@@ -1,0 +1,45 @@
+
+Menu - wyścig
+	
+Dopalacz
+	a) - dopalacz: wizualnie i technicznie (dopalacz zmiękcza zawieszenie i zwiększa moc, ale nie moment)
+		
+Ewolucje
+	a) właściwe tempo ewolucji
+	b) wykonywanie dwóch ewolucji naraz powoduje dwukrotne zwolnienie tempa obrotu wzłuż każdej z osi
+	c) wykrywanie ewolucji - salto, obrót, beczka
+			
+B. Bateria
+	a) jazda zużywa baterię
+	b) salta i obroty ładują baterię
+
+H. HUD
+	a) nagroda za skok
+	b) nagroda za ewolucje
+	
+8. Respawn
+	a) system przywrócenia na trasę po wypadnięciu
+	b) 5s duch
+
+W - wizualne:
+	c) - cień aerodynamiczny technicznie
+	d) sekwencja tunelu elektrycznego
+
+Dźwięk
+- wszystkie dźwięki
+
+AI - przeciwnicy
+
+Sekwencja powtórki - 
+
+Tuning
+- również wizualny
+POWER------
+MASS ------
+EVO  ------
+1a) silnik elektryczny - szybsze przyspieszenie większa masa - zasłonięte rury wydechowe
+1b) silnik spalinowy - gorsze przyszpieszenie niższa masa - normalny mesh
+2a) zawieszenie - oś jednolita - większy zakres resorowania - łatwiej na hopach
+2b) zawieszenie - oś niezależna - mniejszy z.r. - lepsza zwinność na zakrętach
+3a) większy dopalacz - więcej mocy, ale szybsze zużycie baterii i większa masa - mesh z większą pow. jeta
+4a) obniżona masa - wycięte parę elementów mesha - gorszy docisk, lepsze ewolucje
