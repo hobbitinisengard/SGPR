@@ -1,0 +1,581 @@
+fileFormatVersion: 2
+guid: 0f531b3af58aabd47af3595a76dfd1b2
+TextureImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 12
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMasterTextureLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 0
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 3
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Server
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: overlays_bonus1_0
+      rect:
+        serializedVersion: 2
+        x: 53
+        y: 3077
+        width: 678
+        height: 1014
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 63d53988e56237242b7403cf3530490d
+      internalID: 676967673
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlays_bonus1_3
+      rect:
+        serializedVersion: 2
+        x: 901
+        y: 3077
+        width: 662
+        height: 1019
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b79e18e501a7e5845b8fe5af853a0567
+      internalID: -1123412858
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlays_bonus1_6
+      rect:
+        serializedVersion: 2
+        x: 1589
+        y: 3077
+        width: 678
+        height: 1014
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 362df38b1c63d0b4dbb8b9bf07a079a6
+      internalID: 1535682407
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlays_bonus1_9
+      rect:
+        serializedVersion: 2
+        x: 2312
+        y: 1695
+        width: 145
+        height: 2399
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b41c2d2fca5785f49bf857fd226cf061
+      internalID: 1111094148
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlays_bonus1_10
+      rect:
+        serializedVersion: 2
+        x: 2741
+        y: 3653
+        width: 1334
+        height: 443
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3c9589150bcc1a64284d4d57aee8e6a8
+      internalID: -375069761
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlays_bonus1_21
+      rect:
+        serializedVersion: 2
+        x: 2741
+        y: 3045
+        width: 950
+        height: 582
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b1fd6d14ca849204baf1f9357498ea77
+      internalID: 436056715
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlays_bonus1_41
+      rect:
+        serializedVersion: 2
+        x: 261
+        y: 2053
+        width: 470
+        height: 1014
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: da889460571c91d459cccad4464f4e02
+      internalID: 468366113
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlays_bonus1_42
+      rect:
+        serializedVersion: 2
+        x: 821
+        y: 2053
+        width: 726
+        height: 1014
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d3ebe259e4ffe9b4ba85426c4ea84255
+      internalID: -444963036
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlays_bonus1_43
+      rect:
+        serializedVersion: 2
+        x: 1589
+        y: 2053
+        width: 662
+        height: 1014
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f550a49d1288eda4d817ed5b4b9e36db
+      internalID: 1392795311
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlays_bonus1_63
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 1029
+        width: 731
+        height: 1014
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 21c33b878128c5d449de7b86670fc70e
+      internalID: -365102800
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlays_bonus1_64
+      rect:
+        serializedVersion: 2
+        x: 789
+        y: 1029
+        width: 710
+        height: 1014
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: abcc61d31c639e746b95cb09ab8e36c2
+      internalID: -1085636201
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlays_bonus1_67
+      rect:
+        serializedVersion: 2
+        x: 1573
+        y: 1205
+        width: 694
+        height: 598
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 947d9866b1f86ee469bd5d02c2ebdc39
+      internalID: 1183462636
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlays_bonus1_73
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 731
+        height: 1019
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f3f7994b08175dc49af0a2422c4f1e53
+      internalID: 1173794148
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlays_bonus1_82
+      rect:
+        serializedVersion: 2
+        x: 901
+        y: 0
+        width: 598
+        height: 1019
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 443b72d3aa22b9a4c870a1e037c05da4
+      internalID: -1500592591
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlays_bonus1_92
+      rect:
+        serializedVersion: 2
+        x: 1525
+        y: 0
+        width: 982
+        height: 603
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5668bc3be657e6e46b912eebdcdb6ff5
+      internalID: -1176355716
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlays_bonus1_105
+      rect:
+        serializedVersion: 2
+        x: 2465
+        y: 1695
+        width: 147
+        height: 2401
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8440d86998e814c408bdb51fa8bafc2c
+      internalID: 1458711747
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    physicsShape: []
+    bones: []
+    spriteID: 622a9892f19744c4f9acb38dd9656ad9
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    nameFileIdTable:
+      overlays_bonus1_0: 676967673
+      overlays_bonus1_1: 1493983778
+      overlays_bonus1_10: -375069761
+      overlays_bonus1_100: 1281316021
+      overlays_bonus1_101: 1730401392
+      overlays_bonus1_102: -1215087130
+      overlays_bonus1_103: 943568590
+      overlays_bonus1_104: -1559223789
+      overlays_bonus1_105: 1458711747
+      overlays_bonus1_106: 947015307
+      overlays_bonus1_107: 928648669
+      overlays_bonus1_108: -1851412039
+      overlays_bonus1_109: -1784849916
+      overlays_bonus1_11: -1108699230
+      overlays_bonus1_12: 842686493
+      overlays_bonus1_13: 1784655183
+      overlays_bonus1_14: 1864891157
+      overlays_bonus1_15: -44125496
+      overlays_bonus1_16: -412951959
+      overlays_bonus1_17: -1280842401
+      overlays_bonus1_18: 2070570471
+      overlays_bonus1_19: -159161280
+      overlays_bonus1_2: 370549258
+      overlays_bonus1_20: 1023790640
+      overlays_bonus1_21: 436056715
+      overlays_bonus1_22: -1557826766
+      overlays_bonus1_23: 2079852470
+      overlays_bonus1_24: 1942490025
+      overlays_bonus1_25: -945104485
+      overlays_bonus1_26: 1813826366
+      overlays_bonus1_27: -1930096964
+      overlays_bonus1_28: 1428570553
+      overlays_bonus1_29: -1507233044
+      overlays_bonus1_3: -1123412858
+      overlays_bonus1_30: -1444208188
+      overlays_bonus1_31: 1737742389
+      overlays_bonus1_32: 1732540051
+      overlays_bonus1_33: -142950980
+      overlays_bonus1_34: -777788448
+      overlays_bonus1_35: -845246516
+      overlays_bonus1_36: -1112551583
+      overlays_bonus1_37: 1434010536
+      overlays_bonus1_38: -484570250
+      overlays_bonus1_39: -1709746309
+      overlays_bonus1_4: -783720979
+      overlays_bonus1_40: -108152241
+      overlays_bonus1_41: 468366113
+      overlays_bonus1_42: -444963036
+      overlays_bonus1_43: 1392795311
+      overlays_bonus1_44: 4308470
+      overlays_bonus1_45: -703051931
+      overlays_bonus1_46: -1048414665
+      overlays_bonus1_47: 264147431
+      overlays_bonus1_48: -1206185009
+      overlays_bonus1_49: -2094754102
+      overlays_bonus1_5: -380916537
+      overlays_bonus1_50: 1334279251
+      overlays_bonus1_51: 884467254
+      overlays_bonus1_52: 1404955282
+      overlays_bonus1_53: 119910690
+      overlays_bonus1_54: 1376138317
+      overlays_bonus1_55: 1275913316
+      overlays_bonus1_56: 404868120
+      overlays_bonus1_57: 617248656
+      overlays_bonus1_58: -1028920821
+      overlays_bonus1_59: 287230856
+      overlays_bonus1_6: 1535682407
+      overlays_bonus1_60: -1289169792
+      overlays_bonus1_61: -197327905
+      overlays_bonus1_62: -948923425
+      overlays_bonus1_63: -365102800
+      overlays_bonus1_64: -1085636201
+      overlays_bonus1_65: -1749421517
+      overlays_bonus1_66: -44344851
+      overlays_bonus1_67: 1183462636
+      overlays_bonus1_68: -760818914
+      overlays_bonus1_69: -2027730238
+      overlays_bonus1_7: -623591616
+      overlays_bonus1_70: 2135905536
+      overlays_bonus1_71: 518215629
+      overlays_bonus1_72: 523812079
+      overlays_bonus1_73: 1173794148
+      overlays_bonus1_74: -2054803253
+      overlays_bonus1_75: -1757814170
+      overlays_bonus1_76: 2000551220
+      overlays_bonus1_77: -1057469071
+      overlays_bonus1_78: 1613016072
+      overlays_bonus1_79: -69122207
+      overlays_bonus1_8: -1688868557
+      overlays_bonus1_80: 1922832158
+      overlays_bonus1_81: -228163502
+      overlays_bonus1_82: -1500592591
+      overlays_bonus1_83: 1829805407
+      overlays_bonus1_84: -1490075908
+      overlays_bonus1_85: -1126025168
+      overlays_bonus1_86: 2004490893
+      overlays_bonus1_87: -1577705344
+      overlays_bonus1_88: -1214082744
+      overlays_bonus1_89: -1353993310
+      overlays_bonus1_9: 1111094148
+      overlays_bonus1_90: -240905766
+      overlays_bonus1_91: 403029215
+      overlays_bonus1_92: -1176355716
+      overlays_bonus1_93: -2113760494
+      overlays_bonus1_94: -369408689
+      overlays_bonus1_95: 104750847
+      overlays_bonus1_96: -639189734
+      overlays_bonus1_97: 393501410
+      overlays_bonus1_98: 1785107940
+      overlays_bonus1_99: 961683891
+  spritePackingTag: 
+  pSDRemoveMatte: 0
+  pSDShowRemoveMatteOption: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
