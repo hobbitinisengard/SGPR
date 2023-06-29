@@ -1,0 +1,762 @@
+fileFormatVersion: 2
+guid: 6205c83abded04348bf99859e4f9eee9
+TextureImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 12
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMasterTextureLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 0
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 25
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 3
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: Server
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 3
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: overlays_dial_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 2071
+        width: 3208
+        height: 2022
+      alignment: 8
+      pivot: {x: 1, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6823578ea35a18443b149c2352be0e67
+      internalID: 1965540174
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 0
+      rect:
+        serializedVersion: 2
+        x: 5
+        y: 5
+        width: 406
+        height: 518
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 617d2f09f5dd62346bf7d8681758c021
+      internalID: 1022970062
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 1
+      rect:
+        serializedVersion: 2
+        x: 501
+        y: 5
+        width: 310
+        height: 518
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0905d1ca31b502b4c9d37ae4f8d0b193
+      internalID: -1836650192
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 2
+      rect:
+        serializedVersion: 2
+        x: 805
+        y: 5
+        width: 406
+        height: 518
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 84d8ba2caeef7eb428d25093c3dcb150
+      internalID: 1272151748
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 3
+      rect:
+        serializedVersion: 2
+        x: 1204
+        y: 5
+        width: 402
+        height: 518
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f4fbc9a5f45e1814c889c0f459835ff5
+      internalID: 10466821
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 7
+      rect:
+        serializedVersion: 2
+        x: 2805
+        y: 5
+        width: 406
+        height: 518
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5078eb5d97d8c6345bbb7967b75b2219
+      internalID: -815555598
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 8
+      rect:
+        serializedVersion: 2
+        x: 3205
+        y: 5
+        width: 406
+        height: 518
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c12b3a5af82c8b44896f5a44ada545e2
+      internalID: -1082510007
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 9
+      rect:
+        serializedVersion: 2
+        x: 3605
+        y: 5
+        width: 406
+        height: 518
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 715a46998f422184682f9008cdf2c797
+      internalID: -1564026335
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlays_dial_57
+      rect:
+        serializedVersion: 2
+        x: 28
+        y: 1429
+        width: 1890
+        height: 623
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a67cb04c75db6ff41973634262be11d5
+      internalID: 811891718
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlays_dial_58
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 1120
+        width: 2093
+        height: 279
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1ca0f29833229f54c91cbfcf8f7c9e2b
+      internalID: -2044241590
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlays_dial_59
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 682
+        width: 1314
+        height: 438
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ac4d0fec1e0b75543a37878439d47ff6
+      internalID: -2070416249
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 4
+      rect:
+        serializedVersion: 2
+        x: 1605
+        y: 0
+        width: 399
+        height: 524
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1cb6e3492547a04479d0ca47d9a799d7
+      internalID: -368451287
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 5
+      rect:
+        serializedVersion: 2
+        x: 2011
+        y: 0
+        width: 392
+        height: 521
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 47bf69d4d9b112a4cbf6eb751046e0cb
+      internalID: -591823420
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 6
+      rect:
+        serializedVersion: 2
+        x: 2406
+        y: 0
+        width: 396
+        height: 521
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b1a49eb7b58a0d5449e2bdab0e222603
+      internalID: 1383696448
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlays_dial_5
+      rect:
+        serializedVersion: 2
+        x: 1320
+        y: 530
+        width: 1003
+        height: 583
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 98310c55edcd37045913632cb8979d8f
+      internalID: -453273351
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlays_dial_6
+      rect:
+        serializedVersion: 2
+        x: 2327
+        y: 532
+        width: 946
+        height: 579
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1244c7c351f824345bf807ec15832b6c
+      internalID: -1290011048
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlays_dial_7
+      rect:
+        serializedVersion: 2
+        x: 3781
+        y: 616
+        width: 306
+        height: 300
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 694088fc152978148a4001bdce4b30db
+      internalID: 384292035
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlays_dial_8
+      rect:
+        serializedVersion: 2
+        x: 3277
+        y: 556
+        width: 321
+        height: 1314
+      alignment: 9
+      pivot: {x: 0.49999848, y: 0.15549919}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 42bfb5d454ae4a144aa7ea566b5c5d23
+      internalID: -1676461037
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlays_dial_9
+      rect:
+        serializedVersion: 2
+        x: 2099
+        y: 1120
+        width: 1160
+        height: 290
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d52dcfd25dc6a5549b24ff66f41b6ef3
+      internalID: 286740814
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlays_dial_10
+      rect:
+        serializedVersion: 2
+        x: 1950
+        y: 1844
+        width: 164
+        height: 154
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2ca5f8a9058687f4ca078db7162c9067
+      internalID: -205667401
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlays_dial_11
+      rect:
+        serializedVersion: 2
+        x: 2163
+        y: 1847
+        width: 174
+        height: 193
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1038709f35804c64481614f29e4e81a4
+      internalID: -990931661
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlays_dial_12
+      rect:
+        serializedVersion: 2
+        x: 2366
+        y: 1847
+        width: 187
+        height: 193
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5f6163740bc177048b2af5ba60be2d7d
+      internalID: 82869111
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlays_dial_13
+      rect:
+        serializedVersion: 2
+        x: 2567
+        y: 1821
+        width: 196
+        height: 219
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cce842f48c16e3d4baa3850084ff703a
+      internalID: -1652258389
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlays_dial_14
+      rect:
+        serializedVersion: 2
+        x: 3687
+        y: 939
+        width: 177
+        height: 3157
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 879804a9423ec9e47aba91444c21f592
+      internalID: 821813739
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlays_dial_15
+      rect:
+        serializedVersion: 2
+        x: 3898
+        y: 938
+        width: 178
+        height: 3158
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e9e21f3368370d444910f7019669eff6
+      internalID: -1633737619
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlays_star
+      rect:
+        serializedVersion: 2
+        x: 2670
+        y: 1612
+        width: 143
+        height: 156
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0c0299e4eadfb0d489b3674471f7445a
+      internalID: -1302267487
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlays_dial_1
+      rect:
+        serializedVersion: 2
+        x: 3477
+        y: 2091
+        width: 177
+        height: 2005
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e10801c5c9e345842b6d2144c0ebf71e
+      internalID: -337139522
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    physicsShape: []
+    bones: []
+    spriteID: e1070e19ec86e154485a1184c9b87536
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    nameFileIdTable:
+      0: 1022970062
+      1: -1836650192
+      2: 1272151748
+      3: 10466821
+      4: -368451287
+      5: -591823420
+      6: 1383696448
+      7: -815555598
+      8: -1082510007
+      9: -1564026335
+      overlays_dial_0: 1965540174
+      overlays_dial_1: -337139522
+      overlays_dial_10: -205667401
+      overlays_dial_11: -990931661
+      overlays_dial_12: 82869111
+      overlays_dial_13: -1652258389
+      overlays_dial_14: 821813739
+      overlays_dial_15: -1633737619
+      overlays_dial_17: 504249341
+      overlays_dial_18: -318097544
+      overlays_dial_19: 271698477
+      overlays_dial_20: -187664629
+      overlays_dial_21: 1021419499
+      overlays_dial_22: 672655993
+      overlays_dial_23: -952859552
+      overlays_dial_25: 1826476394
+      overlays_dial_32: 154520351
+      overlays_dial_33: 649182745
+      overlays_dial_34: -1552730765
+      overlays_dial_35: -1212608084
+      overlays_dial_36: -1281520500
+      overlays_dial_37: 1287670699
+      overlays_dial_38: 1618089180
+      overlays_dial_39: -1972296080
+      overlays_dial_40: 1763735317
+      overlays_dial_41: 1593261569
+      overlays_dial_42: -904451787
+      overlays_dial_43: -1622266708
+      overlays_dial_44: -1986842441
+      overlays_dial_45: -113658154
+      overlays_dial_46: -572605948
+      overlays_dial_47: 2019679519
+      overlays_dial_48: -1899286006
+      overlays_dial_49: -240173989
+      overlays_dial_5: -453273351
+      overlays_dial_50: -1158202608
+      overlays_dial_51: -2068883879
+      overlays_dial_52: 1704030480
+      overlays_dial_53: -254252785
+      overlays_dial_54: -40134768
+      overlays_dial_55: -2086374173
+      overlays_dial_56: 125917593
+      overlays_dial_57: 811891718
+      overlays_dial_58: -2044241590
+      overlays_dial_59: -2070416249
+      overlays_dial_6: -1290011048
+      overlays_dial_7: 384292035
+      overlays_dial_8: -1676461037
+      overlays_dial_9: 286740814
+      overlays_star: -1302267487
+  spritePackingTag: 
+  pSDRemoveMatte: 0
+  pSDShowRemoveMatteOption: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
