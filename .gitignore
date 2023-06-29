@@ -5,10 +5,11 @@
 [Bb]uilds/
 #Assets/Unver/cars*
 #Assets/Unver/tracks*
-Assets/Unver/music*
+#Assets/Unver/music*
+#Assets/Unver/sfx*
 Assets/Unver/textures*
 Assets/Unver/pics*
-Assets/Unver/sfx*
+
 Assets/AssetStoreTools*
 
 # Visual Studio cache directory
