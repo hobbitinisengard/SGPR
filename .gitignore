@@ -3,7 +3,7 @@
 [Oo]bj/
 [Bb]uild/
 [Bb]uilds/
-Assets/Unver/cars*
+#Assets/Unver/cars*
 Assets/Unver/tracks*
 Assets/Unver/music*
 Assets/Unver/textures*
