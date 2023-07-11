@@ -33,19 +33,18 @@ public class SGP_Bouncer : MonoBehaviour
             float velocityMagn = collision.relativeVelocity.magnitude;
             
             // can't bounce vertical forces
-            if (Mathf.Abs(colNormal.y) >= Mathf.Abs(colNormal.x) || Mathf.Abs(colNormal.y) >= Mathf.Abs(colNormal.z))
-                return;
-
-            float dot = Mathf.Abs(Vector3.Dot(-vp.rb.velocity.normalized, colNormal));
-            d_dot = dot;
-            float energy = velocityMagn * dot;
-            if (energy < minimalVelocityAtWall) // velocity directed at the wall
-                return;
-            float currentAngleSteer = Mathf.Sign(vp.steerInput) * vp.wheels[1].suspensionParent.steerAngle * vp.wheels[1].suspensionParent.steerDegrees;
-            Vector3 intendedDirection = Quaternion.AngleAxis(currentAngleSteer, vp.upDir) * vp.forwardDir;
-            colNormal = (intendedDirection + vp.centerOfMassObj.localPosition.y * vp.upDir).normalized;
-            rb.AddForce(multiplier * velocityMagn * colNormal, ForceMode.VelocityChange);
-            
+            if (Mathf.Abs(colNormal.y) < Mathf.Abs(colNormal.x) || Mathf.Abs(colNormal.y) < Mathf.Abs(colNormal.z))
+            {
+                float dot = Mathf.Abs(Vector3.Dot(-vp.rb.velocity.normalized, colNormal));
+                d_dot = dot;
+                float energy = velocityMagn * dot;
+                if (energy < minimalVelocityAtWall) // velocity directed at the wall
+                    return;
+                float currentAngleSteer = Mathf.Sign(vp.steerInput) * vp.wheels[1].suspensionParent.steerAngle * vp.wheels[1].suspensionParent.steerDegrees;
+                Vector3 intendedDirection = Quaternion.AngleAxis(currentAngleSteer, vp.upDir) * vp.forwardDir;
+                colNormal = (intendedDirection + 0.4f * vp.upDir).normalized;
+                rb.AddForce(multiplier * velocityMagn * colNormal, ForceMode.VelocityChange);
+            }
         }
     }
     private void OnCollisionExit(Collision collision)

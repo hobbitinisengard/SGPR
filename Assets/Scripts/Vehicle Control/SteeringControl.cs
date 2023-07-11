@@ -1,8 +1,6 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System;
-using UnityEngine.UIElements;
-using UnityEngine.WSA;
+using UnityEngine.UIElements.Experimental;
 
 namespace RVP
 {
@@ -23,7 +21,8 @@ namespace RVP
 
         [Tooltip("Shape of curve need to be setup in inspector. It's , x-axis = speed, y-axis = multiplier")]
         public AnimationCurve steerLimitCurve = AnimationCurve.Linear(0,1,30,0.1f);
-
+        static readonly float speedOfMaxComebackSteeringSpeed = 30;
+        AnimationCurve comebackSteerLimitCurve = AnimationCurve.Linear(0, 0, speedOfMaxComebackSteeringSpeed, 1f);
         [Header("Experimental")]
         public float steerLimitCurveCoeff = 1f;
         [Range(-1,1)]
@@ -81,25 +80,26 @@ namespace RVP
         }
         void FixedUpdate()
         {
-            float rawSteerAngle = 0;
+            float rawSteer = 0;
             if (vp.steerInput == 0)
             {
                 if (holdDuration > 0)
-                    holdDuration -= 1 * Time.fixedDeltaTime;
+                    holdDuration -= 5 * Time.fixedDeltaTime;
             }
             else
             {
                 if (holdDuration < secsForMaxSteeringSpeed)
                 {
+                    //holdDurationRaw = Mathf.Clamp()
                     if (holdDuration < 0)
                         holdDuration = Time.fixedDeltaTime;
                     else
                         holdDuration += Time.fixedDeltaTime;
                 }
-                rawSteerAngle = steerStepScale * keyboardInputCurve.Evaluate(holdDuration);
+                
+                rawSteer = keyboardInputCurve.Evaluate(holdDuration);
             }
             steerLimit = steerLimitCurve.Evaluate(vp.localVelocity.z);
-
             // Set steer angles in wheels
             foreach (Suspension curSus in steeredWheels)
             {
@@ -126,13 +126,17 @@ namespace RVP
                 if (curSus.wheel.sliding)
                     targetSteerAngle = vp.steerInput * curSus.steerAngle;
                 else
-                    targetSteerAngle = vp.steerInput * rawSteerAngle;
+                    targetSteerAngle = vp.steerInput * steerLimit * rawSteer;
 
                 if (Mathf.Abs(targetSteerAngle) > steerLimit)
                     targetSteerAngle = Mathf.Sign(targetSteerAngle) * steerLimit;
 
-                curSus.steerAngle = Mathf.Lerp(curSus.steerAngle, targetSteerAngle,
-                    (vp.steerInput == 0 ? 6 : 3) * Time.fixedDeltaTime);
+                float step;
+                if (vp.steerInput == 0)
+                    step = 12 * Time.fixedDeltaTime * comebackSteerLimitCurve.Evaluate(Mathf.Abs(Mathf.Clamp(vp.localVelocity.z, -speedOfMaxComebackSteeringSpeed, speedOfMaxComebackSteeringSpeed)));
+                else
+                    step = 10 * Time.fixedDeltaTime; //* Easing.InCubic(holdDuration/1f);
+                curSus.steerAngle = Mathf.Lerp(curSus.steerAngle, targetSteerAngle, step);
             }
             steerAngle = steeredWheels[0].steerAngle;
         }
