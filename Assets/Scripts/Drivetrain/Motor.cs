@@ -51,9 +51,9 @@ namespace RVP
         public float damagePitchWiggle;
         public ParticleSystem smoke;
         float initialSmokeEmission;
-        private float baseJetScale = 0;
-        private float boostVel;
-        private float SinArg = 0;
+        float baseJetScale = 0;
+        float boostVel;
+        float SinArg = 0;
         float SinJetCoeff = 11f;
         public float boostActivatedTime;
 
@@ -90,7 +90,6 @@ namespace RVP
         }
         public virtual void FixedUpdate() {
             health = Mathf.Clamp01(health);
-
             // Boost logic
             battery = Mathf.Clamp(boosting ? battery - boostBurnRate * Time.timeScale * 0.05f * TimeMaster.inverseFixedTimeFactor : battery, 0, maxBattery);
             boostPrev = boosting;
@@ -142,7 +141,6 @@ namespace RVP
                 {
                     baseJetScale = Mathf.SmoothDamp(baseJetScale, boosting ? 1f : 0f, ref boostVel,
                         0.1f, 0.3f);
-
                     float sine = Mathf.Sin(SinArg);
                     jet.transform.localScale = (1 + 0.1f * sine) * baseJetScale * Vector3.one;
 

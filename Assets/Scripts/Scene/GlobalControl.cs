@@ -16,6 +16,7 @@ namespace RVP
     public class GlobalControl : MonoBehaviour
     {
         public GameObject Sun;
+        public GameObject nightTimeLights;
         [Tooltip("Reload the scene with the 'Restart' button in the input manager")]
         public bool quickRestart = true;
         float initialFixedTime;
@@ -72,6 +73,7 @@ namespace RVP
             else if(pod == PartOfDay.Night)
             {
                 Sun.SetActive(false);
+                nightTimeLights.SetActive(true);
                 RenderSettings.ambientLight = new Color32(52, 52, 52,1);
             }
         }

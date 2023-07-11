@@ -445,7 +445,7 @@ namespace RVP
                 }
             }
 
-            rb.centerOfMass = centerOfMassOffset + new Vector3(0, -susAverage, 0);
+            rb.centerOfMass = centerOfMassOffset + new Vector3(0, susAverage, 0);
             Debug.Log(transform.name + rb.centerOfMass);
             rb.inertiaTensor = rb.inertiaTensor; // This is required due to decoupling of inertia tensor from center of mass in Unity 5.3
         }

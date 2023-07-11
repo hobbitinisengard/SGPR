@@ -1022,7 +1022,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1531201485}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.6, z: 0}
+  m_LocalPosition: {x: 0, y: 0.4, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6258,8 +6258,8 @@ TrailRenderer:
       m_RotationOrder: 4
     colorGradient:
       serializedVersion: 2
-      key0: {r: 1, g: 1, b: 1, a: 1}
-      key1: {r: 1, g: 1, b: 1, a: 1}
+      key0: {r: 1, g: 1, b: 1, a: 0.20784314}
+      key1: {r: 1, g: 1, b: 1, a: 0.20784314}
       key2: {r: 0.11681201, g: 0.30630082, b: 0.990566, a: 0}
       key3: {r: 0, g: 0, b: 0, a: 0}
       key4: {r: 0, g: 0, b: 0, a: 0}
@@ -16097,7 +16097,7 @@ SkinnedMeshRenderer:
   m_GameObject: {fileID: 1235074252864835299}
   m_Enabled: 1
   m_CastShadows: 1
-  m_ReceiveShadows: 1
+  m_ReceiveShadows: 0
   m_DynamicOccludee: 1
   m_StaticShadowCaster: 0
   m_MotionVectors: 1
@@ -16150,19 +16150,19 @@ Cloth:
   m_GameObject: {fileID: 1235074252864835299}
   m_Enabled: 1
   m_StretchingStiffness: 1
-  m_BendingStiffness: 0
+  m_BendingStiffness: 1
   m_UseTethers: 1
   m_UseGravity: 1
-  m_Damping: 0
+  m_Damping: 0.5
   m_ExternalAcceleration: {x: 0, y: 0, z: 0}
   m_RandomAcceleration: {x: 0, y: 0, z: 0}
-  m_WorldVelocityScale: 0.5
+  m_WorldVelocityScale: 1
   m_WorldAccelerationScale: 1
-  m_Friction: 0.5
-  m_CollisionMassScale: 0
+  m_Friction: 1
+  m_CollisionMassScale: 1
   m_UseContinuousCollision: 1
   m_UseVirtualParticles: 1
-  m_SolverFrequency: 120
+  m_SolverFrequency: 10
   m_SleepThreshold: 0.1
   m_Coefficients:
   - maxDistance: 0
@@ -54608,7 +54608,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d7bc4fd8f3a080841a7a518b322859f8, type: 2}
+  - {fileID: 2100000, guid: 332a5244336f0ae499eafc8d825f78b8, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -103382,7 +103382,7 @@ MonoBehaviour:
   hoverWheels: []
   wheelGroups: []
   hover: 0
-  suspensionCenterOfMass: 0
+  suspensionCenterOfMass: 1
   centerOfMassObj: {fileID: 1531201486}
   wheelForceMode: 0
   suspensionForceMode: 0
@@ -103409,7 +103409,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   basedOnWheelsGrounded: 1
-  driftSpinAssist: 30
+  driftSpinAssist: 10
   driftSpinSpeed: 1
   driftSpinExponent: 1
   autoSteerDrift: 0
@@ -103440,7 +103440,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   driftPush: 0
   straightenAssist: 0
-  downforce: 0.65
+  downforce: 0.45
   invertDownforceInReverse: 0
   applyDownforceInAir: 1
   downforceCurve:
@@ -103563,7 +103563,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4004a853526701343b191aaf6c4b56c8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  minimalVelocityAtWall: 18
+  minimalVelocityAtWall: 5
   multiplier: 1
   d_dot: 0
 --- !u!114 &6779875395068024192
@@ -123009,7 +123009,7 @@ MonoBehaviour:
   axleFriction: 0
   frictionSmoothness: 0.5
   forwardFriction: 6
-  sidewaysFriction: 10
+  sidewaysFriction: 14
   forwardRimFriction: 1
   sidewaysRimFriction: 1
   forwardCurveStretch: 1
@@ -125634,11 +125634,11 @@ MonoBehaviour:
   axleFriction: 0
   frictionSmoothness: 0.5
   forwardFriction: 10
-  sidewaysFriction: 12
+  sidewaysFriction: 16
   forwardRimFriction: 1
   sidewaysRimFriction: 1
   forwardCurveStretch: 1
-  sidewaysCurveStretch: 2
+  sidewaysCurveStretch: 3
   forwardFrictionCurve:
     serializedVersion: 2
     m_Curve:
@@ -128447,23 +128447,14 @@ MonoBehaviour:
       inWeight: 0
       outWeight: 0.0272175
     - serializedVersion: 3
-      time: 30.058435
+      time: 29.941736
       value: 0.1
-      inSlope: -0.0031122386
-      outSlope: -0.0017588029
+      inSlope: -0.006366719
+      outSlope: -0.0053554596
       tangentMode: 1
       weightedMode: 0
-      inWeight: 0.092102006
-      outWeight: 0.12961756
-    - serializedVersion: 3
-      time: 79.88318
-      value: 0.05
-      inSlope: -0.0011286774
-      outSlope: -0.0011286774
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.058436736
-      outWeight: 0
+      inWeight: 0.09768996
+      outWeight: 0.047755472
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
@@ -128976,11 +128967,11 @@ MonoBehaviour:
   axleFriction: 0
   frictionSmoothness: 0.5
   forwardFriction: 10
-  sidewaysFriction: 12
+  sidewaysFriction: 16
   forwardRimFriction: 1
   sidewaysRimFriction: 1
   forwardCurveStretch: 1
-  sidewaysCurveStretch: 2
+  sidewaysCurveStretch: 3
   forwardFrictionCurve:
     serializedVersion: 2
     m_Curve:
@@ -131472,7 +131463,7 @@ MonoBehaviour:
   axleFriction: 0
   frictionSmoothness: 0.5
   forwardFriction: 6
-  sidewaysFriction: 10
+  sidewaysFriction: 14
   forwardRimFriction: 1
   sidewaysRimFriction: 1
   forwardCurveStretch: 1
@@ -139480,16 +139471,16 @@ TrailRenderer:
       m_RotationOrder: 4
     colorGradient:
       serializedVersion: 2
-      key0: {r: 0.28773582, g: 0.68008476, b: 1, a: 0.39215687}
-      key1: {r: 0, g: 0, b: 1, a: 0.39215687}
+      key0: {r: 0.5372549, g: 0.7921569, b: 1, a: 0.5764706}
+      key1: {r: 0, g: 0, b: 1, a: 0.5764706}
       key2: {r: 0.34901962, g: 0.49019608, b: 1, a: 1}
       key3: {r: 0, g: 0, b: 0, a: 0}
       key4: {r: 0, g: 0, b: 0, a: 0}
       key5: {r: 0, g: 0, b: 0, a: 0}
       key6: {r: 0, g: 0, b: 0, a: 0}
       key7: {r: 0, g: 0, b: 0, a: 0}
-      ctime0: 193
-      ctime1: 49922
+      ctime0: 0
+      ctime1: 10486
       ctime2: 57440
       ctime3: 0
       ctime4: 0

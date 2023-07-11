@@ -43,7 +43,7 @@ namespace RVP
 
         public float maxDegreesRotation;
         AnimationCurve keyboardInputCurve;
-        float secsForMaxSteeringSpeed = 1f;
+        float secsForMaxSteeringSpeed = 1.5f;
 
         public float d_angleSteer;
 
@@ -103,6 +103,7 @@ namespace RVP
             // Set steer angles in wheels
             foreach (Suspension curSus in steeredWheels)
             {
+
                 if (Mathf.Abs(curSus.steerAngle) < 0.001f && vp.steerInput == 0)
                 { // important for high speed straight drive
                     curSus.steerAngle = 0;
@@ -118,14 +119,12 @@ namespace RVP
                 {
                     curSus.wheel.sidewaysFriction = frontSidewaysCoeff;
                 }
-                if (steerAngle * vp.steerInput < 0)
-                    curSus.steerAngle /= 1.1f; // for fast direction change 
+                //if (steerAngle * vp.steerInput < 0)
+                //    curSus.steerAngle /= 1.1f; // for fast direction change 
 
                 float targetSteerAngle;
                 if (curSus.wheel.sliding)
-                {
                     targetSteerAngle = vp.steerInput * curSus.steerAngle;
-                }
                 else
                     targetSteerAngle = vp.steerInput * rawSteerAngle;
 
@@ -133,7 +132,7 @@ namespace RVP
                     targetSteerAngle = Mathf.Sign(targetSteerAngle) * steerLimit;
 
                 curSus.steerAngle = Mathf.Lerp(curSus.steerAngle, targetSteerAngle,
-                    4 * Time.fixedDeltaTime);
+                    (vp.steerInput == 0 ? 6 : 3) * Time.fixedDeltaTime);
             }
             steerAngle = steeredWheels[0].steerAngle;
         }
