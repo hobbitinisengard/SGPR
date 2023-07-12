@@ -103287,6 +103287,7 @@ GameObject:
   - component: {fileID: 4194641081301078446}
   - component: {fileID: 6779875395068024204}
   - component: {fileID: 6779875395068024192}
+  - component: {fileID: 1803491810}
   m_Layer: 9
   m_Name: car1
   m_TagString: Untagged
@@ -103581,6 +103582,19 @@ MonoBehaviour:
   starLevel: 0
   grantedComboTime: 0
   aeroMeterVelocity: 0
+--- !u!114 &1803491810
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5969412531493064941}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed9d126e716020b4493830d2a5d1e810, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  COM_Movement: -1.2
 --- !u!1 &6179087285394029084
 GameObject:
   m_ObjectHideFlags: 0
