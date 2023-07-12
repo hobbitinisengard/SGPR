@@ -42,8 +42,8 @@ public class SGP_Bouncer : MonoBehaviour
                     return;
                 float currentAngleSteer = Mathf.Sign(vp.steerInput) * vp.wheels[1].suspensionParent.steerAngle * vp.wheels[1].suspensionParent.steerDegrees;
                 Vector3 intendedDirection = Quaternion.AngleAxis(currentAngleSteer, vp.upDir) * vp.forwardDir;
-                colNormal = (intendedDirection + 0.4f * vp.upDir).normalized;
-                rb.AddForce(multiplier * velocityMagn * colNormal, ForceMode.VelocityChange);
+                intendedDirection = (intendedDirection + 0.4f * vp.upDir).normalized;
+                rb.AddForce(multiplier * velocityMagn * intendedDirection, ForceMode.VelocityChange);
             }
         }
     }

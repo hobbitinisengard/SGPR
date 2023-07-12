@@ -4,37 +4,45 @@ using UnityEngine;
 public enum Direction { ANTICLOCK = -1, CLOCK = 1};
 public class RotationDampStruct
 {
-    public static float evoSmoothTime = 2f;
-    public static float evoMaxSpeed = 60f;
-    public static float evoCoeff = 10;
-    public static float minEvoCoeff = 10;
-    public static float maxEvoCoeff = 20;
-    
+    readonly float evoSmoothTime = 0.05f;
+    readonly float staticEvoMaxSpeed = 400; // 400 = hustler max speed. 1500 = dart max speed
+    readonly float evoAcceleration = 15; // 15 = hustler max acc.  57 = dart max acc
+
+    // increases when holding shift
+    float evoMaxSpeed = 1; 
 
     float pos = 0;
     public float targetPos = 0;
-    public float velocity = 0;
+    public float evoCoeff = 1;
+    public float speed = 0;
     public float offset = 0;
-    public float deltaCoeff = 1f;
+    public bool Active()
+    {
+        return Mathf.Abs(targetPos - pos) > 2;
+    }
     public float Pos()
     {
         return pos + offset;
     }
     public void UpdateTarget(Direction dir)
     {
-        if (velocity * (int)dir < 0)
-            DecreaseCoeff();
+        if (speed * (int)dir < 0)
+        {
+            speed = 0;
+            evoMaxSpeed = 0.1f;
+        }
+            
         if(dir == Direction.CLOCK)
         {
             if (pos > 315)
-                targetPos = float.MaxValue;
+                targetPos = 999; // big +value
             else
                 targetPos = 360;
         }
         else
         {
             if (pos < 45)
-                targetPos = float.MinValue;
+                targetPos = -999; // big -value
             else
                 targetPos = 0;
         }
@@ -43,7 +51,7 @@ public class RotationDampStruct
     {
         if (deg > 360)
             deg -= 360;
-        if (deg < 0)
+        else if (deg < 0)
             deg += 360;
         return deg;
     }
@@ -57,27 +65,26 @@ public class RotationDampStruct
         else
             pos = newpos;
         targetPos = pos;
-        velocity = 0;
-        evoCoeff = minEvoCoeff;
+        speed = 0;
+        evoMaxSpeed = 1;
     }
     public void SmoothDamp()
     {
         pos = degs(pos);
-        pos = Mathf.SmoothDamp(pos, targetPos, ref velocity,
-               evoSmoothTime, evoMaxSpeed, Time.fixedDeltaTime * evoCoeff);
-        
+        pos = Mathf.SmoothDamp(pos, targetPos, ref speed,
+               evoSmoothTime, evoMaxSpeed, Time.fixedDeltaTime);
     }
-    public void IncreaseCoeff()
+    public void IncreaseEvoSpeed()
     {
-        evoCoeff += deltaCoeff;
-        evoCoeff = Mathf.Clamp(evoCoeff, minEvoCoeff, maxEvoCoeff);
+        evoMaxSpeed += evoAcceleration;
+        if (evoMaxSpeed > staticEvoMaxSpeed)
+            evoMaxSpeed = staticEvoMaxSpeed;
     }
-    public void DecreaseCoeff()
+    public void DecreaseMaxEvoSpeed()
     {
-        evoCoeff -= deltaCoeff;
-        evoCoeff = Mathf.Clamp(evoCoeff, minEvoCoeff, maxEvoCoeff);
+        if(!Active())
+            evoMaxSpeed = speed;
     }
-    
 }
 public class SGP_Evo : MonoBehaviour
 {
@@ -93,6 +100,7 @@ public class SGP_Evo : MonoBehaviour
     public float posy;
     public float tary;
 
+    
 	void Start()
 	{
         rb = GetComponent<Rigidbody>();
@@ -108,13 +116,21 @@ public class SGP_Evo : MonoBehaviour
 
 	void FixedUpdate()
 	{
-        rX_delta = rX.deltaCoeff;
         posy = rY.Pos();
         tary = rY.targetPos;
 		
-        if (stunting && (vp.groundedWheels > 0 || vp.crashing))
+        if (vp.groundedWheels > 0 || vp.colliding)
             stunting = false;
-        if (!stunting && !vp.colliding && vp.groundedWheels == 0 && Time.time - shiftPressTime < maxTimeToInit)
+
+        if (vp.SGPshiftbutton)
+        {
+            if (vp.groundedWheels != 0 && !stunting && prevSGPShiftButton == false)
+            { // shift press before jump
+                shiftPressTime = Time.time;
+            }
+        }
+
+        if (!stunting && !vp.crashing && vp.groundedWheels == 0 && Time.time - shiftPressTime < maxTimeToInit)
         {
             stunting = true;
             euler = vp.tr.rotation.eulerAngles;
@@ -123,47 +139,51 @@ public class SGP_Evo : MonoBehaviour
             rZ.Init(euler.z);
         }
 			
-        if (vp.SGPshiftbutton)
-		{
-			if(!stunting && prevSGPShiftButton == false)
-			{ // shift press before jump
-				shiftPressTime = Time.time;
-			}
-		}
+        
         if (stunting)
         {
-            if (vp.accelInput > 0)
-            { // backflip
-                rX.UpdateTarget(Direction.ANTICLOCK);
-                rX.IncreaseCoeff();
-            }
-            if(vp.brakeInput > 0)
+            if(vp.SGPshiftbutton)
             {
-                // frontflip
-                rX.UpdateTarget(Direction.CLOCK);
-                rX.IncreaseCoeff();
-            }
-            if(vp.rollInput != 0)
-            { 
-                if (vp.rollInput > 0)
-                { // right roll
-                    rZ.UpdateTarget(Direction.CLOCK);
+                if (vp.accelInput > 0)
+                { // backflip
+                    rX.UpdateTarget(Direction.ANTICLOCK);
+                    rX.IncreaseEvoSpeed();
                 }
-                else if (vp.rollInput < 0)
-                { // left roll
-                    rZ.UpdateTarget(Direction.ANTICLOCK);
+                if (vp.brakeInput > 0)
+                {
+                    // frontflip
+                    rX.UpdateTarget(Direction.CLOCK);
+                    rX.IncreaseEvoSpeed();
                 }
-                rZ.IncreaseCoeff();
+                if (vp.rollInput != 0)
+                {
+                    if (vp.rollInput > 0)
+                    { // right barrel roll
+                        rZ.UpdateTarget(Direction.CLOCK);
+                    }
+                    else if (vp.rollInput < 0)
+                    { // left barrel roll
+                        rZ.UpdateTarget(Direction.ANTICLOCK);
+                    }
+                    rZ.IncreaseEvoSpeed();
+                }
+                if (vp.steerInput != 0)
+                { // rotation left/right 
+                    rY.IncreaseEvoSpeed();
+
+                    if (vp.steerInput > 0)
+                        rY.UpdateTarget(Direction.CLOCK);
+                    else
+                        rY.UpdateTarget(Direction.ANTICLOCK);
+                }
             }
-            if(vp.steerInput != 0)
-            { // left/right 
-                rY.IncreaseCoeff();
-              
-                if (vp.steerInput > 0)
-                    rY.UpdateTarget(Direction.CLOCK);
-                else
-                    rY.UpdateTarget(Direction.ANTICLOCK);
+            else
+            {
+                rX.DecreaseMaxEvoSpeed();
+                rY.DecreaseMaxEvoSpeed();
+                rZ.DecreaseMaxEvoSpeed();
             }
+            
 			rX.SmoothDamp();
             rY.SmoothDamp();
             rZ.SmoothDamp();
