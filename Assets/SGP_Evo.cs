@@ -4,12 +4,12 @@ using UnityEngine;
 public enum Direction { ANTICLOCK = -1, CLOCK = 1};
 public class RotationDampStruct
 {
-    readonly float evoSmoothTime = 0.05f;
-    readonly float staticEvoMaxSpeed = 400; // 400 = hustler max speed. 1500 = dart max speed
+    readonly float evoSmoothTime = 0.07f;
+    readonly float staticEvoMaxSpeed = 1100; // 400 = hustler max speed. 1500 = dart max speed
     readonly float evoAcceleration = 15; // 15 = hustler max acc.  57 = dart max acc
 
     // increases when holding shift
-    float evoMaxSpeed = 1; 
+    float evoMaxSpeed = 0; 
 
     float pos = 0;
     public float targetPos = 0;
@@ -18,7 +18,7 @@ public class RotationDampStruct
     public float offset = 0;
     public bool Active()
     {
-        return Mathf.Abs(targetPos - pos) > 2;
+        return Mathf.Abs(targetPos - pos) > 0.1f;
     }
     public float Pos()
     {
@@ -35,16 +35,26 @@ public class RotationDampStruct
         if(dir == Direction.CLOCK)
         {
             if (pos > 315)
-                targetPos = 999; // big +value
+                targetPos = 720;
+            else if (pos > 45)
+                if (pos > 135)
+                    targetPos = 360;
+                else
+                    targetPos = 180;
             else
-                targetPos = 360;
+                targetPos = 90;
         }
         else
         {
             if (pos < 45)
-                targetPos = -999; // big -value
+                targetPos = -360;
+            else if (pos < 315)
+                if (pos > 225)
+                    targetPos = 180;
+                else
+                    targetPos = 0;
             else
-                targetPos = 0;
+                targetPos = 270;
         }
     }
     float degs(float deg)
@@ -66,7 +76,7 @@ public class RotationDampStruct
             pos = newpos;
         targetPos = pos;
         speed = 0;
-        evoMaxSpeed = 1;
+        evoMaxSpeed = 0;
     }
     public void SmoothDamp()
     {
@@ -85,6 +95,21 @@ public class RotationDampStruct
         if(!Active())
             evoMaxSpeed = speed;
     }
+    public void CloseAdvancedMode()
+    {
+        float restPos = targetPos % 360;
+        if (restPos != 0)
+        {
+            if (speed > 0) // clockwise rotation
+            {
+                targetPos += restPos;
+            }
+            else // anticlockwise rotation
+            {
+                targetPos -= restPos;
+            }
+        }
+    }
 }
 public class SGP_Evo : MonoBehaviour
 {
@@ -94,7 +119,7 @@ public class SGP_Evo : MonoBehaviour
 	bool prevSGPShiftButton = false;
 	public bool stunting = false;
 	float maxTimeToInit = 1f;
-	public RotationDampStruct rX, rY, rZ;
+    RotationDampStruct[] r;
     public float rX_delta;
     public Vector3 euler;
     public float posy;
@@ -105,20 +130,15 @@ public class SGP_Evo : MonoBehaviour
 	{
         rb = GetComponent<Rigidbody>();
 		vp = GetComponent<VehicleParent>();
-		rX = new RotationDampStruct();
-		rY = new RotationDampStruct();
-		rZ = new RotationDampStruct();
-	}
+        r = F.InitializeArray<RotationDampStruct>(3);
+    }
 	public bool IsStunting()
 	{
 		return stunting;
 	}
 
 	void FixedUpdate()
-	{
-        posy = rY.Pos();
-        tary = rY.targetPos;
-		
+	{	
         if (vp.groundedWheels > 0 || vp.colliding)
             stunting = false;
 
@@ -134,9 +154,9 @@ public class SGP_Evo : MonoBehaviour
         {
             stunting = true;
             euler = vp.tr.rotation.eulerAngles;
-            rX.Init(euler.x);
-            rY.Init(euler.y, true);
-            rZ.Init(euler.z);
+            r[0].Init(euler.x); //rX
+            r[1].Init(euler.y, true); // rY
+            r[2].Init(euler.z); // rZ
         }
 			
         
@@ -146,48 +166,52 @@ public class SGP_Evo : MonoBehaviour
             {
                 if (vp.accelInput > 0)
                 { // backflip
-                    rX.UpdateTarget(Direction.ANTICLOCK);
-                    rX.IncreaseEvoSpeed();
+                    r[0].UpdateTarget(Direction.ANTICLOCK);
+                    r[0].IncreaseEvoSpeed();
                 }
-                if (vp.brakeInput > 0)
+                else if (vp.brakeInput > 0)
                 {
                     // frontflip
-                    rX.UpdateTarget(Direction.CLOCK);
-                    rX.IncreaseEvoSpeed();
+                    r[0].UpdateTarget(Direction.CLOCK);
+                    r[0].IncreaseEvoSpeed();
                 }
                 if (vp.rollInput != 0)
                 {
                     if (vp.rollInput > 0)
                     { // right barrel roll
-                        rZ.UpdateTarget(Direction.CLOCK);
+                        r[2].UpdateTarget(Direction.CLOCK);
                     }
                     else if (vp.rollInput < 0)
                     { // left barrel roll
-                        rZ.UpdateTarget(Direction.ANTICLOCK);
+                        r[2].UpdateTarget(Direction.ANTICLOCK);
                     }
-                    rZ.IncreaseEvoSpeed();
+                    r[2].IncreaseEvoSpeed();
                 }
                 if (vp.steerInput != 0)
                 { // rotation left/right 
-                    rY.IncreaseEvoSpeed();
+                    r[1].IncreaseEvoSpeed();
 
                     if (vp.steerInput > 0)
-                        rY.UpdateTarget(Direction.CLOCK);
+                        r[1].UpdateTarget(Direction.CLOCK);
                     else
-                        rY.UpdateTarget(Direction.ANTICLOCK);
+                        r[1].UpdateTarget(Direction.ANTICLOCK);
                 }
             }
             else
             {
-                rX.DecreaseMaxEvoSpeed();
-                rY.DecreaseMaxEvoSpeed();
-                rZ.DecreaseMaxEvoSpeed();
+                foreach(RotationDampStruct rds in r)
+                {
+                    rds.DecreaseMaxEvoSpeed();
+                    // rotation locking to 90 and 180deg turns off when not pressing shift
+                    if (!vp.SGPshiftbutton)
+                        rds.CloseAdvancedMode();
+                }
             }
+
+            foreach (RotationDampStruct rds in r)
+                rds.SmoothDamp();
             
-			rX.SmoothDamp();
-            rY.SmoothDamp();
-            rZ.SmoothDamp();
-            rb.rotation = Quaternion.Euler(rX.Pos(), rY.Pos(), rZ.Pos());
+            rb.rotation = Quaternion.Euler(r[0].Pos(), r[1].Pos(), r[2].Pos());
         }
 		prevSGPShiftButton = vp.SGPshiftbutton;
 	}

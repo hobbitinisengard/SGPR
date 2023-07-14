@@ -644,12 +644,12 @@ RectTransform:
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 2112563782}
   - {fileID: 1766130489}
   - {fileID: 1229866357}
   - {fileID: 1934037883}
   - {fileID: 180903193}
   - {fileID: 1367332022}
-  - {fileID: 2112563782}
   - {fileID: 1069169331}
   - {fileID: 1125093874}
   m_Father: {fileID: 0}
@@ -994,7 +994,7 @@ RectTransform:
   - {fileID: 13157792}
   - {fileID: 1097236130}
   m_Father: {fileID: 75744811}
-  m_RootOrder: 3
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
@@ -4118,7 +4118,7 @@ RectTransform:
   - {fileID: 1449128045}
   - {fileID: 27715782}
   m_Father: {fileID: 75744811}
-  m_RootOrder: 1
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
@@ -4367,8 +4367,13 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "STUNT GP-RELOADED 2023 \nStunt GP and Team 17 are registered trademarks
-    of Team17 Software Limited."
+  m_Text: 'STUNT GP RELOADED
+
+    Stunt GP and Team 17 are registered trademarks
+    of Team17 Software Limited.
+
+    SGP-R is an unofficial remake of Stunt GP. This
+    game is not for sale'
 --- !u!222 &1307976181
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -4546,7 +4551,7 @@ RectTransform:
   - {fileID: 2035752531}
   - {fileID: 450469547}
   m_Father: {fileID: 75744811}
-  m_RootOrder: 4
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
@@ -6294,7 +6299,7 @@ RectTransform:
   - {fileID: 2033356927}
   - {fileID: 710480212}
   m_Father: {fileID: 75744811}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
@@ -6326,7 +6331,7 @@ PrefabInstance:
     - target: {fileID: 509757369793656648, guid: c45b5db04fef3904d8289011e629a352,
         type: 3}
       propertyPath: m_Name
-      value: Catalogue
+      value: Replays
       objectReference: {fileID: 0}
     - target: {fileID: 509757369793656655, guid: c45b5db04fef3904d8289011e629a352,
         type: 3}
@@ -6436,7 +6441,7 @@ PrefabInstance:
     - target: {fileID: 509757370374064043, guid: c45b5db04fef3904d8289011e629a352,
         type: 3}
       propertyPath: m_Text
-      value: CATALOGUE
+      value: REPLAYS
       objectReference: {fileID: 0}
     - target: {fileID: 1720519267623792212, guid: c45b5db04fef3904d8289011e629a352,
         type: 3}
@@ -6496,7 +6501,7 @@ RectTransform:
   - {fileID: 1679475256}
   - {fileID: 1555213862}
   m_Father: {fileID: 75744811}
-  m_RootOrder: 2
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
@@ -6744,12 +6749,12 @@ PrefabInstance:
     - target: {fileID: 7558037269257785745, guid: 94ef7001ac6cc034e861f68438db75a3,
         type: 3}
       propertyPath: m_SizeDelta.x
-      value: 1599.2
+      value: 996.5
       objectReference: {fileID: 0}
     - target: {fileID: 7558037269257785745, guid: 94ef7001ac6cc034e861f68438db75a3,
         type: 3}
       propertyPath: m_SizeDelta.y
-      value: -877.3
+      value: -871.5
       objectReference: {fileID: 0}
     - target: {fileID: 7558037269257785745, guid: 94ef7001ac6cc034e861f68438db75a3,
         type: 3}
@@ -7422,7 +7427,7 @@ RectTransform:
   - {fileID: 567017134}
   - {fileID: 406376304}
   m_Father: {fileID: 75744811}
-  m_RootOrder: 5
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
@@ -7790,7 +7795,7 @@ PrefabInstance:
     - target: {fileID: 7558037269257785745, guid: 94ef7001ac6cc034e861f68438db75a3,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 455
+      value: 470
       objectReference: {fileID: 0}
     - target: {fileID: 7558037269257785745, guid: 94ef7001ac6cc034e861f68438db75a3,
         type: 3}

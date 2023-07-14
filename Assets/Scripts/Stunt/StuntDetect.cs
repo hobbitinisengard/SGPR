@@ -39,13 +39,29 @@ namespace RVP
 
         public Motor engine;
 
+        public float lastGrindTime = 0;
+        public float grindTimer = 0;
         void Start() {
             tr = transform;
             rb = GetComponent<Rigidbody>();
             vp = GetComponent<VehicleParent>();
         }
 
+        private void OnTriggerEnter(Collider other)
+        {
+            if(vp.groundedWheels == 0)
+            {
+                lastGrindTime = Time.time;
+                grindTimer += Time.fixedDeltaTime;
+            }
+        }
         void FixedUpdate() {
+            // Detect grinds
+            if(grindTimer > 0 && Time.time - lastGrindTime > 1)
+            { // grind ended
+                grindTimer = 0;
+            }
+
             // Detect drifts
             if (detectDrift && !vp.crashing) {
                 DetectDrift();

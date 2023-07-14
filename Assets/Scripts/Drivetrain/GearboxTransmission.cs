@@ -89,23 +89,24 @@ namespace RVP
                 float curOutputRatio = gears[currentGear].ratio;
                 actualFeedbackRPM = targetDrive.feedbackRPM / (curOutputRatio == 0 ? 1 : Mathf.Abs(curOutputRatio));
 
-                int upGearOffset = 1;
-                //int downGearOffset = 1;
+                int upGearOffset = 3;
+				int downGearOffset = 3;
 
-                //while (/*(skipNeutral || automatic) && 
-                //    gears[Mathf.Clamp(currentGear + upGearOffset, 0, gears.Length - 1)].ratio == 0
-                //    && */currentGear + upGearOffset != 0 && currentGear + upGearOffset < gears.Length - 1) 
-                //{
-                //    upGearOffset++;
-                //}
+				while (/*(skipNeutral || automatic) && 
+                    gears[Mathf.Clamp(currentGear + upGearOffset, 0, gears.Length - 1)].ratio == 0
+                    && */currentGear + upGearOffset != 0 && currentGear + upGearOffset < gears.Length - 1)
+				{
+					upGearOffset++;
+				}
 
-                //while (/*(skipNeutral || automatic) && 
-                //    gears[Mathf.Clamp(currentGear - downGearOffset, 0, gears.Length - 1)].ratio == 0 
-                //    && */ currentGear - downGearOffset != 0 && currentGear - downGearOffset > 0) {
-                //    downGearOffset++;
-                //}
+				while (/*(skipNeutral || automatic) && 
+                    gears[Mathf.Clamp(currentGear - downGearOffset, 0, gears.Length - 1)].ratio == 0 
+                    && */ currentGear - downGearOffset != 0 && currentGear - downGearOffset > 0)
+				{
+					downGearOffset++;
+				}
 
-                upperGear = gears[Mathf.Min(gears.Length - 1, selectedGear + upGearOffset)];
+				upperGear = gears[Mathf.Min(gears.Length - 1, selectedGear + upGearOffset)];
                 //Gear lowerGear = gears[Mathf.Max(0, selectedGear - downGearOffset)];
 
                 // Perform RPM calculations
@@ -145,9 +146,9 @@ namespace RVP
                         }
                         if (selectedGear > 0)
                         {
-                            if (d_rpm < gears[selectedGear].minSpeed
-                                || (vp.groundedWheels != 0 && actualFeedbackRPM < gears[selectedGear].minRPM && vp.localVelocity.z > 0 && !vp.AnyWheelsPowerSliding())
-                                || (vp.localVelocity.z < 1 && vp.brakeInput > 0 && vp.brakeIsReverse))
+                            if ((vp.groundedWheels != 0 && vp.localVelocity.z < gears[selectedGear].minSpeed
+								&& vp.localVelocity.z > 0 && !vp.AnyWheelsPowerSliding())
+                                || (vp.velMag < 1 && vp.brakeInput > 0 && vp.brakeIsReverse))
                             {
                                 Shift(-1);
                             }
@@ -275,8 +276,7 @@ namespace RVP
 						gears[i].maxRPM = 0;
 					}
                     gears[i].minRPM *= 0.75f;
-					// why /3.6??? it works but why?
-                    gears[i].minSpeed = gears[i].minRPM/60 * 2 * Mathf.PI * vp.wheels[2].tireRadius / 3.6f;
+                    gears[i].minSpeed = 0.8f*gears[i].minRPM/60 * 2 * Mathf.PI * vp.wheels[2].tireRadius / 3.6f;
 					//gears[i].maxRPM *= 0.55f;
 				}
 			}

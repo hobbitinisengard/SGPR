@@ -37,12 +37,12 @@ namespace RVP
         public bool canReverse;
         DriveForce targetDrive;
         [System.NonSerialized]
-        public float maxRPM;
+        public float maxkRPM;
 
-        float limit2RPM = 22.5f; // in 1000s
-        float limitRPM = 22.35f; // in 1000s
-        float minRPM = 0.45f; // in 1000s
-        float maxTorque = 0.28F; // in 100s
+        public float limit2kRPM = 11.5f; // in 1000s
+        public float limitkRPM = 11.35f; // in 1000s
+        public float minkRPM = 0.45f; // in 1000s
+        public float maxTorque = 0.28F; // in 100s
 
         public DriveForce[] outputDrives;
 
@@ -53,19 +53,19 @@ namespace RVP
         [Header("Transmission")]
         public GearboxTransmission transmission;
         bool rpmTooHigh = false;
-        float curr_engine_rpm = 0;
+        float curr_engine_krpm = 0;
         public ParticleSystem engineSmoke;
         public float batteryCutOffLevel = 0.1f;
         public float boostEval;
-        public float maxBoost = 0.2f;
-        AnimationCurve GenerateTorqueCurve(int curve_number, float max_rpm, float torque_mult)
+        
+        AnimationCurve GenerateTorqueCurve(int curve_number, float max_rpm)
         {
             curve_number = Mathf.Clamp(curve_number, 0, torqueCurveData.Length);
             Keyframe[] keys = new Keyframe[torqueCurveData[curve_number].Length];
             for (int i = 0; i < keys.Length; i++)
             {
                 keys[i].time = max_rpm * (i+1) / keys.Length;
-                keys[i].value = torque_mult * (float)torqueCurveData[curve_number][i];
+                keys[i].value = (float)torqueCurveData[curve_number][i];
             }
             return new AnimationCurve(keys);
         }
@@ -73,7 +73,7 @@ namespace RVP
         {
             base.Start();
             targetDrive = GetComponent<DriveForce>();
-            torqueCurve = GenerateTorqueCurve(1, limit2RPM, maxTorque);
+            torqueCurve = GenerateTorqueCurve(1, limit2kRPM);
             GetMaxRPM();
         }
 
@@ -89,24 +89,24 @@ namespace RVP
 
             if (ignition) {
                 if (boosting && vp.accelInput>0)
-                    boostEval = maxBoost * boostPowerCurve.Evaluate(Time.time - boostActivatedTime);
+                    boostEval = 1+(maxBoost * boostPowerCurve.Evaluate(Time.time - boostActivatedTime));
                 else
-                    boostEval = 0;
+                    boostEval = 1;
                 
                 float targetRPM;
                 if (rpmTooHigh || actualInput == 0 || (transmission.IsShifting() && transmission.selectedGear > 2))
-                    targetRPM = Mathf.Max(minRPM * 1000, targetDrive.feedbackRPM-2000);
+                    targetRPM = Mathf.Max(minkRPM * 1000, targetDrive.feedbackRPM-2000);
                 else
-                    targetRPM = actualInput * maxRPM * 1000;
+                    targetRPM = actualInput * maxkRPM * 1000;
                
-                if(!transmission.IsShifting())// || transmission.ShiftSeqProgress() > 0.5f)
-                    targetDrive.rpm = Mathf.Lerp(targetDrive.rpm, targetRPM, Mathf.Clamp01((inertia+boostEval)) * 10 * Time.fixedDeltaTime);
+                if(!transmission.IsShifting())
+                    targetDrive.rpm = Mathf.Lerp(targetDrive.rpm, targetRPM, boostEval * inertia * 20*Time.fixedDeltaTime);
                 
-                curr_engine_rpm = targetDrive.feedbackRPM / 1000f;
+                curr_engine_krpm = targetDrive.feedbackRPM / 1000f;
 
                 if(engineSmoke != null)
                 {
-                    if (curr_engine_rpm <= 0.3f * maxRPM)
+                    if (curr_engine_krpm <= 0.3f * maxkRPM)
                     {
                         if (!engineSmoke.isPlaying)
                         {
@@ -120,16 +120,16 @@ namespace RVP
                         engineSmoke.Stop(true, ParticleSystemStopBehavior.StopEmitting);
                 }
                 
-                if(curr_engine_rpm < maxRPM)
+                if(curr_engine_krpm < maxkRPM)
                 {
                     if(rpmTooHigh)
                     {
-                        if (curr_engine_rpm < limitRPM)
+                        if (curr_engine_krpm < limitkRPM)
                         {
                             rpmTooHigh = false;
                         }
                     }
-                    else if (curr_engine_rpm >= 0.99f*limit2RPM && transmission.currentGear != transmission.gears.Length - 1)
+                    else if (curr_engine_krpm >= 0.99f*limit2kRPM && transmission.currentGear != transmission.gears.Length - 1)
                     {
                         rpmTooHigh = true;
                         targetDrive.torque = 0;
@@ -142,10 +142,11 @@ namespace RVP
                         }
                         else
                         {
-                            targetDrive.torque = (boosting ? boostEval : 1) * torqueCurve.Evaluate(curr_engine_rpm) *
+                            targetDrive.torque = boostEval * maxTorque*torqueCurve.Evaluate(curr_engine_krpm) *
                             Mathf.Lerp(targetDrive.torque,
-                            Mathf.Abs(Mathf.Sign(actualInput)),
-                            (inertia + boostEval) * Time.timeScale * health);
+                            Mathf.Abs(actualInput)*maxTorque,
+                            boostEval * inertia * Time.timeScale * health);
+                            
                             targetDrive.torque = Mathf.Clamp(targetDrive.torque, 0, float.MaxValue);
                         }
                     }
@@ -181,7 +182,7 @@ namespace RVP
             if (snd && ignition) {
                 airPitch = vp.groundedWheels > 0 || actualAccel != 0 ? 1 : Mathf.Lerp(airPitch, 0, 0.5f * Time.deltaTime);
                 
-                targetPitch = Mathf.Abs((targetDrive.feedbackRPM * 0.001f) / limit2RPM);
+                targetPitch = Mathf.Abs((targetDrive.feedbackRPM * 0.001f) / limit2kRPM);
             }
 
             base.Update();
@@ -189,7 +190,7 @@ namespace RVP
 
         // Calculates the max RPM and propagates its effects
         public void GetMaxRPM() {
-            maxRPM = torqueCurve.keys[torqueCurve.length - 1].time;
+            maxkRPM = torqueCurve.keys[torqueCurve.length - 1].time;
 
             if (outputDrives.Length > 0) {
                 foreach (DriveForce curOutput in outputDrives) {

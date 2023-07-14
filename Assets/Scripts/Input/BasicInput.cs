@@ -22,6 +22,7 @@ namespace RVP
         //public string yawAxis;
         public string rollAxis;
         public string shiftSGPButton;
+        //public string lockSGPButton;
         public string lightsButton;
         public string resetOnTrackButton;
         void Start() {
@@ -68,6 +69,10 @@ namespace RVP
             {
                 vp.SetSGPShift(Input.GetButton(shiftSGPButton));
             }
+            //if (!string.IsNullOrEmpty(lockSGPButton))
+            //{
+            //    vp.SetSGPLock(Input.GetButton(lockSGPButton));
+            //}
             if (!string.IsNullOrEmpty(lightsButton))
             {
                 if(Input.GetButtonDown(lightsButton))

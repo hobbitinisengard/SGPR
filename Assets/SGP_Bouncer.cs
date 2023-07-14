@@ -5,7 +5,6 @@ public class SGP_Bouncer : MonoBehaviour
     Rigidbody rb;
     VehicleParent vp;
     public float minimalVelocityAtWall = 40;
-    public float multiplier = 0.5f;
 
     public float d_dot;
 
@@ -31,8 +30,8 @@ public class SGP_Bouncer : MonoBehaviour
             Vector3 colNormal = collision.GetContact(0).normal;
             //Debug.DrawRay(collision.GetContact(0).point, colNormal, Color.red, 5);
             float velocityMagn = collision.relativeVelocity.magnitude;
-            
-            // can't bounce vertical forces
+
+            // bounce only horizontal forces
             if (Mathf.Abs(colNormal.y) < Mathf.Abs(colNormal.x) || Mathf.Abs(colNormal.y) < Mathf.Abs(colNormal.z))
             {
                 float dot = Mathf.Abs(Vector3.Dot(-vp.rb.velocity.normalized, colNormal));
@@ -42,8 +41,8 @@ public class SGP_Bouncer : MonoBehaviour
                     return;
                 float currentAngleSteer = Mathf.Sign(vp.steerInput) * vp.wheels[1].suspensionParent.steerAngle * vp.wheels[1].suspensionParent.steerDegrees;
                 Vector3 intendedDirection = Quaternion.AngleAxis(currentAngleSteer, vp.upDir) * vp.forwardDir;
-                intendedDirection = (intendedDirection + 0.4f * vp.upDir).normalized;
-                rb.AddForce(multiplier * velocityMagn * intendedDirection, ForceMode.VelocityChange);
+                intendedDirection = (vp.forwardDir + 0.4f * vp.upDir).normalized;
+                rb.AddForce(velocityMagn * intendedDirection, ForceMode.VelocityChange);
             }
         }
     }

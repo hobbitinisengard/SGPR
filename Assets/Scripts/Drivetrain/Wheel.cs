@@ -56,12 +56,14 @@ namespace RVP
         public float forwardCurveStretch = 1;
         public float sidewaysCurveStretch = 1;
         Vector3 frictionForce = Vector3.zero;
-        static double[] SGPFrictionData = {1.000000, 0.997070, 0.994141, 0.991211, 0.988281, 0.985645, 0.983008, 0.980371,0.977734, 0.975098, 0.972461, 0.969824, 0.967188, 0.957227, 0.947266, 0.937305,0.927344, 0.925488, 0.923633, 0.921777, 0.919922, 0.918067, 0.916211, 0.914356,0.912500, 0.907422, 0.902344, 0.897266, 0.892188, 0.887109, 0.882031, 0.876953,0.871875, 0.860513, 0.849152, 0.837790, 0.826428, 0.818370, 0.810312, 0.802254,0.794196, 0.786138, 0.778079, 0.770021, 0.761963, 0.750097, 0.738231, 0.726366,0.714500, 0.702634, 0.690768, 0.678902, 0.667036, 0.657031, 0.647025, 0.637020,0.627014, 0.617009, 0.607003, 0.596997, 0.586992, 0.580758, 0.574525, 0.568292,0.562058, 0.555825, 0.549591, 0.543358, 0.537125, 0.531591, 0.526058, 0.520525,0.514992, 0.509459, 0.503925, 0.498392, 0.492859, 0.489663, 0.486468, 0.483272,0.480077, 0.476881, 0.473685, 0.470490, 0.467294, 0.462449, 0.457604, 0.452759,0.447914, 0.443069, 0.438224, 0.433379, 0.428534, 0.427097, 0.425659, 0.424222,0.422784, 0.419936, 0.417088, 0.414240, 0.411392, 0.408544, 0.405696, 0.402848,0.400000, 0.396875, 0.393750, 0.390625, 0.387500, 0.384375, 0.381250, 0.378125,0.375000, 0.371524, 0.368048, 0.364572, 0.361096, 0.357620, 0.354144, 0.350668,0.347192, 0.347593, 0.347994, 0.348395, 0.348796, 0.349198, 0.349599, 0.350000};
+        //static double[] SGPFrictionData = {1.000000, 0.997070, 0.994141, 0.991211, 0.988281, 0.985645, 0.983008, 0.980371,0.977734, 0.975098, 0.972461, 0.969824, 0.967188, 0.957227, 0.947266, 0.937305,0.927344, 0.925488, 0.923633, 0.921777, 0.919922, 0.918067, 0.916211, 0.914356,0.912500, 0.907422, 0.902344, 0.897266, 0.892188, 0.887109, 0.882031, 0.876953,0.871875, 0.860513, 0.849152, 0.837790, 0.826428, 0.818370, 0.810312, 0.802254,0.794196, 0.786138, 0.778079, 0.770021, 0.761963, 0.750097, 0.738231, 0.726366,0.714500, 0.702634, 0.690768, 0.678902, 0.667036, 0.657031, 0.647025, 0.637020,0.627014, 0.617009, 0.607003, 0.596997, 0.586992, 0.580758, 0.574525, 0.568292,0.562058, 0.555825, 0.549591, 0.543358, 0.537125, 0.531591, 0.526058, 0.520525,0.514992, 0.509459, 0.503925, 0.498392, 0.492859, 0.489663, 0.486468, 0.483272,0.480077, 0.476881, 0.473685, 0.470490, 0.467294, 0.462449, 0.457604, 0.452759,0.447914, 0.443069, 0.438224, 0.433379, 0.428534, 0.427097, 0.425659, 0.424222,0.422784, 0.419936, 0.417088, 0.414240, 0.411392, 0.408544, 0.405696, 0.402848,0.400000, 0.396875, 0.393750, 0.390625, 0.387500, 0.384375, 0.381250, 0.378125,0.375000, 0.371524, 0.368048, 0.364572, 0.361096, 0.357620, 0.354144, 0.350668,0.347192, 0.347593, 0.347994, 0.348395, 0.348796, 0.349198, 0.349599, 0.350000};
+        // better
+        //static double[] SGPFrictionData = { 1, 0.99707, 0.994141, 0.991211, 0.988281, 0.985645, 0.983008, 0.980371, 0.979164257, 0.974241466, 0.969177728, 0.963976612, 0.958641683, 0.953176512, 0.947584665, 0.94186971, 0.936035216, 0.930084751, 0.924021882, 0.917850177, 0.911573204, 0.905194531, 0.898717726, 0.892146358, 0.885483993, 0.878734201, 0.871900548, 0.864986602, 0.857995933, 0.850932107, 0.843798693, 0.836599258, 0.829337371, 0.822016599, 0.81464051, 0.807212672, 0.799736654, 0.792216023, 0.784654347, 0.777055194, 0.769422132, 0.761758728, 0.754068552, 0.74635517, 0.738622151, 0.730873062, 0.723111472, 0.715340949, 0.70756506, 0.699787373, 0.692011456, 0.684240878, 0.676479206, 0.668730008, 0.660996852, 0.653283306, 0.645592938, 0.637929316, 0.630296007, 0.62269658, 0.615134603, 0.607613643, 0.600137269, 0.592709049, 0.58533255, 0.57801134, 0.570748987, 0.563549059, 0.556415125, 0.549350752, 0.542359508, 0.53544496, 0.528610678, 0.521860228, 0.515197179, 0.508625099, 0.502147556, 0.495768117, 0.48949035, 0.483317824, 0.477254106, 0.471302765, 0.465467367, 0.459751482, 0.454158678, 0.448692521, 0.44335658, 0.438154423, 0.433089618, 0.428165732, 0.423386335, 0.418754993, 0.414275274, 0.409950747, 0.40578498, 0.40178154, 0.397943996, 0.394275914, 0.390780864, 0.387462413, 0.384324129, 0.38136958, 0.378602334, 0.376025959, 0.373644023, 0.371460094, 0.369477739, 0.367700527, 0.366132025, 0.364775802, 0.363635426, 0.361, 0.359, 0.357, 0.357, 0.356, 0.354, 0.352, 0.35, 0.349, 0.347192, 0.347593, 0.347994, 0.348395, 0.348796, 0.349198, 0.349599, 0.35 };
         [Tooltip("X-axis = slip, y-axis = friction")]
-        public AnimationCurve forwardFrictionCurve = AnimationCurve.Linear(0, 0, 1, 1);
+        AnimationCurve forwardFrictionCurve = AnimationCurve.EaseInOut(0, 1, 1, 0.35f);
 
         [Tooltip("X-axis = slip, y-axis = friction")]
-        public AnimationCurve sidewaysFrictionCurve = AnimationCurve.Linear(0, 0, 1, 1);
+        AnimationCurve sidewaysFrictionCurve = AnimationCurve.EaseInOut(0, 1, 1, 0.35f);
         [System.NonSerialized]
         public float forwardSlip;
         //[System.NonSerialized]
@@ -201,20 +203,20 @@ namespace RVP
         public ParticleSystem airGreenParticleSystem;
         private float prevVel;
         
-        AnimationCurve GenerateFrictionCurve(bool moreGrip = false)
-        {
-            Keyframe[] keys = new Keyframe[SGPFrictionData.Length];
-            for (int i = 0; i < keys.Length; i++)
-            {
-                if (moreGrip)
-                    keys[i].time = 0.5f + 0.5f * (i + 1) / keys.Length;
-                else
-                    keys[i].time = (float)(i + 1) / keys.Length;
+        //AnimationCurve GenerateFrictionCurve(bool moreGrip = false)
+        //{
+        //    Keyframe[] keys = new Keyframe[SGPFrictionData.Length];
+        //    for (int i = 0; i < keys.Length; i++)
+        //    {
+        //        if (moreGrip)
+        //            keys[i].time = 0.5f + 0.5f * (i + 1) / keys.Length;
+        //        else
+        //            keys[i].time = (float)(i + 1) / keys.Length;
 
-                keys[i].value = (float)SGPFrictionData[i];
-            }
-            return new AnimationCurve(keys);
-        }
+        //        keys[i].value = (float)SGPFrictionData[i];
+        //    }
+        //    return new AnimationCurve(keys);
+        //}
         void Start() {
             tr = transform;
             rb = tr.GetTopmostParentComponent<Rigidbody>();
@@ -224,9 +226,8 @@ namespace RVP
             canDetach = detachForce < Mathf.Infinity && Application.isPlaying;
             initialTirePressure = tirePressure;
 
-            // if front wheel, generate friction curve with more grip - sgp cars are generally oversteering
-            sidewaysFrictionCurve = GenerateFrictionCurve(transform.parent.name[transform.parent.name.Length - 2] == 'F');
-            forwardFrictionCurve = GenerateFrictionCurve();
+            //sidewaysFrictionCurve = GenerateFrictionCurve();
+            //forwardFrictionCurve = GenerateFrictionCurve();
 
             if (tr.childCount > 0) {
                 // Get rim
@@ -576,7 +577,8 @@ namespace RVP
                 //    targetForce.z = 0;
                 //}
                     
-                float targetForceMultiplier = ((1 - compressionFrictionFactor) + (1 - suspensionParent.compression) * compressionFrictionFactor * Mathf.Clamp01(Mathf.Abs(suspensionParent.tr.InverseTransformDirection(localVel).z) * 10)) * wheelFriction; 
+                float targetForceMultiplier = ((1 - compressionFrictionFactor) + (1 - suspensionParent.compression) * compressionFrictionFactor
+                    * Mathf.Clamp01(Mathf.Abs(suspensionParent.tr.InverseTransformDirection(localVel).z) * 2)) * wheelFriction; 
                 frictionForce = Vector3.Lerp(frictionForce, targetForce * targetForceMultiplier, 1 - frictionSmoothness);
                 rb.AddForceAtPosition(frictionForce, forceApplicationPoint, vp.wheelForceMode);
 

@@ -32,6 +32,8 @@ namespace RVP
         [System.NonSerialized]
         public bool SGPshiftbutton;
         [System.NonSerialized]
+        public bool SGPlockbutton;
+        [System.NonSerialized]
         public bool lightsInput;
         [System.NonSerialized]
         public bool upshiftPressed;
@@ -363,6 +365,10 @@ namespace RVP
         public void SetSGPShift(bool b)
         {
             SGPshiftbutton = b;
+        }
+        public void SetSGPLock(bool b)
+        {
+            SGPlockbutton = b;
         }
         public void SetLights()
         {

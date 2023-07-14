@@ -84,7 +84,7 @@ namespace RVP
             if (vp.steerInput == 0)
             {
                 if (holdDuration > 0)
-                    holdDuration -= 5 * Time.fixedDeltaTime;
+                    holdDuration -= 7 * Time.fixedDeltaTime;
             }
             else
             {
@@ -103,12 +103,11 @@ namespace RVP
             // Set steer angles in wheels
             foreach (Suspension curSus in steeredWheels)
             {
-
-                if (Mathf.Abs(curSus.steerAngle) < 0.001f && vp.steerInput == 0)
-                { // important for high speed straight drive
-                    curSus.steerAngle = 0;
-                    continue;
-                }
+                //if (Mathf.Abs(curSus.steerAngle) < 0.001f && vp.steerInput == 0)
+                //{ // important for high speed straight drive
+                //    curSus.steerAngle = 0;
+                //    continue;
+                //}
 
                 if(vp.SGPshiftbutton)
                 {
@@ -123,13 +122,13 @@ namespace RVP
                 //    curSus.steerAngle /= 1.1f; // for fast direction change 
 
                 float targetSteerAngle;
-                if (curSus.wheel.sliding)
-                    targetSteerAngle = vp.steerInput * curSus.steerAngle;
-                else
+                //if (curSus.wheel.sliding)
+                //    targetSteerAngle = vp.steerInput * curSus.steerAngle;
+                //else
                     targetSteerAngle = vp.steerInput * steerLimit * rawSteer;
 
-                if (Mathf.Abs(targetSteerAngle) > steerLimit)
-                    targetSteerAngle = Mathf.Sign(targetSteerAngle) * steerLimit;
+                //if (Mathf.Abs(targetSteerAngle) > steerLimit)
+                //    targetSteerAngle = Mathf.Sign(targetSteerAngle) * steerLimit;
 
                 float step;
                 if (vp.steerInput == 0)

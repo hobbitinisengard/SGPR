@@ -32,8 +32,8 @@ namespace RVP
         public float battery = 1;
         bool boostReleased;
         bool boostPrev;
-
-        public AnimationCurve boostPowerCurve = AnimationCurve.EaseInOut(0, 0, 0.5f, 0.2f);
+        public float maxBoost = 1.5f;
+        protected AnimationCurve boostPowerCurve = AnimationCurve.EaseInOut(0, 0, 0.5f, 1);
         public float maxBattery = 1;
         public float boostBurnRate = 0.01f;
         public AudioSource boostLoopSnd;
@@ -60,7 +60,6 @@ namespace RVP
         public virtual void Start()
         {
             vp = transform.GetTopmostParentComponent<VehicleParent>();
-
             // Get engine sound
             snd = GetComponent<AudioSource>();
             if (snd)
