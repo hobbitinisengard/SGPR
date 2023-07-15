@@ -4,7 +4,10 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-public enum BottomInfoType { NEW_LEADER, NO_BATT, PIT_OUT, PIT_IN, STUNT, CAR_WINS};
+public enum BottomInfoType { NEW_LEADER, NO_BATT, PIT_OUT, PIT_IN, STUNT, CAR_WINS };
+
+
+
 public class Message
 {
     public string text = "";
@@ -91,6 +94,10 @@ public class SGP_HUD : MonoBehaviour
     float msgVisiblePos = 0;
     public float newPosY = 0;
     public PauseMenu pauseMenu;
+    public GameObject StuntInfo;
+    GameObject stuntTemplate;
+    Text stuntRots;
+    
     public void SetBottomTextPos(float posy)
     {
         Vector2 position = infoText_rt.anchoredPosition;
@@ -126,8 +133,21 @@ public class SGP_HUD : MonoBehaviour
                 liveMessages.Enqueue(message);
         }
     }
+    public void AddStunt(string stuntStr)
+    {
+        GameObject stuntEntry = Instantiate(stuntTemplate, StuntInfo.transform);
+        stuntEntry.SetActive(true);
+        stuntEntry.GetComponent<StuntInfoOverlay>().NewStunt(stuntStr);
+
+    }
+    public void EditStunt(string stuntStr)
+    {
+        StuntInfo.transform.GetChild(StuntInfo.transform.childCount - 1).GetComponent<Text>().text = stuntStr;
+    }
     private void Start()
     {
+        stuntRots = StuntInfo.transform.GetChild(0).gameObject.GetComponent<Text>();
+        stuntTemplate = StuntInfo.transform.GetChild(1).gameObject;
         fullScaleGear = currentGear.transform.localScale.x;
         smolScaleGear = fullScaleGear * 0.75f;
         progressBarUpdateTime = Time.time;
@@ -147,8 +167,8 @@ public class SGP_HUD : MonoBehaviour
             vp = targetVehicle.GetComponent<VehicleParent>();
             initialized = true;
         }
-
-
+        
+        
         //if (!raceManager.Initialized())
         //    return;
 

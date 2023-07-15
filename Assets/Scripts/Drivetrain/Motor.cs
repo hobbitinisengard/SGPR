@@ -32,7 +32,7 @@ namespace RVP
         public float battery = 1;
         bool boostReleased;
         bool boostPrev;
-        public float maxBoost = 1.5f;
+        public float maxBoost = 0.5f;
         protected AnimationCurve boostPowerCurve = AnimationCurve.EaseInOut(0, 0, 0.5f, 1);
         public float maxBattery = 1;
         public float boostBurnRate = 0.01f;

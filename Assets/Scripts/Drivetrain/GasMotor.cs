@@ -100,7 +100,7 @@ namespace RVP
                     targetRPM = actualInput * maxkRPM * 1000;
                
                 if(!transmission.IsShifting())
-                    targetDrive.rpm = Mathf.Lerp(targetDrive.rpm, targetRPM, boostEval * inertia * 20*Time.fixedDeltaTime);
+                    targetDrive.rpm = Mathf.Lerp(targetDrive.rpm, targetRPM, boostEval * inertia * 20 * Time.fixedDeltaTime);
                 
                 curr_engine_krpm = targetDrive.feedbackRPM / 1000f;
 
@@ -145,7 +145,7 @@ namespace RVP
                             targetDrive.torque = boostEval * maxTorque*torqueCurve.Evaluate(curr_engine_krpm) *
                             Mathf.Lerp(targetDrive.torque,
                             Mathf.Abs(actualInput)*maxTorque,
-                            boostEval * inertia * Time.timeScale * health);
+                            inertia * Time.timeScale * health);
                             
                             targetDrive.torque = Mathf.Clamp(targetDrive.torque, 0, float.MaxValue);
                         }

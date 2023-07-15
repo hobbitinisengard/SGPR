@@ -137,7 +137,7 @@ namespace RVP
                             if (!(vp.brakeInput > 0 && vp.brakeIsReverse && upperGear.ratio >= 0)
                             && !(vp.localVelocity.z < 0 && vp.accelInput == 0))
                             {
-                                if ((actualFeedbackRPM > 0.98f * gears[selectedGear].maxRPM && !vp.AnyWheelsPowerSliding())
+                                if ((actualFeedbackRPM > 0.9f * gears[selectedGear].maxRPM && !vp.AnyWheelsPowerSliding())
                                     || (vp.localVelocity.z < 1 && vp.localVelocity.z > -1 && vp.accelInput > 0 && currentGear == 1))
                                 {
                                     Shift(1);

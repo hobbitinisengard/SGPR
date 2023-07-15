@@ -122908,7 +122908,7 @@ MonoBehaviour:
   wheel: {fileID: 6779875394929326516}
   generateHardCollider: 0
   hardColliderRadiusFactor: 1
-  brakeForce: 0.3
+  brakeForce: 0.01
   ebrakeForce: 0
   steerRangeMin: -35
   steerRangeMax: 35
@@ -123388,8 +123388,8 @@ MonoBehaviour:
   rpmBiasCurveLimit: Infinity
   axleFriction: 0.001
   frictionSmoothness: 0.5
-  forwardFriction: 18
-  sidewaysFriction: 18
+  forwardFriction: 17
+  sidewaysFriction: 15
   forwardRimFriction: 1
   sidewaysRimFriction: 1
   forwardCurveStretch: 1
@@ -123532,7 +123532,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   strength: 1
-  automatic: 1
+  automatic: 0
   skidSteerDrive: 0
   outputDrives:
   - {fileID: 6779875395759827800}
@@ -123608,8 +123608,8 @@ MonoBehaviour:
   wheel: {fileID: 6779875395201521068}
   generateHardCollider: 0
   hardColliderRadiusFactor: 1
-  brakeForce: 0.2
-  ebrakeForce: 1
+  brakeForce: 0
+  ebrakeForce: 0
   steerRangeMin: 0
   steerRangeMax: 0
   steerFactor: 0
@@ -123748,8 +123748,8 @@ MonoBehaviour:
   wheel: {fileID: 6779875396142811108}
   generateHardCollider: 0
   hardColliderRadiusFactor: 1
-  brakeForce: 0.2
-  ebrakeForce: 1
+  brakeForce: 0
+  ebrakeForce: 0
   steerRangeMin: 0
   steerRangeMax: 0
   steerFactor: 0
@@ -123976,7 +123976,7 @@ MonoBehaviour:
   wheel: {fileID: 6779875396295812404}
   generateHardCollider: 0
   hardColliderRadiusFactor: 1
-  brakeForce: 0.3
+  brakeForce: 0.01
   ebrakeForce: 0
   steerRangeMin: -35
   steerRangeMax: 35
@@ -124189,12 +124189,12 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  inertia: 0.1
+  inertia: 0.375
   canReverse: 0
-  limit2kRPM: 11.5
-  limitkRPM: 11.35
+  limit2kRPM: 10.5
+  limitkRPM: 10.35
   minkRPM: 0.45
-  maxTorque: 0.5
+  maxTorque: 1
   outputDrives:
   - {fileID: 6779875395388755403}
   driveDividePower: 3
@@ -124394,8 +124394,8 @@ MonoBehaviour:
   rpmBiasCurveLimit: Infinity
   axleFriction: 0.001
   frictionSmoothness: 0.5
-  forwardFriction: 18
-  sidewaysFriction: 18
+  forwardFriction: 17
+  sidewaysFriction: 15
   forwardRimFriction: 1
   sidewaysRimFriction: 1
   forwardCurveStretch: 1

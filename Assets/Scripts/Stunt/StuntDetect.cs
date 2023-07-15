@@ -83,14 +83,7 @@ namespace RVP
                 jumpString = "";
             }
 
-            // Detect flips
-            if (detectFlips && !vp.crashing) {
-                DetectFlips();
-            }
-            else {
-                stunts.Clear();
-                flipString = "";
-            }
+            
 
             // Combine strings into final stunt string
             stuntString = vp.crashing ? "Crashed" : driftString + jumpString + (string.IsNullOrEmpty(flipString) || string.IsNullOrEmpty(jumpString) ? "" : " + ") + flipString;
@@ -144,71 +137,6 @@ namespace RVP
         }
 
         // Logic for detecting and tracking flips
-        void DetectFlips() {
-            if (vp.groundedWheels == 0) {
-                // Check to see if vehicle is performing a stunt and add it to the stunts list
-                foreach (Stunt curStunt in StuntManager.stuntsStatic) {
-                    if (Vector3.Dot(vp.localAngularVel.normalized, curStunt.rotationAxis) >= curStunt.precision) {
-                        bool stuntExists = false;
-
-                        foreach (Stunt checkStunt in stunts) {
-                            if (curStunt.name == checkStunt.name) {
-                                stuntExists = true;
-                                break;
-                            }
-                        }
-
-                        if (!stuntExists) {
-                            stunts.Add(new Stunt(curStunt));
-                        }
-                    }
-                }
-
-                // Check the progress of stunts and compile the flip string listing all stunts
-                foreach (Stunt curStunt2 in stunts) {
-                    if (Vector3.Dot(vp.localAngularVel.normalized, curStunt2.rotationAxis) >= curStunt2.precision) {
-                        curStunt2.progress += rb.angularVelocity.magnitude * Time.fixedDeltaTime;
-                    }
-
-                    if (curStunt2.progress * Mathf.Rad2Deg >= curStunt2.angleThreshold) {
-                        bool stuntDoneExists = false;
-
-                        foreach (Stunt curDoneStunt in doneStunts) {
-                            if (curDoneStunt == curStunt2) {
-                                stuntDoneExists = true;
-                                break;
-                            }
-                        }
-
-                        if (!stuntDoneExists) {
-                            doneStunts.Add(curStunt2);
-                        }
-                    }
-                }
-
-                string stuntCount = "";
-                flipString = "";
-
-                foreach (Stunt curDoneStunt2 in doneStunts) {
-                    stuntCount = curDoneStunt2.progress * Mathf.Rad2Deg >= curDoneStunt2.angleThreshold * 2 ? " x" + Mathf.FloorToInt((curDoneStunt2.progress * Mathf.Rad2Deg) / curDoneStunt2.angleThreshold).ToString() : "";
-                    flipString = string.IsNullOrEmpty(flipString) ? curDoneStunt2.name + stuntCount : flipString + " + " + curDoneStunt2.name + stuntCount;
-                }
-            }
-            else {
-                // Add stunt points to the score
-                foreach (Stunt curStunt in stunts) {
-                    score += curStunt.progress * Mathf.Rad2Deg * curStunt.scoreRate * Mathf.FloorToInt((curStunt.progress * Mathf.Rad2Deg) / curStunt.angleThreshold) * curStunt.multiplier;
-
-                    // Add boost to the engine
-                    if (engine) {
-                        engine.battery += curStunt.progress * Mathf.Rad2Deg * curStunt.boostAdd * curStunt.multiplier * 0.01f;
-                    }
-                }
-
-                stunts.Clear();
-                doneStunts.Clear();
-                flipString = "";
-            }
-        }
+        
     }
 }
