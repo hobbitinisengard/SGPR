@@ -71,7 +71,7 @@ public class SGP_HUD : MonoBehaviour
     public float hudHeight;
     RectTransform rt;
     bool initialized = false;
-    public float compression;
+    public float compression = 0;
 
     // HUD spring
     float frequency = 2;
@@ -96,8 +96,9 @@ public class SGP_HUD : MonoBehaviour
     public PauseMenu pauseMenu;
     public GameObject StuntInfo;
     GameObject stuntTemplate;
-    Text stuntRots;
-    
+    float dimStuntTableTimer = -1;
+    float dimStuntTableTime = 1;
+    int d_select = 0;
     public void SetBottomTextPos(float posy)
     {
         Vector2 position = infoText_rt.anchoredPosition;
@@ -133,21 +134,70 @@ public class SGP_HUD : MonoBehaviour
                 liveMessages.Enqueue(message);
         }
     }
-    public void AddStunt(string stuntStr)
+    public void UpdateStuntSequenceTable() 
+    {
+        // if previous stunt table hasn't ended dimming yet
+        if (Time.time - dimStuntTableTimer < dimStuntTableTime)
+        {
+            dimStuntTableTimer = 0;
+            ClearStuntInfo();
+        }
+        for (int j=0; j<racebox.stunts.Count; j++)
+        {
+            if (racebox.stunts[j].updateOverlay)
+            {
+                int stuntEntriesCount = StuntInfo.transform.childCount;
+                if (stuntEntriesCount == 1) // if no elements; first element is just a template
+                {
+                    AddStunt(racebox.stunts[j]);
+                }
+                else // at least one element
+                {
+                    StuntInfoOverlay lastElement = StuntInfo.transform.GetChild(stuntEntriesCount - 1).GetComponent<StuntInfoOverlay>();
+                    if (lastElement.name == racebox.stunts[j].name)
+                    {
+                        lastElement.UpdatePostfix(racebox.stunts[j]);
+                    }
+                    else
+                    {
+                        if (stuntEntriesCount == 7)
+                            Destroy(StuntInfo.transform.GetChild(1).gameObject);
+                        AddStunt(racebox.stunts[j]);
+                        racebox.stunts[j].doneTimes = 0;
+                    }
+                }
+            }
+            racebox.stunts[j].updateOverlay = false;
+        }
+        if (StuntInfo.transform.childCount > 2)
+            StuntInfo.SetActive(true);
+    }
+    public void AddStunt(in Stunt stunt)
     {
         GameObject stuntEntry = Instantiate(stuntTemplate, StuntInfo.transform);
+        stuntEntry.GetComponent<StuntInfoOverlay>().WriteStuntName(stunt);
         stuntEntry.SetActive(true);
-        stuntEntry.GetComponent<StuntInfoOverlay>().NewStunt(stuntStr);
-
     }
-    public void EditStunt(string stuntStr)
+    public void EndStuntSeq(bool success)
     {
-        StuntInfo.transform.GetChild(StuntInfo.transform.childCount - 1).GetComponent<Text>().text = stuntStr;
+        if (success)
+            dimStuntTableTimer = Time.time;
+        else
+        {
+            ClearStuntInfo();
+            StuntInfo.SetActive(false);
+        }
+    }
+    void ClearStuntInfo()
+    {
+        for(int i=1; i<StuntInfo.transform.childCount; ++i)
+        {
+            Destroy(StuntInfo.transform.GetChild(i).gameObject);
+        }
     }
     private void Start()
     {
-        stuntRots = StuntInfo.transform.GetChild(0).gameObject.GetComponent<Text>();
-        stuntTemplate = StuntInfo.transform.GetChild(1).gameObject;
+        stuntTemplate = StuntInfo.transform.GetChild(0).gameObject;
         fullScaleGear = currentGear.transform.localScale.x;
         smolScaleGear = fullScaleGear * 0.75f;
         progressBarUpdateTime = Time.time;
@@ -167,7 +217,47 @@ public class SGP_HUD : MonoBehaviour
             vp = targetVehicle.GetComponent<VehicleParent>();
             initialized = true;
         }
-        
+        // debug 
+        if (Input.GetKeyDown(KeyCode.T)) // update overlay
+        {
+            racebox.stunts[d_select].updateOverlay = true;
+            UpdateStuntSequenceTable();
+        }
+        else if (Input.GetKeyDown(KeyCode.Y)) // select next
+        {
+            d_select++;
+        }
+        else if (Input.GetKeyDown(KeyCode.U)) // select prev
+        {
+            d_select--;
+        }
+        else if (Input.GetKeyDown(KeyCode.I)) // succeeded
+        {
+            EndStuntSeq(true);
+        }
+        else if (Input.GetKeyDown(KeyCode.O)) // failed
+        {
+            EndStuntSeq(false);
+        }
+
+        // dim stunt table after end of evos
+        if(dimStuntTableTimer != -1)
+        {
+            if (Time.time - dimStuntTableTimer < dimStuntTableTime)
+            {
+                float progress = (dimStuntTableTime - (Time.time - dimStuntTableTimer)) / dimStuntTableTime;
+                for (int i = 1; i < StuntInfo.transform.childCount; ++i)
+                {
+                    StuntInfo.transform.GetChild(i).GetComponent<StuntInfoOverlay>().DimTexts(progress);
+                }
+            }
+            else if (StuntInfo.activeSelf)
+            {
+                dimStuntTableTimer = -1;
+                ClearStuntInfo();
+                StuntInfo.SetActive(false);
+            }
+        }
         
         //if (!raceManager.Initialized())
         //    return;
@@ -199,7 +289,14 @@ public class SGP_HUD : MonoBehaviour
 
         // HUD vibrates along with dampers
         Vector3 hudPos = rt.anchoredPosition;
-        compression = vp.wheels[0].suspensionParent.compression;
+        try
+        {
+            compression = vp.wheels[0].suspensionParent.compression;
+        }
+        catch
+        {
+
+        }
         float target = Mathf.Lerp(hudPos0, hudHeight - hudPos0, compression);
         damper_spring(ref spring_pos,ref spring_v, target, spring_maxV);
         hudPos.y = spring_pos;

@@ -1,47 +1,79 @@
 using UnityEngine.UI;
 using UnityEngine;
+using RVP;
 
 public class StuntInfoOverlay : MonoBehaviour
 {
+    static float animationTime = .5f;
     GameObject stuntObj;
     Text stuntObjText;
-    Text prefixObjText;
-    GameObject prefixObj;
-    float prefixObjAnimStartTime;
+    Text postfixObjText;
+    GameObject postfixObj;
+    RectTransform rt;
+    float postfixObjAnimStartTime;
     float stuntObjAnimStartTime;
-    void Start()
+    /// <summary>
+    /// How many times has this stunt been done without interruptions by other stunts
+    /// </summary>
+    int localDoneTimes = 0;
+    int originalPostfixFontSize;
+    private void Initialize()
     {
-        stuntObj = transform.GetChild(0).gameObject;
+        postfixObj = transform.GetChild(0).gameObject;
+        stuntObj = transform.GetChild(0).GetChild(0).gameObject;
+
+        postfixObjText = postfixObj.GetComponent<Text>();
         stuntObjText = stuntObj.GetComponent<Text>();
-        prefixObjText = prefixObj.GetComponent<Text>();
-        prefixObj = transform.GetChild(0).GetChild(0).gameObject;
-        stuntObjAnimStartTime = Time.time;
+        originalPostfixFontSize = postfixObjText.fontSize;
+
+        rt = postfixObj.GetComponent<RectTransform>();
     }
 
     void Update()
     {
-        float animTime = Time.time - stuntObjAnimStartTime;
-        if (animTime < 1)
+        if(stuntObj)
         {
-            var color = stuntObjText.color;
-            color.a = 255 * animTime;
-            stuntObjText.color = color;
-        }
-        animTime = Time.time - prefixObjAnimStartTime;
-        if(animTime < .5f)
-        {
-            prefixObj.transform.localScale = (2-2*animTime)*Vector3.one;
+            float animTime = Time.time - stuntObjAnimStartTime;
+            if (animTime < animationTime)
+            {
+                var color = stuntObjText.color;
+                color.a = animTime / animationTime;
+                stuntObjText.color = color;
+                postfixObjText.color = color;
+
+                Vector2 offsetMin = rt.offsetMin;
+                float newBottomValue = -100 * (animationTime - animTime);
+                offsetMin.y = newBottomValue;
+                rt.offsetMin = offsetMin;
+            }
+            animTime = Time.time - postfixObjAnimStartTime;
+            if (animTime < animationTime)
+            {
+                postfixObjText.fontSize = (int)((2 - 2 * animTime) * originalPostfixFontSize);
+            }
         }
     }
-    public void NewPrefix(string str, bool animate)
+    public void UpdatePostfix(in Stunt stunt)
     {
-        prefixObj.SetActive(true);
-        prefixObjText.text = str;
-        if(animate)
-            prefixObjAnimStartTime = Time.time;
+        postfixObjText.text = (++localDoneTimes * 360).ToString();
+        postfixObjAnimStartTime = Time.time;
     }
-    public void NewStunt(string str)
+    public void WriteStuntName(in Stunt stunt)
     {
-        stuntObjText.text = str;
+        Initialize();
+        stuntObjAnimStartTime = Time.time;
+        stuntObjText.text = stunt.name;
+        name = stunt.name;
+        postfixObjText.text = (++localDoneTimes * 360).ToString();
+    }
+    public void DimTexts(float opaqueness)
+    {
+        var c = postfixObjText.color;
+        c.a = opaqueness;
+        postfixObjText.color = c;
+
+        c = stuntObjText.color;
+        c.a = opaqueness;
+        stuntObjText.color = c;
     }
 }

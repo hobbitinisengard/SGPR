@@ -26,8 +26,7 @@ namespace RVP
         public float jumpBoostAdd;
         public static float jumpBoostAddStatic;
 
-        public Stunt[] stunts;
-        public static Stunt[] stuntsStatic;
+        public Flip[] allPossibleFlips;
 
         void Start() {
             // Set static variables
@@ -36,45 +35,76 @@ namespace RVP
             driftBoostAddStatic = driftBoostAdd;
             jumpScoreRateStatic = jumpScoreRate;
             jumpBoostAddStatic = jumpBoostAdd;
-            stuntsStatic = stunts;
         }
     }
     public enum VectorRelationship { Perpendicular, Parallel, None};
-    // Stunt class
-    [System.Serializable]
+    enum EndStuntReqParallelAlignment { Forward_w, Up_gY, None };
+    
     public class Stunt
     {
+        //public static readonly string[] doneTimesPrefixes = { "", "Double ", "Triple ", "Super ", "Master " };
         public string name;
-        public VectorRelationship w_and_Angular;
-        public VectorRelationship globalY_and_Angular;
-        public Vector3 rotationAxis; // Local rotation axis of the stunt
-        public float scoreRate;
-        public float multiplier = 1; // Multiplier for when the stunt is performed more than once in the same jump
-        public float angleThreshold;
+        public float score;
         [System.NonSerialized]
-        public float progress; // How much rotation has happened during the stunt in radians?
+        public float doneTimes = 0;
+        [System.NonSerialized]
+        public bool updateOverlay = false;
+        [System.NonSerialized]
+        public float progress;
+    }
 
-        // Use this to duplicate a stunt
-        public Stunt(Stunt oldStunt) {
+    [System.Serializable]
+    public class Flip : Stunt
+    {
+        public VectorRelationship req_w_and_Angular_relation;
+        public VectorRelationship req_globalY_and_Angular_relation;
+        public Vector3 rotationAxis; // Local rotation axis of the stunt
+        [SerializeField]
+        private EndStuntReqParallelAlignment endStuntReqParallelAlignment = EndStuntReqParallelAlignment.None;
+        public float angleThreshold;
+
+        public Flip(Flip oldStunt) { // copy ctor
             name = oldStunt.name;
             rotationAxis = oldStunt.rotationAxis;
-            scoreRate = oldStunt.scoreRate;
+            score = oldStunt.score;
             angleThreshold = oldStunt.angleThreshold;
-            multiplier = oldStunt.multiplier;
+            doneTimes = oldStunt.doneTimes;
         }
 
         public static VectorRelationship GetRelationship(Vector3 norm_a, Vector3 norm_b)
         {
-            if(Vector3.Dot(norm_a, norm_b) >= 0.9f) // angle is 0 deg +- 25deg
+            if(Parallel(norm_a, norm_b)) 
             {
                 return VectorRelationship.Parallel;
             }
-            if (Vector3.Dot(norm_a, norm_b) < 0.4f) // angle is 90 deg +- 23deg
+            if (Perpendicular(norm_a, norm_b)) 
             {
                 return VectorRelationship.Perpendicular;
             }
             else
                 return VectorRelationship.None;
+        }
+        public static bool Parallel(Vector3 norm_a, Vector3 norm_b)
+        {
+            return Vector3.Dot(norm_a, norm_b) >= 0.9f;// angle is 0 deg +- 25deg
+        }
+        public static bool Perpendicular(Vector3 norm_a, Vector3 norm_b)
+        {
+            return Vector3.Dot(norm_a, norm_b) < 0.4f; // angle is 90 deg +- 23deg
+        }
+        public bool CarAlignmentConditionFulfilled(in VehicleParent vp, in Vector3 w)
+        {
+            switch (endStuntReqParallelAlignment)
+            {
+                case EndStuntReqParallelAlignment.None:
+                    return true;
+                case EndStuntReqParallelAlignment.Forward_w:
+                    return Parallel(vp.forwardDir, w);
+                case EndStuntReqParallelAlignment.Up_gY:
+                    return vp.upDot >= 0.9f; // same as: Parallel(vp.upDir, Vector3.up);
+            }
+            Debug.LogError("Shouldn't come here");
+            return false;
         }
     }
 }

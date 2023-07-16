@@ -29,7 +29,7 @@ Transform:
   m_GameObject: {fileID: 121460}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 2.5998, y: 2.5998, z: 2.5998}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -48,6 +48,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Sun: {fileID: 0}
+  nightTimeLights: {fileID: 0}
   quickRestart: 1
   wheelCastMask:
     serializedVersion: 2
@@ -134,49 +135,35 @@ MonoBehaviour:
   driftBoostAdd: 0.1
   jumpScoreRate: 0.01
   jumpBoostAdd: 0.1
-  stunts:
-  - name: Front Flip
-    rotationAxis: {x: 1, y: 0, z: 0}
-    precision: 0.8
-    scoreRate: 1
-    multiplier: 1
-    angleThreshold: 300
-    boostAdd: 0.1
-  - name: Back Flip
-    rotationAxis: {x: -1, y: 0, z: 0}
-    precision: 0.8
-    scoreRate: 1
-    multiplier: 1
-    angleThreshold: 300
-    boostAdd: 0.1
-  - name: Barrel Roll Left
-    rotationAxis: {x: 0, y: 0, z: 1}
-    precision: 0.8
-    scoreRate: 1
-    multiplier: 1
-    angleThreshold: 300
-    boostAdd: 0.1
-  - name: Barrel Roll Right
-    rotationAxis: {x: 0, y: 0, z: -1}
-    precision: 0.8
-    scoreRate: 1
-    multiplier: 1
-    angleThreshold: 300
-    boostAdd: 0.1
-  - name: Spin Right
-    rotationAxis: {x: 0, y: 1, z: 0}
-    precision: 0.8
-    scoreRate: 1
-    multiplier: 1
-    angleThreshold: 300
-    boostAdd: 0.1
-  - name: Spin Left
-    rotationAxis: {x: 0, y: -1, z: 0}
-    precision: 0.8
-    scoreRate: 1
-    multiplier: 1
-    angleThreshold: 300
-    boostAdd: 0.1
+  allPossibleFlips:
+  - name: FRONT FLIP
+    score: 200
+    req_w_and_Angular_relation: 0
+    req_globalY_and_Angular_relation: 0
+    rotationAxis: {x: 0, y: 0, z: 0}
+    endStuntReqParallelAlignment: 0
+    angleThreshold: 0
+  - name: BACK FLIP
+    score: 0
+    req_w_and_Angular_relation: 0
+    req_globalY_and_Angular_relation: 0
+    rotationAxis: {x: 0, y: 0, z: 0}
+    endStuntReqParallelAlignment: 0
+    angleThreshold: 0
+  - name: LEFT
+    score: 0
+    req_w_and_Angular_relation: 0
+    req_globalY_and_Angular_relation: 0
+    rotationAxis: {x: 0, y: 0, z: 0}
+    endStuntReqParallelAlignment: 0
+    angleThreshold: 0
+  - name: RIGHT
+    score: 0
+    req_w_and_Angular_relation: 0
+    req_globalY_and_Angular_relation: 0
+    rotationAxis: {x: 0, y: 0, z: 0}
+    endStuntReqParallelAlignment: 0
+    angleThreshold: 0
 --- !u!114 &1461308774
 MonoBehaviour:
   m_ObjectHideFlags: 0

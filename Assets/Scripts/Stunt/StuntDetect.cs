@@ -17,8 +17,8 @@ namespace RVP
 
         [System.NonSerialized]
         public float score;
-        List<Stunt> stunts = new List<Stunt>();
-        List<Stunt> doneStunts = new List<Stunt>();
+        List<Flip> stunts = new List<Flip>();
+        List<Flip> doneStunts = new List<Flip>();
         bool drifting;
         float driftDist;
         float driftScore;
