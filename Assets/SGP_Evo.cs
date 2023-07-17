@@ -1,6 +1,30 @@
 using RVP;
+using System;
 using UnityEngine;
+public class VectorPid
+{
+    public float pFactor, iFactor, dFactor;
 
+    private Vector3 integral;
+    private Vector3 lastError;
+
+    public VectorPid(float pFactor, float iFactor, float dFactor)
+    {
+        this.pFactor = pFactor;
+        this.iFactor = iFactor;
+        this.dFactor = dFactor;
+    }
+
+    public Vector3 Update(Vector3 currentError, float timeFrame)
+    {
+        integral += currentError * timeFrame;
+        var deriv = (currentError - lastError) / timeFrame;
+        lastError = currentError;
+        return currentError * pFactor
+            + integral * iFactor
+            + deriv * dFactor;
+    }
+}
 public enum Direction { ANTICLOCK = -1, CLOCK = 1};
 public class RotationDampStruct
 {
@@ -10,11 +34,10 @@ public class RotationDampStruct
 
     // increases when holding shift
     float evoMaxSpeed = 0; 
-
     float pos = 0;
     public float targetPos = 0;
-    public float evoCoeff = 1;
     public float speed = 0;
+    //float prevSpeed = 0;
     public float offset = 0;
     public bool Active()
     {
@@ -81,9 +104,15 @@ public class RotationDampStruct
     public void SmoothDamp()
     {
         pos = degs(pos);
+        //prevSpeed = speed;
         pos = Mathf.SmoothDamp(pos, targetPos, ref speed,
                evoSmoothTime, evoMaxSpeed, Time.fixedDeltaTime);
+        
     }
+    //public float Delta()
+    //{
+    //    return speed - prevSpeed;
+    //}
     public void IncreaseEvoSpeed()
     {
         evoMaxSpeed += evoAcceleration;
@@ -125,8 +154,14 @@ public class SGP_Evo : MonoBehaviour
     public float posy;
     public float tary;
 
-    
-	void Start()
+    public Transform target;
+    public float rotationSpeed = 5f;
+    [NonSerialized]
+    public Vector3 localEvoAngularVelocity = Vector3.zero;
+
+    public float mult = 1;
+
+    void Start()
 	{
         rb = GetComponent<Rigidbody>();
 		vp = GetComponent<VehicleParent>();
@@ -210,9 +245,21 @@ public class SGP_Evo : MonoBehaviour
 
             foreach (RotationDampStruct rds in r)
                 rds.SmoothDamp();
-            
             rb.rotation = Quaternion.Euler(r[0].Pos(), r[1].Pos(), r[2].Pos());
+            localEvoAngularVelocity.Set(r[0].speed, r[1].speed, r[2].speed);
+            localEvoAngularVelocity *= Time.fixedDeltaTime;
+            rb.angularVelocity = Mathf.Deg2Rad * vp.transform.TransformDirection(localEvoAngularVelocity);
+            //Vector3 delta = new Vector3(r[0].Delta(), r[1].Delta(), r[2].Delta());
+
+            //rb.AddRelativeTorque(mult*delta, ForceMode.VelocityChange);
+            //if(vp.name.Contains("Clone"))
+            //{
+            //    Debug.DrawRay(vp.transform.position, vp.transform.TransformDirection(localEvoAngularVelocity), Color.red, 3);
+            //    //Debug.Log(localEvoAngularVelocity.magnitude);
+
+            //}
         }
+        
 		prevSGPShiftButton = vp.SGPshiftbutton;
 	}
 }

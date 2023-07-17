@@ -7043,7 +7043,7 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 101a7b77f9a95ea4bbfc34ada46171db,
         type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 101a7b77f9a95ea4bbfc34ada46171db, type: 3}
@@ -33177,19 +33177,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 471010, guid: bdcebfa96c8bde040bb960321a9623e5, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 117.3
+      value: 184.6
       objectReference: {fileID: 0}
     - target: {fileID: 471010, guid: bdcebfa96c8bde040bb960321a9623e5, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 28.8
+      value: 4.37
       objectReference: {fileID: 0}
     - target: {fileID: 471010, guid: bdcebfa96c8bde040bb960321a9623e5, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 150.45
+      value: 180
       objectReference: {fileID: 0}
     - target: {fileID: 471010, guid: bdcebfa96c8bde040bb960321a9623e5, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.9989015
+      value: 0.6566781
       objectReference: {fileID: 0}
     - target: {fileID: 471010, guid: bdcebfa96c8bde040bb960321a9623e5, type: 3}
       propertyPath: m_LocalRotation.x
@@ -33197,7 +33197,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 471010, guid: bdcebfa96c8bde040bb960321a9623e5, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0.046860993
+      value: 0.7541711
       objectReference: {fileID: 0}
     - target: {fileID: 471010, guid: bdcebfa96c8bde040bb960321a9623e5, type: 3}
       propertyPath: m_LocalRotation.z
@@ -45296,7 +45296,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.001472082, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 169.93954, y: -0.008605957}
+  m_AnchoredPosition: {x: 169.93916, y: -0.008605957}
   m_SizeDelta: {x: 32.513794, y: 4.239998}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!212 &602281001
@@ -104575,7 +104575,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 454.50024, y: 2.750061}
+  m_AnchoredPosition: {x: 454.50024, y: 2.75}
   m_SizeDelta: {x: -1433.2749, y: -515}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1376600232
@@ -112565,14 +112565,14 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1461196560}
-  m_LocalRotation: {x: -0, y: -0.046860993, z: -0, w: 0.9989015}
-  m_LocalPosition: {x: 117.3, y: 28.8, z: 150.45}
+  m_LocalRotation: {x: -0, y: 0.7541711, z: -0, w: 0.6566781}
+  m_LocalPosition: {x: 184.6, y: 4.37, z: 180}
   m_LocalScale: {x: 2.5998, y: 2.5998, z: 2.5998}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: -5.372, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 97.906, z: 0}
 --- !u!1 &1462896158
 GameObject:
   m_ObjectHideFlags: 0
@@ -113539,34 +113539,15 @@ MonoBehaviour:
   jumpScoreRate: 0.01
   jumpBoostAdd: 0.1
   allPossibleFlips:
-  - name: FRONT FLIP
+  - name: FLIP
     score: 200
     req_w_and_Angular_relation: 0
     req_globalY_and_Angular_relation: 0
-    rotationAxis: {x: 0, y: 0, z: 0}
+    rotationAxis: {x: 1, y: 0, z: 0}
     endStuntReqParallelAlignment: 0
-    angleThreshold: 0
-  - name: BACK FLIP
-    score: 0
-    req_w_and_Angular_relation: 0
-    req_globalY_and_Angular_relation: 0
-    rotationAxis: {x: 0, y: 0, z: 0}
-    endStuntReqParallelAlignment: 0
-    angleThreshold: 0
-  - name: LEFT
-    score: 0
-    req_w_and_Angular_relation: 0
-    req_globalY_and_Angular_relation: 0
-    rotationAxis: {x: 0, y: 0, z: 0}
-    endStuntReqParallelAlignment: 0
-    angleThreshold: 0
-  - name: RIGHT
-    score: 0
-    req_w_and_Angular_relation: 0
-    req_globalY_and_Angular_relation: 0
-    rotationAxis: {x: 0, y: 0, z: 0}
-    endStuntReqParallelAlignment: 0
-    angleThreshold: 0
+    angleThreshold: 270
+    halfFirstPositiveName: FLAT ATTACK
+    halfFirstNegativeName: METEOR
 --- !u!114 &1471661476
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -147176,7 +147157,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.001472082, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 169.93954, y: -1.06427}
+  m_AnchoredPosition: {x: 169.93916, y: -1.06427}
   m_SizeDelta: {x: 32.513794, y: 2.1285744}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!212 &1924452706
@@ -156428,7 +156409,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!33 &998677345387942035
 MeshFilter:
   m_ObjectHideFlags: 0

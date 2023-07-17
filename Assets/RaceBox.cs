@@ -1,8 +1,8 @@
 using RVP;
 using System;
 using UnityEngine;
-using System.Collections.Generic;
-using UnityEngine.SocialPlatforms.Impl;
+using UnityEditor;
+using System.Linq;
 
 public class StuntRotInfo
 {
@@ -15,7 +15,6 @@ public class StuntRotInfo
 }
 public class RaceBox : MonoBehaviour
 {
-    SGP_HUD hud;
     VehicleParent vp;
     SGP_Evo evoModule;
     public float distance { get; private set; }
@@ -26,11 +25,12 @@ public class RaceBox : MonoBehaviour
     /// <summary>
     /// number of laps done already
     /// </summary>
-    public int curNoLap { get; private set; }
+    public int curLaps { get; private set; }
     /// <summary>
     /// All number of laps of this race
     /// </summary>
-    public int NoLaps { get; private set; }
+    public int LapsCount { get; private set; }
+    public float w_A_dot;
 
     public int starLevel;
 
@@ -43,75 +43,124 @@ public class RaceBox : MonoBehaviour
     bool prevGroundedWheels0 = false;
     Vector3 w;
     //Stack<StuntRotInfo> rots;
-    [NonSerialized]
-    public List<Stunt> stunts;
-    
+    Stunt[] stunts;
+    float pointsFromThisEvoSeq = 0;
+    int starLevelAdd = 0;
+    private bool stuntsAvailableForFrontend;
+
     void Start()
     {
         vp = transform.GetComponent<VehicleParent>();
         evoModule = transform.GetComponent<SGP_Evo>();
         lapStartTime = DateTime.MinValue;
         bestLapTime = TimeSpan.MaxValue;
-        curNoLap = 0;
-        NoLaps = 18;
+        curLaps = 0;
+        LapsCount = 18;
         starLevel = 0;
         comboStartTime = DateTime.MinValue;
         //rots = new Stack<StuntRotInfo>(32);
-        stunts = new List<Stunt>();
         var globalcontrol = GameObject.Find("GlobalControl");
-        stunts.AddRange(globalcontrol.transform.GetComponent<StuntManager>().allPossibleFlips);
-        hud = globalcontrol.transform.GetComponent<SGP_HUD>();
+        stunts = globalcontrol.transform.GetComponent<StuntManager>().allPossibleFlips.ToArray();
+    }
+    public Stunt[] GetStuntsSeq()
+    {
+        if (stuntsAvailableForFrontend)
+        {
+            stuntsAvailableForFrontend = false;
+            return stunts;
+        }
+        else
+            return null;
+    }
+    private void OnDrawGizmos()
+    {
+        
     }
     void DetectStunts()
     {
-        //if (vp.groundedWheels == 0)
-        //{
-        //    if (!prevGroundedWheels0)
-        //    {
-        //        w = vp.rb.velocity; w.y = 0; w = w.normalized;
-        //        prevGroundedWheels0 = true;
-        //    }
-        //    Vector3 lA = vp.localAngularVel.normalized;
-        //    Vector3 A = vp.rb.angularVelocity.normalized;
-        //    foreach (Flip stunt in stunts)
-        //    {
-        //        bool w_A_test = Flip.GetRelationship(w, A) == stunt.req_w_and_Angular_relation;
-        //        bool gY_A_test = Flip.GetRelationship(Vector3.up, A) == stunt.req_globalY_and_Angular_relation;
-        //        bool lA_car_test = Flip.GetRelationship(lA, stunt.rotationAxis) == VectorRelationship.Parallel;
+        if (vp.groundedWheels == 0)
+        {
+            if (!prevGroundedWheels0)
+            {
+                w = vp.rb.velocity; 
+                w.y = 0; 
+                w = w.normalized;
+                Debug.DrawRay(vp.transform.position, w, Color.red, 10);
+                prevGroundedWheels0 = true;
+            }
+            Vector3 A = vp.rb.angularVelocity;
+            Vector3 normA = A.normalized;
+            Vector3 normlA = vp.transform.InverseTransformDirection(A).normalized;
+            //Debug.DrawRay(vp.transform.position, normA, Color.blue, 5);
+            //Debug2Mono.DrawText(vp.transform.position, Mathf.Abs(Vector3.Dot(Vector3.forward, normlA)).ToString(),5,Color.blue);
+            foreach (RotationStunt stunt in stunts)
+            {
+                //w_A_dot = Mathf.Abs(Vector3.Dot(w, normA));
+                bool w_A_test = RotationStunt.GetRelationship(w, normA) == stunt.req_w_and_Angular_relation;
+                bool gY_A_test = RotationStunt.GetRelationship(Vector3.up, normA) == stunt.req_globalY_and_Angular_relation;
+                bool lA_car_test = RotationStunt.GetRelationship(normlA, stunt.rotationAxis) == VectorRelationship.Parallel;
 
-        //        if (w_A_test && gY_A_test && lA_car_test)
-        //        {
-        //            stunt.progress += lA.magnitude * Time.fixedDeltaTime;
+                if (w_A_test && gY_A_test && lA_car_test)
+                {
+                    if (stunt.rotationAxis.x != 0)
+                    {
+                        Debug.Log("progressing");
+                        stunt.AddProgress(A.magnitude * Time.fixedDeltaTime, A.x > 0);
+                    }
+                    else if (stunt.rotationAxis.y != 0)
+                    {
+                        stunt.AddProgress(A.magnitude * Time.fixedDeltaTime, A.y > 0);
+                    }
+                    else if (stunt.rotationAxis.z != 0)
+                    {
+                        stunt.AddProgress(A.magnitude * Time.fixedDeltaTime, A.z > 0);
+                    }
 
-        //            if (stunt.progress * Mathf.Rad2Deg >= stunt.angleThreshold && stunt.CarAlignmentConditionFulfilled(vp, w))
-        //            {
-        //                stunt.doneTimes++;
-        //                stunt.updateOverlay = true;
-        //                stunt.progress = 0;
-        //            }
-        //        }
-        //    }
-            //hud.UpdateStuntList(stunts);
-        //}
-        //else
-        //{
-        //    prevGroundedWheels0 = false;
-        //    // Add stunt points to the score
-        //    foreach (Flip curStunt in stunts)
-        //    {
-        //        score += curStunt.progress * Mathf.Rad2Deg * curStunt.scoreRate * Mathf.FloorToInt((curStunt.progress * Mathf.Rad2Deg) / curStunt.angleThreshold) * curStunt.doneTimes;
+                    if(stunt.positiveProgress * Mathf.Rad2Deg >= 135 && stunt.negativeProgress * Mathf.Rad2Deg >= 135 
+                        && stunt.CarAlignmentConditionFulfilled(vp, w))
+                    { // done half rotation two-directions
+                        stuntsAvailableForFrontend = true;
+                        stunt.positiveProgress = 0;
+                        stunt.negativeProgress = 0;
+                        stunt.updateOverlay = true;
+                        stunt.WriteHalfOverlayName(w, !evoModule.IsStunting(), vp.forwardDir);
+                        pointsFromThisEvoSeq += (starLevel + 1) * 1.5f * stunt.score * (stunt.overlayName.Contains("REV") ? 2 : 1)
+                            * (!evoModule.IsStunting() ? 2 : 1);
+                    }
+                    else if (stunt.positiveProgress * Mathf.Rad2Deg >= stunt.angleThreshold && stunt.CarAlignmentConditionFulfilled(vp, w))
+                    { // done full rotation
+                        stuntsAvailableForFrontend = true;
+                        stunt.doneTimes++;
+                        stunt.updateOverlay = true;
+                        stunt.WriteOverlayName(w, !evoModule.IsStunting(), vp.forwardDir);
+                        stunt.positiveProgress = 0;
+                        stunt.negativeProgress = 0;
+                        pointsFromThisEvoSeq += (starLevel + 1) * stunt.score * (stunt.overlayName.Contains("REV") ? 2 : 1)
+                            * (!evoModule.IsStunting() ? 2 : 1);
+                    }
+                }
+            }
+            prevGroundedWheels0 = true;
+        }
+        else
+        {
+            prevGroundedWheels0 = false;
+            //// Add stunt points to the score
+            //foreach (Flip curStunt in stunts)
+            //{
+            //    score += curStunt.progress * Mathf.Rad2Deg * curStunt.scoreRate * Mathf.FloorToInt((curStunt.progress * Mathf.Rad2Deg) / curStunt.angleThreshold) * curStunt.doneTimes;
 
-        //        // Add boost to the engine
-        //        if (engine)
-        //        {
-        //            engine.battery += curStunt.progress * Mathf.Rad2Deg * curStunt.boostAdd * curStunt.doneTimes * 0.01f;
-        //        }
-        //    }
+            //    // Add boost to the engine
+            //    if (engine)
+            //    {
+            //        engine.battery += curStunt.progress * Mathf.Rad2Deg * curStunt.boostAdd * curStunt.doneTimes * 0.01f;
+            //    }
+            //}
 
-        //    stunts.Clear();
-        //    doneStunts.Clear();
-        //    flipString = "";
-        //}
+            //stunts.Clear();
+            //doneStunts.Clear();
+            //flipString = "";
+        }
 
     }
     private void Update()
@@ -164,7 +213,7 @@ public class RaceBox : MonoBehaviour
             bestLapTime = CurLapTime();
 
         lapStartTime = DateTime.Now;
-        curNoLap++;
+        curLaps++;
     }
     public bool ComboActive()
     {

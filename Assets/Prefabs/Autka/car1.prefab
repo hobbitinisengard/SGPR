@@ -103610,6 +103610,9 @@ MonoBehaviour:
   euler: {x: 0, y: 0, z: 0}
   posy: 0
   tary: 0
+  target: {fileID: 0}
+  rotationSpeed: 5
+  mult: 1000
 --- !u!114 &6779875395068024204
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -124194,7 +124197,7 @@ MonoBehaviour:
   limit2kRPM: 10.5
   limitkRPM: 10.35
   minkRPM: 0.45
-  maxTorque: 1
+  maxTorque: 0.6
   outputDrives:
   - {fileID: 6779875395388755403}
   driveDividePower: 3

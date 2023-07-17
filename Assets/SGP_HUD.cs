@@ -134,42 +134,44 @@ public class SGP_HUD : MonoBehaviour
                 liveMessages.Enqueue(message);
         }
     }
-    public void UpdateStuntSequenceTable() 
+    public void UpdateStuntSequenceTable(in Stunt[] stunts) 
     {
+        if (stunts == null)
+            return;
         // if previous stunt table hasn't ended dimming yet
         if (Time.time - dimStuntTableTimer < dimStuntTableTime)
         {
             dimStuntTableTimer = 0;
             ClearStuntInfo();
         }
-        for (int j=0; j<racebox.stunts.Count; j++)
+        for (int j=0; j<stunts.Length; j++)
         {
-            if (racebox.stunts[j].updateOverlay)
+            if (stunts[j].updateOverlay)
             {
                 int stuntEntriesCount = StuntInfo.transform.childCount;
                 if (stuntEntriesCount == 1) // if no elements; first element is just a template
                 {
-                    AddStunt(racebox.stunts[j]);
+                    AddStunt(stunts[j]);
                 }
                 else // at least one element
                 {
                     StuntInfoOverlay lastElement = StuntInfo.transform.GetChild(stuntEntriesCount - 1).GetComponent<StuntInfoOverlay>();
-                    if (lastElement.name == racebox.stunts[j].name)
+                    if (lastElement.name == stunts[j].name)
                     {
-                        lastElement.UpdatePostfix(racebox.stunts[j]);
+                        lastElement.UpdatePostfix(stunts[j]);
                     }
                     else
                     {
                         if (stuntEntriesCount == 7)
                             Destroy(StuntInfo.transform.GetChild(1).gameObject);
-                        AddStunt(racebox.stunts[j]);
-                        racebox.stunts[j].doneTimes = 0;
+                        AddStunt(stunts[j]);
+                        stunts[j].doneTimes = 0;
                     }
                 }
             }
-            racebox.stunts[j].updateOverlay = false;
+            stunts[j].updateOverlay = false;
         }
-        if (StuntInfo.transform.childCount > 2)
+        if (StuntInfo.transform.childCount > 1)
             StuntInfo.SetActive(true);
     }
     public void AddStunt(in Stunt stunt)
@@ -218,28 +220,29 @@ public class SGP_HUD : MonoBehaviour
             initialized = true;
         }
         // debug 
-        if (Input.GetKeyDown(KeyCode.T)) // update overlay
-        {
-            racebox.stunts[d_select].updateOverlay = true;
-            UpdateStuntSequenceTable();
-        }
-        else if (Input.GetKeyDown(KeyCode.Y)) // select next
-        {
-            d_select++;
-        }
-        else if (Input.GetKeyDown(KeyCode.U)) // select prev
-        {
-            d_select--;
-        }
-        else if (Input.GetKeyDown(KeyCode.I)) // succeeded
-        {
-            EndStuntSeq(true);
-        }
-        else if (Input.GetKeyDown(KeyCode.O)) // failed
-        {
-            EndStuntSeq(false);
-        }
+        //if (Input.GetKeyDown(KeyCode.T)) // update overlay
+        //{
+        //    racebox.stunts[d_select].updateOverlay = true;
+        //    UpdateStuntSequenceTable();
+        //}
+        //else if (Input.GetKeyDown(KeyCode.Y)) // select next
+        //{
+        //    d_select++;
+        //}
+        //else if (Input.GetKeyDown(KeyCode.U)) // select prev
+        //{
+        //    d_select--;
+        //}
+        //else if (Input.GetKeyDown(KeyCode.I)) // succeeded
+        //{
+        //    EndStuntSeq(true);
+        //}
+        //else if (Input.GetKeyDown(KeyCode.O)) // failed
+        //{
+        //    EndStuntSeq(false);
+        //}
 
+        UpdateStuntSequenceTable(racebox.GetStuntsSeq());
         // dim stunt table after end of evos
         if(dimStuntTableTimer != -1)
         {
@@ -387,11 +390,11 @@ public class SGP_HUD : MonoBehaviour
         }
 
         // Lap number rollers
-        lapNoRollers[1].SetValue(racebox.curNoLap % 10); // ones
-        lapNoRollers[0].SetValue(racebox.curNoLap / 10); // tens
+        lapNoRollers[1].SetValue(racebox.curLaps % 10); // ones
+        lapNoRollers[0].SetValue(racebox.curLaps / 10); // tens
 
-        lapNoRollers[3].SetValue(racebox.NoLaps % 10); // ones
-        lapNoRollers[2].SetValue(racebox.NoLaps / 10); // tens
+        lapNoRollers[3].SetValue(racebox.LapsCount % 10); // ones
+        lapNoRollers[2].SetValue(racebox.LapsCount / 10); // tens
 
         // Stars
         if (Input.GetKeyDown(KeyCode.Alpha1))

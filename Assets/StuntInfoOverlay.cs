@@ -63,8 +63,8 @@ public class StuntInfoOverlay : MonoBehaviour
         Initialize();
         stuntObjAnimStartTime = Time.time;
         stuntObjText.text = stunt.name;
-        name = stunt.name;
-        postfixObjText.text = (++localDoneTimes * 360).ToString();
+        name = stunt.OverlayName();
+        postfixObjText.text = stunt.PostfixText(++localDoneTimes);
     }
     public void DimTexts(float opaqueness)
     {
