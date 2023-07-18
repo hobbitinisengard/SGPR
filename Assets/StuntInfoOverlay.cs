@@ -54,6 +54,10 @@ public class StuntInfoOverlay : MonoBehaviour
             }
         }
     }
+    public override string ToString()
+    {
+        return stuntObjText.text + " " + postfixObjText.text;
+    }
     public void UpdatePostfix(in Stunt stunt)
     {
         if(stunt is RotationStunt rotationStunt)

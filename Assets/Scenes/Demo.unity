@@ -45296,7 +45296,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.001472082, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 169.9376, y: -0.008605957}
+  m_AnchoredPosition: {x: 169.93758, y: -0.008605957}
   m_SizeDelta: {x: 32.513794, y: 4.239998}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!212 &602281001
@@ -113587,8 +113587,8 @@ MonoBehaviour:
     score: 400
     allowHalfs: 0
     req_carAlignment: 0
-    req_w_and_Angular_relation: 1
-    req_globalY_and_Angular_relation: 0
+    req_w_and_Angular_relation: 0
+    req_globalY_and_Angular_relation: 1
     rotationAxis: {x: 1, y: 0, z: 0}
     endStuntReqParallelAlignment: 2
     angleThreshold: 315
@@ -113634,6 +113634,17 @@ MonoBehaviour:
     req_w_and_Angular_relation: 1
     req_globalY_and_Angular_relation: 0
     rotationAxis: {x: 0, y: 1, z: 0}
+    endStuntReqParallelAlignment: 2
+    angleThreshold: 315
+    halfFirstPositiveName: 
+    halfFirstNegativeName: 
+  - name: WINDMILL
+    score: 400
+    allowHalfs: 0
+    req_carAlignment: 0
+    req_w_and_Angular_relation: 1
+    req_globalY_and_Angular_relation: 0
+    rotationAxis: {x: 1, y: 0, z: 0}
     endStuntReqParallelAlignment: 2
     angleThreshold: 315
     halfFirstPositiveName: 
@@ -147269,7 +147280,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.001472082, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 169.9376, y: -1.06427}
+  m_AnchoredPosition: {x: 169.93758, y: -1.06427}
   m_SizeDelta: {x: 32.513794, y: 2.1285744}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!212 &1924452706

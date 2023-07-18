@@ -195,7 +195,6 @@ namespace RVP
         public bool IsReverse(in VehicleParent vp)
         {
             float dot = Vector2.Dot(Flat(w), Flat(vp.forwardDir));
-            Debug.Log(dot);
             return /*canBeReverse &&*/ dot < -0.9f;
         }
         public void AddProgress(float radians, in VehicleParent vp)

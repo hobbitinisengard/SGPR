@@ -173,7 +173,7 @@ public class SGP_HUD : MonoBehaviour
             }
             stunts[j].updateOverlay = false;
         }
-        if (StuntInfo.transform.childCount > 1)
+        if (StuntInfo.transform.childCount > 2)
             StuntInfo.SetActive(true);
     }
     public void AddStunt(in Stunt stunt)
@@ -185,7 +185,13 @@ public class SGP_HUD : MonoBehaviour
     public void EndStuntSeq(bool success)
     {
         if (success)
+        {
             dimStuntTableTimer = Time.time;
+            if (StuntInfo.transform.childCount == 2)
+            {
+                AddMessage(new Message(StuntInfo.transform.GetChild(1).GetComponent<StuntInfoOverlay>().ToString(), BottomInfoType.STUNT));
+            }
+        }
         else
         {
             ClearStuntInfo();
@@ -244,7 +250,7 @@ public class SGP_HUD : MonoBehaviour
         //    EndStuntSeq(false);
         //}
 
-        if (StuntInfo.activeSelf && racebox.StuntSeqEnded(out bool withSuccess))
+        if (StuntInfo.transform.childCount > 1 && racebox.StuntSeqEnded(out bool withSuccess))
         {
             EndStuntSeq(withSuccess);
         }
@@ -261,7 +267,7 @@ public class SGP_HUD : MonoBehaviour
                     StuntInfo.transform.GetChild(i).GetComponent<StuntInfoOverlay>().DimTexts(progress);
                 }
             }
-            else if (StuntInfo.activeSelf)
+            else if (StuntInfo.transform.childCount > 1)
             {
                 dimStuntTableTimer = -1;
                 ClearStuntInfo();
