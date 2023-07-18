@@ -1,6 +1,7 @@
 using UnityEngine.UI;
 using UnityEngine;
 using RVP;
+using System;
 
 public class StuntInfoOverlay : MonoBehaviour
 {
@@ -55,16 +56,23 @@ public class StuntInfoOverlay : MonoBehaviour
     }
     public void UpdatePostfix(in Stunt stunt)
     {
-        postfixObjText.text = (++localDoneTimes * 360).ToString();
+        if(stunt is RotationStunt rotationStunt)
+        {
+            postfixObjText.text = rotationStunt.PostfixText(++localDoneTimes);
+        }
+        else
+        {
+            postfixObjText.text = stunt.PostfixText(++localDoneTimes);
+        }
         postfixObjAnimStartTime = Time.time;
     }
     public void WriteStuntName(in Stunt stunt)
     {
         Initialize();
         stuntObjAnimStartTime = Time.time;
-        stuntObjText.text = stunt.name;
-        name = stunt.OverlayName();
-        postfixObjText.text = stunt.PostfixText(++localDoneTimes);
+        stuntObjText.text = stunt.overlayName;
+        name = stunt.overlayName;
+        UpdatePostfix(stunt);
     }
     public void DimTexts(float opaqueness)
     {

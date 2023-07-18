@@ -45296,7 +45296,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.001472082, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 169.93916, y: -0.008605957}
+  m_AnchoredPosition: {x: 169.9376, y: -0.008605957}
   m_SizeDelta: {x: 32.513794, y: 4.239998}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!212 &602281001
@@ -104556,7 +104556,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1376600231
 RectTransform:
   m_ObjectHideFlags: 0
@@ -113541,13 +113541,125 @@ MonoBehaviour:
   allPossibleFlips:
   - name: FLIP
     score: 200
+    allowHalfs: 1
+    req_carAlignment: 0
     req_w_and_Angular_relation: 0
     req_globalY_and_Angular_relation: 0
     rotationAxis: {x: 1, y: 0, z: 0}
     endStuntReqParallelAlignment: 0
-    angleThreshold: 270
+    angleThreshold: 315
     halfFirstPositiveName: FLAT ATTACK
     halfFirstNegativeName: METEOR
+  - name: TWIST
+    score: 200
+    allowHalfs: 1
+    req_carAlignment: 1
+    req_w_and_Angular_relation: 0
+    req_globalY_and_Angular_relation: 1
+    rotationAxis: {x: 0, y: 1, z: 0}
+    endStuntReqParallelAlignment: 0
+    angleThreshold: 315
+    halfFirstPositiveName: RIGHT HALF TWISTER
+    halfFirstNegativeName: LEFT HALF TWISTER
+  - name: ROLL
+    score: 200
+    allowHalfs: 0
+    req_carAlignment: 0
+    req_w_and_Angular_relation: 1
+    req_globalY_and_Angular_relation: 0
+    rotationAxis: {x: 0, y: 0, z: 1}
+    endStuntReqParallelAlignment: 0
+    angleThreshold: 315
+    halfFirstPositiveName: 
+    halfFirstNegativeName: 
+  - name: ROLLINGSTONE
+    score: 400
+    allowHalfs: 0
+    req_carAlignment: 0
+    req_w_and_Angular_relation: 0
+    req_globalY_and_Angular_relation: 0
+    rotationAxis: {x: 0, y: 0, z: 1}
+    endStuntReqParallelAlignment: 2
+    angleThreshold: 315
+    halfFirstPositiveName: 
+    halfFirstNegativeName: 
+  - name: TORNADO
+    score: 400
+    allowHalfs: 0
+    req_carAlignment: 0
+    req_w_and_Angular_relation: 1
+    req_globalY_and_Angular_relation: 0
+    rotationAxis: {x: 1, y: 0, z: 0}
+    endStuntReqParallelAlignment: 2
+    angleThreshold: 315
+    halfFirstPositiveName: 
+    halfFirstNegativeName: 
+  - name: CORKSCREW
+    score: 400
+    allowHalfs: 0
+    req_carAlignment: 0
+    req_w_and_Angular_relation: 0
+    req_globalY_and_Angular_relation: 1
+    rotationAxis: {x: 0, y: 0, z: 1}
+    endStuntReqParallelAlignment: 2
+    angleThreshold: 360
+    halfFirstPositiveName: 
+    halfFirstNegativeName: 
+  - name: SHURIKEN
+    score: 400
+    allowHalfs: 0
+    req_carAlignment: 0
+    req_w_and_Angular_relation: 0
+    req_globalY_and_Angular_relation: 0
+    rotationAxis: {x: 0, y: 1, z: 0}
+    endStuntReqParallelAlignment: 2
+    angleThreshold: 315
+    halfFirstPositiveName: 
+    halfFirstNegativeName: 
+  - name: UFO
+    score: 400
+    allowHalfs: 0
+    req_carAlignment: 2
+    req_w_and_Angular_relation: 0
+    req_globalY_and_Angular_relation: 1
+    rotationAxis: {x: 0, y: 1, z: 0}
+    endStuntReqParallelAlignment: 0
+    angleThreshold: 315
+    halfFirstPositiveName: 
+    halfFirstNegativeName: 
+  - name: STAR
+    score: 400
+    allowHalfs: 0
+    req_carAlignment: 0
+    req_w_and_Angular_relation: 1
+    req_globalY_and_Angular_relation: 0
+    rotationAxis: {x: 0, y: 1, z: 0}
+    endStuntReqParallelAlignment: 2
+    angleThreshold: 315
+    halfFirstPositiveName: 
+    halfFirstNegativeName: 
+  - name: RODEO
+    score: 100
+    allowHalfs: 0
+    req_carAlignment: 0
+    req_w_and_Angular_relation: 2
+    req_globalY_and_Angular_relation: 2
+    rotationAxis: {x: 1, y: 0, z: 0}
+    endStuntReqParallelAlignment: 2
+    angleThreshold: 315
+    halfFirstPositiveName: 
+    halfFirstNegativeName: 
+  - name: SPINNING CHAOS
+    score: 100
+    allowHalfs: 0
+    req_carAlignment: 0
+    req_w_and_Angular_relation: 2
+    req_globalY_and_Angular_relation: 2
+    rotationAxis: {x: 0, y: 1, z: 0}
+    endStuntReqParallelAlignment: 2
+    angleThreshold: 315
+    halfFirstPositiveName: 
+    halfFirstNegativeName: 
 --- !u!114 &1471661476
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -147157,7 +147269,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.001472082, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 169.93916, y: -1.06427}
+  m_AnchoredPosition: {x: 169.9376, y: -1.06427}
   m_SizeDelta: {x: 32.513794, y: 2.1285744}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!212 &1924452706
@@ -157103,6 +157215,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: car1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5969412531493064941, guid: fb725e08a6e1931468e51f09949be07c,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6457121441695959639, guid: fb725e08a6e1931468e51f09949be07c,
         type: 3}

@@ -138,6 +138,8 @@ public class SGP_HUD : MonoBehaviour
     {
         if (stunts == null)
             return;
+
+        
         // if previous stunt table hasn't ended dimming yet
         if (Time.time - dimStuntTableTimer < dimStuntTableTime)
         {
@@ -156,7 +158,7 @@ public class SGP_HUD : MonoBehaviour
                 else // at least one element
                 {
                     StuntInfoOverlay lastElement = StuntInfo.transform.GetChild(stuntEntriesCount - 1).GetComponent<StuntInfoOverlay>();
-                    if (lastElement.name == stunts[j].name)
+                    if (lastElement.name == stunts[j].overlayName)
                     {
                         lastElement.UpdatePostfix(stunts[j]);
                     }
@@ -242,7 +244,12 @@ public class SGP_HUD : MonoBehaviour
         //    EndStuntSeq(false);
         //}
 
+        if (StuntInfo.activeSelf && racebox.StuntSeqEnded(out bool withSuccess))
+        {
+            EndStuntSeq(withSuccess);
+        }
         UpdateStuntSequenceTable(racebox.GetStuntsSeq());
+
         // dim stunt table after end of evos
         if(dimStuntTableTimer != -1)
         {

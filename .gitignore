@@ -4,11 +4,7 @@
 [Bb]uild/
 [Bb]uilds/
 [Ll]ogs/
-#Assets/Unver/cars*
-#Assets/Unver/tracks*
-#Assets/Unver/music*
-#Assets/Unver/sfx*
-#Assets/Unver/textures/16x
+[Uu]serSettings/
 Assets/Unver/pics*
 
 Assets/AssetStoreTools*

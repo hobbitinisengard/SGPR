@@ -6,7 +6,7 @@ public class SGP_Bouncer : MonoBehaviour
     VehicleParent vp;
     public float minimalVelocityAtWall = 40;
 
-    public float d_dot;
+    public float d_collAngle;
 
     private void Start()
     {
@@ -34,14 +34,22 @@ public class SGP_Bouncer : MonoBehaviour
             // bounce only horizontal forces
             if (Mathf.Abs(colNormal.y) < Mathf.Abs(colNormal.x) || Mathf.Abs(colNormal.y) < Mathf.Abs(colNormal.z))
             {
-                float dot = Mathf.Abs(Vector3.Dot(-vp.rb.velocity.normalized, colNormal));
-                d_dot = dot;
-                float energy = velocityMagn * dot;
+                
+                float collisionAngle = Mathf.Rad2Deg * Mathf.Abs(Mathf.Acos(Vector3.Dot(-vp.rb.velocity.normalized, colNormal)));
+                collisionAngle %= 90f;
+                float mult;
+                d_collAngle = collisionAngle;
+                if (collisionAngle >= 45)
+                    mult = 1 + (45-collisionAngle) / 45;
+                else
+                    mult = collisionAngle / 45;
+                
+                float energy = velocityMagn * mult;
                 if (energy < minimalVelocityAtWall) // velocity directed at the wall
                     return;
-                float currentAngleSteer = Mathf.Sign(vp.steerInput) * vp.wheels[1].suspensionParent.steerAngle * vp.wheels[1].suspensionParent.steerDegrees;
-                Vector3 intendedDirection = Quaternion.AngleAxis(currentAngleSteer, vp.upDir) * vp.forwardDir;
-                intendedDirection = (vp.forwardDir + 0.4f * vp.upDir).normalized;
+                //float currentAngleSteer = Mathf.Sign(vp.steerInput) * vp.wheels[1].suspensionParent.steerAngle * vp.wheels[1].suspensionParent.steerDegrees;
+                //Vector3 intendedDirection = Quaternion.AngleAxis(currentAngleSteer, vp.upDir) * vp.forwardDir;
+                Vector3 intendedDirection = (vp.forwardDir + 0.4f * vp.upDir).normalized;
                 rb.AddForce(velocityMagn * intendedDirection, ForceMode.VelocityChange);
             }
         }

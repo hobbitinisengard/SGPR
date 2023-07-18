@@ -47,7 +47,9 @@ public class RaceBox : MonoBehaviour
     float pointsFromThisEvoSeq = 0;
     int starLevelAdd = 0;
     private bool stuntsAvailableForFrontend;
-
+    public bool duringStuntSeqTimer;
+    float endStuntSeqTime;
+    float stableLandingTimer = -1;
     void Start()
     {
         vp = transform.GetComponent<VehicleParent>();
@@ -72,71 +74,104 @@ public class RaceBox : MonoBehaviour
         else
             return null;
     }
-    private void OnDrawGizmos()
+    /// <summary>
+    /// returns true if Seq ended. withSuccess is false when vehicle landing failed
+    /// </summary>
+    public bool StuntSeqEnded(out bool withSuccess)
     {
+        withSuccess = true;
+
+        if (stableLandingTimer == -1)
+            return false;
         
+        bool ended = stableLandingTimer > 1;
+        if (ended)
+            stableLandingTimer = -1;
+        return ended;
     }
-    void DetectStunts()
+    void StuntDetector()
     {
         if (vp.groundedWheels == 0)
         {
             if (!prevGroundedWheels0)
             {
+                foreach (RotationStunt stunt in stunts)
+                {
+                    stunt.positiveProgress = 0;
+                    stunt.negativeProgress = 0;
+                }
+                stableLandingTimer = 0;
                 w = vp.rb.velocity; 
                 w.y = 0; 
                 w = w.normalized;
-                Debug.DrawRay(vp.transform.position, w, Color.red, 10);
+                
                 prevGroundedWheels0 = true;
             }
-            Vector3 A = vp.rb.angularVelocity;
-            Vector3 normA = A.normalized;
-            Vector3 normlA = vp.transform.InverseTransformDirection(A).normalized;
-            //Debug.DrawRay(vp.transform.position, normA, Color.blue, 5);
-            //Debug2Mono.DrawText(vp.transform.position, Mathf.Abs(Vector3.Dot(Vector3.forward, normlA)).ToString(),5,Color.blue);
+            Vector3 normA = vp.rb.angularVelocity.normalized;
+            Vector3 lA = vp.transform.InverseTransformDirection(vp.rb.angularVelocity);
+            Vector3 normlA = lA.normalized;
+            //Debug.DrawRay(vp.transform.position, lA, Color.red, 10);
+            Vector3 foundMoves = Vector3.zero;
             foreach (RotationStunt stunt in stunts)
             {
+                stunt.w = w;
                 //w_A_dot = Mathf.Abs(Vector3.Dot(w, normA));
-                bool w_A_test = RotationStunt.GetRelationship(w, normA) == stunt.req_w_and_Angular_relation;
-                bool gY_A_test = RotationStunt.GetRelationship(Vector3.up, normA) == stunt.req_globalY_and_Angular_relation;
-                bool lA_car_test = RotationStunt.GetRelationship(normlA, stunt.rotationAxis) == VectorRelationship.Parallel;
+                bool w_A_test = stunt.req_w_and_Angular_relation == VectorRelationship.None || 
+                    RotationStunt.GetRelationship(w, normA) == stunt.req_w_and_Angular_relation;
 
-                if (w_A_test && gY_A_test && lA_car_test)
+                bool gY_A_test = stunt.req_globalY_and_Angular_relation == VectorRelationship.None ||
+                    RotationStunt.GetRelationship(Vector3.up, normA) == stunt.req_globalY_and_Angular_relation;
+
+                var relationship = RotationStunt.GetRelationship(normlA, stunt.rotationAxis);
+                bool lA_car_test = relationship == VectorRelationship.None || relationship == VectorRelationship.Parallel;
+
+                bool Y_ok = stunt.StuntingCarAlignmentConditionFulfilled(vp);
+
+                if (Y_ok && w_A_test && gY_A_test && lA_car_test)
                 {
-                    if (stunt.rotationAxis.x != 0)
+                    if (foundMoves.x == 0 && stunt.rotationAxis.x != 0 && lA.x != 0)
                     {
-                        Debug.Log("progressing");
-                        stunt.AddProgress(A.magnitude * Time.fixedDeltaTime, A.x > 0);
+                        //Debug2Mono.DrawText(vp.transform.position, lA.x.ToString(),5,Color.blue);
+                        //Debug.DrawRay(vp.transform.position, normA, Color.red, 5);
+                        //Debug.Log(lA.x);
+                        stunt.AddProgress(lA.x*Time.fixedDeltaTime, vp);
+                        foundMoves.x = 1;
+                        //stunt.PrintProgress();
                     }
-                    else if (stunt.rotationAxis.y != 0)
+                    if (foundMoves.y == 0 && stunt.rotationAxis.y != 0 && lA.y != 0)
                     {
-                        stunt.AddProgress(A.magnitude * Time.fixedDeltaTime, A.y > 0);
+                        stunt.AddProgress(lA.y * Time.fixedDeltaTime, vp);
+                        foundMoves.y = 1;
                     }
-                    else if (stunt.rotationAxis.z != 0)
+                    if (foundMoves.z == 0 && stunt.rotationAxis.z != 0 && lA.z != 0)
                     {
-                        stunt.AddProgress(A.magnitude * Time.fixedDeltaTime, A.z > 0);
+                        stunt.AddProgress(lA.z * Time.fixedDeltaTime, vp);
+                        foundMoves.z = 1;
                     }
-
-                    if(stunt.positiveProgress * Mathf.Rad2Deg >= 135 && stunt.negativeProgress * Mathf.Rad2Deg >= 135 
-                        && stunt.CarAlignmentConditionFulfilled(vp, w))
+                
+                    if(stunt.allowHalfs && stunt.positiveProgress * Mathf.Rad2Deg >= stunt.angleThreshold/2f 
+                        && stunt.negativeProgress * Mathf.Rad2Deg >= stunt.angleThreshold/2f
+                        && stunt.CarAlignmentConditionFulfilled(vp))
                     { // done half rotation two-directions
                         stuntsAvailableForFrontend = true;
-                        stunt.positiveProgress = 0;
-                        stunt.negativeProgress = 0;
+                        stunt.ResetProgress();
                         stunt.updateOverlay = true;
-                        stunt.WriteHalfOverlayName(w, !evoModule.IsStunting(), vp.forwardDir);
-                        pointsFromThisEvoSeq += (starLevel + 1) * 1.5f * stunt.score * (stunt.overlayName.Contains("REV") ? 2 : 1)
-                            * (!evoModule.IsStunting() ? 2 : 1);
+
+                        bool reverse = stunt.IsReverse(vp);
+                        stunt.WriteHalfOverlayName(reverse, !evoModule.IsStunting());
+                        pointsFromThisEvoSeq += (starLevel + 1) * 1.5f * stunt.score * (reverse ? 2 : 1) * (!evoModule.IsStunting() ? 2 : 1);
                     }
-                    else if (stunt.positiveProgress * Mathf.Rad2Deg >= stunt.angleThreshold && stunt.CarAlignmentConditionFulfilled(vp, w))
+                    else if ((stunt.positiveProgress * Mathf.Rad2Deg >= stunt.angleThreshold 
+                        || stunt.negativeProgress * Mathf.Rad2Deg >= stunt.angleThreshold )
+                        && stunt.CarAlignmentConditionFulfilled(vp))
                     { // done full rotation
                         stuntsAvailableForFrontend = true;
                         stunt.doneTimes++;
                         stunt.updateOverlay = true;
-                        stunt.WriteOverlayName(w, !evoModule.IsStunting(), vp.forwardDir);
-                        stunt.positiveProgress = 0;
-                        stunt.negativeProgress = 0;
-                        pointsFromThisEvoSeq += (starLevel + 1) * stunt.score * (stunt.overlayName.Contains("REV") ? 2 : 1)
-                            * (!evoModule.IsStunting() ? 2 : 1);
+                        bool reverse = stunt.IsReverse(vp);
+                        stunt.WriteOverlayName(reverse, !evoModule.IsStunting());
+                        stunt.ResetProgress();
+                        pointsFromThisEvoSeq += (starLevel + 1) * stunt.score * (reverse ? 2 : 1) * (!evoModule.IsStunting() ? 2 : 1);
                     }
                 }
             }
@@ -144,7 +179,24 @@ public class RaceBox : MonoBehaviour
         }
         else
         {
+            if (stableLandingTimer >= 0 && vp.groundedWheels == 4)
+            {
+                stableLandingTimer += Time.fixedDeltaTime;
+            }
+            if(prevGroundedWheels0)
+            {
+                endStuntSeqTime = Time.time;
+                foreach (RotationStunt stunt in stunts)
+                {
+                    stunt.positiveProgress = 0;
+                    stunt.negativeProgress = 0;
+                }
+            }
             prevGroundedWheels0 = false;
+            if(Time.time - endStuntSeqTime > 5 + starLevel*0.5f)
+            { // end combo
+
+            }
             //// Add stunt points to the score
             //foreach (Flip curStunt in stunts)
             //{
@@ -163,24 +215,12 @@ public class RaceBox : MonoBehaviour
         }
 
     }
+    private void FixedUpdate()
+    {
+        StuntDetector();
+    }
     private void Update()
     {
-
-        DetectStunts();
-        // Detect flips
-        //if (detectEvo && !vp.crashing)
-        //{
-        //    DetectStunts();
-        //}
-        //else
-        //{
-        //    stunts.Clear();
-        //    flipString = "";
-        //}
-        // ... i wysy³a informacjê do SGP_HUD
-        // ... przez AddStunt() ? 
-
-
         if (Time.timeScale != 0)
         {
             aeroMeterVelocity = Mathf.Lerp(aeroMeterVelocity,

@@ -246,9 +246,8 @@ public class SGP_Evo : MonoBehaviour
             foreach (RotationDampStruct rds in r)
                 rds.SmoothDamp();
             rb.rotation = Quaternion.Euler(r[0].Pos(), r[1].Pos(), r[2].Pos());
-            localEvoAngularVelocity.Set(r[0].speed, r[1].speed, r[2].speed);
-            localEvoAngularVelocity *= Time.fixedDeltaTime;
-            rb.angularVelocity = Mathf.Deg2Rad * vp.transform.TransformDirection(localEvoAngularVelocity);
+            rb.angularVelocity = vp.transform.TransformDirection(Mathf.Deg2Rad * new Vector3(r[0].speed, r[1].speed, r[2].speed));
+            
             //Vector3 delta = new Vector3(r[0].Delta(), r[1].Delta(), r[2].Delta());
 
             //rb.AddRelativeTorque(mult*delta, ForceMode.VelocityChange);
@@ -259,8 +258,8 @@ public class SGP_Evo : MonoBehaviour
 
             //}
         }
-        
-		prevSGPShiftButton = vp.SGPshiftbutton;
+        //
+        prevSGPShiftButton = vp.SGPshiftbutton;
 	}
 }
 

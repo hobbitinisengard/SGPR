@@ -1,7 +1,5 @@
-﻿using UnityEngine;
-using System.Collections;
-using System;
-using System.CodeDom.Compiler;
+﻿using System;
+using UnityEngine;
 
 namespace RVP
 {
@@ -40,6 +38,7 @@ namespace RVP
         }
     }
     public enum VectorRelationship { Perpendicular, Parallel, None};
+    public enum CarAlignment { None, Up_positive, Up_negative};
     enum EndStuntReqParallelAlignment { Forward_w, Up_gY, None };
 
     public class Stunt
@@ -53,11 +52,7 @@ namespace RVP
         public bool updateOverlay = false;
         [System.NonSerialized]
         public float positiveProgress;
-
-        public virtual string OverlayName()
-        {
-            return name;
-        }
+        public string overlayName { get; protected set; }
         public static bool Parallel(Vector3 norm_a, Vector3 norm_b)
         {
             return Mathf.Abs(Vector3.Dot(norm_a, norm_b)) >= 0.9f;// angle is 0 deg +- 25deg
@@ -66,7 +61,6 @@ namespace RVP
         {
             return Mathf.Abs(Vector3.Dot(norm_a, norm_b)) < 0.4f; // angle is 90 deg +- 23deg
         }
-
         public virtual string PostfixText(int localDoneTimes)
         {
             return localDoneTimes.ToString();
@@ -76,10 +70,12 @@ namespace RVP
     [System.Serializable]
     public class RotationStunt : Stunt
     {
+        public bool allowHalfs = false;
+        public CarAlignment req_carAlignment = CarAlignment.None;
         public VectorRelationship req_w_and_Angular_relation;
         public VectorRelationship req_globalY_and_Angular_relation;
         [Tooltip(" Local rotation axis of the stunting car. Can be: Vector3.up, front, right")]
-        public Vector3 rotationAxis; 
+        public Vector3 rotationAxis;
         [SerializeField]
         private EndStuntReqParallelAlignment endStuntReqParallelAlignment = EndStuntReqParallelAlignment.None;
         public float angleThreshold;
@@ -88,8 +84,11 @@ namespace RVP
         public string halfFirstPositiveName;
         public string halfFirstNegativeName;
         bool lastWriteWasPositive;
-        public string halfOverlayName { get; private set; }
-        public string overlayName { get; private set; }
+        bool isHalfRotation;
+        public bool canBeReverse { get; private set; }
+        [NonSerialized]
+        public Vector3 w;
+        //public Vector3 w;
 
         //public RotationStunt(RotationStunt oldStunt) { // copy ctor
         //    name = oldStunt.name;
@@ -98,96 +97,129 @@ namespace RVP
         //    angleThreshold = oldStunt.angleThreshold;
         //    doneTimes = oldStunt.doneTimes;
         //}
-
+        public bool StuntingCarAlignmentConditionFulfilled(in VehicleParent vp)
+        {
+            switch (req_carAlignment)
+            {
+                case CarAlignment.None:
+                    return true;
+                case CarAlignment.Up_positive:
+                    return vp.upDir.y > 0;
+                case CarAlignment.Up_negative:
+                    return vp.upDir.y < 0;
+            }
+            Debug.LogError("Shouldn't come here");
+            return true;
+        }
         public static VectorRelationship GetRelationship(Vector3 norm_a, Vector3 norm_b)
         {
-            if(Parallel(norm_a, norm_b)) 
+            if (Parallel(norm_a, norm_b))
             {
                 return VectorRelationship.Parallel;
             }
-            if (Perpendicular(norm_a, norm_b)) 
+            if (Perpendicular(norm_a, norm_b))
             {
                 return VectorRelationship.Perpendicular;
             }
             else
                 return VectorRelationship.None;
         }
-        
-        public bool CarAlignmentConditionFulfilled(in VehicleParent vp, in Vector3 w)
+
+        public bool CarAlignmentConditionFulfilled(in VehicleParent vp)
         {
             switch (endStuntReqParallelAlignment)
             {
                 case EndStuntReqParallelAlignment.None:
                     return true;
                 case EndStuntReqParallelAlignment.Forward_w:
-                    return Parallel(vp.forwardDir, w);
+                    return Parallel(vp.forwardDir, vp.rb.velocity);
                 case EndStuntReqParallelAlignment.Up_gY:
                     return vp.upDot >= 0.9f; // same as: Parallel(vp.upDir, Vector3.up);
             }
             Debug.LogError("Shouldn't come here");
             return false;
         }
-        public void WriteOverlayName(in Vector3 w, bool natural, in Vector3 normCarFacingDir)
+        public void WriteHalfOverlayName(bool reverse, bool natural)
         {
-            overlayName = natural ? "NATURAL " : "";
-            if (Vector3.Dot(w, normCarFacingDir) < -0.9f)
+            isHalfRotation = true;
+            overlayName = (reverse ? "REVERSE " : "");
+            if (lastWriteWasPositive)
+                overlayName += halfFirstNegativeName; // first .x/.y/.z lA < 0
+            else
+                overlayName += halfFirstPositiveName; // first .x/.y/.z lA > 0
+        }
+        public void WriteOverlayName(bool reverse, bool natural)
+        {
+            isHalfRotation = false;
+            overlayName = (natural ? "NATURAL " : "");
+            if (reverse)
                 overlayName += "REVERSE ";
             if (rotationAxis.x != 0)
             {
-                if (positiveProgress > 0)
-                    overlayName += "BACK ";
-                else
+                if (lastWriteWasPositive)
                     overlayName += "FRONT ";
+                else
+                    overlayName += "BACK ";
             }
             else if (rotationAxis.y != 0)
             {
-                if (positiveProgress > 0)
-                    overlayName += "LEFT ";
-                else
+                if (lastWriteWasPositive)
                     overlayName += "RIGHT ";
+                else
+                    overlayName += "LEFT ";
             }
             else if (rotationAxis.z != 0)
             {
-                if (positiveProgress > 0)
-                    overlayName += "RIGHT ";
-                else
+                if (lastWriteWasPositive)
                     overlayName += "LEFT ";
+                else
+                    overlayName += "RIGHT ";
             }
             overlayName += name;
         }
-        public void WriteHalfOverlayName(in Vector3 w, bool natural, in Vector3 normCarFacingDir)
-        {
-            if (Vector3.Dot(w, normCarFacingDir) < -0.9f)
-                halfOverlayName += "REVERSE ";
-            if (lastWriteWasPositive)
-                halfOverlayName += halfFirstNegativeName; // first .x/.y/.z lA < 0
-            else
-                halfOverlayName += halfFirstPositiveName; // first .x/.y/.z lA > 0
+        
 
-            overlayName = null;// halfoverlay is being written
-        }
-        public override string OverlayName()
-        {
-            if (overlayName == null) // is null when halfoverlay was written
-                return halfOverlayName;
-            else
-                return overlayName;
-        }
         public override string PostfixText(int localDoneTimes)
         {
-            if (overlayName == null)// is null when halfoverlay was written
+            if (isHalfRotation)// is null when halfoverlay was written
                 return " x" + localDoneTimes.ToString();
             else
-                return localDoneTimes.ToString();
+                return (360 * localDoneTimes).ToString();
         }
-        
-        public void AddProgress(float degrees, bool isPositive)
+        public void ResetProgress()
         {
-            lastWriteWasPositive = isPositive;
-            if (isPositive)
-                positiveProgress += degrees;
+            positiveProgress = 0;
+            negativeProgress = 0;
+            canBeReverse = false;
+        }
+        public bool IsReverse(in VehicleParent vp)
+        {
+            float dot = Vector2.Dot(Flat(w), Flat(vp.forwardDir));
+            Debug.Log(dot);
+            return /*canBeReverse &&*/ dot < -0.9f;
+        }
+        public void AddProgress(float radians, in VehicleParent vp)
+        {
+            if (!canBeReverse && (positiveProgress <= 2 || negativeProgress <= 2))
+            {
+                canBeReverse = Vector2.Dot(Flat(w/*vp.rb.velocity.normalized*/), Flat(vp.forwardDir)) < -0.9f;
+                //Debug.Log(Vector3.Dot(vp.rb.velocity.normalized, vp.forwardDir));
+            }
+            lastWriteWasPositive = radians > 0;
+            //Debug.Log(lastWriteWasPositive);
+            if (lastWriteWasPositive)
+                positiveProgress += radians;
             else
-                negativeProgress += degrees;
+                negativeProgress -= radians;
+        }
+
+        public void PrintProgress()
+        {
+            Debug.Log("+++"+positiveProgress.ToString() + " ---" + negativeProgress.ToString());
+        }
+        Vector2 Flat(Vector3 v)
+        {
+            return new Vector2(v.x, v.z);
         }
     }
 }
