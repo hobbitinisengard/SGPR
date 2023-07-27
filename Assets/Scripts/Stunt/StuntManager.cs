@@ -194,14 +194,14 @@ namespace RVP
         }
         public bool IsReverse(in VehicleParent vp)
         {
-            float dot = Vector2.Dot(Flat(w), Flat(vp.forwardDir));
+            float dot = Vector3.Dot(w, vp.forwardDir);
             return /*canBeReverse &&*/ dot < -0.9f;
         }
         public void AddProgress(float radians, in VehicleParent vp)
         {
-            if (!canBeReverse && (positiveProgress <= 2 || negativeProgress <= 2))
+            if (positiveProgress == 0 && negativeProgress == 0)
             {
-                canBeReverse = Vector2.Dot(Flat(w/*vp.rb.velocity.normalized*/), Flat(vp.forwardDir)) < -0.9f;
+                canBeReverse = Vector3.Dot(w, vp.forwardDir) < -0.9f;
                 //Debug.Log(Vector3.Dot(vp.rb.velocity.normalized, vp.forwardDir));
             }
             lastWriteWasPositive = radians > 0;

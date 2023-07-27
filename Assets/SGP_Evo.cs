@@ -1,30 +1,6 @@
 using RVP;
 using System;
 using UnityEngine;
-public class VectorPid
-{
-    public float pFactor, iFactor, dFactor;
-
-    private Vector3 integral;
-    private Vector3 lastError;
-
-    public VectorPid(float pFactor, float iFactor, float dFactor)
-    {
-        this.pFactor = pFactor;
-        this.iFactor = iFactor;
-        this.dFactor = dFactor;
-    }
-
-    public Vector3 Update(Vector3 currentError, float timeFrame)
-    {
-        integral += currentError * timeFrame;
-        var deriv = (currentError - lastError) / timeFrame;
-        lastError = currentError;
-        return currentError * pFactor
-            + integral * iFactor
-            + deriv * dFactor;
-    }
-}
 public enum Direction { ANTICLOCK = -1, CLOCK = 1};
 public class RotationDampStruct
 {
@@ -39,6 +15,8 @@ public class RotationDampStruct
     public float speed = 0;
     //float prevSpeed = 0;
     public float offset = 0;
+    private Axis axis;
+
     public bool Active()
     {
         return Mathf.Abs(targetPos - pos) > 0.1f;
@@ -58,39 +36,69 @@ public class RotationDampStruct
         if(dir == Direction.CLOCK)
         {
             if (pos > 315)
-                targetPos = 720;
+            {
+                if (axis == Axis.X)
+                    targetPos = 710;
+                else
+                    targetPos = 720;
+            }
             else if (pos > 45)
+            {
                 if (pos > 135)
-                    targetPos = 360;
+                {
+                    if (axis == Axis.X)
+                        targetPos = 350;
+                    else
+                        targetPos = 360;
+                }
                 else
                     targetPos = 180;
+            }
             else
                 targetPos = 90;
         }
         else
         {
             if (pos < 45)
-                targetPos = -360;
+            {
+                if (axis == Axis.X)
+                    targetPos = -370;
+                else
+                    targetPos = -360;
+            }
             else if (pos < 315)
+            {
                 if (pos > 225)
                     targetPos = 180;
                 else
-                    targetPos = 0;
+                {
+                    if (axis == Axis.X)
+                        targetPos = -10;
+                    else
+                        targetPos = 0;
+                }
+            }
             else
                 targetPos = 270;
         }
+        //Debug.Log(targetPos);
     }
     float degs(float deg)
     {
         if (deg > 360)
+        {
             deg -= 360;
+        }
         else if (deg < 0)
-            deg += 360;
+        {
+             deg += 360;
+        }
         return deg;
     }
-    public void Init(float newpos, bool isY = false)
+    public void Init(float newpos, Axis axis)
     {
-        if (isY)
+        this.axis = axis;
+        if (axis == Axis.Y)
         {
             offset = newpos;
             pos = 0;
@@ -107,12 +115,7 @@ public class RotationDampStruct
         //prevSpeed = speed;
         pos = Mathf.SmoothDamp(pos, targetPos, ref speed,
                evoSmoothTime, evoMaxSpeed, Time.fixedDeltaTime);
-        
     }
-    //public float Delta()
-    //{
-    //    return speed - prevSpeed;
-    //}
     public void IncreaseEvoSpeed()
     {
         evoMaxSpeed += evoAcceleration;
@@ -126,18 +129,19 @@ public class RotationDampStruct
     }
     public void CloseAdvancedMode()
     {
-        float restPos = targetPos % 360;
-        if (restPos != 0)
-        {
+       // float restPos = targetPos % 360;
+       // if (restPos != 0)
+        //{
             if (speed > 0) // clockwise rotation
             {
-                targetPos += restPos;
+                targetPos = 360;
             }
             else // anticlockwise rotation
             {
-                targetPos -= restPos;
+                targetPos = 0;
             }
-        }
+           // targetPos = Mathf.Clamp(targetPos, 0, 360);
+        //}
     }
 }
 public class SGP_Evo : MonoBehaviour
@@ -189,9 +193,9 @@ public class SGP_Evo : MonoBehaviour
         {
             stunting = true;
             euler = vp.tr.rotation.eulerAngles;
-            r[0].Init(euler.x); //rX
-            r[1].Init(euler.y, true); // rY
-            r[2].Init(euler.z); // rZ
+            r[0].Init(euler.x, Axis.X); //rX
+            r[1].Init(euler.y, Axis.Y); // rY
+            r[2].Init(euler.z, Axis.Z); // rZ
         }
 			
         

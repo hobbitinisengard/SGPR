@@ -18767,7 +18767,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 0.0721074}
-  m_AnchoredPosition: {x: 0.009521484, y: -7.1435547}
+  m_AnchoredPosition: {x: 0, y: 7.1435547}
   m_SizeDelta: {x: -1521.1863, y: 14.287102}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &318391343
@@ -33177,15 +33177,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 471010, guid: bdcebfa96c8bde040bb960321a9623e5, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 184.6
+      value: 141.31
       objectReference: {fileID: 0}
     - target: {fileID: 471010, guid: bdcebfa96c8bde040bb960321a9623e5, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 4.37
+      value: 30.12
       objectReference: {fileID: 0}
     - target: {fileID: 471010, guid: bdcebfa96c8bde040bb960321a9623e5, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 180
+      value: 151.9
       objectReference: {fileID: 0}
     - target: {fileID: 471010, guid: bdcebfa96c8bde040bb960321a9623e5, type: 3}
       propertyPath: m_LocalRotation.w
@@ -45296,7 +45296,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.001472082, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 169.93758, y: -0.008605957}
+  m_AnchoredPosition: {x: 169.9366, y: -0.008605957}
   m_SizeDelta: {x: 32.513794, y: 4.239998}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!212 &602281001
@@ -112565,8 +112565,8 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1461196560}
-  m_LocalRotation: {x: -0, y: 0.7541711, z: -0, w: 0.6566781}
-  m_LocalPosition: {x: 184.6, y: 4.37, z: 180}
+  m_LocalRotation: {x: 0, y: 0.7541711, z: 0, w: 0.6566781}
+  m_LocalPosition: {x: 141.31, y: 30.12, z: 151.9}
   m_LocalScale: {x: 2.5998, y: 2.5998, z: 2.5998}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -113547,7 +113547,7 @@ MonoBehaviour:
     req_globalY_and_Angular_relation: 0
     rotationAxis: {x: 1, y: 0, z: 0}
     endStuntReqParallelAlignment: 0
-    angleThreshold: 315
+    angleThreshold: 300
     halfFirstPositiveName: FLAT ATTACK
     halfFirstNegativeName: METEOR
   - name: TWIST
@@ -113558,7 +113558,7 @@ MonoBehaviour:
     req_globalY_and_Angular_relation: 1
     rotationAxis: {x: 0, y: 1, z: 0}
     endStuntReqParallelAlignment: 0
-    angleThreshold: 315
+    angleThreshold: 300
     halfFirstPositiveName: RIGHT HALF TWISTER
     halfFirstNegativeName: LEFT HALF TWISTER
   - name: ROLL
@@ -113569,7 +113569,7 @@ MonoBehaviour:
     req_globalY_and_Angular_relation: 0
     rotationAxis: {x: 0, y: 0, z: 1}
     endStuntReqParallelAlignment: 0
-    angleThreshold: 315
+    angleThreshold: 300
     halfFirstPositiveName: 
     halfFirstNegativeName: 
   - name: ROLLINGSTONE
@@ -113580,7 +113580,7 @@ MonoBehaviour:
     req_globalY_and_Angular_relation: 0
     rotationAxis: {x: 0, y: 0, z: 1}
     endStuntReqParallelAlignment: 2
-    angleThreshold: 315
+    angleThreshold: 300
     halfFirstPositiveName: 
     halfFirstNegativeName: 
   - name: TORNADO
@@ -113591,7 +113591,7 @@ MonoBehaviour:
     req_globalY_and_Angular_relation: 1
     rotationAxis: {x: 1, y: 0, z: 0}
     endStuntReqParallelAlignment: 2
-    angleThreshold: 315
+    angleThreshold: 300
     halfFirstPositiveName: 
     halfFirstNegativeName: 
   - name: CORKSCREW
@@ -113613,7 +113613,7 @@ MonoBehaviour:
     req_globalY_and_Angular_relation: 0
     rotationAxis: {x: 0, y: 1, z: 0}
     endStuntReqParallelAlignment: 2
-    angleThreshold: 315
+    angleThreshold: 300
     halfFirstPositiveName: 
     halfFirstNegativeName: 
   - name: UFO
@@ -113624,7 +113624,7 @@ MonoBehaviour:
     req_globalY_and_Angular_relation: 1
     rotationAxis: {x: 0, y: 1, z: 0}
     endStuntReqParallelAlignment: 0
-    angleThreshold: 315
+    angleThreshold: 300
     halfFirstPositiveName: 
     halfFirstNegativeName: 
   - name: STAR
@@ -113635,7 +113635,7 @@ MonoBehaviour:
     req_globalY_and_Angular_relation: 0
     rotationAxis: {x: 0, y: 1, z: 0}
     endStuntReqParallelAlignment: 2
-    angleThreshold: 315
+    angleThreshold: 300
     halfFirstPositiveName: 
     halfFirstNegativeName: 
   - name: WINDMILL
@@ -113646,7 +113646,7 @@ MonoBehaviour:
     req_globalY_and_Angular_relation: 0
     rotationAxis: {x: 1, y: 0, z: 0}
     endStuntReqParallelAlignment: 2
-    angleThreshold: 315
+    angleThreshold: 300
     halfFirstPositiveName: 
     halfFirstNegativeName: 
   - name: RODEO
@@ -113657,7 +113657,7 @@ MonoBehaviour:
     req_globalY_and_Angular_relation: 2
     rotationAxis: {x: 1, y: 0, z: 0}
     endStuntReqParallelAlignment: 2
-    angleThreshold: 315
+    angleThreshold: 300
     halfFirstPositiveName: 
     halfFirstNegativeName: 
   - name: SPINNING CHAOS
@@ -113668,7 +113668,7 @@ MonoBehaviour:
     req_globalY_and_Angular_relation: 2
     rotationAxis: {x: 0, y: 1, z: 0}
     endStuntReqParallelAlignment: 2
-    angleThreshold: 315
+    angleThreshold: 300
     halfFirstPositiveName: 
     halfFirstNegativeName: 
 --- !u!114 &1471661476
@@ -147280,7 +147280,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.001472082, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 169.93758, y: -1.06427}
+  m_AnchoredPosition: {x: 169.9366, y: -1.06427}
   m_SizeDelta: {x: 32.513794, y: 2.1285744}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!212 &1924452706
@@ -157226,11 +157226,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: car1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5969412531493064941, guid: fb725e08a6e1931468e51f09949be07c,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6457121441695959639, guid: fb725e08a6e1931468e51f09949be07c,
         type: 3}

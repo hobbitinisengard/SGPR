@@ -103395,9 +103395,9 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5969412531493064941}
   serializedVersion: 2
-  m_Mass: 1.2
-  m_Drag: 0.1
-  m_AngularDrag: 0.1
+  m_Mass: 1
+  m_Drag: 0.15
+  m_AngularDrag: 0.15
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
@@ -103466,7 +103466,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   basedOnWheelsGrounded: 1
-  driftSpinAssist: 30
+  driftSpinAssist: 15
   driftSpinSpeed: 1
   driftSpinExponent: 2
   autoSteerDrift: 0
@@ -103626,7 +103626,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   minimalVelocityAtWall: 20
-  d_dot: 0
+  d_collAngle: 0
 --- !u!114 &6779875395068024192
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -103639,9 +103639,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ea7d76ad0805fd5479e1b489d58e44d2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  w_A_dot: 0
   starLevel: 0
   grantedComboTime: 0
   aeroMeterVelocity: 0
+  duringStuntSeqTimer: 0
 --- !u!114 &1803491810
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -122634,10 +122636,10 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 24333640, guid: 36e40e79cbecd9449800bb1288274833,
     type: 2}
   m_audioClip: {fileID: 8300000, guid: 0debe53a9c4cef54f95b55f393937edf, type: 3}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
-  Loop: 1
+  Loop: 0
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
@@ -122951,16 +122953,16 @@ MonoBehaviour:
   pivotOffset: 0
   suspensionDistance: 0.25
   targetCompression: 1
-  springForce: 15
+  springForce: 7
   springForceCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
       time: 0
       value: 0
-      inSlope: 0
+      inSlope: 1
       outSlope: 1
-      tangentMode: 0
+      tangentMode: 34
       weightedMode: 0
       inWeight: 0
       outWeight: 0
@@ -122968,20 +122970,20 @@ MonoBehaviour:
       time: 1
       value: 1
       inSlope: 1
-      outSlope: 0
-      tangentMode: 0
+      outSlope: 1
+      tangentMode: 34
       weightedMode: 0
       inWeight: 0
       outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  springExponent: 5
+  springExponent: 1
   springDampening: 0.4
   extendSpeed: 1
   applyHardContactForce: 1
-  hardContactForce: 50
-  hardContactSensitivity: 2
+  hardContactForce: 25
+  hardContactSensitivity: 20
   applyForceAtGroundContact: 1
   leaningForce: 0
   damagePivot: {x: 0, y: 0, z: 0}
@@ -123082,14 +123084,14 @@ MonoBehaviour:
   rpmBiasCurveLimit: Infinity
   axleFriction: 0.001
   frictionSmoothness: 0.5
-  forwardFriction: 17
-  sidewaysFriction: 17
+  forwardFriction: 14
+  sidewaysFriction: 14
   forwardRimFriction: 1
   sidewaysRimFriction: 1
   forwardCurveStretch: 1
-  sidewaysCurveStretch: 4
+  sidewaysCurveStretch: 8
   sidewaysSlip: 0
-  slipDependence: 3
+  slipDependence: 1
   forwardSlipDependence: 2
   sidewaysSlipDependence: 2
   normalFrictionCurve:
@@ -123212,7 +123214,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 24358228, guid: 36e40e79cbecd9449800bb1288274833,
     type: 2}
   m_audioClip: {fileID: 8300000, guid: 7eaac2eb43881414c9ba43d3322a0ab9, type: 3}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
   Loop: 0
@@ -123391,14 +123393,14 @@ MonoBehaviour:
   rpmBiasCurveLimit: Infinity
   axleFriction: 0.001
   frictionSmoothness: 0.5
-  forwardFriction: 17
-  sidewaysFriction: 15
+  forwardFriction: 14
+  sidewaysFriction: 14
   forwardRimFriction: 1
   sidewaysRimFriction: 1
   forwardCurveStretch: 1
-  sidewaysCurveStretch: 3
+  sidewaysCurveStretch: 8
   sidewaysSlip: 0
-  slipDependence: 3
+  slipDependence: 1
   forwardSlipDependence: 2
   sidewaysSlipDependence: 2
   normalFrictionCurve:
@@ -123651,16 +123653,16 @@ MonoBehaviour:
   pivotOffset: 0
   suspensionDistance: 0.25
   targetCompression: 1
-  springForce: 15
+  springForce: 7
   springForceCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
       time: 0
       value: 0
-      inSlope: 0
+      inSlope: 1
       outSlope: 1
-      tangentMode: 0
+      tangentMode: 34
       weightedMode: 0
       inWeight: 0
       outWeight: 0
@@ -123668,20 +123670,20 @@ MonoBehaviour:
       time: 1
       value: 1
       inSlope: 1
-      outSlope: 0
-      tangentMode: 0
+      outSlope: 1
+      tangentMode: 34
       weightedMode: 0
       inWeight: 0
       outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  springExponent: 5
+  springExponent: 1
   springDampening: 0.4
   extendSpeed: 1
   applyHardContactForce: 1
-  hardContactForce: 50
-  hardContactSensitivity: 2
+  hardContactForce: 25
+  hardContactSensitivity: 20
   applyForceAtGroundContact: 1
   leaningForce: 0
   damagePivot: {x: 0, y: 0, z: 0}
@@ -123791,16 +123793,16 @@ MonoBehaviour:
   pivotOffset: 0
   suspensionDistance: 0.25
   targetCompression: 1
-  springForce: 15
+  springForce: 7
   springForceCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
       time: 0
       value: 0
-      inSlope: 0
+      inSlope: 1
       outSlope: 1
-      tangentMode: 0
+      tangentMode: 34
       weightedMode: 0
       inWeight: 0
       outWeight: 0
@@ -123808,20 +123810,20 @@ MonoBehaviour:
       time: 1
       value: 1
       inSlope: 1
-      outSlope: 0
-      tangentMode: 0
+      outSlope: 1
+      tangentMode: 34
       weightedMode: 0
       inWeight: 0
       outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  springExponent: 5
+  springExponent: 1
   springDampening: 0.4
   extendSpeed: 1
   applyHardContactForce: 1
-  hardContactForce: 50
-  hardContactSensitivity: 2
+  hardContactForce: 25
+  hardContactSensitivity: 20
   applyForceAtGroundContact: 1
   leaningForce: 0
   damagePivot: {x: 0, y: 0, z: 0}
@@ -124019,16 +124021,16 @@ MonoBehaviour:
   pivotOffset: 0
   suspensionDistance: 0.25
   targetCompression: 1
-  springForce: 15
+  springForce: 7
   springForceCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
       time: 0
       value: 0
-      inSlope: 0
+      inSlope: 1
       outSlope: 1
-      tangentMode: 0
+      tangentMode: 34
       weightedMode: 0
       inWeight: 0
       outWeight: 0
@@ -124036,20 +124038,20 @@ MonoBehaviour:
       time: 1
       value: 1
       inSlope: 1
-      outSlope: 0
-      tangentMode: 0
+      outSlope: 1
+      tangentMode: 34
       weightedMode: 0
       inWeight: 0
       outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  springExponent: 5
+  springExponent: 1
   springDampening: 0.4
   extendSpeed: 1
   applyHardContactForce: 1
-  hardContactForce: 50
-  hardContactSensitivity: 2
+  hardContactForce: 25
+  hardContactSensitivity: 20
   applyForceAtGroundContact: 1
   leaningForce: 0
   damagePivot: {x: 0, y: 0, z: 0}
@@ -124397,14 +124399,14 @@ MonoBehaviour:
   rpmBiasCurveLimit: Infinity
   axleFriction: 0.001
   frictionSmoothness: 0.5
-  forwardFriction: 17
-  sidewaysFriction: 15
+  forwardFriction: 14
+  sidewaysFriction: 14
   forwardRimFriction: 1
   sidewaysRimFriction: 1
   forwardCurveStretch: 1
-  sidewaysCurveStretch: 3
+  sidewaysCurveStretch: 8
   sidewaysSlip: 0
-  slipDependence: 3
+  slipDependence: 1
   forwardSlipDependence: 2
   sidewaysSlipDependence: 2
   normalFrictionCurve:
@@ -124577,14 +124579,14 @@ MonoBehaviour:
   rpmBiasCurveLimit: Infinity
   axleFriction: 0.001
   frictionSmoothness: 0.5
-  forwardFriction: 17
-  sidewaysFriction: 17
+  forwardFriction: 14
+  sidewaysFriction: 14
   forwardRimFriction: 1
   sidewaysRimFriction: 1
   forwardCurveStretch: 1
-  sidewaysCurveStretch: 4
+  sidewaysCurveStretch: 8
   sidewaysSlip: 0
-  slipDependence: 3
+  slipDependence: 1
   forwardSlipDependence: 2
   sidewaysSlipDependence: 2
   normalFrictionCurve:
@@ -130270,7 +130272,7 @@ TrailRenderer:
       m_RotationOrder: 4
     colorGradient:
       serializedVersion: 2
-      key0: {r: 0.5372549, g: 0.7921569, b: 1, a: 0.20784314}
+      key0: {r: 0.5372549, g: 0.7921569, b: 1, a: 0.09019608}
       key1: {r: 0, g: 0, b: 1, a: 0.20784314}
       key2: {r: 0.34901962, g: 0.49019608, b: 1, a: 1}
       key3: {r: 0, g: 0, b: 0, a: 0}
@@ -130279,14 +130281,14 @@ TrailRenderer:
       key6: {r: 0, g: 0, b: 0, a: 0}
       key7: {r: 0, g: 0, b: 0, a: 0}
       ctime0: 0
-      ctime1: 10486
+      ctime1: 16384
       ctime2: 57440
       ctime3: 0
       ctime4: 0
       ctime5: 0
       ctime6: 0
       ctime7: 0
-      atime0: 0
+      atime0: 771
       atime1: 65535
       atime2: 38357
       atime3: 0
@@ -130321,7 +130323,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7880935873233194977}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
