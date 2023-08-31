@@ -43,7 +43,6 @@ namespace RVP
         public float maxDegreesRotation;
         AnimationCurve keyboardInputCurve;
         float secsForMaxSteeringSpeed = 1.5f;
-
         public float d_angleSteer;
 
         AnimationCurve Generate_digitalSteeringInputCurve()
@@ -90,7 +89,6 @@ namespace RVP
             {
                 if (holdDuration < secsForMaxSteeringSpeed)
                 {
-                    //holdDurationRaw = Mathf.Clamp()
                     if (holdDuration < 0)
                         holdDuration = Time.fixedDeltaTime;
                     else
@@ -99,45 +97,22 @@ namespace RVP
                 
                 rawSteer = keyboardInputCurve.Evaluate(holdDuration);
             }
-            steerLimit = steerLimitCurve.Evaluate(vp.localVelocity.z);
-            // Set steer angles in wheels
-            foreach (Suspension curSus in steeredWheels)
+            if (vp.steerInput == 0)
             {
-                //if (Mathf.Abs(curSus.steerAngle) < 0.001f && vp.steerInput == 0)
-                //{ // important for high speed straight drive
-                //    curSus.steerAngle = 0;
-                //    continue;
-                //}
+				steerLimit = steerLimitCurve.Evaluate(vp.localVelocity.z);
+			}
 
-                if(vp.SGPshiftbutton)
-                {
-                    steerLimit *= 1.5f;
-                    curSus.wheel.sidewaysFriction = 1.5f * frontSidewaysCoeff;
-                }
-                else
-                {
-                    curSus.wheel.sidewaysFriction = frontSidewaysCoeff;
-                }
-                //if (steerAngle * vp.steerInput < 0)
-                //    curSus.steerAngle /= 1.1f; // for fast direction change 
+			// Set steer angles in wheels
+			foreach (Suspension curSus in steeredWheels)
+            {
+                curSus.wheel.sidewaysFriction = (vp.SGPshiftbutton && vp.steerInput != 0 ? 1.5f : 1) * frontSidewaysCoeff;
 
-                float targetSteerAngle;
-                //if (curSus.wheel.sliding)
-                //    targetSteerAngle = vp.steerInput * curSus.steerAngle;
-                //else
-                    targetSteerAngle = vp.steerInput * steerLimit * rawSteer;
+                float targetSteerAngle = vp.steerInput * (vp.steerInput == 0 ? 1 : steerLimit) * (vp.SGPshiftbutton ? 1.5f : 1) * rawSteer;
 
-                //if (Mathf.Abs(targetSteerAngle) > steerLimit)
-                //    targetSteerAngle = Mathf.Sign(targetSteerAngle) * steerLimit;
-
-                float step;
-                if (vp.steerInput == 0)
-                    step = 12 * Time.fixedDeltaTime * comebackSteerLimitCurve.Evaluate(Mathf.Abs(Mathf.Clamp(vp.localVelocity.z, -speedOfMaxComebackSteeringSpeed, speedOfMaxComebackSteeringSpeed)));
-                else
-                    step = 10 * Time.fixedDeltaTime; //* Easing.InCubic(holdDuration/1f);
-                curSus.steerAngle = Mathf.Lerp(curSus.steerAngle, targetSteerAngle, step);
+                curSus.steerAngle = Mathf.Lerp(curSus.steerAngle, targetSteerAngle, 10 * Time.fixedDeltaTime);
             }
             steerAngle = steeredWheels[0].steerAngle;
+            
         }
     }
 }

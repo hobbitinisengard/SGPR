@@ -103656,7 +103656,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ed9d126e716020b4493830d2a5d1e810, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  COM_Movement: -1.2
+  COM_Movement: -1
 --- !u!1 &6179087285394029084
 GameObject:
   m_ObjectHideFlags: 0
@@ -123083,9 +123083,9 @@ MonoBehaviour:
     m_RotationOrder: 4
   rpmBiasCurveLimit: Infinity
   axleFriction: 0.001
-  frictionSmoothness: 0.5
-  forwardFriction: 14
-  sidewaysFriction: 14
+  frictionSmoothness: 0.509
+  forwardFriction: 10
+  sidewaysFriction: 10
   forwardRimFriction: 1
   sidewaysRimFriction: 1
   forwardCurveStretch: 1
@@ -123392,9 +123392,9 @@ MonoBehaviour:
     m_RotationOrder: 4
   rpmBiasCurveLimit: Infinity
   axleFriction: 0.001
-  frictionSmoothness: 0.5
-  forwardFriction: 14
-  sidewaysFriction: 14
+  frictionSmoothness: 0.509
+  forwardFriction: 11
+  sidewaysFriction: 11
   forwardRimFriction: 1
   sidewaysRimFriction: 1
   forwardCurveStretch: 1
@@ -124398,9 +124398,9 @@ MonoBehaviour:
     m_RotationOrder: 4
   rpmBiasCurveLimit: Infinity
   axleFriction: 0.001
-  frictionSmoothness: 0.5
-  forwardFriction: 14
-  sidewaysFriction: 14
+  frictionSmoothness: 0.509
+  forwardFriction: 11
+  sidewaysFriction: 11
   forwardRimFriction: 1
   sidewaysRimFriction: 1
   forwardCurveStretch: 1
@@ -124578,9 +124578,9 @@ MonoBehaviour:
     m_RotationOrder: 4
   rpmBiasCurveLimit: Infinity
   axleFriction: 0.001
-  frictionSmoothness: 0.5
-  forwardFriction: 14
-  sidewaysFriction: 14
+  frictionSmoothness: 0.509
+  forwardFriction: 10
+  sidewaysFriction: 10
   forwardRimFriction: 1
   sidewaysRimFriction: 1
   forwardCurveStretch: 1

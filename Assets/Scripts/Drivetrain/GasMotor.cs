@@ -44,6 +44,7 @@ namespace RVP
         public float minkRPM = 0.45f; // in 1000s
         public float maxTorque = 0.28F; // in 100s
 
+        float[] wheelForwardFrictions;
         public DriveForce[] outputDrives;
 
         [Tooltip("Exponent for torque output on each wheel")]
@@ -75,6 +76,9 @@ namespace RVP
             targetDrive = GetComponent<DriveForce>();
             torqueCurve = GenerateTorqueCurve(1, limit2kRPM);
             GetMaxRPM();
+            wheelForwardFrictions = new float[outputDrives.Length];
+            for (int i = 0; i < outputDrives.Length; ++i)
+                wheelForwardFrictions[i] = transmission.outputDrives[i].transform.GetComponent<Suspension>().wheel.forwardFriction;
         }
 
         public override void FixedUpdate() {
@@ -89,10 +93,19 @@ namespace RVP
 
             if (ignition) {
                 if (boosting && vp.accelInput>0)
-                    boostEval = 1+(maxBoost * boostPowerCurve.Evaluate(Time.time - boostActivatedTime));
+                    boostEval = maxBoost * boostPowerCurve.Evaluate(Time.time - boostActivatedTime);
                 else
-                    boostEval = 1;
-                
+                    boostEval = 0;
+
+
+                // nitro increases wheel friction and decreases mass
+                for (int i = 0; i < outputDrives.Length; ++i)
+                {
+                    transmission.outputDrives[i].transform.GetComponent<Suspension>().wheel.forwardFriction = (1 + boostEval) * wheelForwardFrictions[i];
+                    transmission.outputDrives[i].transform.GetComponent<Suspension>().wheel.sidewaysFriction = (1 + boostEval) * wheelForwardFrictions[i];
+                }
+                vp.rb.mass = 1 - boostEval;
+                    
                 float targetRPM;
                 if (rpmTooHigh || actualInput == 0 || (transmission.IsShifting() && transmission.selectedGear > 2))
                     targetRPM = Mathf.Max(minkRPM * 1000, targetDrive.feedbackRPM-2000);
@@ -100,7 +113,7 @@ namespace RVP
                     targetRPM = actualInput * maxkRPM * 1000;
                
                 if(!transmission.IsShifting())
-                    targetDrive.rpm = Mathf.Lerp(targetDrive.rpm, targetRPM, boostEval * inertia * 20 * Time.fixedDeltaTime);
+                    targetDrive.rpm = Mathf.Lerp(targetDrive.rpm, targetRPM, inertia * 20 * Time.fixedDeltaTime);
                 
                 curr_engine_krpm = targetDrive.feedbackRPM / 1000f;
 
@@ -142,7 +155,7 @@ namespace RVP
                         }
                         else
                         {
-                            targetDrive.torque = boostEval * maxTorque*torqueCurve.Evaluate(curr_engine_krpm) *
+                            targetDrive.torque = maxTorque*torqueCurve.Evaluate(curr_engine_krpm) *
                             Mathf.Lerp(targetDrive.torque,
                             Mathf.Abs(actualInput)*maxTorque,
                             inertia * Time.timeScale * health);
