@@ -156,7 +156,7 @@ PlayerSettings:
   androidMaxAspectRatio: 2.1
   applicationIdentifier:
     Android: com.RandomationGames.RVP2
-    Standalone: unity.Randomation Games.Randomation Vehicle Physics 2.0
+    Standalone: com.viatrufka.STUNT-GP-RELOADED
     Tizen: com.RandomationGames.RVP2
     iPhone: com.RandomationGames.RVP2
     tvOS: com.RandomationGames.RVP2
@@ -668,7 +668,7 @@ PlayerSettings:
   webGLPowerPreference: 2
   scriptingDefineSymbols:
     Android: CROSS_PLATFORM_INPUT;MOBILE_INPUT
-    Standalone: CROSS_PLATFORM_INPUT
+    Standalone: CROSS_PLATFORM_INPUT;CREST_OCEAN
     Windows Store Apps: MOBILE_INPUT
     iPhone: CROSS_PLATFORM_INPUT;MOBILE_INPUT
   additionalCompilerArguments: {}
