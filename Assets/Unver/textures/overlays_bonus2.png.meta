@@ -47,7 +47,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 100
+  spritePixelsToUnits: 50
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -121,9 +121,9 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 5
-        y: 2469
-        width: 2046
-        height: 1627
+        y: 2452
+        width: 4068
+        height: 1644
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -141,9 +141,9 @@ TextureImporter:
       name: overlays_bonus2_3
       rect:
         serializedVersion: 2
-        x: 2101
-        y: 2693
-        width: 1995
+        x: 3675
+        y: 312
+        width: 1984
         height: 1403
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
@@ -164,7 +164,7 @@ TextureImporter:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 4096
+        width: 3383
         height: 2427
       alignment: 0
       pivot: {x: 0.5, y: 0.5}

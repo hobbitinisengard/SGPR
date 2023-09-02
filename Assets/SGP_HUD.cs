@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using RVP;
 using System;
 using System.Collections.Generic;
@@ -25,12 +24,13 @@ public class SGP_HUD : MonoBehaviour
 {
     VehicleParent vp;
     GearboxTransmission trans;
-    StuntDetect stunter;
+    //StuntDetect stunter;
     GasMotor engine;
     RaceBox racebox;
     readonly int minRpmRotation = 122;
     readonly int maxRpmRotation = -63;
-    public RaceManager raceManager;
+	public PtsAnim ptsAnim;
+	public RaceManager raceManager;
     public GameObject targetVehicle;
     public Sprite[] gearsSprites;
     public Image currentGear;
@@ -227,30 +227,34 @@ public class SGP_HUD : MonoBehaviour
             vp = targetVehicle.GetComponent<VehicleParent>();
             initialized = true;
         }
-        // debug 
-        //if (Input.GetKeyDown(KeyCode.T)) // update overlay
-        //{
-        //    racebox.stunts[d_select].updateOverlay = true;
-        //    UpdateStuntSequenceTable();
-        //}
-        //else if (Input.GetKeyDown(KeyCode.Y)) // select next
-        //{
-        //    d_select++;
-        //}
-        //else if (Input.GetKeyDown(KeyCode.U)) // select prev
-        //{
-        //    d_select--;
-        //}
-        //else if (Input.GetKeyDown(KeyCode.I)) // succeeded
-        //{
-        //    EndStuntSeq(true);
-        //}
-        //else if (Input.GetKeyDown(KeyCode.O)) // failed
-        //{
-        //    EndStuntSeq(false);
-        //}
+		// debug stunt UI
+		//if (Input.GetKeyDown(KeyCode.T)) // update overlay
+		//{
+		//    racebox.stunts[d_select].updateOverlay = true;
+		//    UpdateStuntSequenceTable();
+		//}
+		//else if (Input.GetKeyDown(KeyCode.Y)) // select next
+		//{
+		//    d_select++;
+		//}
+		//else if (Input.GetKeyDown(KeyCode.U)) // select prev
+		//{
+		//    d_select--;
+		//}
+		//else if (Input.GetKeyDown(KeyCode.I)) // succeeded
+		//{
+		//    EndStuntSeq(true);
+		//}
+		//else if (Input.GetKeyDown(KeyCode.O)) // failed
+		//{
+		//    EndStuntSeq(false);
+		//}
 
-        if (StuntInfo.transform.childCount > 1 && racebox.StuntSeqEnded(out bool withSuccess))
+		if (Input.GetKeyDown(KeyCode.Alpha1))
+		{
+            ptsAnim.Play(UnityEngine.Random.Range(1, 101) * 100, ptsAnim.EvoImage, ptsAnim.violet);
+		}
+		if (StuntInfo.transform.childCount > 1 && racebox.StuntSeqEnded(out bool withSuccess))
         {
             EndStuntSeq(withSuccess);
         }
@@ -504,7 +508,7 @@ public class SGP_HUD : MonoBehaviour
 
         trans = targetVehicle.GetComponentInChildren<Transmission>() as GearboxTransmission;
 
-        stunter = targetVehicle.GetComponent<StuntDetect>();
+        //stunter = targetVehicle.GetComponent<StuntDetect>();
 
         engine = targetVehicle.GetComponentInChildren<GasMotor>();
 

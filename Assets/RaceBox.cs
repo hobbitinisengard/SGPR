@@ -229,6 +229,8 @@ public class RaceBox : MonoBehaviour
             aeroMeterVelocity = Mathf.Lerp(aeroMeterVelocity,
             (vp.groundedWheels == 0 && !vp.colliding) ? maxAeroMeterVelocity : minAeroMeterVelocity
             , Time.deltaTime * aeroMeterResponsiveness);
+
+            
             //aeroMeterVelocity *= Mathf.Clamp01(vp.rb.velocity.magnitude / 46);
             aero += aeroMeterVelocity;
         }
