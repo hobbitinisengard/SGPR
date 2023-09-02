@@ -128,7 +128,7 @@ Material:
     - _Foam3DLighting: 1
     - _FoamBubbleParallax: 0.1
     - _FoamScale: 5
-    - _FresnelPower: 10.52
+    - _FresnelPower: 4.65
     - _Invert: 1
     - _MipBias: 0
     - _Moving: 0.17
@@ -137,22 +137,22 @@ Material:
     - _NormalsStrengthOverall: 1
     - _Offset: 0.00008
     - _OverrideReflectionCubemap: 0
-    - _PlanarReflectionDistanceFactor: 0.373
-    - _PlanarReflectionIntensity: 0.361
+    - _PlanarReflectionDistanceFactor: 0.381
+    - _PlanarReflectionIntensity: 0.39
     - _PlanarReflectionNormalsStrength: 1
     - _PlanarReflections: 1
     - _ProceduralSky: 1
     - _Projection: 0
     - _RefractAmt: 0
     - _RefractionStrength: 1
-    - _RefractiveIndexOfAir: 1.464
+    - _RefractiveIndexOfAir: 1.992
     - _RefractiveIndexOfWater: 1.472
-    - _Roughness: 0
+    - _Roughness: 0.264
     - _S: 1
     - _Shadows: 0
     - _ShorelineFoamMinDepth: 0.27
     - _SkyDirectionality: 0.99
-    - _Specular: 0.489
+    - _Specular: 0.612
     - _StartLevel: 0.157
     - _StencilFunction: 0
     - _SubSurfaceBase: 2.65
