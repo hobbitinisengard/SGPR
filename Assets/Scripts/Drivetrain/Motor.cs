@@ -56,8 +56,9 @@ namespace RVP
         float SinArg = 0;
         float SinJetCoeff = 11f;
         public float boostActivatedTime;
+		public float batteryStuntIncrease = 0.1f;
 
-        public virtual void Start()
+		public virtual void Start()
         {
             vp = transform.GetTopmostParentComponent<VehicleParent>();
             // Get engine sound

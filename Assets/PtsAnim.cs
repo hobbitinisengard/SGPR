@@ -3,71 +3,107 @@ using UnityEngine;
 using UnityEngine.UI;
 public class PtsAnim : MonoBehaviour
 {
-    public AnimationCurve scaleCurve;
-    public AnimationCurve visibilityCurve;
-    public Sprite jumpImage;
-    public Sprite EvoImage;
-    public Sprite[] digitsSprites;
-    public Image[] visibleDigits;
-    public Color bronze;
-    public Color silver;
-    public Color gold;
-    public Color violet;
-    Image image;
-    RectTransform rt;
-    float timer;
-    float duration = 1;
+	public AnimationCurve scaleCurve;
+	public AnimationCurve visibilityCurve;
+	public Sprite jumpImage;
+	public Sprite EvoImage;
+	public Sprite[] digitsSprites;
+	public Image[] visibleDigits;
+	public Color[] colorLevels;
+	//public Color bronze;//FF9F00
+	//public Color silver;//FFFFFF
+	//public Color gold;//F1D200
+	//public Color violet; //EA3863
+	Image image;
+	RectTransform rt;
+	float timer;
+	float duration = 1;
+	public enum PtsAnimType { Jump, Evo };
+	public class PtsAnimInfo
+	{
+		public int score;
+		public PtsAnimType type;
+		public int level;
+		public PtsAnimInfo(int score, PtsAnimType type, int level)
+		{
+			this.score = score;
+			this.type = type;
+			this.level = level;
+		}
+		public PtsAnimInfo(PtsAnimInfo pai)
+		{
+			this.score = pai.score;
+			this.type = pai.type;
+			this.level = pai.level;
+		}
+	}
 	private void Start()
 	{
-        image = GetComponent<Image>();
-        rt = GetComponent<RectTransform>();
-        timer = duration;
+		image = GetComponent<Image>();
+		rt = GetComponent<RectTransform>();
+		timer = duration;
 	}
 	// Update is called once per frame
 	void Update()
-    {
-        if(timer < duration)
-        {
-            rt.localScale = Vector3.one * scaleCurve.Evaluate(timer);
-            var clr = image.color;
-            clr.a = visibilityCurve.Evaluate(timer);
-            image.color = clr;
+	{
+		if (timer < duration)
+		{
+			rt.localScale = Vector3.one * scaleCurve.Evaluate(timer);
+			var clr = image.color;
+			clr.a = visibilityCurve.Evaluate(timer);
+			image.color = clr;
 
-            clr = visibleDigits[0].color;
+			clr = visibleDigits[0].color;
 			clr.a = visibilityCurve.Evaluate(timer);
 			foreach (var digit in visibleDigits)
-            {
-                digit.color = clr;
+			{
+				digit.color = clr;
 			}
-            var pos = rt.localPosition;
-            pos.y = Screen.currentResolution.height / 2f * timer / duration;
-            rt.localPosition = pos;
-        }
-        else
-        {
-            gameObject.SetActive(false);
-        }
-        timer += Time.deltaTime;
-    }
-	public void Play(int score, in Sprite sprite, in Color color)
-    {
+			var pos = rt.localPosition;
+			pos.y = Screen.currentResolution.height / 2f * timer / duration;
+			rt.localPosition = pos;
+		}
+		else
+		{
+			gameObject.SetActive(false);
+		}
+		timer += Time.deltaTime;
+	}
+	public void Play(in PtsAnimInfo pai)
+	{
+		if (pai == null)
+			return;
 		gameObject.SetActive(true);
 		timer = 0;
 
-        image.sprite = sprite;
-        image.color = color;
-        rt.localScale = Vector3.zero;
+		if (pai.type == PtsAnimType.Jump)
+			image.sprite = jumpImage;
+		else
+			image.sprite = EvoImage;
+		pai.level = Mathf.Clamp(pai.level, 0, colorLevels.Length - 1);
+		image.color = colorLevels[pai.level];
+		rt.localScale = Vector3.zero;
 
+		int score = pai.score;
 		int digits = (int)CountDigit(score) - 1;
-        foreach (var vd in visibleDigits)
-            vd.gameObject.SetActive(false);
+		foreach (var vd in visibleDigits)
+			vd.gameObject.SetActive(false);
 
 		for (int i = digits; i >= 0; --i)
 		{
-			int letter = score % 10;
-			visibleDigits[i].sprite = digitsSprites[letter];
-            visibleDigits[i].gameObject.SetActive(true);
-			score /= 10;
+			try
+			{
+				int letter = score % 10;
+				visibleDigits[i].sprite = digitsSprites[letter];
+				visibleDigits[i].gameObject.SetActive(true);
+				score /= 10;
+			}
+			catch
+			{
+				Debug.Log(pai.score);
+				break;
+			}
+
 		}
 	}
 	float CountDigit(int number)

@@ -558,6 +558,7 @@ namespace RVP
 
         internal void ResetOnTrack()
         {
+            GetComponent<RaceBox>().ResetOnTrack();
             var rot = tr.rotation.eulerAngles;
             if (Mathf.Abs(rot.x) > 100)
                 rot.x = 0;

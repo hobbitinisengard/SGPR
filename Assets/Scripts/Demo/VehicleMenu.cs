@@ -62,7 +62,7 @@ namespace RVP
 
             if (hud)
             {
-                hud.Initialize(newVehicle);
+                hud.Connect(newVehicle);
             }
         }
 
