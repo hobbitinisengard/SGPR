@@ -41,10 +41,8 @@ namespace RVP
         {
             return curve.keys[curve.keys.Length - 1].time;
         }
-        public static Vector3 Y(this Vector3 str, float val)
-        {
-            return new Vector3(str.x, val, str.z);
-        }
+        
+
         /// <summary>
         /// returns magnitude of the vector ignoring Y component
         /// </summary>
@@ -79,10 +77,22 @@ namespace RVP
 
             return getting;
         }
+		public static T FindParentComponent<T>(this Transform tr) where T : Component
+		{
+			while (tr.parent != null)
+			{
+				if (tr.parent.GetComponent<T>() != null)
+				{
+					return tr.parent.GetComponent<T>();
+				}
+				tr = tr.parent;
+			}
+         return null;
+		}
 
 #if UNITY_EDITOR
-        // Returns whether the given object is part of a prefab (meant to be used with selected objects in the inspector)
-        public static bool IsPrefab(Object componentOrGameObject) {
+		// Returns whether the given object is part of a prefab (meant to be used with selected objects in the inspector)
+		public static bool IsPrefab(Object componentOrGameObject) {
             return UnityEditor.Selection.assetGUIDs.Length > 0
                 && UnityEditor.PrefabUtility.GetPrefabAssetType(componentOrGameObject) != UnityEditor.PrefabAssetType.NotAPrefab
                 && UnityEditor.PrefabUtility.GetPrefabAssetType(componentOrGameObject) != UnityEditor.PrefabAssetType.MissingAsset;

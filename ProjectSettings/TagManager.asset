@@ -6,6 +6,8 @@ TagManager:
   tags:
   - Pop Tire
   - Underside
+  - CP
+  - START
   layers:
   - Default
   - TransparentFX
@@ -13,7 +15,7 @@ TagManager:
   - 
   - Water
   - UI
-  - 
+  - Road
   - 
   - Ignore Wheel Cast
   - Vehicles

@@ -33,7 +33,6 @@ public class RaceBox : MonoBehaviour
 	public float w_A_dot;
 
 	public int starLevel;
-
 	public float grantedComboTime { get; private set; }
 	float maxAeroMeterVelocity = 0.05f;
 	float minAeroMeterVelocity = 0;
@@ -47,10 +46,17 @@ public class RaceBox : MonoBehaviour
 	float stableLandingTimer = -1;
 	private float prevVel;
 	private float jumpTimer;
-	public PtsAnimInfo stuntPai { get; private set; }
-	//public PtsAnimInfo stuntPai { get; private set; }
-
+	private float respawnTimer;
+	private PtsAnimInfo stuntPai;
 	private PtsAnimInfo jumpPai;
+	private Vector3 lastRespawnPosition;
+	private void OnTriggerEnter(Collider other)
+	{
+		if(other.tag == "START")
+		{
+
+		}
+	}
 	public PtsAnimInfo JumpPai
 	{
 		get
@@ -272,6 +278,20 @@ public class RaceBox : MonoBehaviour
 	{
 		StuntDetector();
 		JumpDetector();
+		//if(respawnTimer <= 0)
+		//{
+		//	respawnTimer = 1;
+		//	bool traf = Physics.Raycast(vp.tr.position, Vector3.down, out var hit, float.MaxValue, 1 << 6);
+		//	if (traf)
+		//	{
+		//		lastRespawnPosition = hit.point;
+		//		lastRespawnPosition.y += 1;
+		//	}
+		//}
+		//else
+		//{
+		//	respawnTimer -= Time.fixedDeltaTime;
+		//}
 	}
 	private void JumpDetector()
 	{
@@ -338,19 +358,6 @@ public class RaceBox : MonoBehaviour
 			{
 				jumpTimer = 0;
 			}
-		}
-	}
-	public PtsAnimInfo GetPAI()
-	{
-		if (jumpPai == null)
-		{
-			return jumpPai;
-		}
-		else
-		{
-			var local_pai = jumpPai;
-			jumpPai = null;
-			return local_pai;
 		}
 	}
 	void SetGrantedComboTime(float seconds)

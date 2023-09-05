@@ -1,12 +1,7 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class Dyndak : MonoBehaviour
 {
-    Sprite singlePlayerSprite;
-    Sprite multiPlayerSprite;
     float posy;
     RectTransform rt;
     float begintime = 0;
@@ -24,9 +19,5 @@ public class Dyndak : MonoBehaviour
         Vector3 pos = rt.anchoredPosition;
         pos.y = posy + 2*40 * Mathf.Abs(Mathf.Sin((Time.time - begintime) * 0.8f * Mathf.PI));
         rt.anchoredPosition = pos;
-    }
-    void SetSprite(Sprite sprite)
-    {
-
     }
 }
