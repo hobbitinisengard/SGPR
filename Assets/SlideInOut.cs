@@ -17,6 +17,7 @@ public class SlideInOut : MonoBehaviour
 	float targetPos;
 	float startPos;
 	float mult = 1;
+	bool disableAfterEndOfAnim = false;
 	RectTransform rt;
 	Image img;
 	SlideInOut nextNode;
@@ -67,8 +68,11 @@ public class SlideInOut : MonoBehaviour
 		return transform.parent.GetChild(thisIndex + 1);
 	}
 	public void PlaySlideIn() => PlaySlide(Dir.In);
-	public void PlaySlideOut() => PlaySlide(Dir.Out);
-
+	public void PlaySlideOut(bool disableAfterEndOfAnim = false)
+	{
+		this.disableAfterEndOfAnim = disableAfterEndOfAnim;
+		PlaySlide(Dir.Out);
+	}
 	void PlaySlide(Dir dir)
 	{
 		this.dir = dir;
@@ -94,6 +98,7 @@ public class SlideInOut : MonoBehaviour
 	}
 	void OnEnable()
 	{
+		//Debug.Log("onenable");
 		PlaySlideIn();
 	}
 	IEnumerator Play()
@@ -115,6 +120,11 @@ public class SlideInOut : MonoBehaviour
 				if ((dir < 0 && timer < 0) || (dir > 0 && timer > 1))
 				{
 					canAnimate = false;
+					if (dir == Dir.Out && disableAfterEndOfAnim)
+					{
+						gameObject.SetActive(false);
+						disableAfterEndOfAnim = false;
+					}
 					yield break;
 				}
 			}

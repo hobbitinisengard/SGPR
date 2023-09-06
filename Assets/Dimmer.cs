@@ -5,6 +5,7 @@ public class Dimmer : MonoBehaviour
 {
 	public Image blackness;
 	public AnimationCurve dimCurve;
+	public BackgroundTiles background;
 	float timer = 0;
 	float duration;
 	GameObject viewA;
@@ -13,6 +14,7 @@ public class Dimmer : MonoBehaviour
 	{
 		duration = dimCurve.keys[dimCurve.length - 1].time;
 	}
+	public void SwitchBackgroundTo(in Sprite sprite) => background.SwitchBackgroundTo(sprite);
 	IEnumerator Play()
 	{
 		while(true)

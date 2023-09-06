@@ -31,7 +31,7 @@ public class BackgroundTiles : MonoBehaviour
         RandomizeMovement();
         speed = Mathf.Sqrt(2) * dim / 3f;
     }
-    public void SwitchBackgroundTo(Sprite sprite)
+    public void SwitchBackgroundTo(in Sprite sprite)
     {
         GetComponent<SpriteRenderer>().sprite = sprite;
     }

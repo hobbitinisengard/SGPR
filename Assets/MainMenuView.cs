@@ -10,9 +10,14 @@ public class MainMenuView : MonoBehaviour
 	public Image dyndak;
 	public Button firstButtonToBeSelected;
 	public Text bottomText;
+	public Sprite bgTile;
+	Dimmer dimmer;
 	private void OnEnable()
 	{
-		firstButtonToBeSelected.Select();
+		if(firstButtonToBeSelected)
+			firstButtonToBeSelected.Select();
+		dimmer = transform.FindParentComponent<Dimmer>();
+		dimmer.SwitchBackgroundTo(bgTile);
 	}
 	void Update()
 	{
@@ -27,7 +32,6 @@ public class MainMenuView : MonoBehaviour
 		{
 			Check(transform.GetChild(i));
 		}
-		var dimmer = transform.FindParentComponent<Dimmer>();
 		dimmer.PlayDimmer(gameObject, view);
 	}
 	void Check(Transform node)
@@ -35,7 +39,8 @@ public class MainMenuView : MonoBehaviour
 		var comp = node.GetComponent<SlideInOut>();
 		if (comp)
 		{
-			comp.PlaySlideOut();
+			if(comp.gameObject.activeSelf)
+				comp.PlaySlideOut();
 		}
 		else
 		{
