@@ -22,12 +22,14 @@ public class MainMenuButton : MonoBehaviour, ISelectHandler, IDeselectHandler
 	{
 		text.color = selectedColor;
 		if (dyndakSpriteOnSelect)
+		{
 			mainMenuView.dyndak.sprite = dyndakSpriteOnSelect;
+			mainMenuView.dyndak.GetComponent<SlideInOut>().PlaySlideIn();
+		}
 		if (!string.IsNullOrEmpty(BottomTextOnSelect))
 		{
 			mainMenuView.bottomText.text = BottomTextOnSelect;
 		}
-		mainMenuView.dyndak.GetComponent<SlideInOut>().PlaySlideIn();
 	}
 	void Start()
 	{

@@ -1,13 +1,10 @@
 using UnityEngine.UI;
 using UnityEngine;
 using System.Collections;
-using UnityEditor.Experimental.GraphView;
+using RVP;
 
 public class GreetingLogo : MonoBehaviour
 {
-	AnimationCurve curve = AnimationCurve.EaseInOut(0, 1, 1, 0);
-	AnimationCurve curve2 = AnimationCurve.EaseInOut(0, 0, 1, 1);
-
 	public Color reddish;
 	public AnimationCurve jumpingCurve;
 	public Text bottomText;
@@ -53,7 +50,7 @@ public class GreetingLogo : MonoBehaviour
 				else
 					Debug.Log("To Menu");
 			}
-			rt.localPosition = Vector2.Lerp(outMoveInitPos, outMoveTargetPos, curve2.Evaluate(timer));
+			rt.localPosition = Vector2.Lerp(outMoveInitPos, outMoveTargetPos, F.curve.Evaluate(timer));
 			timer += 4*Time.deltaTime;
 			return;
 		}
@@ -69,7 +66,7 @@ public class GreetingLogo : MonoBehaviour
 		Vector2 pos = rt.localPosition;
 		if (timer < 1)
 		{ // down move
-			pos.y = -50 + Screen.height * curve.Evaluate(timer);
+			pos.y = -50 + Screen.height * F.curve2.Evaluate(timer);
 		}
 		else if (timer > 8)
 		{ // jumping
@@ -92,7 +89,7 @@ public class GreetingLogo : MonoBehaviour
 			}
 			else if(jumps % 8 == 0)
 			{
-				pos.x = -Screen.width * curve2.Evaluate(timer3);
+				pos.x = -Screen.width * F.curve.Evaluate(timer3);
 				timer3 += 2 * Time.deltaTime;
 			}
 			else if(jumps % 8 == 1 && jumps > lastTryCo)
@@ -120,7 +117,7 @@ public class GreetingLogo : MonoBehaviour
 		while(true)
 		{
 			var pos = blitz.anchoredPosition;
-			pos.y = Mathf.Lerp(rt.rect.height / 1.8f, -rt.rect.height / 1.8f, curve2.Evaluate(bTimer));
+			pos.y = Mathf.Lerp(rt.rect.height / 1.8f, -rt.rect.height / 1.8f, F.curve.Evaluate(bTimer));
 			blitz.anchoredPosition = pos;
 			bTimer += Time.deltaTime;
 			if(bTimer >= 1)

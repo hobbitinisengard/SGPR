@@ -60,14 +60,5 @@ public class EnterNameInputField : MonoBehaviour
 		}
 		selector.gameObject.SetActive(true);
 	}
-	//int ActiveChildren()
-	//{
-	//	int count = 0;
-	//	for(int i=0; i<transform.childCount; ++i)
-	//	{
-	//		if (transform.GetChild(i).gameObject.activeSelf)
-	//			++count;
-	//	}
-	//	return count;
-	//}
+	
 }
