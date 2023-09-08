@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 namespace RVP
 {
 	// Static class with extra functions
@@ -7,7 +8,10 @@ namespace RVP
 		readonly public static int trackMask = 0;
 		public static AnimationCurve curve2 = AnimationCurve.EaseInOut(0, 1, 1, 0);
 		public static AnimationCurve curve = AnimationCurve.EaseInOut(0, 0, 1, 1);
-
+		public static float EasingOutQuint(float x)
+		{
+			return 1 - Mathf.Pow(1 - x, 5);
+		}
 		static public void drawString(string text, Vector3 worldPos, Color? colour = null)
 		{
 			UnityEditor.Handles.BeginGUI();
@@ -97,6 +101,31 @@ namespace RVP
 			}
 			return null;
 		}
+		
+		/// <param name="group">search children of this transform</param>
+		/// <param name="excludeChild"></param>
+		public static float PosAmongstActive(this Transform group, Transform child, bool countChildAsActive = true)
+		{
+			float posAmongstActive = -1;
+			int activeChildren = 0;
+			for (int i = 0; i < group.childCount; ++i)
+			{
+				if (group.GetChild(i) == child)
+				{
+					posAmongstActive = activeChildren;
+					if(!countChildAsActive)
+						continue;
+				}
+
+				if (group.GetChild(i).gameObject.activeSelf)
+					activeChildren++;
+			}
+			if (activeChildren == 0)
+				return 0;
+
+			//Debug.Log(posAmongstActive + " " + activeChildren);
+			return posAmongstActive / (activeChildren);
+		}
 		public static int ActiveChildren(this Transform tr)
 		{
 			int count = 0;
@@ -110,7 +139,7 @@ namespace RVP
 
 #if UNITY_EDITOR
 		// Returns whether the given object is part of a prefab (meant to be used with selected objects in the inspector)
-		public static bool IsPrefab(Object componentOrGameObject)
+		public static bool IsPrefab(UnityEngine.Object componentOrGameObject)
 		{
 			return UnityEditor.Selection.assetGUIDs.Length > 0
 				 && UnityEditor.PrefabUtility.GetPrefabAssetType(componentOrGameObject) != UnityEditor.PrefabAssetType.NotAPrefab

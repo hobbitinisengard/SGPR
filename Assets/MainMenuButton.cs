@@ -2,6 +2,7 @@ using UnityEngine.EventSystems;
 using UnityEngine;
 using UnityEngine.UI;
 using RVP;
+using System.Collections;
 
 public class MainMenuButton : MonoBehaviour, ISelectHandler, IDeselectHandler
 {
@@ -13,6 +14,13 @@ public class MainMenuButton : MonoBehaviour, ISelectHandler, IDeselectHandler
 	MainMenuView mainMenuView;
 	[System.NonSerialized]
 	public Button buttonComponent;
+	void Awake()
+	{
+		text = transform.GetChild(0).GetComponent<Text>();
+		text.color = deselectedColor;
+		buttonComponent = GetComponent<Button>();
+		mainMenuView = transform.FindParentComponent<MainMenuView>();//transform.parent.GetComponent<MainMenuView>();
+	}
 	public void OnDeselect(BaseEventData eventData)
 	{
 		text.color = deselectedColor;
@@ -31,11 +39,26 @@ public class MainMenuButton : MonoBehaviour, ISelectHandler, IDeselectHandler
 			mainMenuView.bottomText.text = BottomTextOnSelect;
 		}
 	}
-	void Start()
+	public void Select()
 	{
-		text = transform.GetChild(0).GetComponent<Text>();
-		text.color = deselectedColor;
-		buttonComponent = transform.GetComponent<Button>();
-		mainMenuView = transform.FindParentComponent<MainMenuView>();//transform.parent.GetComponent<MainMenuView>();
+		if (!gameObject.activeSelf)
+			StartCoroutine(SelectBtn());
+		else
+			buttonComponent.Select();
 	}
+	IEnumerator SelectBtn()
+	{
+		float timer = 1;
+		while (timer > 0)
+		{
+			if (gameObject.activeSelf)
+			{
+				buttonComponent.Select();
+				yield break;
+			}
+			timer -= Time.deltaTime;
+			yield return null;
+		}
+	}
+	
 }
