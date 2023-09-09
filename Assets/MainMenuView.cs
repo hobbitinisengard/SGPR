@@ -25,6 +25,8 @@ public class MainMenuView : MonoBehaviour
 		{
 			GoToView(prevView);
 		}
+		if (Input.GetKeyDown(KeyCode.Alpha1))
+			Info.AddCar();
 	}
 	public void GoToView(GameObject view)
 	{

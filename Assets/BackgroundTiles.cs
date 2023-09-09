@@ -22,7 +22,7 @@ public class BackgroundTiles : MonoBehaviour
 	public Sprite tileRed;
 	public Sprite tileSky;
 	public Sprite tilePurple;
-	void Start()
+	void Awake()
 	{
 		var img = GetComponent<Image>();
 		rt = GetComponent<RectTransform>();
@@ -44,7 +44,7 @@ public class BackgroundTiles : MonoBehaviour
 		Vector2 pos = rt.anchoredPosition;
 
 		if (Mathf.Abs(pos.x) >= tileDimensions.x)
-			pos = Vector3.zero;
+			pos = Vector2.zero;
 
 		pos += movementDir * speed * Time.deltaTime;
 		transform.localPosition = pos;
@@ -53,5 +53,7 @@ public class BackgroundTiles : MonoBehaviour
 	{
 		movementDir.x = Random.value > 0.5f ? 1 : -1;
 		movementDir.y = Random.value > 0.5f ? 1 : -1;
+		if(rt)
+			rt.anchoredPosition = Vector2.zero;
 	}
 }

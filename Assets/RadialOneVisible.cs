@@ -63,10 +63,9 @@ public class RadialOneVisible : MonoBehaviour
 	}
 	IEnumerator Set()
 	{
-		yield return null;
+		yield return null;//gameobject's states of active/not active are refreshed after one frame
 		initPos = rad.StartAngle / 360;
 		targetPos = 1 - transform.PosAmongstActive(selected);
-		Debug.Log(targetPos);
 
 		float timer = 0;
 		
@@ -76,9 +75,20 @@ public class RadialOneVisible : MonoBehaviour
 			float value = Mathf.Lerp(initPos, targetPos, ppTimer);
 			rad.StartAngle = 360 * (value);
 			rad.CalculateLayoutInputHorizontal();
-
-			prevSelected.GetComponent<Image>().color = new Color(255, 255, 255, Mathf.Clamp01(1 - ppTimer));
-			selected.GetComponent<Image>().color = new Color(255, 255, 255, Mathf.Clamp01(ppTimer));
+			for(int i=0; i<transform.childCount; ++i)
+			{
+				Transform child = transform.GetChild(i);
+				if (child == selected)
+					selected.GetComponent<Image>().color = new Color(255, 255, 255, Mathf.Clamp01(ppTimer));
+				else if(child == prevSelected)
+					prevSelected.GetComponent<Image>().color = 
+						new Color(255, 255, 255, Mathf.Clamp01(1 - ppTimer));
+				else
+				{
+					Image img = child.GetComponent<Image>();
+					img.color = new Color(255, 255, 255, Mathf.Lerp(img.color.a, 0, ppTimer));
+				}
+			}
 			
 			timer += Time.deltaTime;
 			yield return null;

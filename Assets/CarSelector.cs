@@ -13,56 +13,94 @@ public class CarSelector : MonoBehaviour
 	public Scrollbar scrollx;
 	public Scrollbar scrolly;
 	public RadialOneVisible radial;
-	RectTransform selectedCar;
+	public GameObject carImageTemplate;
+	Transform selectedCar;
+	string persistentSelectedCar;
 	float initBarSizeDelta;
 	Coroutine barsAndRadialCo;
 	Coroutine containerCo;
+	bool loadCo;
 	public bool d_co;
 	void Awake()
 	{
 		initBarSizeDelta = bars[0].sizeDelta.x;
-		Debug.Log(initBarSizeDelta);
-		//carImgDims = carContent.GetChild(0).GetChild(0).GetComponent<RectTransform>().rect.size;
+	}
+	private void OnDisable()
+	{ // in unity, 
+		persistentSelectedCar = selectedCar.name;
+		Debug.Log("Disable "+persistentSelectedCar);
 	}
 	private void OnEnable()
 	{
+		if (loadCo)
+		{
+			StopCoroutine(Load());
+		}
+		StartCoroutine(Load());
+	}
+	IEnumerator Load()
+	{
+		loadCo = true;
 		bool[] menuButtons = new bool[4];
 		for (int i = 0; i < carContent.childCount; ++i)
-		{
+		{ // remove cars from previous entry
 			Transform carClass = carContent.GetChild(i);
 			for (int j = 0; j < carClass.childCount; ++j)
 			{
-				Transform carxx = carClass.GetChild(j);
-				// show only unlocked cars. I can add more conditions to show cars
-				bool conditionOK = Info.cars[carxx.name].unlocked;
-				carxx.gameObject.SetActive(conditionOK);
-				if (selectedCar == null && conditionOK)
-					selectedCar = (RectTransform)carxx;
-				// if we don't have any car of this class registered
-				if (!menuButtons[(int)Info.cars[carxx.name].carClass])
-					menuButtons[(int)Info.cars[carxx.name].carClass] = conditionOK;
+				//Debug.Log(carClass.GetChild(j).name);
+				Destroy(carClass.GetChild(j).gameObject);
 			}
 		}
+		foreach (var car in Info.cars)
+		{ // populate car grid
+			if (car.Value.unlocked)
+			{
+				var newcar = Instantiate(carImageTemplate, carContent.GetChild((int)car.Value.carClass));
+				newcar.name = car.Key;
+				newcar.GetComponent<Image>().sprite = Resources.Load<Sprite>(Info.carImagesPath + car.Key);
+				newcar.SetActive(true);
+				menuButtons[(int)car.Value.carClass] = true;
+				if (persistentSelectedCar != null && persistentSelectedCar == car.Key)
+					selectedCar = newcar.transform;
+			}
+		}
+		Debug.Log(menuButtons[0] + " " + menuButtons[1] + " " + menuButtons[2] + " " + menuButtons[3]);
+
+		yield return null; // wait for one frame for active objects to refresh
+
 		// set buttons
 		for (int i = 0; i < buttonsContainer.childCount; ++i)
 		{
+			if (selectedCar == null && menuButtons[i])
+			{
+				selectedCar = carContent.GetChild(i).GetChild(0);
+			}
 			// show only carclass buttons when carclass exists
 			buttonsContainer.GetChild(i).gameObject.SetActive(menuButtons[i]);
-			// set carclass transforms with/without children to active/notactive
+			// disable car classes without children (required for sliders to work)
 			carContent.GetChild(i).gameObject.SetActive(menuButtons[i]);
-			if ((int)Info.cars[selectedCar.name].carClass == i)
-				buttonsContainer.GetChild(i).GetComponent<MainMenuButton>().Select();
 		}
-		// set description
-		carDescText.text = Info.cars[selectedCar.name].desc;
-		// set bars and radial
-		barsAndRadialCo = StartCoroutine(SetPerformanceBarsAndRadial());
+		if (selectedCar == null)
+		{
+			carDescText.text = "No cars available lol";
+		}
+		else
+		{
+			buttonsContainer.GetChild(selectedCar.parent.GetSiblingIndex()).GetComponent<MainMenuButton>().Select();
+			carDescText.text = Info.cars[selectedCar.name].desc;
+		}
+		radial.gameObject.SetActive(selectedCar);
+
 		containerCo = StartCoroutine(MoveToCar());
 		radial.SetChildrenActive(menuButtons);
+		barsAndRadialCo = StartCoroutine(SetPerformanceBarsAndRadial());
+		Debug.Log(selectedCar);
+		loadCo = false;
 	}
-
 	void Update()
 	{
+		if (!selectedCar || loadCo)
+			return;
 		d_co = containerCo == null;
 		int x = Input.GetKeyDown(KeyCode.RightArrow) ? 1 : Input.GetKeyDown(KeyCode.LeftArrow) ? -1 : 0;
 		int y = Input.GetKeyDown(KeyCode.UpArrow) ? -1 : Input.GetKeyDown(KeyCode.DownArrow) ? 1 : 0;
@@ -75,38 +113,13 @@ public class CarSelector : MonoBehaviour
 			{
 				for (int i = posy; i < carContent.childCount && i >= 0;)
 				{
-					Transform selectedClass = (RectTransform)carContent.GetChild(i);
-					if (selectedClass.ActiveChildren() > 0)
+					Transform selectedClass = carContent.GetChild(i);
+					if (selectedClass.childCount > 0)
 					{
-						if(posx < selectedClass.childCount && selectedClass.GetChild(posx).gameObject.activeSelf)
-						{// /\ if car exists set it
-							selectedCar = (RectTransform)selectedClass.GetChild(posx);
-							break;
-						}
-						// such car isn't available. set the closest one to posx
-						int prev = posx-1;
-						int next = prev+1;
-						while (prev >= 0 || next < selectedClass.childCount)
-						{
-							if (prev >= 0 && selectedClass.GetChild(prev).gameObject.activeSelf)
-							{
-								if(selectedCar != (RectTransform)selectedClass.GetChild(prev))
-								{ // don't choose the same car as currently set
-									selectedCar = (RectTransform)selectedClass.GetChild(prev);
-									break;
-								}
-							}
-							if (next < selectedClass.childCount && selectedClass.GetChild(next).gameObject.activeSelf)
-							{
-								if (selectedCar != (RectTransform)selectedClass.GetChild(next))
-								{ // don't choose the same car as currently set
-									selectedCar = (RectTransform)selectedClass.GetChild(next);
-									break;
-								}
-							}
-							--prev;
-							++next;
-						}
+						if (posx >= selectedClass.childCount)
+							posx = selectedClass.childCount - 1;
+						selectedCar = selectedClass.GetChild(posx);
+						Debug.Log(selectedCar);
 						break;
 					}
 					i = (y > 0) ? (i + 1) : (i - 1);
@@ -128,11 +141,13 @@ public class CarSelector : MonoBehaviour
 	}
 	IEnumerator MoveToCar()
 	{
+		yield return null;
+		if (!selectedCar)
+			yield break;
 		float timer = 0;
 		Vector2 initPos = carContent.anchoredPosition;
-		Vector2 targetPos = new Vector2(-selectedCar.anchoredPosition.x,
+		Vector2 targetPos = new Vector2(-((RectTransform)selectedCar).anchoredPosition.x,
 			-selectedCar.parent.GetComponent<RectTransform>().anchoredPosition.y);
-
 		Vector2 scrollInitPos = new Vector2(scrollx.value, scrolly.value);
 		Vector2 scrollInitSize = new Vector2(scrollx.size, scrolly.size);
 		float carInGroupPos = selectedCar.parent.PosAmongstActive(selectedCar, false);
@@ -156,8 +171,9 @@ public class CarSelector : MonoBehaviour
 	
 	IEnumerator SetPerformanceBarsAndRadial()
 	{
-		radial.SetAnimTo(selectedCar.parent.GetSiblingIndex());
-		float[] targetSgpBars = Info.cars[selectedCar.name].sgpBars;
+		if(selectedCar)
+			radial.SetAnimTo(selectedCar.parent.GetSiblingIndex());
+		float[] targetSgpBars = selectedCar ? Info.cars[selectedCar.name].sgpBars : new float[] { .03f, .03f, .03f };
 		float[] initSgpBars = new float[3];
 
 		for (int i = 0; i < 3; i++)

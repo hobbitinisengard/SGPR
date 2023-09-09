@@ -2,7 +2,6 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.UIElements.Experimental;
-using static UnityEngine.PlayerLoop.PreUpdate;
 
 public class SlideInOut : MonoBehaviour
 {
@@ -30,11 +29,7 @@ public class SlideInOut : MonoBehaviour
 			type = Type.Button;
 			mult = 4;
 			img = transform.GetChild(1).GetComponent<Image>();
-			Transform next = NextChild();
-			if (next)
-			{
-				nextNode = next.GetComponent<SlideInOut>();
-			}
+			nextNode = NextNode();
 		}
 		else
 		{
@@ -55,17 +50,20 @@ public class SlideInOut : MonoBehaviour
 			startPos = -inSlideDirection.y * (Screen.height / 2f + rt.rect.height/2f);
 		PlaySlideIn();
 	}
-	private Transform NextChild()
+	private SlideInOut NextNode()
 	{
-		// Check where we are
-		int thisIndex = transform.GetSiblingIndex();
-		// We have a few cases to rule out
-		if (transform.parent == null)
+		int idx = transform.GetSiblingIndex()+1;
+		Transform child=null;
+		while(idx < transform.parent.childCount-1)
+		{
+			child = transform.parent.GetChild(idx);
+			if (child.gameObject.activeSelf)
+				break;
+			idx++;
+		}
+		if (!child)
 			return null;
-		if (transform.parent.childCount <= thisIndex + 1)
-			return null;
-		// Then return whatever was next, now that we're sure it's there
-		return transform.parent.GetChild(thisIndex + 1);
+		return child.GetComponent<SlideInOut>();
 	}
 	public void PlaySlideIn() => PlaySlide(Dir.In);
 	public void PlaySlideOut(bool disableAfterEndOfAnim = false)
@@ -98,7 +96,8 @@ public class SlideInOut : MonoBehaviour
 	}
 	void OnEnable()
 	{
-		//Debug.Log("onenable");
+		if(type == Type.Button)
+			nextNode = NextNode();
 		PlaySlideIn();
 	}
 	IEnumerator Play()
