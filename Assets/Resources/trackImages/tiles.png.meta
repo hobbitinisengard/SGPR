@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 6205c83abded04348bf99859e4f9eee9
+guid: 18364d1d6a4deb74bb82b9c0aeae459f
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -47,7 +47,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 25
+  spritePixelsToUnits: 100
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -101,50 +101,17 @@ TextureImporter:
     overridden: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 3
-    buildTarget: WebGL
-    maxTextureSize: 2048
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 1
-    compressionQuality: 50
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 0
-    androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: overlays_dial_0
+      name: Speed
       rect:
         serializedVersion: 2
-        x: 0
-        y: 2071
-        width: 3208
-        height: 2022
-      alignment: 8
-      pivot: {x: 1, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 6823578ea35a18443b149c2352be0e67
-      internalID: 1965540174
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: 0
-      rect:
-        serializedVersion: 2
-        x: 5
-        y: 5
-        width: 406
-        height: 518
+        x: 26
+        y: 1878
+        width: 207
+        height: 206
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -152,20 +119,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 617d2f09f5dd62346bf7d8681758c021
-      internalID: 1022970062
+      spriteID: 808b6ea0a58c7804f80f0bf1a4417fb0
+      internalID: 362428555
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: 1
+      name: GER
       rect:
         serializedVersion: 2
-        x: 501
-        y: 5
-        width: 310
-        height: 518
+        x: 249
+        y: 1878
+        width: 208
+        height: 206
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -173,176 +140,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 0905d1ca31b502b4c9d37ae4f8d0b193
-      internalID: -1836650192
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: 2
-      rect:
-        serializedVersion: 2
-        x: 805
-        y: 5
-        width: 406
-        height: 518
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 84d8ba2caeef7eb428d25093c3dcb150
-      internalID: 1272151748
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: 3
-      rect:
-        serializedVersion: 2
-        x: 1204
-        y: 5
-        width: 402
-        height: 518
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: f4fbc9a5f45e1814c889c0f459835ff5
-      internalID: 10466821
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: 7
-      rect:
-        serializedVersion: 2
-        x: 2805
-        y: 5
-        width: 406
-        height: 518
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 5078eb5d97d8c6345bbb7967b75b2219
-      internalID: -815555598
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: 8
-      rect:
-        serializedVersion: 2
-        x: 3205
-        y: 5
-        width: 406
-        height: 518
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: c12b3a5af82c8b44896f5a44ada545e2
-      internalID: -1082510007
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: 9
-      rect:
-        serializedVersion: 2
-        x: 3605
-        y: 5
-        width: 406
-        height: 518
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 715a46998f422184682f9008cdf2c797
-      internalID: -1564026335
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: overlays_dial_57
-      rect:
-        serializedVersion: 2
-        x: 28
-        y: 1429
-        width: 1890
-        height: 623
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: a67cb04c75db6ff41973634262be11d5
-      internalID: 811891718
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: overlays_dial_58
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 1120
-        width: 2093
-        height: 279
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 1ca0f29833229f54c91cbfcf8f7c9e2b
-      internalID: -2044241590
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: overlays_dial_59
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 682
-        width: 1314
-        height: 438
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: ac4d0fec1e0b75543a37878439d47ff6
-      internalID: -2070416249
+      spriteID: 1edd58892c87c9349a576373c5d3401a
+      internalID: -52397154
       vertices: []
       indices: 
       edges: []
@@ -351,10 +150,10 @@ TextureImporter:
       name: 4
       rect:
         serializedVersion: 2
-        x: 1605
-        y: 0
-        width: 399
-        height: 524
+        x: 468
+        y: 1878
+        width: 207
+        height: 206
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -362,8 +161,92 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 1cb6e3492547a04479d0ca47d9a799d7
-      internalID: -368451287
+      spriteID: 2af6ba20c36f8f143945b78ad12f2c80
+      internalID: -875731548
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Stunty
+      rect:
+        serializedVersion: 2
+        x: 691
+        y: 1878
+        width: 209
+        height: 206
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 78b8b7001ffb3fe48ba3096fa2d808dd
+      internalID: 868287864
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: No_pits
+      rect:
+        serializedVersion: 2
+        x: 910
+        y: 1878
+        width: 208
+        height: 206
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 149eb19d83a1fb44695961d0ed3c4eee
+      internalID: 1753598309
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Aero
+      rect:
+        serializedVersion: 2
+        x: 26
+        y: 1653
+        width: 206
+        height: 206
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: dca2a6c9fd3be19449e19b8d50f086ca
+      internalID: 1558892839
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: JAP
+      rect:
+        serializedVersion: 2
+        x: 249
+        y: 1653
+        width: 208
+        height: 206
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c2cea95eab4ebab49ac0f20b31e96466
+      internalID: -1907352408
       vertices: []
       indices: 
       edges: []
@@ -372,10 +255,10 @@ TextureImporter:
       name: 5
       rect:
         serializedVersion: 2
-        x: 2011
-        y: 0
-        width: 392
-        height: 521
+        x: 468
+        y: 1653
+        width: 207
+        height: 206
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -383,8 +266,92 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 47bf69d4d9b112a4cbf6eb751046e0cb
-      internalID: -591823420
+      spriteID: 1ed5cee3ed823da499df43960444f3de
+      internalID: 981838198
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Loop
+      rect:
+        serializedVersion: 2
+        x: 691
+        y: 1653
+        width: 209
+        height: 207
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fcf67802cc94a4f47aea20785b9728df
+      internalID: -398185503
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: No_jumps
+      rect:
+        serializedVersion: 2
+        x: 910
+        y: 1651
+        width: 208
+        height: 207
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a2e0f7cc7e7047e4c8dd90ba4cf71e69
+      internalID: 749395949
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Wild
+      rect:
+        serializedVersion: 2
+        x: 25
+        y: 1429
+        width: 208
+        height: 207
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 520fe207571b8a24eb64439d1fd55d84
+      internalID: 612556931
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: SPA
+      rect:
+        serializedVersion: 2
+        x: 249
+        y: 1429
+        width: 208
+        height: 208
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: eb4647312b5590248859eeff233c1c7c
+      internalID: -728725714
       vertices: []
       indices: 
       edges: []
@@ -393,10 +360,10 @@ TextureImporter:
       name: 6
       rect:
         serializedVersion: 2
-        x: 2406
-        y: 0
-        width: 396
-        height: 521
+        x: 466
+        y: 1429
+        width: 208
+        height: 207
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -404,20 +371,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: b1a49eb7b58a0d5449e2bdab0e222603
-      internalID: 1383696448
+      spriteID: c090255e042e7ea48a7a17401390225b
+      internalID: 1743839365
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: overlays_dial_5
+      name: Sandy
       rect:
         serializedVersion: 2
-        x: 1320
-        y: 530
-        width: 1003
-        height: 583
+        x: 691
+        y: 1428
+        width: 209
+        height: 208
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -425,20 +392,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 98310c55edcd37045913632cb8979d8f
-      internalID: -453273351
+      spriteID: a0b3420aa3b49c84c9159520187d9c1e
+      internalID: -1964055179
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: overlays_dial_6
+      name: Icy
       rect:
         serializedVersion: 2
-        x: 2327
-        y: 532
-        width: 946
-        height: 579
+        x: 910
+        y: 1429
+        width: 208
+        height: 208
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -446,20 +413,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 1244c7c351f824345bf807ec15832b6c
-      internalID: -1290011048
+      spriteID: 309b908018a5f44468044c43c1d001db
+      internalID: -810388652
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: overlays_dial_7
+      name: Team
       rect:
         serializedVersion: 2
-        x: 3781
-        y: 616
-        width: 306
-        height: 300
+        x: 25
+        y: 1194
+        width: 208
+        height: 207
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -467,41 +434,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 694088fc152978148a4001bdce4b30db
-      internalID: 384292035
+      spriteID: 3eea0552ea0b677429eaee93301e7c64
+      internalID: -724901288
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: overlays_dial_8
+      name: FRA
       rect:
         serializedVersion: 2
-        x: 3277
-        y: 556
-        width: 321
-        height: 1314
-      alignment: 9
-      pivot: {x: 0.49999848, y: 0.15549919}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 42bfb5d454ae4a144aa7ea566b5c5d23
-      internalID: -1676461037
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: overlays_dial_9
-      rect:
-        serializedVersion: 2
-        x: 2099
-        y: 1120
-        width: 1160
-        height: 290
+        x: 249
+        y: 1194
+        width: 208
+        height: 207
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -509,41 +455,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: d52dcfd25dc6a5549b24ff66f41b6ef3
-      internalID: 286740814
+      spriteID: 5e968be545dff0a40a0b2027d68dbc44
+      internalID: 774621808
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: overlays_dial_10
+      name: 7
       rect:
         serializedVersion: 2
-        x: 1950
-        y: 1844
-        width: 164
-        height: 154
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 81, y: 78, z: 83, w: 76}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 2ca5f8a9058687f4ca078db7162c9067
-      internalID: -205667401
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: overlays_dial_11
-      rect:
-        serializedVersion: 2
-        x: 2163
-        y: 1847
-        width: 174
-        height: 193
+        x: 468
+        y: 1194
+        width: 208
+        height: 207
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -551,20 +476,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 1038709f35804c64481614f29e4e81a4
-      internalID: -990931661
+      spriteID: dae38426f79e0844fbf501c7d1a339db
+      internalID: -2036895600
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: overlays_dial_12
+      name: tracks_info_icons_18
       rect:
         serializedVersion: 2
-        x: 2366
-        y: 1847
-        width: 187
-        height: 193
+        x: 691
+        y: 1194
+        width: 209
+        height: 207
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -572,20 +497,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 5f6163740bc177048b2af5ba60be2d7d
-      internalID: 82869111
+      spriteID: b2a57158b061d3c46998f196904a6bba
+      internalID: 125005267
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: overlays_dial_13
+      name: 12
       rect:
         serializedVersion: 2
-        x: 2567
-        y: 1821
-        width: 196
-        height: 219
+        x: 26
+        y: 975
+        width: 207
+        height: 207
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -593,20 +518,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: cce842f48c16e3d4baa3850084ff703a
-      internalID: -1652258389
+      spriteID: 27f18462db034fb45a145368e6f330ca
+      internalID: 1153204792
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: overlays_dial_14
+      name: ENG
       rect:
         serializedVersion: 2
-        x: 3687
-        y: 939
-        width: 177
-        height: 3157
+        x: 249
+        y: 975
+        width: 208
+        height: 207
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -614,20 +539,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 879804a9423ec9e47aba91444c21f592
-      internalID: 821813739
+      spriteID: baa38f1d07bfef643b469cac4dc59633
+      internalID: 2000173748
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: overlays_dial_15
+      name: 8
       rect:
         serializedVersion: 2
-        x: 3898
-        y: 938
-        width: 178
-        height: 3158
+        x: 468
+        y: 975
+        width: 208
+        height: 207
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -635,20 +560,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: e9e21f3368370d444910f7019669eff6
-      internalID: -1633737619
+      spriteID: 66ee590a0bd38354fa627b4c9e54a7cb
+      internalID: -690182148
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: overlays_star
+      name: Jumpy
       rect:
         serializedVersion: 2
-        x: 2670
-        y: 1612
-        width: 143
-        height: 156
+        x: 691
+        y: 976
+        width: 209
+        height: 206
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -656,20 +581,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 0c0299e4eadfb0d489b3674471f7445a
-      internalID: -1302267487
+      spriteID: c433dd1c3329c294a8e37c1f2d63b48b
+      internalID: 426539847
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: overlays_dial_1
+      name: 13
       rect:
         serializedVersion: 2
-        x: 3477
-        y: 2091
-        width: 177
-        height: 2005
+        x: 27
+        y: 757
+        width: 207
+        height: 207
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -677,8 +602,260 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: e10801c5c9e345842b6d2144c0ebf71e
-      internalID: -337139522
+      spriteID: 8d5b2db23d49b424c8850439a808aa7c
+      internalID: -1363964979
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: USA
+      rect:
+        serializedVersion: 2
+        x: 249
+        y: 757
+        width: 209
+        height: 208
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 97d8abd9f38c21948b198b40a78682d3
+      internalID: 1428310808
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 9
+      rect:
+        serializedVersion: 2
+        x: 468
+        y: 757
+        width: 208
+        height: 207
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: aa18f04b24caf6c45abf10647c9b5946
+      internalID: -28221370
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Windy
+      rect:
+        serializedVersion: 2
+        x: 691
+        y: 757
+        width: 208
+        height: 208
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a0e046eada2d8c8428de941253731f8d
+      internalID: 1237658456
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 14
+      rect:
+        serializedVersion: 2
+        x: 26
+        y: 535
+        width: 207
+        height: 207
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ffbda16b42775164f8a0064f8df3d958
+      internalID: -1336511540
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ITA
+      rect:
+        serializedVersion: 2
+        x: 249
+        y: 534
+        width: 208
+        height: 206
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: cb3db79d2511e174093de33dbcc2ad4f
+      internalID: -2077031659
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 10
+      rect:
+        serializedVersion: 2
+        x: 468
+        y: 536
+        width: 207
+        height: 206
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8bfe82dc28b00ef46a9f51c4af1fe52a
+      internalID: -1613168930
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Intersecting
+      rect:
+        serializedVersion: 2
+        x: 691
+        y: 534
+        width: 209
+        height: 206
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ddf0f83a197a6e14d85908935f8557f3
+      internalID: 1953420212
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 15
+      rect:
+        serializedVersion: 2
+        x: 27
+        y: 320
+        width: 207
+        height: 206
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: eeebe66e89464704d9e2dae7a7dff8dd
+      internalID: -718667947
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: MEX
+      rect:
+        serializedVersion: 2
+        x: 249
+        y: 315
+        width: 208
+        height: 207
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5b25a9600b1b8d74e9b956097cd17ef8
+      internalID: -90433104
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 11
+      rect:
+        serializedVersion: 2
+        x: 468
+        y: 315
+        width: 207
+        height: 207
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e8454379f373b99418bd612aa3da8e4b
+      internalID: 697800670
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 16
+      rect:
+        serializedVersion: 2
+        x: 27
+        y: 98
+        width: 207
+        height: 207
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2ce7abe36de41a141b1e370758a5b58e
+      internalID: 1198146124
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: 17
+      rect:
+        serializedVersion: 2
+        x: 249
+        y: 95
+        width: 207
+        height: 206
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0dbb199890661d54bbc633d2371eba04
+      internalID: 158817429
       vertices: []
       indices: 
       edges: []
@@ -686,7 +863,7 @@ TextureImporter:
     outline: []
     physicsShape: []
     bones: []
-    spriteID: e1070e19ec86e154485a1184c9b87536
+    spriteID: 5e97eb03825dee720800000000000000
     internalID: 0
     vertices: []
     indices: 
@@ -694,66 +871,43 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      0: 1022970062
-      1: -1836650192
-      2: 1272151748
-      3: 10466821
-      4: -368451287
-      5: -591823420
-      6: 1383696448
-      7: -815555598
-      8: -1082510007
-      9: -1564026335
-      overlays_dial_0: 1965540174
-      overlays_dial_1: -337139522
-      overlays_dial_10: -205667401
-      overlays_dial_11: -990931661
-      overlays_dial_12: 82869111
-      overlays_dial_13: -1652258389
-      overlays_dial_14: 821813739
-      overlays_dial_15: -1633737619
-      overlays_dial_17: 504249341
-      overlays_dial_18: -318097544
-      overlays_dial_19: 271698477
-      overlays_dial_20: -187664629
-      overlays_dial_21: 1021419499
-      overlays_dial_22: 672655993
-      overlays_dial_23: -952859552
-      overlays_dial_25: 1826476394
-      overlays_dial_32: 154520351
-      overlays_dial_33: 649182745
-      overlays_dial_34: -1552730765
-      overlays_dial_35: -1212608084
-      overlays_dial_36: -1281520500
-      overlays_dial_37: 1287670699
-      overlays_dial_38: 1618089180
-      overlays_dial_39: -1972296080
-      overlays_dial_40: 1763735317
-      overlays_dial_41: 1593261569
-      overlays_dial_42: -904451787
-      overlays_dial_43: -1622266708
-      overlays_dial_44: -1986842441
-      overlays_dial_45: -113658154
-      overlays_dial_46: -572605948
-      overlays_dial_47: 2019679519
-      overlays_dial_48: -1899286006
-      overlays_dial_49: -240173989
-      overlays_dial_5: -453273351
-      overlays_dial_50: -1158202608
-      overlays_dial_51: -2068883879
-      overlays_dial_52: 1704030480
-      overlays_dial_53: -254252785
-      overlays_dial_54: -40134768
-      overlays_dial_55: -2086374173
-      overlays_dial_56: 125917593
-      overlays_dial_57: 811891718
-      overlays_dial_58: -2044241590
-      overlays_dial_59: -2070416249
-      overlays_dial_6: -1290011048
-      overlays_dial_7: 384292035
-      overlays_dial_8: -1676461037
-      overlays_dial_9: 286740814
-      overlays_star: -1302267487
+      10: -1613168930
+      11: 697800670
+      12: 1153204792
+      13: -1363964979
+      14: -1336511540
+      15: -718667947
+      16: 1198146124
+      17: 158817429
+      4: -875731548
+      5: 981838198
+      6: 1743839365
+      7: -2036895600
+      8: -690182148
+      9: -28221370
+      Aero: 1558892839
+      ENG: 2000173748
+      FRA: 774621808
+      GER: -52397154
+      ITA: -2077031659
+      Icy: -810388652
+      Intersecting: 1953420212
+      JAP: -1907352408
+      Jumpy: 426539847
+      Loop: -398185503
+      MEX: -90433104
+      No_jumps: 749395949
+      No_pits: 1753598309
+      SPA: -728725714
+      Sandy: -1964055179
+      Speed: 362428555
+      Stunty: 868287864
+      Team: -724901288
+      USA: 1428310808
+      Wild: 612556931
+      Windy: 1237658456
+      tracks_info_icons_18: 125005267
+      tracks_info_icons_19: -1438079871
   spritePackingTag: 
   pSDRemoveMatte: 0
   pSDShowRemoveMatteOption: 0

@@ -52,4 +52,10 @@ public class MainMenuView : MonoBehaviour
 			}
 		}
 	}
+
+
+	public void ToRaceScene()
+	{
+
+	}
 }
