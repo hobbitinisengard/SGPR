@@ -336,7 +336,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: SPA
+      name: SPN
       rect:
         serializedVersion: 2
         x: 249
@@ -860,6 +860,27 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: default
+      rect:
+        serializedVersion: 2
+        x: 913
+        y: 1196
+        width: 202
+        height: 205
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 535c0d59aa22d9c4093cc8d7c9288686
+      internalID: -672574049
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     physicsShape: []
     bones: []
@@ -898,7 +919,7 @@ TextureImporter:
       MEX: -90433104
       No_jumps: 749395949
       No_pits: 1753598309
-      SPA: -728725714
+      SPN: -728725714
       Sandy: -1964055179
       Speed: 362428555
       Stunty: 868287864
@@ -906,6 +927,7 @@ TextureImporter:
       USA: 1428310808
       Wild: 612556931
       Windy: 1237658456
+      default: -672574049
       tracks_info_icons_18: 125005267
       tracks_info_icons_19: -1438079871
   spritePackingTag: 

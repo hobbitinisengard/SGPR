@@ -5,7 +5,7 @@ using UnityEngine.UIElements.Experimental;
 
 public class SlideInOut : MonoBehaviour
 {
-	enum Type { Image, Button };
+	enum Type { Image, Button, ButtonContainer };
 	Type type;
 	public enum Dir { In = 1, Out = -1 };
 	Dir dir = Dir.In;
@@ -18,7 +18,7 @@ public class SlideInOut : MonoBehaviour
 	float mult = 1;
 	bool disableAfterEndOfAnim = false;
 	RectTransform rt;
-	Image img;
+	Image[] imgs;
 	SlideInOut nextNode;
 
 	void Awake()
@@ -28,19 +28,25 @@ public class SlideInOut : MonoBehaviour
 		{
 			type = Type.Button;
 			mult = 4;
-			img = transform.GetChild(1).GetComponent<Image>();
+			imgs = new Image[] { transform.GetChild(1).GetComponent<Image>() };
 			nextNode = NextNode();
 		}
-		else
+		else if(GetComponent<Image>())
 		{
 			type = Type.Image;
 			mult = 2;
-			img = GetComponent<Image>();
+			imgs = new Image[] { GetComponent<Image>() };
 		}
-		var c = img.color;
-		c.a = 0;
-		img.color = c;
-
+		else
+		{
+			type = Type.ButtonContainer;
+			mult = 4;
+			imgs = new Image[transform.childCount];
+			for (int i = 0; i < transform.childCount; ++i)
+				imgs[i] = transform.GetChild(i).GetChild(1).GetComponent<Image>();
+		}
+		SetImageTransp(0);
+		
 		rt = GetComponent<RectTransform>();
 		targetPos = Get();
 
@@ -49,6 +55,15 @@ public class SlideInOut : MonoBehaviour
 		else
 			startPos = -inSlideDirection.y * (Screen.height / 2f + rt.rect.height/2f);
 		PlaySlideIn();
+	}
+	void SetImageTransp(float a)
+	{
+		for (int i = 0; i < imgs.Length; ++i)
+		{
+			var c = imgs[i].color;
+			c.a = a;
+			imgs[i].color = c;
+		}
 	}
 	private SlideInOut NextNode()
 	{
@@ -75,17 +90,7 @@ public class SlideInOut : MonoBehaviour
 	{
 		this.dir = dir;
 		if (type == Type.Image)
-		{
 			canAnimate = true;
-			//timer = ((int)dir > 0) ? 0 : 1;
-		}
-		else
-		{
-			if(!nextNode)
-			{
-				//timer = ((int)dir > 0) ? 0 : 1;
-			}
-		}
 		StartCoroutine(Play());
 		
 	}
@@ -96,7 +101,7 @@ public class SlideInOut : MonoBehaviour
 	}
 	void OnEnable()
 	{
-		if(type == Type.Button)
+		if(type == Type.Button || type == Type.ButtonContainer)
 			nextNode = NextNode();
 		PlaySlideIn();
 	}
@@ -111,10 +116,8 @@ public class SlideInOut : MonoBehaviour
 				float step = ((int)dir > 0) ? Easing.OutCubic(timer) : Easing.InCubic(timer);
 				Set(Mathf.Lerp(startPos, targetPos, step));
 
-				var c = img.color;
 				//On simple images img var is an image. On buttons img is a white texture
-				c.a = (type == Type.Image) ? step :1 - step;
-				img.color = c;
+				SetImageTransp((type == Type.Image) ? step :1 - step);
 
 				if ((dir < 0 && timer < 0) || (dir > 0 && timer > 1))
 				{

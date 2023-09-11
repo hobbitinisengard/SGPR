@@ -3,12 +3,14 @@ using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Linq;
+using static Track;
+using TMPro;
 
 public class TrackSelector : MonoBehaviour
 {
 	private enum SortingCond { Difficulty, Name };
-	public Text trackDescText;
-	public Transform buttonsContainer;
+	public TextMeshProUGUI trackDescText;
 	public RectTransform trackContent;
 	public Scrollbar scrollx;
 	public Scrollbar scrolly;
@@ -24,6 +26,7 @@ public class TrackSelector : MonoBehaviour
 	public Text reversedButtonText;
 	public Text catchupButtonText;
 	public Transform tilesContainer;
+	public Transform recordsContainer;
 
 	Transform selectedTrack;
 	string persistentSelectedTrack;
@@ -32,21 +35,15 @@ public class TrackSelector : MonoBehaviour
 	bool loadCo;
 	public void SortTrackList()
 	{
-		int sorting = (int)curSortingCondition + 1;
-		sorting %= 2;
-		curSortingCondition = (SortingCond)sorting;
-		if(sorting == 1)
-		{
+		curSortingCondition = (SortingCond)(((int)curSortingCondition + 1) % 2);
+		if(curSortingCondition == SortingCond.Name)
 			sortButton.transform.GetChild(0).GetComponent<Text>().text = "Sorted by track's name";
-		}
 		else
-		{
 			sortButton.transform.GetChild(0).GetComponent<Text>().text = "Sorted by track's difficulty";
-		}
-
-		//sort tracks
-		// move to 
-		containerCo = StartCoroutine(MoveToTrack());
+		// reload 
+		if (loadCo)
+			StopCoroutine(Load());
+		StartCoroutine(Load());
 	}
 	public void SwitchRaceType()
 	{
@@ -117,19 +114,35 @@ public class TrackSelector : MonoBehaviour
 	private void OnDisable()
 	{ // in unity, 
 		persistentSelectedTrack = selectedTrack.name;
-		Debug.Log("Disable "+persistentSelectedTrack);
+		//Debug.Log("Disable "+persistentSelectedTrack);
 	}
 	private void OnEnable()
 	{
 		if (loadCo)
-		{
 			StopCoroutine(Load());
-		}
 		StartCoroutine(Load());
 	}
 	bool[] PopulateContent()
 	{
 		bool[] existingTrackClasses = new bool[2];
+
+		//-----------------
+		void AddTrackImage(in string key, in Track value)
+		{
+			if(value.unlocked)
+			{
+				int trackOrigin = value.TrackOrigin();
+				var newtrack = Instantiate(trackImageTemplate, trackContent.GetChild(trackOrigin));
+				newtrack.name = key;
+				newtrack.GetComponent<Image>().sprite = Resources.Load<Sprite>(Info.trackImagesPath + key);
+				newtrack.SetActive(true);
+				existingTrackClasses[trackOrigin] = true;
+				if (persistentSelectedTrack != null && persistentSelectedTrack == key)
+					selectedTrack = newtrack.transform;
+			}
+		}
+		//-------------------
+
 		for (int i = 0; i < trackContent.childCount; ++i)
 		{ // remove tracks from previous entry
 			Transform trackClass = trackContent.GetChild(i);
@@ -139,20 +152,14 @@ public class TrackSelector : MonoBehaviour
 				Destroy(trackClass.GetChild(j).gameObject);
 			}
 		}
-		foreach (var track in Info.tracks)
-		{ // populate track grid
-			if (track.Value.unlocked)
-			{
-				int trackOrigin = track.Value.TrackOrigin();
-				var newtrack = Instantiate(trackImageTemplate, trackContent.GetChild(trackOrigin));
-				newtrack.name = track.Key;
-				newtrack.GetComponent<Image>().sprite = Resources.Load<Sprite>(Info.trackImagesPath + track.Key);
-				newtrack.SetActive(true);
-				existingTrackClasses[trackOrigin] = true;
-				if (persistentSelectedTrack != null && persistentSelectedTrack == track.Key)
-					selectedTrack = newtrack.transform;
-			}
-		}
+		string[] sortedTracks;
+		// populate track grid	
+		if (curSortingCondition == SortingCond.Name)
+			sortedTracks = Info.tracks.OrderBy(t => t.Key).Select(kv => kv.Key).ToArray();
+		else //if(curSortingCondition == SortingCond.Difficulty)
+			sortedTracks = Info.tracks.OrderBy(t => t.Value.difficulty).Select(kv => kv.Key).ToArray();
+		foreach (var tname in sortedTracks)
+			AddTrackImage(tname, Info.tracks[tname]);
 		return existingTrackClasses;
 	}
 	IEnumerator Load()
@@ -163,18 +170,15 @@ public class TrackSelector : MonoBehaviour
 
 		yield return null; // wait for one frame for active objects to refresh
 
-		// set buttons
 		for (int i = 0; i < existingTrackClasses.Length; ++i)
 		{
 			if (selectedTrack == null && existingTrackClasses[i])
-			{
 				selectedTrack = trackContent.GetChild(i).GetChild(0);
-			}
-			// disable car classes without children (required for sliders to work)
+			// disable track classes without children (required for sliders to work)
 			trackContent.GetChild(i).gameObject.SetActive(existingTrackClasses[i]);
 		}
 		SetTiles();
-		
+		SetRecords();
 		radial.gameObject.SetActive(selectedTrack);
 		startButton.Select();
 
@@ -184,7 +188,6 @@ public class TrackSelector : MonoBehaviour
 		}
 		else
 		{
-			buttonsContainer.GetChild(selectedTrack.parent.GetSiblingIndex()).GetComponent<MainMenuButton>().Select();
 			trackDescText.text = Info.tracks[selectedTrack.name].desc;
 			radial.SetAnimTo(selectedTrack.parent.GetSiblingIndex());
 		}
@@ -193,22 +196,58 @@ public class TrackSelector : MonoBehaviour
 		radial.SetChildrenActive(existingTrackClasses);
 			
 		Debug.Log(selectedTrack);
+		loadCo = false;
+	}
+	void SetRecords()
+	{
+		for(int i=0; i<recordsContainer.childCount; ++i)
+		{
+			Transform record = recordsContainer.GetChild(i);
+			Record recordData = Info.tracks[selectedTrack.name].records[i];
+
+			string valueStr = (recordData == null || recordData.playerName == null) ? "-" : recordData.playerName;
+			record.GetChild(1).GetComponent<Text>().text = valueStr;
+			if (recordData == null || recordData.secondsOrPts == 0)
+				valueStr = "-";
+			else
+			{
+				if (recordData.isTime)
+					valueStr = TimeSpan.FromSeconds(recordData.secondsOrPts).ToString(@"hh\:mm\:ss\:ff");
+				else
+					valueStr = recordData.secondsOrPts.ToString();
+			}
+			record.GetChild(2).GetComponent<Text>().text = valueStr;
+			
+			if (recordData != null && recordData.secondsOrPts > recordData.requiredSecondsOrPts)
+				record.GetChild(2).GetComponent<Text>().color = Color.yellow;
+			else
+				record.GetChild(2).GetComponent<Text>().color = Color.white;
+			
+		}
 	}
 	void SetTiles()
 	{
-		void AddTile(in string spriteName)
+		void AddTile(string spriteName)
 		{
 			var tile = Instantiate(tilesContainer.GetChild(0).gameObject, tilesContainer);
 			tile.SetActive(true);
-			tile.GetComponent<Image>().sprite = Resources.Load<Sprite>(Info.trackImagesPath + spriteName);
+			tile.name = spriteName;
+			try
+			{
+				tile.GetComponent<Image>().sprite = Info.icons.First(i => i.name == spriteName);
+			}
+			catch
+			{
+				Debug.LogError(spriteName);
+			}
 		}
 
 		for (int i = 1; i < tilesContainer.childCount; ++i)
 			Destroy(tilesContainer.GetChild(i).gameObject);
 
 		AddTile(Enum.GetName(typeof(Info.CarGroup),Info.tracks[selectedTrack.name].preferredCarClass));
-		AddTile(Enum.GetName(typeof(Info.CarGroup), Info.tracks[selectedTrack.name].envir));
-		AddTile(Info.tracks[selectedTrack.name].trackDifficulty.ToString());
+		AddTile(Enum.GetName(typeof(Info.Envir), Info.tracks[selectedTrack.name].envir));
+		AddTile(Info.tracks[selectedTrack.name].difficulty.ToString());
 		foreach (var flag in Info.tracks[selectedTrack.name].flags)
 			AddTile(Info.flagNames[flag]);
 	}
@@ -217,12 +256,17 @@ public class TrackSelector : MonoBehaviour
 	{
 		if (!selectedTrack || loadCo)
 			return;
-		int x = Input.GetKeyDown(KeyCode.D) ? 1 : Input.GetKeyDown(KeyCode.A) ? -1 : 0;
-		int y = Input.GetKeyDown(KeyCode.W) ? -1 : Input.GetKeyDown(KeyCode.S) ? 1 : 0;
+		int mult = Input.GetKey(KeyCode.LeftShift) ? 5 : 1;
+		int x = Input.GetKeyDown(KeyCode.D) ? mult : Input.GetKeyDown(KeyCode.A) ? -mult : 0;
+		int y = Input.GetKeyDown(KeyCode.W) ? -mult : Input.GetKeyDown(KeyCode.S) ? mult : 0;
+		bool gotoHome = Input.GetKeyDown(KeyCode.Home);
+		bool gotoEnd = Input.GetKeyDown(KeyCode.End);
 
-		if (x != 0 || y != 0)
+		if (x != 0 || y != 0 || gotoHome || gotoEnd)
 		{
-			int posx = x + selectedTrack.GetSiblingIndex();
+			int posx = gotoHome ? 0 : gotoEnd ? selectedTrack.parent.childCount-1 : x + selectedTrack.GetSiblingIndex();
+			if (posx < 0)
+				posx = 0;
 			int posy = y + selectedTrack.parent.GetSiblingIndex();
 			if (posy >= 0 && posy <= 3 && posx>=0)
 			{
@@ -234,18 +278,19 @@ public class TrackSelector : MonoBehaviour
 						if (posx >= selectedClass.childCount)
 							posx = selectedClass.childCount - 1;
 						selectedTrack = selectedClass.GetChild(posx);
-						Debug.Log(selectedTrack);
+						//Debug.Log(selectedTrack);
 						break;
 					}
 					i = (y > 0) ? (i + 1) : (i - 1);
 				}
 
-				// new car has been selected
+				// new track has been selected
 				// set description
 				trackDescText.text = Info.tracks[selectedTrack.name].desc;
-				// set bars
 				radial.SetAnimTo(selectedTrack.parent.GetSiblingIndex());
-				// focus on car
+				SetTiles();
+				SetRecords();
+				// focus on track
 				if (containerCo != null)
 					StopCoroutine(containerCo);
 				containerCo = StartCoroutine(MoveToTrack());
@@ -263,7 +308,7 @@ public class TrackSelector : MonoBehaviour
 			-selectedTrack.parent.GetComponent<RectTransform>().anchoredPosition.y);
 		Vector2 scrollInitPos = new Vector2(scrollx.value, scrolly.value);
 		Vector2 scrollInitSize = new Vector2(scrollx.size, scrolly.size);
-		float trackInGroupPos = selectedTrack.GetSiblingIndex() / (selectedTrack.parent.childCount - 1);
+		float trackInGroupPos = Info.InGroupPos(selectedTrack);
 		float groupPos = trackContent.PosAmongstActive(selectedTrack.parent, false);
 		Vector2 scrollTargetPos = new Vector2(trackInGroupPos, groupPos);
 		Vector2 scrollTargetSize = new Vector2(1f / selectedTrack.parent.ActiveChildren(), 1f / trackContent.ActiveChildren());

@@ -152,7 +152,7 @@ MonoBehaviour:
     m_HighlightedSprite: {fileID: -1598817372, guid: ff9ffb50dd31f864c9d95e1662af2f74,
       type: 3}
     m_PressedSprite: {fileID: 304937427, guid: ff9ffb50dd31f864c9d95e1662af2f74, type: 3}
-    m_SelectedSprite: {fileID: -1997842530, guid: dfbed0115b25eb64e99fabcc4967047b,
+    m_SelectedSprite: {fileID: -1598817372, guid: ff9ffb50dd31f864c9d95e1662af2f74,
       type: 3}
     m_DisabledSprite: {fileID: -1763772631, guid: ff9ffb50dd31f864c9d95e1662af2f74,
       type: 3}
@@ -166,19 +166,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 8008391774863635960}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: MainMenuView, Assembly-CSharp
-        m_MethodName: GoToView
-        m_Mode: 2
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!222 &8008391774863635961
 CanvasRenderer:
   m_ObjectHideFlags: 0

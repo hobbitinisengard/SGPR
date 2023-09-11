@@ -4,13 +4,7 @@ using UnityEngine.UI;
 public class ButtonLayout : LayoutGroup
 {
 	public float offset;
-	Axis axis;
-	protected override void OnEnable()
-	{
-		base.OnEnable();
-		UpdateAxis();
-		Calculate();
-	}
+	
 	public override void SetLayoutHorizontal()
 	{
 	}
@@ -19,28 +13,24 @@ public class ButtonLayout : LayoutGroup
 	}
 	public override void CalculateLayoutInputVertical()
 	{
-		Calculate();
-	}
-	void UpdateAxis()
-	{
-		if (transform.GetChild(0).GetComponent<SlideInOut>().inSlideDirection.x != 0)
-			axis = Axis.Y;
-		else
-			axis = Axis.X;
+		//Calculate();
 	}
 	public override void CalculateLayoutInputHorizontal()
 	{
-		Calculate();
+		//Calculate();
 	}
 #if UNITY_EDITOR
 	protected override void OnValidate()
 	{
 		base.OnValidate();
-		UpdateAxis();
 		Calculate();
 	}
 #endif
-
+	protected override void OnEnable()
+	{
+		base.OnEnable();
+		Calculate();
+	}
 	protected override void OnDisable()
 	{
 		m_Tracker.Clear(); // key change - do not restore - false
@@ -60,23 +50,14 @@ public class ButtonLayout : LayoutGroup
 			if ((child != null) && child.gameObject.activeSelf)
 			{
 				//Adding the elements to the tracker stops the user from modifying their positions via the editor.
-				m_Tracker.Add(this, child,
-				DrivenTransformProperties.Anchors |
-				DrivenTransformProperties.AnchoredPositionY |
-				DrivenTransformProperties.Pivot);
-				switch (axis)
-				{
-					case Axis.Y:
-						child.anchoredPosition = new Vector3(child.anchoredPosition.x,
+
+				child.anchoredPosition = new Vector3(child.anchoredPosition.x,
 							-(offset + activeCount * child.rect.height));
-						break;
-					case Axis.X:
-						child.anchoredPosition = new Vector3(-(offset + activeCount * child.rect.width),
-							child.anchoredPosition.y);
-						break;
-					default:
-						break;
-				}
+				m_Tracker.Add(this, child,
+					DrivenTransformProperties.Anchors |
+					DrivenTransformProperties.AnchoredPositionY |
+					DrivenTransformProperties.Pivot);
+
 				child.anchorMin = child.anchorMax = child.pivot = new Vector2(0, 1);
 				activeCount++;
 			}

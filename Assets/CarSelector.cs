@@ -150,7 +150,7 @@ public class CarSelector : MonoBehaviour
 			-selectedCar.parent.GetComponent<RectTransform>().anchoredPosition.y);
 		Vector2 scrollInitPos = new Vector2(scrollx.value, scrolly.value);
 		Vector2 scrollInitSize = new Vector2(scrollx.size, scrolly.size);
-		float carInGroupPos = selectedCar.GetSiblingIndex() / (selectedCar.parent.childCount - 1);//.parent.PosAmongstActive(selectedCar, false);
+		float carInGroupPos = Info.InGroupPos(selectedCar);//.parent.PosAmongstActive(selectedCar, false);
 		float groupPos = carContent.PosAmongstActive(selectedCar.parent, false);
 		Vector2 scrollTargetPos = new Vector2(carInGroupPos, groupPos);
 		Vector2 scrollTargetSize = new Vector2(1f / selectedCar.parent.ActiveChildren(), 1f / carContent.ActiveChildren());
