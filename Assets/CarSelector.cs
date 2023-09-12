@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.UIElements.Experimental;
 
-public class CarSelector : MonoBehaviour
+public class CarSelector : Sfxable
 {
 	public RectTransform[] bars;
 	public Text carDescText;
@@ -111,20 +111,26 @@ public class CarSelector : MonoBehaviour
 			int posy = y + selectedCar.parent.GetSiblingIndex();
 			if (posy >= 0 && posy <= 3 && posx>=0)
 			{
+				Transform tempSelectedCar = null;
 				for (int i = posy; i < carContent.childCount && i >= 0;)
 				{
 					Transform selectedClass = carContent.GetChild(i);
+					
 					if (selectedClass.childCount > 0)
 					{
 						if (posx >= selectedClass.childCount)
 							posx = selectedClass.childCount - 1;
-						selectedCar = selectedClass.GetChild(posx);
-						Debug.Log(selectedCar);
+						tempSelectedCar = selectedClass.GetChild(posx);
+						Debug.Log(tempSelectedCar);
 						break;
 					}
 					i = (y > 0) ? (i + 1) : (i - 1);
 				}
-
+				if(tempSelectedCar != selectedCar)
+				{
+					selectedCar = tempSelectedCar;
+					PlaySFX("fe-bitmapscroll");
+				}
 				// new car has been selected
 				// set description
 				carDescText.text = Info.cars[selectedCar.name].desc;
@@ -194,5 +200,5 @@ public class CarSelector : MonoBehaviour
 			yield return null;
 		}
 	}
-
+	
 }

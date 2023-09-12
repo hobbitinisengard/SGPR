@@ -16,7 +16,8 @@ public static class Info
 	public static readonly string trackImagesPath = "trackImages/";
 	public static Dictionary<string, Car> cars;
 	public static SortedDictionary<string, Track> tracks;
-
+	public static Dictionary<string, AudioClip> audioClips;
+	public static bool loaded = false;
 	// next session data
 	public static CarSetup[] s_carSetups;
 	public static string s_trackName;
@@ -38,7 +39,8 @@ public static class Info
 	{
 		if (cars == null)
 			cars = new Dictionary<string, Car>();
-
+		else
+			return;
 		cars.Add("car01", new Car(0,CarGroup.Speed, "MEAN STREAK\n\nFast, light and agile, this racer offers much for those who wish to modify their vehicle."));
 		cars.Add("car02", new Car(0,CarGroup.Wild, "THE HUSTLER\n\nSturdy 4x4 pick-up truck with an eye for the outrageous!"));
 		cars.Add("car03", new Car(0,CarGroup.Aero, "TWIN EAGLE\n\nTake flight with this light and speedy stuntcar."));
@@ -69,6 +71,8 @@ public static class Info
 	{
 		if (tracks == null)
 			tracks = new SortedDictionary<string, Track>();
+		else
+			return;
 		// 0         1			2			3			4					5				6				7		8			9
 		//"stunty", "loop", "jumpy", "windy", "intersecting", "no_pit", "no_jumps", "icy", "sandy", "offroad"
 		//										unlock   preffered				   author            flags          
@@ -113,6 +117,17 @@ public static class Info
 			return 0;
 		return (float)child.GetSiblingIndex() / (child.parent.childCount - 1);
 	}
+	internal static void PopulateSFXData()
+	{
+		var clipsSFX = Resources.LoadAll<AudioClip>("sfx");
+		if (audioClips == null)
+			audioClips = new Dictionary<string, AudioClip>();
+		else
+			return;
+		foreach (var c in clipsSFX)
+			audioClips.Add(c.name, c);
+	}
+	
 }
 
 public class Track

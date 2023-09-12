@@ -4,7 +4,7 @@ using UnityEngine.UI;
 using RVP;
 using System.Collections;
 
-public class MainMenuButton : MonoBehaviour, ISelectHandler, IDeselectHandler
+public class MainMenuButton : Sfxable, ISelectHandler, IDeselectHandler, ISubmitHandler
 {
 	static Color32 deselectedColor = new Color32(200, 198, 250, 255);
 	static Color32 selectedColor = new Color32(255, 255, 255, 255);
@@ -19,13 +19,17 @@ public class MainMenuButton : MonoBehaviour, ISelectHandler, IDeselectHandler
 		text = transform.GetChild(0).GetComponent<Text>();
 		text.color = deselectedColor;
 		buttonComponent = GetComponent<Button>();
-		mainMenuView = transform.FindParentComponent<MainMenuView>();//transform.parent.GetComponent<MainMenuView>();
+		mainMenuView = transform.FindParentComponent<MainMenuView>();
+	}
+	public void OnSubmit(BaseEventData eventData)
+	{
+		PlaySFX("fe-dialogconfirm");
 	}
 	public void OnDeselect(BaseEventData eventData)
 	{
 		text.color = deselectedColor;
+		PlaySFX("fe-dialogmove");
 	}
-
 	public void OnSelect(BaseEventData eventData)
 	{
 		text.color = selectedColor;
@@ -38,6 +42,7 @@ public class MainMenuButton : MonoBehaviour, ISelectHandler, IDeselectHandler
 		{
 			mainMenuView.bottomText.text = BottomTextOnSelect;
 		}
+
 	}
 	public void Select()
 	{
@@ -60,5 +65,6 @@ public class MainMenuButton : MonoBehaviour, ISelectHandler, IDeselectHandler
 			yield return null;
 		}
 	}
+
 	
 }

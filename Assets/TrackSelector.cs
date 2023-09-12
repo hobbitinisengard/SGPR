@@ -7,7 +7,7 @@ using System.Linq;
 using static Track;
 using TMPro;
 
-public class TrackSelector : MonoBehaviour
+public class TrackSelector : Sfxable
 {
 	private enum SortingCond { Difficulty, Name };
 	public TextMeshProUGUI trackDescText;
@@ -27,12 +27,12 @@ public class TrackSelector : MonoBehaviour
 	public Text catchupButtonText;
 	public Transform tilesContainer;
 	public Transform recordsContainer;
-
 	Transform selectedTrack;
 	string persistentSelectedTrack;
 	SortingCond curSortingCondition = SortingCond.Difficulty;
 	Coroutine containerCo;
 	bool loadCo;
+
 	public void SortTrackList()
 	{
 		curSortingCondition = (SortingCond)(((int)curSortingCondition + 1) % 2);
@@ -67,7 +67,7 @@ public class TrackSelector : MonoBehaviour
 	public void SwitchDayNight()
 	{
 		Info.s_isNight = !Info.s_isNight;
-		nightButtonText.text = Info.s_isNight ? "Nighttime" : "Daytime";
+		nightButtonText.text = Info.s_isNight ? "Night" : "Daytime";
 	}
 	public void SwitchCPULevel()
 	{
@@ -270,6 +270,7 @@ public class TrackSelector : MonoBehaviour
 			int posy = y + selectedTrack.parent.GetSiblingIndex();
 			if (posy >= 0 && posy <= 3 && posx>=0)
 			{
+				Transform tempSelectedTrack = null;
 				for (int i = posy; i < trackContent.childCount && i >= 0;)
 				{
 					Transform selectedClass = trackContent.GetChild(i);
@@ -277,13 +278,17 @@ public class TrackSelector : MonoBehaviour
 					{
 						if (posx >= selectedClass.childCount)
 							posx = selectedClass.childCount - 1;
-						selectedTrack = selectedClass.GetChild(posx);
-						//Debug.Log(selectedTrack);
+						tempSelectedTrack = selectedClass.GetChild(posx);
+						//Debug.Log(tempSelectedTrack);
 						break;
 					}
 					i = (y > 0) ? (i + 1) : (i - 1);
 				}
-
+				if(tempSelectedTrack != selectedTrack)
+				{
+					selectedTrack = tempSelectedTrack;
+					PlaySFX("fe-bitmapscroll");
+				}
 				// new track has been selected
 				// set description
 				trackDescText.text = Info.tracks[selectedTrack.name].desc;

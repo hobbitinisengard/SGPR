@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class EnterNameInputField : MonoBehaviour
+public class EnterNameInputField : Sfxable
 {
 	KeyCode[] allowedKeys = { KeyCode.Space, KeyCode.A, KeyCode.B, KeyCode.C, KeyCode.D, KeyCode.E, KeyCode.F, KeyCode.G, KeyCode.H, KeyCode.I, KeyCode.J, KeyCode.K, KeyCode.L, KeyCode.P, KeyCode.O, KeyCode.N, KeyCode.M, KeyCode.Q, KeyCode.R, KeyCode.S, KeyCode.T, KeyCode.U, KeyCode.V, KeyCode.W, KeyCode.X, KeyCode.Y, KeyCode.Z, KeyCode.Equals, KeyCode.Colon, KeyCode.LeftBracket, KeyCode.RightBracket };
 	public Sprite[] allowedKeysSprites;
@@ -20,6 +20,7 @@ public class EnterNameInputField : MonoBehaviour
 	{
 		if(Input.GetKeyDown(KeyCode.Backspace) && len > 0)
 		{
+			PlaySFX("fe-keydeleted");
 			if (len == 3)
 				OKButton.PlaySlideOut(true);
 			Destroy(transform.GetChild(transform.childCount - 2).gameObject);
@@ -33,6 +34,9 @@ public class EnterNameInputField : MonoBehaviour
 			{
 				if (Input.GetKeyDown(allowedKeys[i]))
 				{
+
+					PlaySFX("fe-keypressed");
+
 					var newletter = Instantiate(letterTemplate, transform);
 					newletter.GetComponent<Image>().sprite = allowedKeysSprites[i];
 					newletter.SetActive(true);

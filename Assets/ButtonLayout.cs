@@ -13,11 +13,11 @@ public class ButtonLayout : LayoutGroup
 	}
 	public override void CalculateLayoutInputVertical()
 	{
-		//Calculate();
+		Calculate();
 	}
 	public override void CalculateLayoutInputHorizontal()
 	{
-		//Calculate();
+		Calculate();
 	}
 #if UNITY_EDITOR
 	protected override void OnValidate()
