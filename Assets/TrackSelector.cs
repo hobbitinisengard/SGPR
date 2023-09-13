@@ -284,7 +284,7 @@ public class TrackSelector : Sfxable
 					}
 					i = (y > 0) ? (i + 1) : (i - 1);
 				}
-				if(tempSelectedTrack != selectedTrack)
+				if(tempSelectedTrack != null && tempSelectedTrack != selectedTrack)
 				{
 					selectedTrack = tempSelectedTrack;
 					PlaySFX("fe-bitmapscroll");

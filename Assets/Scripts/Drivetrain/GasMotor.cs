@@ -192,7 +192,7 @@ namespace RVP
         }
         public override void Update() {
             // Set audio pitch
-            if (snd && ignition) {
+            if (engineAudio && ignition) {
                 airPitch = vp.groundedWheels > 0 || actualAccel != 0 ? 1 : Mathf.Lerp(airPitch, 0, 0.5f * Time.deltaTime);
                 
                 targetPitch = Mathf.Abs((targetDrive.feedbackRPM * 0.001f) / limit2kRPM);

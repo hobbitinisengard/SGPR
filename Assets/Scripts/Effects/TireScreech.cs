@@ -56,7 +56,7 @@ namespace RVP
                         }
                     }
 
-                    screechAmount = Mathf.Max(screechAmount, Mathf.Pow(Mathf.Clamp01(Mathf.Abs(F.MaxAbs(wheels[i].sidewaysSlip, wheels[i].forwardSlip, alwaysScrape)) - slipThreshold), 2));
+                    screechAmount = Mathf.Max(screechAmount, Mathf.Pow(Mathf.Clamp01(Mathf.Abs(F.MaxAbs(2*wheels[i].sidewaysSlip, 2*wheels[i].forwardSlip, alwaysScrape)) - slipThreshold), 2));
                 }
             }
 
@@ -72,8 +72,9 @@ namespace RVP
                     snd.volume = 0;
                 }
                 else {
-                    snd.volume = Mathf.Lerp(snd.volume, screechAmount * ((vp.groundedWheels * 1.0f) / (wheels.Length * 1.0f)), 2 * Time.deltaTime);
-                    snd.pitch = Mathf.Lerp(snd.pitch, 0.5f + screechAmount * 0.9f, 2 * Time.deltaTime);
+                    snd.volume = Mathf.Lerp(snd.volume, 
+                       screechAmount * ((vp.groundedWheels * 1.0f) / (wheels.Length * 1.0f)), 8*Time.deltaTime);
+                    //snd.pitch = Mathf.Lerp(snd.pitch, 0.5f + screechAmount * 0.9f, 2 * Time.deltaTime);
                 }
             }
             else if (snd.isPlaying) {

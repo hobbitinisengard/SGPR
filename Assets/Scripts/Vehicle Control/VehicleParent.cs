@@ -130,6 +130,7 @@ namespace RVP
 		[Header("Crashing")]
 
 		public bool canCrash = true;
+		public AudioSource roadNoiseSnd;
 		public AudioSource crashSnd;
 		public AudioClip[] crashClips;
 		[System.NonSerialized]
@@ -229,6 +230,9 @@ namespace RVP
 			{
 				InheritInputOneShot();
 			}
+
+			if (groundedWheels == 0)
+				roadNoiseSnd.volume = groundedWheels == 0 ? 0 : Mathf.Lerp(0, 80, velMag);
 
 			if (brakeInput > 0 && !reversing)
 			{
@@ -529,19 +533,19 @@ namespace RVP
 		// Check for crashes and play collision sounds
 		void OnCollisionEnter(Collision col)
 		{
-			if (col.contacts.Length > 0 && groundedWheels == 0)
+			if (col.contacts.Length > 0)
 			{
 				foreach (ContactPoint curCol in col.contacts)
 				{
-					if (!curCol.thisCollider.CompareTag("Underside") && curCol.thisCollider.gameObject.layer != GlobalControl.ignoreWheelCastLayer)
+					if (curCol.thisCollider.gameObject.layer != GlobalControl.ignoreWheelCastLayer)
 					{
 						if (Vector3.Dot(curCol.normal, col.relativeVelocity.normalized) > 0.2f && col.relativeVelocity.sqrMagnitude > 20)
 						{
 							bool checkTow = true;
-							if (newTow)
-							{
-								checkTow = !curCol.otherCollider.transform.IsChildOf(newTow.transform);
-							}
+							//if (newTow)
+							//{
+							//	checkTow = !curCol.otherCollider.transform.IsChildOf(newTow.transform);
+							//}
 
 							if (checkTow)
 							{

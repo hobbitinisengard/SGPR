@@ -11,6 +11,7 @@ namespace RVP
 	// Transmission subclass for gearboxes
 	public class GearboxTransmission : Transmission
 	{
+		public AudioSource audioShift;
 		public Gear[] gears { get; private set; }
 		public int startGear;
 		[System.NonSerialized]
@@ -209,7 +210,8 @@ namespace RVP
 			if (health > 0) {
 				shiftTime = shiftDelay;
 				selectedGear += dir;
-
+				if(audioShift)
+					audioShift.Play();
 				//while ((skipNeutral || automatic) && gears[Mathf.Clamp(currentGear, 0, gears.Length - 1)].ratio == 0
 				//    && selectedGear != 0 && selectedGear != gears.Length - 1) {
 				//    selectedGear += dir;

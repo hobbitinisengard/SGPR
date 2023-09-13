@@ -23,7 +23,6 @@ public class SlideInOut : MonoBehaviour
 
 	void Awake()
 	{
-		timer = 0;
 		if (GetComponent<Button>())
 		{
 			type = Type.Button;
@@ -54,7 +53,6 @@ public class SlideInOut : MonoBehaviour
 			startPos = -inSlideDirection.x * (Screen.width / 2f + rt.rect.width/2f);
 		else
 			startPos = -inSlideDirection.y * (Screen.height / 2f + rt.rect.height/2f);
-		PlaySlideIn();
 	}
 	void SetImageTransp(float a)
 	{
@@ -88,21 +86,21 @@ public class SlideInOut : MonoBehaviour
 	}
 	void PlaySlide(Dir dir)
 	{
+
+		if (type == Type.Button || type == Type.ButtonContainer)
+			nextNode = NextNode();
 		this.dir = dir;
 		if (type == Type.Image)
 			canAnimate = true;
 		StartCoroutine(Play());
-		
 	}
 	private void OnDisable()
 	{
 		canAnimate = false;
-		timer = 0;
 	}
 	void OnEnable()
 	{
-		if(type == Type.Button || type == Type.ButtonContainer)
-			nextNode = NextNode();
+		timer = 0;
 		PlaySlideIn();
 	}
 	IEnumerator Play()

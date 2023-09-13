@@ -101,6 +101,12 @@ public class SGP_HUD : MonoBehaviour
 	float dimStuntTableTimer = -1;
 	float dimStuntTableTime = 1;
 	int d_select = 0;
+	int carStarLevel = 0;
+	AudioSource sfx;
+	private void Awake()
+	{
+		sfx = GetComponent<AudioSource>();
+	}
 	public void SetBottomTextPos(float posy)
 	{
 		Vector2 position = infoText_rt.anchoredPosition;
@@ -267,7 +273,13 @@ public class SGP_HUD : MonoBehaviour
 		//{
 		//    EndStuntSeq(false);
 		//}
-
+		if(racebox.starLevel > carStarLevel)
+		{
+			carStarLevel = racebox.starLevel;
+			sfx.clip = Info.audioClips["combo0" + Mathf.Clamp(carStarLevel / 2, 1, 5).ToString()];
+			sfx.Play();
+		}
+		carStarLevel = racebox.starLevel;
 
 		ptsAnim.Play(racebox.JumpPai);
 

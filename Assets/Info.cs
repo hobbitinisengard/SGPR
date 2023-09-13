@@ -76,16 +76,16 @@ public static class Info
 		// 0         1			2			3			4					5				6				7		8			9
 		//"stunty", "loop", "jumpy", "windy", "intersecting", "no_pit", "no_jumps", "icy", "sandy", "offroad"
 		//										unlock   preffered				   author            flags          
-		tracks.Add("track01", new Track(1, (CarGroup)2,6, Envir.FRA, "vo", new int[] { 2 }, "CRAZY STRAIGHTS\n\nThis long speed track offers opportunity for a number of jump stunts."));
-		tracks.Add("track02", new Track(1, (CarGroup)2,4, Envir.JAP, "vo", new int[] { 0 }, "BANK JOB\n\nThis short, speedy circuit offers a number of stunt opportunities and high-banks for sneaky overtaking."));
-		tracks.Add("track03", new Track(1, (CarGroup)1,7, Envir.JAP, "vo", new int[] { 2 }, "TUBULAR HELL\n\nA long and winding track with many ramps. Try not to climb too high in the tubular sections!"));
-		tracks.Add("track04", new Track(1, (CarGroup)2,6, Envir.FRA, "vo", new int[] { 2 }, "CURBED HEIGHTS\n\nA long, high track that is best navigated by hugging the racing line.."));
-		tracks.Add("track05", new Track(1, (CarGroup)1,8, Envir.ITA, "vo", new int[] { 2 }, "FLYING FINISH\n\nA short, tough and dramatic track with a huge jump over the finish line!"));
-		tracks.Add("track06", new Track(1, (CarGroup)1,7, Envir.SPN, "vo", new int[] { 2 }, "SECRET SIX\n\nAn exciting track with plenty of ramps and a cross-over."));
-		tracks.Add("track07", new Track(1, (CarGroup)0,8, Envir.SPN, "vo", new int[] { 8 }, "THE SANDWINDER\n\nA huge, winding off-road track featuring a very bumpy mid section and multi-level turns."));
-		tracks.Add("track08", new Track(1, (CarGroup)0,6, Envir.SPN, "vo", new int[] { 8,6 }, "ROUGHDUST FLATS\n\nThe only flat track in the original Stunt GP collection, this is far from a gentle experience!"));
-		tracks.Add("track09", new Track(1, (CarGroup)1,7, Envir.ENG, "vo", new int[] { 2 }, "THE LOOPBACK\n\nA long, fast track with many opportunities for jumps and stunts."));
-		tracks.Add("track10", new Track(1, (CarGroup)2,7, Envir.ENG, "vo", new int[] { 4 }, "INTERSECTOR\n\nA long, fast track with a multitude of mad crossovers!"));
+		tracks.Add("track01", new Track(1, (CarGroup)2,6, Envir.FRA, null, new int[] { 2 }, "CRAZY STRAIGHTS\n\nThis long speed track offers opportunity for a number of jump stunts."));
+		tracks.Add("track02", new Track(1, (CarGroup)2,4, Envir.JAP, null, new int[] { 0 }, "BANK JOB\n\nThis short, speedy circuit offers a number of stunt opportunities and high-banks for sneaky overtaking."));
+		tracks.Add("track03", new Track(1, (CarGroup)1,7, Envir.JAP, null, new int[] { 2 }, "TUBULAR HELL\n\nA long and winding track with many ramps. Try not to climb too high in the tubular sections!"));
+		tracks.Add("track04", new Track(1, (CarGroup)2,6, Envir.FRA, null, new int[] { 2 }, "CURBED HEIGHTS\n\nA long, high track that is best navigated by hugging the racing line.."));
+		tracks.Add("track05", new Track(1, (CarGroup)1,8, Envir.ITA, null, new int[] { 2 }, "FLYING FINISH\n\nA short, tough and dramatic track with a huge jump over the finish line!"));
+		tracks.Add("track06", new Track(1, (CarGroup)1,7, Envir.SPN, null, new int[] { 2 }, "SECRET SIX\n\nAn exciting track with plenty of ramps and a cross-over."));
+		tracks.Add("track07", new Track(1, (CarGroup)0,8, Envir.SPN, null, new int[] { 8 }, "THE SANDWINDER\n\nA huge, winding off-road track featuring a very bumpy mid section and multi-level turns."));
+		tracks.Add("track08", new Track(1, (CarGroup)0,6, Envir.SPN, null, new int[] { 8,6 }, "ROUGHDUST FLATS\n\nThe only flat track in the original Stunt GP collection, this is far from a gentle experience!"));
+		tracks.Add("track09", new Track(1, (CarGroup)1,7, Envir.ENG, null, new int[] { 2 }, "THE LOOPBACK\n\nA long, fast track with many opportunities for jumps and stunts."));
+		tracks.Add("track10", new Track(1, (CarGroup)2,7, Envir.ENG, null, new int[] { 4 }, "INTERSECTOR\n\nA long, fast track with a multitude of mad crossovers!"));
 		tracks.Add("track11", new Track(1, (CarGroup)1,6, Envir.SPN, null, new int[] { 2 }, "RISE'N'FALL\n\nHave you got the stomach for the massive climb and fall? Not to mention the loop!"));
 		tracks.Add("track12", new Track(1, (CarGroup)2,5, Envir.SPN, null, new int[] { 0 }, "WIDE WALL CHASE\n\nA very fast night track where you can use the burns for over-taking."));
 		tracks.Add("track13", new Track(1, (CarGroup)2,5, Envir.USA, null, new int[] { 3 }, "CURB CITY CIRCUIT\n\nA track of contrasts, straight outside and tricky inside."));
@@ -119,11 +119,12 @@ public static class Info
 	}
 	internal static void PopulateSFXData()
 	{
-		var clipsSFX = Resources.LoadAll<AudioClip>("sfx");
 		if (audioClips == null)
 			audioClips = new Dictionary<string, AudioClip>();
 		else
 			return;
+
+		var clipsSFX = Resources.LoadAll<AudioClip>("sfx");
 		foreach (var c in clipsSFX)
 			audioClips.Add(c.name, c);
 	}

@@ -126,7 +126,7 @@ public class CarSelector : Sfxable
 					}
 					i = (y > 0) ? (i + 1) : (i - 1);
 				}
-				if(tempSelectedCar != selectedCar)
+				if(tempSelectedCar != null && tempSelectedCar != selectedCar)
 				{
 					selectedCar = tempSelectedCar;
 					PlaySFX("fe-bitmapscroll");

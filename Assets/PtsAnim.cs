@@ -1,23 +1,7 @@
-using System.Globalization;
 using UnityEngine;
 using UnityEngine.UI;
-public class PtsAnim : MonoBehaviour
+public class PtsAnim : Sfxable
 {
-	public AnimationCurve scaleCurve;
-	public AnimationCurve visibilityCurve;
-	public Sprite jumpImage;
-	public Sprite EvoImage;
-	public Sprite[] digitsSprites;
-	public Image[] visibleDigits;
-	public Color[] colorLevels;
-	//public Color bronze;//FF9F00
-	//public Color silver;//FFFFFF
-	//public Color gold;//F1D200
-	//public Color violet; //EA3863
-	Image image;
-	RectTransform rt;
-	float timer;
-	float duration = 1;
 	public enum PtsAnimType { Jump, Evo };
 	public class PtsAnimInfo
 	{
@@ -37,6 +21,22 @@ public class PtsAnim : MonoBehaviour
 			this.level = pai.level;
 		}
 	}
+	public AnimationCurve scaleCurve;
+	public AnimationCurve visibilityCurve;
+	public Sprite jumpImage;
+	public Sprite EvoImage;
+	public Sprite[] digitsSprites;
+	public Image[] visibleDigits;
+	public Color[] colorLevels;
+	//public Color bronze;//FF9F00
+	//public Color silver;//FFFFFF
+	//public Color gold;//F1D200
+	//public Color violet; //EA3863
+	
+	Image image;
+	RectTransform rt;
+	float timer;
+	float duration = 1;
 	private void Start()
 	{
 		image = GetComponent<Image>();
@@ -46,6 +46,7 @@ public class PtsAnim : MonoBehaviour
 	// Update is called once per frame
 	void Update()
 	{
+
 		if (timer < duration)
 		{
 			rt.localScale = Vector3.one * scaleCurve.Evaluate(timer);
@@ -77,9 +78,15 @@ public class PtsAnim : MonoBehaviour
 		timer = 0;
 
 		if (pai.type == PtsAnimType.Jump)
+		{
 			image.sprite = jumpImage;
+			PlaySFX("swoosh2");
+		}
 		else
+		{
 			image.sprite = EvoImage;
+			PlaySFX("swoosh1");
+		}
 		pai.level = Mathf.Clamp(pai.level, 0, colorLevels.Length - 1);
 		image.color = colorLevels[pai.level];
 		rt.localScale = Vector3.zero;
@@ -103,7 +110,6 @@ public class PtsAnim : MonoBehaviour
 				Debug.Log(pai.score);
 				break;
 			}
-
 		}
 	}
 	float CountDigit(int number)

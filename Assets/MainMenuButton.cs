@@ -36,7 +36,8 @@ public class MainMenuButton : Sfxable, ISelectHandler, IDeselectHandler, ISubmit
 		if (dyndakSpriteOnSelect)
 		{
 			mainMenuView.dyndak.sprite = dyndakSpriteOnSelect;
-			mainMenuView.dyndak.GetComponent<SlideInOut>().PlaySlideIn();
+			mainMenuView.dyndak.gameObject.SetActive(false);
+			mainMenuView.dyndak.gameObject.SetActive(true);
 		}
 		if (!string.IsNullOrEmpty(BottomTextOnSelect))
 		{

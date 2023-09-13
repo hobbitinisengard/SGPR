@@ -32,7 +32,7 @@ public class RaceBox : MonoBehaviour
 	public int LapsCount { get; private set; }
 	public float w_A_dot;
 
-	public int starLevel;
+	public int starLevel { get; private set; }
 	public float grantedComboTime { get; private set; }
 	float maxAeroMeterVelocity = 0.05f;
 	float minAeroMeterVelocity = 0;
@@ -110,7 +110,8 @@ public class RaceBox : MonoBehaviour
 		{
 			if (!prevGroundedWheels0)
 			{
-				stableLandingTimer = 1;
+				
+				stableLandingTimer = .5f;
 				w = vp.rb.velocity;
 				//w.y = 0; 
 				w = w.normalized;
@@ -126,7 +127,7 @@ public class RaceBox : MonoBehaviour
 
 			prevGroundedWheels0 = true;
 
-			if (stableLandingTimer == 1)
+			if (stableLandingTimer == .5f)
 			{
 				Vector3 normA = vp.rb.angularVelocity.normalized;
 				Vector3 lA = vp.transform.InverseTransformDirection(vp.rb.angularVelocity);

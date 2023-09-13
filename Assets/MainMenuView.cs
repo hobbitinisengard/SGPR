@@ -37,8 +37,8 @@ public class MainMenuView : Sfxable
 			GoToView(prevView);
 			PlaySFX("fe-dialogcancel");
 		}
-		if (Input.GetKeyDown(KeyCode.Alpha1))
-			Info.AddCar();
+		//if (Input.GetKeyDown(KeyCode.Alpha1))
+		//	Info.AddCar();
 	}
 	public void GoToView(GameObject view)
 	{
