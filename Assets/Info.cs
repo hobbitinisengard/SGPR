@@ -10,6 +10,17 @@ public static class Info
 	public static readonly int RaceTypes = 5;
 	public enum Envir { GER, JAP, SPN, FRA, ENG, USA, ITA, MEX };
 	public static readonly int Environments = 8;
+	public static readonly string[] EnvirDescs =
+	{
+		"GERMANY\n\nLoud crowd cheering and powerful spotlights..This german arena is really a place to show off.",
+		"JAPAN\n\nHere in this calm japanese dojo placed on the outskirts of a big city you can meditate, or organize a race!",
+		"SPAIN\n\nBeaches like this usually ooze holidays. This is not an exception: beach, palms, and sun.. What could people possibly want more? Maybe a RC car race :)",
+		"FRANCE\n\nThis shadowy warehouse is full of boxes, forklifts and machinery. There are some really dark places here.", 
+		"ENGLAND\n\nEnglish go-kart track is a fantastic location to test your driving skills. This place has a reputation for great races.",
+		"USA\n\nAre you looking for an intense experience? Racing on top of a multistorey parking lot located in the heart of New York will be a bombastic idea!",
+		"ITALY\n\nFeeling mediterranean? This italian coast is very scenic, especially at night. There are two dangers here to look out however: staircase descent and water!",
+		"MEXICO\n\nOnly some people are in the possession of info that there's this ancient place located in the middle of an unknown forest, where aztecs used to race RC-cars. However no-one really knows how to get there."
+	};
 	public enum CarGroup { Wild, Aero, Speed, Team };
 	public enum TrackOrigin { Original, Custom};
 	public static readonly string carImagesPath = "carImages/";
@@ -29,7 +40,7 @@ public static class Info
 	public static bool s_reversed = false;
 	public static bool s_catchup = true;
 
-	public static string[] flagNames =
+	public static readonly string[] flagNames =
 	{
 		"Stunty", "Loop", "Jumpy", "Windy", "Intersecting", "No_pit", "No_jumps", "Icy", "Sandy", "Offroad"
 	};

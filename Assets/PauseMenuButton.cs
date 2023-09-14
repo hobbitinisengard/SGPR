@@ -28,7 +28,6 @@ public class PauseMenuButton : Sfxable, ISelectHandler, IDeselectHandler
 	}
 	private void Update()
 	{
-
 		if (selected)
 		{
 			if (Time.unscaledTime - timeStart >= 1)
@@ -56,12 +55,10 @@ public class PauseMenuButton : Sfxable, ISelectHandler, IDeselectHandler
 	{
 		selected = true;
 	}
-
 	public void OnDeselect(BaseEventData eventData)
 	{
 		PlaySFX("menublip1", true);
 		selected = false;
 		text.color = new Color32(255, 255, 255, 255);
 	}
-
 }
