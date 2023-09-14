@@ -1,9 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using static Info;
 public static class Info
 {
+	public readonly static string userdata_path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Stunt GP Reloaded\\userdata.txt";
+	public readonly static string path_path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Stunt GP Reloaded\\path.txt";
+	public readonly static string documents_sgpr_path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Stunt GP Reloaded";
 	public enum Livery { Caltex, Rline, Mysuko, Titan, Itex, TGR, Special}
 	public static readonly int Liveries = 7;
 	public enum RaceType { Race, Stunt, Drift, Knockout, Survival};
@@ -14,12 +18,12 @@ public static class Info
 	{
 		"GERMANY\n\nLoud crowd cheering and powerful spotlights..This german arena is really a place to show off.",
 		"JAPAN\n\nHere in this calm japanese dojo placed on the outskirts of a big city you can meditate, or organize a race!",
-		"SPAIN\n\nBeaches like this usually ooze holidays. This is not an exception: beach, palms, and sun.. What could people possibly want more? Maybe a RC car race :)",
+		"SPAIN\n\nBeaches like this usually ooze holidays. This is not an exception: warm sand, palms, and sun.. What could people possibly want more? Maybe a RC car race :)",
 		"FRANCE\n\nThis shadowy warehouse is full of boxes, forklifts and machinery. There are some really dark places here.", 
-		"ENGLAND\n\nEnglish go-kart track is a fantastic location to test your driving skills. This place has a reputation for great races.",
+		"ENGLAND\n\nEnglish go-kart track is a good location to test your driving skills. This place has a reputation for great races.",
 		"USA\n\nAre you looking for an intense experience? Racing on top of a multistorey parking lot located in the heart of New York will be a bombastic idea!",
 		"ITALY\n\nFeeling mediterranean? This italian coast is very scenic, especially at night. There are two dangers here to look out however: staircase descent and water!",
-		"MEXICO\n\nOnly some people are in the possession of info that there's this ancient place located in the middle of an unknown forest, where aztecs used to race RC-cars. However no-one really knows how to get there."
+		"MEXICO\n\nOnly some people are in the possession of info that there's this ancient place located in the middle of an unknown mexican forest, where aztecs used to race RC-cars. However no-one really knows how to get there."
 	};
 	public enum CarGroup { Wild, Aero, Speed, Team };
 	public enum TrackOrigin { Original, Custom};
@@ -29,11 +33,13 @@ public static class Info
 	public static SortedDictionary<string, Track> tracks;
 	public static Dictionary<string, AudioClip> audioClips;
 	public static bool loaded = false;
+
 	// next session data
 	public static CarSetup[] s_carSetups;
 	public static string s_trackName;
 	public static RaceType s_raceType = RaceType.Race;
 	public static int s_laps = 3;
+	public static bool s_inEditor = true;
 	public static bool s_isNight = false;
 	public static int s_cpuLevel = 20;
 	public static int s_rivals = 3;
@@ -139,7 +145,39 @@ public static class Info
 		foreach (var c in clipsSFX)
 			audioClips.Add(c.name, c);
 	}
-	
+
+	/// <summary>
+	/// Loads latest path from StreamingAssets/Path.txt
+	/// </summary>
+	/// <returns></returns>
+	public static string LoadLastFolderPath()
+	{
+		string MyDocuments = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+
+		StreamReader w = new StreamReader(path_path);
+		string LastTrackPath = w.ReadLine();
+		w.Close();
+		if (LastTrackPath == "")
+			LastTrackPath = MyDocuments;
+		//Debug.Log("LoadPath:" + LastTrackPath);
+		return LastTrackPath;
+	}
+
+	/// <summary>
+	/// Saves latest path to Documents\Crashday 3D Editor\path.txt
+	/// </summary>
+	public static void SaveLastFolderPath(string path)
+	{
+		if (path == null)
+		{
+			Debug.LogError("path null");
+			return;
+		}
+		Debug.Log(path);
+		StreamWriter w = new StreamWriter(path_path);
+		w.WriteLine(path);
+		w.Close();
+	}
 }
 
 public class Track

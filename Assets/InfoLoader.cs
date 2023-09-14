@@ -8,5 +8,4 @@ public class InfoLoader : MonoBehaviour
 		Info.icons = Resources.LoadAll<Sprite>(Info.trackImagesPath + "tiles");
 		Info.PopulateSFXData();
 	}
-	
 }

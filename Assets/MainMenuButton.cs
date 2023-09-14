@@ -43,7 +43,6 @@ public class MainMenuButton : Sfxable, ISelectHandler, IDeselectHandler, ISubmit
 		{
 			mainMenuView.bottomText.text = BottomTextOnSelect;
 		}
-
 	}
 	public void Select()
 	{
@@ -53,7 +52,7 @@ public class MainMenuButton : Sfxable, ISelectHandler, IDeselectHandler, ISubmit
 			buttonComponent.Select();
 	}
 	IEnumerator SelectBtn()
-	{
+	{ 
 		float timer = 1;
 		while (timer > 0)
 		{

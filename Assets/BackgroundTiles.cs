@@ -5,7 +5,8 @@ public class BackgroundTiles : MonoBehaviour
 {
 	Vector2 tileDimensions;
 	static Vector2 movementDir = Vector2.zero;
-	public float speed;
+	float baseSpeed;
+	public float speed = 1;
 	RectTransform rt;
 	public Sprite tileBlack;
 	public Sprite tileDarkGreen;
@@ -32,7 +33,7 @@ public class BackgroundTiles : MonoBehaviour
 		if(movementDir == Vector2.zero)
 			RandomizeMovement();
 		
-		speed = Mathf.Sqrt(2) * dim / 3f;
+		baseSpeed = Mathf.Sqrt(2) * dim / 3f;
 	}
 	public void SwitchBackgroundTo(in Sprite sprite)
 	{
@@ -46,7 +47,7 @@ public class BackgroundTiles : MonoBehaviour
 		if (Mathf.Abs(pos.x) >= tileDimensions.x)
 			pos = Vector2.zero;
 
-		pos += movementDir * speed * Time.deltaTime;
+		pos += movementDir * speed * baseSpeed * Time.deltaTime;
 		transform.localPosition = pos;
 	}
 	public void RandomizeMovement()

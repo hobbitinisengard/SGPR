@@ -3,9 +3,559 @@ guid: 75f75626432fb764fa111376095841b0
 ModelImporter:
   serializedVersion: 21300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_128flag
+    second: {fileID: 2100000, guid: 9bd63481b23a6bf4a8925f4486ee25a9, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_128flag.png
+    second: {fileID: 2100000, guid: a84d334d47df3fe4f93f42172e27702d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_128gardenrock
+    second: {fileID: 2100000, guid: 3078ac54adefb2442926ccdf9864b59c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_128gardenrock.png
+    second: {fileID: 2100000, guid: 914e39bb5fb7fb547880d4fc28dc9154, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_128gate
+    second: {fileID: 2100000, guid: 25dd40c701562d54895ad278d2fc2035, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_128gate.png
+    second: {fileID: 2100000, guid: ffe47c919844ac34da1c04334ba8041e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_128gateroof
+    second: {fileID: 2100000, guid: 5bfd844a7630f32459c093b461e936cd, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_128gateroof.png
+    second: {fileID: 2100000, guid: dde448ee129382840955d19458b8ecb8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_128mainwall2
+    second: {fileID: 2100000, guid: d5d4534bc4ff8eb4ca2abe433417f8c2, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_128mainwall2.png
+    second: {fileID: 2100000, guid: a481b72464726924d9857302f329c7da, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_128mainwallx
+    second: {fileID: 2100000, guid: 809d89d440656734596ff52d049ba73e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_128mainwallx.png
+    second: {fileID: 2100000, guid: 15ba9be341ef1c14b957b6d1f707fd9b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_128paving
+    second: {fileID: 2100000, guid: 78ebd3b75437ea243aee24c085bc6262, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_128paving.png
+    second: {fileID: 2100000, guid: 37f9eb7f098a8294a80b2e64336aa580, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_128plantsjap
+    second: {fileID: 2100000, guid: 3c90c1355a42f8343890ab9443bc7201, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_128plantsjap.png
+    second: {fileID: 2100000, guid: b0cc6514a2329b04886d396b689335e4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_128tembarrier
+    second: {fileID: 2100000, guid: 1cd8ad4d418ae924cbb82e7c561a5ed6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_128tembarrier.png
+    second: {fileID: 2100000, guid: 0702f1b0e21e6a74e9ac84cbb457c3df, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_128temple2
+    second: {fileID: 2100000, guid: 91f7007451effaf42b76e266394ea64a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_128temple2.png
+    second: {fileID: 2100000, guid: 7406d97196da3e84da4793555a8eb52f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_128tree1
+    second: {fileID: 2100000, guid: 9708fdeed457f014ca140b21e74d5fa1, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_128tree1.png
+    second: {fileID: 2100000, guid: 45328fa28244258499f265d455b0b0b4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_128woodwall
+    second: {fileID: 2100000, guid: 5cf9415a7aabeb44c8182a62b44ec0b2, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_128woodwall.png
+    second: {fileID: 2100000, guid: 5080702abdfe8584a8c0e158eb93b6d6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_256pagoda
+    second: {fileID: 2100000, guid: 0dc54258b6f575340a0c0808cadd0789, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_256pagoda.png
+    second: {fileID: 2100000, guid: 02b9935149596434bb81751bfd695abc, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_256pillargate
+    second: {fileID: 2100000, guid: c582c20d762b567468324808b30299b8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_256pillargate.png
+    second: {fileID: 2100000, guid: a0516afc78f7f0e4cb374171129f8a00, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_256roof
+    second: {fileID: 2100000, guid: 2e71660851cc9114a9f4ccdf72a93b4f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_256roof.png
+    second: {fileID: 2100000, guid: c9ab712b9d5add14c97186c26c14472c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_256wall3
+    second: {fileID: 2100000, guid: 9a3869e4080687441855992d57dcf937, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_256wall3.png
+    second: {fileID: 2100000, guid: 77d33f1271a5f31488dc1228b2f39780, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_64grass
+    second: {fileID: 2100000, guid: f5149cddaa33fc9438a6f6e128b35f5e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_64grass.png
+    second: {fileID: 2100000, guid: 41b639c93b1cd0f48aac398fbdb87da7, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_64grassgate
+    second: {fileID: 2100000, guid: df1e99bb419007e4e94516804bb60aa5, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_64grassgate.png
+    second: {fileID: 2100000, guid: 69b6357e753ca874aa1ebb4d64e3137e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_64grasspath
+    second: {fileID: 2100000, guid: 08488e2e6325f8d46992384e44d36270, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_64grasspath.png
+    second: {fileID: 2100000, guid: 0c29397d15a099e47ad917b341d627b6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_64japflag
+    second: {fileID: 2100000, guid: 2a02ba71208c1e04a95f52cc360ee5fb, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_64japflag.png
+    second: {fileID: 2100000, guid: 41b3426d2b6697042898e2bbcf0527e8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_64mainbar
+    second: {fileID: 2100000, guid: ff7c1c30b889e004ea2aeb3d8f1234bc, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_64mainbar.png
+    second: {fileID: 2100000, guid: 44065936552b6be42b5120e585820730, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_64pepbles
+    second: {fileID: 2100000, guid: 9cc234e35a842bd4fa97b39504f59234, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_64pepbles.png
+    second: {fileID: 2100000, guid: 7e7eeba793d0fa440af1cea1169b15d9, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_64roof2
+    second: {fileID: 2100000, guid: 2dedb8b69602a1a4ab19ec8b47f7bf03, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_64roof2.png
+    second: {fileID: 2100000, guid: be6a8250bd3d5a64184f3a9df4ca9864, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_64tembit1
+    second: {fileID: 2100000, guid: 5bf47413d556d6f47947ba64ec4aa7cf, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_64tembit1.png
+    second: {fileID: 2100000, guid: c61ff93b4c577f94da1af7c6d30be605, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_64temrfwood
+    second: {fileID: 2100000, guid: ead911d0cea373641a28a48605594026, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_64temrfwood.png
+    second: {fileID: 2100000, guid: 3d26a18e4af52184e9eb3772391dac7a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_64temroofu
+    second: {fileID: 2100000, guid: 0e2d484e29c88db4e984428551ae703e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_64temroofu.png
+    second: {fileID: 2100000, guid: 3b77c4c5cdd6e384687d3c39d2f70ebc, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_64wallroof
+    second: {fileID: 2100000, guid: 495d235a78c7804489afd161443371c7, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_64wallroof.png
+    second: {fileID: 2100000, guid: 6603bc14d16323e4bb3935cd4fdbdae8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_psxstairs128
+    second: {fileID: 2100000, guid: b1d882f6165815048bd42b84bf946133, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_psxstairs128.png
+    second: {fileID: 2100000, guid: 6194b881beb3ac843b3bf1381a57d95e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_sponser1
+    second: {fileID: 2100000, guid: 4b98d1dc927cc154a8589a960e237501, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_sponser1.png
+    second: {fileID: 2100000, guid: fea510ffbdbf2e343840b042d52ee24d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_sponser2
+    second: {fileID: 2100000, guid: c13781d9ecb94cc419340579b863ab17, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_sponser2.png
+    second: {fileID: 2100000, guid: d2ef1245d199f604d81601348398dd0b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_sponser3
+    second: {fileID: 2100000, guid: cd5e19801f35dc74c87579351af184ae, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_sponser3.png
+    second: {fileID: 2100000, guid: 27746e9bfe12e66469a0d5d0446dd3fd, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_64chevback
+    second: {fileID: 2100000, guid: ee424087809c73945ab4f831bbd22ae8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_64chevback.png
+    second: {fileID: 2100000, guid: c78af41b02607d843ac3877154488ec0, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_64chevrons
+    second: {fileID: 2100000, guid: 38587ddfe2ae98943bb614e8cd556a87, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_64chevrons.png
+    second: {fileID: 2100000, guid: ee7eb9d8b1ef6fd488cb44adaa5b43d3, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_c1_hill
+    second: {fileID: 2100000, guid: a0d3dbf18b019bb4195bcb7e16283582, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_c1_hill.png
+    second: {fileID: 2100000, guid: 47fe3ea6a0c61444cb94a94234b3c1c3, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_c1_inout
+    second: {fileID: 2100000, guid: df0bf8c81107a2f4cbebbbf6bf2d7fdf, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_c1_inout.png
+    second: {fileID: 2100000, guid: 29fffad6be5aedf42b518ac245d6f4ea, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_c1_straight
+    second: {fileID: 2100000, guid: fd5ad228bd999764d81ca3c178e79faf, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_c1_straight.png
+    second: {fileID: 2100000, guid: 0a45d97edb2ded2469898c9ec1281eae, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_c1_topend
+    second: {fileID: 2100000, guid: 685157ce18715cb4b966eba2a2eb9ea0, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_c1_topend.png
+    second: {fileID: 2100000, guid: b3536cd912b2f7542a36997583990c66, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_c1_turn
+    second: {fileID: 2100000, guid: 2ddb32523c1507e4da59efff2ecf28cf, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_c1_turn.png
+    second: {fileID: 2100000, guid: 59610043107fad24f8f34e0757d877ca, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_c2_hill
+    second: {fileID: 2100000, guid: 6a32cfb40c6da4246a3a17b2bf3da69c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_c2_hill.png
+    second: {fileID: 2100000, guid: 9fb39aa508a673449aeae5ac515ef316, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_c2_inout
+    second: {fileID: 2100000, guid: 715d01b7621f31748b97a8c63eb0230c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_c2_inout.png
+    second: {fileID: 2100000, guid: 4852eac6b4fa6d649b5bc7a9d570cecf, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_curb
+    second: {fileID: 2100000, guid: 4a2ce0d69ece2bb45bcf815bd16c7d49, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_curb.png
+    second: {fileID: 2100000, guid: 4bf584aec2394154e8a4fd526124256b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_pitchevrons
+    second: {fileID: 2100000, guid: 7ea6c712d514f17468c1d2ae99420e70, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_pitchevrons.png
+    second: {fileID: 2100000, guid: beff8e767b8c7954b97fe95b4ed11699, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_pitfloor
+    second: {fileID: 2100000, guid: 77d00495465559e4b8da471a93116364, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_pitfloor.png
+    second: {fileID: 2100000, guid: f226a30a220c4614baf5bbbd80772183, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_pitmetal
+    second: {fileID: 2100000, guid: 88d76fca3ab9e8147bd6c80742492563, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_pitmetal.png
+    second: {fileID: 2100000, guid: 501c4340979db6a4f9c7ffb41e070e56, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_pitwall
+    second: {fileID: 2100000, guid: 6a1ef13a12dc6a847af7b855108fb812, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_pitwall.png
+    second: {fileID: 2100000, guid: 227a4bf25ea54e54db2efca211313022, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_s0_grasssurface
+    second: {fileID: 2100000, guid: ad18f9f4f37a4474aab9a5b75504247e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_s0_grasssurface.png
+    second: {fileID: 2100000, guid: 7d063f9158aec1f4db48398f7c21c2ec, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_s1_grassinout
+    second: {fileID: 2100000, guid: 765680e103b40b049b95c5a45f356e4c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_s1_grassinout.png
+    second: {fileID: 2100000, guid: 9685c9cdc7c532a48925710603a6c753, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_s2_grasspatch
+    second: {fileID: 2100000, guid: 65be84ec89792444994ec38f57f3f312, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_s2_grasspatch.png
+    second: {fileID: 2100000, guid: d5343a24846e5d349ab58e1c11c68d36, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_s3_grasshalf
+    second: {fileID: 2100000, guid: dad3d0397f98eff42a8ebce4dbd3efc4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_s3_grasshalf.png
+    second: {fileID: 2100000, guid: a033118fb54301b418010842b39679e9, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_s4_grassbarr
+    second: {fileID: 2100000, guid: 79e85833e6e5c744e9a48b676da66323, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_s4_grassbarr.png
+    second: {fileID: 2100000, guid: acff18f27300c4c449d4a57584edea0a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_sidewall_grass
+    second: {fileID: 2100000, guid: 696e48a6ffb260b468f3dafe57081903, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_sidewall_grass.png
+    second: {fileID: 2100000, guid: 8c5057a2d8351cc468594ed0d6817114, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_startline
+    second: {fileID: 2100000, guid: b7f2251c28dbdf94fa007955e3971cdf, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_startline.png
+    second: {fileID: 2100000, guid: 9af47c63614f0ea41a78272decf8cb49, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_tubeglass
+    second: {fileID: 2100000, guid: 961f19ee509323548ae8bec04042b577, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_tubeglass.png
+    second: {fileID: 2100000, guid: 5264159815cb79c419ab8ae0531a1fa6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_tubemetal
+    second: {fileID: 2100000, guid: 9a13d4ff8f9775b468bbb4ed11a4458c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_tubemetal.png
+    second: {fileID: 2100000, guid: 50e98a71371866e4488d1c8dc2ffda9b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_tubewall
+    second: {fileID: 2100000, guid: 45a48e9f955164b4ea94c875dbd0b1d6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_tubewall.png
+    second: {fileID: 2100000, guid: 3b964bb95b9ad0945bcd3022e0026039, type: 2}
   materials:
-    materialImportMode: 2
+    materialImportMode: 1
     materialName: 0
     materialSearch: 1
     materialLocation: 1

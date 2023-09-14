@@ -37,35 +37,22 @@ public class MainMenuView : Sfxable
 			GoToView(prevView);
 			PlaySFX("fe-dialogcancel");
 		}
-		//if (Input.GetKeyDown(KeyCode.Alpha1))
-		//	Info.AddCar();
 	}
 	public void GoToView(GameObject view)
 	{
 		for(int i=0; i< transform.childCount; ++i)
 		{
-			Check(transform.GetChild(i));
+			F.PlaySlideOutOnChildren(transform.GetChild(i));
 		}
 		dimmer.PlayDimmer(gameObject, view);
 	}
-	void Check(Transform node)
-	{
-		var comp = node.GetComponent<SlideInOut>();
-		if (comp)
-		{
-			if(comp.gameObject.activeSelf)
-				comp.PlaySlideOut();
-		}
-		else
-		{
-			for (int i = node.transform.childCount - 1; i >= 0; --i)
-			{
-				Check(node.transform.GetChild(i));
-			}
-		}
-	}
+	
 	public void ToRaceScene()
 	{
 		PlaySFX("fe-gameload");
+	}
+	public void ToEditorScene()
+	{
+		
 	}
 }

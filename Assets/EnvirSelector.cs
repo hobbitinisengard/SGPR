@@ -12,23 +12,24 @@ public class EnvirSelector : Sfxable
 	public RectTransform envirContent;
 	public Scrollbar scrollx;
 	public Scrollbar scrolly;
-	public GameObject trackImageTemplate;
 	public MainMenuButton startButton;
 	public Image tile;
 	Transform selectedEnvir;
 	int persistentSelectedEnvir = 0;
 	Coroutine containerCo;
-
 	private void OnEnable()
 	{
 		startButton.Select();
-		envirDescText.text = Info.tracks[selectedEnvir.name].desc;
-		selectedEnvir = transform.parent.GetChild(persistentSelectedEnvir);
+		selectedEnvir = envirContent.GetChild(0).GetChild(persistentSelectedEnvir);
+		if (containerCo != null)
+			StopCoroutine(containerCo);
+		envirDescText.text = Info.EnvirDescs[selectedEnvir.GetSiblingIndex()];
+		containerCo = StartCoroutine(MoveToEnvir());
 	}
 
 	void SetTile()
 	{
-		tile.sprite = Info.icons.First(i => i.name == transform.name);
+		tile.sprite = Info.icons.First(i => i.name == selectedEnvir.name);
 	}
 
 	void Update()
@@ -59,7 +60,7 @@ public class EnvirSelector : Sfxable
 				}
 				// new track has been selected
 				// set description
-				envirDescText.text = Info.EnvirDescs[transform.GetSiblingIndex()];
+				envirDescText.text = Info.EnvirDescs[selectedEnvir.GetSiblingIndex()];
 				SetTile();
 				// focus on track
 				if (containerCo != null)

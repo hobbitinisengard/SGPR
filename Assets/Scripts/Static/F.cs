@@ -101,7 +101,22 @@ namespace RVP
 			}
 			return null;
 		}
-		
+		public static void PlaySlideOutOnChildren(Transform node)
+		{
+			var comp = node.GetComponent<SlideInOut>();
+			if (comp)
+			{
+				if (comp.gameObject.activeSelf)
+					comp.PlaySlideOut();
+			}
+			else
+			{
+				for (int i = node.transform.childCount - 1; i >= 0; --i)
+				{
+					PlaySlideOutOnChildren(node.transform.GetChild(i));
+				}
+			}
+		}
 		/// <param name="group">search children of this transform</param>
 		/// <param name="excludeChild"></param>
 		public static float PosAmongstActive(this Transform group, Transform child, bool countChildAsActive = true)
