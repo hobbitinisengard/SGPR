@@ -81,7 +81,6 @@ namespace RVP
 		}
 		void FixedUpdate()
 		{
-
 			float rawSteer = 0;
 			if (vp.steerInput == 0)
 			{
@@ -92,6 +91,9 @@ namespace RVP
 			}
 			else
 			{
+				var newSteerLimit = steerLimitCurve.Evaluate(vp.localVelocity.z);
+				if (newSteerLimit > steerLimit)
+					steerLimit = newSteerLimit;
 				servoAudio.volume = 0.5f;
 				servoAudio.pitch = vp.steerInput > 0 ? 1.5f : 1;
 				if (holdDuration < secsForMaxSteeringSpeed)
