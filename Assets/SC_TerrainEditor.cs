@@ -198,7 +198,7 @@ public class SC_TerrainEditor : MonoBehaviour
 
 	void wheelValuesControl()
 	{
-		float mouseWheel = Input.GetAxis("Mouse ScrollWheel");
+		float mouseWheel = Input.mouseScrollDelta.y;
 		if (Mathf.Abs(mouseWheel) > 0.0)
 		{
 			if (mouseWheel > 0.0)

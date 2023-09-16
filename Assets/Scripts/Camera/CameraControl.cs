@@ -118,7 +118,6 @@ namespace RVP
 		}
 		void FixedUpdate()
 		{
-
 			if (target && targetBody && target.gameObject.activeSelf)
 			{
 				const int maxPitch = 10;

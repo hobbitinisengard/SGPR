@@ -8,6 +8,7 @@ public static class Info
 	public readonly static string userdata_path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Stunt GP Reloaded\\userdata.txt";
 	public readonly static string path_path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Stunt GP Reloaded\\path.txt";
 	public readonly static string documents_sgpr_path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Stunt GP Reloaded";
+	public enum TileGroup { Roads, }
 	public enum Livery { Caltex, Rline, Mysuko, Titan, Itex, TGR, Special}
 	public static readonly int Liveries = 7;
 	public enum RaceType { Race, Stunt, Drift, Knockout, Survival};
@@ -29,11 +30,13 @@ public static class Info
 	public enum TrackOrigin { Original, Custom};
 	public static readonly string carImagesPath = "carImages/";
 	public static readonly string trackImagesPath = "trackImages/";
+	public static readonly string editorTilesPath = "tiles/objects/";
 	public static Dictionary<string, Car> cars;
 	public static SortedDictionary<string, Track> tracks;
 	public static Dictionary<string, AudioClip> audioClips;
 	public static bool loaded = false;
-
+	public static readonly int invisibleLevelLayer = 12;
+	public static readonly int roadLayer = 6;
 	// next session data
 	public static CarSetup[] s_carSetups;
 	public static string s_trackName;
@@ -51,6 +54,7 @@ public static class Info
 		"Stunty", "Loop", "Jumpy", "Windy", "Intersecting", "No_pit", "No_jumps", "Icy", "Sandy", "Offroad"
 	};
 	internal static Sprite[] icons;
+
 
 	public static void PopulateCarsData()
 	{

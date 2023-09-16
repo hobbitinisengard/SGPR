@@ -326,6 +326,48 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: frontend_dialog_1234ups_10
+      rect:
+        serializedVersion: 2
+        x: 1102
+        y: 555
+        width: 419
+        height: 427
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 58d1759a82af0ff4183f9872efe1a6ac
+      internalID: -1385777990
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: frontend_dialog_1234ups_11
+      rect:
+        serializedVersion: 2
+        x: 1594
+        y: 553
+        width: 422
+        height: 424
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b3f7af9f4edc6a64daf6f97c9f58b52e
+      internalID: -1243477325
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     physicsShape: []
     bones: []
@@ -339,6 +381,8 @@ TextureImporter:
     nameFileIdTable:
       frontend_dialog_1234ups_0: -471014494
       frontend_dialog_1234ups_1: 1612392034
+      frontend_dialog_1234ups_10: -1385777990
+      frontend_dialog_1234ups_11: -1243477325
       frontend_dialog_1234ups_2: -862872802
       frontend_dialog_1234ups_3: 1227164664
       frontend_dialog_1234ups_4: 722218126

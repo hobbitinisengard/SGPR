@@ -12,8 +12,7 @@ namespace RVP
 	public class GlobalControl : MonoBehaviour
 	{
 		public AudioSource musicPlayer;
-		public SC_TerrainEditor terrainEditor;
-		public SC_EditorFlyCamera editorCamera;
+		
 		public GameObject Sun;
 		public GameObject nightTimeLights;
 		[Tooltip("Reload the scene with the 'Restart' button in the input manager")]
@@ -79,18 +78,11 @@ namespace RVP
 		private void Awake()
 		{
 			musicPlayer = GetComponent<AudioSource>();
-			terrainEditor = GetComponent<SC_TerrainEditor>();
-			editorCamera = GetComponent<SC_EditorFlyCamera>();
-			musicPlayer = GetComponent<AudioSource>();
+			musicPlayer.clip = Resources.Load<AudioClip>("music/JAP");
+
 			Info.PopulateSFXData();
 			Info.PopulateCarsData();
 			Info.PopulateTrackData();
-			musicPlayer.clip = Resources.Load<AudioClip>("music/JAP");
-			if (Info.s_inEditor)
-			{
-				terrainEditor.enabled = true;
-				editorCamera.enabled = true;
-			}
 		}
 		void Start()
 		{
