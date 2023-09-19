@@ -68,8 +68,7 @@ public class SC_TerrainEditor : MonoBehaviour
 			saved = tData.GetHeights(0, 0, xRes, yRes);
 		}
 
-		//Change terrain layer to UI
-		terrain.gameObject.layer = 5;
+		terrain.gameObject.layer = Info.terrainLayer;
 		strength = 2;
 		area = 2;
 		brushScaling();
@@ -96,7 +95,7 @@ public class SC_TerrainEditor : MonoBehaviour
 		Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 		hit = new RaycastHit();
 		//Do Raycast hit only against UI layer
-		if (Physics.Raycast(ray, out hit, 300, 1 << 5))
+		if (Physics.Raycast(ray, out hit, Mathf.Infinity, 1 << Info.terrainLayer))
 		{
 			onTerrain = true;
 			if (buildTarget)

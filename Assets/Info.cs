@@ -28,6 +28,7 @@ public static class Info
 	};
 	public enum CarGroup { Wild, Aero, Speed, Team };
 	public enum TrackOrigin { Original, Custom};
+	public static readonly string carModelsPath = "carModels/";
 	public static readonly string carImagesPath = "carImages/";
 	public static readonly string trackImagesPath = "trackImages/";
 	public static readonly string editorTilesPath = "tiles/objects/";
@@ -37,6 +38,10 @@ public static class Info
 	public static bool loaded = false;
 	public static readonly int invisibleLevelLayer = 12;
 	public static readonly int roadLayer = 6;
+	public static readonly int terrainLayer = 13;
+	public static readonly int connectorLayer = 11;
+	public static readonly int cameraLayer = 14;
+
 	// next session data
 	public static CarSetup[] s_carSetups;
 	public static string s_trackName;
@@ -53,8 +58,8 @@ public static class Info
 	{
 		"Stunty", "Loop", "Jumpy", "Windy", "Intersecting", "No_pit", "No_jumps", "Icy", "Sandy", "Offroad"
 	};
-	internal static Sprite[] icons;
 
+	internal static Sprite[] icons;
 
 	public static void PopulateCarsData()
 	{

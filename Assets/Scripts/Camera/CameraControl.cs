@@ -63,8 +63,6 @@ namespace RVP
 		private Vector3 velocity = Vector3.zero;
 		private Vector3 fastVelocity = Vector3.zero;
 		public bool cameraStopped = false;
-		private Vector3 initialCamRotVec;
-		private Vector3 fastDampPos;
 		private float smoothDampRspnvns = 10f;
 		public float smoothTime = 1f;
 		private Vector3 newTrPos;
@@ -72,17 +70,19 @@ namespace RVP
 		private float camFollowSmoothTime = 1f;
 		private float smoothTimeSpeed = 2.5f;
 
-		void Start()
+		void Awake()
 		{
 			tr = transform;
 			cam = GetComponent<Camera>();
 			cam.depthTextureMode |= DepthTextureMode.Depth;
 		}
-		public void ReleaseControl()
+		public void Disconnect()
 		{
 			target = null;
+			if(lookObj)
+				Destroy(lookObj.gameObject);
 		}
-		public void Initialize(GameObject car)
+		public void Connect(VehicleParent car)
 		{
 			target = car.transform;
 			// lookObj is an object used to help position and rotate the camera
@@ -95,15 +95,14 @@ namespace RVP
 			// Set variables based on target vehicle's properties
 			if (target)
 			{
-				vp = target.GetComponent<VehicleParent>();
+				vp = car;
 				targetCamCarDistance += vp.cameraDistanceChange;
 				height += vp.cameraHeightChange;
 				forwardLook = target.forward;
-				upLook = target.up;
+				upLook = Vector3.up;//target.up;
 				targetBody = target.GetComponent<Rigidbody>();
-				tr.rotation = Quaternion.LookRotation(target.position - tr.position);
 				tr.position = target.position - target.forward * targetCamCarDistance + target.up * height;
-				initialCamRotVec = target.position - tr.position;
+				tr.rotation = Quaternion.LookRotation(target.position - tr.position);
 			}
 
 			// Set the audio listener update mode to fixed, because the camera moves in FixedUpdate

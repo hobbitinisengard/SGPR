@@ -1,6 +1,7 @@
 // Using Remi Coulom's K1999 Path-Optimisation Algorithm to calculate
 // racing line.
 //This is an adaption of Remi Coulom's K1999 driver for TORCS
+using System.Collections.Generic;
 using UnityEngine;
 public class K1999
 {
@@ -11,9 +12,9 @@ public class K1999
 	float[] tRInverse;
 	int Divs = 0;
 	readonly float SecurityR = 1f;     // Security radius
-	readonly float SideDistExt = 1f;  // Security distance wrt outside
-	readonly float SideDistInt = 1f;  // Security distance wrt inside
-	readonly int Iterations = 100;    // Number of smoothing operations
+	readonly float SideDistExt = 5f;  // Security distance wrt outside
+	readonly float SideDistInt = 5f;  // Security distance wrt inside
+	readonly int Iterations = 500;    // Number of smoothing operations
 
 	void UpdateTxTy(int i)
 	{
@@ -204,7 +205,7 @@ public class K1999
 
 	public void CalcRaceLine()
 	{
-		int stepsize = 128;
+		int stepsize = 6;
 
 		//abort if the track isn't long enough
 		if (tx.Length < stepsize)
@@ -239,7 +240,7 @@ public class K1999
 		if (!v)
 			Debug.LogError("assertion failed");
 	}
-	public Vector4[] GetRacingLine(in Vector3[] leftLimits, in Vector3[] rightLimits)
+	public Vector4[] GetRacingLine(in List<Vector3> leftLimits, in List<Vector3> rightLimits)
 	{
 		if (Divs == 0)
 			return null;
@@ -252,9 +253,9 @@ public class K1999
 		}
 		return racingLine;
 	}
-	public void LoadData(in Vector3[] leftLimits, in Vector3[] rightLimits)//const RoadStrip & road)
+	public void LoadData(in List<Vector3> leftLimits, in List<Vector3> rightLimits)//const RoadStrip & road)
 	{
-		Divs = leftLimits.Length;
+		Divs = leftLimits.Count;
 		tx = new float[Divs];
 		ty = new float[Divs];
 		tRInverse = new float[Divs];
@@ -264,7 +265,7 @@ public class K1999
 		tyRight = new float[Divs];
 		tLane = new float[Divs];
 
-		for (int i = 0; i < leftLimits.Length; ++i)
+		for (int i = 0; i < leftLimits.Count; ++i)
 		{
 			//txLeft.push_back(p.GetPoint(3, 0)[1]);
 			//tyLeft.push_back(-p.GetPoint(3, 0)[0]);

@@ -289,9 +289,9 @@ namespace RVP
 			forwardDir = tr.forward;
 			rightDir = tr.right;
 			upDir = tr.up;
-			forwardDot = Vector3.Dot(forwardDir, GlobalControl.worldUpDir);
-			rightDot = Vector3.Dot(rightDir, GlobalControl.worldUpDir);
-			upDot = Vector3.Dot(upDir, GlobalControl.worldUpDir);
+			forwardDot = Vector3.Dot(forwardDir, RaceManager.worldUpDir);
+			rightDot = Vector3.Dot(rightDir, RaceManager.worldUpDir);
+			upDot = Vector3.Dot(upDir, RaceManager.worldUpDir);
 			norm.transform.position = tr.position;
 			norm.transform.rotation = Quaternion.LookRotation(groundedWheels == 0 ? upDir : wheelNormalAverage, forwardDir);
 
@@ -537,7 +537,7 @@ namespace RVP
 			{
 				foreach (ContactPoint curCol in col.contacts)
 				{
-					if (curCol.thisCollider.gameObject.layer != GlobalControl.ignoreWheelCastLayer)
+					if (curCol.thisCollider.gameObject.layer != RaceManager.ignoreWheelCastLayer)
 					{
 						if (Vector3.Dot(curCol.normal, col.relativeVelocity.normalized) > 0.2f && col.relativeVelocity.sqrMagnitude > 20)
 						{
@@ -575,7 +575,7 @@ namespace RVP
 			{
 				foreach (ContactPoint curCol in col.contacts)
 				{
-					if (!curCol.thisCollider.CompareTag("Underside") && curCol.thisCollider.gameObject.layer != GlobalControl.ignoreWheelCastLayer)
+					if (!curCol.thisCollider.CompareTag("Underside") && curCol.thisCollider.gameObject.layer != RaceManager.ignoreWheelCastLayer)
 					{
 						if (col.relativeVelocity.sqrMagnitude < 5)
 						{

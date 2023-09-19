@@ -46,7 +46,7 @@ namespace RVP
 
             transform.position = spawnPos;
             yield return new WaitForFixedUpdate();
-            transform.rotation = Quaternion.LookRotation(spawnRot, GlobalControl.worldUpDir);
+            transform.rotation = Quaternion.LookRotation(spawnRot, RaceManager.worldUpDir);
             GetComponent<Rigidbody>().velocity = Vector3.zero;
             GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
         }

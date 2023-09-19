@@ -89,7 +89,7 @@ public class RaceBox : MonoBehaviour
 		LapsCount = 18;
 		starLevel = 0;
 		//rots = new Stack<StuntRotInfo>(32);
-		var globalcontrol = GameObject.Find("GlobalControl");
+		var globalcontrol = GameObject.Find("Canvas");
 		stunts = globalcontrol.transform.GetComponent<StuntManager>().allPossibleFlips.ToArray();
 		stuntPai = new PtsAnimInfo(0, PtsAnimType.Evo, -1);
 	}

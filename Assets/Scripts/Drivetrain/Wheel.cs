@@ -279,14 +279,14 @@ namespace RVP
                     // Generate hard collider
                     if (generateHardCollider) {
                         GameObject sphereColNew = new GameObject("Rim Collider");
-                        sphereColNew.layer = GlobalControl.ignoreWheelCastLayer;
+                        sphereColNew.layer = RaceManager.ignoreWheelCastLayer;
                         sphereColTr = sphereColNew.transform;
                         sphereCol = sphereColNew.AddComponent<SphereCollider>();
                         sphereColTr.parent = tr;
                         sphereColTr.localPosition = Vector3.zero;
                         sphereColTr.localRotation = Quaternion.identity;
                         sphereCol.radius = Mathf.Min(rimWidth * 0.5f, rimRadius * 0.5f);
-                        sphereCol.sharedMaterial = GlobalControl.frictionlessMatStatic;
+                        sphereCol.sharedMaterial = RaceManager.frictionlessMatStatic;
                     }
 
                     if (canDetach) {
@@ -453,7 +453,7 @@ namespace RVP
         // Use raycasting to find the current contact point for the wheel
         void GetWheelContact() {
             float castDist = Mathf.Max(suspensionParent.suspensionDistance * Mathf.Max(0.001f, suspensionParent.targetCompression) + actualRadius, 0.001f);
-            RaycastHit[] wheelHits = Physics.RaycastAll(suspensionParent.maxCompressPoint, suspensionParent.springDirection, castDist, GlobalControl.wheelCastMaskStatic);
+            RaycastHit[] wheelHits = Physics.RaycastAll(suspensionParent.maxCompressPoint, suspensionParent.springDirection, castDist, RaceManager.wheelCastMaskStatic);
             RaycastHit hit;
             int hitIndex = 0;
             bool validHit = false;
@@ -564,7 +564,7 @@ namespace RVP
 
                 float targetForceX = forwardFrictionCurve.Evaluate(Mathf.Abs(forwardSlipFactor)) * -System.Math.Sign(forwardSlip) * (popped ? forwardRimFriction : forwardFriction) * forwardSlipDependenceFactor * -suspensionParent.flippedSideFactor;
                 float targetForceZ = sidewaysFrictionCurve.Evaluate(Mathf.Abs(sidewaysSlipFactor)) * -System.Math.Sign(sidewaysSlip) * (popped ? sidewaysRimFriction : sidewaysFriction) * sidewaysSlipDependenceFactor *
-                    normalFrictionCurve.Evaluate(Mathf.Clamp01(Vector3.Dot(contactPoint.normal, GlobalControl.worldUpDir))) *
+                    normalFrictionCurve.Evaluate(Mathf.Clamp01(Vector3.Dot(contactPoint.normal, RaceManager.worldUpDir))) *
                     (vp.burnout > 0 && Mathf.Abs(targetDrive.rpm) != 0 && actualEbrake * vp.ebrakeInput == 0 && grounded ? (1 - vp.burnout) * (1 - Mathf.Abs(vp.accelInput)) : 1);
 
                 Vector3 targetForce = tr.TransformDirection(targetForceX, 0, targetForceZ);

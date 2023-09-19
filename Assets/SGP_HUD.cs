@@ -147,7 +147,6 @@ public class SGP_HUD : MonoBehaviour
 		if (stunts == null)
 			return;
 
-
 		// if previous stunt table hasn't ended dimming yet
 		if (Time.time - dimStuntTableTimer < dimStuntTableTime)
 		{
@@ -214,11 +213,25 @@ public class SGP_HUD : MonoBehaviour
 			Destroy(StuntInfo.transform.GetChild(i).gameObject);
 		}
 	}
-	public void Connect(GameObject newVehicle)
+	public void Disconnect()
+	{
+		targetVehicle = null;
+		vp = null;
+		trans = null;
+		engine = null;
+		racebox = null;
+	}
+	public void OnDisable()
+	{
+		Disconnect();
+		ClearStuntInfo();
+		liveMessages.Clear();
+	}
+	public void Connect(VehicleParent newVehicle)
 	{
 		if (!newVehicle)
 			return;
-		targetVehicle = newVehicle;
+		targetVehicle = newVehicle.gameObject;
 		vp = targetVehicle.GetComponent<VehicleParent>();
 
 		trans = targetVehicle.GetComponentInChildren<Transmission>() as GearboxTransmission;
@@ -477,7 +490,8 @@ public class SGP_HUD : MonoBehaviour
 		if (Time.time - progressBarUpdateTime > 2)
 		{
 			progressBarUpdateTime = Time.time;
-			for (int i = 1; i < raceManager.cars.Length; ++i)
+			int carsLen = raceManager.cars.Count;
+			for (int i = 1; i < carsLen; ++i)
 			{
 				float distance = raceManager.cars[i].GetComponent<RaceBox>().distance - racebox.distance;
 				Vector3 pos = progressBar.GetChild(i).GetComponent<RectTransform>().anchoredPosition;
@@ -486,7 +500,7 @@ public class SGP_HUD : MonoBehaviour
 			}
 		}
 	}
-	void SetRollers(TimeSpan timespan, ref Roller[] rollers, bool millisecondsAsFrac = false)
+	void SetRollers(in TimeSpan timespan, ref Roller[] rollers, bool millisecondsAsFrac = false)
 	{
 		if (timespan < TimeSpan.FromMinutes(10)) // laptime < 10 mins
 		{

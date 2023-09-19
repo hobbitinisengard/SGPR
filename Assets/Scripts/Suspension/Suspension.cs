@@ -169,7 +169,7 @@ namespace RVP
                 // Generate the hard collider
                 if (generateHardCollider) {
                     GameObject cap = new GameObject("Compress Collider");
-                    cap.layer = GlobalControl.ignoreWheelCastLayer;
+                    cap.layer = RaceManager.ignoreWheelCastLayer;
                     compressTr = cap.transform;
                     compressTr.parent = tr;
                     compressTr.localPosition = Vector3.zero;
@@ -180,7 +180,7 @@ namespace RVP
                     hardColliderRadiusFactorPrev = setHardColliderRadiusFactor;
                     compressCol.radius = wheel.rimWidth * hardColliderRadiusFactor;
                     compressCol.height = (wheel.popped ? wheel.rimRadius : Mathf.Lerp(wheel.rimRadius, wheel.tireRadius, wheel.tirePressure)) * 2;
-                    compressCol.sharedMaterial = GlobalControl.frictionlessMatStatic;
+                    compressCol.sharedMaterial = RaceManager.frictionlessMatStatic;
                 }
 
                 steerRangeMax = Mathf.Max(steerRangeMin, steerRangeMax);

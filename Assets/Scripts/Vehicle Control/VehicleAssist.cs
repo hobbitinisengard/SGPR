@@ -174,9 +174,9 @@ namespace RVP
 
             // Check if rolled over
             if (vp.groundedWheels == 0 && vp.velMag < rollSpeedThreshold && vp.upDot < 0.8 && rollCheckDistance > 0) {
-                if (Physics.Raycast(tr.position, vp.upDir, out rollHit, rollCheckDistance, GlobalControl.groundMaskStatic)
-                    || Physics.Raycast(tr.position, vp.rightDir, out rollHit, rollCheckDistance, GlobalControl.groundMaskStatic)
-                    || Physics.Raycast(tr.position, -vp.rightDir, out rollHit, rollCheckDistance, GlobalControl.groundMaskStatic)) {
+                if (Physics.Raycast(tr.position, vp.upDir, out rollHit, rollCheckDistance, RaceManager.groundMaskStatic)
+                    || Physics.Raycast(tr.position, vp.rightDir, out rollHit, rollCheckDistance, RaceManager.groundMaskStatic)
+                    || Physics.Raycast(tr.position, -vp.rightDir, out rollHit, rollCheckDistance, RaceManager.groundMaskStatic)) {
                     rolledOver = true;
                 }
                 else {

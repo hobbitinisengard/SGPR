@@ -1,10 +1,11 @@
-﻿using UnityEngine;
+﻿using RVP;
+using UnityEngine;
 using UnityEngine.UI;
 
 public class PauseMenu : Sfxable
 {
 	public RaceManager rm;
-	public Button resumeButton;
+	public Button firstButton;
 	public Image veil;
 	Color startColor;
 	public Color blackColor;
@@ -27,7 +28,7 @@ public class PauseMenu : Sfxable
 	{
 		Time.timeScale = 0;
 		startColor = veil.color;
-		resumeButton.Select();
+		firstButton.Select();
 	}
 	private void OnDisable()
 	{

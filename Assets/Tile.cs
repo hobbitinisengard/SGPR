@@ -1,27 +1,31 @@
-using RVP;
 using System;
 using System.Linq;
-using System.Runtime.InteropServices;
 using UnityEngine;
 
 public class Tile : MonoBehaviour
 {
-	private void OnDestroy()
-	{ // restore turned off connections of other tiles when destroying this tile
-		for(int i=0; i<4; ++i)
-		{
-			if (disabledConnectors[i] != null)
-				disabledConnectors[i].enabled = true;
-		}
-	}
-	[DllImport("user32.dll")]
-	static extern bool SetCursorPos(int X, int Y);
 	[NonSerialized]
 	public EditorPanel panel;
-	Collider[] disabledConnectors = new Collider[4];
-
 	public bool placed { get; private set; }
 	public bool mirrored { get; private set; }
+	public bool hasConnectors { get; private set; }
+	private void Awake()
+	{
+		// add mesh collider to 'main' mesh 
+		transform.GetChild(0).gameObject.AddComponent<MeshCollider>().enabled = false;
+		for (int i=1; i< transform.childCount; ++i)
+		{
+			var connector = transform.GetChild(i).gameObject;
+			var col = connector.AddComponent<SphereCollider>();
+			col.radius = 5;
+			col.isTrigger = true;
+			var rb = connector.AddComponent<Rigidbody>();
+			rb.useGravity = false;
+			rb.isKinematic = true;
+			connector.AddComponent<Connector>();
+			hasConnectors = true;
+		}
+	}
 	internal void SetPlaced()
 	{
 		placed = true;
@@ -40,57 +44,41 @@ public class Tile : MonoBehaviour
 			int[] trgs = mesh.GetTriangles(i);
 			mesh.SetTriangles(trgs.Reverse().ToArray(), i);
 		}
+		mesh.RecalculateBounds();
+		mesh.RecalculateNormals();
 		return mesh;
 	}
-	public void MirrorTile()
+	public bool MirrorTile()
 	{
 		mirrored = !mirrored;
 		var mf = transform.GetChild(0).GetComponent<MeshFilter>();
 		var mc = transform.GetChild(0).GetComponent<MeshCollider>();
 		mf.mesh = MirrorMesh(mf.mesh);
-		mc.sharedMesh = mf.mesh;
-		for (int i = 1; i < transform.childCount; ++i)
+		if(mc)
+			mc.sharedMesh = mf.mesh;
+		if(hasConnectors)
 		{
-			var p = transform.GetChild(i).position;
-			p.x = -p.x;
-			transform.GetChild(i).position = p;
-		}
-	}
-	private void OnTriggerStay(Collider other)
-	{
-		if(!placed)
-		{
-			panel.placedConnector = other.transform.position;
-		}
-		else
-		{
-			if (other.transform.FindParentComponent<Tile>().placed)
-			{ // both connectors are placed, disable other one
-				other.enabled = false;
-
-				// add connector to array
-				for (int i = 0; i<4; ++i)
+			Debug.Log("hasConnectors=true");
+			for (int i = 1; i < transform.childCount; ++i)
+			{
+				Transform connector = transform.GetChild(i);
+				var p = connector.localPosition;
+				p.x = -p.x;
+				connector.localPosition = p;
+				for (int j = 0; j < connector.childCount; ++j)
 				{
-					if (disabledConnectors[i] == null)
+					Transform path = connector.GetChild(j);
+					for (int k = 0; k < path.childCount; ++k)
 					{
-						disabledConnectors[i] = other;
-						break;
+						Vector3 a = connector.InverseTransformPoint(path.GetChild(k).position);
+						a.x = -a.x;
+						a = connector.TransformPoint(a);
+						path.GetChild(k).position = a;
 					}
 				}
 			}
-			else
-				panel.floatingConnector = other.transform.position;
 		}
+		return mirrored;
 	}
-	private void OnTriggerExit(Collider other)
-	{
-		if (!placed)
-		{
-			panel.placedConnector = null;
-		}
-		else
-		{
-			panel.floatingConnector = null;
-		}
-	}
+	
 }

@@ -101,8 +101,8 @@ namespace RVP
                 // Calculate segment points
                 if (curMark) {
                     Vector3 pointDir = Quaternion.AngleAxis(90, w.contactPoint.normal) * tr.right * (w.popped ? w.rimWidth : w.tireWidth);
-                    leftPoint = curMarkTr.InverseTransformPoint(w.contactPoint.point + pointDir * w.suspensionParent.flippedSideFactor * Mathf.Sign(w.rawRPM) + w.contactPoint.normal * GlobalControl.tireMarkHeightStatic);
-                    rightPoint = curMarkTr.InverseTransformPoint(w.contactPoint.point - pointDir * w.suspensionParent.flippedSideFactor * Mathf.Sign(w.rawRPM) + w.contactPoint.normal * GlobalControl.tireMarkHeightStatic);
+                    leftPoint = curMarkTr.InverseTransformPoint(w.contactPoint.point + pointDir * w.suspensionParent.flippedSideFactor * Mathf.Sign(w.rawRPM) + w.contactPoint.normal * RaceManager.tireMarkHeightStatic);
+                    rightPoint = curMarkTr.InverseTransformPoint(w.contactPoint.point - pointDir * w.suspensionParent.flippedSideFactor * Mathf.Sign(w.rawRPM) + w.contactPoint.normal * RaceManager.tireMarkHeightStatic);
                 }
             }
             else if (creatingMark) {
@@ -111,7 +111,7 @@ namespace RVP
             }
 
             // Update mark if it's short enough, otherwise end it
-            if (curEdge < GlobalControl.tireMarkLengthStatic && creatingMark) {
+            if (curEdge < RaceManager.tireMarkLengthStatic && creatingMark) {
                 UpdateMark();
             }
             else if (creatingMark) {
@@ -178,8 +178,8 @@ namespace RVP
 
             tempRend.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             mesh = curMark.AddComponent<MeshFilter>().mesh;
-            verts = new Vector3[GlobalControl.tireMarkLengthStatic * 2];
-            tris = new int[GlobalControl.tireMarkLengthStatic * 3];
+            verts = new Vector3[RaceManager.tireMarkLengthStatic * 2];
+            tris = new int[RaceManager.tireMarkLengthStatic * 3];
 
             if (continueMark) {
                 verts[0] = leftPointPrev;
@@ -204,17 +204,17 @@ namespace RVP
             colors[1].a = 0;
 
             curEdge = 2;
-            gapDelay = GlobalControl.tireMarkGapStatic;
+            gapDelay = RaceManager.tireMarkGapStatic;
         }
 
         // Update mark currently being generated
         void UpdateMark() {
             if (gapDelay == 0) {
-                float alpha = (curEdge < GlobalControl.tireMarkLengthStatic - 2 && curEdge > 5 ? 1 : 0) *
+                float alpha = (curEdge < RaceManager.tireMarkLengthStatic - 2 && curEdge > 5 ? 1 : 0) *
                     Random.Range(
                         Mathf.Clamp01(Mathf.Abs(F.MaxAbs(w.sidewaysSlip, w.forwardSlip, alwaysScrape)) - slipThreshold) * 0.9f,
                         Mathf.Clamp01(Mathf.Abs(F.MaxAbs(w.sidewaysSlip, w.forwardSlip, alwaysScrape)) - slipThreshold));
-                gapDelay = GlobalControl.tireMarkGapStatic;
+                gapDelay = RaceManager.tireMarkGapStatic;
                 curEdge += 2;
 
                 verts[curEdge] = leftPoint;
@@ -271,7 +271,7 @@ namespace RVP
             rightPointPrev = verts[Mathf.RoundToInt(verts.Length * 0.5f + 1)];
             continueMark = w.grounded;
 
-            curMark.GetComponent<TireMark>().fadeTime = GlobalControl.tireFadeTimeStatic;
+            curMark.GetComponent<TireMark>().fadeTime = RaceManager.tireFadeTimeStatic;
             curMark.GetComponent<TireMark>().mesh = mesh;
             curMark.GetComponent<TireMark>().colors = colors;
             curMark = null;

@@ -217,7 +217,7 @@ namespace RVP
 			reverseTime = 0;
 			yield return new WaitForFixedUpdate();
 			tr.position = targetPoint;
-			tr.rotation = Quaternion.LookRotation(targetIsWaypoint ? (targetWaypoint.nextPoint.transform.position - targetPoint).normalized : Vector3.forward, GlobalControl.worldUpDir);
+			tr.rotation = Quaternion.LookRotation(targetIsWaypoint ? (targetWaypoint.nextPoint.transform.position - targetPoint).normalized : Vector3.forward, RaceManager.worldUpDir);
 			rb.velocity = Vector3.zero;
 			rb.angularVelocity = Vector3.zero;
 		}

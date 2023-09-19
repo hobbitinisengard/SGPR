@@ -26,6 +26,10 @@ public class PauseMenuButton : Sfxable, ISelectHandler, IDeselectHandler
 			soundLevel = Mathf.Floor((int)(soundLevel * 10)) / 10f; // steps by 0.1
 		}
 	}
+	private void OnEnable()
+	{
+		selected = gameObject == EventSystem.current.currentSelectedGameObject;
+	}
 	private void Update()
 	{
 		if (selected)
