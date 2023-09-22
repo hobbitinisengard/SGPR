@@ -62,6 +62,11 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: level2_256blossom.png
+    second: {fileID: 2100000, guid: 0390398b4ca829f41971557f312492be, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: level2_256japcastle.png
     second: {fileID: 2100000, guid: b89a4b75df952ac45a0f9ee990627dbb, type: 2}
   - first:
