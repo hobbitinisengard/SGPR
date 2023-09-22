@@ -3,7 +3,12 @@ guid: bf58565333da7f14b9fe0a13fe5cceba
 ModelImporter:
   serializedVersion: 21300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level3_ford256x
+    second: {fileID: 2100000, guid: d5aadbed84280034794af5ffdfcbb858, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

@@ -3,7 +3,22 @@ guid: ec7bc9ebc443ef54ba651a67d8e506d4
 ModelImporter:
   serializedVersion: 21300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_64japflag
+    second: {fileID: 2100000, guid: 892083f70861a3d4d92dd77193477c16, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_sponser2
+    second: {fileID: 2100000, guid: a73e493874be6644aa9adfc4238f8fe6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_sponser3
+    second: {fileID: 2100000, guid: 5a128d0681e718949b108d71da66d683, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

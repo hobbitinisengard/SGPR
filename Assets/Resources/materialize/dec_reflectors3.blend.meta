@@ -3,7 +3,12 @@ guid: 332de6d7521faa448bd041bf5c96dba8
 ModelImporter:
   serializedVersion: 21300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level8_spotlights128
+    second: {fileID: 2100000, guid: 62144222ce7bd9042b84b4cb4d31914e, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

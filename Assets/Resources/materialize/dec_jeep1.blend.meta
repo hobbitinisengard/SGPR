@@ -3,7 +3,12 @@ guid: dc7f2a00a1134104dba87a4ba3d1d4a7
 ModelImporter:
   serializedVersion: 21300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level3_lexus256x4
+    second: {fileID: 2100000, guid: 47092a5b8cfd06848a141695ae5bf49c, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

@@ -3,7 +3,12 @@ guid: f1e729a138f59f145ad27378ef442920
 ModelImporter:
   serializedVersion: 21300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level4_tyrewall128
+    second: {fileID: 2100000, guid: 9557bd1f26a5be246beb36f7ddbc382b, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

@@ -3,7 +3,37 @@ guid: 82f358c160fad31488395bd98bc72de5
 ModelImporter:
   serializedVersion: 21300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_64chevback
+    second: {fileID: 2100000, guid: ee424087809c73945ab4f831bbd22ae8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_64chevrons
+    second: {fileID: 2100000, guid: 38587ddfe2ae98943bb614e8cd556a87, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_c1_straight
+    second: {fileID: 2100000, guid: fd5ad228bd999764d81ca3c178e79faf, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_c2_hill
+    second: {fileID: 2100000, guid: 38195ed14b20f034aa7526eef9329f5c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_c2_inout
+    second: {fileID: 2100000, guid: 715d01b7621f31748b97a8c63eb0230c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_startline
+    second: {fileID: 2100000, guid: ddce798a34f1bbb45bc395510c0da72c, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

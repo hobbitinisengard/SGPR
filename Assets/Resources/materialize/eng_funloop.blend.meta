@@ -3,7 +3,12 @@ guid: 2119078c68341b244ab0db2e5e5042b2
 ModelImporter:
   serializedVersion: 21300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level4_funloop128g
+    second: {fileID: 2100000, guid: 05fc493e929f24f40889db34a74f1cf1, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

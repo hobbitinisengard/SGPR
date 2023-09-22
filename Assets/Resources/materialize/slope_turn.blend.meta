@@ -3,7 +3,32 @@ guid: 7832a3671fb11374580077f8d4b3b4cf
 ModelImporter:
   serializedVersion: 21300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_c1_turn
+    second: {fileID: 2100000, guid: 15dbc894707e09a46a568b7eaf198b0d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_curb
+    second: {fileID: 2100000, guid: c443cb20eb60c21479e17c15bce7f23c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_startline
+    second: {fileID: 2100000, guid: 62538eb4bcf27b940be1ff201c266387, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_ubank
+    second: {fileID: 2100000, guid: fe83d229cdd000e4387b2f1016b54c70, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_ubankback
+    second: {fileID: 2100000, guid: 531eb516be4ab6142a47507976b487ff, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

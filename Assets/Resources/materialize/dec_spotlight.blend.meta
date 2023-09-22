@@ -3,7 +3,12 @@ guid: 5b5ee82b3080bce48a16ced7ea310031
 ModelImporter:
   serializedVersion: 21300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level4_startlight128
+    second: {fileID: 2100000, guid: bea81402b83c13e47aa040178e000b86, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

@@ -3,7 +3,17 @@ guid: c8d3828368ce8e24a873f22d033f2581
 ModelImporter:
   serializedVersion: 21300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level5_heliblade64
+    second: {fileID: 2100000, guid: 8d20880e17489bc449fc8448ad600951, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level5_plane
+    second: {fileID: 2100000, guid: d438681ccf1ab104bb6eeb52fa593837, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

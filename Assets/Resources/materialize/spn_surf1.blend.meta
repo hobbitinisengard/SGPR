@@ -3,7 +3,17 @@ guid: 886f92c958b5d3648ab09eb8dab7aeb1
 ModelImporter:
   serializedVersion: 21300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level5_sand2sea
+    second: {fileID: 2100000, guid: 8c550efaa2b92834d8f8d09248f0608f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level5_surfboards2
+    second: {fileID: 2100000, guid: 5d3a556ab4324e74b9f2831abad16a12, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

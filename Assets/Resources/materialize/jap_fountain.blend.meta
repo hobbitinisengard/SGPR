@@ -3,7 +3,32 @@ guid: 2b368e0a452bc3845b0b56e232e8480b
 ModelImporter:
   serializedVersion: 21300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_128woodwall
+    second: {fileID: 2100000, guid: a4a3a2b47c66ad24281fdf88331db76a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_256pillargate
+    second: {fileID: 2100000, guid: 4a9d645bc2233b4438637291cfd443f9, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_64grasspath
+    second: {fileID: 2100000, guid: 7dcefdf0fa0e20c4f84e202c35caa363, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_64pepbles
+    second: {fileID: 2100000, guid: b5fd27df9cc67424182f9aaa4f685e8d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_64waterfall
+    second: {fileID: 2100000, guid: 18d8ca471f838f04b9e5456febdacad3, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

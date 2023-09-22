@@ -3,7 +3,17 @@ guid: 1d0cb1ebc32f52b478a4ab4751c9005a
 ModelImporter:
   serializedVersion: 21300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level5_wallnotwhite128
+    second: {fileID: 2100000, guid: 0db940c51be1f0442a04fb80da610495, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level7_sponser1
+    second: {fileID: 2100000, guid: c4ce23aa5f1d05646ab35ea3de389438, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

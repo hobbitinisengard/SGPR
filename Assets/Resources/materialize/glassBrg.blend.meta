@@ -3,7 +3,22 @@ guid: f18313735152ed848b9aebfd8bed541c
 ModelImporter:
   serializedVersion: 21300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_tubeglass
+    second: {fileID: 2100000, guid: 961f19ee509323548ae8bec04042b577, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_tubemetal
+    second: {fileID: 2100000, guid: de978267e2ca657468591802699e6ed0, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_tubewall
+    second: {fileID: 2100000, guid: 81a5a3f912e8ed548ada75d6b7e947e5, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

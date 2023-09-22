@@ -3,7 +3,42 @@ guid: 74bbe0a068581124e836ff3c6e97ad28
 ModelImporter:
   serializedVersion: 21300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_sponser1
+    second: {fileID: 2100000, guid: fc38a57d19365344a9a7d15f6e9d3f07, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_sponser3
+    second: {fileID: 2100000, guid: 5a128d0681e718949b108d71da66d683, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_64chevback
+    second: {fileID: 2100000, guid: a2d57c1e9c62af94abba1b10b18d224a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_64chevrons
+    second: {fileID: 2100000, guid: ec824bf1b47985a46ac627e4a732e06a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_c1_turn
+    second: {fileID: 2100000, guid: 2ddb32523c1507e4da59efff2ecf28cf, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_curb
+    second: {fileID: 2100000, guid: 4a2ce0d69ece2bb45bcf815bd16c7d49, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_startline
+    second: {fileID: 2100000, guid: 62538eb4bcf27b940be1ff201c266387, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

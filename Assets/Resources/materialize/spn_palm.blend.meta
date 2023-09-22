@@ -3,7 +3,17 @@ guid: 5310512ff0deca8419e992f3fa6667b0
 ModelImporter:
   serializedVersion: 21300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level5_jetskipage2
+    second: {fileID: 2100000, guid: 5e37bdc55052d9842abe4f792e018c2b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level5_palmbark
+    second: {fileID: 2100000, guid: 3bb212181b9b7974fa3e923e1ece9399, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

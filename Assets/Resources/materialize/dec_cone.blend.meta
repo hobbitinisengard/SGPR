@@ -3,7 +3,12 @@ guid: b1d417fcad14ab148bc23a235dafdc52
 ModelImporter:
   serializedVersion: 21300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level3_shadow256
+    second: {fileID: 2100000, guid: ce6a577e047916849a295e11f9015991, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

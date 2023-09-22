@@ -3,7 +3,17 @@ guid: 250f3c447aea3ea4e8a3bd43ea5a6f5f
 ModelImporter:
   serializedVersion: 21300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level6_floodlight
+    second: {fileID: 2100000, guid: d72473ad02c80944fb158ab4b13537ac, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_ubank
+    second: {fileID: 2100000, guid: fe83d229cdd000e4387b2f1016b54c70, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

@@ -3,7 +3,17 @@ guid: db84baa9ac307ee4a9d2247583b9ce1e
 ModelImporter:
   serializedVersion: 21300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_s0_sandsurface
+    second: {fileID: 2100000, guid: 850e66b307087ac4baec56418702184c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_s4_sandbarr
+    second: {fileID: 2100000, guid: 24339ba0f7b05d444b32a5edf055ac32, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

@@ -3,7 +3,17 @@ guid: 8b3c690144fa0b5459a5ae15c1c8b286
 ModelImporter:
   serializedVersion: 21300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level5_sandsurface
+    second: {fileID: 2100000, guid: 9d09b4b562f05944b8984a4865ac62d4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level5_wood
+    second: {fileID: 2100000, guid: e77d36b99f211fe4a8c5e5d4fea38db8, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

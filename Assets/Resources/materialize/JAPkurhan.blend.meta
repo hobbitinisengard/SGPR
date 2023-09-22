@@ -3,7 +3,12 @@ guid: b919df5acf79b6b4aae15092fbe8f0fa
 ModelImporter:
   serializedVersion: 21300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_256pagoda
+    second: {fileID: 2100000, guid: 575cd11454dd98440b59f2a3ce27c9f1, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

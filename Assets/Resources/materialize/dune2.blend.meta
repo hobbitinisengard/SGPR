@@ -3,7 +3,22 @@ guid: 9453540ad1d3ef9478bf2c95acad4b54
 ModelImporter:
   serializedVersion: 21300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_s2_grasspatch
+    second: {fileID: 2100000, guid: 1f0a6de9dc0276c48ab975d4496f4a06, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_sidewall_grass
+    second: {fileID: 2100000, guid: 696e48a6ffb260b468f3dafe57081903, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_startline
+    second: {fileID: 2100000, guid: ddce798a34f1bbb45bc395510c0da72c, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

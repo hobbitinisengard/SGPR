@@ -3,7 +3,22 @@ guid: f881b473deb0bc64e8e2a0c61a84e8a4
 ModelImporter:
   serializedVersion: 21300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level8_digital
+    second: {fileID: 2100000, guid: 6f53bdb47e473a64381184661e367c27, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level8_gold
+    second: {fileID: 2100000, guid: 07b9b3ea3edbb6a42b654558f4740697, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level8_wallc128
+    second: {fileID: 2100000, guid: 778a9b3e4b239bd4eb41a75c10678936, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

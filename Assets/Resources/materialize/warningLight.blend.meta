@@ -3,7 +3,12 @@ guid: 1adc99d36ae70ab4281f99c632f2bc6c
 ModelImporter:
   serializedVersion: 21300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_warninglight
+    second: {fileID: 2100000, guid: 45290ca9e2e7c0f4cbfed6eaaacbf064, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

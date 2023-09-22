@@ -3,7 +3,12 @@ guid: acb7d82083182eb4981e5275f5414bac
 ModelImporter:
   serializedVersion: 21300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level5_speedb128
+    second: {fileID: 2100000, guid: e704e0d071d56f94db9033e96ea89f76, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

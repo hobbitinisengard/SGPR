@@ -3,7 +3,42 @@ guid: fe1224c9e4e524a449333380ecdeea16
 ModelImporter:
   serializedVersion: 21300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_c1_straight
+    second: {fileID: 2100000, guid: fd5ad228bd999764d81ca3c178e79faf, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_c2_hill
+    second: {fileID: 2100000, guid: 38195ed14b20f034aa7526eef9329f5c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_c2_inout
+    second: {fileID: 2100000, guid: 1f59cc7295cd9674d814dfe6e84389ae, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_c2_topend
+    second: {fileID: 2100000, guid: 53e4aff552c687946ba6c650626f241b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_sidewall_sand
+    second: {fileID: 2100000, guid: e6685877c9da3b34c8f630832f0dffcc, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_startline
+    second: {fileID: 2100000, guid: 62538eb4bcf27b940be1ff201c266387, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_tubemetal
+    second: {fileID: 2100000, guid: de978267e2ca657468591802699e6ed0, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

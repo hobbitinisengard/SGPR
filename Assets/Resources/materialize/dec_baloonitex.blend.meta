@@ -3,7 +3,22 @@ guid: 879efb224c337e14a9b12f1f361bf675
 ModelImporter:
   serializedVersion: 21300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level4_gdoory64
+    second: {fileID: 2100000, guid: 407b68ab1f502f34f832573da19b1f2d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level4_pipe64
+    second: {fileID: 2100000, guid: 56723543431e7774fb43fac873551e71, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level4_psxballoons
+    second: {fileID: 2100000, guid: 323752790f2c0f34f81f333e25fe4b60, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

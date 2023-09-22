@@ -3,7 +3,12 @@ guid: 1a3058fd28704c24d986d8130c3832a9
 ModelImporter:
   serializedVersion: 21300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level4_balloon128
+    second: {fileID: 2100000, guid: e94e99b433d81804aae5759fd0dc2728, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

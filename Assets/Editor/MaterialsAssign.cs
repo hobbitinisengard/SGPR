@@ -23,7 +23,7 @@ public class AssignMaterials : EditorWindow
 	void AssignMaterialsToModels()
 	{
 		// Directory path where your .blend models are located
-		string modelsDirectory = "Assets/Models/";
+		string modelsDirectory = "Assets/Resources/materialize";
 
 		// Get all .blend model files in the specified directory
 		string[] blendModelFiles = Directory.GetFiles(modelsDirectory, "*.blend", SearchOption.AllDirectories);
@@ -36,26 +36,19 @@ public class AssignMaterials : EditorWindow
 			if (model != null)
 			{
 				// Iterate through all the materials in the model
-				Renderer[] renderers = model.GetComponentsInChildren<Renderer>();
-				foreach (Renderer renderer in renderers)
+				Renderer renderer = model.GetComponent<Renderer>();
+				foreach (Material originalMaterial in renderer.sharedMaterials)
 				{
-					foreach (Material originalMaterial in renderer.sharedMaterials)
+					// Material name to search for or create
+					string materialName = originalMaterial.name;
+
+					// Try to find an existing material with the same name
+					Material newMaterial = AssetDatabase.LoadAssetAtPath<Material>(
+						"Assets/Resources/materialize/" + materialName + ".mat");
+
+					// If the material doesn't exist, create a new one
+					if (newMaterial != null)
 					{
-						// Material name to search for or create
-						string materialName = originalMaterial.name;
-
-						// Try to find an existing material with the same name
-						Material newMaterial = AssetDatabase.LoadAssetAtPath<Material>("Assets/Materials/" + materialName + ".mat");
-
-						// If the material doesn't exist, create a new one
-						if (newMaterial == null)
-						{
-							newMaterial = new Material(originalMaterial);
-							AssetDatabase.CreateAsset(newMaterial, "Assets/Materials/" + materialName + ".mat");
-							AssetDatabase.SaveAssets();
-						}
-
-						// Assign the new material
 						renderer.sharedMaterial = newMaterial;
 					}
 				}

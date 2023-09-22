@@ -3,10 +3,15 @@ guid: 776a6d7e5d3589c40a5e86317947299c
 ModelImporter:
   serializedVersion: 21300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level3_sponser2
+    second: {fileID: 2100000, guid: 173855e61c31ac84bb591d15be9761eb, type: 2}
   materials:
     materialImportMode: 2
-    materialName: 0
+    materialName: 1
     materialSearch: 1
     materialLocation: 1
   animations:

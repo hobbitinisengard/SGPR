@@ -3,7 +3,22 @@ guid: ecb6b3d2219209344a91cdd88ebec75c
 ModelImporter:
   serializedVersion: 21300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_sponser2
+    second: {fileID: 2100000, guid: 3dab87680435b6b45a1dc3491866e3db, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level5_wallnotwhite128
+    second: {fileID: 2100000, guid: 0db940c51be1f0442a04fb80da610495, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level7_sponser3
+    second: {fileID: 2100000, guid: 6d01974492b2f8c40a1fb77ace4e6da7, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

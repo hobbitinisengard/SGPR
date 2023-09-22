@@ -3,7 +3,17 @@ guid: 18fabcf746873594a98f469adada12d0
 ModelImporter:
   serializedVersion: 21300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level5_hotel3
+    second: {fileID: 2100000, guid: e343e513d5003164189bda0e25036848, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level5_wallnotwhite128
+    second: {fileID: 2100000, guid: 0db940c51be1f0442a04fb80da610495, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
