@@ -13,8 +13,8 @@ public class Connector : MonoBehaviour
 	public static Material red;
 	public static Material green;
 	public static Material pink;
-	public bool visible { get; private set; }
-	void Start()
+	public bool marked { get; private set; }
+	void Awake()
 	{
 		if(!blue)
 		{
@@ -59,29 +59,16 @@ public class Connector : MonoBehaviour
 	{
 		return siblingIdx + (((siblingIdx - 1) % 2 == 0) ? 1 : -1);
 	}
-	public void Show(in Material mat)
+	public void Colorize(in Material mat)
 	{
-		MeshRenderer mr;
-		MeshFilter mf;
-		bool success = transform.TryGetComponent(out mf);
-		if (!success)
-		{
-			mf = transform.gameObject.AddComponent<MeshFilter>();
-			mf.mesh = Resources.Load<Mesh>("sphere");
-			mr = transform.gameObject.AddComponent<MeshRenderer>();
-		}
-		else
-			mr = transform.GetComponent<MeshRenderer>();
-		mr.enabled = true;
-		visible = true;
-		mr.material = mat;
+		if (mat != blue)
+			marked = true;
+		GetComponent<MeshRenderer>().material = mat;
 	}
 	public void Hide()
 	{
-		bool success = transform.TryGetComponent(out MeshRenderer mr);
-		if (success)
-			mr.enabled = false;
-		visible = false;
+		marked = false;
+		GetComponent<MeshRenderer>().material = blue;
 	}
 	public void Paths(out Vector3[] Lpath, out Vector3[] Rpath)
 	{
@@ -92,16 +79,8 @@ public class Connector : MonoBehaviour
 		else
 			idxWithPaths = transform.GetSiblingIndex();
 
-		//if (!tile.mirrored)
-		//{
-			Lpath = ListPositions(transform.parent.GetChild(idxWithPaths).GetChild(0), reverse);
-			Rpath = ListPositions(transform.parent.GetChild(idxWithPaths).GetChild(1), reverse);
-		//}
-		//else
-		//{
-		//	Rpath = ListPositions(transform.parent.GetChild(idxWithPaths).GetChild(0), reverse);
-		//	Lpath = ListPositions(transform.parent.GetChild(idxWithPaths).GetChild(1), reverse);
-		//}
+		Lpath = ListPositions(transform.parent.GetChild(idxWithPaths).GetChild(0), reverse);
+		Rpath = ListPositions(transform.parent.GetChild(idxWithPaths).GetChild(1), reverse);
 	}
 	Vector3[] ListPositions(Transform node, bool reverse)
 	{

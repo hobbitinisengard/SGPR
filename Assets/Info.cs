@@ -10,11 +10,11 @@ public static class Info
 	public readonly static string documents_sgpr_path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Stunt GP Reloaded";
 	public enum TileGroup { Roads, }
 	public enum Livery { Caltex, Rline, Mysuko, Titan, Itex, TGR, Special}
-	public static readonly int Liveries = 7;
+	public const int Liveries = 7;
 	public enum RaceType { Race, Stunt, Drift, Knockout, Survival};
-	public static readonly int RaceTypes = 5;
+	public const int RaceTypes = 5;
 	public enum Envir { GER, JAP, SPN, FRA, ENG, USA, ITA, MEX };
-	public static readonly int Environments = 8;
+	public const int Environments = 8;
 	public static readonly string[] EnvirDescs =
 	{
 		"GERMANY\n\nLoud crowd cheering and powerful spotlights..This german arena is really a place to show off.",
@@ -36,11 +36,11 @@ public static class Info
 	public static SortedDictionary<string, Track> tracks;
 	public static Dictionary<string, AudioClip> audioClips;
 	public static bool loaded = false;
-	public static readonly int invisibleLevelLayer = 12;
-	public static readonly int roadLayer = 6;
-	public static readonly int terrainLayer = 13;
-	public static readonly int connectorLayer = 11;
-	public static readonly int cameraLayer = 14;
+	public const int invisibleLevelLayer = 12;
+	public const int roadLayer = 6;
+	public const int terrainLayer = 13;
+	public const int connectorLayer = 11;
+	public const int cameraLayer = 14;
 
 	// next session data
 	public static CarSetup[] s_carSetups;

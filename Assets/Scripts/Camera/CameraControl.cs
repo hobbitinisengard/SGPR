@@ -1,8 +1,4 @@
-﻿using System;
-using Unity.Rendering.HybridV2;
-using UnityEditor;
-using UnityEditor.Build;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace RVP
 {
@@ -122,7 +118,7 @@ namespace RVP
 				const int maxPitch = 10;
 				pitchAngle = WrapAround180Degs(vp.tr.localEulerAngles.x);
 				bool pitchLocked = pitchAngle < -maxPitch;
-				if (vp.groundedWheels > 1)
+				if (vp.groundedWheels > 0)
 				{
 					if (pitchLocked)
 					{

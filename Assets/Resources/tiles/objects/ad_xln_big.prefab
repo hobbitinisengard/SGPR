@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 6948786415169408321}
   - component: {fileID: 6948786415169408323}
   - component: {fileID: 6948786415169408322}
+  - component: {fileID: 6593908103642952192}
   m_Layer: 0
   m_Name: ad_xln_big
   m_TagString: Untagged
@@ -62,7 +63,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 8f282aa6b5d9b5b43b83752abba307cb, type: 2}
+  - {fileID: 2100000, guid: c4ce23aa5f1d05646ab35ea3de389438, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -84,6 +85,18 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &6593908103642952192
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6948786415169408320}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b84bb76c1b4c804b8ec131d5e92c350, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &6948786416196180955
 GameObject:
   m_ObjectHideFlags: 0

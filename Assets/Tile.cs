@@ -1,18 +1,28 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static EditorPanel;
 
+[DisallowMultipleComponent]
 public class Tile : MonoBehaviour
 {
 	[NonSerialized]
 	public EditorPanel panel;
 	public bool placed { get; private set; }
 	public bool mirrored { get; private set; }
-	public bool hasConnectors { get; private set; }
+	public bool scaled { get; private set; }
+	MeshCollider mc;
 	private void Awake()
 	{
 		// add mesh collider to 'main' mesh 
-		transform.GetChild(0).gameObject.AddComponent<MeshCollider>().enabled = false;
+		if (transform.childCount == 0)
+			mc = transform.gameObject.AddComponent<MeshCollider>();
+		else
+			mc = transform.GetChild(0).gameObject.AddComponent<MeshCollider>();
+
+		mc.enabled = true;
+
 		for (int i=1; i< transform.childCount; ++i)
 		{
 			var connector = transform.GetChild(i).gameObject;
@@ -21,16 +31,21 @@ public class Tile : MonoBehaviour
 			col.isTrigger = true;
 			var rb = connector.AddComponent<Rigidbody>();
 			rb.useGravity = false;
-			rb.isKinematic = true;
+			rb.isKinematic = true; 
 			connector.AddComponent<Connector>();
-			hasConnectors = true;
+			connector.layer = Info.connectorLayer;
+			var mf = connector.AddComponent<MeshFilter>();
+			var mr = connector.AddComponent<MeshRenderer>();
+			mf.mesh = Resources.Load<Mesh>("sphere");
+			mr.enabled = true;
+			mr.material = Connector.blue;
 		}
 	}
+	
 	internal void SetPlaced()
 	{
 		placed = true;
-		transform.GetChild(0).gameObject.layer = Info.roadLayer;
-		transform.GetChild(0).GetComponent<MeshCollider>().enabled = true;
+		mc.gameObject.layer = Info.roadLayer;
 	}
 	Mesh MirrorMesh(Mesh mesh)
 	{
@@ -51,34 +66,98 @@ public class Tile : MonoBehaviour
 	public bool MirrorTile()
 	{
 		mirrored = !mirrored;
-		var mf = transform.GetChild(0).GetComponent<MeshFilter>();
-		var mc = transform.GetChild(0).GetComponent<MeshCollider>();
+		var mf = mc.transform.GetComponent<MeshFilter>();
 		mf.mesh = MirrorMesh(mf.mesh);
 		if(mc)
 			mc.sharedMesh = mf.mesh;
-		if(hasConnectors)
+
+		for (int i = 1; i < transform.childCount; ++i)
 		{
-			Debug.Log("hasConnectors=true");
-			for (int i = 1; i < transform.childCount; ++i)
+			Transform connector = transform.GetChild(i);
+			var p = connector.localPosition;
+			p.x = -p.x;
+			connector.localPosition = p;
+			for (int j = 0; j < connector.childCount; ++j)
 			{
-				Transform connector = transform.GetChild(i);
-				var p = connector.localPosition;
-				p.x = -p.x;
-				connector.localPosition = p;
-				for (int j = 0; j < connector.childCount; ++j)
+				Transform path = connector.GetChild(j);
+				for (int k = 0; k < path.childCount; ++k)
 				{
-					Transform path = connector.GetChild(j);
-					for (int k = 0; k < path.childCount; ++k)
-					{
-						Vector3 a = connector.InverseTransformPoint(path.GetChild(k).position);
-						a.x = -a.x;
-						a = connector.TransformPoint(a);
-						path.GetChild(k).position = a;
-					}
+					Vector3 a = connector.InverseTransformPoint(path.GetChild(k).position);
+					a.x = -a.x;
+					a = connector.TransformPoint(a);
+					path.GetChild(k).position = a;
 				}
 			}
 		}
 		return mirrored;
 	}
-	
+	public float Length()
+	{
+		return mc.transform.GetComponent<MeshFilter>().mesh.bounds.size.y;
+	}
+	Mesh CopyMesh(in Mesh mesh)
+	{
+		var newMesh = new Mesh()
+		{
+			vertices = mesh.vertices,
+			triangles = mesh.triangles,
+			normals = mesh.normals,
+			tangents = mesh.tangents,
+			bounds = mesh.bounds,
+			uv = mesh.uv
+		};
+		return newMesh;
+	}
+	public void AdjustScale(float distance)
+	{
+		if (distance == 0)
+			return;
+		var mf = mc.transform.GetComponent<MeshFilter>();
+
+		if(scaled)
+		{
+			mf.mesh = CopyMesh(mf.sharedMesh);
+		}
+		scaled = true;
+		
+		float scale = distance / mf.mesh.bounds.size.y;
+		transform.localScale = new Vector3(1, 1, scale);
+
+		{ // adjust UVs
+			Vector2[] uvs = mf.mesh.uv;
+			int submeshes = mf.mesh.subMeshCount;
+			float[] maxUVYs = new float[submeshes];
+
+			for (int i = 0; i < submeshes; ++i)
+			{ // foreach material find max UV Y-coord
+				int[] triangles = mf.mesh.GetTriangles(i);
+				for (int j = 0; j < triangles.Length; ++j)
+				{
+					if (uvs[triangles[j]].y > maxUVYs[i])
+						maxUVYs[i] = uvs[triangles[j]].y;
+				}
+				for (int j = 0; j < triangles.Length; ++j)
+				{
+					if (uvs[triangles[j]].y == maxUVYs[i])
+						uvs[triangles[j]].y *= scale;
+				}
+			}
+			mf.mesh.uv = uvs;
+		}
+
+		// make connectors round again
+		for (int i = 1; i < transform.childCount; ++i)
+		{
+			var connector = transform.GetChild(i);
+			connector.transform.localScale = new Vector3(1, 1 / scale, 1);
+			//for (int j = 0; j < connector.childCount; ++j)
+			//{
+			//	var pathParent = connector.GetChild(j);
+			//	for (int k = 0; k < pathParent.childCount; ++k)
+			//	{
+			//		pathParent.GetChild(k).transform.localScale = new Vector3(1, 1, newScale);
+			//	}
+			//}
+		}
+	}
 }
