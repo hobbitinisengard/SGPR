@@ -3,330 +3,380 @@ using System.Collections;
 
 namespace RVP
 {
-    [RequireComponent(typeof(Wheel))]
-    [DisallowMultipleComponent]
-    [AddComponentMenu("RVP/Effects/Tire Mark Creator", 0)]
+	[RequireComponent(typeof(Wheel))]
+	[DisallowMultipleComponent]
+	[AddComponentMenu("RVP/Effects/Tire Mark Creator", 0)]
 
-    // Class for creating tire marks
-    public class TireMarkCreate : MonoBehaviour
-    {
-        Transform tr;
-        Wheel w;
-        Mesh mesh;
-        int[] tris;
-        Vector3[] verts;
-        Vector2[] uvs;
-        Color[] colors;
+	// Class for creating tire marks
+	public class TireMarkCreate : MonoBehaviour
+	{
+		Transform tr;
+		Wheel w;
+		Mesh mesh;
+		int[] tris;
+		Vector3[] verts;
+		Vector2[] uvs;
+		Color[] colors;
 
-        Vector3 leftPoint;
-        Vector3 rightPoint;
-        Vector3 leftPointPrev;
-        Vector3 rightPointPrev;
+		Vector3 leftPoint;
+		Vector3 rightPoint;
+		Vector3 leftPointPrev;
+		Vector3 rightPointPrev;
 
-        bool creatingMark;
-        bool continueMark; // Continue making mark after current one ends
-        GameObject curMark; // Current mark
-        Transform curMarkTr;
-        int curEdge;
-        float gapDelay; // Gap between segments
+		bool creatingMark;
+		bool continueMark; // Continue making mark after current one ends
+		GameObject curMark; // Current mark
+		Transform curMarkTr;
+		int curEdge;
+		float gapDelay; // Gap between segments
 
-        int curSurface = -1; // Current surface type
-        int prevSurface = -1; // Previous surface type
+		int curSurface = -1; // Current surface type
+		int prevSurface = -1; // Previous surface type
 
-        bool popped = false;
-        bool poppedPrev = false;
+		bool popped = false;
+		bool poppedPrev = false;
 
-        [Tooltip("How much the tire must slip before marks are created")]
-        public float slipThreshold;
-        float alwaysScrape;
+		[Tooltip("How much the tire must slip before marks are created")]
+		public float slipThreshold;
+		public float alwaysScrape;
 
-        public bool calculateTangents = true;
+		public bool calculateTangents = true;
 
-        [Tooltip("Materials in array correspond to indices in surface types in GroundSurfaceMaster")]
-        public Material[] tireMarkMaterials;
+		[Tooltip("Materials in array correspond to indices in surface types in GroundSurfaceMaster")]
+		public Material[] tireMarkMaterials;
 
-        [Tooltip("Materials in array correspond to indices in surface types in GroundSurfaceMaster")]
-        public Material[] rimMarkMaterials;
+		[Tooltip("Materials in array correspond to indices in surface types in GroundSurfaceMaster")]
+		public Material[] rimMarkMaterials;
 
-        [Tooltip("Particles in array correspond to indices in surface types in GroundSurfaceMaster")]
-        public ParticleSystem[] debrisParticles;
-        public ParticleSystem sparks;
-        float[] initialEmissionRates;
-        ParticleSystem.MinMaxCurve zeroEmission = new ParticleSystem.MinMaxCurve(0);
-        
+		[Tooltip("Particles in array correspond to indices in surface types in GroundSurfaceMaster")]
+		public ParticleSystem[] debrisParticles;
+		public ParticleSystem sparks;
+		float[] initialEmissionRates;
+		ParticleSystem.MinMaxCurve zeroEmission = new ParticleSystem.MinMaxCurve(0);
 
-        void Start() {
-            tr = transform;
-            w = GetComponent<Wheel>();
 
-            initialEmissionRates = new float[debrisParticles.Length + 1];
-            for (int i = 0; i < debrisParticles.Length; i++) {
-                initialEmissionRates[i] = debrisParticles[i].emission.rateOverTime.constantMax;
-            }
+		void Start()
+		{
+			tr = transform;
+			w = GetComponent<Wheel>();
 
-            if (sparks) {
-                initialEmissionRates[debrisParticles.Length] = sparks.emission.rateOverTime.constantMax;
-            }
-        }
-        public bool PowerSliding()
-        {
-            return Mathf.Abs(w.forwardSlip) > slipThreshold;
-        }
-        void Update() {
-            // Check for continuous marking
-            if (w.grounded) {
-                alwaysScrape = GroundSurfaceMaster.surfaceTypesStatic[w.contactPoint.surfaceType].alwaysScrape ? slipThreshold + Mathf.Min(0.5f, Mathf.Abs(w.rawRPM * 0.001f)) : 0;
-            }
-            else {
-                alwaysScrape = 0;
-            }
+			initialEmissionRates = new float[debrisParticles.Length + 1];
+			for (int i = 0; i < debrisParticles.Length; i++)
+			{
+				initialEmissionRates[i] = debrisParticles[i].emission.rateOverTime.constantMax;
+				var em = debrisParticles[i].emission;
+				em.rateOverTime = zeroEmission;
+			}
 
-            // Create mark
-            if (w.grounded && (Mathf.Abs(F.MaxAbs(w.sidewaysSlip, w.forwardSlip)) > slipThreshold || alwaysScrape > 0) && w.connected) {
-                w.sliding = true;
-                prevSurface = curSurface;
-                curSurface = w.grounded ? w.contactPoint.surfaceType : -1;
+			if (sparks)
+			{
+				initialEmissionRates[debrisParticles.Length] = sparks.emission.rateOverTime.constantMax;
+			}
+		}
+		public bool PowerSliding()
+		{
+			return Mathf.Abs(w.forwardSlip) > slipThreshold;
+		}
+		void Update()
+		{
+			// Check for continuous marking
+			if (w.grounded)
+			{
+				alwaysScrape = GroundSurfaceMaster.surfaceTypesStatic[w.contactPoint.surfaceType].alwaysScrape ?
+					(slipThreshold + w.vp.engine.targetPitch) : 0;
+			}
+			else
+			{
+				alwaysScrape = 0;
+			}
 
-                poppedPrev = popped;
-                popped = w.popped;
+			// Create mark
+			if (w.grounded && (Mathf.Abs(F.MaxAbs(w.sidewaysSlip, w.forwardSlip)) > slipThreshold || alwaysScrape > 0) && w.connected)
+			{
+				w.sliding = true;
+				prevSurface = curSurface;
+				curSurface = w.grounded ? w.contactPoint.surfaceType : -1;
 
-                if (!creatingMark) {
-                    prevSurface = curSurface;
-                    StartMark();
-                }
-                else if (curSurface != prevSurface || popped != poppedPrev) {
-                    EndMark();
-                }
+				poppedPrev = popped;
+				popped = w.popped;
 
-                // Calculate segment points
-                if (curMark) {
-                    Vector3 pointDir = Quaternion.AngleAxis(90, w.contactPoint.normal) * tr.right * (w.popped ? w.rimWidth : w.tireWidth);
-                    leftPoint = curMarkTr.InverseTransformPoint(w.contactPoint.point + pointDir * w.suspensionParent.flippedSideFactor * Mathf.Sign(w.rawRPM) + w.contactPoint.normal * RaceManager.tireMarkHeightStatic);
-                    rightPoint = curMarkTr.InverseTransformPoint(w.contactPoint.point - pointDir * w.suspensionParent.flippedSideFactor * Mathf.Sign(w.rawRPM) + w.contactPoint.normal * RaceManager.tireMarkHeightStatic);
-                }
-            }
-            else if (creatingMark) {
-                w.sliding = false;
-                EndMark();
-            }
+				if (!creatingMark)
+				{
+					prevSurface = curSurface;
+					StartMark();
+				}
+				else if (curSurface != prevSurface || popped != poppedPrev)
+				{
+					EndMark();
+				}
 
-            // Update mark if it's short enough, otherwise end it
-            if (curEdge < RaceManager.tireMarkLengthStatic && creatingMark) {
-                UpdateMark();
-            }
-            else if (creatingMark) {
-                EndMark();
-            }
+				// Calculate segment points
+				if (curMark)
+				{
+					Vector3 pointDir = Quaternion.AngleAxis(90, w.contactPoint.normal) * tr.right * (w.popped ? w.rimWidth : w.tireWidth);
+					leftPoint = curMarkTr.InverseTransformPoint(w.contactPoint.point + pointDir * w.suspensionParent.flippedSideFactor * Mathf.Sign(w.rawRPM) + w.contactPoint.normal * RaceManager.tireMarkHeightStatic);
+					rightPoint = curMarkTr.InverseTransformPoint(w.contactPoint.point - pointDir * w.suspensionParent.flippedSideFactor * Mathf.Sign(w.rawRPM) + w.contactPoint.normal * RaceManager.tireMarkHeightStatic);
+				}
+			}
+			else if (creatingMark)
+			{
+				w.sliding = false;
+				EndMark();
+			}
 
-            // Set particle emission rates
-            ParticleSystem.EmissionModule em;
-            for (int ps = 0; ps < debrisParticles.Length; ps++) {
-                if (w.connected) {
-                    if (ps == w.contactPoint.surfaceType) {
-                        if (GroundSurfaceMaster.surfaceTypesStatic[w.contactPoint.surfaceType].leaveSparks && w.popped) {
-                            em = debrisParticles[ps].emission;
-                            em.rateOverTime = zeroEmission;
+			// Update mark if it's short enough, otherwise end it
+			if (curEdge < RaceManager.tireMarkLengthStatic && creatingMark)
+			{
+				UpdateMark();
+			}
+			else if (creatingMark)
+			{
+				EndMark();
+			}
 
-                            if (sparks) {
-                                em = sparks.emission;
-                                em.rateOverTime = new ParticleSystem.MinMaxCurve(initialEmissionRates[debrisParticles.Length] * Mathf.Clamp01(Mathf.Abs(F.MaxAbs(w.sidewaysSlip, w.forwardSlip, alwaysScrape)) - slipThreshold));
-                            }
-                        }
-                        else {
-                            em = debrisParticles[ps].emission;
-                            em.rateOverTime = new ParticleSystem.MinMaxCurve(initialEmissionRates[ps] * Mathf.Clamp01(Mathf.Abs(F.MaxAbs(w.sidewaysSlip, w.forwardSlip, alwaysScrape)) - slipThreshold));
+			// Set particle emission rates
+			ParticleSystem.EmissionModule em;
+			for (int ps = 0; ps < debrisParticles.Length; ps++)
+			{
+				if (w.connected)
+				{
+					if (ps == w.contactPoint.surfaceType)
+					{
+						if (GroundSurfaceMaster.surfaceTypesStatic[w.contactPoint.surfaceType].leaveSparks && w.popped)
+						{
+							em = debrisParticles[ps].emission;
+							em.rateOverTime = zeroEmission;
 
-                            if (sparks) {
-                                em = sparks.emission;
-                                em.rateOverTime = zeroEmission;
-                            }
-                        }
-                    }
-                    else {
-                        em = debrisParticles[ps].emission;
-                        em.rateOverTime = zeroEmission;
-                    }
-                }
-                else {
-                    em = debrisParticles[ps].emission;
-                    em.rateOverTime = zeroEmission;
+							if (sparks)
+							{
+								em = sparks.emission;
+								em.rateOverTime = new ParticleSystem.MinMaxCurve(initialEmissionRates[debrisParticles.Length] * 
+									Mathf.Clamp01(Mathf.Abs(F.MaxAbs(w.sidewaysSlip, w.forwardSlip, alwaysScrape)) - slipThreshold));
+							}
+						}
+						else
+						{
+							em = debrisParticles[ps].emission;
+							em.rateOverTime = new ParticleSystem.MinMaxCurve(initialEmissionRates[ps] * 
+								Mathf.Clamp01(Mathf.Abs(F.MaxAbs(w.sidewaysSlip, w.forwardSlip, alwaysScrape)) - slipThreshold));
 
-                    if (sparks) {
-                        em = sparks.emission;
-                        em.rateOverTime = zeroEmission;
-                    }
-                }
-            }
-        }
+							if (sparks)
+							{
+								em = sparks.emission;
+								em.rateOverTime = zeroEmission;
+							}
+						}
+					}
+					else
+					{
+						em = debrisParticles[ps].emission;
+						em.rateOverTime = zeroEmission;
+					}
+				}
+				else
+				{
+					em = debrisParticles[ps].emission;
+					em.rateOverTime = zeroEmission;
 
-        // Start creating a mark
-        void StartMark() {
-            creatingMark = true;
-            curMark = new GameObject("Tire Mark");
-            curMarkTr = curMark.transform;
-            curMarkTr.parent = w.contactPoint.col.transform;
-            curMark.AddComponent<TireMark>();
-            MeshRenderer tempRend = curMark.AddComponent<MeshRenderer>();
+					if (sparks)
+					{
+						em = sparks.emission;
+						em.rateOverTime = zeroEmission;
+					}
+				}
+			}
+		}
 
-            // Set material based on whether the tire is popped
-            if (w.popped) {
-                tempRend.sharedMaterial = rimMarkMaterials[Mathf.Min(w.contactPoint.surfaceType, rimMarkMaterials.Length - 1)];
-            }
-            else {
-                tempRend.sharedMaterial = tireMarkMaterials[Mathf.Min(w.contactPoint.surfaceType, tireMarkMaterials.Length - 1)];
-            }
+		// Start creating a mark
+		void StartMark()
+		{
+			creatingMark = true;
+			curMark = new GameObject("Tire Mark");
+			curMarkTr = curMark.transform;
+			curMarkTr.parent = w.contactPoint.col.transform;
+			curMark.AddComponent<TireMark>();
+			MeshRenderer tempRend = curMark.AddComponent<MeshRenderer>();
 
-            tempRend.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            mesh = curMark.AddComponent<MeshFilter>().mesh;
-            verts = new Vector3[RaceManager.tireMarkLengthStatic * 2];
-            tris = new int[RaceManager.tireMarkLengthStatic * 3];
+			// Set material based on whether the tire is popped
+			if (w.popped)
+			{
+				tempRend.sharedMaterial = rimMarkMaterials[Mathf.Min(w.contactPoint.surfaceType, rimMarkMaterials.Length - 1)];
+			}
+			else
+			{
+				tempRend.sharedMaterial = tireMarkMaterials[Mathf.Min(w.contactPoint.surfaceType, tireMarkMaterials.Length - 1)];
+			}
 
-            if (continueMark) {
-                verts[0] = leftPointPrev;
-                verts[1] = rightPointPrev;
+			tempRend.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+			mesh = curMark.AddComponent<MeshFilter>().mesh;
+			verts = new Vector3[RaceManager.tireMarkLengthStatic * 2];
+			tris = new int[RaceManager.tireMarkLengthStatic * 3];
 
-                tris[0] = 0;
-                tris[1] = 3;
-                tris[2] = 1;
-                tris[3] = 0;
-                tris[4] = 2;
-                tris[5] = 3;
-            }
+			if (continueMark)
+			{
+				verts[0] = leftPointPrev;
+				verts[1] = rightPointPrev;
 
-            uvs = new Vector2[verts.Length];
-            uvs[0] = new Vector2(0, 0);
-            uvs[1] = new Vector2(1, 0);
-            uvs[2] = new Vector2(0, 1);
-            uvs[3] = new Vector2(1, 1);
+				tris[0] = 0;
+				tris[1] = 3;
+				tris[2] = 1;
+				tris[3] = 0;
+				tris[4] = 2;
+				tris[5] = 3;
+			}
 
-            colors = new Color[verts.Length];
-            colors[0].a = 0;
-            colors[1].a = 0;
+			uvs = new Vector2[verts.Length];
+			uvs[0] = new Vector2(0, 0);
+			uvs[1] = new Vector2(1, 0);
+			uvs[2] = new Vector2(0, 1);
+			uvs[3] = new Vector2(1, 1);
 
-            curEdge = 2;
-            gapDelay = RaceManager.tireMarkGapStatic;
-        }
+			colors = new Color[verts.Length];
+			colors[0].a = 0;
+			colors[1].a = 0;
 
-        // Update mark currently being generated
-        void UpdateMark() {
-            if (gapDelay == 0) {
-                float alpha = (curEdge < RaceManager.tireMarkLengthStatic - 2 && curEdge > 5 ? 1 : 0) *
-                    Random.Range(
-                        Mathf.Clamp01(Mathf.Abs(F.MaxAbs(w.sidewaysSlip, w.forwardSlip, alwaysScrape)) - slipThreshold) * 0.9f,
-                        Mathf.Clamp01(Mathf.Abs(F.MaxAbs(w.sidewaysSlip, w.forwardSlip, alwaysScrape)) - slipThreshold));
-                gapDelay = RaceManager.tireMarkGapStatic;
-                curEdge += 2;
+			curEdge = 2;
+			gapDelay = RaceManager.tireMarkGapStatic;
+		}
 
-                verts[curEdge] = leftPoint;
-                verts[curEdge + 1] = rightPoint;
+		// Update mark currently being generated
+		void UpdateMark()
+		{
+			if (gapDelay == 0)
+			{
+				float alpha = (curEdge < RaceManager.tireMarkLengthStatic - 2 && curEdge > 5 ? 1 : 0) *
+					 Random.Range(
+						  Mathf.Clamp01(Mathf.Abs(F.MaxAbs(w.sidewaysSlip, w.forwardSlip, alwaysScrape)) - slipThreshold) * 0.9f,
+						  Mathf.Clamp01(Mathf.Abs(F.MaxAbs(w.sidewaysSlip, w.forwardSlip, alwaysScrape)) - slipThreshold));
+				gapDelay = RaceManager.tireMarkGapStatic;
+				curEdge += 2;
 
-                for (int i = curEdge + 2; i < verts.Length; i++) {
-                    verts[i] = Mathf.Approximately(i * 0.5f, Mathf.Round(i * 0.5f)) ? leftPoint : rightPoint;
-                    colors[i].a = 0;
-                }
+				verts[curEdge] = leftPoint;
+				verts[curEdge + 1] = rightPoint;
 
-                tris[curEdge * 3 - 3] = curEdge;
-                tris[curEdge * 3 - 2] = curEdge + 3;
-                tris[curEdge * 3 - 1] = curEdge + 1;
-                tris[Mathf.Min(curEdge * 3, tris.Length - 1)] = curEdge;
-                tris[Mathf.Min(curEdge * 3 + 1, tris.Length - 1)] = curEdge + 2;
-                tris[Mathf.Min(curEdge * 3 + 2, tris.Length - 1)] = curEdge + 3;
+				for (int i = curEdge + 2; i < verts.Length; i++)
+				{
+					verts[i] = Mathf.Approximately(i * 0.5f, Mathf.Round(i * 0.5f)) ? leftPoint : rightPoint;
+					colors[i].a = 0;
+				}
 
-                uvs[curEdge] = new Vector2(0, curEdge * 0.5f);
-                uvs[curEdge + 1] = new Vector2(1, curEdge * 0.5f);
+				tris[curEdge * 3 - 3] = curEdge;
+				tris[curEdge * 3 - 2] = curEdge + 3;
+				tris[curEdge * 3 - 1] = curEdge + 1;
+				tris[Mathf.Min(curEdge * 3, tris.Length - 1)] = curEdge;
+				tris[Mathf.Min(curEdge * 3 + 1, tris.Length - 1)] = curEdge + 2;
+				tris[Mathf.Min(curEdge * 3 + 2, tris.Length - 1)] = curEdge + 3;
 
-                colors[curEdge] = new Color(1, 1, 1, alpha);
-                colors[curEdge + 1] = colors[curEdge];
+				uvs[curEdge] = new Vector2(0, curEdge * 0.5f);
+				uvs[curEdge + 1] = new Vector2(1, curEdge * 0.5f);
 
-                mesh.vertices = verts;
-                mesh.triangles = tris;
-                mesh.uv = uvs;
-                mesh.colors = colors;
-                mesh.RecalculateBounds();
-                mesh.RecalculateNormals();
-            }
-            else {
-                gapDelay = Mathf.Max(0, gapDelay - Time.deltaTime);
-                verts[curEdge] = leftPoint;
-                verts[curEdge + 1] = rightPoint;
+				colors[curEdge] = new Color(1, 1, 1, alpha);
+				colors[curEdge + 1] = colors[curEdge];
 
-                for (int i = curEdge + 2; i < verts.Length; i++) {
-                    verts[i] = Mathf.Approximately(i * 0.5f, Mathf.Round(i * 0.5f)) ? leftPoint : rightPoint;
-                    colors[i].a = 0;
-                }
+				mesh.vertices = verts;
+				mesh.triangles = tris;
+				mesh.uv = uvs;
+				mesh.colors = colors;
+				mesh.RecalculateBounds();
+				mesh.RecalculateNormals();
+			}
+			else
+			{
+				gapDelay = Mathf.Max(0, gapDelay - Time.deltaTime);
+				verts[curEdge] = leftPoint;
+				verts[curEdge + 1] = rightPoint;
 
-                mesh.vertices = verts;
-                mesh.RecalculateBounds();
-            }
+				for (int i = curEdge + 2; i < verts.Length; i++)
+				{
+					verts[i] = Mathf.Approximately(i * 0.5f, Mathf.Round(i * 0.5f)) ? leftPoint : rightPoint;
+					colors[i].a = 0;
+				}
 
-            if (calculateTangents) {
-                mesh.RecalculateTangents();
-            }
-        }
+				mesh.vertices = verts;
+				mesh.RecalculateBounds();
+			}
 
-        // Stop making mark
-        void EndMark() {
-            creatingMark = false;
-            leftPointPrev = verts[Mathf.RoundToInt(verts.Length * 0.5f)];
-            rightPointPrev = verts[Mathf.RoundToInt(verts.Length * 0.5f + 1)];
-            continueMark = w.grounded;
+			if (calculateTangents)
+			{
+				mesh.RecalculateTangents();
+			}
+		}
 
-            curMark.GetComponent<TireMark>().fadeTime = RaceManager.tireFadeTimeStatic;
-            curMark.GetComponent<TireMark>().mesh = mesh;
-            curMark.GetComponent<TireMark>().colors = colors;
-            curMark = null;
-            curMarkTr = null;
-            mesh = null;
-        }
+		// Stop making mark
+		void EndMark()
+		{
+			creatingMark = false;
+			leftPointPrev = verts[Mathf.RoundToInt(verts.Length * 0.5f)];
+			rightPointPrev = verts[Mathf.RoundToInt(verts.Length * 0.5f + 1)];
+			continueMark = w.grounded;
 
-        // Clean up mark if destroyed while creating
-        void OnDestroy() {
-            if (creatingMark && curMark) {
-                EndMark();
-            }
-            else if (mesh != null) {
-                Destroy(mesh);
-            }
-        }
-    }
+			curMark.GetComponent<TireMark>().fadeTime = RaceManager.tireFadeTimeStatic;
+			curMark.GetComponent<TireMark>().mesh = mesh;
+			curMark.GetComponent<TireMark>().colors = colors;
+			curMark = null;
+			curMarkTr = null;
+			mesh = null;
+		}
 
-    // Class for tire mark instances
-    public class TireMark : MonoBehaviour
-    {
-        [System.NonSerialized]
-        public float fadeTime = -1;
-        bool fading;
-        float alpha = 1;
-        [System.NonSerialized]
-        public Mesh mesh;
-        [System.NonSerialized]
-        public Color[] colors;
+		// Clean up mark if destroyed while creating
+		void OnDestroy()
+		{
+			if (creatingMark && curMark)
+			{
+				EndMark();
+			}
+			else if (mesh != null)
+			{
+				Destroy(mesh);
+			}
+		}
+	}
 
-        // Fade the tire mark and then destroy it
-        void Update() {
-            if (fading) {
-                if (alpha <= 0) {
-                    Destroy(mesh);
-                    Destroy(gameObject);
-                }
-                else {
-                    alpha -= Time.deltaTime;
+	// Class for tire mark instances
+	public class TireMark : MonoBehaviour
+	{
+		[System.NonSerialized]
+		public float fadeTime = -1;
+		bool fading;
+		float alpha = 1;
+		[System.NonSerialized]
+		public Mesh mesh;
+		[System.NonSerialized]
+		public Color[] colors;
 
-                    for (int i = 0; i < colors.Length; i++) {
-                        colors[i].a -= Time.deltaTime;
-                    }
+		// Fade the tire mark and then destroy it
+		void Update()
+		{
+			if (fading)
+			{
+				if (alpha <= 0)
+				{
+					Destroy(mesh);
+					Destroy(gameObject);
+				}
+				else
+				{
+					alpha -= Time.deltaTime;
 
-                    mesh.colors = colors;
-                }
-            }
-            else {
-                if (fadeTime > 0) {
-                    fadeTime = Mathf.Max(0, fadeTime - Time.deltaTime);
-                }
-                else if (fadeTime == 0) {
-                    fading = true;
-                }
-            }
-        }
-    }
+					for (int i = 0; i < colors.Length; i++)
+					{
+						colors[i].a -= Time.deltaTime;
+					}
+
+					mesh.colors = colors;
+				}
+			}
+			else
+			{
+				if (fadeTime > 0)
+				{
+					fadeTime = Mathf.Max(0, fadeTime - Time.deltaTime);
+				}
+				else if (fadeTime == 0)
+				{
+					fading = true;
+				}
+			}
+		}
+	}
 }

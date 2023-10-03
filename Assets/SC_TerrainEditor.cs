@@ -73,6 +73,14 @@ public class SC_TerrainEditor : MonoBehaviour
 		area = 2;
 		brushScaling();
 	}
+	public float[,] GetCurrentHeights()
+	{
+		return tData.GetHeights(0, 0, xRes, yRes);
+	}
+	public void SetHeights(float[,] heights)
+	{
+		tData.SetHeights(0, 0, heights);
+	}
 
 	void FixedUpdate()
 	{

@@ -118,7 +118,7 @@ namespace RVP
 				const int maxPitch = 10;
 				pitchAngle = WrapAround180Degs(vp.tr.localEulerAngles.x);
 				bool pitchLocked = pitchAngle < -maxPitch;
-				if (vp.groundedWheels > 0)
+				if (vp.groundedWheels == 4)
 				{
 					if (pitchLocked)
 					{
@@ -164,6 +164,7 @@ namespace RVP
 				{
 					EffectiveTurnAngle = 0;
 					scaledTurnAngle = 0;
+					
 				}
 				smoothedRollAngle = Mathf.Lerp(smoothedRollAngle, scaledTurnAngle, rollCoeff * Time.fixedDeltaTime);
 				rollAngleDeg = smoothedRollAngle * 15f * Mathf.Lerp(0, 15, targetBody.velocity.magnitude) / 15f;
@@ -222,6 +223,7 @@ namespace RVP
 				if (Physics.Linecast(target.position, camOffset, out hit, castMask))
 				{ //Check if there is an object between the camera and target vehicle and move the camera in front of it
 					camOffset = hit.point + (target.position - camOffset).normalized * (cam.nearClipPlane + 0.1f);
+					camOffset.y += height;
 				}
 				//Vector3 forwardDir = lookObj.TransformDirection(lookDirActual);
 

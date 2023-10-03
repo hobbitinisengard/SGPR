@@ -1,18 +1,25 @@
 using RVP;
 using System;
 using UnityEngine;
-
+/* connectors act as:
+ * - connections between tiles for raceline (connection)
+ * - points of reference when scaling tiles (scalator)
+ * - stunt zones for AI (isStuntZone)
+*/
 public class Connector : MonoBehaviour
 {
 	[NonSerialized]
 	public Connector connection;
 	[NonSerialized]
-	public TrackCamera trackCamera;
+	public TrackCamera trackCamera; // po GetChild
 	Tile tile;
 	public static Material blue;
 	public static Material red;
 	public static Material green;
 	public static Material pink;
+
+	public bool isStuntZone;
+
 	public bool marked { get; private set; }
 	void Awake()
 	{
@@ -24,6 +31,19 @@ public class Connector : MonoBehaviour
 			pink = Resources.Load<Material>("materials/pink");
 		}
 		tile = transform.parent.GetComponent<Tile>();
+	}
+	/// <summary>
+	/// Connected connectors have their colliders disabled. 
+	/// But when adding stuntZones, we have to temporarily re-enable colliders
+	/// </summary>
+	public void EnableColliderForStuntZoneMode()
+	{
+		GetComponent<Collider>().enabled = true;
+	}
+	public void DisableCollider()
+	{
+		if (connection)
+			GetComponent<Collider>().enabled = false;
 	}
 	public void SetCamera(TrackCamera cam)
 	{
@@ -82,6 +102,17 @@ public class Connector : MonoBehaviour
 		Lpath = ListPositions(transform.parent.GetChild(idxWithPaths).GetChild(0), reverse);
 		Rpath = ListPositions(transform.parent.GetChild(idxWithPaths).GetChild(1), reverse);
 	}
+	public Vector3[] PathsExtra()
+	{
+		int idxWithPaths;
+		bool reverse = (transform.GetSiblingIndex() - 1) % 2 == 1;
+		if (reverse)
+			idxWithPaths = transform.GetSiblingIndex() - 1;
+		else
+			idxWithPaths = transform.GetSiblingIndex();
+
+		return ListPositions(transform.parent.GetChild(idxWithPaths).GetChild(2), reverse);
+	}
 	Vector3[] ListPositions(Transform node, bool reverse)
 	{
 		Vector3[] positions = new Vector3[node.childCount];
@@ -100,30 +131,36 @@ public class Connector : MonoBehaviour
 	}
 	private void OnTriggerStay(Collider otherCollider)
 	{
-		if (!tile.placed)
+		if(tile.panel.mode == EditorPanel.Mode.Build)
 		{
-			tile.panel.placedConnector = otherCollider.transform.position;
-		}
-		else
-		{
-			if (otherCollider.transform.FindParentComponent<Tile>().placed)
-			{ // both connectors are placed, disable other one
-				otherCollider.enabled = false;
-				connection = otherCollider.GetComponent<Connector>();
+			if (!tile.placed)
+			{
+				tile.panel.placedConnector = otherCollider.transform.position;
 			}
 			else
-				tile.panel.floatingConnector = otherCollider.transform.position;
+			{
+				if (otherCollider.transform.FindParentComponent<Tile>().placed)
+				{ // both connectors are placed, disable other one
+					otherCollider.enabled = false;
+					connection = otherCollider.GetComponent<Connector>();
+				}
+				else
+					tile.panel.floatingConnector = otherCollider.transform.position;
+			}
 		}
 	}
 	private void OnTriggerExit(Collider other)
 	{
-		if (!tile.placed)
+		if (tile.panel.mode == EditorPanel.Mode.Build)
 		{
-			tile.panel.placedConnector = null;
-		}
-		else
-		{
-			tile.panel.floatingConnector = null;
+			if (!tile.placed)
+			{
+				tile.panel.placedConnector = null;
+			}
+			else
+			{
+				tile.panel.floatingConnector = null;
+			}
 		}
 	}
 }

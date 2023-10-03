@@ -7,6 +7,16 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: trackset00_trk_c1_hill
+    second: {fileID: 2100000, guid: 4bdb9205822c08e49aa6f379991d4f6c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset00_trk_c1_inout
+    second: {fileID: 2100000, guid: 578e2cf3a9d2db94d992e04b07976e20, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: trackset00_trk_c1_straight
     second: {fileID: 2100000, guid: fd5ad228bd999764d81ca3c178e79faf, type: 2}
   - first:

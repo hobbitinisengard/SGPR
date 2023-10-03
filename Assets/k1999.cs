@@ -11,7 +11,7 @@ public class K1999
 	float[] tLane;
 	float[] tRInverse;
 	int Divs = 0;
-	readonly float SecurityR = 1f;     // Security radius
+	readonly float SecurityR = 2f;     // Security radius
 	readonly float SideDistExt = 5f;  // Security distance wrt outside
 	readonly float SideDistInt = 5f;  // Security distance wrt inside
 	readonly int Iterations = 500;    // Number of smoothing operations
@@ -78,10 +78,10 @@ public class K1999
 			tLane[i] = -0.2;
 		else if (tLane[i] > 1.2)
 			tLane[i] = 1.2;*/
-		if (tLane[i] < 0.0)
-			tLane[i] = 0;
-		else if (tLane[i] > 1)
-			tLane[i] = 1;
+		if (tLane[i] < 0.1f)
+			tLane[i] = 0.1f;
+		else if (tLane[i] > 0.9f)
+			tLane[i] = 0.9f;
 
 		UpdateTxTy(i);
 

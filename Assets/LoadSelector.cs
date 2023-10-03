@@ -175,7 +175,7 @@ public class LoadSelector : Sfxable
 		AddTile(Enum.GetName(typeof(Info.Envir), Info.tracks[selectedTrack.name].envir));
 		AddTile(Info.tracks[selectedTrack.name].difficulty.ToString());
 		foreach (var flag in Info.tracks[selectedTrack.name].flags)
-			AddTile(Info.flagNames[flag]);
+			AddTile(Info.IconNames[flag]);
 	}
 
 	void Update()

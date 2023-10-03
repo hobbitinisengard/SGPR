@@ -1,3 +1,4 @@
+using RVP;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,13 +12,16 @@ public class Tile : MonoBehaviour
 	public EditorPanel panel;
 	public bool placed { get; private set; }
 	public bool mirrored { get; private set; }
-	public bool scaled { get; private set; }
+
+	public string url;
+	
 	MeshCollider mc;
+
 	private void Awake()
 	{
 		// add mesh collider to 'main' mesh 
 		if (transform.childCount == 0)
-			mc = transform.gameObject.AddComponent<MeshCollider>();
+			mc = gameObject.AddComponent<MeshCollider>();
 		else
 			mc = transform.GetChild(0).gameObject.AddComponent<MeshCollider>();
 
@@ -46,6 +50,15 @@ public class Tile : MonoBehaviour
 	{
 		placed = true;
 		mc.gameObject.layer = Info.roadLayer;
+		if(name.Contains("dirt")) //= mud
+			mc.gameObject.AddComponent<GroundSurfaceInstance>().surfaceType = 1;
+		else if(name.Contains("sand")) // =dust
+			mc.gameObject.AddComponent<GroundSurfaceInstance>().surfaceType = 2;
+		else if(name.Contains("ice"))
+			mc.gameObject.AddComponent<GroundSurfaceInstance>().surfaceType = 3;
+		else
+			mc.gameObject.AddComponent<GroundSurfaceInstance>().surfaceType = 0;
+
 	}
 	Mesh MirrorMesh(Mesh mesh)
 	{
@@ -95,30 +108,22 @@ public class Tile : MonoBehaviour
 	{
 		return mc.transform.GetComponent<MeshFilter>().mesh.bounds.size.y;
 	}
-	Mesh CopyMesh(in Mesh mesh)
-	{
-		var newMesh = new Mesh()
-		{
-			vertices = mesh.vertices,
-			triangles = mesh.triangles,
-			normals = mesh.normals,
-			tangents = mesh.tangents,
-			bounds = mesh.bounds,
-			uv = mesh.uv
-		};
-		return newMesh;
-	}
 	public void AdjustScale(float distance)
 	{
 		if (distance == 0)
 			return;
 		var mf = mc.transform.GetComponent<MeshFilter>();
 
-		if(scaled)
-		{
-			mf.mesh = CopyMesh(mf.sharedMesh);
-		}
-		scaled = true;
+		//if(scaled)
+		//{
+		//	if(!original)
+		//	{
+		//		Debug.LogError("No original UVs");
+		//		return;
+		//	}
+		//	mf.mesh.uv = original.transform.GetChild(0).GetComponent<MeshFilter>().mesh.uv;
+		//}
+		//scaled = true;
 		
 		float scale = distance / mf.mesh.bounds.size.y;
 		transform.localScale = new Vector3(1, 1, scale);
@@ -126,20 +131,22 @@ public class Tile : MonoBehaviour
 		{ // adjust UVs
 			Vector2[] uvs = mf.mesh.uv;
 			int submeshes = mf.mesh.subMeshCount;
-			float[] maxUVYs = new float[submeshes];
-
 			for (int i = 0; i < submeshes; ++i)
 			{ // foreach material find max UV Y-coord
 				int[] triangles = mf.mesh.GetTriangles(i);
+				float maxUVY = 0;
+				float minUVY = 999;
 				for (int j = 0; j < triangles.Length; ++j)
 				{
-					if (uvs[triangles[j]].y > maxUVYs[i])
-						maxUVYs[i] = uvs[triangles[j]].y;
+					if (uvs[triangles[j]].y > maxUVY)
+						maxUVY = uvs[triangles[j]].y;
+					if (uvs[triangles[j]].y < minUVY)
+						minUVY = uvs[triangles[j]].y;
 				}
 				for (int j = 0; j < triangles.Length; ++j)
 				{
-					if (uvs[triangles[j]].y == maxUVYs[i])
-						uvs[triangles[j]].y *= scale;
+					if (uvs[triangles[j]].y == maxUVY)
+						uvs[triangles[j]].y = Mathf.LerpUnclamped(minUVY, maxUVY, scale);
 				}
 			}
 			mf.mesh.uv = uvs;

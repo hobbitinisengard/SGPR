@@ -36,11 +36,12 @@ public static class Info
 	public static SortedDictionary<string, Track> tracks;
 	public static Dictionary<string, AudioClip> audioClips;
 	public static bool loaded = false;
-	public const int invisibleLevelLayer = 12;
 	public const int roadLayer = 6;
-	public const int terrainLayer = 13;
 	public const int connectorLayer = 11;
+	public const int invisibleLevelLayer = 12;
+	public const int terrainLayer = 13;
 	public const int cameraLayer = 14;
+	public const int flagLayer = 15;
 
 	// next session data
 	public static CarSetup[] s_carSetups;
@@ -54,7 +55,7 @@ public static class Info
 	public static bool s_reversed = false;
 	public static bool s_catchup = true;
 
-	public static readonly string[] flagNames =
+	public static readonly string[] IconNames =
 	{
 		"Stunty", "Loop", "Jumpy", "Windy", "Intersecting", "No_pit", "No_jumps", "Icy", "Sandy", "Offroad"
 	};
