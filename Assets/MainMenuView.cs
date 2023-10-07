@@ -42,7 +42,8 @@ public class MainMenuView : Sfxable
 	{
 		for(int i=0; i< transform.childCount; ++i)
 		{
-			F.PlaySlideOutOnChildren(transform.GetChild(i));
+			if(transform.GetChild(i).gameObject.activeSelf)
+				F.PlaySlideOutOnChildren(transform.GetChild(i));
 		}
 		dimmer.PlayDimmer(gameObject, view);
 	}

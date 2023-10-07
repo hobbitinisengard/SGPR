@@ -4,7 +4,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Linq;
-using static Track;
+using static TrackHeader;
 using TMPro;
 
 public class LoadSelector : Sfxable
@@ -55,7 +55,7 @@ public class LoadSelector : Sfxable
 		bool[] existingTrackClasses = new bool[2];
 
 		//-----------------
-		void AddTrackImage(in string key, in Track value)
+		void AddTrackImage(in string key, in TrackHeader value)
 		{
 			if (value.unlocked)
 			{
@@ -174,7 +174,7 @@ public class LoadSelector : Sfxable
 		AddTile(Enum.GetName(typeof(Info.CarGroup), Info.tracks[selectedTrack.name].preferredCarClass));
 		AddTile(Enum.GetName(typeof(Info.Envir), Info.tracks[selectedTrack.name].envir));
 		AddTile(Info.tracks[selectedTrack.name].difficulty.ToString());
-		foreach (var flag in Info.tracks[selectedTrack.name].flags)
+		foreach (var flag in Info.tracks[selectedTrack.name].icons)
 			AddTile(Info.IconNames[flag]);
 	}
 

@@ -14,7 +14,7 @@ public class Tile : MonoBehaviour
 	public bool mirrored { get; private set; }
 
 	public string url;
-	
+
 	MeshCollider mc;
 
 	private void Awake()
@@ -27,7 +27,7 @@ public class Tile : MonoBehaviour
 
 		mc.enabled = true;
 
-		for (int i=1; i< transform.childCount; ++i)
+		for (int i = 1; i < transform.childCount; ++i)
 		{
 			var connector = transform.GetChild(i).gameObject;
 			var col = connector.AddComponent<SphereCollider>();
@@ -35,7 +35,7 @@ public class Tile : MonoBehaviour
 			col.isTrigger = true;
 			var rb = connector.AddComponent<Rigidbody>();
 			rb.useGravity = false;
-			rb.isKinematic = true; 
+			rb.isKinematic = true;
 			connector.AddComponent<Connector>();
 			connector.layer = Info.connectorLayer;
 			var mf = connector.AddComponent<MeshFilter>();
@@ -45,16 +45,16 @@ public class Tile : MonoBehaviour
 			mr.material = Connector.blue;
 		}
 	}
-	
+
 	internal void SetPlaced()
 	{
 		placed = true;
 		mc.gameObject.layer = Info.roadLayer;
-		if(name.Contains("dirt")) //= mud
+		if (name.Contains("dirt")) //= mud
 			mc.gameObject.AddComponent<GroundSurfaceInstance>().surfaceType = 1;
-		else if(name.Contains("sand")) // =dust
+		else if (name.Contains("sand")) // =dust
 			mc.gameObject.AddComponent<GroundSurfaceInstance>().surfaceType = 2;
-		else if(name.Contains("ice"))
+		else if (name.Contains("ice"))
 			mc.gameObject.AddComponent<GroundSurfaceInstance>().surfaceType = 3;
 		else
 			mc.gameObject.AddComponent<GroundSurfaceInstance>().surfaceType = 0;
@@ -81,7 +81,7 @@ public class Tile : MonoBehaviour
 		mirrored = !mirrored;
 		var mf = mc.transform.GetComponent<MeshFilter>();
 		mf.mesh = MirrorMesh(mf.mesh);
-		if(mc)
+		if (mc)
 			mc.sharedMesh = mf.mesh;
 
 		for (int i = 1; i < transform.childCount; ++i)
@@ -106,7 +106,7 @@ public class Tile : MonoBehaviour
 	}
 	public float Length()
 	{
-		return mc.transform.GetComponent<MeshFilter>().mesh.bounds.size.y;
+		return transform.localScale.z * mc.transform.GetComponent<MeshFilter>().mesh.bounds.size.y;
 	}
 	public void AdjustScale(float distance)
 	{
@@ -124,7 +124,7 @@ public class Tile : MonoBehaviour
 		//	mf.mesh.uv = original.transform.GetChild(0).GetComponent<MeshFilter>().mesh.uv;
 		//}
 		//scaled = true;
-		
+
 		float scale = distance / mf.mesh.bounds.size.y;
 		transform.localScale = new Vector3(1, 1, scale);
 

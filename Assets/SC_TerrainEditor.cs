@@ -1,3 +1,5 @@
+using System;
+using System.Security.Cryptography;
 using UnityEngine;
 
 public class SC_TerrainEditor : MonoBehaviour
@@ -5,8 +7,8 @@ public class SC_TerrainEditor : MonoBehaviour
 	public enum DeformMode { RaiseLower, Flatten, Smooth }
 	DeformMode deformMode = DeformMode.RaiseLower;
 	string[] deformModeNames = new string[] { "Raise Lower", "Flatten", "Smooth" };
-
-	public Terrain terrain;
+	[NonSerialized]
+	Terrain terrain;
 	public Texture2D deformTexture;
 	public float strength = 1;
 	public float area = 1;
@@ -42,8 +44,11 @@ public class SC_TerrainEditor : MonoBehaviour
 			return (strength) / 9.0f;
 		}
 	}
-
-	// Start is called before the first frame update
+	public void SetTerrain(Terrain terrain)
+	{
+		this.terrain = terrain;
+		tData = this.terrain.terrainData;
+	}
 	void Start()
 	{
 		//Create build target object
@@ -65,21 +70,21 @@ public class SC_TerrainEditor : MonoBehaviour
 			//Save original height data
 			xRes = tData.heightmapResolution;
 			yRes = tData.heightmapResolution;
-			saved = tData.GetHeights(0, 0, xRes, yRes);
+			saved = new float[xRes, yRes];
+
+			for (int i = 0; i < xRes; i++)
+			{
+				for (int j = 0; j < xRes; j++)
+				{
+					saved[i, j] = 0.5f;
+				}
+			}
 		}
 
 		terrain.gameObject.layer = Info.terrainLayer;
 		strength = 2;
 		area = 2;
 		brushScaling();
-	}
-	public float[,] GetCurrentHeights()
-	{
-		return tData.GetHeights(0, 0, xRes, yRes);
-	}
-	public void SetHeights(float[,] heights)
-	{
-		tData.SetHeights(0, 0, heights);
 	}
 
 	void FixedUpdate()
@@ -345,11 +350,5 @@ public class SC_TerrainEditor : MonoBehaviour
 		GUILayout.EndHorizontal();
 
 		GUILayout.EndVertical();
-	}
-
-	void OnApplicationQuit()
-	{
-		//Reset terrain height when exiting play mode
-		tData.SetHeights(0, 0, saved);
 	}
 }

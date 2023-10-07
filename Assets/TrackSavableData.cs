@@ -1,30 +1,22 @@
-﻿using System;
-using Vector3 = UnityEngine.Vector3;
+﻿using Vector3 = UnityEngine.Vector3;
+using Vector4 = UnityEngine.Vector4;
 using Vector2Int = UnityEngine.Vector2Int;
 using Quaternion = UnityEngine.Quaternion;
 using System.Collections.Generic;
+using System;
 
 [Serializable]
-internal class TrackSavable
+internal class TrackSavableData
 {
-	// heightmap - track_h.png,  picture - track.png
-	public string desc;
-	public string author;
-	public int unlocked;
-	public int difficulty;
-	public Info.Envir envir;
-	public Info.CarGroup prefCarGroup;
 	public Vector3 windExternal;
 	public Vector3 windRandom;
-	public int valid;
-	public Vector3[] Lpath;
-	public Vector3[] Rpath;
+	public Vector4[] racingLine;
 	public List<string> tileNames;
 	public List<TileSavable> tiles;
 	public Vector3[] replayCams;
-	public int[] icons;
 	public float[,] heights;
 }
+
 [Serializable]
 public class ObjSavable
 {
@@ -45,7 +37,7 @@ public class TileSavable : ObjSavable
 public class ConnectorSavable
 {
 	/// <summary>
-	/// Example: (30;2) - connected to 30th tile's 2nd anchor
+	/// Example: (30;2) - connected to 30th tile's 2nd child
 	/// </summary>
 	public Vector2Int connectionData; 
 	public int cameraID; // connected to id'th camera in camerasContainer

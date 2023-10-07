@@ -6,7 +6,7 @@
 [Ll]ogs/
 [Uu]serSettings/
 Assets/Unver/pics*
-
+Assets/StreamingAssets*
 Assets/AssetStoreTools*
 
 # Visual Studio cache directory

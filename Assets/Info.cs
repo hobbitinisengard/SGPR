@@ -1,3 +1,4 @@
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,11 +10,13 @@ public static class Info
 	public readonly static string path_path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Stunt GP Reloaded\\path.txt";
 	public readonly static string documents_sgpr_path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Stunt GP Reloaded";
 	public enum TileGroup { Roads, }
-	public enum Livery { Caltex, Rline, Mysuko, Titan, Itex, TGR, Special}
+	public enum Livery { Caltex, Rline, Mysuko, Titan, Itex, TGR, Special }
 	public const int Liveries = 7;
-	public enum RaceType { Race, Stunt, Drift, Knockout, Survival};
+	public enum RaceType { Race, Stunt, Drift, Knockout, Survival };
 	public const int RaceTypes = 5;
 	public enum Envir { GER, JAP, SPN, FRA, ENG, USA, ITA, MEX };
+	public static readonly int[] skys = new int[]{1,2,3,4,5,6,7,8};
+	
 	public const int Environments = 8;
 	public static readonly string[] EnvirDescs =
 	{
@@ -33,7 +36,7 @@ public static class Info
 	public static readonly string trackImagesPath = "trackImages/";
 	public static readonly string editorTilesPath = "tiles/objects/";
 	public static Dictionary<string, Car> cars;
-	public static SortedDictionary<string, Track> tracks;
+	public static SortedDictionary<string, TrackHeader> tracks;
 	public static Dictionary<string, AudioClip> audioClips;
 	public static bool loaded = false;
 	public const int roadLayer = 6;
@@ -45,7 +48,7 @@ public static class Info
 
 	// next session data
 	public static CarSetup[] s_carSetups;
-	public static string s_trackName;
+	public static string s_trackName = "JAP";
 	public static RaceType s_raceType = RaceType.Race;
 	public static int s_laps = 3;
 	public static bool s_inEditor = true;
@@ -55,13 +58,15 @@ public static class Info
 	public static bool s_reversed = false;
 	public static bool s_catchup = true;
 
+	public static int s_resultPos = 3;
+
 	public static readonly string[] IconNames =
 	{
 		"Stunty", "Loop", "Jumpy", "Windy", "Intersecting", "No_pit", "No_jumps", "Icy", "Sandy", "Offroad"
 	};
 
 	internal static Sprite[] icons;
-
+	
 	public static void PopulateCarsData()
 	{
 		if (cars == null)
@@ -97,46 +102,64 @@ public static class Info
 	public static void PopulateTrackData()
 	{
 		if (tracks == null)
-			tracks = new SortedDictionary<string, Track>();
+			tracks = new SortedDictionary<string, TrackHeader>();
 		else
 			return;
 		// 0         1			2			3			4					5				6				7		8			9
 		//"stunty", "loop", "jumpy", "windy", "intersecting", "no_pit", "no_jumps", "icy", "sandy", "offroad"
-		//										unlock   preffered				   author            flags          
-		tracks.Add("track01", new Track(1, (CarGroup)2,6, Envir.FRA, null, new int[] { 2 }, "CRAZY STRAIGHTS\n\nThis long speed track offers opportunity for a number of jump stunts."));
-		tracks.Add("track02", new Track(1, (CarGroup)2,4, Envir.JAP, null, new int[] { 0 }, "BANK JOB\n\nThis short, speedy circuit offers a number of stunt opportunities and high-banks for sneaky overtaking."));
-		tracks.Add("track03", new Track(1, (CarGroup)1,7, Envir.JAP, null, new int[] { 2 }, "TUBULAR HELL\n\nA long and winding track with many ramps. Try not to climb too high in the tubular sections!"));
-		tracks.Add("track04", new Track(1, (CarGroup)2,6, Envir.FRA, null, new int[] { 2 }, "CURBED HEIGHTS\n\nA long, high track that is best navigated by hugging the racing line.."));
-		tracks.Add("track05", new Track(1, (CarGroup)1,8, Envir.ITA, null, new int[] { 2 }, "FLYING FINISH\n\nA short, tough and dramatic track with a huge jump over the finish line!"));
-		tracks.Add("track06", new Track(1, (CarGroup)1,7, Envir.SPN, null, new int[] { 2 }, "SECRET SIX\n\nAn exciting track with plenty of ramps and a cross-over."));
-		tracks.Add("track07", new Track(1, (CarGroup)0,8, Envir.SPN, null, new int[] { 8 }, "THE SANDWINDER\n\nA huge, winding off-road track featuring a very bumpy mid section and multi-level turns."));
-		tracks.Add("track08", new Track(1, (CarGroup)0,6, Envir.SPN, null, new int[] { 8,6 }, "ROUGHDUST FLATS\n\nThe only flat track in the original Stunt GP collection, this is far from a gentle experience!"));
-		tracks.Add("track09", new Track(1, (CarGroup)1,7, Envir.ENG, null, new int[] { 2 }, "THE LOOPBACK\n\nA long, fast track with many opportunities for jumps and stunts."));
-		tracks.Add("track10", new Track(1, (CarGroup)2,7, Envir.ENG, null, new int[] { 4 }, "INTERSECTOR\n\nA long, fast track with a multitude of mad crossovers!"));
-		tracks.Add("track11", new Track(1, (CarGroup)1,6, Envir.SPN, null, new int[] { 2 }, "RISE'N'FALL\n\nHave you got the stomach for the massive climb and fall? Not to mention the loop!"));
-		tracks.Add("track12", new Track(1, (CarGroup)2,5, Envir.SPN, null, new int[] { 0 }, "WIDE WALL CHASE\n\nA very fast night track where you can use the burns for over-taking."));
-		tracks.Add("track13", new Track(1, (CarGroup)2,5, Envir.USA, null, new int[] { 3 }, "CURB CITY CIRCUIT\n\nA track of contrasts, straight outside and tricky inside."));
-		tracks.Add("track14", new Track(1, (CarGroup)2,9, Envir.ITA, null, new int[] { 3 }, "WATERFRONT DASH\n\nThis long and winding track takes you all over the waterfront!"));
-		tracks.Add("track15", new Track(1, (CarGroup)1,6, Envir.SPN, null, new int[] { 2 }, "FREEFALL FREEWAY\n\nTwo huge jumps and a mighty climb feature in this evening excursion."));
-		tracks.Add("track16", new Track(1, (CarGroup)2,7, Envir.GER, null, new int[] { 3 }, "HIGH ROLLER\n\nThis complex, winding track has a number of high curved bends."));
-		tracks.Add("track17", new Track(1, (CarGroup)0,9, Envir.JAP, null, new int[] { 8 }, "HIGHFLY CLEARWAY\n\nA large and difficult track with bumps, jumps and cross-overs."));
-		tracks.Add("track18", new Track(1, (CarGroup)1,6, Envir.USA, null, new int[] { 2 }, "HELIPAD HEIGHTS\n\nThis interior and exterior track features a spectacular leap across a skyline!"));
-		tracks.Add("track19", new Track(1, (CarGroup)0,6, Envir.SPN, null, new int[] { 8 }, "SUNKEN SIGHTS\n\nA three level sunken area and a high banked climb are the highlights of this dusty track."));
-		tracks.Add("track20", new Track(1, (CarGroup)0,4, Envir.JAP, null, new int[] { 8 }, "DUST BUSTER\n\nThis fast, relatively flat track offers many ways to drive."));
-		tracks.Add("track21", new Track(1, (CarGroup)1,8, Envir.GER, null, new int[] { 1 }, "TWINLOOP CIRCUIT\n\nTwo huge climbs and a double loop make this a formidable track."));
-		tracks.Add("track22", new Track(1, (CarGroup)1,6, Envir.GER, null, new int[] { 1 }, "SNAKESTORM\n\nA long, winding track with multi-levels and a loop."));
-		tracks.Add("track23", new Track(1, (CarGroup)2,4, Envir.USA, null, new int[] { 0 }, "SKYTOP SPEED CIRCUIT\n\nA very small, fast track with a couple of jumps and high banks."));
-		tracks.Add("track24", new Track(1, (CarGroup)2,4, Envir.FRA, null, new int[] { 0 }, "THE CHRONOZONE\n\nA very fast track with burns and a very sharp turn."));
+		//										unlock   preffered				   author            flags
+		tracks.Add("JAP", new TrackHeader(0, 0, 4, Envir.JAP, null, new int[] { }, null, false));
+		tracks.Add("GER", new TrackHeader(0, 0, 4, Envir.GER, null, new int[] { }, null, false));
+		tracks.Add("SPN", new TrackHeader(0, 0, 4, Envir.SPN, null, new int[] { }, null, false));
+		tracks.Add("FRA", new TrackHeader(0, 0, 4, Envir.FRA, null, new int[] { }, null, false));
+		tracks.Add("ENG", new TrackHeader(0, 0, 4, Envir.ENG, null, new int[] { }, null, false));
+		tracks.Add("USA", new TrackHeader(0, 0, 4, Envir.USA, null, new int[] { }, null, false));
+		tracks.Add("ITA", new TrackHeader(0, 0, 4, Envir.ITA, null, new int[] { }, null, false));
+		tracks.Add("MEX", new TrackHeader(0, 0, 4, Envir.MEX, null, new int[] { }, null, false));
+
+		//tracks.Add("track01", new TrackHeader(1, (CarGroup)2, 6, Envir.FRA, null, new int[] { 2 }, "CRAZY STRAIGHTS\n\nThis long speed track offers opportunity for a number of jump stunts."));
+		//tracks.Add("track02", new TrackHeader(1, (CarGroup)2, 4, Envir.JAP, null, new int[] { 0 }, "BANK JOB\n\nThis short, speedy circuit offers a number of stunt opportunities and high-banks for sneaky overtaking."));
+		//tracks.Add("track03", new TrackHeader(1, (CarGroup)1, 7, Envir.JAP, null, new int[] { 2 }, "TUBULAR HELL\n\nA long and winding track with many ramps. Try not to climb too high in the tubular sections!"));
+		//tracks.Add("track04", new TrackHeader(1, (CarGroup)2,6, Envir.FRA, null, new int[] { 2 }, "CURBED HEIGHTS\n\nA long, high track that is best navigated by hugging the racing line.."));
+		//tracks.Add("track05", new TrackHeader(1, (CarGroup)1,8, Envir.ITA, null, new int[] { 2 }, "FLYING FINISH\n\nA short, tough and dramatic track with a huge jump over the finish line!"));
+		//tracks.Add("track06", new TrackHeader(1, (CarGroup)1,7, Envir.SPN, null, new int[] { 2 }, "SECRET SIX\n\nAn exciting track with plenty of ramps and a cross-over."));
+		//tracks.Add("track07", new TrackHeader(1, (CarGroup)0,8, Envir.SPN, null, new int[] { 8 }, "THE SANDWINDER\n\nA huge, winding off-road track featuring a very bumpy mid section and multi-level turns."));
+		//tracks.Add("track08", new TrackHeader(1, (CarGroup)0,6, Envir.SPN, null, new int[] { 8,6 }, "ROUGHDUST FLATS\n\nThe only flat track in the original Stunt GP collection, this is far from a gentle experience!"));
+		//tracks.Add("track09", new TrackHeader(1, (CarGroup)1,7, Envir.ENG, null, new int[] { 2 }, "THE LOOPBACK\n\nA long, fast track with many opportunities for jumps and stunts."));
+		//tracks.Add("track10", new TrackHeader(1, (CarGroup)2,7, Envir.ENG, null, new int[] { 4 }, "INTERSECTOR\n\nA long, fast track with a multitude of mad crossovers!"));
+		//tracks.Add("track11", new TrackHeader(1, (CarGroup)1,6, Envir.SPN, null, new int[] { 2 }, "RISE'N'FALL\n\nHave you got the stomach for the massive climb and fall? Not to mention the loop!"));
+		//tracks.Add("track12", new TrackHeader(1, (CarGroup)2,5, Envir.SPN, null, new int[] { 0 }, "WIDE WALL CHASE\n\nA very fast night track where you can use the burns for over-taking."));
+		//tracks.Add("track13", new TrackHeader(1, (CarGroup)2,5, Envir.USA, null, new int[] { 3 }, "CURB CITY CIRCUIT\n\nA track of contrasts, straight outside and tricky inside."));
+		//tracks.Add("track14", new TrackHeader(1, (CarGroup)2,9, Envir.ITA, null, new int[] { 3 }, "WATERFRONT DASH\n\nThis long and winding track takes you all over the waterfront!"));
+		//tracks.Add("track15", new TrackHeader(1, (CarGroup)1,6, Envir.SPN, null, new int[] { 2 }, "FREEFALL FREEWAY\n\nTwo huge jumps and a mighty climb feature in this evening excursion."));
+		//tracks.Add("track16", new TrackHeader(1, (CarGroup)2,7, Envir.GER, null, new int[] { 3 }, "HIGH ROLLER\n\nThis complex, winding track has a number of high curved bends."));
+		//tracks.Add("track17", new TrackHeader(1, (CarGroup)0,9, Envir.JAP, null, new int[] { 8 }, "HIGHFLY CLEARWAY\n\nA large and difficult track with bumps, jumps and cross-overs."));
+		//tracks.Add("track18", new TrackHeader(1, (CarGroup)1,6, Envir.USA, null, new int[] { 2 }, "HELIPAD HEIGHTS\n\nThis interior and exterior track features a spectacular leap across a skyline!"));
+		//tracks.Add("track19", new TrackHeader(1, (CarGroup)0,6, Envir.SPN, null, new int[] { 8 }, "SUNKEN SIGHTS\n\nA three level sunken area and a high banked climb are the highlights of this dusty track."));
+		//tracks.Add("track20", new TrackHeader(1, (CarGroup)0,4, Envir.JAP, null, new int[] { 8 }, "DUST BUSTER\n\nThis fast, relatively flat track offers many ways to drive."));
+		//tracks.Add("track21", new TrackHeader(1, (CarGroup)1,8, Envir.GER, null, new int[] { 1 }, "TWINLOOP CIRCUIT\n\nTwo huge climbs and a double loop make this a formidable track."));
+		//tracks.Add("track22", new TrackHeader(1, (CarGroup)1,6, Envir.GER, null, new int[] { 1 }, "SNAKESTORM\n\nA long, winding track with multi-levels and a loop."));
+		//tracks.Add("track23", new TrackHeader(1, (CarGroup)2,4, Envir.USA, null, new int[] { 0 }, "SKYTOP SPEED CIRCUIT\n\nA very small, fast track with a couple of jumps and high banks."));
+		//tracks.Add("track24", new TrackHeader(1, (CarGroup)2,4, Envir.FRA, null, new int[] { 0 }, "THE CHRONOZONE\n\nA very fast track with burns and a very sharp turn."));
 
 		// lap race stunt drift
-		Track.Record[] records = new Track.Record[]
+		TrackHeader.Record[] records = new TrackHeader.Record[]
 		{
-			new Track.Record("Viatrufka", 87.3f, true),
-			new Track.Record("T17", 187.3f, true),
-			new Track.Record(null, 0, true),
-			new Track.Record("Via", 3500, false),
+			new TrackHeader.Record("Viatrufka", 87.3f, true),
+			new TrackHeader.Record("T17", 187.3f, true),
+			new TrackHeader.Record(null, 0, true),
+			new TrackHeader.Record("Via", 3500, false),
 		};
-		tracks["track02"].records = records;
+		//tracks["track02"].records = records;
+
+		string[] trackFiles = Directory.GetFiles(Application.streamingAssetsPath, "*.track");
+		foreach(var path in trackFiles)
+		{
+			string trackJson = File.ReadAllText(path);
+			string name = Path.GetFileNameWithoutExtension(path);
+			TrackHeader header = JsonConvert.DeserializeObject<TrackHeader>(trackJson);
+			tracks.Add(name, header);
+		}
 	}
 	public static float InGroupPos(Transform child)
 	{
@@ -189,9 +212,10 @@ public static class Info
 		w.Close();
 	}
 }
-
-public class Track
+[Serializable]
+public class TrackHeader
 {
+	[Serializable]
 	public class Record
 	{
 		public string playerName;
@@ -214,14 +238,18 @@ public class Track
 	public CarGroup preferredCarClass;//
 	public int difficulty;//
 	public bool unlocked;//
-	public int[] flags;
+	public int[] icons;
 	/// <summary>
 	/// lap, race, stunt, drift 
 	/// </summary>
 	public Record[] records = new Record[4];
 
-	public Track(int unlocked, CarGroup prefCarClass, int trackDifficulty, 
-		Envir envir, string author, int[] flags, string desc, bool valid = true)
+	public TrackHeader()
+	{
+
+	}
+	public TrackHeader(int unlocked, CarGroup prefCarClass, int trackDifficulty, 
+		Envir envir, string author, int[] icons, string desc, bool valid = true)
 	{
 		this.unlocked = unlocked > 0;
 		this.preferredCarClass = prefCarClass;
@@ -230,7 +258,7 @@ public class Track
 		this.author = author;
 		this.desc = desc;
 		this.valid = valid;
-		this.flags = flags;
+		this.icons = icons;
 	}
 	public int TrackOrigin()
 	{

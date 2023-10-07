@@ -881,6 +881,27 @@ TextureImporter:
       indices: 
       edges: []
       weights: []
+    - serializedVersion: 2
+      name: chequered
+      rect:
+        serializedVersion: 2
+        x: 910
+        y: 975
+        width: 207
+        height: 208
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c65361d9e4c7fde4a8d40544bec47e47
+      internalID: -628248341
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     physicsShape: []
     bones: []
@@ -927,6 +948,7 @@ TextureImporter:
       USA: 1428310808
       Wild: 612556931
       Windy: 1237658456
+      chequered: -628248341
       default: -672574049
       tracks_info_icons_18: 125005267
       tracks_info_icons_19: -1438079871

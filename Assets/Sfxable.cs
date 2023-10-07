@@ -12,19 +12,21 @@ public class Sfxable : MonoBehaviour
 			mainCameraObj = GameObject.Find("MainCamera");
 		}
 	}
-	protected void PlaySFX(string name, bool ignorePause = false)
+	protected AudioSource PlaySFX(string name, bool ignorePause = false)
 	{
 		var snd = Resources.Load<GameObject>("sfx/SoundInstance");
-		var a = Instantiate(snd, mainCameraObj.transform);
-		a.GetComponent<AudioSource>().clip = Info.audioClips[name];
+		var go = Instantiate(snd, mainCameraObj.transform);
+		var audioSource = go.GetComponent<AudioSource>();
+		audioSource.clip = Info.audioClips[name];
 		if (ignorePause)
 		{
-			a.GetComponent<AudioSource>().ignoreListenerPause = true;
+			audioSource.ignoreListenerPause = true;
 			//a.GetComponent<AudioSource>().ignoreListenerVolume = true;
 
 		}
-		a.GetComponent<AudioSource>().Play();
-		a.name = name;
-		Destroy(a, 2);
+		audioSource.Play();
+		go.name = name;
+		Destroy(go, audioSource.clip.length);
+		return audioSource;
 	}
 }

@@ -1,4 +1,6 @@
+using RVP;
 using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.UIElements.Experimental;
@@ -10,88 +12,154 @@ public class SlideInOut : MonoBehaviour
 	public enum Dir { In = 1, Out = -1 };
 	Dir dir = Dir.In;
 	bool canAnimate = false;
-
+	public bool ForceNextNode = false;
+	public bool EasingUnchanged = false;
 	public float timer { get; private set; }
 	public Vector2 inSlideDirection = Vector2.right;
-	float targetPos;
+	float endPos;
 	float startPos;
-	float mult = 1;
+	public float mult = 1;
 	bool disableAfterEndOfAnim = false;
 	RectTransform rt;
 	Image[] imgs;
 	SlideInOut nextNode;
-
+	float initEndPos;
+	static Camera mainCamera;
+	float GetPos()
+	{
+		if (inSlideDirection.x != 0)
+			return rt.anchoredPosition.x;
+		else
+			return rt.anchoredPosition.y;
+	}
+	void SetPos(float value)
+	{
+		if (inSlideDirection.x != 0)
+			rt.anchoredPosition = new Vector2(value, rt.anchoredPosition.y);
+		else
+			rt.anchoredPosition = new Vector2(rt.anchoredPosition.x, value);
+	}
 	void Awake()
 	{
+		
+		if(mainCamera == null)
+		{
+			mainCamera = F.GetTopmostParentComponent<Canvas>(transform).worldCamera;
+		}
+		rt = GetComponent<RectTransform>();
+
 		if (GetComponent<Button>())
 		{
 			type = Type.Button;
-			mult = 4;
+			if(mult == 1)
+				mult = 4;
 			imgs = new Image[] { transform.GetChild(1).GetComponent<Image>() };
 			nextNode = NextNode();
 		}
 		else if(GetComponent<Image>())
 		{
 			type = Type.Image;
-			mult = 2;
+			if (mult == 1)
+				mult = 2;
 			imgs = new Image[] { GetComponent<Image>() };
 		}
 		else
 		{
 			type = Type.ButtonContainer;
-			mult = 4;
+			if (mult == 1)
+				mult = 4;
 			imgs = new Image[transform.childCount];
 			for (int i = 0; i < transform.childCount; ++i)
 				imgs[i] = transform.GetChild(i).GetChild(1).GetComponent<Image>();
 		}
-		SetImageTransp(0);
+		SetContentsTransp(0);
 		
-		rt = GetComponent<RectTransform>();
-		targetPos = Get();
+		initEndPos = GetPos();
+		endPos = initEndPos;
+
+		var screenPos = mainCamera.WorldToScreenPoint(transform.TransformPoint(rt.anchoredPosition3D));
 
 		if (inSlideDirection.x != 0)
-			startPos = -inSlideDirection.x * (Screen.width / 2f + rt.rect.width/2f);
-		else
-			startPos = -inSlideDirection.y * (Screen.height / 2f + rt.rect.height/2f);
-	}
-	void SetImageTransp(float a)
-	{
-		for (int i = 0; i < imgs.Length; ++i)
 		{
-			var c = imgs[i].color;
-			c.a = a;
-			imgs[i].color = c;
+			if (inSlideDirection.x > 0)
+				startPos = -(screenPos.x+rt.rect.width);
+			else
+				startPos = Screen.width-screenPos.x + rt.rect.width;
+		}
+		else
+		{
+			if (inSlideDirection.y > 0)
+				startPos = rt.anchoredPosition.y + screenPos.y;
+			else
+				startPos = rt.anchoredPosition.y + Screen.height-screenPos.y-rt.rect.height;
+		}
+	}
+	void SetContentsTransp(float a)
+	{
+		if(type== Type.ButtonContainer)
+		{
+			for (int i = 0; i < imgs.Length; ++i)
+			{
+				var c = imgs[i].color;
+				c.a = a;
+				imgs[i].color = c;
+			}
+		}
+		else
+		{
+			var allImages = transform.GetComponentsInChildren<Image>();
+			var allTexts = transform.GetComponentsInChildren<TextMeshProUGUI>();
+			foreach(var child in allImages)
+			{
+				var c = child.color;
+				c.a = a;
+				child.color = c;
+			}
+			foreach (var child in allTexts)
+			{
+				var c = child.color;
+				c.a = a;
+				child.color = c;
+			}
 		}
 	}
 	private SlideInOut NextNode()
 	{
 		int idx = transform.GetSiblingIndex()+1;
-		Transform child=null;
+		Transform nnode=null;
 		while(idx < transform.parent.childCount-1)
 		{
-			child = transform.parent.GetChild(idx);
-			if (child.gameObject.activeSelf)
+			if (transform.parent.GetChild(idx).gameObject.activeSelf)
+			{
+				nnode = transform.parent.GetChild(idx);
 				break;
+			}
 			idx++;
 		}
-		if (!child)
+		if (!nnode)
 			return null;
-		return child.GetComponent<SlideInOut>();
+		return nnode.GetComponent<SlideInOut>();
 	}
-	public void PlaySlideIn() => PlaySlide(Dir.In);
+	public void PlaySlideIn()
+	{
+		endPos = initEndPos;
+		PlaySlide(Dir.In);
+	}
 	public void PlaySlideOut(bool disableAfterEndOfAnim = false)
 	{
+		endPos = GetPos();
 		this.disableAfterEndOfAnim = disableAfterEndOfAnim;
 		PlaySlide(Dir.Out);
 	}
 	void PlaySlide(Dir dir)
 	{
-
-		if (type == Type.Button || type == Type.ButtonContainer)
-			nextNode = NextNode();
 		this.dir = dir;
-		if (type == Type.Image)
+
+		if (ForceNextNode || type == Type.Button || type == Type.ButtonContainer)
+			nextNode = NextNode();
+		else if (type == Type.Image)
 			canAnimate = true;
+
 		StartCoroutine(Play());
 	}
 	private void OnDisable()
@@ -100,22 +168,29 @@ public class SlideInOut : MonoBehaviour
 	}
 	void OnEnable()
 	{
+		rt = GetComponent<RectTransform>();
 		timer = 0;
 		PlaySlideIn();
 	}
 	IEnumerator Play()
 	{
-		for (int i=0; i<100000; ++i)
+
+		while(true)
 		{
 			if (canAnimate)
 			{
 				timer += (int)dir * mult * Time.deltaTime;
 
-				float step = ((int)dir > 0) ? Easing.OutCubic(timer) : Easing.InCubic(timer);
-				Set(Mathf.Lerp(startPos, targetPos, step));
+				float step;
+				if(EasingUnchanged)
+					step = Easing.OutCubic(timer);
+				else
+					step = ((int)dir > 0) ? Easing.OutCubic(timer) : Easing.InCubic(timer);
+
+				SetPos(Mathf.Lerp(startPos, endPos, step));
 
 				//On simple images img var is an image. On buttons img is a white texture
-				SetImageTransp((type == Type.Image) ? step :1 - step);
+				SetContentsTransp((type == Type.Image) ? step :1 - step);
 
 				if ((dir < 0 && timer < 0) || (dir > 0 && timer > 1))
 				{
@@ -128,40 +203,23 @@ public class SlideInOut : MonoBehaviour
 					yield break;
 				}
 			}
-			else if (type == Type.Button)
+			else
 			{
 				if (!nextNode)
 				{
 					canAnimate = true;
-					//timer = ((int)dir > 0) ? 0 : 1;
 				}
 				else
 				{
 					if (((int)dir < 0 && nextNode.timer < timer) || ((int)dir > 0 && nextNode.timer > timer))
 					{
-						//timer = ((int)dir > 0) ? 0 : 1;
 						canAnimate = true;
 					}
 				}
 			}
 			yield return null;
 		}
-		Debug.LogError("nope");
-		yield break;
 	}
-	float Get()
-	{
-		if (inSlideDirection.x != 0)
-			return rt.anchoredPosition.x;
-		else
-			return rt.anchoredPosition.y;
-	}
-	void Set(float value)
-	{
-		if (inSlideDirection.x != 0)
-			rt.anchoredPosition = new Vector2(value, rt.anchoredPosition.y);
-		else
-			rt.anchoredPosition = new Vector2(rt.anchoredPosition.x, value);
-	}
+	
 }
 

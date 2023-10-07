@@ -45,12 +45,18 @@ public class Connector : MonoBehaviour
 		if (connection)
 			GetComponent<Collider>().enabled = false;
 	}
-	public void SetCamera(TrackCamera cam)
+	public void SetCamera(TrackCamera newCamera)
 	{
 		if(trackCamera)
-			trackCamera.SetMaterial(pink);
-		trackCamera = cam;
+		{
+			trackCamera.SetMaterial(blue);
+			trackCamera.connector = null;
+		}
+		if (newCamera.connector)
+			newCamera.connector.trackCamera = null;
+		trackCamera = newCamera;
 		trackCamera.SetMaterial(green);
+		trackCamera.connector = this;
 	}
 	public Connector Opposite()
 	{

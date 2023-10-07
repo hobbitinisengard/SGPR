@@ -3,7 +3,6 @@ using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-
 namespace RVP
 {
 	public enum PartOfDay { Day, Night };
@@ -65,19 +64,12 @@ namespace RVP
 		public SGP_HUD hud;
 		public EditorPanel editorPanel;
 		public CameraControl cam;
+		
 		public enum InfoMessage
 		{
 			TAKES_THE_LEAD, NO_ENERGY, SPLIT_TIME,
 		}
-		public bool Initialized()
-		{
-			return initialized;
-		}
-		public void Initialize(VehicleParent[] cars)
-		{
-			this.cars.AddRange(cars);
-			initialized = true;
-		}
+		
 		public void StartFreeRoam(Vector3 position, Quaternion rotation)
 		{
 			position.y += 1;
@@ -123,8 +115,7 @@ namespace RVP
 			//    position++;
 			//if (Input.GetKeyDown(KeyCode.M))
 			//    position--;
-			position = Mathf.Clamp(position, 1, 10);
-			return position;
+			return UnityEngine.Random.Range(1, 11);
 		}
 		//Color HDRColor(float r, float g, float b, int intensity = 0)
 		//{
@@ -145,14 +136,14 @@ namespace RVP
 				RenderSettings.ambientLight = new Color32(52, 52, 52, 1);
 			}
 		}
-		private void Awake()
+		public bool Initialized()
 		{
-			musicPlayer = GetComponent<AudioSource>();
-			musicPlayer.clip = Resources.Load<AudioClip>("music/JAP");
-
-			Info.PopulateSFXData();
-			Info.PopulateCarsData();
-			Info.PopulateTrackData();
+			return initialized;
+		}
+		public void Initialize(VehicleParent[] cars)
+		{
+			this.cars.AddRange(cars);
+			initialized = true;
 		}
 		void Start()
 		{
@@ -169,7 +160,15 @@ namespace RVP
 			tireMarkHeightStatic = tireMarkHeight;
 			tireFadeTimeStatic = tireFadeTime;
 
-			if(Info.s_inEditor)
+			musicPlayer = GetComponent<AudioSource>();
+			musicPlayer.clip = Resources.Load<AudioClip>("music/JAP");
+
+			Info.PopulateSFXData();
+			Info.PopulateCarsData();
+			Info.PopulateTrackData();
+			StartCoroutine(editorPanel.LoadTrack());
+
+			if (Info.s_inEditor)
 			{
 				BackToEditor();
 			}
@@ -197,7 +196,7 @@ namespace RVP
 					Time.fixedDeltaTime = initialFixedTime;
 				}
 			}
-			if (Input.GetKeyDown(KeyCode.N))
+			if (Input.GetKeyDown(KeyCode.Tilde))
 			{
 				SetPartOfDay(PartOfDay.Night);
 			}

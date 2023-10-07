@@ -24,7 +24,7 @@ public class Message
 }
 public class SGP_HUD : MonoBehaviour
 {
-	VehicleParent vp;
+	public VehicleParent vp { get; private set; }
 	GearboxTransmission trans;
 	//StuntDetect stunter;
 	GasMotor engine;
@@ -33,7 +33,6 @@ public class SGP_HUD : MonoBehaviour
 	readonly int maxRpmRotation = -63;
 	public PtsAnim ptsAnim;
 	public RaceManager raceManager;
-	public GameObject targetVehicle;
 	public Sprite[] gearsSprites;
 	public Image currentGear;
 	public Transform rpmIndicator;
@@ -72,7 +71,6 @@ public class SGP_HUD : MonoBehaviour
 	public float hudPos0;
 	public float hudHeight;
 	RectTransform rt;
-	bool initialized = false;
 	public float compression = 0;
 
 	// HUD spring
@@ -215,7 +213,6 @@ public class SGP_HUD : MonoBehaviour
 	}
 	public void Disconnect()
 	{
-		targetVehicle = null;
 		vp = null;
 		trans = null;
 		engine = null;
@@ -231,14 +228,13 @@ public class SGP_HUD : MonoBehaviour
 	{
 		if (!newVehicle)
 			return;
-		targetVehicle = newVehicle.gameObject;
-		vp = targetVehicle.GetComponent<VehicleParent>();
+		vp = newVehicle;
 
-		trans = targetVehicle.GetComponentInChildren<Transmission>() as GearboxTransmission;
+		trans = newVehicle.gameObject.GetComponentInChildren<Transmission>() as GearboxTransmission;
 
-		engine = targetVehicle.GetComponentInChildren<GasMotor>();
+		engine = newVehicle.gameObject.GetComponentInChildren<GasMotor>();
 
-		racebox = targetVehicle.GetComponent<RaceBox>();
+		racebox = newVehicle.gameObject.GetComponent<RaceBox>();
 
 		transform.gameObject.SetActive(true);
 	}
@@ -257,13 +253,9 @@ public class SGP_HUD : MonoBehaviour
 	}
 	void Update()
 	{
-		if (!targetVehicle)
+		if (!vp)
 			return;
-		if (!initialized)
-		{
-			vp = targetVehicle.GetComponent<VehicleParent>();
-			initialized = true;
-		}
+
 		// debug stunt UI
 		//if (Input.GetKeyDown(KeyCode.T)) // update overlay
 		//{

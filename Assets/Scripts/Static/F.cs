@@ -14,6 +14,19 @@ namespace RVP
 		{
 			return 1 - Mathf.Pow(1 - x, 5);
 		}
+		public static Texture2D toTexture2D(this RenderTexture rTex)
+		{
+			Texture2D tex = new Texture2D(rTex.width, rTex.height, TextureFormat.RGB24, false);
+			var old_rt = RenderTexture.active;
+			RenderTexture.active = rTex;
+
+			tex.ReadPixels(new Rect(0, 0, rTex.width, rTex.height), 0, 0);
+			tex.Apply();
+
+			RenderTexture.active = old_rt;
+			return tex;
+		}
+
 		static public void drawString(string text, Vector3 worldPos, Color? colour = null)
 		{
 			UnityEditor.Handles.BeginGUI();
@@ -88,8 +101,22 @@ namespace RVP
 
 				tr = tr.parent;
 			}
-
+			if (getting == null)
+				Debug.LogError("no component");
 			return getting;
+		}
+		public static RectTransform FindBigCanvasParent(this Transform tr)
+		{
+			while (tr.parent != null)
+			{
+				var rt = tr.parent.GetComponent<RectTransform>();
+				if (rt != null && rt.rect.width > 0.9f * Screen.width && rt.rect.height > 0.9f * Screen.height)
+				{
+					return rt;
+				}
+				tr = tr.parent;
+			}
+			return null;
 		}
 		public static T FindParentComponent<T>(this Transform tr) where T : Component
 		{
@@ -115,7 +142,8 @@ namespace RVP
 			{
 				for (int i = node.transform.childCount - 1; i >= 0; --i)
 				{
-					PlaySlideOutOnChildren(node.transform.GetChild(i));
+					if(node.transform.GetChild(i).gameObject.activeSelf)
+						PlaySlideOutOnChildren(node.transform.GetChild(i));
 				}
 			}
 		}
@@ -140,7 +168,6 @@ namespace RVP
 			if (activeChildren == 0)
 				return 0;
 
-			//Debug.Log(posAmongstActive + " " + activeChildren);
 			return posAmongstActive / (activeChildren);
 		}
 		public static int ActiveChildren(this Transform tr)

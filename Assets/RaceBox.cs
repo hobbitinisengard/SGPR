@@ -15,7 +15,7 @@ public class StuntRotInfo
 }
 public class RaceBox : MonoBehaviour
 {
-	VehicleParent vp;
+	public VehicleParent vp { get; private set; }
 	SGP_Evo evoModule;
 	public float distance { get; private set; }
 	public float aero { get; private set; }

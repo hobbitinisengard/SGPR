@@ -651,7 +651,7 @@ PrefabInstance:
     - target: {fileID: 509757369793656655, guid: c45b5db04fef3904d8289011e629a352,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -49
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 509757369793656655, guid: c45b5db04fef3904d8289011e629a352,
         type: 3}
@@ -1387,7 +1387,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  EasingUnchanged: 0
   inSlideDirection: {x: -1, y: 0}
+  mult: 1
 --- !u!1 &87731156
 GameObject:
   m_ObjectHideFlags: 0
@@ -2020,7 +2022,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  EasingUnchanged: 0
   inSlideDirection: {x: -1, y: 0}
+  mult: 1
 --- !u!1 &127303500
 GameObject:
   m_ObjectHideFlags: 0
@@ -2400,7 +2404,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  EasingUnchanged: 0
   inSlideDirection: {x: -1, y: 0}
+  mult: 1
 --- !u!1 &141769079
 GameObject:
   m_ObjectHideFlags: 0
@@ -4893,7 +4899,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  EasingUnchanged: 0
   inSlideDirection: {x: -1, y: 0}
+  mult: 1
 --- !u!1 &311981609 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 509757369793656648, guid: c45b5db04fef3904d8289011e629a352,
@@ -6313,7 +6321,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  EasingUnchanged: 0
   inSlideDirection: {x: -1, y: 0}
+  mult: 1
 --- !u!1 &441533218
 GameObject:
   m_ObjectHideFlags: 0
@@ -8640,7 +8650,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  EasingUnchanged: 0
   inSlideDirection: {x: -1, y: 0}
+  mult: 1
 --- !u!1 &643431522
 GameObject:
   m_ObjectHideFlags: 0
@@ -9687,7 +9699,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  EasingUnchanged: 0
   inSlideDirection: {x: 1, y: 0}
+  mult: 1
 --- !u!1 &715280126
 GameObject:
   m_ObjectHideFlags: 0
@@ -9730,9 +9744,9 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 269, y: -69}
+  m_AnchoredPosition: {x: 0, y: 179.25003}
   m_SizeDelta: {x: 588.6, y: 455.5}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_Pivot: {x: 0, y: 1}
 --- !u!114 &715280128
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10275,7 +10289,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  EasingUnchanged: 0
   inSlideDirection: {x: -1, y: 0}
+  mult: 1
 --- !u!1 &759346178
 GameObject:
   m_ObjectHideFlags: 0
@@ -10971,7 +10987,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  EasingUnchanged: 0
   inSlideDirection: {x: 0, y: 1}
+  mult: 1
 --- !u!1 &795464608
 GameObject:
   m_ObjectHideFlags: 0
@@ -11920,7 +11938,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  EasingUnchanged: 0
   inSlideDirection: {x: -1, y: 0}
+  mult: 1
 --- !u!1 &866300238
 GameObject:
   m_ObjectHideFlags: 0
@@ -12280,7 +12300,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  EasingUnchanged: 0
   inSlideDirection: {x: 1, y: 0}
+  mult: 1
 --- !u!114 &876248953
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15897,7 +15919,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  EasingUnchanged: 0
   inSlideDirection: {x: -1, y: 0}
+  mult: 1
 --- !u!1 &1157813789
 GameObject:
   m_ObjectHideFlags: 0
@@ -17254,7 +17278,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  EasingUnchanged: 0
   inSlideDirection: {x: -1, y: 0}
+  mult: 1
 --- !u!1 &1285030690
 GameObject:
   m_ObjectHideFlags: 0
@@ -17431,7 +17457,7 @@ PrefabInstance:
     - target: {fileID: 509757369793656655, guid: c45b5db04fef3904d8289011e629a352,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -46.01999
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 509757369793656655, guid: c45b5db04fef3904d8289011e629a352,
         type: 3}
@@ -17509,7 +17535,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  EasingUnchanged: 0
   inSlideDirection: {x: -1, y: 0}
+  mult: 1
 --- !u!1 &1300947524
 GameObject:
   m_ObjectHideFlags: 0
@@ -17758,8 +17786,8 @@ MonoBehaviour:
     Stunt GP and Team 17 are registered trademarks
     of Team17 Software Limited.
 
-    Stunt GP Reloaded is a fan remaster of Stunt
-    GP.'
+    Stunt GP Reloaded is an unofficial remake of
+    Stunt GP.'
 --- !u!222 &1307976181
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -18379,7 +18407,7 @@ PrefabInstance:
     - target: {fileID: 509757369793656655, guid: c45b5db04fef3904d8289011e629a352,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -46.02002
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 509757369793656655, guid: c45b5db04fef3904d8289011e629a352,
         type: 3}
@@ -18473,7 +18501,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  EasingUnchanged: 0
   inSlideDirection: {x: -1, y: 0}
+  mult: 1
 --- !u!1 &1394698636
 GameObject:
   m_ObjectHideFlags: 0
@@ -20588,7 +20618,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  EasingUnchanged: 0
   inSlideDirection: {x: 0, y: 1}
+  mult: 1
 --- !u!1 &1574586170
 GameObject:
   m_ObjectHideFlags: 0
@@ -20945,7 +20977,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  EasingUnchanged: 0
   inSlideDirection: {x: -1, y: 0}
+  mult: 1
 --- !u!124 &1592986896
 Behaviour:
   m_ObjectHideFlags: 0
@@ -21329,7 +21363,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  EasingUnchanged: 0
   inSlideDirection: {x: -1, y: 0}
+  mult: 1
 --- !u!1 &1610152012
 GameObject:
   m_ObjectHideFlags: 0
@@ -21751,7 +21787,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  EasingUnchanged: 0
   inSlideDirection: {x: 1, y: 0}
+  mult: 1
 --- !u!114 &1630833287
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -22248,7 +22286,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  EasingUnchanged: 0
   inSlideDirection: {x: 0, y: 1}
+  mult: 1
 --- !u!1 &1656263705
 GameObject:
   m_ObjectHideFlags: 0
@@ -22634,7 +22674,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  EasingUnchanged: 0
   inSlideDirection: {x: 0, y: 1}
+  mult: 1
 --- !u!1 &1682512010
 GameObject:
   m_ObjectHideFlags: 0
@@ -23871,7 +23913,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  EasingUnchanged: 0
   inSlideDirection: {x: 0, y: 1}
+  mult: 1
 --- !u!1 &1785375788
 GameObject:
   m_ObjectHideFlags: 0
@@ -24312,7 +24356,7 @@ PrefabInstance:
     - target: {fileID: 509757369793656655, guid: c45b5db04fef3904d8289011e629a352,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -46.02002
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 509757369793656655, guid: c45b5db04fef3904d8289011e629a352,
         type: 3}
@@ -26493,7 +26537,7 @@ PrefabInstance:
     - target: {fileID: 509757369793656655, guid: c45b5db04fef3904d8289011e629a352,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -46.02002
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 509757369793656655, guid: c45b5db04fef3904d8289011e629a352,
         type: 3}
@@ -26582,7 +26626,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  EasingUnchanged: 0
   inSlideDirection: {x: -1, y: 0}
+  mult: 1
 --- !u!1 &1973448015
 GameObject:
   m_ObjectHideFlags: 0
@@ -27033,7 +27079,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  EasingUnchanged: 0
   inSlideDirection: {x: -1, y: 0}
+  mult: 1
 --- !u!114 &2005215443 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 8008391775352816926, guid: 5fbe097fbb9f8f14f90c43482d70db7f,
@@ -27355,7 +27403,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  EasingUnchanged: 0
   inSlideDirection: {x: -1, y: 0}
+  mult: 1
 --- !u!1 &2025485291
 GameObject:
   m_ObjectHideFlags: 0
@@ -29179,7 +29229,7 @@ PrefabInstance:
     - target: {fileID: 509757369793656655, guid: c45b5db04fef3904d8289011e629a352,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -49
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 509757369793656655, guid: c45b5db04fef3904d8289011e629a352,
         type: 3}
