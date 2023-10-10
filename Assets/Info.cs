@@ -45,6 +45,7 @@ public static class Info
 	public const int terrainLayer = 13;
 	public const int cameraLayer = 14;
 	public const int flagLayer = 15;
+	public const int racingLineLayer = 16;
 
 	// next session data
 	public static CarSetup[] s_carSetups;
@@ -53,7 +54,7 @@ public static class Info
 	public static int s_laps = 3;
 	public static bool s_inEditor = true;
 	public static bool s_isNight = false;
-	public static int s_cpuLevel = 20;
+	public static int s_cpuLevel = 3;
 	public static int s_rivals = 3;
 	public static bool s_reversed = false;
 	public static bool s_catchup = true;

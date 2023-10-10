@@ -12,10 +12,16 @@ public class K1999
 	float[] tRInverse;
 	int Divs = 0;
 	readonly float SecurityR = 2f;     // Security radius
-	readonly float SideDistExt = 5f;  // Security distance wrt outside
-	readonly float SideDistInt = 5f;  // Security distance wrt inside
+	readonly float SideDistExt = 1f;  // Security distance wrt outside
+	readonly float SideDistInt = 1f;  // Security distance wrt inside
 	readonly int Iterations = 500;    // Number of smoothing operations
-
+	public K1999(float SecurityR, float SideDistExt, float SideDistInt, int iterations)
+	{
+		this.SecurityR = SecurityR;
+		this.SideDistExt = SideDistExt;
+		this.SideDistInt = SideDistInt;
+		this.Iterations = iterations;
+	}
 	void UpdateTxTy(int i)
 	{
 		tx[i] = tLane[i] * txRight[i] + (1 - tLane[i]) * txLeft[i];

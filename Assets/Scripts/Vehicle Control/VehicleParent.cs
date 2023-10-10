@@ -150,7 +150,9 @@ namespace RVP
 		internal bool colliding;
 		[Tooltip("Sideways friction when vehicle is in air. 0=no steering in air")]
 		public float inAirFriction = 0.25f;
-		public float d_localX;
+		public float d_R;
+
+		public float carLen { get; private set; }
 
 		AnimationCurve GenerateBrakeCurve()
 		{
@@ -165,13 +167,14 @@ namespace RVP
 		}
 		void Start()
 		{
+			
 			if (brakeCurve == null)
 			{
 				brakeCurve = GenerateBrakeCurve();
 			}
 			tr = transform;
 			rb = GetComponent<Rigidbody>();
-
+			carLen = tr.GetChild(0).GetComponent<MeshFilter>().mesh.bounds.extents.z * 2;
 			// Create normal orientation object
 			GameObject normTemp = new GameObject(tr.name + "'s Normal Orientation");
 			norm = normTemp.transform;
@@ -202,7 +205,9 @@ namespace RVP
 
 		void Update()
 		{
-			d_localX = localVelocity.x;
+			//float friction = wheels[0].contactPoint.surfaceFriction;
+			d_R = carLen / (2 * Mathf.Sin(steeringControl.steerAngle * steeringControl.steeredWheels[0].steerRangeMax * Mathf.Deg2Rad));
+			//d_force = rb.mass * velMag * velMag / R;//Mathf.Sqrt(R / (rb.mass));
 			// Shift single frame pressing logic
 			if (stopUpshift)
 			{
@@ -344,7 +349,9 @@ namespace RVP
 				else
 				{
 					if (brakeStart == 0)
+					{
 						brakeStart = Time.time;
+					}
 					brakeInput = Mathf.Lerp(brakeInput, 1, Time.fixedDeltaTime * brakeCurve.Evaluate(Time.time - brakeStart));
 				}
 			}

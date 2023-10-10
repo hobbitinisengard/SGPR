@@ -115,7 +115,7 @@ namespace RVP
 			//    position++;
 			//if (Input.GetKeyDown(KeyCode.M))
 			//    position--;
-			return UnityEngine.Random.Range(1, 11);
+			return 1;
 		}
 		//Color HDRColor(float r, float g, float b, int intensity = 0)
 		//{

@@ -39,51 +39,6 @@ namespace RVP
 			{
 				hud.Connect(newVehicle.GetComponent<VehicleParent>());
 			}
-			//if (newVehicle.GetComponent<VehicleAssist>())
-			//{
-			//    newVehicle.GetComponent<VehicleAssist>().enabled = assistToggle.isOn;
-			//}
-
-			//Transmission trans = newVehicle.GetComponentInChildren<Transmission>();
-			//if (trans)
-			//{
-			//trans.automatic = autoShiftToggle.isOn;
-			//newVehicle.GetComponent<VehicleParent>().brakeIsReverse = autoShiftToggle.isOn;
-
-			//if (trans is ContinuousTransmission && !autoShiftToggle.isOn)
-			//{
-			//    newVehicle.GetComponent<VehicleParent>().brakeIsReverse = true;
-			//}
-			//}
-
-			//if (newVehicle.GetComponent<FlipControl>() && newVehicle.GetComponent<StuntDetect>())
-			//{
-			//    newVehicle.GetComponent<FlipControl>().flipPower = stuntToggle.isOn && assistToggle.isOn ? new Vector3(10, 10, -10) : Vector3.zero;
-			//    newVehicle.GetComponent<FlipControl>().rotationCorrection = stuntToggle.isOn ? Vector3.zero : (assistToggle.isOn ? new Vector3(5, 1, 10) : Vector3.zero);
-			//    newVehicle.GetComponent<FlipControl>().stopFlip = assistToggle.isOn;
-			//}
-		}
-
-		// Spawns a chasing vehicle
-		public void SpawnChaseVehicle()
-		{
-			if (chaseCarSpawnTime == 0)
-			{
-				chaseCarSpawnTime = 1;
-				GameObject chaseCar = Instantiate(chaseVehicle, spawnPoint.transform.position, Quaternion.LookRotation(spawnRot, RaceManager.worldUpDir)) as GameObject;
-				chaseCar.GetComponent<FollowAI>().target = newVehicle.transform;
-			}
-		}
-
-		// Spawns a damageable chasing vehicle
-		public void SpawnChaseVehicleDamage()
-		{
-			if (chaseCarSpawnTime == 0)
-			{
-				chaseCarSpawnTime = 1;
-				GameObject chaseCar = Instantiate(chaseVehicleDamage, spawnPoint.transform.position, Quaternion.LookRotation(spawnRot, RaceManager.worldUpDir)) as GameObject;
-				chaseCar.GetComponent<FollowAI>().target = newVehicle.transform;
-			}
 		}
 	}
 }

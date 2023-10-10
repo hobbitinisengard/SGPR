@@ -257,6 +257,7 @@ public class RaceBox : MonoBehaviour
 		stableLandingTimer = -1;
 		jumpTimer = 0;
 	}
+
 	/// <summary>
 	/// returns true if Seq ended. withSuccess is false when vehicle landing failed
 	/// </summary>

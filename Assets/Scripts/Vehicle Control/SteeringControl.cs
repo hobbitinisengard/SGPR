@@ -47,6 +47,7 @@ namespace RVP
 		AnimationCurve keyboardInputCurve;
 		float secsForMaxSteeringSpeed = 1.5f;
 		public float d_angleSteer;
+		public bool CPUmode = false;
 
 		AnimationCurve Generate_digitalSteeringInputCurve()
 		{
@@ -109,9 +110,19 @@ namespace RVP
 			// Set steer angles in wheels
 			foreach (Suspension curSus in steeredWheels)
 			{
-				curSus.wheel.sidewaysFriction = (vp.SGPshiftbutton && vp.steerInput != 0 ? 1.5f : 1) * frontSidewaysCoeff;
+				
+				float targetSteerAngle;
+				if (CPUmode)
+				{
+					targetSteerAngle = vp.steerInput;
+					//curSus.wheel.sidewaysFriction = 1.5f * frontSidewaysCoeff;
+				}
+				else
+				{
+					curSus.wheel.sidewaysFriction = (vp.SGPshiftbutton && vp.steerInput != 0 ? 1.5f : 1) * frontSidewaysCoeff;
+					targetSteerAngle = vp.steerInput * (vp.steerInput == 0 ? 1 : steerLimit) * (vp.SGPshiftbutton ? 1.5f : 1) * rawSteer;
 
-				float targetSteerAngle = vp.steerInput * (vp.steerInput == 0 ? 1 : steerLimit) * (vp.SGPshiftbutton ? 1.5f : 1) * rawSteer;
+				}
 				curSus.steerAngle = Mathf.Lerp(curSus.steerAngle, targetSteerAngle, 10 * Time.fixedDeltaTime);
 			}
 			steerAngle = steeredWheels[0].steerAngle;

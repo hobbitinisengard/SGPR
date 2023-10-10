@@ -5,6 +5,7 @@ using SFB;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -77,6 +78,10 @@ public class EditorPanel : Sfxable
 	public Slider WindExtZ;
 	public Slider WindRanX;
 	public Slider WindRanZ;
+	public float SecurityR;
+	public float SideExt;
+	public float SideInt;
+	public int iterations = 500;
 	Vector3? lastEditorCameraPosition;
 	Quaternion lastEditorCameraRotation;
 	Dictionary<string, GameObject> cachedTiles = new Dictionary<string, GameObject>();
@@ -716,19 +721,8 @@ public class EditorPanel : Sfxable
 				yield break;
 			}
 		}
-		//for(int i=0; i<Lpath.Count; ++i)
-		//{
-		//	GameObject L = new GameObject();
-		//	L.transform.position = Lpath[i];
-		//	L.transform.parent = racingLineContainer.transform;
-		//	L.name = "L" + i.ToString();
-		//	GameObject R = new GameObject();
-		//	R.transform.position = Rpath[i];
-		//	R.transform.parent = racingLineContainer.transform;
-		//	R.name = "R" + i.ToString();
-		//}
 
-		K1999 k1999 = new K1999();
+		K1999 k1999 = new K1999(SecurityR, SideExt, SideInt, iterations);
 		k1999.LoadData(Lpath, Rpath);
 		k1999.CalcRaceLine();
 		racingLine = k1999.GetRacingLine(Lpath, Rpath);
@@ -746,24 +740,35 @@ public class EditorPanel : Sfxable
 				}
 			}
 		}
-
-
-		foreach (var pos in racingLine)
-		{
-			GameObject r = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-			r.transform.position = new Vector3(pos.x, pos.y, pos.z);
-			r.transform.parent = racingLineContainer.transform;
-			r.GetComponent<MeshRenderer>().material.color = new Color32((byte)(255 * pos.w), 255, 255, 255);
-		}
-
 		ApplyRacingLine();
 	}
 	void ApplyRacingLine()
 	{
-		BezierPath bezierPath = new BezierPath(racingLine.Select(v => new Vector3(v.x, v.y, v.z)).ToArray(), true, PathSpace.xyz);
+		BezierPath bezierPath = new BezierPath(racingLine.ToArray(),true, PathSpace.xyz);
 		pathCreator.bezierPath = bezierPath;
 		connectButtonImage.color = Color.green;
 		pathFollower.SetActive(true);
+
+		// destroy old castable points
+		for (int i = 0; i < racingLineContainer.transform.childCount; ++i)
+		{
+			GameObject.Destroy(racingLineContainer.transform.GetChild(i).gameObject);
+		}
+		// Create castable points
+		float progress = 0;
+		for(int i=0; i<100000 && progress < pathCreator.path.length; ++i)
+		{
+			GameObject castable = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+			Destroy(castable.GetComponent<MeshRenderer>());
+			castable.transform.position = pathCreator.path.GetPointAtDistance(progress);
+			castable.transform.parent = racingLineContainer.transform;
+			var col = castable.GetComponent<SphereCollider>();
+			col.radius = .5f;
+			col.isTrigger = true;
+			castable.layer = 16;//Info.racingLineLayer;
+			castable.name = (progress).ToString(CultureInfo.InvariantCulture);
+			progress += 0.5f;
+		}
 	}
 	void InvalidateConnections()
 	{
@@ -781,10 +786,7 @@ public class EditorPanel : Sfxable
 			if (c.marked)
 				c.Hide();
 		}
-		for(int i=0; i< racingLineContainer.transform.childCount; ++i)
-		{
-			Destroy(racingLineContainer.transform.GetChild(i).gameObject);
-		}
+		
 		connectors.Clear();
 	}
 	GameObject GetButtonForTile(in string tileName)
@@ -881,9 +883,13 @@ public class EditorPanel : Sfxable
 					terrainEditor.enabled = false;
 					break;
 				case Mode.Build:
+					anchor = null;
+					floatingConnector = null;
+					placedConnector = null;
 					currentTilesPanel.gameObject.SetActive(false);
 					break;
 				case Mode.Connect:
+					pathFollower.SetActive(false);
 					ClearConnectors();
 					flyCamera.transform.GetComponent<Camera>().cullingMask &= ~(1 << Info.connectorLayer);
 					break;

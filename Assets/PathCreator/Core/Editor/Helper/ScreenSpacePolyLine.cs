@@ -53,7 +53,7 @@ namespace PathCreationEditor
 
             for (int segmentIndex = 0; segmentIndex < bezierPath.NumSegments; segmentIndex++)
             {
-                Vector3[] segmentPoints = bezierPath.GetPointsInSegment(segmentIndex);
+                Vector4[] segmentPoints = bezierPath.GetPointsInSegment(segmentIndex);
                 verticesWorld.Add(segmentPoints[0]);
                 vertexToPathSegmentMap.Add(segmentIndex);
                 segmentStartIndices[segmentIndex] = verticesWorld.Count-1;

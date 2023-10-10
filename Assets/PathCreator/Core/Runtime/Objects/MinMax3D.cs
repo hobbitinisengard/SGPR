@@ -12,7 +12,7 @@ namespace PathCreation {
             Max = Vector3.one * float.MinValue;
         }
 
-        public void AddValue(Vector3 v)
+        public void AddValue(Vector4 v)
         {
             Min = new Vector3(Mathf.Min(Min.x, v.x), Mathf.Min(Min.y,v.y), Mathf.Min(Min.z,v.z));
             Max = new Vector3(Mathf.Max(Max.x, v.x), Mathf.Max(Max.y,v.y), Mathf.Max(Max.z,v.z));

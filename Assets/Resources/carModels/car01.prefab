@@ -99324,7 +99324,7 @@ MonoBehaviour:
   cameraHeightChange: 0
   steeringControl: {fileID: 6779875395873480448}
   inAirFriction: 1
-  d_localX: 0
+  d_R: 0
 --- !u!114 &5969412531493064935
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -99539,17 +99539,116 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b9e79fd276225c249ba662e7605e2068, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  target: {fileID: 0}
-  followDistance: 0
-  speed: 1
-  targetVelocity: -1
-  viewBlockMask:
-    serializedVersion: 2
-    m_Bits: 0
-  stopTimeReverse: 1
-  reverseAttemptTime: 1
+  pathCreator: {fileID: 0}
+  forwardTargetDot: 0
+  RightTargetDot: 0
+  tSpeed: 0
+  lookAhead: 20
+  stoppedTime: 0
+  reverseTime: 0
+  brakeTime: 0
+  progress: 0
+  dist: 0
+  speedLimit: 0
+  speedLimitDist: 0
+  hardCornerDot: 0.22
+  slowingCoeff: 1
+  cpuLevel: 0
+  SGPshifting: 0
+  stopTimeReverse: 3
+  reverseAttemptTime: 3
   resetReverseCount: 1
   rollResetTime: 3
+  lookAheadMultCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 60
+      value: 1.5
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  tSpeedCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0.0184
+      value: 140.25702
+      inSlope: -244.34663
+      outSlope: -244.34663
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.01972241
+    - serializedVersion: 3
+      time: 0.6149597
+      value: 30.496002
+      inSlope: -3.9404464
+      outSlope: -3.9404464
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.15357135
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  tSpeedExpCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 150
+      inSlope: -10209.039
+      outSlope: -10209.039
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.15665141
+    - serializedVersion: 3
+      time: 0.0057
+      value: 72.2
+      inSlope: -7281.447
+      outSlope: -7281.447
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.1311155
+    - serializedVersion: 3
+      time: 0.01
+      value: 55
+      inSlope: -947.04614
+      outSlope: -947.04614
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.03736621
+      value: 42.210632
+      inSlope: -369.6114
+      outSlope: -369.6114
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.51539314
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &6179087285394029084
 GameObject:
   m_ObjectHideFlags: 0
@@ -114263,7 +114362,7 @@ MonoBehaviour:
   rpmBiasCurveLimit: Infinity
   axleFriction: 0.001
   frictionSmoothness: 0.509
-  forwardFriction: 10
+  forwardFriction: 11
   sidewaysFriction: 10
   forwardRimFriction: 1
   sidewaysRimFriction: 1
@@ -115323,6 +115422,7 @@ MonoBehaviour:
   rotate: 1
   maxDegreesRotation: 0
   d_angleSteer: 0
+  CPUmode: 0
 --- !u!1 &6779875396000727283
 GameObject:
   m_ObjectHideFlags: 0
@@ -116100,7 +116200,7 @@ MonoBehaviour:
   rpmBiasCurveLimit: Infinity
   axleFriction: 0.001
   frictionSmoothness: 0.509
-  forwardFriction: 10
+  forwardFriction: 11
   sidewaysFriction: 10
   forwardRimFriction: 1
   sidewaysRimFriction: 1

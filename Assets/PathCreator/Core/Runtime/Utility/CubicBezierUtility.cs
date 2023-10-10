@@ -9,19 +9,19 @@ namespace PathCreation.Utility {
     public static class CubicBezierUtility {
 
         /// Returns point at time 't' (between 0 and 1) along bezier curve defined by 4 points (anchor_1, control_1, control_2, anchor_2)
-        public static Vector3 EvaluateCurve (Vector3[] points, float t) {
+        public static Vector4 EvaluateCurve (Vector4[] points, float t) {
             return EvaluateCurve (points[0], points[1], points[2], points[3], t);
         }
 
         /// Returns point at time 't' (between 0 and 1)  along bezier curve defined by 4 points (anchor_1, control_1, control_2, anchor_2)
-        public static Vector3 EvaluateCurve (Vector3 a1, Vector3 c1, Vector3 c2, Vector3 a2, float t) {
+        public static Vector4 EvaluateCurve (Vector4 a1, Vector4 c1, Vector4 c2, Vector4 a2, float t) {
             t = Mathf.Clamp01 (t);
             return (1 - t) * (1 - t) * (1 - t) * a1 + 3 * (1 - t) * (1 - t) * t * c1 + 3 * (1 - t) * t * t * c2 + t * t * t * a2;
         }
 
         /// Returns a vector tangent to the point at time 't'
         /// This is the vector tangent to the curve at that point
-        public static Vector3 EvaluateCurveDerivative (Vector3[] points, float t) {
+        public static Vector4 EvaluateCurveDerivative (Vector4[] points, float t) {
             return EvaluateCurveDerivative (points[0], points[1], points[2], points[3], t);
         }
 
@@ -70,7 +70,7 @@ namespace PathCreation.Utility {
         }
 
         /// Splits curve into two curves at time t. Returns 2 arrays of 4 points.
-        public static Vector3[][] SplitCurve (Vector3[] points, float t) {
+        public static Vector4[][] SplitCurve (Vector4[] points, float t) {
             Vector3 a1 = Vector3.Lerp (points[0], points[1], t);
             Vector3 a2 = Vector3.Lerp (points[1], points[2], t);
             Vector3 a3 = Vector3.Lerp (points[2], points[3], t);
@@ -78,9 +78,9 @@ namespace PathCreation.Utility {
             Vector3 b2 = Vector3.Lerp (a2, a3, t);
             Vector3 pointOnCurve = Vector3.Lerp (b1, b2, t);
 
-            return new Vector3[][] {
-                new Vector3[] { points[0], a1, b1, pointOnCurve },
-                    new Vector3[] { pointOnCurve, b2, a3, points[3] }
+            return new Vector4[][] {
+                new Vector4[] { points[0], a1, b1, pointOnCurve },
+                    new Vector4[] { pointOnCurve, b2, a3, points[3] }
             };
         }
 
