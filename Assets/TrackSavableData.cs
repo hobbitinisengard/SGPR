@@ -10,7 +10,6 @@ internal class TrackSavableData
 {
 	public Vector3 windExternal;
 	public Vector3 windRandom;
-	public Vector4[] racingLine;
 	public List<string> tileNames;
 	public List<TileSavable> tiles;
 	public Vector3[] replayCams;

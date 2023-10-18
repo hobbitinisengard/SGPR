@@ -59,6 +59,9 @@ public class Tile : MonoBehaviour
 		else
 			mc.gameObject.AddComponent<GroundSurfaceInstance>().surfaceType = 0;
 
+		var etp = GetComponent<EnergyTunnelPath>();
+		if (etp)
+			etp.CalculatePitsPath();
 	}
 	Mesh MirrorMesh(Mesh mesh)
 	{

@@ -693,6 +693,7 @@ public class EditorPanel : Sfxable
 						cur.Colorize(Connector.green);
 					}
 					cur = cur.connection; // now on the other tile
+
 					if (cur.transform.parent.name.Contains("loop"))
 					{
 						replacements.Add(new LoopReplacement
@@ -740,15 +741,11 @@ public class EditorPanel : Sfxable
 				}
 			}
 		}
-		ApplyRacingLine();
-	}
-	void ApplyRacingLine()
-	{
-		BezierPath bezierPath = new BezierPath(racingLine.ToArray(),true, PathSpace.xyz);
+		BezierPath bezierPath = new BezierPath(racingLine.ToArray(), true, PathSpace.xyz);
 		pathCreator.bezierPath = bezierPath;
 		connectButtonImage.color = Color.green;
 		pathFollower.SetActive(true);
-
+		 
 		// destroy old castable points
 		for (int i = 0; i < racingLineContainer.transform.childCount; ++i)
 		{
@@ -756,7 +753,7 @@ public class EditorPanel : Sfxable
 		}
 		// Create castable points
 		float progress = 0;
-		for(int i=0; i<100000 && progress < pathCreator.path.length; ++i)
+		for (int i = 0; i < 100000 && progress < pathCreator.path.length; ++i)
 		{
 			GameObject castable = GameObject.CreatePrimitive(PrimitiveType.Sphere);
 			Destroy(castable.GetComponent<MeshRenderer>());
@@ -766,7 +763,7 @@ public class EditorPanel : Sfxable
 			col.radius = .5f;
 			col.isTrigger = true;
 			castable.layer = 16;//Info.racingLineLayer;
-			castable.name = (progress).ToString(CultureInfo.InvariantCulture);
+			castable.name = progress.ToString(CultureInfo.InvariantCulture);
 			progress += 0.5f;
 		}
 	}
@@ -833,7 +830,7 @@ public class EditorPanel : Sfxable
 			.transform.GetComponent<Tile>();
 
 		currentTile.transform.position = position==null ? curPosition : position.Value;
-
+		
 		if(rotation == null)
 			rotation = Quaternion.Euler(new Vector3(
 				((currentTile.transform.GetComponent<MeshFilter>() != null) ? -90 : 0) + xRot, yRot, zRot));
@@ -1055,10 +1052,7 @@ public class EditorPanel : Sfxable
 		TrackSavableData TRACK = new TrackSavableData();
 		TRACK.windExternal = windExternal;
 		TRACK.windRandom = windRandom;
-		if (racingLine!=null && racingLine.Length > 20)
-		{	
-			TRACK.racingLine = racingLine;
-		}
+
 		int stuntyCount=0,loopCount=0, jumpCount=0, jumpyCount=0, windyCount=0, 
 			crossCount=0, pitsCount=0, icyCount=0, sandyCount=0, grassyCount=0;
 		string prevTileName = "";
@@ -1354,12 +1348,6 @@ public class EditorPanel : Sfxable
 		}
 		currentTile = null;
 
-		if (TRACK.racingLine != null && TRACK.racingLine.Length > 8)
-		{
-			racingLine = TRACK.racingLine;
-			ApplyRacingLine();
-		}
-
 		SetHeightsmap(TRACK.heights);
 
 		windExternal = TRACK.windExternal;
@@ -1368,6 +1356,8 @@ public class EditorPanel : Sfxable
 		WindExtZ.value = windExternal.z / maxWind;
 		WindRanX.value = windRandom.x / maxWind;
 		WindRanZ.value = windRandom.z / maxWind;
+
+		SwitchToConnect();
 	}
 	public void OpenLoadTrackFileBrowser()
 	{

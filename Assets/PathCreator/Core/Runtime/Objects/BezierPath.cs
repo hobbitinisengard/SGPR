@@ -103,7 +103,7 @@ namespace PathCreation
 		}
 		
 		public BezierPath(IEnumerable<Vector3> transforms, bool isClosed = false, PathSpace space = PathSpace.xy) :
-			 this(transforms.Select(p => new Vector4(p.x, p.y)), isClosed, space)
+			 this(transforms.Select(p => new Vector4(p.x, p.y, p.z)), isClosed, space)
 		{ }
 
 		/// <summary> Creates a path from the positions of the supplied 2D points </summary>

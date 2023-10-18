@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System;
 
 namespace RVP
 {
@@ -71,7 +72,12 @@ namespace RVP
 		[Range(0, 0.9f)]
 		public float burnoutSmoothness = 0.5f;
 		public Motor engine;
-
+		public ParticleSystem[] batteryLoadingParticleSystems;
+		public float battery = 1;
+		[Range(0.0005f, 0.1f)]
+		public float batteryLoadDelta = 0.05f;//*Time.fixedDeltaTime
+		[Range(0.001f, 0.05f)]
+		public float batteryBurnDelta = 0.01f;
 		bool stopUpshift;
 		bool stopDownShift;
 
@@ -132,6 +138,7 @@ namespace RVP
 		public bool canCrash = true;
 		public AudioSource roadNoiseSnd;
 		public AudioSource crashSnd;
+		public AudioSource batteryLoadingSnd;
 		public AudioClip[] crashClips;
 		[System.NonSerialized]
 		public bool playCrashSounds = true;
@@ -151,9 +158,27 @@ namespace RVP
 		[Tooltip("Sideways friction when vehicle is in air. 0=no steering in air")]
 		public float inAirFriction = 0.25f;
 		public float d_R;
+		[NonSerialized]
+		public GameObject elecTunnelCam;
 
 		public float carLen { get; private set; }
 
+		public void SetBatteryLoading(bool status)
+		{
+			foreach(var ps in batteryLoadingParticleSystems)
+			{
+				if (status)
+				{
+					batteryLoadingSnd.Play();
+					ps.Play();
+				}
+				else
+				{
+					batteryLoadingSnd.Stop();
+					ps.Stop();
+				}
+			}
+		}
 		AnimationCurve GenerateBrakeCurve()
 		{
 			//double[] dydx = { 22.225, 1.808226, 1.808099, 1.808226, 1.808099, 1.808226, 1.808226, 1.808099, 1.808226, 0.535686, 0.535686, 0.535686, 0.535686, 0.535686,0.535686, 0.535559, 0.535686, 0.662432, 0.662305, 0.662432, 0.662305,0.662432, 0.662305, 0.662432, 0.662305, 0.407543, 0.407543, 0.407543,0.407543, 0.407543, 0.407543, 0.407543, 0.407416, 0.102362, 0.102362,0.102235, 0.102362, 0.102362, 0.102235, 0.102362, 0.102362, 0.545719,0.545719, 0.545592, 0.545719, 0.127127, 0.127127, 0.127127, 0.127127,0.127127, 0.127127, 0.127127, 0.127127, 0.617093, 0.616966, 0.616966,0.617093, 0.616966, 0.617093, 0.616966, 0.616966, 0.719328, 0.719328,0.719455, 0.719328, 0.719328, 0.719328, 0.719328, 0.719328, 0.930148,0.930148, 0.930148, 0.930275, 0.930148, 0.930148, 0.930148, 0.930148,1.364361, 1.364234, 1.364234, 1.364234, 1.364234, 1.364361, 1.364234,1.364234, 1.382903, 1.382776, 1.382903, 1.382903, 1.382776, 1.382903,1.382903, 1.382776, 1.885188, 1.885188, 1.885061, 1.885188, 1.885188,1.885188, 1.885061, 1.885188, 1.488313, 1.488313, 1.488186, 1.488313,1.488313, 1.488313, 1.488186, 1.488313, 0.595376, 0.595249, 0.595376,0.595249, 0.595376, 0.595249, 0.595376, 0.595249, 0.396875, 0.396875,0.396875, 0.396875, 0 , 0 , 0 , 0, 0,0};
@@ -331,7 +356,7 @@ namespace RVP
 
 			f = Mathf.Clamp(f, -1, 1);
 			accelInput = f;
-
+			battery -= accelInput * batteryBurnDelta * Time.deltaTime;
 		}
 
 		// Set brake input
@@ -560,7 +585,7 @@ namespace RVP
 
 								if (crashSnd && crashClips.Length > 0 && playCrashSounds)
 								{
-									crashSnd.PlayOneShot(crashClips[Random.Range(0, crashClips.Length)], Mathf.Clamp01(col.relativeVelocity.magnitude * 0.1f));
+									crashSnd.PlayOneShot(crashClips[UnityEngine.Random.Range(0, crashClips.Length)], Mathf.Clamp01(col.relativeVelocity.magnitude * 0.1f));
 								}
 
 								if (sparks && playCrashSparks)

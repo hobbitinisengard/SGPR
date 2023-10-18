@@ -46,6 +46,9 @@ public static class Info
 	public const int cameraLayer = 14;
 	public const int flagLayer = 15;
 	public const int racingLineLayer = 16;
+	public const int pitsLineLayer = 17;
+	public const int pitsZoneLayer = 18;
+	public const int grindTrigger = 19;
 
 	// next session data
 	public static CarSetup[] s_carSetups;
@@ -73,7 +76,7 @@ public static class Info
 		if (cars == null)
 			cars = new Dictionary<string, Car>();
 		else
-			return;
+			return;  
 		cars.Add("car01", new Car(0,CarGroup.Speed, "MEAN STREAK\n\nFast, light and agile, this racer offers much for those who wish to modify their vehicle."));
 		cars.Add("car02", new Car(0,CarGroup.Wild, "THE HUSTLER\n\nSturdy 4x4 pick-up truck with an eye for the outrageous!"));
 		cars.Add("car03", new Car(0,CarGroup.Aero, "TWIN EAGLE\n\nTake flight with this light and speedy stuntcar."));

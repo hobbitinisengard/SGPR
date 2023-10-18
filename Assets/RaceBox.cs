@@ -50,6 +50,8 @@ public class RaceBox : MonoBehaviour
 	private PtsAnimInfo stuntPai;
 	private PtsAnimInfo jumpPai;
 	private Vector3 lastRespawnPosition;
+	public Vector3 elecTunnelCameraPos = -Vector3.one;
+
 	private void OnTriggerEnter(Collider other)
 	{
 		if(other.tag == "START")
@@ -228,7 +230,7 @@ public class RaceBox : MonoBehaviour
 				if(stuntPai.score > 0)
 				{
 					SetGrantedComboTime(5 + 0.5f * starLevel);
-					vp.engine.battery = Mathf.Clamp01(vp.engine.battery + vp.engine.batteryStuntIncrease);
+					vp.battery = Mathf.Clamp01(vp.battery + vp.engine.batteryStuntIncrease);
 					aero += stuntPai.score / 10f;
 					prevStuntPai = new PtsAnimInfo(stuntPai);
 					StuntPaiReset();
@@ -383,5 +385,6 @@ public class RaceBox : MonoBehaviour
 		lapStartTime = DateTime.Now;
 		curLaps++;
 	}
+
 
 }

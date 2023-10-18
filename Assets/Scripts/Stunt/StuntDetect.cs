@@ -74,14 +74,14 @@ namespace RVP
             }
 
             // Detect jumps
-            if (detectJump && !vp.crashing) {
-                DetectJump();
-            }
-            else {
-                jumpTime = 0;
-                jumpDist = 0;
-                jumpString = "";
-            }
+            //if (detectJump && !vp.crashing) {
+            //    DetectJump();
+            //}
+            //else {
+            //    jumpTime = 0;
+            //    jumpDist = 0;
+            //    jumpString = "";
+            //}
 
             
 
@@ -100,7 +100,7 @@ namespace RVP
                 driftString = "Drift: " + driftDist.ToString("n0") + " m";
 
                 if (engine) {
-                    engine.battery += (StuntManager.driftBoostAddStatic * Mathf.Abs(vp.localVelocity.x)) * Time.timeScale * 0.0002f * TimeMaster.inverseFixedTimeFactor;
+                    vp.battery += (StuntManager.driftBoostAddStatic * Mathf.Abs(vp.localVelocity.x)) * Time.timeScale * 0.0002f * TimeMaster.inverseFixedTimeFactor;
                 }
             }
             else {
@@ -112,29 +112,29 @@ namespace RVP
         }
 
         // Logic for detecting and tracking jumps
-        void DetectJump() {
-            if (vp.groundedWheels == 0) {
-                jumpDist = Vector3.Distance(jumpStart, tr.position);
-                jumpTime += Time.fixedDeltaTime;
-                jumpString = "Jump: " + jumpDist.ToString("n0") + " m";
+        //void DetectJump() {
+        //    if (vp.groundedWheels == 0) {
+        //        jumpDist = Vector3.Distance(jumpStart, tr.position);
+        //        jumpTime += Time.fixedDeltaTime;
+        //        jumpString = "Jump: " + jumpDist.ToString("n0") + " m";
 
-                if (engine) {
-                    engine.battery += StuntManager.jumpBoostAddStatic * Time.timeScale * 0.01f * TimeMaster.inverseFixedTimeFactor;
-                }
-            }
-            else {
-                score += (jumpDist + jumpTime) * StuntManager.jumpScoreRateStatic;
+        //        if (engine) {
+        //            vp.battery += StuntManager.jumpBoostAddStatic * Time.timeScale * 0.01f * TimeMaster.inverseFixedTimeFactor;
+        //        }
+        //    }
+        //    else {
+        //        score += (jumpDist + jumpTime) * StuntManager.jumpScoreRateStatic;
 
-                if (engine) {
-                    engine.battery += (jumpDist + jumpTime) * StuntManager.jumpBoostAddStatic * Time.timeScale * 0.01f * TimeMaster.inverseFixedTimeFactor;
-                }
+        //        if (engine) {
+        //            vp.battery += (jumpDist + jumpTime) * StuntManager.jumpBoostAddStatic * Time.timeScale * 0.01f * TimeMaster.inverseFixedTimeFactor;
+        //        }
 
-                jumpStart = tr.position;
-                jumpDist = 0;
-                jumpTime = 0;
-                jumpString = "";
-            }
-        }
+        //        jumpStart = tr.position;
+        //        jumpDist = 0;
+        //        jumpTime = 0;
+        //        jumpString = "";
+        //    }
+        //}
 
         // Logic for detecting and tracking flips
         

@@ -36,6 +36,7 @@ public class SC_TerrainEditor : MonoBehaviour
 	Color[] craterData;
 
 	TerrainData tData;
+	private UITest uiTest;
 
 	float strengthNormalized
 	{
@@ -51,6 +52,7 @@ public class SC_TerrainEditor : MonoBehaviour
 	}
 	void Start()
 	{
+		uiTest = GetComponent<UITest>();
 		//Create build target object
 		GameObject tmpObj = new GameObject("BuildTarget");
 		buildTarget = tmpObj.transform;
@@ -89,6 +91,8 @@ public class SC_TerrainEditor : MonoBehaviour
 
 	void FixedUpdate()
 	{
+		if (uiTest.PointerOverUI())
+			return;
 		raycastHit();
 		wheelValuesControl();
 
@@ -105,9 +109,10 @@ public class SC_TerrainEditor : MonoBehaviour
 	//______________________________________________________________________________________________________________________________
 	void raycastHit()
 	{
+		
 		Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 		hit = new RaycastHit();
-		//Do Raycast hit only against UI layer
+		//Do Raycast hit only against terrain layer
 		if (Physics.Raycast(ray, out hit, Mathf.Infinity, 1 << Info.terrainLayer))
 		{
 			onTerrain = true;

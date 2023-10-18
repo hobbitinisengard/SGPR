@@ -383,9 +383,8 @@ public class SGP_HUD : MonoBehaviour
 			speed /= 10;
 		}
 		// Update battery level
-		float batteryLevel = engine.battery / engine.maxBattery;
 		Vector3 batteryLackPosition = batteryLack.GetComponent<RectTransform>().anchoredPosition;
-		if (batteryLevel < engine.batteryCutOffLevel)
+		if (vp.battery < engine.batteryCutOffLevel)
 		{  // low battery level blink
 			if (batteryCutOffTimer == 0 || Time.time - batteryCutOffTimer > 1)
 				batteryCutOffTimer = Time.time;
@@ -393,10 +392,10 @@ public class SGP_HUD : MonoBehaviour
 			if (Time.time - batteryCutOffTimer < 0.5f)
 				batteryLackPosition.x = maxBatteryLack;
 			else
-				batteryLackPosition.x = Mathf.Lerp(maxBatteryLack, minBatteryLack, batteryLevel);
+				batteryLackPosition.x = Mathf.Lerp(maxBatteryLack, minBatteryLack, vp.battery);
 		}
 		else
-			batteryLackPosition.x = Mathf.Lerp(maxBatteryLack, minBatteryLack, batteryLevel);
+			batteryLackPosition.x = Mathf.Lerp(maxBatteryLack, minBatteryLack, vp.battery);
 		batteryLack.GetComponent<RectTransform>().anchoredPosition = batteryLackPosition;
 
 		// Update position (1st to 10th)

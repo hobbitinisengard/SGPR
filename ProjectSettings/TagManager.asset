@@ -26,9 +26,9 @@ TagManager:
   - TrackCamera
   - Flag
   - Racingline
-  - 
-  - 
-  - 
+  - PitsLine
+  - PitsZone
+  - GrindTrigger
   - 
   - 
   - 

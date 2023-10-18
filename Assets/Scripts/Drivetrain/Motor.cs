@@ -28,15 +28,14 @@ namespace RVP
 		public bool canBoost = true;
 		public GameObject[] jets;
 		public bool boosting;
-		public float battery = 1;
+		
 		bool boostReleased;
 		bool boostPrev;
 		public float maxBoost = 0.5f;
 		protected AnimationCurve boostPowerCurve = AnimationCurve.EaseInOut(0, 0, 0.5f, 1);
-		public float maxBattery = 1;
 		public float boostBurnRate = 0.01f;
+		public float rideBurnRate = 0.002f;
 		public AudioSource boostLoopSnd;
-		AudioSource boostStartEnd; // AudioSource for boostStart and boostEnd
 		public AudioClip boostStart;
 		public AudioClip boostEnd;
 		public ParticleSystem[] boostParticles;
@@ -79,10 +78,10 @@ namespace RVP
 		{
 			health = Mathf.Clamp01(health);
 			// Boost logic
-			battery = Mathf.Clamp(boosting ? battery - boostBurnRate * Time.timeScale * 0.05f * TimeMaster.inverseFixedTimeFactor : battery, 0, maxBattery);
+			vp.battery = Mathf.Clamp01(boosting ? vp.battery - boostBurnRate * Time.timeScale * 0.05f * TimeMaster.inverseFixedTimeFactor : vp.battery);
 			boostPrev = boosting;
 
-			if (canBoost && ignition && health > 0 && battery > 0 &&
+			if (canBoost && ignition && health > 0 && vp.battery > 0 &&
 				 (vp.hover ? vp.accelInput != 0 || Mathf.Abs(vp.localVelocity.z) > 1 : vp.accelInput > 0))
 			{
 				if (((boostReleased && !boosting) || boosting) && vp.boostButton)
@@ -150,7 +149,7 @@ namespace RVP
 			{
 				if (ignition && health > 0)
 				{
-					engineAudio.enabled = true;
+					engineAudio.enabled = true;					
 					engineAudio.pitch = Mathf.Lerp(engineAudio.pitch, Mathf.Lerp(minPitch, maxPitch, targetPitch),
 						20 * Time.deltaTime) + Mathf.Sin(Time.time * 200 * (1 - health)) * (1 - health) * 0.1f * damagePitchWiggle;
 					idlingEngineAudio.pitch = engineAudio.pitch;
