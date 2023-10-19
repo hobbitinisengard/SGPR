@@ -17,15 +17,10 @@ namespace RVP
 
         [System.NonSerialized]
         public float score;
-        List<RotationStunt> stunts = new List<RotationStunt>();
-        List<RotationStunt> doneStunts = new List<RotationStunt>();
         bool drifting;
         float driftDist;
         float driftScore;
         float endDriftTime; // Time during which drifting counts even if the vehicle is not actually drifting
-        float jumpDist;
-        float jumpTime;
-        Vector3 jumpStart;
 
         public bool detectDrift = true;
         public bool detectJump = true;

@@ -49,6 +49,10 @@ public static class Info
 	public const int pitsLineLayer = 17;
 	public const int pitsZoneLayer = 18;
 	public const int grindTrigger = 19;
+	/// <summary>
+	/// Only one object at the time can have this layer
+	/// </summary>
+	public const int selectionLayer = 20;
 
 	// next session data
 	public static CarSetup[] s_carSetups;

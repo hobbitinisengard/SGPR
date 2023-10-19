@@ -10,13 +10,17 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using TMPro;
+using UnityEditor.AnimatedValues;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class EditorPanel : Sfxable
 {
 	const int connectorRadius = 5;
-	public class Scalator
+	/// <summary>
+	/// Connector selector
+	/// </summary>
+	public class CSelector
 	{
 		public Connector a, b;
 		public float distance = 0;
@@ -38,7 +42,8 @@ public class EditorPanel : Sfxable
 		SetCamera,
 		Scalator,
 		FillTool,
-		StuntZonesTool
+		StuntZonesTool,
+		Cross
 	}
 	public Mode mode { get; private set; }
 	public GameObject pathFollower;
@@ -92,11 +97,10 @@ public class EditorPanel : Sfxable
 	AnimationCurve buttonAnimationCurve = new AnimationCurve();
 	Tile currentTile;
 	Vector3? anchor;
-	private bool pointingOnRoad;
 	int yRot = 0;
 	int xRot = 0;
 	int zRot = 0;
-	Scalator scalator = new Scalator();
+	CSelector selector = new CSelector();
 	bool curMirror;
 	GameObject placedTilesContainer;
 	GameObject racingLineContainer;
@@ -115,6 +119,9 @@ public class EditorPanel : Sfxable
 	GameObject skybox;
 	GameObject envir;
 	Terrain terrain;
+	Predicate<Connector> isStuntZonePred = delegate (Connector c) { return c.isStuntZone; };
+	Predicate<Connector> neverMark = delegate (Connector c) { return false; };
+	private Vector3 intersectionSnapLocation = -Vector3.one;
 	void Awake()
 	{
 		mode = Mode.Build;
@@ -267,7 +274,7 @@ public class EditorPanel : Sfxable
 				{
 					if(Input.GetKeyDown(KeyCode.Alpha1))
 					{
-						scalator.Reset(true);
+						selector.Reset(true);
 						if(currentTile)
 						{
 							Destroy(currentTile.gameObject);
@@ -280,14 +287,14 @@ public class EditorPanel : Sfxable
 					{
 						int dir = scroll > 0 ? -1 : 1;
 						
-						scalator.distance = Mathf.Clamp(scalator.distance + dir * 2.5f, 10, 200);
+						selector.distance = Mathf.Clamp(selector.distance + dir * 2.5f, 10, 200);
 						if (currentTile)
 						{
 
 							Destroy(currentTile.gameObject);
 							InstantiateNewTile(currentTileButton.name);
 						}
-						DisplayMessageFor(scalator.distance.ToString("F1"), 1);
+						DisplayMessageFor(selector.distance.ToString("F1"), 1);
 					}
 
 					if (uiTest.PointerOverUI())
@@ -315,7 +322,7 @@ public class EditorPanel : Sfxable
 									pickedTile = hit.transform.parent.GetComponent<Tile>();
 								curMirror = pickedTile.mirrored;
 								if(Input.GetKey(KeyCode.LeftShift))
-									scalator.distance = pickedTile.Length();
+									selector.distance = pickedTile.Length();
 								SetCurrentTileTo(GetButtonForTile(pickedTile.transform.name));
 								currentTile.transform.rotation = pickedTile.transform.rotation;
 								invisibleLevel.position = new Vector3(0,pickedTile.transform.position.y, 0);
@@ -328,7 +335,6 @@ public class EditorPanel : Sfxable
 							if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity,
 								1 << Info.roadLayer))
 							{
-								pointingOnRoad = true;
 								HideCurrentTile();
 								if (Input.GetMouseButtonDown(0))
 								{
@@ -353,17 +359,17 @@ public class EditorPanel : Sfxable
 								//debug_p = Camera.main.WorldToScreenPoint(currentTile.transform.position);
 								if (Input.GetMouseButtonDown(0))
 								{
-									if (!pointingOnRoad)
-									{ // PLACE TILE
-										InvalidateConnections();
-										currentTile.GetComponent<Tile>().SetPlaced();
-										InstantiateNewTile(currentTileButton.name);
-										placedConnector = null;
-										floatingConnector = null;
-										anchor = null;
-										return;
-									}
+									 // PLACE TILE
+									InvalidateConnections();
+									currentTile.GetComponent<Tile>().SetPlaced();
+									InstantiateNewTile(currentTileButton.name);
+									placedConnector = null;
+									floatingConnector = null;
+									anchor = null;
+									intersectionSnapLocation = -Vector3.one;
+									return;
 								}
+
 								if(Input.GetKey(KeyCode.Z) && Input.GetKey(KeyCode.C))
 								{ // normalize rotation
 									currentTile.transform.rotation = Quaternion.Euler(xRot, yRot, zRot);
@@ -431,42 +437,38 @@ public class EditorPanel : Sfxable
 									}
 								}
 								
-								if (Physics.Raycast(ray, out hit, Mathf.Infinity,
-									1 << Info.invisibleLevelLayer | 1 << Info.roadLayer | 1 << Info.terrainLayer))
+								if(intersectionSnapLocation != -Vector3.one)
 								{
+									curPosition = intersectionSnapLocation;
+									currentTile.transform.position = curPosition;
+								}
+								else if (Physics.Raycast(ray, out hit, Mathf.Infinity,
+									1 << Info.invisibleLevelLayer | 1 << Info.roadLayer | 1 << Info.terrainLayer))
+								{ // tile preview location
 									curPosition = hit.point;
-									if (hit.transform.gameObject.layer == Info.roadLayer
-										&& currentTile.transform.childCount > 0)
+									if (anchor == null && placedConnector != null && floatingConnector != null)
 									{
-										pointingOnRoad = true;
+										currentTile.transform.position += placedConnector.Value - floatingConnector.Value;
+										//Debug.DrawRay(currentTile.transform.position, placedConnector.Value - floatingConnector.Value, Color.red, 1);
+										//Debug.Break();
+										anchor = currentTile.transform.position;
+										//var p = invisibleLevel.position;
+										//p.y = placedConnector.Value.y;
+										//invisibleLevel.position = p;
 									}
 									else
 									{
-										pointingOnRoad = false;
-										if (anchor == null && placedConnector != null && floatingConnector != null)
+										if (anchor.HasValue)
 										{
-											currentTile.transform.position += placedConnector.Value - floatingConnector.Value;
-											//Debug.DrawRay(currentTile.transform.position, placedConnector.Value - floatingConnector.Value, Color.red, 1);
-											//Debug.Break();
-											anchor = currentTile.transform.position;
-											//var p = invisibleLevel.position;
-											//p.y = placedConnector.Value.y;
-											//invisibleLevel.position = p;
+											if ((placedConnector == null && floatingConnector == null)
+											|| (anchor.HasValue && Vector3.Distance(hit.point, anchor.Value) > connectorRadius))
+											{
+												anchor = null;
+												currentTile.transform.position = hit.point;
+											}
 										}
 										else
-										{
-											if (anchor.HasValue)
-											{
-												if ((placedConnector == null && floatingConnector == null)
-												|| (anchor.HasValue && Vector3.Distance(hit.point, anchor.Value) > connectorRadius))
-												{
-													anchor = null;
-													currentTile.transform.position = hit.point;
-												}
-											}
-											else
-												currentTile.transform.position = hit.point;
-										}
+											currentTile.transform.position = hit.point;
 									}
 								}
 							}
@@ -490,6 +492,46 @@ public class EditorPanel : Sfxable
 								{
 									selectedConnector = c;
 									flyCamera.transform.GetComponent<Camera>().cullingMask &= ~(1 << Info.connectorLayer);
+								}
+							}
+						}
+					}
+				}
+				break;
+			case Mode.Cross:
+				{
+					if (selector.a == null || selector.b == null) // searching to add connectors
+					{
+						if (Input.GetMouseButtonDown(0))
+						{
+							Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+							if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, 1 << Info.connectorLayer))
+							{
+								var c = hit.transform.GetComponent<Connector>();
+								if (!c.marked)
+								{
+									c.Colorize(Connector.red);
+
+									if (selector.a == null)
+									{
+										selector.a = c;
+									}
+									else
+									{
+										selector.b = c;
+
+										Vector3 centerA = selector.a.transform.parent.GetChild(0).position;
+										Vector3 centerB = selector.b.transform.parent.GetChild(0).position;
+										Vector3 VecA = (selector.a.transform.position - centerA).normalized;
+										Vector3 VecB = (selector.b.transform.position - centerB).normalized;
+
+										if(LineLineIntersection(out Vector3 intersection, centerA, VecA*1000, centerB, VecB * 1000))
+										{
+											intersectionSnapLocation = intersection;
+											SwitchTo(Mode.Build);
+										}
+									}
 								}
 							}
 						}
@@ -526,7 +568,7 @@ public class EditorPanel : Sfxable
 				break;
 			case Mode.Scalator:
 				{
-					if (scalator.distance == 0) // searching to add connectors
+					if (selector.distance == 0) // searching to add connectors
 					{
 						Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 						if (Physics.Raycast(ray, out _, Mathf.Infinity, 1 << Info.roadLayer | 1<<Info.connectorLayer))
@@ -541,14 +583,14 @@ public class EditorPanel : Sfxable
 									{
 										c.Colorize(Connector.red);
 
-										if (scalator.a == null)
+										if (selector.a == null)
 										{
-											scalator.a = c;
+											selector.a = c;
 										}
 										else
 										{
-											scalator.b = c;
-											scalator.distance = Vector3.Distance(scalator.a.transform.position, scalator.b.transform.position);
+											selector.b = c;
+											selector.distance = Vector3.Distance(selector.a.transform.position, selector.b.transform.position);
 											DisplayMessageFor("Measured", 1);
 											SwitchTo(Mode.Build);
 										}
@@ -563,7 +605,7 @@ public class EditorPanel : Sfxable
 					}
 					else
 					{
-						scalator.Reset(true);
+						selector.Reset(true);
 					}
 				}
 				break;
@@ -595,6 +637,57 @@ public class EditorPanel : Sfxable
 				break;
 			default:
 				break;
+		}
+	}
+	/// <summary>
+	/// Returns center of connector's tile surface
+	/// </summary>
+	//Vector3 GetCenter(Connector c)
+	//{
+	//	Vector3 center = Vector3.zero;
+	//	GameObject tileMain = c.transform.parent.GetChild(0).gameObject;
+	//	tileMain.layer = Info.selectionLayer;
+	//	Vector3 rayPoint = tileMain.transform.position;
+	//	rayPoint.y += 100;
+	//	if (Physics.Raycast(rayPoint, Vector3.down, out RaycastHit hit, Mathf.Infinity, 1 << Info.selectionLayer))
+	//	{
+	//		center = rayPoint;
+	//		center.y = hit.point.y;
+	//	}
+	//	else
+	//	{
+	//		Debug.LogError("GetCenter failed");
+	//	}
+	//	tileMain.layer = Info.roadLayer;
+	//	return center;
+	//}
+	/// <param name="intersection">returned intersection</param>
+	/// <param name="linePoint1">start location of the line 1</param>
+	/// <param name="lineDirection1">direction of line 1</param>
+	/// <param name="linePoint2">start location of the line 2</param>
+	/// <param name="lineDirection2">direction of line2</param>
+	public static bool LineLineIntersection(out Vector3 intersection,
+		 Vector3 linePoint1, Vector3 lineDirection1,
+		 Vector3 linePoint2, Vector3 lineDirection2)
+	{
+
+		Vector3 lineVec3 = linePoint2 - linePoint1;
+		Vector3 crossVec1and2 = Vector3.Cross(lineDirection1, lineDirection2);
+		Vector3 crossVec3and2 = Vector3.Cross(lineVec3, lineDirection2);
+		float planarFactor = 0;// Vector3.Dot(lineVec3, crossVec1and2);
+
+		//is coplanar, and not parallel
+		if (Mathf.Abs(planarFactor) < 0.0001f
+				  && crossVec1and2.sqrMagnitude > 0.0001f)
+		{
+			float s = Vector3.Dot(crossVec3and2, crossVec1and2) / crossVec1and2.sqrMagnitude;
+			intersection = linePoint1 + (lineDirection1 * s);
+			return true;
+		}
+		else
+		{
+			intersection = Vector3.zero;
+			return false;
 		}
 	}
 	async Task SetFlagsTexture(string texturePath)
@@ -845,7 +938,7 @@ public class EditorPanel : Sfxable
 			currentTile.MirrorTile();
 
 		if (distance == null)
-			distance = scalator.distance;
+			distance = selector.distance;
 		currentTile.AdjustScale(distance.Value);
 
 		if(url!=null)
@@ -863,6 +956,10 @@ public class EditorPanel : Sfxable
 	public void SwitchToFill()
 	{
 		SwitchTo(Mode.FillTool);
+	}
+	public void SwitchToCross()
+	{
+		SwitchTo(Mode.Cross);
 	}
 	public void SwitchTo(Mode mode)
 	{
@@ -883,6 +980,7 @@ public class EditorPanel : Sfxable
 					anchor = null;
 					floatingConnector = null;
 					placedConnector = null;
+					intersectionSnapLocation = -Vector3.one;
 					currentTilesPanel.gameObject.SetActive(false);
 					break;
 				case Mode.Connect:
@@ -904,7 +1002,7 @@ public class EditorPanel : Sfxable
 					break;
 				case Mode.Scalator:
 					flyCamera.transform.GetComponent<Camera>().cullingMask &= ~(1 << Info.connectorLayer);
-					scalator.Reset();
+					selector.Reset();
 					break;
 				case Mode.FillTool:
 					fillMenu.SetActive(false);
@@ -915,6 +1013,10 @@ public class EditorPanel : Sfxable
 
 					UnmarkAllAndDisableCollidersOfConnectedConnectors();
 					
+					break;
+				case Mode.Cross:
+					selector.Reset();
+					flyCamera.transform.GetComponent<Camera>().cullingMask &= ~(1 << Info.connectorLayer);
 					break;
 				default:
 					break;
@@ -935,7 +1037,7 @@ public class EditorPanel : Sfxable
 					arrow = Instantiate(arrowModel);
 					break;
 				case Mode.Scalator:
-					scalator.Reset();
+					selector.Reset();
 					break;
 				case Mode.None:
 					break;
@@ -948,14 +1050,17 @@ public class EditorPanel : Sfxable
 					flyCamera.transform.GetComponent<Camera>().cullingMask |= 1 << Info.connectorLayer;
 					EnableAllCollidersAndMark(isStuntZonePred);
 					break;
+				case Mode.Cross:
+					flyCamera.transform.GetComponent<Camera>().cullingMask |= 1 << Info.connectorLayer;
+					break;
 				default:
 					break;
 			}
 			this.mode = mode;
 		}
 	}
-	Predicate<Connector> isStuntZonePred = delegate (Connector c) { return c.isStuntZone; };
-	Predicate<Connector> neverMark = delegate (Connector c) { return false; };
+	
+
 	void EnableAllCollidersAndMark(Predicate<Connector> p)
 	{
 		for (int i = 0; i < placedTilesContainer.transform.childCount; ++i)
