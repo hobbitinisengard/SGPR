@@ -88,49 +88,45 @@ namespace PathCreation
 #if UNITY_EDITOR
 
 		// Draw the path when path objected is not selected (if enabled in settings)
-		void OnDrawGizmos()
-		{
+		//void OnDrawGizmos()
+		//{
+		//	//// Only draw path gizmo if the path object is not selected
+		//	//// (editor script is resposible for drawing when selected)
+		//	GameObject selectedObj = UnityEditor.Selection.activeGameObject;
+		//	if (selectedObj != gameObject)
+		//	{
+		//		if (path != null)
+		//		{
+		//			path.UpdateTransform(transform);
 
-			// Only draw path gizmo if the path object is not selected
-			// (editor script is resposible for drawing when selected)
-			GameObject selectedObj = UnityEditor.Selection.activeGameObject;
-			if (selectedObj != gameObject)
-			{
+		//			if (globalEditorDisplaySettings == null)
+		//			{
+		//				globalEditorDisplaySettings = GlobalDisplaySettings.Load();
+		//			}
 
-				if (path != null)
-				{
-					path.UpdateTransform(transform);
-
-					if (globalEditorDisplaySettings == null)
-					{
-						globalEditorDisplaySettings = GlobalDisplaySettings.Load();
-					}
-
-					if (globalEditorDisplaySettings.visibleWhenNotSelected)
-					{
-
-						Gizmos.color = globalEditorDisplaySettings.bezierPath;
-
-						for (int i = 0; i < path.NumPoints; i++)
-						{
-							int nextI = i + 1;
-							if (nextI >= path.NumPoints)
-							{
-								if (path.isClosedLoop)
-								{
-									nextI %= path.NumPoints;
-								}
-								else
-								{
-									break;
-								}
-							}
-							Gizmos.DrawLine(path.GetPoint(i), path.GetPoint(nextI));
-						}
-					}
-				}
-			}
-		}
+		//			if (globalEditorDisplaySettings.visibleWhenNotSelected)
+		//			{
+		//				Gizmos.color = globalEditorDisplaySettings.bezierPath;
+		//				for (int i = 0; i < path.NumPoints; i++)
+		//				{
+		//					int nextI = i + 1;
+		//					if (nextI >= path.NumPoints)
+		//					{
+		//						if (path.isClosedLoop)
+		//						{
+		//							nextI %= path.NumPoints;
+		//						}
+		//						else
+		//						{
+		//							break;
+		//						}
+		//					}
+		//					Gizmos.DrawLine(path.GetPoint(i), path.GetPoint(nextI));
+		//				}
+		//			}
+		//		}
+		//	}
+		//}
 #endif
 
 		#endregion
