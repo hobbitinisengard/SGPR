@@ -832,13 +832,12 @@ public class EditorPanel : Sfxable
 					racingLine[r.offset + i].x = r.points[i].x;
 					racingLine[r.offset + i].y = r.points[i].y;
 					racingLine[r.offset + i].z = r.points[i].z;
-					racingLine[r.offset + i].w = 150;
+					racingLine[r.offset + i].w = 0; // as if no turns -> makes car go fast
 				}
 			}
 		}
 		BezierPath bezierPath = new BezierPath(racingLine.ToArray(), true, PathSpace.xyz);
 		pathCreator.bezierPath = bezierPath;
-		pathCreator.bezierPath.AutoControlLength = 0.02f;
 		connectButtonImage.color = Color.green;
 		pathFollower.SetActive(true);
 		

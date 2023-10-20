@@ -27,7 +27,6 @@ namespace RVP
 		private Vector4 tPos2;
 		Vector3 pathDir;
 		public float forwardTargetDot;
-		public float RightTargetDot; 
 		public float tSpeed;
 		public float lookAhead = 15;
 		public float radius = 30;
@@ -42,7 +41,7 @@ namespace RVP
 		public float speedLimitDist = 0;
 		public float hardCornerDot = 0.7f;
 		public float slowingCoeff = 1;
-
+		float maxPhysicalSteerAngle = 5;
 		// CPU settings
 		float tyreMult = 1;
 		float lowSpeed = 30;
@@ -67,6 +66,8 @@ namespace RVP
 		public AnimationCurve tSpeedExpCurve = new AnimationCurve();
 		private bool searchForPits;
 		float inPitsTime;
+
+
 		private void OnEnable()
 		{
 			if(!trackPathCreator)
@@ -78,8 +79,8 @@ namespace RVP
 			vp = GetComponent<VehicleParent>();
 			va = GetComponent<VehicleAssist>();
 			GetComponent<BasicInput>().enabled = false;
-			GetComponent<VehicleParent>().steeringControl.CPUmode = true;
-
+			GetComponent<VehicleParent>().steeringControl.unfiltered = true;
+			maxPhysicalSteerAngle = vp.steeringControl.steeredWheels[0].steerRangeMax;
 			if (cpuLevel == 3)
 			{
 				lowSpeed = 42;
@@ -112,7 +113,7 @@ namespace RVP
 		private void OnDisable()
 		{
 			GetComponent<BasicInput>().enabled = true;
-			GetComponent<VehicleParent>().steeringControl.CPUmode = false;
+			GetComponent<VehicleParent>().steeringControl.unfiltered = false;
 			for (int i = 0; i < 4; ++i)
 			{
 				vp.wheels[i].sidewaysFriction /= tyreMult;
@@ -221,12 +222,10 @@ namespace RVP
 			tPos0.y = transform.position.y;
 			tPos.y = transform.position.y;
 			tPos2.y = transform.position.y;
-
 			Debug.DrawLine((Vector3)tPos, (Vector3)tPos + 100*Vector3.up, Color.magenta);
 			Debug.DrawLine((Vector3)tPos2, (Vector3)tPos2 + 100*Vector3.up, Color.red);
 			
 			Vector3 targetDir = ((Vector3)tPos - transform.position).normalized;
-			RightTargetDot = Vector3.Dot(vp.rightDir, targetDir);
 
 			if (vp.batteryLoadingSnd.isPlaying)
 				tSpeed = 22f;
@@ -328,16 +327,21 @@ namespace RVP
 					}
 				}
 			}
-			
+
+			float steerAngle = Vector3.SignedAngle(tr.forward,targetDir, tr.up);
 			// Set steer input
 			if (reverseTime == 0)
 			{
-				vp.SetSteer(Mathf.Abs(Mathf.Pow(RightTargetDot, (tr.position - (Vector3)tPos).sqrMagnitude > 20 ? 1 : 2))
-					* Mathf.Sign(RightTargetDot));
+				//float initAngle = Mathf.Acos(RightTargetDot);
+				//realAngle = Mathf.Clamp(Mathf.Rad2Deg * Mathf.Abs(initAngle), -physicalMaxSteerDeg, physicalMaxSteerDeg);
+				//float steer01 = Mathf.Sign(initAngle) * realAngle / physicalMaxSteerDeg;
+				//vp.SetSteer(steer01);
+
+				vp.SetSteer(Mathf.Sign(steerAngle) * Mathf.InverseLerp(0,maxPhysicalSteerAngle, Mathf.Abs(steerAngle)));
 			}
 			else
 			{
-				vp.SetSteer(-Mathf.Sign(RightTargetDot));
+				vp.SetSteer(0);
 			}
 			
 			//if (reverseTime == 0)

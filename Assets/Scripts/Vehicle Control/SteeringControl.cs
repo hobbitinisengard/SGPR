@@ -47,7 +47,7 @@ namespace RVP
 		AnimationCurve keyboardInputCurve;
 		float secsForMaxSteeringSpeed = 1.5f;
 		public float d_angleSteer;
-		public bool CPUmode = false;
+		public bool unfiltered = false;
 
 		AnimationCurve Generate_digitalSteeringInputCurve()
 		{
@@ -112,7 +112,7 @@ namespace RVP
 			{
 				
 				float targetSteerAngle;
-				if (CPUmode)
+				if (unfiltered)
 				{
 					targetSteerAngle = vp.steerInput;
 					//curSus.wheel.sidewaysFriction = 1.5f * frontSidewaysCoeff;
