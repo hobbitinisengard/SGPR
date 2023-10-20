@@ -64,7 +64,7 @@ namespace RVP
 		public SGP_HUD hud;
 		public EditorPanel editorPanel;
 		public CameraControl cam;
-		
+
 		public enum InfoMessage
 		{
 			TAKES_THE_LEAD, NO_ENERGY, SPLIT_TIME,

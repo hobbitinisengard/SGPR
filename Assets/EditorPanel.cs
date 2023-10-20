@@ -122,6 +122,8 @@ public class EditorPanel : Sfxable
 	Predicate<Connector> isStuntZonePred = delegate (Connector c) { return c.isStuntZone; };
 	Predicate<Connector> neverMark = delegate (Connector c) { return false; };
 	private Vector3 intersectionSnapLocation = -Vector3.one;
+	private bool abortIfPathNotConnectable = false;
+
 	void Awake()
 	{
 		mode = Mode.Build;
@@ -521,8 +523,8 @@ public class EditorPanel : Sfxable
 									{
 										selector.b = c;
 
-										Vector3 centerA = selector.a.transform.parent.GetChild(0).position;
-										Vector3 centerB = selector.b.transform.parent.GetChild(0).position;
+										Vector3 centerA = selector.a.transform.parent.position;
+										Vector3 centerB = selector.b.transform.parent.position;
 										Vector3 VecA = (selector.a.transform.position - centerA).normalized;
 										Vector3 VecB = (selector.b.transform.position - centerB).normalized;
 
@@ -830,15 +832,16 @@ public class EditorPanel : Sfxable
 					racingLine[r.offset + i].x = r.points[i].x;
 					racingLine[r.offset + i].y = r.points[i].y;
 					racingLine[r.offset + i].z = r.points[i].z;
-					racingLine[r.offset + i].w = 1;
+					racingLine[r.offset + i].w = 150;
 				}
 			}
 		}
 		BezierPath bezierPath = new BezierPath(racingLine.ToArray(), true, PathSpace.xyz);
 		pathCreator.bezierPath = bezierPath;
+		pathCreator.bezierPath.AutoControlLength = 0.02f;
 		connectButtonImage.color = Color.green;
 		pathFollower.SetActive(true);
-		 
+		
 		// destroy old castable points
 		for (int i = 0; i < racingLineContainer.transform.childCount; ++i)
 		{
@@ -846,18 +849,23 @@ public class EditorPanel : Sfxable
 		}
 		// Create castable points
 		float progress = 0;
-		for (int i = 0; i < 100000 && progress < pathCreator.path.length; ++i)
+		if (pathCreator.path.length > 10000)
+			Debug.LogError("Path > 10000");
+		else
 		{
-			GameObject castable = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-			Destroy(castable.GetComponent<MeshRenderer>());
-			castable.transform.position = pathCreator.path.GetPointAtDistance(progress);
-			castable.transform.parent = racingLineContainer.transform;
-			var col = castable.GetComponent<SphereCollider>();
-			col.radius = .5f;
-			col.isTrigger = true;
-			castable.layer = 16;//Info.racingLineLayer;
-			castable.name = progress.ToString(CultureInfo.InvariantCulture);
-			progress += 0.5f;
+			for (int i = 0; i < 10000 && progress < pathCreator.path.length; ++i)
+			{
+				GameObject castable = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+				Destroy(castable.GetComponent<MeshRenderer>());
+				castable.transform.position = pathCreator.path.GetPointAtDistance(progress);
+				castable.transform.parent = racingLineContainer.transform;
+				var col = castable.GetComponent<SphereCollider>();
+				col.radius = 1;
+				col.isTrigger = true;
+				castable.layer = 16;//Info.racingLineLayer;
+				castable.name = progress.ToString(CultureInfo.InvariantCulture);
+				progress += 1;
+			}
 		}
 	}
 	void InvalidateConnections()
@@ -1462,6 +1470,7 @@ public class EditorPanel : Sfxable
 		WindRanX.value = windRandom.x / maxWind;
 		WindRanZ.value = windRandom.z / maxWind;
 
+		abortIfPathNotConnectable = true;
 		SwitchToConnect();
 	}
 	public void OpenLoadTrackFileBrowser()

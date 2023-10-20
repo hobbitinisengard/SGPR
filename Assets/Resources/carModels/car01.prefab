@@ -89540,6 +89540,7 @@ MonoBehaviour:
   - {fileID: 839933645}
   battery: 1
   batteryLoadDelta: 0.05
+  batteryBurnDelta: 0.01
   wheels:
   - {fileID: 6779875394929326516}
   - {fileID: 6779875396295812404}
