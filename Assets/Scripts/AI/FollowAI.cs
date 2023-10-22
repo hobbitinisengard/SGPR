@@ -1,9 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections;
 using PathCreation;
-using UnityEngine.UIElements.Experimental;
 using System.Linq;
 using System.Globalization;
+using System;
 
 namespace RVP
 {
@@ -14,11 +14,17 @@ namespace RVP
 	// Class for following AI
 	public class FollowAI : MonoBehaviour
 	{
-
-		PathCreator trackPathCreator;
+		[NonSerialized]
+		public PathCreator trackPathCreator;
 		PathCreator pitsPathCreator;
-
+		/// <summary>
+		/// CPU takes control in pits
+		/// </summary>
 		public bool isCPU = false;
+		/// <summary>
+		/// CPU drives
+		/// </summary>
+		public bool selfDriving = false;
 		Transform tr;
 		Rigidbody rb;
 		VehicleParent vp;
@@ -59,18 +65,20 @@ namespace RVP
 
 		[Tooltip("Seconds a vehicle will be rolled over before resetting, -1 = no reset")]
 		public float rollResetTime = 3;
-		float rolledOverTime;
+		public float rolledOverTime;
 		private bool dumbBool;
 		public AnimationCurve lookAheadMultCurve = new AnimationCurve();
 		public AnimationCurve tSpeedCurve = new AnimationCurve();
 		public AnimationCurve tSpeedExpCurve = new AnimationCurve();
 		private bool searchForPits;
 		float inPitsTime;
-
+		public float driven;
+		public float outOfTrackTime;
+		public float outOfTrackRequiredTime = 2;
 
 		private void OnEnable()
 		{
-			if(!trackPathCreator)
+			if (!trackPathCreator)
 			{
 				trackPathCreator = GameObject.Find("RacingPath").GetComponent<PathCreator>();
 			}
@@ -81,43 +89,50 @@ namespace RVP
 			GetComponent<BasicInput>().enabled = false;
 			GetComponent<VehicleParent>().steeringControl.unfiltered = true;
 			maxPhysicalSteerAngle = vp.steeringControl.steeredWheels[0].steerRangeMax;
-			if (cpuLevel == 3)
+
+			if (isCPU)
 			{
-				lowSpeed = 42;
-				tyreMult = 1.5f;
+				if (cpuLevel == 3)
+				{
+					lowSpeed = 42;
+					tyreMult = 1.5f;
+				}
+				if (cpuLevel == 2)
+				{
+					lowSpeed = 38;
+					tyreMult = 1.5f;
+				}
+				if (cpuLevel == 1)
+				{
+					lowSpeed = 35;
+					tyreMult = 1.2f;
+				}
+				if (cpuLevel == 0)
+				{
+					lowSpeed = 30;
+					tyreMult = 1;
+				}
+				for (int i = 0; i < 4; ++i)
+				{
+					vp.wheels[i].sidewaysFriction *= tyreMult;
+					vp.wheels[i].forwardFriction *= tyreMult;
+				}
+				var keys = tSpeedExpCurve.keys;
+				keys[keys.Count() - 1].value = lowSpeed;
+				tSpeedExpCurve.keys = keys;
 			}
-			if (cpuLevel == 2)
-			{
-				lowSpeed = 38;
-				tyreMult = 1.5f;
-			}
-			if (cpuLevel == 1)
-			{
-				lowSpeed = 35;
-				tyreMult = 1.2f;
-			}
-			if (cpuLevel == 0)
-			{
-				lowSpeed = 30;
-				tyreMult = 1;
-			}
-			for (int i = 0; i < 4; ++i)
-			{
-				vp.wheels[i].sidewaysFriction *= tyreMult;
-				vp.wheels[i].forwardFriction *= tyreMult;
-			}
-			var keys = tSpeedExpCurve.keys;
-			keys[keys.Count() - 1].value = lowSpeed;
-			tSpeedExpCurve.keys = keys;
 		}
 		private void OnDisable()
 		{
 			GetComponent<BasicInput>().enabled = true;
 			GetComponent<VehicleParent>().steeringControl.unfiltered = false;
-			for (int i = 0; i < 4; ++i)
+			if (isCPU)
 			{
-				vp.wheels[i].sidewaysFriction /= tyreMult;
-				vp.wheels[i].forwardFriction /= tyreMult;
+				for (int i = 0; i < 4; ++i)
+				{
+					vp.wheels[i].sidewaysFriction /= tyreMult;
+					vp.wheels[i].forwardFriction /= tyreMult;
+				}
 			}
 		}
 		float GetDist(Collider[] racingPathHits)
@@ -148,22 +163,32 @@ namespace RVP
 			pitsProgress = 0;
 			searchForPits = false;
 			if (!isCPU)
-				enabled = false;
+				selfDriving = false;
 		}
 		void FixedUpdate()
 		{
 			if (!trackPathCreator)
 				return;
 
+			rolledOverTime = va.rolledOver ? rolledOverTime + Time.fixedDeltaTime : 0;
+
+			// Reset if stuck rolled over
+			if (rolledOverTime > rollResetTime && rollResetTime >= 0)
+			{
+				StartCoroutine(ResetOnTrack());
+			}
+
+			
+
 			Collider[] hits = Physics.OverlapSphere(transform.position, radius, 1 << Info.racingLineLayer);
 			Collider[] pitsPathHits;
 			float pitsDist = 0;
 			if (pitsPathCreator)
 			{
-				if(Time.time - inPitsTime > 8)
+				if (Time.time - inPitsTime > 8)
 				{
 					SetOutOfPits();
-					StartCoroutine(ReverseReset());
+					StartCoroutine(ResetOnTrack());
 				}
 				pitsPathHits = Physics.OverlapSphere(transform.position, radius, 1 << Info.pitsLineLayer);
 				pitsDist = GetDist(pitsPathHits);
@@ -172,7 +197,7 @@ namespace RVP
 					pitsDist = pitsProgress;
 				pitsProgress = pitsDist;
 
-				if (pitsDist+lookAhead > pitsPathCreator.path.length)
+				if (pitsDist + lookAhead > pitsPathCreator.path.length)
 				{
 					SetOutOfPits();
 				}
@@ -183,189 +208,190 @@ namespace RVP
 				{
 					pitsPathHits = Physics.OverlapSphere(transform.position, radius, 1 << Info.pitsLineLayer);
 
-					if(pitsPathHits.Length > 0)
+					if (pitsPathHits.Length > 0)
+					{
 						pitsPathCreator = hits[0].transform.parent.GetComponent<PathCreator>();
+						pitsDist = 0;
+						pitsProgress = 0;
+					}
 				}
 				var racingPathHits = Physics.OverlapSphere(transform.position, radius, 1 << Info.racingLineLayer);
 				dist = GetDist(racingPathHits);
-			}
 
-			if (progress/trackPathCreator.path.length < 0.9f && dist < progress)
-				dist = progress;
-			progress = dist;
-
-			if (searchForPits && pitsPathCreator == null)
-			{
-				if (hits.Length > 0)
+				if (progress / trackPathCreator.path.length < 0.9f && dist < progress)
 				{
-					searchForPits = false;
+					dist = progress;
+				}
+
+				if (dist < progress + 2 * radius && progress != 0)
+				{
+					progress = dist;
+					outOfTrackTime = 0;
+				}
+				else
+				{
+					outOfTrackTime += Time.fixedDeltaTime;
 				}
 			}
+			
+			bool onRoad = Physics.SphereCast(tr.position + Vector3.up, radius, Vector3.down, out var _, Mathf.Infinity, 1 << Info.racingLineLayer);
+
+			// Reset if out of track (driving not on track
+			outOfTrackTime = onRoad ? outOfTrackTime + Time.fixedDeltaTime : 0;
+
+			if (outOfTrackTime > outOfTrackRequiredTime)
+			{
+				StartCoroutine(ResetOnTrack());
+			}
+			
+
 			if (vp.battery < 0.2f)
 			{
 				searchForPits = true;
 			}
 
-			if (pitsPathCreator)
+			if (selfDriving)
 			{
-				tPos0 = pitsPathCreator.path.GetPointAtDistance(pitsDist, EndOfPathInstruction.Stop);
-				tPos = pitsPathCreator.path.GetPointAtDistance(pitsDist + lookAhead, EndOfPathInstruction.Stop);
-				tPos2 = pitsPathCreator.path.GetPointAtDistance(pitsDist + lookAhead, EndOfPathInstruction.Stop);
-			}
-			else
-			{
-				tPos0 = trackPathCreator.path.GetPointAtDistance(dist);
-				tPos = trackPathCreator.path.GetPointAtDistance(dist + lookAhead);
-				tPos2 = trackPathCreator.path.GetPointAtDistance(dist + 30);
-			}
-			
-			tPos0.y = transform.position.y;
-			tPos.y = transform.position.y;
-			tPos2.y = transform.position.y;
-			Debug.DrawLine((Vector3)tPos, (Vector3)tPos + 100*Vector3.up, Color.magenta);
-			Debug.DrawLine((Vector3)tPos2, (Vector3)tPos2 + 100*Vector3.up, Color.red);
-			
-			Vector3 targetDir = ((Vector3)tPos - transform.position).normalized;
-
-			if (vp.batteryLoadingSnd.isPlaying)
-				tSpeed = 22f;
-			else
-			{
-				if(pitsPathCreator)
+				if (pitsPathCreator)
 				{
-					tSpeed = 150;
-					speedLimit = 1024;
-					speedLimitDist = -1;
+					tPos0 = pitsPathCreator.path.GetPointAtDistance(pitsDist, EndOfPathInstruction.Stop);
+					tPos = pitsPathCreator.path.GetPointAtDistance(pitsDist + lookAhead, EndOfPathInstruction.Stop);
+					tPos2 = pitsPathCreator.path.GetPointAtDistance(pitsDist + lookAhead, EndOfPathInstruction.Stop);
 				}
 				else
 				{
-					float aheadSpeed = tSpeedExpCurve.Evaluate(Mathf.Abs(tPos2.w));
-					if (aheadSpeed < speedLimit)
-					{
-						speedLimit = aheadSpeed;
-						speedLimitDist = (dist + lookAheadMultCurve.Evaluate(vp.velMag) * lookAhead) % trackPathCreator.path.length;
-					}
+					tPos0 = trackPathCreator.path.GetPointAtDistance(dist);
+					tPos = trackPathCreator.path.GetPointAtDistance(dist + lookAhead);
+					tPos2 = trackPathCreator.path.GetPointAtDistance(dist + 30);
+				}
 
-					if (dist > speedLimitDist)
+				tPos0.y = transform.position.y;
+				tPos.y = transform.position.y;
+				tPos2.y = transform.position.y;
+				Debug.DrawLine((Vector3)tPos, (Vector3)tPos + 100 * Vector3.up, Color.magenta);
+				Debug.DrawLine((Vector3)tPos2, (Vector3)tPos2 + 100 * Vector3.up, Color.red);
+
+				Vector3 targetDir = ((Vector3)tPos - transform.position).normalized;
+
+				if (vp.batteryLoadingSnd.isPlaying)
+					tSpeed = 22f;
+				else
+				{
+					if (pitsPathCreator)
 					{
-						tSpeed = tSpeedExpCurve.Evaluate(Mathf.Abs(tPos0.w));
+						tSpeed = 150;
 						speedLimit = 1024;
 						speedLimitDist = -1;
 					}
 					else
 					{
-						//var pos = pathCreator.path.GetPointAtDistance(speedLimitDist);
-						//Debug.DrawLine((Vector3)pos, (Vector3)pos + 100 * Vector3.up, Color.blue);
-						tSpeed = speedLimit;
+						float aheadSpeed = tSpeedExpCurve.Evaluate(Mathf.Abs(tPos2.w));
+						if (aheadSpeed < speedLimit)
+						{
+							speedLimit = aheadSpeed;
+							speedLimitDist = (dist + lookAheadMultCurve.Evaluate(vp.velMag) * lookAhead) % trackPathCreator.path.length;
+						}
 
+						if (dist > speedLimitDist)
+						{
+							tSpeed = tSpeedExpCurve.Evaluate(Mathf.Abs(tPos0.w));
+							speedLimit = 1024;
+							speedLimitDist = -1;
+						}
+						else
+						{
+							//var pos = pathCreator.path.GetPointAtDistance(speedLimitDist);
+							//Debug.DrawLine((Vector3)pos, (Vector3)pos + 100 * Vector3.up, Color.blue);
+							tSpeed = speedLimit;
+
+						}
 					}
 				}
-			}
-			
-			// Attempt to reverse if vehicle is stuck
-			stoppedTime = (Mathf.Abs(vp.localVelocity.z) < 1 
-			&& vp.groundedWheels > 0) ? stoppedTime + Time.fixedDeltaTime : 0;
 
-			if(!dumbBool && stoppedTime > 0)
-			{
-				dumbBool = true;
-				vp.SetAccel(0);
-			}
-			if (stoppedTime > stopTimeReverse && reverseTime == 0)
-			{
-				dumbBool = false;
-				reverseTime = reverseAttemptTime;
-				reverseAttempts++;
-			}
+				// Attempt to reverse if vehicle is stuck
+				stoppedTime = (Mathf.Abs(vp.localVelocity.z) < 1
+				&& vp.groundedWheels > 0) ? stoppedTime + Time.fixedDeltaTime : 0;
 
-			// Reset if reversed too many times
-			if (reverseAttempts > resetReverseCount && resetReverseCount >= 0)
-			{
-				StartCoroutine(ReverseReset());
-			}
-
-			reverseTime = Mathf.Max(0, reverseTime - Time.fixedDeltaTime);
-
-			
-			// Set accel input
-			if (vp.velMag < tSpeed && reverseTime == 0)
-			{
-				vp.SetAccel(1);
-			}
-			else
-			{
-				vp.SetAccel(0f);
-			}
-
-			// Set brake input
-			if (reverseTime == 0 && brakeTime == 0)
-			{
-				if (vp.velMag > tSpeed)
+				if (!dumbBool && stoppedTime > 0)
 				{
-					vp.SetBrake(1);
+					dumbBool = true;
+					vp.SetAccel(0);
+				}
+				if (stoppedTime > stopTimeReverse && reverseTime == 0)
+				{
+					dumbBool = false;
+					reverseTime = reverseAttemptTime;
+					reverseAttempts++;
+				}
+
+				// Reset if reversed too many times
+				if (reverseAttempts > resetReverseCount && resetReverseCount >= 0)
+				{
+					StartCoroutine(ResetOnTrack());
+				}
+
+				reverseTime = Mathf.Max(0, reverseTime - Time.fixedDeltaTime);
+
+
+				// Set accel input
+				if (vp.velMag < tSpeed && reverseTime == 0)
+				{
+					vp.SetAccel(1);
 				}
 				else
 				{
-					vp.SetBrake(0);
+					vp.SetAccel(0f);
 				}
-			}
-			else
-			{
-				if (reverseTime > 0)
+
+				// Set brake input
+				if (reverseTime == 0 && brakeTime == 0)
 				{
-					vp.SetBrake(1);
-				}
-				else
-				{
-					if (brakeTime > 0)
+					if (vp.velMag > tSpeed)
 					{
-						vp.SetBrake(brakeTime * 0.2f);
+						vp.SetBrake(1);
 					}
 					else
 					{
-						vp.SetBrake(1 - Mathf.Clamp01(Vector3.Distance(tr.position, tPos)));
+						vp.SetBrake(0);
 					}
 				}
-			}
+				else
+				{
+					if (reverseTime > 0)
+					{
+						vp.SetBrake(1);
+					}
+					else
+					{
+						if (brakeTime > 0)
+						{
+							vp.SetBrake(brakeTime * 0.2f);
+						}
+						else
+						{
+							vp.SetBrake(1 - Mathf.Clamp01(Vector3.Distance(tr.position, tPos)));
+						}
+					}
+				}
 
-			float steerAngle = Vector3.SignedAngle(tr.forward,targetDir, tr.up);
-			// Set steer input
-			if (reverseTime == 0)
-			{
-				//float initAngle = Mathf.Acos(RightTargetDot);
-				//realAngle = Mathf.Clamp(Mathf.Rad2Deg * Mathf.Abs(initAngle), -physicalMaxSteerDeg, physicalMaxSteerDeg);
-				//float steer01 = Mathf.Sign(initAngle) * realAngle / physicalMaxSteerDeg;
-				//vp.SetSteer(steer01);
-
-				vp.SetSteer(Mathf.Sign(steerAngle) * Mathf.InverseLerp(0,maxPhysicalSteerAngle, Mathf.Abs(steerAngle)));
-			}
-			else
-			{
-				vp.SetSteer(0);
-			}
-			
-			//if (reverseTime == 0)
-			//{
-			//	vp.SetSteer(Mathf.InverseLerp(0, physicalMaxSteeringAngle, Mathf.Abs(RightTargetDot))
-			//		* Mathf.Sign(RightTargetDot));
-			//}
-			//else
-			//{
-			//	vp.SetSteer(-Mathf.InverseLerp(0, physicalMaxSteeringAngle, Mathf.Abs(RightTargetDot))
-			//		* Mathf.Sign(RightTargetDot));
-			//}
-
-			rolledOverTime = va.rolledOver ? rolledOverTime + Time.fixedDeltaTime : 0;
-
-			// Reset if stuck rolled over
-			if (rolledOverTime > rollResetTime && rollResetTime >= 0)
-			{
-				StartCoroutine(ResetRotation());
+				float steerAngle = Vector3.SignedAngle(tr.forward, targetDir, tr.up);
+				// Set steer input
+				if (reverseTime == 0)
+				{
+					vp.SetSteer(Mathf.Sign(steerAngle) * Mathf.InverseLerp(0, maxPhysicalSteerAngle, Mathf.Abs(steerAngle)));
+				}
+				else
+				{
+					vp.SetSteer(-Mathf.Sign(steerAngle) * Mathf.InverseLerp(0, maxPhysicalSteerAngle, Mathf.Abs(steerAngle)));
+				}
 			}
 		}
-		public IEnumerator ReverseReset()
+		public IEnumerator ResetOnTrack()
 		{
+			vp.engine.transmission.ShiftToGear(1);
+			pitsProgress = 0;
 			reverseAttempts = 0;
+			outOfTrackTime = 0;
 			reverseTime = 0;
 			stoppedTime = 0;
 			yield return new WaitForFixedUpdate();
@@ -374,22 +400,22 @@ namespace RVP
 			rb.velocity = Vector3.zero;
 			rb.angularVelocity = Vector3.zero;
 		}
-		IEnumerator ResetRotation()
-		{
-			stoppedTime = 0;
-			yield return new WaitForFixedUpdate();
-			tr.position = tPos;
-			tr.eulerAngles = new Vector3(0, transform.eulerAngles.y, 0);
-			tr.Translate(Vector3.up, Space.World);
-			rb.velocity = Vector3.zero;
-			rb.angularVelocity = Vector3.zero;
-		}
+		//IEnumerator ResetRotation()
+		//{
+		//	stoppedTime = 0;
+		//	yield return new WaitForFixedUpdate();
+		//	tr.position = tPos;
+		//	tr.eulerAngles = new Vector3(0, transform.eulerAngles.y, 0);
+		//	tr.Translate(Vector3.up, Space.World);
+		//	rb.velocity = Vector3.zero;
+		//	rb.angularVelocity = Vector3.zero;
+		//}
 		public void DriveThruPits(in PathCreator pitsPathCreator)
 		{
 			inPitsTime = Time.time;
 			this.pitsPathCreator = pitsPathCreator;
-			enabled = true;
+			selfDriving = true;
 		}
 	}
-	
+
 }

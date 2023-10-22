@@ -17,19 +17,14 @@ public class RaceBox : MonoBehaviour
 {
 	public VehicleParent vp { get; private set; }
 	SGP_Evo evoModule;
+	FollowAI followAI;
 	public float distance { get; private set; }
 	public float aero { get; private set; }
 	public DateTime lapStartTime;
 	public TimeSpan bestLapTime { get; private set; }
 
-	/// <summary>
-	/// number of laps done already
-	/// </summary>
-	public int curLaps { get; private set; }
-	/// <summary>
-	/// All number of laps of this race
-	/// </summary>
-	public int LapsCount { get; private set; }
+	public int curLap { get; private set; }
+
 	public float w_A_dot;
 
 	public int starLevel { get; private set; }
@@ -47,6 +42,7 @@ public class RaceBox : MonoBehaviour
 	private float prevVel;
 	private float jumpTimer;
 	private float respawnTimer;
+	public bool passedHalfOfTrack;
 	private PtsAnimInfo stuntPai;
 	private PtsAnimInfo jumpPai;
 	private Vector3 lastRespawnPosition;
@@ -85,10 +81,10 @@ public class RaceBox : MonoBehaviour
 	{
 		vp = transform.GetComponent<VehicleParent>();
 		evoModule = transform.GetComponent<SGP_Evo>();
-		lapStartTime = DateTime.MinValue;
-		bestLapTime = TimeSpan.MaxValue;
-		curLaps = 0;
-		LapsCount = 18;
+		followAI = transform.GetComponent<FollowAI>();
+		lapStartTime = DateTime.Now;
+		bestLapTime = new TimeSpan(0, 0, (int)Info.tracks[Info.s_trackName].records[0].secondsOrPts);
+		curLap = 1;
 		starLevel = 0;
 		//rots = new Stack<StuntRotInfo>(32);
 		var globalcontrol = GameObject.Find("Canvas");
@@ -378,13 +374,18 @@ public class RaceBox : MonoBehaviour
 	}
 	public void NextLap()
 	{
-		var curlaptime = CurLapTime();
-		if (curlaptime < bestLapTime && curlaptime != TimeSpan.MinValue)
-			bestLapTime = CurLapTime();
+		if (GetComponent<FollowAI>().progress >= 0.9f)
+		{
+			var curlaptime = CurLapTime();
+			lapStartTime = DateTime.Now;
+			curLap++;
+			if (!GetComponent<FollowAI>().isCPU)
+			{
+				var recordTable = Info.tracks[Info.s_trackName].records;
 
-		lapStartTime = DateTime.Now;
-		curLaps++;
+				if (curlaptime.TotalSeconds < recordTable[0].secondsOrPts && curlaptime != TimeSpan.MinValue)
+					recordTable[0].secondsOrPts = (float)curlaptime.TotalSeconds;
+			}
+		}
 	}
-
-
 }

@@ -440,11 +440,11 @@ public class SGP_HUD : MonoBehaviour
 		}
 
 		// Lap number rollers
-		lapNoRollers[1].SetValue(racebox.curLaps % 10); // ones
-		lapNoRollers[0].SetValue(racebox.curLaps / 10); // tens
+		lapNoRollers[1].SetValue(racebox.curLap % 10); // ones
+		lapNoRollers[0].SetValue(racebox.curLap / 10); // tens
 
-		lapNoRollers[3].SetValue(racebox.LapsCount % 10); // ones
-		lapNoRollers[2].SetValue(racebox.LapsCount / 10); // tens
+		lapNoRollers[3].SetValue(Info.s_laps % 10); // ones
+		lapNoRollers[2].SetValue(Info.s_laps / 10); // tens
 
 		// Stars
 		int len = starsParent.childCount;
@@ -478,15 +478,19 @@ public class SGP_HUD : MonoBehaviour
 		}
 
 		// Progress bar
-		if (Time.time - progressBarUpdateTime > 2)
+		if (Time.time - progressBarUpdateTime > 2 && raceManager.cars.Count > 1)
 		{
 			progressBarUpdateTime = Time.time;
 			int carsLen = raceManager.cars.Count;
+			float playerDistance = raceManager.cars[0].raceBox.curLap
+					* raceManager.cars[0].followAI.progress / raceManager.cars[0].followAI.trackPathCreator.path.length;
 			for (int i = 1; i < carsLen; ++i)
 			{
-				float distance = raceManager.cars[i].GetComponent<RaceBox>().distance - racebox.distance;
+				float distance = raceManager.cars[i].raceBox.curLap 
+					* raceManager.cars[i].followAI.progress / raceManager.cars[i].followAI.trackPathCreator.path.length;
+				float diff = Mathf.Clamp(distance - playerDistance, -1, 1);
 				Vector3 pos = progressBar.GetChild(i).GetComponent<RectTransform>().anchoredPosition;
-				pos.x = Mathf.Sign(distance) * Mathf.Lerp(0, 50, distance / raceManager.trackDistance);
+				pos.x = 25 + 25 * diff; // 0-50
 				progressBar.GetChild(i).GetComponent<RectTransform>().anchoredPosition = pos;
 			}
 		}

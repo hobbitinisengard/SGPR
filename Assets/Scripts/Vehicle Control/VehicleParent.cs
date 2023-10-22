@@ -71,7 +71,7 @@ namespace RVP
 		public float burnoutSpin = 5;
 		[Range(0, 0.9f)]
 		public float burnoutSmoothness = 0.5f;
-		public Motor engine;
+		public GasMotor engine;
 		public ParticleSystem[] batteryLoadingParticleSystems;
 		public float battery = 1;
 		[Range(0.0005f, 0.1f)]
@@ -159,7 +159,9 @@ namespace RVP
 		public float inAirFriction = 0.25f;
 		public float d_R;
 		[NonSerialized]
-		public GameObject elecTunnelCam;
+		public GameObject customCam;
+		public FollowAI followAI { get; private set; }
+		public RaceBox raceBox { get; private set; }
 
 		public float carLen { get; private set; }
 
@@ -192,7 +194,8 @@ namespace RVP
 		}
 		void Start()
 		{
-			
+			followAI = GetComponent<FollowAI>();
+			raceBox = GetComponent<RaceBox>();
 			if (brakeCurve == null)
 			{
 				brakeCurve = GenerateBrakeCurve();

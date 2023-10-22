@@ -76,7 +76,7 @@ namespace RVP
                 if (showButtons) {
                     if (GUILayout.Button("Get Engine")) {
                         foreach (VehicleParent curTarget in allTargets) {
-                            curTarget.engine = curTarget.transform.GetComponentInChildren<Motor>();
+                            curTarget.engine = curTarget.transform.GetComponentInChildren<GasMotor>();
                         }
                     }
 

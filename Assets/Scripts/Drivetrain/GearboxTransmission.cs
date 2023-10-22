@@ -48,12 +48,12 @@ namespace RVP
 				new Gear(-3.21f),
 				new Gear(0),
 				new Gear(3.21f),
-				new Gear(2.68f),
+				//new Gear(2.68f),
 				new Gear(2.12f),
-				new Gear(1.76f),
+				//new Gear(1.76f),
 				new Gear(1.52f),
 				new Gear(1.38f),
-				new Gear(1.25f),
+				//new Gear(1.25f),
 				new Gear(1.15f)
 			};
 			currentGear = Mathf.Clamp(startGear, 0, gears.Length - 1);

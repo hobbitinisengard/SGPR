@@ -17,7 +17,7 @@ public class EnergyTransfer : MonoBehaviour
 		var pitsPathCreator = transform.parent.parent.GetComponent<EnergyTunnelPath>().pitsPathCreator;
 		vp.transform.GetComponent<FollowAI>().DriveThruPits(pitsPathCreator);
 		pitsBuzzing.volume = 1;
-		vp.elecTunnelCam = elecCam;
+		vp.customCam = elecCam;
 	}
 	private void OnTriggerExit(Collider other)
 	{
@@ -25,7 +25,7 @@ public class EnergyTransfer : MonoBehaviour
 		var vp = other.attachedRigidbody.transform.GetComponent<VehicleParent>();
 		vp.SetBatteryLoading(false);
 		pitsBuzzing.volume = 0.5f;
-		vp.elecTunnelCam = null;
+		vp.customCam = null;
 	}
 	private void OnTriggerStay(Collider other)
 	{

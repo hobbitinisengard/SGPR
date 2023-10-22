@@ -250,14 +250,22 @@ public class TrackHeader
 	/// <summary>
 	/// lap, race, stunt, drift 
 	/// </summary>
-	public Record[] records = new Record[4];
+	public Record[] records;
 
 	public TrackHeader()
 	{
-
+		// lap race stunt drift
+		records = new Record[]
+		{
+			new Record(null, float.MaxValue, true),
+			new Record(null, float.MaxValue, true),
+			new Record(null, 0, false),
+			new Record(null, 0, false),
+		};
 	}
 	public TrackHeader(int unlocked, CarGroup prefCarClass, int trackDifficulty, 
 		Envir envir, string author, int[] icons, string desc, bool valid = true)
+		: this()
 	{
 		this.unlocked = unlocked > 0;
 		this.preferredCarClass = prefCarClass;
@@ -267,6 +275,7 @@ public class TrackHeader
 		this.desc = desc;
 		this.valid = valid;
 		this.icons = icons;
+		
 	}
 	public int TrackOrigin()
 	{
