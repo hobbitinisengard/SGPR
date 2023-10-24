@@ -95,7 +95,7 @@ namespace RVP
 				var newSteerLimit = steerLimitCurve.Evaluate(vp.localVelocity.z);
 				if (newSteerLimit > steerLimit)
 					steerLimit = newSteerLimit;
-				servoAudio.volume = 0.5f;
+				servoAudio.volume = 0.9f;
 				servoAudio.pitch = vp.steerInput > 0 ? 1.5f : 1;
 				if (holdDuration < secsForMaxSteeringSpeed)
 				{
@@ -115,13 +115,11 @@ namespace RVP
 				if (unfiltered)
 				{
 					targetSteerAngle = vp.steerInput;
-					//curSus.wheel.sidewaysFriction = 1.5f * frontSidewaysCoeff;
 				}
 				else
 				{
 					curSus.wheel.sidewaysFriction = (vp.SGPshiftbutton && vp.steerInput != 0 ? 1.5f : 1) * frontSidewaysCoeff;
 					targetSteerAngle = vp.steerInput * (vp.steerInput == 0 ? 1 : steerLimit) * (vp.SGPshiftbutton ? 1.5f : 1) * rawSteer;
-
 				}
 				curSus.steerAngle = Mathf.Lerp(curSus.steerAngle, targetSteerAngle, 10 * Time.fixedDeltaTime);
 			}

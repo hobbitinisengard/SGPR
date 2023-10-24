@@ -136,7 +136,6 @@ namespace RVP
 				}
 			}
 		}
-
 		public virtual void Update()
 		{
 			// Set engine sound properties
@@ -157,11 +156,6 @@ namespace RVP
 					float blendPoint = 0.4f;
 					idlingEngineAudio.volume = idlingEngineAudioCurve.Evaluate(1 / (2*blendPoint) * targetPitch);
 					engineAudio.volume = 1 - idlingEngineAudio.volume;
-					//idlingEngineAudio.volume *= Mathf.Clamp01(0.2f+vp.accelInput);
-					//engineAudio.volume *= Mathf.Clamp01(0.2f+vp.accelInput);
-					//engineAudio.volume *= Mathf.Lerp(engineAudio.volume, 0.3f + targetPitch * 0.7f, 20 * Time.deltaTime);
-					//idlingEngineAudio.volume *= Mathf.Lerp(idlingEngineAudio.volume, 0.3f + targetPitch * 0.7f, 20 * Time.deltaTime);
-
 				}
 				else
 				{

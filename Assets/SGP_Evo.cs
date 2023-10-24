@@ -129,9 +129,6 @@ public class RotationDampStruct
 	}
 	public void CloseAdvancedMode()
 	{
-		// float restPos = targetPos % 360;
-		// if (restPos != 0)
-		//{
 		if (speed > 0) // clockwise rotation
 		{
 			targetPos = 360;
@@ -140,8 +137,6 @@ public class RotationDampStruct
 		{
 			targetPos = 0;
 		}
-		// targetPos = Mathf.Clamp(targetPos, 0, 360);
-		//}
 	}
 }
 public class SGP_Evo : MonoBehaviour

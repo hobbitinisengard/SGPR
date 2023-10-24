@@ -422,10 +422,6 @@ namespace RVP
 		{
 			SGPshiftbutton = b;
 		}
-		public void SetSGPLock(bool b)
-		{
-			SGPlockbutton = b;
-		}
 		public void SetLights()
 		{
 			lightsInput = !lightsInput;

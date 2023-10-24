@@ -75,23 +75,13 @@ namespace RVP
 		public float driven;
 		public float outOfTrackTime;
 		public float outOfTrackRequiredTime = 2;
-
-		private void OnEnable()
+		public void SetCPU(bool val)
 		{
-			if (!trackPathCreator)
-			{
-				trackPathCreator = GameObject.Find("RacingPath").GetComponent<PathCreator>();
-			}
-			tr = transform;
-			rb = GetComponent<Rigidbody>();
-			vp = GetComponent<VehicleParent>();
-			va = GetComponent<VehicleAssist>();
-			GetComponent<BasicInput>().enabled = false;
-			GetComponent<VehicleParent>().steeringControl.unfiltered = true;
-			maxPhysicalSteerAngle = vp.steeringControl.steeredWheels[0].steerRangeMax;
-
+			isCPU = val;
 			if (isCPU)
 			{
+				GetComponent<VehicleParent>().steeringControl.unfiltered = true;
+				GetComponent<BasicInput>().enabled = false;
 				if (cpuLevel == 3)
 				{
 					lowSpeed = 42;
@@ -121,19 +111,33 @@ namespace RVP
 				keys[keys.Count() - 1].value = lowSpeed;
 				tSpeedExpCurve.keys = keys;
 			}
-		}
-		private void OnDisable()
-		{
-			GetComponent<BasicInput>().enabled = true;
-			GetComponent<VehicleParent>().steeringControl.unfiltered = false;
-			if (isCPU)
+			else
 			{
-				for (int i = 0; i < 4; ++i)
+				GetComponent<BasicInput>().enabled = true;
+				GetComponent<VehicleParent>().steeringControl.unfiltered = false;
+				if (isCPU)
 				{
-					vp.wheels[i].sidewaysFriction /= tyreMult;
-					vp.wheels[i].forwardFriction /= tyreMult;
+					for (int i = 0; i < 4; ++i)
+					{
+						vp.wheels[i].sidewaysFriction /= tyreMult;
+						vp.wheels[i].forwardFriction /= tyreMult;
+					}
 				}
 			}
+		}
+		private void Start()
+		{
+			if (!trackPathCreator)
+			{
+				trackPathCreator = GameObject.Find("RacingPath").GetComponent<PathCreator>();
+			}
+			tr = transform;
+			rb = GetComponent<Rigidbody>();
+			vp = GetComponent<VehicleParent>();
+			va = GetComponent<VehicleAssist>();
+
+			maxPhysicalSteerAngle = vp.steeringControl.steeredWheels[0].steerRangeMax;
+			SetCPU(isCPU);
 		}
 		float GetDist(Collider[] racingPathHits)
 		{
@@ -153,7 +157,7 @@ namespace RVP
 				dist = float.Parse(closestLen, CultureInfo.InvariantCulture.NumberFormat);
 			else
 			{
-				Debug.LogError("OverlapSphere failed");
+				//Debug.LogError("OverlapSphere failed");
 			}
 			return dist;
 		}
@@ -177,9 +181,6 @@ namespace RVP
 			{
 				StartCoroutine(ResetOnTrack());
 			}
-
-			
-
 			Collider[] hits = Physics.OverlapSphere(transform.position, radius, 1 << Info.racingLineLayer);
 			Collider[] pitsPathHits;
 			float pitsDist = 0;
@@ -237,6 +238,7 @@ namespace RVP
 			bool onRoad = Physics.SphereCast(tr.position + Vector3.up, radius, Vector3.down, out var _, Mathf.Infinity, 1 << Info.racingLineLayer);
 
 			// Reset if out of track (driving not on track
+			if(onRoad)
 			outOfTrackTime = onRoad ? outOfTrackTime + Time.fixedDeltaTime : 0;
 
 			if (outOfTrackTime > outOfTrackRequiredTime)

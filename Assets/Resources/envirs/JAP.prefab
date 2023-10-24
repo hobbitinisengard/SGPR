@@ -91,7 +91,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1a913f46a2393e24a8d0a5a11cb76d54, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  surfaceType: 1
+  surfaceType: 4
 --- !u!1001 &8288237871636329355
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -177,7 +177,7 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 0539fc64312b0e042833c2b3fd13cb34,
         type: 3}
       propertyPath: m_Name
-      value: japan
+      value: JAP
       objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: 0539fc64312b0e042833c2b3fd13cb34,
         type: 3}

@@ -71,14 +71,14 @@ public class SGP_HUD : MonoBehaviour
 	public float hudPos0;
 	public float hudHeight;
 	RectTransform rt;
-	public float compression = 0;
 
 	// HUD spring
-	float frequency = 2;
-	float halflife = .5f;
+	public float frequency = 2;
+	public float halflife = .5f;
+	float compression = 0;
 	float spring_v = 0;
 	float spring_pos = 0;
-	float spring_maxV = 4;
+	public float spring_maxV = 4;
 
 	// Bottom info text
 	public Text infoText;
@@ -478,7 +478,7 @@ public class SGP_HUD : MonoBehaviour
 		}
 
 		// Progress bar
-		if (Time.time - progressBarUpdateTime > 2 && raceManager.cars.Count > 1)
+		if (raceManager.cars.Count > 1 && Time.time - progressBarUpdateTime > 2)
 		{
 			progressBarUpdateTime = Time.time;
 			int carsLen = raceManager.cars.Count;
