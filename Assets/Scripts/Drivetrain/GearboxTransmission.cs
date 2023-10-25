@@ -152,8 +152,8 @@ namespace RVP
 						{
 							if ((vp.groundedWheels > 0 && vp.localVelocity.z < gears[selectedGear].minSpeed
 								&& vp.localVelocity.z > 0 && !vp.AnyWheelsPowerSliding())
-								|| (vp.groundedWheels == 0 && vp.localVelocity.y < 0 && vp.localVelocity.y > -40 && 
-								Mathf.Abs(vp.localVelocity.y) < gears[selectedGear].minSpeed)
+								//|| (vp.groundedWheels == 0 && selectedGear > 3 && vp.localVelocity.y < 0 && vp.localVelocity.y > -40 && 
+								//Mathf.Abs(vp.localVelocity.y) < gears[selectedGear].minSpeed)
 								|| (vp.velMag < 1 && vp.brakeInput > 0 && vp.brakeIsReverse))
 							{
 								Shift(-1);

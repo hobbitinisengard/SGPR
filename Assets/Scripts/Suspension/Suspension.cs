@@ -152,6 +152,7 @@ namespace RVP
 		public float jamForce = Mathf.Infinity;
 		[System.NonSerialized]
 		public bool jammed;
+		private Vector3 lastAppliedSuspForce;
 		public Vector3 appliedSuspensionForce;
 
 		void Start()
@@ -294,6 +295,8 @@ namespace RVP
 				// Apply the suspension force
 				if (suspensionDistance > 0 && targetCompression > 0)
 				{
+					lastAppliedSuspForce = appliedSuspensionForce;
+
 					appliedSuspensionForce = (leaningForce ? Vector3.Lerp(upDir, vp.norm.forward,
 						 Mathf.Abs(Mathf.Pow(Vector3.Dot(vp.norm.forward, vp.upDir), 5))) : vp.norm.forward) *
 						 springForce * (Mathf.Pow(springForceCurve.Evaluate(1 - compression),
@@ -325,11 +328,7 @@ namespace RVP
 						 + penetration) * hardContactForce * Mathf.Clamp01(TimeMaster.fixedTimeFactor),
 						 applyForceAtGroundContact ? wheel.contactPoint.point : wheel.tr.position,
 						 vp.suspensionForceMode);
-					// push car forward
-					rb.AddForceAtPosition(vp.tr.forward * (Mathf.Clamp(travelVel, -hardContactSensitivity * TimeMaster.fixedTimeFactor, 0) + penetration),
-						applyForceAtGroundContact ? wheel.contactPoint.point : wheel.tr.position,
-						 vp.suspensionForceMode
-						);
+					
 				}
 			}
 		}

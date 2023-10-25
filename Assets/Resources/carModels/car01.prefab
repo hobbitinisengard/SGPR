@@ -361,7 +361,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 289683228}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.01199913, z: 0}
+  m_LocalPosition: {x: -0.029, y: 0.209, z: 0.086}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -383,7 +383,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 289683228}
-  m_Enabled: 0
+  m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
   m_DynamicOccludee: 0
@@ -771,7 +771,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 861023730}
   m_LocalRotation: {x: -0, y: -0.7071068, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: -0.59755325, y: 0.11943281, z: -0.0024261475}
+  m_LocalPosition: {x: 0.001, y: 0.11943281, z: -0.0024261475}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1378,7 +1378,7 @@ ParticleSystem:
     donutRadius: 0.2
     m_Position: {x: 0, y: 0, z: 0}
     m_Rotation: {x: 0, y: 0, z: 0}
-    m_Scale: {x: 0.11500752, y: 0.017320234, z: 0.21103145}
+    m_Scale: {x: 0.4473259, y: 0.43762457, z: 0.21103145}
     placementMode: 0
     m_MeshMaterialIndex: 0
     m_MeshNormalOffset: 0
@@ -1454,7 +1454,7 @@ ParticleSystem:
     m_TextureAlphaAffectsParticles: 1
     m_TextureBilinearFiltering: 0
     randomDirectionAmount: 0
-    sphericalDirectionAmount: 0
+    sphericalDirectionAmount: 1
     randomPositionAmount: 0
     radius:
       value: 0.067380466
@@ -89440,10 +89440,10 @@ GameObject:
   - component: {fileID: 5969412531493064937}
   - component: {fileID: 5969412531493064936}
   - component: {fileID: 4194641081301078446}
-  - component: {fileID: 6779875395068024204}
   - component: {fileID: 6779875395068024192}
   - component: {fileID: 1803491810}
   - component: {fileID: 8045125721435560817}
+  - component: {fileID: 8319369162350912230}
   m_Layer: 9
   m_Name: car01
   m_TagString: Untagged
@@ -89499,7 +89499,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5969412531493064941}
   serializedVersion: 2
-  m_Mass: 1
+  m_Mass: 1.5
   m_Drag: 0.05
   m_AngularDrag: 0.15
   m_UseGravity: 1
@@ -89729,20 +89729,6 @@ MonoBehaviour:
   target: {fileID: 0}
   rotationSpeed: 5
   mult: 1000
---- !u!114 &6779875395068024204
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5969412531493064941}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4004a853526701343b191aaf6c4b56c8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  minimalVelocityAtWall: 20
-  d_collAngle: 0
 --- !u!114 &6779875395068024192
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -89900,6 +89886,18 @@ MonoBehaviour:
   driven: 0
   outOfTrackTime: 0
   outOfTrackRequiredTime: 2
+--- !u!114 &8319369162350912230
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5969412531493064941}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4004a853526701343b191aaf6c4b56c8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &6179087285394029084
 GameObject:
   m_ObjectHideFlags: 0
@@ -104480,7 +104478,7 @@ MonoBehaviour:
   pivotOffset: 0
   suspensionDistance: 0.25
   targetCompression: 1
-  springForce: 7
+  springForce: 14
   springForceCurve:
     serializedVersion: 2
     m_Curve:
@@ -104509,8 +104507,8 @@ MonoBehaviour:
   springDampening: 0.4
   extendSpeed: 0
   applyHardContactForce: 1
-  hardContactForce: 10
-  hardContactSensitivity: 100
+  hardContactForce: 15
+  hardContactSensitivity: 5
   applyForceAtGroundContact: 1
   leaningForce: 0
   damagePivot: {x: 0, y: 0, z: 0}
@@ -105407,7 +105405,7 @@ MonoBehaviour:
   pivotOffset: 0
   suspensionDistance: 0.25
   targetCompression: 1
-  springForce: 7
+  springForce: 14
   springForceCurve:
     serializedVersion: 2
     m_Curve:
@@ -105436,8 +105434,8 @@ MonoBehaviour:
   springDampening: 0.4
   extendSpeed: 0
   applyHardContactForce: 1
-  hardContactForce: 10
-  hardContactSensitivity: 100
+  hardContactForce: 15
+  hardContactSensitivity: 5
   applyForceAtGroundContact: 1
   leaningForce: 0
   damagePivot: {x: 0, y: 0, z: 0}
@@ -105547,7 +105545,7 @@ MonoBehaviour:
   pivotOffset: 0
   suspensionDistance: 0.25
   targetCompression: 1
-  springForce: 7
+  springForce: 14
   springForceCurve:
     serializedVersion: 2
     m_Curve:
@@ -105576,8 +105574,8 @@ MonoBehaviour:
   springDampening: 0.4
   extendSpeed: 0
   applyHardContactForce: 1
-  hardContactForce: 10
-  hardContactSensitivity: 100
+  hardContactForce: 15
+  hardContactSensitivity: 5
   applyForceAtGroundContact: 1
   leaningForce: 0
   damagePivot: {x: 0, y: 0, z: 0}
@@ -105777,7 +105775,7 @@ MonoBehaviour:
   pivotOffset: 0
   suspensionDistance: 0.25
   targetCompression: 1
-  springForce: 7
+  springForce: 14
   springForceCurve:
     serializedVersion: 2
     m_Curve:
@@ -105806,8 +105804,8 @@ MonoBehaviour:
   springDampening: 0.4
   extendSpeed: 0
   applyHardContactForce: 1
-  hardContactForce: 10
-  hardContactSensitivity: 100
+  hardContactForce: 15
+  hardContactSensitivity: 5
   applyForceAtGroundContact: 1
   leaningForce: 0
   damagePivot: {x: 0, y: 0, z: 0}

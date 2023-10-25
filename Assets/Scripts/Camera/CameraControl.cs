@@ -160,11 +160,16 @@ namespace RVP
 				//-----------
 
 				//camera look-position
-				// cos(45d) = 0.7f cos(0d) = 1
+				// cos(45d) = 0.7f cos(0d) = 1 cos(90deg) = 0
 				//d_vel_norm = vp.rb.velocity.normalized;
 				//d_dot = Vector3.Dot(vp.tr.forward, vp.rb.velocity.normalized);
-				Vector3 forward = ((vp.groundedWheels > 0 && Vector3.Dot(vp.tr.forward, vp.rb.velocity.normalized) > 0f) || vp.rb.velocity.magnitude < 1) ? vp.tr.forward : vp.rb.velocity.normalized;
-
+				Vector3 forward;
+				if (vp.rb.velocity.magnitude < 1)
+					forward = vp.tr.forward;
+				else
+					forward = (vp.groundedWheels > 0)
+					 ? vp.tr.forward : vp.rb.velocity.normalized;
+				
 				smoothYRot = Mathf.Lerp(smoothYRot, smoothRotCoeff * vp.rb.angularVelocity.y, 0.01f * Time.fixedDeltaTime);
 				forward = Quaternion.AngleAxis(Time.fixedDeltaTime * smoothYRot * Mathf.Rad2Deg, vp.tr.up) * forward;//Mathf.Abs(smoothYRot) * new Vector3(Mathf.Sin(smoothYRot), 0, Mathf.Cos(smoothYRot)).normalized;
 				forward = Quaternion.AngleAxis(xInput * 90 + yInput * 180, vp.tr.up) * forward;
