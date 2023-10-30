@@ -1,6 +1,7 @@
 using RVP;
 using System;
 using UnityEngine;
+
 public enum Direction { ANTICLOCK = -1, CLOCK = 1 };
 public class RotationDampStruct
 {
@@ -24,6 +25,11 @@ public class RotationDampStruct
 	public float Pos()
 	{
 		return pos + offset;
+	}
+	public void UpdateTargetToValue(int target)
+	{
+		targetPos = target;
+		evoMaxSpeed = 5 * evoAcceleration;
 	}
 	public void UpdateTarget(Direction dir)
 	{
@@ -161,7 +167,7 @@ public class SGP_Evo : MonoBehaviour
 
 	public float mult = 1;
 
-	void Start()
+	void Awake()
 	{
 		rb = GetComponent<Rigidbody>();
 		vp = GetComponent<VehicleParent>();
@@ -174,7 +180,7 @@ public class SGP_Evo : MonoBehaviour
 
 	void FixedUpdate()
 	{
-		if (vp.groundedWheels > 0 || vp.colliding)
+		if (vp.groundedWheels > 0 || vp.crashing)
 			stunting = false;
 
 		if (vp.SGPshiftbutton)
@@ -194,6 +200,7 @@ public class SGP_Evo : MonoBehaviour
 			r[2].Init(euler.z, Axis.Z); // rZ
 		}
 
+		
 
 		if (stunting)
 		{
@@ -224,12 +231,14 @@ public class SGP_Evo : MonoBehaviour
 				}
 				if (vp.steerInput != 0)
 				{ // rotation left/right 
-					r[1].IncreaseEvoSpeed();
-
 					if (vp.steerInput > 0)
 						r[1].UpdateTarget(Direction.CLOCK);
 					else
 						r[1].UpdateTarget(Direction.ANTICLOCK);
+					r[1].IncreaseEvoSpeed();
+
+					int rest = (int)r[0].Pos() % 90;
+					r[0].UpdateTargetToValue(90*((int)r[0].Pos() / 90) + ((rest < 45) ? 0 : 90));
 				}
 			}
 			else
@@ -258,7 +267,7 @@ public class SGP_Evo : MonoBehaviour
 
 			//}
 		}
-		//
+	
 		prevSGPShiftButton = vp.SGPshiftbutton;
 	}
 }

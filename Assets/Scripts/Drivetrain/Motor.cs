@@ -33,8 +33,7 @@ namespace RVP
 		bool boostPrev;
 		public float maxBoost = 0.5f;
 		protected AnimationCurve boostPowerCurve = AnimationCurve.EaseInOut(0, 0, 0.5f, 1);
-		public float boostBurnRate = 0.01f;
-		public float rideBurnRate = 0.002f;
+		
 		public AudioSource boostLoopSnd;
 		public AudioClip boostStart;
 		public AudioClip boostEnd;
@@ -78,7 +77,6 @@ namespace RVP
 		{
 			health = Mathf.Clamp01(health);
 			// Boost logic
-			vp.battery = Mathf.Clamp01(boosting ? vp.battery - boostBurnRate * Time.timeScale * 0.05f * TimeMaster.inverseFixedTimeFactor : vp.battery);
 			boostPrev = boosting;
 
 			if (canBoost && ignition && health > 0 && vp.battery > 0 &&

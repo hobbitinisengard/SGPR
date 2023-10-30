@@ -12,6 +12,8 @@ public class SlideInOut : MonoBehaviour
 	public enum Dir { In = 1, Out = -1 };
 	Dir dir = Dir.In;
 	bool canAnimate = false;
+	public float initialOwnDelay = 0;
+	float ownDelay;
 	public bool ForceNextNode = false;
 	public bool EasingUnchanged = false;
 	public float timer { get; private set; }
@@ -165,6 +167,7 @@ public class SlideInOut : MonoBehaviour
 	private void OnDisable()
 	{
 		canAnimate = false;
+		ownDelay = initialOwnDelay;
 	}
 	void OnEnable()
 	{
@@ -213,7 +216,15 @@ public class SlideInOut : MonoBehaviour
 				{
 					if (((int)dir < 0 && nextNode.timer < timer) || ((int)dir > 0 && nextNode.timer > timer))
 					{
-						canAnimate = true;
+						if(ownDelay>0)
+						{
+							ownDelay -= Time.deltaTime;
+						}
+						else
+						{
+							canAnimate = true;
+							ownDelay = initialOwnDelay;
+						}
 					}
 				}
 			}

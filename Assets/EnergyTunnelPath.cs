@@ -17,18 +17,18 @@ public class EnergyTunnelPath : MonoBehaviour
 
 		// Create castable points
 		float progress = 0;
-		for (int i = 0; i < 100000 && progress < pitsPathCreator.path.length; ++i)
+		for (int i = 0; i < 5000 && progress < pitsPathCreator.path.length; ++i)
 		{
 			GameObject castable = GameObject.CreatePrimitive(PrimitiveType.Sphere);
 			Destroy(castable.GetComponent<MeshRenderer>());
 			castable.transform.position = pitsPathCreator.path.GetPointAtDistance(progress);
 			castable.transform.parent = castableContainer.transform;
 			var col = castable.GetComponent<SphereCollider>();
-			col.radius = .5f;
+			col.radius = 1f;
 			col.isTrigger = true;
 			castable.layer = Info.pitsLineLayer;
-			castable.name = progress.ToString(CultureInfo.InvariantCulture);
-			progress += 0.5f;
+			castable.name = progress.ToString();
+			progress += 3f;
 		}
 	}
 	private void OnDestroy()

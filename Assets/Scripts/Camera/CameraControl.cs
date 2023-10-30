@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
 
 namespace RVP
 {
@@ -10,6 +12,8 @@ namespace RVP
 	// Class for controlling the camera
 	public class CameraControl : MonoBehaviour
 	{
+		public enum Mode { Follow, Replay };
+		Mode mode = Mode.Follow;
 		Transform tr;
 		Camera cam;
 		VehicleParent vp;
@@ -68,7 +72,14 @@ namespace RVP
 		public int maxPitch = 10;
 		public float cHeight = 2;
 		public float smoothRotCoeff = 0.01f;
-
+		public int curReplayCamIdx;
+		public float replayCamAgility = 1;
+		public void SetMode(Mode mode)
+		{
+			this.mode = mode;
+			if (mode == Mode.Follow)
+				tr.position = target.position;
+		}
 		void Awake()
 		{
 			tr = transform;
@@ -81,9 +92,10 @@ namespace RVP
 			if(lookObj)
 				Destroy(lookObj.gameObject);
 		}
-		public void Connect(VehicleParent car)
+		public void Connect(VehicleParent car, Mode mode = Mode.Follow)
 		{
 			target = car.transform;
+			this.mode = mode;
 			// lookObj is an object used to help position and rotate the camera
 			if (!lookObj)
 			{
@@ -118,136 +130,153 @@ namespace RVP
 		{
 			if (target && targetBody && target.gameObject.activeSelf)
 			{
-				pitchAngle = WrapAround180Degs(vp.tr.localEulerAngles.x);
-				bool pitchLocked = pitchAngle < -maxPitch;
-				if (vp.groundedWheels == 4)
+				if(mode == Mode.Follow)
 				{
-					if (pitchLocked)
-					{
-						Quaternion qRotation = Quaternion.AngleAxis(-pitchAngle - maxPitch, vp.tr.right);
-						targetForward = qRotation * vp.tr.forward;
-						targetUp = qRotation * vp.tr.up;
-					}
-					else
-					{
-						targetForward = vp.tr.forward;
-						targetUp = vp.tr.up;
-					}
+					FollowCam();
 				}
 				else
 				{
+					ReplayCam();
+				}
+			}
+		}
+		void ReplayCam()
+		{
+			tr.position = vp.followAI.replayCams[vp.followAI.curReplayPointIdx].cam.transform.position;
+			Vector3 camTarget = target.position - replayCamAgility * Time.fixedDeltaTime * vp.rb.velocity;
+			tr.rotation = Quaternion.LookRotation(camTarget - tr.position);
+		}
+		void FollowCam()
+		{
+			pitchAngle = WrapAround180Degs(vp.tr.localEulerAngles.x);
+			bool pitchLocked = pitchAngle < -maxPitch;
+			if (vp.groundedWheels == 4)
+			{
+				if (pitchLocked)
+				{
+					Quaternion qRotation = Quaternion.AngleAxis(-pitchAngle - maxPitch, vp.tr.right);
+					targetForward = qRotation * vp.tr.forward;
+					targetUp = qRotation * vp.tr.up;
+				}
+				else
+				{
+					targetForward = vp.tr.forward;
 					targetUp = vp.tr.up;
-					targetForward = targetBody.velocity;
 				}
+			}
+			else
+			{
+				targetUp = vp.tr.up;
+				targetForward = targetBody.velocity;
+			}
 
-				// ROLL: camera rolls proportional to car's effective angle and speed
-				if (vp.localVelocity.z > 5f)
-				{
-					Vector3 locVel = vp.localVelocity;
-					locVel.y = 0;
-					EffectiveTurnAngle = Vector3.SignedAngle(Vector3.forward, locVel, Vector3.up);
-					EffectiveTurnAngle = Mathf.Clamp(EffectiveTurnAngle, -maxEffectiveRollTurnAngle, maxEffectiveRollTurnAngle);
-					scaledTurnAngle = EffectiveTurnAngle / maxEffectiveRollTurnAngle;
-				}
-				else
-				{
-					EffectiveTurnAngle = 0;
-					scaledTurnAngle = 0;
-				}
-				smoothedRollAngle = Mathf.Lerp(smoothedRollAngle, scaledTurnAngle, rollCoeff * Time.fixedDeltaTime);
-				rollAngleDeg = smoothedRollAngle * 15f * Mathf.Lerp(0, 15, targetBody.velocity.magnitude) / 15f;
-				Vector3 rollUp = Quaternion.AngleAxis(-rollAngleDeg, vp.tr.forward) * Vector3.up;
-				//-----------
+			// ROLL: camera rolls proportional to car's effective angle and speed
+			if (vp.localVelocity.z > 5f)
+			{
+				Vector3 locVel = vp.localVelocity;
+				locVel.y = 0;
+				EffectiveTurnAngle = Vector3.SignedAngle(Vector3.forward, locVel, Vector3.up);
+				EffectiveTurnAngle = Mathf.Clamp(EffectiveTurnAngle, -maxEffectiveRollTurnAngle, maxEffectiveRollTurnAngle);
+				scaledTurnAngle = EffectiveTurnAngle / maxEffectiveRollTurnAngle;
+			}
+			else
+			{
+				EffectiveTurnAngle = 0;
+				scaledTurnAngle = 0;
+			}
+			smoothedRollAngle = Mathf.Lerp(smoothedRollAngle, scaledTurnAngle, rollCoeff * Time.fixedDeltaTime);
+			rollAngleDeg = smoothedRollAngle * 15f * Mathf.Lerp(0, 15, targetBody.velocity.magnitude) / 15f;
+			Vector3 rollUp = Quaternion.AngleAxis(-rollAngleDeg, vp.tr.forward) * Vector3.up;
+			//-----------
 
-				//camera look-position
-				// cos(45d) = 0.7f cos(0d) = 1 cos(90deg) = 0
-				//d_vel_norm = vp.rb.velocity.normalized;
-				//d_dot = Vector3.Dot(vp.tr.forward, vp.rb.velocity.normalized);
-				Vector3 forward;
-				if (vp.rb.velocity.magnitude < 1)
-					forward = vp.tr.forward;
-				else
-					forward = (vp.groundedWheels > 0)
-					 ? vp.tr.forward : vp.rb.velocity.normalized;
-				
-				smoothYRot = Mathf.Lerp(smoothYRot, smoothRotCoeff * vp.rb.angularVelocity.y, 0.01f * Time.fixedDeltaTime);
-				forward = Quaternion.AngleAxis(Time.fixedDeltaTime * smoothYRot * Mathf.Rad2Deg, vp.tr.up) * forward;//Mathf.Abs(smoothYRot) * new Vector3(Mathf.Sin(smoothYRot), 0, Mathf.Cos(smoothYRot)).normalized;
-				forward = Quaternion.AngleAxis(xInput * 90 + yInput * 180, vp.tr.up) * forward;
-				lookObj.position = target.position - forward * targetCamCarDistance + Vector3.up * height;
-				//--------------
-				targetForward = target.position + cHeight * Vector3.up - lookObj.position; //Quaternion.AngleAxis(9, vp.tr.right) * forward; // targetForward
-																													//camera look-rotation
-				forwardLook = Vector3.Lerp(forwardLook, targetForward, 0.1f * TimeMaster.inverseFixedTimeFactor);
-				if (Physics.Raycast(target.position, -targetUp, out RaycastHit hit, 1, castMask))
-				{
-					float dot = Vector3.Dot(targetUp, hit.normal);
-					// 0.9848 = cos(15d)
-					upLook = Vector3.Lerp(
-						 upLook, (dot < 0.9848077 && pitchLocked ? targetUp : hit.normal), 0.02f * TimeMaster.inverseFixedTimeFactor);
-				}
-				lookObj.rotation = Quaternion.LookRotation(forwardLook, upLook + rollUp);
-				//-------------
+			//camera look-position
+			// cos(45d) = 0.7f cos(0d) = 1 cos(90deg) = 0
+			//d_vel_norm = vp.rb.velocity.normalized;
+			//d_dot = Vector3.Dot(vp.tr.forward, vp.rb.velocity.normalized);
+			Vector3 forward;
+			if (vp.rb.velocity.magnitude < 1)
+				forward = vp.tr.forward;
+			else
+				forward = (vp.groundedWheels > 0)
+				 ? vp.tr.forward : vp.rb.velocity.normalized;
 
-				// this.tr chases lookObj
-				dampOffset = Vector3.SmoothDamp(dampOffset, lookObj.position, ref fastVelocity,
-					 camFollowSmoothTime, catchUpCamSpeed, Time.fixedDeltaTime * smoothDampRspnvns);
+			smoothYRot = Mathf.Lerp(smoothYRot, smoothRotCoeff * vp.rb.angularVelocity.y, 0.01f * Time.fixedDeltaTime);
+			forward = Quaternion.AngleAxis(Time.fixedDeltaTime * smoothYRot * Mathf.Rad2Deg, vp.tr.up) * forward;//Mathf.Abs(smoothYRot) * new Vector3(Mathf.Sin(smoothYRot), 0, Mathf.Cos(smoothYRot)).normalized;
+			forward = Quaternion.AngleAxis(xInput * 90 + yInput * 180, vp.tr.up) * forward;
+			lookObj.position = target.position - forward * targetCamCarDistance + Vector3.up * height;
+			//--------------
+			targetForward = target.position + cHeight * Vector3.up - lookObj.position; //Quaternion.AngleAxis(9, vp.tr.right) * forward; // targetForward
+																												//camera look-rotation
+			forwardLook = Vector3.Lerp(forwardLook, targetForward, 0.1f * TimeMaster.inverseFixedTimeFactor);
+			if (Physics.Raycast(target.position, -targetUp, out RaycastHit hit, 1, castMask))
+			{
+				float dot = Vector3.Dot(targetUp, hit.normal);
+				// 0.9848 = cos(15d)
+				upLook = Vector3.Lerp(
+					 upLook, (dot < 0.9848077 && pitchLocked ? targetUp : hit.normal), 0.02f * TimeMaster.inverseFixedTimeFactor);
+			}
+			lookObj.rotation = Quaternion.LookRotation(forwardLook, upLook + rollUp);
+			//-------------
 
-				if (vp.groundedWheels == 0) // when car airborne
+			// this.tr chases lookObj
+			dampOffset = Vector3.SmoothDamp(dampOffset, lookObj.position, ref fastVelocity,
+				 camFollowSmoothTime, catchUpCamSpeed, Time.fixedDeltaTime * smoothDampRspnvns);
+
+			if (vp.groundedWheels == 0) // when car airborne
+			{
+				offsetCarDistance = Vector3.Distance(dampOffset, target.position);
+				camOffsetDistance = Vector3.Distance(tr.position, dampOffset);
+				if (camOffsetDistance < 2)
 				{
-					offsetCarDistance = Vector3.Distance(dampOffset, target.position);
-					camOffsetDistance = Vector3.Distance(tr.position, dampOffset);
-					if (camOffsetDistance < 2)
-					{
-						cameraStopped = true;
-					}
-					else if (camOffsetDistance > .5f * offsetCarDistance)
-					{
-						cameraStopped = false;
-					}
+					cameraStopped = true;
 				}
-				else
+				else if (camOffsetDistance > .5f * offsetCarDistance)
 				{
 					cameraStopped = false;
 				}
+			}
+			else
+			{
+				cameraStopped = false;
+			}
 
-				Quaternion rotation;
-				if (vp.customCam)
+			Quaternion rotation;
+			if (vp.customCam)
+			{
+				rotation = Quaternion.Lerp(tr.rotation, Quaternion.LookRotation(target.position - vp.customCam.transform.position), 3 * Time.fixedDeltaTime);
+				newTrPos = vp.customCam.transform.position;
+			}
+			else
+			{
+				bool badpos = Physics.Linecast(target.position + cHeight * Vector3.up, lookObj.position, out hit, castMask);
+				if (badpos)
+				{ //Check if there is an object between the camera and target vehicle and move the camera in front of it
+					lookObj.position = hit.point + (target.position - lookObj.position).normalized * (cam.nearClipPlane + 0.1f);
+				}
+
+				smoothTime = Mathf.Lerp(smoothTime, cameraStopped ? camStoppedSmoothTime : camFollowSmoothTime
+					, (cameraStopped ? 1 : 2) * Time.fixedDeltaTime * smoothTimeSpeed);
+
+				if (yInput == 0 && xInput == 0)
+					newTrPos =
+								Vector3.SmoothDamp(tr.position, lookObj.position, ref velocity,
+								smoothTime, catchUpCamSpeed, Time.fixedDeltaTime * smoothDampRspnvns);
+				else
+					newTrPos = Vector3.Lerp(tr.position, lookObj.position, 0.5f);
+
+				if (cameraStopped)
 				{
-					rotation = Quaternion.Lerp(tr.rotation, Quaternion.LookRotation(target.position - vp.customCam.transform.position), 3*Time.fixedDeltaTime);
-					newTrPos = vp.customCam.transform.position;
+					Quaternion cameraStoppedRotation = Quaternion.LookRotation(target.position - tr.position, rollUp);
+					rotation = Quaternion.Lerp(tr.rotation, cameraStoppedRotation,
+						 2 * Time.fixedDeltaTime);
 				}
 				else
 				{
-					bool badpos = Physics.Linecast(target.position + cHeight * Vector3.up, lookObj.position, out hit, castMask);
-					if (badpos)
-					{ //Check if there is an object between the camera and target vehicle and move the camera in front of it
-						lookObj.position = hit.point + (target.position - lookObj.position).normalized * (cam.nearClipPlane + 0.1f);
-					}
-
-					smoothTime = Mathf.Lerp(smoothTime, cameraStopped ? camStoppedSmoothTime : camFollowSmoothTime
-						, (cameraStopped ? 1 : 2) * Time.fixedDeltaTime * smoothTimeSpeed);
-
-					if (yInput == 0 && xInput == 0)
-						newTrPos =
-									Vector3.SmoothDamp(tr.position, lookObj.position, ref velocity,
-									smoothTime, catchUpCamSpeed, Time.fixedDeltaTime * smoothDampRspnvns);
-					else
-						newTrPos = Vector3.Lerp(tr.position, lookObj.position, 0.5f);
-
-					if (cameraStopped)
-					{
-						Quaternion cameraStoppedRotation = Quaternion.LookRotation(target.position - tr.position, rollUp);
-						rotation = Quaternion.Lerp(tr.rotation, cameraStoppedRotation,
-							 2 * Time.fixedDeltaTime);
-					}
-					else
-					{
-						rotation = Quaternion.Lerp(tr.rotation, lookObj.rotation,
-							 (vp.groundedWheels > 1 ? 12f : 3f) * Time.fixedDeltaTime);
-					}
+					rotation = Quaternion.Lerp(tr.rotation, lookObj.rotation,
+						 (vp.groundedWheels > 1 ? 12f : 3f) * Time.fixedDeltaTime);
 				}
-				tr.SetPositionAndRotation(newTrPos, rotation);
 			}
+			tr.SetPositionAndRotation(newTrPos, rotation);
 		}
 		// function for setting the rotation input of the camera
 		public void SetInput(float x, float y)
@@ -264,6 +293,5 @@ namespace RVP
 				Destroy(lookObj.gameObject);
 			}
 		}
-
 	}
 }

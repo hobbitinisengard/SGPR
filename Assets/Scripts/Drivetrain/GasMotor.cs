@@ -116,8 +116,8 @@ namespace RVP
 				else
 					targetRPM = actualInput * maxkRPM * 1000;
 
-				if (!transmission.IsShifting())
-					targetDrive.rpm = Mathf.Lerp(targetDrive.rpm, targetRPM, inertia * 20 * Time.fixedDeltaTime);
+				//if (!transmission.IsShifting() || transmission.currentGear == 1)
+				targetDrive.rpm = Mathf.Lerp(targetDrive.rpm, targetRPM, inertia * 20 * Time.fixedDeltaTime);
 
 				curr_engine_krpm = targetDrive.feedbackRPM / 1000f;
 

@@ -2,6 +2,9 @@
 using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using PathCreation;
+using System.Collections;
+using System.Linq;
 
 namespace RVP
 {
@@ -12,7 +15,7 @@ namespace RVP
 	public class RaceManager : MonoBehaviour
 	{
 		AudioSource musicPlayer;
-		
+		public PathCreator racingPath;
 		public GameObject Sun;
 		public GameObject nightTimeLights;
 		[Tooltip("Reload the scene with the 'Restart' button in the input manager")]
@@ -57,40 +60,28 @@ namespace RVP
 
 		public PartOfDay pod = PartOfDay.Day;
 		[NonSerialized]
-		public List<VehicleParent> cars = new List<VehicleParent>();
 		bool initialized = false;
-		int position = 1;
 		public float trackDistance = 1000;
 		public SGP_HUD hud;
 		public EditorPanel editorPanel;
 		public CameraControl cam;
-
+		public CountDownSeq countDownSeq;
+		public ResultsSeq resultsSeq;
 		public enum InfoMessage
 		{
 			TAKES_THE_LEAD, NO_ENERGY, SPLIT_TIME,
 		}
 		
-		public void StartFreeRoam(Vector3 position, Quaternion rotation)
-		{
-			position.y += 1;
-			editorPanel.gameObject.SetActive(false);
-			var carModel = Resources.Load<GameObject>(Info.carModelsPath + "car01");
-			var newCar = Instantiate(carModel, position, rotation).GetComponent<VehicleParent>();
-			cars.Add(newCar);
-			cam.enabled = true;
-			cam.Connect(newCar);
-			hud.gameObject.SetActive(true);
-			hud.Connect(newCar);
-		}
+		
 		public void BackToEditor()
 		{
 			hud.Disconnect();
 			hud.gameObject.SetActive(false);
 			cam.Disconnect();
 			cam.enabled = false;
-			foreach (var c in cars)
+			foreach (var c in Info.s_cars)
 				Destroy(c.gameObject);
-			cars.Clear();
+			Info.s_cars.Clear();
 			editorPanel.gameObject.SetActive(true);
 		}
 		public void RestartButton()
@@ -99,6 +90,10 @@ namespace RVP
 		}
 		public void ExitButton()
 		{
+			if (resultsSeq.gameObject.activeSelf)
+				return;
+			countDownSeq.gameObject.SetActive(false);
+			
 			if (Info.s_inEditor)
 				BackToEditor();
 			else
@@ -108,14 +103,19 @@ namespace RVP
 		{
 
 		}
+		public float RaceProgress(VehicleParent vp)
+		{
+			return vp.raceBox.curLap + vp.followAI.ProgressPercent();
+		}
 		public int Position(VehicleParent vp)
 		{
-			//// DEBUG
-			//if (Input.GetKeyDown(KeyCode.K))
-			//    position++;
-			//if (Input.GetKeyDown(KeyCode.M))
-			//    position--;
-			return 1;
+			Info.s_cars.Sort((carA, carB) => RaceProgress(carB).CompareTo(RaceProgress(carA)));
+			for(int i=0; i<Info.s_cars.Count; ++i)
+			{
+				if (Info.s_cars[i] == vp)
+					return i + 1;
+			}
+			return 0;
 		}
 		//Color HDRColor(float r, float g, float b, int intensity = 0)
 		//{
@@ -142,7 +142,7 @@ namespace RVP
 		}
 		public void Initialize(VehicleParent[] cars)
 		{
-			this.cars.AddRange(cars);
+			Info.s_cars.AddRange(cars);
 			initialized = true;
 		}
 		void Start()
@@ -167,20 +167,88 @@ namespace RVP
 			Info.PopulateCarsData();
 			Info.PopulateTrackData();
 			StartCoroutine(editorPanel.LoadTrack());
-
 			if (Info.s_inEditor)
 			{
 				BackToEditor();
 			}
 			else
 			{
-				// START RACE
-
+				StartRace();
 			}
 		}
+		public void StartFreeRoam(Vector3 position, Quaternion rotation)
+		{
+			position.y += 1;
+			editorPanel.gameObject.SetActive(false);
+			var carModel = Resources.Load<GameObject>(Info.carModelsPath + "car01");
+			var newCar = Instantiate(carModel, position, rotation).GetComponent<VehicleParent>();
+			Info.s_cars.Add(newCar);
+			cam.enabled = true;
+			cam.Connect(newCar);
+			hud.gameObject.SetActive(true);
+			hud.Connect(newCar);
+			newCar.followAI.AssignPath(racingPath, ref editorPanel.stuntpointsContainer, ref editorPanel.replayCamsContainer);
+		}
+		public void StartRace()
+		{
+			float countDownSeconds = 5;
+			Info.s_cars.Clear();
+			Transform startTile = null;
+			int startlines = 0;
+			for(int i=0; i<editorPanel.placedTilesContainer.transform.childCount; ++i)
+			{
+				if (editorPanel.placedTilesContainer.transform.GetChild(i).name == "startline")
+				{
+					startlines++;
+					startTile = editorPanel.placedTilesContainer.transform.GetChild(i);
+				}
+			}
 
+			if (startlines != 1)
+				return;
+
+			Vector3 v = new Vector3(-7, 0, 0);
+			for(int i = 0; i< Info.s_rivals+1; ++i)
+			{
+				Vector3 castPos = startTile.TransformPoint(v);
+				if(Physics.Raycast(castPos + 3 * Vector3.up, Vector3.down, out var hit, Mathf.Infinity,  1 << Info.roadLayer))
+				{
+					var carModel = Resources.Load<GameObject>(Info.carModelsPath + "car01");
+					var position = new Vector3(castPos.x, hit.point.y + 2, castPos.z);
+					var newCar = Instantiate(carModel, position, startTile.rotation).GetComponent<VehicleParent>();
+					newCar.SetSponsor((i % Info.Liveries)+1);
+					StartCoroutine(newCar.CountdownTimer(countDownSeconds - newCar.engine.transmission.shiftDelaySeconds));
+					newCar.followAI.AssignPath(racingPath, ref editorPanel.stuntpointsContainer, ref editorPanel.replayCamsContainer);
+					Info.s_cars.Add(newCar);
+
+					if (i == Info.s_rivals)
+					{ // last car is the player
+						newCar.name = Info.s_playerName;
+						cam.enabled = true;
+						cam.Connect(newCar);
+						hud.Connect(newCar);
+					}
+					else
+					{
+						newCar.name = "CPU" + (i + 1).ToString();
+						newCar.followAI.SetCPU(true);
+					}
+				}
+				else
+				{
+					Debug.LogError("placing Info.s_cars cast failed");
+					return;
+				}
+				v.x = 7 * ((i % 2 == 0) ? 1 : -1);
+				v.z = -(i * 15);
+			}
+			editorPanel.gameObject.SetActive(false);
+			countDownSeq.CountdownSeconds = countDownSeconds;
+			countDownSeq.gameObject.SetActive(true);
+		}
 		void Update()
 		{
+
 			// DEBUG
 			if (Input.GetKeyDown(KeyCode.K))
 				hud.AddMessage(new Message("CP1 IS RECHARGING!" + 5 * UnityEngine.Random.value, BottomInfoType.PIT_IN));
@@ -201,5 +269,13 @@ namespace RVP
 				SetPartOfDay(PartOfDay.Night);
 			}
 		}
+
+		public void PlayFinishSeq()
+		{
+			Debug.Log("FINISH");
+			resultsSeq.gameObject.SetActive(true);
+			cam.SetMode(CameraControl.Mode.Replay);
+		}
+		
 	}
 }

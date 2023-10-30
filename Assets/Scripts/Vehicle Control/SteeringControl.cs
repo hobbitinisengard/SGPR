@@ -45,7 +45,7 @@ namespace RVP
 
 		public float maxDegreesRotation;
 		AnimationCurve keyboardInputCurve;
-		float secsForMaxSteeringSpeed = 5;
+		float secsForMaxSteeringSpeed = 10;
 		public float d_angleSteer;
 		public bool unfiltered = false;
 
@@ -55,7 +55,7 @@ namespace RVP
 			Keyframe[] keys = new Keyframe[digitalSteeringInputEnv.Length];
 			for (int i = 0; i < keys.Length; i++)
 			{   // i + 1 ??? TODO
-				keys[i].time = secsForMaxSteeringSpeed * (i) / keys.Length;
+				keys[i].time = secsForMaxSteeringSpeed * i / keys.Length;
 				keys[i].value = (float)digitalSteeringInputEnv[i];
 			}
 			return new AnimationCurve(keys);
@@ -91,13 +91,11 @@ namespace RVP
 					else
 						holdDuration += Time.fixedDeltaTime;
 				}
-
 				rawSteer = keyboardInputCurve.Evaluate(holdDuration);
 			}
 			// Set steer angles in wheels
 			foreach (Suspension curSus in steeredWheels)
 			{
-				
 				float targetSteerAngle;
 				if (unfiltered)
 				{
@@ -111,7 +109,6 @@ namespace RVP
 				curSus.steerAngle = Mathf.Lerp(curSus.steerAngle, targetSteerAngle, 10 * Time.fixedDeltaTime);
 			}
 			steerAngle = steeredWheels[0].steerAngle;
-
 		}
 	}
 }

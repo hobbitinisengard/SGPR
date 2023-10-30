@@ -94,7 +94,14 @@ public class Connector : MonoBehaviour
 	public void Hide()
 	{
 		marked = false;
-		GetComponent<MeshRenderer>().material = blue;
+		try
+		{
+			GetComponent<MeshRenderer>().material = blue;
+		}
+		catch
+		{
+
+		}
 	}
 	public void Paths(out Vector3[] Lpath, out Vector3[] Rpath)
 	{

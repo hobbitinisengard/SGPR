@@ -295,8 +295,6 @@ namespace RVP
 				// Apply the suspension force
 				if (suspensionDistance > 0 && targetCompression > 0)
 				{
-					lastAppliedSuspForce = appliedSuspensionForce;
-
 					appliedSuspensionForce = (leaningForce ? Vector3.Lerp(upDir, vp.norm.forward,
 						 Mathf.Abs(Mathf.Pow(Vector3.Dot(vp.norm.forward, vp.upDir), 5))) : vp.norm.forward) *
 						 springForce * (Mathf.Pow(springForceCurve.Evaluate(1 - compression),
@@ -328,11 +326,15 @@ namespace RVP
 						 + penetration) * hardContactForce * Mathf.Clamp01(TimeMaster.fixedTimeFactor),
 						 applyForceAtGroundContact ? wheel.contactPoint.point : wheel.tr.position,
 						 vp.suspensionForceMode);
-					
 				}
 			}
 		}
-
+		public static Vector3 ProjectOnVector(Vector3 force, Vector3 direction)
+		{
+			float dot = Vector3.Dot(force.normalized, direction.normalized);
+			Debug.Log(dot);
+			return dot * force;
+		}
 		// Calculate the direction of the spring
 		void GetSpringVectors()
 		{

@@ -68,7 +68,7 @@ namespace RVP
 				wheelsNotGroundedTime = Time.time;
 
 			// Check for manual shift button presses
-			if (!automatic)
+			if (!automatic && vp.countdownTimer<=0)
 			{
 				if (vp.upshiftPressed && currentGear < gears.Length - 1)
 				{
@@ -87,30 +87,32 @@ namespace RVP
 			shiftTime = Mathf.Max(0, shiftTime - Time.timeScale * TimeMaster.inverseFixedTimeFactor);
 			d_feedback = targetDrive.feedbackRPM;
 			d_rpm = targetDrive.rpm;
-			if (shiftTime == 0)
+			if (shiftTime == 0 || currentGear < 2)
 			{
-				currentGear = selectedGear;
+				if(shiftTime == 0)
+					currentGear = selectedGear;
+
 				float curOutputRatio = gears[currentGear].ratio;
 				actualFeedbackRPM = targetDrive.feedbackRPM / (curOutputRatio == 0 ? 1 : Mathf.Abs(curOutputRatio));
 
-				int upGearOffset = 3;
-				int downGearOffset = 3;
+				int upGearOffset = 1;
+				//int downGearOffset = 1;
 
-				while (/*(skipNeutral || automatic) && 
-                    gears[Mathf.Clamp(currentGear + upGearOffset, 0, gears.Length - 1)].ratio == 0
-                    && */currentGear + upGearOffset != 0 && currentGear + upGearOffset < gears.Length - 1)
-				{
-					upGearOffset++;
-				}
+				//while (/*(skipNeutral || automatic) && 
+    //                gears[Mathf.Clamp(currentGear + upGearOffset, 0, gears.Length - 1)].ratio == 0
+    //                && */currentGear + upGearOffset != 0 && currentGear + upGearOffset < gears.Length - 1)
+				//{
+				//	upGearOffset++;
+				//}
 
-				while (/*(skipNeutral || automatic) && 
-                    gears[Mathf.Clamp(currentGear - downGearOffset, 0, gears.Length - 1)].ratio == 0 
-                    && */ currentGear - downGearOffset != 0 && currentGear - downGearOffset > 0)
-				{
-					downGearOffset++;
-				}
+				//while (/*(skipNeutral || automatic) && 
+    //                gears[Mathf.Clamp(currentGear - downGearOffset, 0, gears.Length - 1)].ratio == 0 
+    //                && */ currentGear - downGearOffset != 0 && currentGear - downGearOffset > 0)
+				//{
+				//	downGearOffset++;
+				//}
 
-				upperGear = gears[Mathf.Min(gears.Length - 1, selectedGear + upGearOffset)];
+				upperGear = gears[Mathf.Min(gears.Length - 1, currentGear + upGearOffset)];
 				//Gear lowerGear = gears[Mathf.Max(0, selectedGear - downGearOffset)];
 
 				// Perform RPM calculations
@@ -123,12 +125,9 @@ namespace RVP
 						CalculateRpmRanges();
 					}
 				}
-
-
-
-				if (automatic)
+				if (automatic && vp.countdownTimer<=0)
 				{
-					if (!skidSteerDrive && vp.burnout == 0)
+					if (selectedGear == currentGear)
 					{
 						// Perform automatic shifting
 						//upshiftDifference = gears[selectedGear].maxRPM - upperGear.minRPM;
@@ -136,24 +135,24 @@ namespace RVP
 
 						//if (Mathf.Abs(vp.localVelocity.z) > 1 || vp.accelInput > 0 || (vp.brakeInput > 0 && vp.brakeIsReverse)) 
 						//{
-						if (Time.time - wheelsNotGroundedTime > 1 && selectedGear < gears.Length - 1)
+						if (Time.time - wheelsNotGroundedTime > 1 && currentGear < gears.Length - 1)
 						{
 							if (!(vp.brakeInput > 0 && vp.brakeIsReverse && upperGear.ratio >= 0)
 							&& !(vp.localVelocity.z < 0 && vp.accelInput == 0))
 							{
-								if ((actualFeedbackRPM > 0.9f * gears[selectedGear].maxRPM && !vp.AnyWheelsPowerSliding())
+								if ((actualFeedbackRPM > 0.9f * gears[currentGear].maxRPM && vp.velMag > upperGear.minSpeed)
 									 || (vp.localVelocity.z < 1 && vp.localVelocity.z > -1 && vp.accelInput > 0 && currentGear == 1))
 								{
 									Shift(1);
 								}
 							}
 						}
-						if (selectedGear > 0)
+						if (currentGear > 0)
 						{
-							if ((vp.groundedWheels > 0 && vp.localVelocity.z < gears[selectedGear].minSpeed
+							if ((vp.groundedWheels > 0 && vp.localVelocity.z < gears[currentGear].minSpeed
 								&& vp.localVelocity.z > 0 && !vp.AnyWheelsPowerSliding())
-								//|| (vp.groundedWheels == 0 && selectedGear > 3 && vp.localVelocity.y < 0 && vp.localVelocity.y > -40 && 
-								//Mathf.Abs(vp.localVelocity.y) < gears[selectedGear].minSpeed)
+								//|| (vp.groundedWheels == 0 && currentGear > 3 && vp.localVelocity.y < 0 && vp.localVelocity.y > -40 && 
+								//Mathf.Abs(vp.localVelocity.y) < gears[currentGear].minSpeed)
 								|| (vp.velMag < 1 && vp.brakeInput > 0 && vp.brakeIsReverse))
 							{
 								Shift(-1);
@@ -164,33 +163,24 @@ namespace RVP
 					else if (currentGear != firstGear)
 					{
 						// Shift into first gear if skid steering or burning out
-						ShiftToGear(firstGear);
+						//ShiftToGear(firstGear);
 					}
 				}
+				curOutputRatio = gears[currentGear].ratio;
+				// Set RPMs and torque of output
+				newDrive.curve = targetDrive.curve;
 
-				// N gear
-				if (selectedGear != currentGear)
-				{
-					newDrive.rpm = 0;
-					newDrive.torque = 0;
-				}
-				else
-				{
-					curOutputRatio = gears[currentGear].ratio;
-					// Set RPMs and torque of output
-					newDrive.curve = targetDrive.curve;
+				newDrive.rpm = (automatic && skidSteerDrive ?
+						Mathf.Abs(targetDrive.rpm) * Mathf.Sign(vp.accelInput - (vp.brakeIsReverse ? vp.brakeInput * (1 - vp.burnout) : 0))
+						: targetDrive.rpm) / (curOutputRatio == 0 ? 1 : curOutputRatio);
+				newDrive.torque = Mathf.Abs(curOutputRatio) * targetDrive.torque;
 
-					newDrive.rpm = (automatic && skidSteerDrive ?
-						 Mathf.Abs(targetDrive.rpm) * Mathf.Sign(vp.accelInput - (vp.brakeIsReverse ? vp.brakeInput * (1 - vp.burnout) : 0))
-						 : targetDrive.rpm) / (curOutputRatio == 0 ? 1 : curOutputRatio);
-					newDrive.torque = Mathf.Abs(curOutputRatio) * targetDrive.torque;
-
-					SetOutputDrives(curOutputRatio);
-				}
+				SetOutputDrives(curOutputRatio);
 			}
 			else
-			{
-				float sequenceComplt = ShiftSeqProgress();
+			{ // switch gear with clutch-like action
+				// 0 = completed, 1 = just began
+				float sequenceComplt = shiftTime / shiftDelay;
 				// perform shift sequence
 				if (sequenceComplt > 0.5f)
 				{
@@ -203,12 +193,13 @@ namespace RVP
 			}
 		}
 		/// <summary>
-		/// 0 = completed, 1 = just began
+		/// speed in m/s
 		/// </summary>
+		/// <param name="spd"></param>
 		/// <returns></returns>
-		public float ShiftSeqProgress()
+		float RPM4Speed(float spd)
 		{
-			return shiftTime / shiftDelay;
+			return spd * 30 * 3.6f / (Mathf.PI * vp.wheels[2].tireRadius);
 		}
 		// Shift gears by the number entered
 		public void Shift(int dir)

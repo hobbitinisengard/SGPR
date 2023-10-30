@@ -18,7 +18,7 @@ public class ResultsSeq : Sfxable
 	public Image dimmer;
 	//AnimationCurve pulseCurve;
 	Color yellowDark = new Color(0.3607f, 0.3607f, 0);
-	string[] rightBoxLabels = new string[] { "DRIFT POINTS", "RACE TIME", "AEROMILES", "BEST LAP"};
+	string[] rightBoxLabels = new string[] { "BEST LAP", "RACE TIME", "AEROMILES", "DRIFT POINTS"};
 	int rightBoxLabelInt = 0;
 	Coroutine seq, dimCo,showResultCo, showTableCo;
 	int playerResultPosition = 0;
@@ -54,15 +54,9 @@ public class ResultsSeq : Sfxable
 		imgResult.sprite = ResultPositionSprites[playerResultPosition - 1];
 		imgResult.transform.GetChild(0).gameObject.SetActive(playerResultPosition > 3);
 		minImgResultPos = -Screen.height / 2f - imgResult.transform.GetComponent<RectTransform>().sizeDelta.y / 2f;
-
+		SetTableBoxesValues();
 		imgResult = transform.GetChild(0).GetComponent<Image>();
 		rightBoxLabel.text = rightBoxLabels[rightBoxLabelInt];
-		// populate names
-		for (int i = 0; i < Info.s_rivals; ++i)
-		{
-			leftRow.GetChild(i).GetChild(0).GetChild(0).GetComponent<TextMeshProUGUI>().text = "NAME" + i.ToString();
-		}
-
 		if (showResultCo != null)
 			StopCoroutine(showResultCo);
 		if (seq != null)
@@ -155,8 +149,8 @@ public class ResultsSeq : Sfxable
 		float timer = TimeRequiredForUpdate+1;
 		for (int i = leftRow.childCount-1; i >=0 ; --i)
 		{
-			leftRow.GetChild(i).gameObject.SetActive(i + 1 <= Info.s_rivals);
-			rightRow.GetChild(i).gameObject.SetActive(i + 1 <= Info.s_rivals);
+			leftRow.GetChild(i).gameObject.SetActive(i + 1 <= Info.s_cars.Count);
+			rightRow.GetChild(i).gameObject.SetActive(i + 1 <= Info.s_cars.Count);
 		}
 		yield return null;
 
@@ -167,10 +161,10 @@ public class ResultsSeq : Sfxable
 
 		while(true)
 		{
-			if (Input.GetKeyDown(KeyCode.Return) && dimCo == null)
+			if (Input.GetKeyDown(KeyCode.Return) && dimCo == null) // closing seq
 			{
-				for (int i = 0; i < Info.s_rivals; ++i)
-				{ // closing seq
+				for (int i = 0; i < Info.s_cars.Count; ++i)
+				{ 
 					leftRow.GetChild(i).gameObject.GetComponent<SlideInOut>().PlaySlideOut(true);
 					rightRow.GetChild(i).gameObject.GetComponent<SlideInOut>().PlaySlideOut(true);
 					foreach (var b in boxes)
@@ -185,7 +179,9 @@ public class ResultsSeq : Sfxable
 			if (timer > TimeRequiredForUpdate)
 			{
 				timer = 0;
-				SetRightRowBoxesValues(++rightBoxLabelInt % rightBoxLabels.Length);
+				++rightBoxLabelInt;
+				rightBoxLabelInt %= rightBoxLabels.Length;
+				SetTableBoxesValues();
 			}
 			timer += Time.deltaTime;
 			yield return null;
@@ -210,14 +206,17 @@ public class ResultsSeq : Sfxable
 		rightRow.GetChild(playerResultPosition - 1).GetChild(0).GetChild(0).GetComponent<TextMeshProUGUI>().color = color;
 		leftRow.GetChild(playerResultPosition - 1).GetChild(0).GetChild(0).GetComponent<TextMeshProUGUI>().color = color;
 	}
-	void SetRightRowBoxesValues(int labelInt)
+	void SetTableBoxesValues()
 	{
-		rightBoxLabel.text = rightBoxLabels[labelInt];
-		for (int i = 0; i < Info.s_rivals; ++i)
+		for(int i=0; i<Info.s_cars.Count; ++i)
 		{
+			leftRow.GetChild(i).GetChild(0).GetChild(0)
+						.GetComponent<TextMeshProUGUI>().text = Info.s_cars[i].transform.name;
+			rightBoxLabel.text = rightBoxLabels[rightBoxLabelInt];
 			rightRow.GetChild(i).GetChild(0).GetChild(0)
-					.GetComponent<TextMeshProUGUI>().text = "VAL" + Random.value.ToString("f3");
+						.GetComponent<TextMeshProUGUI>().text = Info.s_cars[i].raceBox.Result((Info.RecordType)rightBoxLabelInt);
 		}
+		
 	}
 
 }

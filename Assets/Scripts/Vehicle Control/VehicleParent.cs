@@ -11,6 +11,7 @@ namespace RVP
 	// Vehicle root class
 	public class VehicleParent : MonoBehaviour
 	{
+		public GameObject bodyObj;
 		static double[] digitalBrakeInputEnv = { 0.050000, 0.055749, 0.061497, 0.067246, 0.072994, 0.078743, 0.084491, 0.090240, 0.095988, 0.100108, 0.104227, 0.108347, 0.112467, 0.116586, 0.120706, 0.124826, 0.128945, 0.131461, 0.133977, 0.136492, 0.139008, 0.141523, 0.144039, 0.146555, 0.149070, 0.150732, 0.152394, 0.154057, 0.155719, 0.157381, 0.159043, 0.160705, 0.162367, 0.164702, 0.167037, 0.169372, 0.171707, 0.174042, 0.176377, 0.178712, 0.181047, 0.184175, 0.187302, 0.190430, 0.193557, 0.198389, 0.203220, 0.208051, 0.212883, 0.217714, 0.222546, 0.227377, 0.232208, 0.234335, 0.236462, 0.238589, 0.240716, 0.242843, 0.244970, 0.247097, 0.249224, 0.251272, 0.253320, 0.255368, 0.257416, 0.263848, 0.270281, 0.276713, 0.283146, 0.289578, 0.296011, 0.302443, 0.308876, 0.313165, 0.317455, 0.321745, 0.326034, 0.330324, 0.334614, 0.338904, 0.343193, 0.349227, 0.355260, 0.361294, 0.367327, 0.373361, 0.379394, 0.385428, 0.391461, 0.400442, 0.409424, 0.418405, 0.427386, 0.436368, 0.445349, 0.454330, 0.463311, 0.472721, 0.482131, 0.491541, 0.500951, 0.510361, 0.519771, 0.529180, 0.538590, 0.560293, 0.581995, 0.603697, 0.625400, 0.647102, 0.668805, 0.690507, 0.712209, 0.735046, 0.757883, 0.780720, 0.803557, 0.826394, 0.849231, 0.872068, 0.888060, 0.904051, 0.920043, 0.936034, 0.952026, 0.968017, 0.984009, 1.000000 };
 		static AnimationCurve brakeCurve;
 		[System.NonSerialized]
@@ -78,6 +79,8 @@ namespace RVP
 		public float batteryLoadDelta = 0.05f;//*Time.fixedDeltaTime
 		[Range(0.001f, 0.05f)]
 		public float batteryBurnDelta = 0.01f;
+		public float lowBatteryLevel = 0.2f;
+		public float boostBurnRate = 0.005f;
 		bool stopUpshift;
 		bool stopDownShift;
 
@@ -160,6 +163,13 @@ namespace RVP
 		public float d_R;
 		[NonSerialized]
 		public GameObject customCam;
+		/// <summary>
+		/// allowed values: 1-7
+		/// </summary>
+		public int sponsor { get; private set; }
+
+		public float countdownTimer { get; private set; }
+
 		public FollowAI followAI { get; private set; }
 		public RaceBox raceBox { get; private set; }
 
@@ -192,21 +202,24 @@ namespace RVP
 			}
 			return new AnimationCurve(keys);
 		}
-		void Start()
+		private void Awake()
 		{
 			followAI = GetComponent<FollowAI>();
 			raceBox = GetComponent<RaceBox>();
+			tr = transform;
+			rb = GetComponent<Rigidbody>();
+			
+		}
+		void Start()
+		{
 			if (brakeCurve == null)
 			{
 				brakeCurve = GenerateBrakeCurve();
 			}
-			tr = transform;
-			rb = GetComponent<Rigidbody>();
-			carLen = tr.GetChild(0).GetComponent<MeshFilter>().mesh.bounds.extents.z * 2;
 			// Create normal orientation object
 			GameObject normTemp = new GameObject(tr.name + "'s Normal Orientation");
 			norm = normTemp.transform;
-
+			carLen = tr.GetChild(0).GetComponent<MeshFilter>().mesh.bounds.extents.z * 2;
 			SetCenterOfMass();
 
 			// Instantiate tow vehicle
@@ -357,7 +370,7 @@ namespace RVP
 		public void SetAccel(float f)
 		{
 
-			f = Mathf.Clamp(f, -1, 1);
+			f = Mathf.Clamp(f, -1, (battery < lowBatteryLevel) ? 0.5f : 1);
 			accelInput = f;
 			battery -= accelInput * batteryBurnDelta * Time.deltaTime;
 		}
@@ -416,6 +429,7 @@ namespace RVP
 		// Set boost input
 		public void SetBoost(bool b)
 		{
+			battery -= Time.deltaTime * boostBurnRate;
 			boostButton = b;
 		}
 		public void SetSGPShift(bool b)
@@ -663,10 +677,36 @@ namespace RVP
 				rot.z = 0;
 			tr.rotation = Quaternion.Euler(rot);
 		}
+
+		public IEnumerator CountdownTimer(float v)
+		{
+			countdownTimer = v;
+			GetComponent<SGP_Bouncer>().enabled = false;
+			while (countdownTimer>0)
+			{
+				SetEbrake(1);
+				countdownTimer -= Time.deltaTime;
+				yield return null;
+			}
+			GetComponent<SGP_Bouncer>().enabled = true;
+			SetEbrake(0);
+		}
+
+		public void SetSponsor(int v)
+		{
+			v = Mathf.Clamp(v, 1, Info.Liveries);
+			sponsor = v;
+			var mr = bodyObj.GetComponent<MeshRenderer>();
+			string matName = mr.sharedMaterial.name;
+			matName = matName.Substring(0, matName.Length - 1) + v.ToString();
+			Material newMat = Resources.Load<Material>("materials/" + matName);
+			newMat.name = matName;
+			mr.material = newMat;
+		}
 	}
 
 	// Class for groups of wheels to check each FixedUpdate
-	[System.Serializable]
+	[Serializable]
 	public class WheelCheckGroup
 	{
 		public Wheel[] wheels;

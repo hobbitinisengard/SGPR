@@ -31,9 +31,9 @@ TagManager:
   - GrindTrigger
   - Selection
   - DecreasedGravityZone
-  - Startline
-  - 
-  - 
+  - VehicleTrigger
+  - Underside
+  - Ghost
   - 
   - 
   - 

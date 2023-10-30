@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -180,7 +181,40 @@ namespace RVP
 			}
 			return count;
 		}
+		public static Material ToOpaqueMode(Material inputMat)
+		{
+			Material material = inputMat;
 
+			material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
+			material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.Zero);
+			material.SetInt("_ZWrite", 1);
+			material.DisableKeyword("_ALPHATEST_ON");
+			material.DisableKeyword("_ALPHABLEND_ON");
+			material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+			material.renderQueue = -1; // Set it back to the default opaque render queue
+
+			return material;
+		}
+
+		public static Material ToFadeMode(Material inputMat)
+		{
+			Material material = inputMat;
+
+			var c = material.color;
+			c.a = 0.5f;
+			material.color = c;
+
+			// Set the rendering mode to transparent
+			material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+			material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+			material.SetInt("_ZWrite", 0);
+			material.DisableKeyword("_ALPHATEST_ON");
+			material.EnableKeyword("_ALPHABLEND_ON");
+			material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+			material.renderQueue = 3500;
+
+			return material;
+		}
 		public static async Task<Texture2D> GetRemoteTexture(string url)
 		{
 			using (UnityWebRequest www = UnityWebRequestTexture.GetTexture(url))
@@ -208,6 +242,10 @@ namespace RVP
 				}
 			}
 		}
+		public static Vector3 Vec3Flatten(in Vector3 v)
+		{
+			return new Vector3(v.x, 0, v.z).normalized;
+		}
 
 #if UNITY_EDITOR
 		// Returns whether the given object is part of a prefab (meant to be used with selected objects in the inspector)
@@ -217,6 +255,8 @@ namespace RVP
 				 && UnityEditor.PrefabUtility.GetPrefabAssetType(componentOrGameObject) != UnityEditor.PrefabAssetType.NotAPrefab
 				 && UnityEditor.PrefabUtility.GetPrefabAssetType(componentOrGameObject) != UnityEditor.PrefabAssetType.MissingAsset;
 		}
+
+		
 #endif
 	}
 }

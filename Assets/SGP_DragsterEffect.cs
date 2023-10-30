@@ -8,7 +8,7 @@ public class SGP_DragsterEffect : MonoBehaviour
     bool modified_COM = false;
     VehicleParent vp;
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
         vp = GetComponent<VehicleParent>();
 

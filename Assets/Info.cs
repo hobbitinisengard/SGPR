@@ -1,4 +1,5 @@
 using Newtonsoft.Json;
+using RVP;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,10 +10,10 @@ public static class Info
 	public readonly static string userdata_path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Stunt GP Reloaded\\userdata.txt";
 	public readonly static string path_path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Stunt GP Reloaded\\path.txt";
 	public readonly static string documents_sgpr_path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Stunt GP Reloaded";
-	public enum TileGroup { Roads, }
-	public enum Livery { Caltex, Rline, Mysuko, Titan, Itex, TGR, Special }
+	public enum Livery { Special=1, TGR, Rline, Itex, Caltex, Titan, Mysuko }
 	public const int Liveries = 7;
-	public enum RaceType { Race, Stunt, Drift, Knockout, Survival };
+	public enum RecordType { BestLap, RaceTime, StuntScore, DriftScore }
+	public enum RaceType { Race, Stunt, Drift, Knockout, Survival }
 	public const int RaceTypes = 5;
 	public enum Envir { GER, JAP, SPN, FRA, ENG, USA, ITA, MEX };
 	public static readonly int[] skys = new int[]{1,2,3,4,5,6,7,8};
@@ -40,6 +41,7 @@ public static class Info
 	public static Dictionary<string, AudioClip> audioClips;
 	public static bool loaded = false;
 	public const int roadLayer = 6;
+	public const int vehicleLayer = 9;
 	public const int connectorLayer = 11;
 	public const int invisibleLevelLayer = 12;
 	public const int terrainLayer = 13;
@@ -49,14 +51,20 @@ public static class Info
 	public const int pitsLineLayer = 17;
 	public const int pitsZoneLayer = 18;
 	public const int grindTrigger = 19;
+	public const int ghostLayer = 24;
+	
+	public const int firstExternalSurface = 4;
+
 	/// <summary>
 	/// Only one object at the time can have this layer
 	/// </summary>
 	public const int selectionLayer = 20;
 
-	// next session data
+	// curr/next session data
+	public static List<VehicleParent> s_cars = new List<VehicleParent>();
 	public static CarSetup[] s_carSetups;
 	public static string s_trackName = "JAP";
+	public static string s_playerName = "P1";
 	public static RaceType s_raceType = RaceType.Race;
 	public static int s_laps = 3;
 	public static bool s_inEditor = true;
@@ -257,8 +265,8 @@ public class TrackHeader
 		// lap race stunt drift
 		records = new Record[]
 		{
-			new Record(null, float.MaxValue, true),
-			new Record(null, float.MaxValue, true),
+			new Record(null, 3600*9+59*60+59+0.99f, true),
+			new Record(null, 3600*9+59*60+59+0.99f, true),
 			new Record(null, 0, false),
 			new Record(null, 0, false),
 		};

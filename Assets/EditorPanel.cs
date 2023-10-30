@@ -10,10 +10,13 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using TMPro;
-using UnityEditor.AnimatedValues;
 using UnityEngine;
 using UnityEngine.UI;
-
+public struct ReplayCamStruct
+{
+	public int dist;
+	public TrackCamera cam;
+}
 public class EditorPanel : Sfxable
 {
 	const int connectorRadius = 5;
@@ -45,7 +48,13 @@ public class EditorPanel : Sfxable
 		StuntZonesTool,
 		Cross
 	}
+	
+
 	public Mode mode { get; private set; }
+	public List<int> stuntpointsContainer = new List<int>();
+	public List<int> waypointsContainer = new List<int>(32);
+	public List<ReplayCamStruct> replayCamsContainer = new List<ReplayCamStruct>(32);
+	public GameObject waypointTriggerPrefab;
 	public GameObject pathFollower;
 	public RenderTexture renderTexture;
 	public GameObject YouSurePanel;
@@ -102,7 +111,7 @@ public class EditorPanel : Sfxable
 	int zRot = 0;
 	CSelector selector = new CSelector();
 	bool curMirror;
-	GameObject placedTilesContainer;
+	public GameObject placedTilesContainer { get; private set; }
 	GameObject racingLineContainer;
 	Vector3 curPosition;
 	List<Connector> connectors = new List<Connector>();
@@ -122,8 +131,6 @@ public class EditorPanel : Sfxable
 	Predicate<Connector> isStuntZonePred = delegate (Connector c) { return c.isStuntZone; };
 	Predicate<Connector> neverMark = delegate (Connector c) { return false; };
 	private Vector3 intersectionSnapLocation = -Vector3.one;
-	private bool abortIfPathNotConnectable = false;
-
 	void Awake()
 	{
 		mode = Mode.Build;
@@ -237,7 +244,7 @@ public class EditorPanel : Sfxable
 	{
 		if (Input.GetKeyDown(KeyCode.Escape))
 		{
-			ShowYouSurePanel();
+			SwitchTo(Mode.None);
 		}
 		if (Input.GetKey(KeyCode.LeftAlt) && Input.GetKey(KeyCode.S))
 			QuickSave();
@@ -752,7 +759,6 @@ public class EditorPanel : Sfxable
 			yield break;
 		}
 
-
 		// get connector-B of startline
 		Connector begin = startline.GetChild(2).GetComponent<Connector>();
 		Connector cur = begin;
@@ -863,8 +869,52 @@ public class EditorPanel : Sfxable
 				col.isTrigger = true;
 				castable.layer = 16;//Info.racingLineLayer;
 				castable.name = progress.ToString(CultureInfo.InvariantCulture);
-				progress += 1;
+				progress += 3;
 			}
+
+			// generate stuntpoints for cars
+			stuntpointsContainer.Clear();
+			replayCamsContainer.Clear();
+			foreach(var c in connectors)
+			{
+				if(c.isStuntZone || c.trackCamera != null)
+				{
+					var hits = Physics.OverlapSphere(c.transform.position + Vector3.up, 30, 1 << Info.racingLineLayer);
+					float min = 999;
+					int closestIdx = 0;
+					for(int i=0; i<hits.Length; ++i)
+					{
+						float distance = Vector3.Distance(hits[i].transform.position, c.transform.position);
+						if(distance < min)
+						{
+							min = distance;
+							closestIdx = i;
+						}
+					}
+					if(c.isStuntZone)
+						stuntpointsContainer.Add(int.Parse(hits[closestIdx].name));
+					if(c.trackCamera != null)
+					{
+						replayCamsContainer.Add(new ReplayCamStruct { cam = c.trackCamera,dist = int.Parse(hits[closestIdx].name) });
+					}
+				}
+			}
+
+			// generate waypoints for cars
+			//waypointsContainer.Clear();
+			//float maxDot = Mathf.Cos(15 * Mathf.Deg2Rad);
+			//Vector3 curWayDir = pathCreator.path.GetDirectionAtDistance(0);
+			//waypointsContainer.Add(0);
+			//for(int i=5;i< pathCreator.path.length; i+=10)
+			//{
+			//	Vector3 newWayDir = pathCreator.path.GetDirectionAtDistance(i);
+			//	float dot = Vector3.Dot(F.Vec3Flatten(curWayDir), F.Vec3Flatten(newWayDir));
+			//	if (Mathf.Abs(dot) <= maxDot)
+			//	{
+			//		waypointsContainer.Add(i);
+			//		curWayDir = newWayDir;
+			//	}
+			//}
 		}
 	}
 	void InvalidateConnections()
@@ -1469,7 +1519,6 @@ public class EditorPanel : Sfxable
 		WindRanX.value = windRandom.x / maxWind;
 		WindRanZ.value = windRandom.z / maxWind;
 
-		abortIfPathNotConnectable = true;
 		SwitchToConnect();
 	}
 	public void OpenLoadTrackFileBrowser()
@@ -1495,7 +1544,8 @@ public class EditorPanel : Sfxable
 	}
 	public void ToValidate()
 	{
-
+		SwitchTo(Mode.None);
+		raceManager.StartRace();
 	}
 	public void HidePanel()
 	{

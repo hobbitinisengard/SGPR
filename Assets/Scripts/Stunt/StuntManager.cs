@@ -53,11 +53,11 @@ namespace RVP
         [System.NonSerialized]
         public float positiveProgress;
         public string overlayName { get; protected set; }
-        public static bool Parallel(Vector3 norm_a, Vector3 norm_b)
+        public static bool Parallel(in Vector3 norm_a, in Vector3 norm_b)
         {
             return Mathf.Abs(Vector3.Dot(norm_a, norm_b)) >= 0.9f;// angle is 0 deg +- 25deg
         }
-        public static bool Perpendicular(Vector3 norm_a, Vector3 norm_b)
+        public static bool Perpendicular(in Vector3 norm_a, in Vector3 norm_b)
         {
             return Mathf.Abs(Vector3.Dot(norm_a, norm_b)) < 0.4f; // angle is 90 deg +- 23deg
         }
@@ -111,7 +111,7 @@ namespace RVP
             Debug.LogError("Shouldn't come here");
             return true;
         }
-        public static VectorRelationship GetRelationship(Vector3 norm_a, Vector3 norm_b)
+        public static VectorRelationship GetRelationship(in Vector3 norm_a, in Vector3 norm_b)
         {
             if (Parallel(norm_a, norm_b))
             {

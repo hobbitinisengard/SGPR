@@ -5,24 +5,29 @@ using UnityEngine.UI;
 public class CountDownSeq : Sfxable
 {
 	public Sprite[] countdownSprites;
+	float countdownSeconds;
+	public float CountdownSeconds {
+		get { return countdownSeconds; }
+		set { countdownSeconds = value+1; } // dimming of "GO" takes 1 sec
+	}
 	Image img;
 	Coroutine seq;
 	void OnEnable()
 	{
 		img = transform.GetChild(0).GetComponent<Image>();
-		img.color = new Color(1,1,1,0);
+		img.color = new Color(1, 1, 1, 0);
 		if (seq != null)
 			StopCoroutine(seq);
 		seq = StartCoroutine(CountdownSeq());
 	}
 
 	IEnumerator CountdownSeq()
-	{ 
-		float timer = 5;
+	{
+		float timer = countdownSeconds;
 		float lastTime = Time.time;
-		while(timer>0)
+		while (timer > 0)
 		{
-			if(timer < 4)
+			if (timer < 4)
 			{
 				if (timer % 1f > 0.5f)
 					img.color = Color.white;
