@@ -189,14 +189,14 @@ public class SGP_HUD : MonoBehaviour
 	}
 	public void AddStunt(in Stunt stunt)
 	{
-		Debug.Log("addElement");
+		if(!vp.followAI.isCPU)
+			Debug.Log("addElement");
 		GameObject stuntEntry = Instantiate(stuntTemplate, StuntInfo.transform);
 		stuntEntry.GetComponent<StuntInfoOverlay>().WriteStuntName(stunt);
 		stuntEntry.SetActive(true);
 	}
 	void ClearStuntInfo()
 	{
-		Debug.Log("clear");
 		for (int i = 1; i < StuntInfo.transform.childCount; ++i)
 		{
 			Destroy(StuntInfo.transform.GetChild(i).gameObject);
@@ -220,26 +220,7 @@ public class SGP_HUD : MonoBehaviour
 		liveMessages.Clear();
 		carProgressIcons.Clear();
 	}
-	public void Connect(VehicleParent newVehicle)
-	{
-		if (!newVehicle)
-		{
-			Debug.LogError("newVehicle is null");
-			return;
-		}	
-		vp = newVehicle;
-
-		trans = newVehicle.gameObject.GetComponentInChildren<Transmission>() as GearboxTransmission;
-
-		engine = newVehicle.gameObject.GetComponentInChildren<GasMotor>();
-
-		racebox = newVehicle.gameObject.GetComponent<RaceBox>();
-
-		transform.gameObject.SetActive(true);
-
-		gameObject.SetActive(true);
-	}
-	private void Start()
+	private void Awake()
 	{
 		stuntTemplate = StuntInfo.transform.GetChild(0).gameObject;
 		fullScaleGear = currentGear.transform.localScale.x;
@@ -252,27 +233,38 @@ public class SGP_HUD : MonoBehaviour
 		curMsgInQueue = new Message();
 		SetBottomTextPos(msgHiddenPos);
 	}
-	/// <summary>
-	/// Before enabling, all cars has to be in Info.s_cars
-	/// </summary>
-	private void OnEnable()
+	public void Connect(VehicleParent newVehicle)
 	{
-		for(int i=0; i<Info.s_cars.Count; ++i)
+		if (!newVehicle)
+		{
+			Debug.LogError("newVehicle is null");
+			return;
+		}	
+		vp = newVehicle;
+
+		trans = newVehicle.GetComponentInChildren<Transmission>() as GearboxTransmission;
+
+		engine = newVehicle.GetComponentInChildren<GasMotor>();
+
+		racebox = newVehicle.GetComponent<RaceBox>();
+
+		transform.gameObject.SetActive(true);
+
+		gameObject.SetActive(true);
+
+		for (int i = 0; i < Info.s_cars.Count; ++i)
 		{
 			progressBar.GetChild(i).gameObject.SetActive(true);
 			progressBar.GetChild(i).localScale = 0.75f * Vector3.one;
 			carProgressIcons.Add(Info.s_cars[i], progressBar.GetChild(i));
 			progressBar.GetChild(i).name = Info.s_cars[i].tr.name;
-			// SponserSprites is 0-6, vp.sponsor is 1-7
-			progressBar.GetChild(i).GetComponent<Image>().sprite = SponserSprites[Info.s_cars[i].sponsor-1];
+			progressBar.GetChild(i).GetComponent<Image>().sprite = SponserSprites[Info.s_cars[i].sponsor];
 		}
-		if(vp)
-		{
-			carProgressIcons[vp].SetSiblingIndex(9);
-			carProgressIcons[vp].localScale = Vector3.one;
-		}
+		carProgressIcons[vp].SetSiblingIndex(9);
+		carProgressIcons[vp].localScale = Vector3.one;
 	}
-	void Update()
+	
+	void FixedUpdate()
 	{
 		if (!vp)
 			return;
@@ -303,6 +295,7 @@ public class SGP_HUD : MonoBehaviour
 		{
 			raceManager.PlayFinishSeq();
 			gameObject.SetActive(false);
+			return;
 		}
 
 		ptsAnim.Play(racebox.JumpPai);
@@ -315,14 +308,13 @@ public class SGP_HUD : MonoBehaviour
 			{
 				StuntInfo.transform.GetChild(i).GetComponent<StuntInfoOverlay>().DimTexts(progress);
 			}
-			dimStuntTableTimer -= Time.deltaTime;
+			dimStuntTableTimer -= Time.fixedDeltaTime;
 		}
 		if (StuntInfo.transform.childCount > 1)
 		{
 			var result = racebox.StuntSeqEnded(out var stuntPai);
 			if (result == StuntSeqStatus.None && dimStuntTableTimer<=0)
 			{ // hide stunt panel abruptly if car suddenly isn't stunting (e.g. when resetting on track)
-				Debug.Log("None");
 				ClearStuntInfo();
 				StuntInfo.SetActive(false);
 			}

@@ -45,7 +45,7 @@ namespace RVP
 
 		public float maxDegreesRotation;
 		AnimationCurve keyboardInputCurve;
-		float secsForMaxSteeringSpeed = 10;
+		float secsForMaxSteeringSpeed = 15;
 		public float d_angleSteer;
 		public bool unfiltered = false;
 

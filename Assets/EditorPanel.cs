@@ -200,8 +200,7 @@ public class EditorPanel : Sfxable
 		flyCamera.enabled = true;
 		if (lastEditorCameraPosition.HasValue)
 		{
-			flyCamera.transform.position = lastEditorCameraPosition.Value;
-			flyCamera.transform.rotation = lastEditorCameraRotation;
+			flyCamera.transform.SetPositionAndRotation(lastEditorCameraPosition.Value, lastEditorCameraRotation);
 		}
 	}
 	private void Start()
@@ -1544,6 +1543,7 @@ public class EditorPanel : Sfxable
 	}
 	public void ToValidate()
 	{
+		flyCamera.enabled = false;
 		SwitchTo(Mode.None);
 		raceManager.StartRace();
 	}

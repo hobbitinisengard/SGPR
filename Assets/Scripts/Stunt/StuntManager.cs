@@ -65,6 +65,11 @@ namespace RVP
         {
             return localDoneTimes.ToString();
         }
+      public Stunt(Stunt s)
+      {
+         name = s.name;
+         score = s.score;
+      }
     }
 
     [System.Serializable]
@@ -88,16 +93,36 @@ namespace RVP
         public bool canBeReverse { get; private set; }
         [NonSerialized]
         public Vector3 w;
-        //public Vector3 w;
 
-        //public RotationStunt(RotationStunt oldStunt) { // copy ctor
-        //    name = oldStunt.name;
-        //    rotationAxis = oldStunt.rotationAxis;
-        //    score = oldStunt.score;
-        //    angleThreshold = oldStunt.angleThreshold;
-        //    doneTimes = oldStunt.doneTimes;
-        //}
-        public bool StuntingCarAlignmentConditionFulfilled(in VehicleParent vp)
+      public RotationStunt(RotationStunt rs) 
+         : base(rs)
+      { 
+         allowHalfs = rs.allowHalfs;
+         req_carAlignment = rs.req_carAlignment;
+         req_w_and_Angular_relation = rs.req_w_and_Angular_relation;
+         req_globalY_and_Angular_relation = rs.req_globalY_and_Angular_relation;
+         rotationAxis = rs.rotationAxis;
+         endStuntReqParallelAlignment = rs.endStuntReqParallelAlignment;
+         angleThreshold = rs.angleThreshold;
+         negativeProgress = rs.negativeProgress;
+         halfFirstPositiveName = rs.halfFirstPositiveName;
+         halfFirstNegativeName = rs.halfFirstNegativeName;
+         lastWriteWasPositive = rs.lastWriteWasPositive;
+         isHalfRotation = rs.isHalfRotation;
+         canBeReverse = rs.canBeReverse;
+         w = rs.w;
+      }
+
+      //public Vector3 w;
+
+      //public RotationStunt(RotationStunt oldStunt) { // copy ctor
+      //    name = oldStunt.name;
+      //    rotationAxis = oldStunt.rotationAxis;
+      //    score = oldStunt.score;
+      //    angleThreshold = oldStunt.angleThreshold;
+      //    doneTimes = oldStunt.doneTimes;
+      //}
+      public bool StuntingCarAlignmentConditionFulfilled(in VehicleParent vp)
         {
             switch (req_carAlignment)
             {
@@ -215,10 +240,6 @@ namespace RVP
         public void PrintProgress()
         {
             Debug.Log("+++"+positiveProgress.ToString() + " ---" + negativeProgress.ToString());
-        }
-        Vector2 Flat(Vector3 v)
-        {
-            return new Vector2(v.x, v.z);
         }
     }
 }

@@ -90,7 +90,7 @@ namespace RVP
 				{
 					snd.volume = Mathf.Lerp(snd.volume,
 						screechAmount * ((vp.groundedWheels * 1.0f) / (wheels.Length * 1.0f)), 8 * Time.deltaTime);
-					snd.pitch = Mathf.Lerp(snd.pitch, 0.5f + screechAmount * 0.9f, 2 * Time.deltaTime);
+					//snd.pitch = Mathf.Lerp(snd.pitch, 0.5f + screechAmount * 0.9f, 2 * Time.deltaTime);
 				}
 			}
 			else if (snd.isPlaying)

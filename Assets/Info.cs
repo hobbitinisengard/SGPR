@@ -66,11 +66,11 @@ public static class Info
 	public static string s_trackName = "JAP";
 	public static string s_playerName = "P1";
 	public static RaceType s_raceType = RaceType.Race;
-	public static int s_laps = 3;
+	public static int s_laps = 99;
 	public static bool s_inEditor = true;
 	public static bool s_isNight = false;
 	public static int s_cpuLevel = 3;
-	public static int s_rivals = 3;
+	public static int s_rivals = 0;
 	public static bool s_reversed = false;
 	public static bool s_catchup = true;
 

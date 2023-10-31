@@ -75,8 +75,7 @@ namespace RVP
 		public GasMotor engine;
 		public ParticleSystem[] batteryLoadingParticleSystems;
 		public float battery = 1;
-		[Range(0.0005f, 0.1f)]
-		public float batteryLoadDelta = 0.05f;//*Time.fixedDeltaTime
+		public float batteryLoadDelta = 0.2f;//*Time.fixedDeltaTime
 		[Range(0.001f, 0.05f)]
 		public float batteryBurnDelta = 0.01f;
 		public float lowBatteryLevel = 0.2f;
@@ -164,7 +163,7 @@ namespace RVP
 		[NonSerialized]
 		public GameObject customCam;
 		/// <summary>
-		/// allowed values: 1-7
+		/// allowed values: 0-6
 		/// </summary>
 		public int sponsor { get; private set; }
 
@@ -370,7 +369,7 @@ namespace RVP
 		public void SetAccel(float f)
 		{
 
-			f = Mathf.Clamp(f, -1, (battery < lowBatteryLevel) ? 0.5f : 1);
+			f = Mathf.Clamp(f, -1, (battery < lowBatteryLevel) ? 0.75f : 1);
 			accelInput = f;
 			battery -= accelInput * batteryBurnDelta * Time.deltaTime;
 		}
@@ -694,11 +693,11 @@ namespace RVP
 
 		public void SetSponsor(int v)
 		{
-			v = Mathf.Clamp(v, 1, Info.Liveries);
+			v = Mathf.Clamp(v, 0, Info.Liveries-1);
 			sponsor = v;
 			var mr = bodyObj.GetComponent<MeshRenderer>();
 			string matName = mr.sharedMaterial.name;
-			matName = matName.Substring(0, matName.Length - 1) + v.ToString();
+			matName = matName.Substring(0, matName.Length - 1) + (v+1).ToString();
 			Material newMat = Resources.Load<Material>("materials/" + matName);
 			newMat.name = matName;
 			mr.material = newMat;

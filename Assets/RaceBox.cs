@@ -17,8 +17,6 @@ public enum StuntSeqStatus { None, Ongoing, Ended };
 
 public class RaceBox : MonoBehaviour
 {
-	public float progress;
-	public int curStuntpointIdx;
 	public VehicleParent vp { get; private set; }
 	SGP_Evo evoModule;
 	public float distance { get; private set; }
@@ -92,7 +90,10 @@ public class RaceBox : MonoBehaviour
 		starLevel = 0;
 		//rots = new Stack<StuntRotInfo>(32);
 		var globalcontrol = GameObject.Find("Canvas");
-		stunts = globalcontrol.transform.GetComponent<StuntManager>().allPossibleFlips.ToArray();
+		var stuntTable = globalcontrol.transform.GetComponent<StuntManager>().allPossibleFlips;
+		stunts = new Stunt[stuntTable.Length];
+		for(int i=0; i< stuntTable.Length; ++i)
+			stunts[i] = new RotationStunt(stuntTable[i]);
 		stuntPai = new PtsAnimInfo(0, PtsAnimType.Evo, -1);
 	}
 	public string Result(Info.RecordType recordType)
@@ -302,6 +303,7 @@ public class RaceBox : MonoBehaviour
 	}
 	void DeclineStunt()
 	{
+		Debug.Log(vp.tr.name + " Decline");
 		stableLandingTimer = -1;
 		prevStuntPai = null;
 		StuntPaiReset();
@@ -315,7 +317,7 @@ public class RaceBox : MonoBehaviour
 			SetGrantedComboTime(5 + 0.5f * starLevel);
 			vp.battery = Mathf.Clamp01(vp.battery + vp.engine.batteryStuntIncrease);
 			aero += stuntPai.score / 10f;
-			Debug.Log("Accept");
+			Debug.Log(vp.tr.name + " Accept");
 			prevStuntPai = new PtsAnimInfo(stuntPai);
 			StuntPaiReset();
 		}
@@ -416,7 +418,6 @@ public class RaceBox : MonoBehaviour
 	}
 	void SetGrantedComboTime(float seconds)
 	{
-		Debug.Log(seconds);
 		grantedComboTime = seconds;
 		starLevel = Mathf.Clamp(++starLevel, 0, 10);
 	}
@@ -434,6 +435,7 @@ public class RaceBox : MonoBehaviour
 			vp.followAI.curWaypointIdx = 0;
 			vp.followAI.curStuntpointIdx = 0;
 			vp.followAI.curReplayPointIdx = 0;
+			vp.followAI.speedLimitDist = -1;
 			var curlaptime = CurLapTime();
 			lapStartTime = DateTime.Now;
 			curLap++;
@@ -443,16 +445,15 @@ public class RaceBox : MonoBehaviour
 				raceTime = DateTime.Now - raceStartTime;
 				vp.followAI.SetCPU(true);
 			}
-			else if (curlaptime!=null)
+			else if (curlaptime.HasValue)
 			{
 				var recordTable = Info.tracks[Info.s_trackName].records;
 
 				if (curlaptime.Value.TotalSeconds < recordTable[0].secondsOrPts)
 					recordTable[0].secondsOrPts = (float)curlaptime.Value.TotalSeconds;
-				if (bestLapTime < curlaptime)
+				if (bestLapTime > curlaptime)
 					bestLapTime = curlaptime.Value;
 			}
-			
 		}
 	}
 }

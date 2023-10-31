@@ -35,6 +35,6 @@ public class EnergyTransfer : MonoBehaviour
 			vp.batteryLoadingSnd.clip = Info.audioClips["elec" + Mathf.RoundToInt(3 * Random.value)];
 			vp.batteryLoadingSnd.Play();
 		}
-		vp.battery = Mathf.Clamp01(vp.battery + vp.batteryLoadDelta*Time.fixedDeltaTime);
+		vp.battery = Mathf.Clamp01(vp.battery + vp.batteryLoadDelta*Time.deltaTime);
 	}
 }

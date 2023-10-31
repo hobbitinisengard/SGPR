@@ -70,7 +70,7 @@ namespace RVP
 		public float rolledOverTime;
 		private bool dumbBool;
 		public AnimationCurve lookAheadMultCurve = new AnimationCurve();
-		public AnimationCurve tSpeedCurve = new AnimationCurve();
+		public AnimationCurve lookAheadSteerCurve = new AnimationCurve();
 		public AnimationCurve tSpeedExpCurve = new AnimationCurve();
 		public bool searchForPits;
 		float inPitsTime;
@@ -97,22 +97,22 @@ namespace RVP
 				GetComponent<BasicInput>().enabled = false;
 				if (cpuLevel == 3)
 				{
-					lowSpeed = 35;
+					lowSpeed = 30;
 					tyreMult = 1.5f;
 				}
 				if (cpuLevel == 2)
 				{
-					lowSpeed = 35;
+					lowSpeed = 30;
 					tyreMult = 1.5f;
 				}
 				if (cpuLevel == 1)
 				{
-					lowSpeed = 35;
+					lowSpeed = 30;
 					tyreMult = 1.5f;
 				}
 				if (cpuLevel == 0)
 				{
-					lowSpeed = 30;
+					lowSpeed = 35;
 					tyreMult = 1.5f;
 				}
 				for (int i = 0; i < 4; ++i)
@@ -286,7 +286,6 @@ namespace RVP
 				}
 				
 			}
-			float lookAhead = lookAheadBase * lookAheadMultCurve.Evaluate(vp.velMag);
 			if (selfDriving)
 			{
 				if (vp.battery < 0.2f)
@@ -322,8 +321,8 @@ namespace RVP
 					//		++curWaypointIdx;
 					//	tPos = trackPathCreator.path.GetPointAtDistance(waypointsContainer[curWaypointIdx]);
 					//}
-					tPos = trackPathCreator.path.GetPointAtDistance(dist + lookAhead);
-					tPos2 = trackPathCreator.path.GetPointAtDistance(dist + lookAhead);
+					tPos = trackPathCreator.path.GetPointAtDistance(dist +  lookAheadBase * lookAheadSteerCurve.Evaluate(vp.velMag));
+					tPos2 = trackPathCreator.path.GetPointAtDistance(dist + lookAheadBase * lookAheadMultCurve.Evaluate(vp.velMag));
 				}
 
 				tPos0.y = transform.position.y;
@@ -347,19 +346,19 @@ namespace RVP
 						if (aheadSpeed < speedLimit)
 						{
 							speedLimit = aheadSpeed;
-							speedLimitDist = (dist + lookAheadMultCurve.Evaluate(vp.velMag) * lookAheadBase) % trackPathCreator.path.length;
+							speedLimitDist = (dist + lookAheadBase * lookAheadMultCurve.Evaluate(vp.velMag));
 						}
 
 						if (dist > speedLimitDist)
 						{
 							tSpeed = tSpeedExpCurve.Evaluate(Mathf.Abs(tPos0.w));
-							speedLimit = 1024;
+							speedLimit = 999;
 							speedLimitDist = -1;
 						}
 						else
 						{
-							//var pos = pathCreator.path.GetPointAtDistance(speedLimitDist);
-							//Debug.DrawLine((Vector3)pos, (Vector3)pos + 100 * Vector3.up, Color.blue);
+							var pos = trackPathCreator.path.GetPointAtDistance(speedLimitDist);
+							Debug.DrawLine((Vector3)pos, (Vector3)pos + 100 * Vector3.up, Color.blue);
 							tSpeed = speedLimit;
 
 						}

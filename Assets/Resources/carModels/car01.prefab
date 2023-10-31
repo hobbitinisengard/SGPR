@@ -294,7 +294,7 @@ AudioSource:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0.502
+      value: 1
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -45731,7 +45731,7 @@ MonoBehaviour:
   suspension: {fileID: 6779875395759827803}
   isHub: 0
   connectObj: {fileID: 7036308157699955445}
-  connectPoint: {x: -0.0059198304, y: -0.09819916, z: -0.3509833}
+  connectPoint: {x: -0.0059217378, y: -0.09819916, z: -0.35098234}
   rotate: 1
   stretch: 0
   solidAxle: 0
@@ -89539,7 +89539,7 @@ MonoBehaviour:
   - {fileID: 1465737922}
   - {fileID: 839933645}
   battery: 1
-  batteryLoadDelta: 0.05
+  batteryLoadDelta: 0.2
   batteryBurnDelta: 0.01
   lowBatteryLevel: 0.2
   boostBurnRate: 0.005
@@ -89690,7 +89690,6 @@ MonoBehaviour:
   euler: {x: 0, y: 0, z: 0}
   posy: 0
   tary: 0
-  target: {fileID: 0}
   rotationSpeed: 5
   mult: 1000
 --- !u!114 &6779875395068024192
@@ -89705,8 +89704,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ea7d76ad0805fd5479e1b489d58e44d2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  progress: 0
-  curStuntpointIdx: 0
   w_A_dot: 0
   starLevel: 0
   driftPts: 0
@@ -89768,7 +89765,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
-      time: 0
+      time: 29.96997
       value: 1
       inSlope: 0
       outSlope: 0
@@ -89777,37 +89774,37 @@ MonoBehaviour:
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 60
-      value: 2.5
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 136
+      time: 80
+      value: 10
+      inSlope: 0.02304861
+      outSlope: 0.02304861
+      tangentMode: 0
       weightedMode: 0
-      inWeight: 0.33333334
+      inWeight: 0.06487738
       outWeight: 0.33333334
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  tSpeedCurve:
+  lookAheadSteerCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
-      time: 0
-      value: 140.25702
-      inSlope: -244.34663
-      outSlope: -244.34663
+      time: 30
+      value: 1
+      inSlope: 0.026054239
+      outSlope: 0.026054239
       tangentMode: 0
       weightedMode: 0
       inWeight: 0.33333334
-      outWeight: 0.01972241
+      outWeight: 0.057844162
     - serializedVersion: 3
-      time: 0.61605835
-      value: 40.14444
-      inSlope: -155.92995
-      outSlope: -155.92995
+      time: 50
+      value: 2
+      inSlope: 0.048940755
+      outSlope: 0.048940755
       tangentMode: 0
       weightedMode: 0
-      inWeight: 0.046288412
+      inWeight: 0.050740622
       outWeight: 0.33333334
     m_PreInfinity: 2
     m_PostInfinity: 2
@@ -104503,8 +104500,8 @@ MonoBehaviour:
   springDampening: 0.4
   extendSpeed: 0
   applyHardContactForce: 1
-  hardContactForce: 15
-  hardContactSensitivity: 5
+  hardContactForce: 18
+  hardContactSensitivity: 0
   applyForceAtGroundContact: 1
   leaningForce: 0
   damagePivot: {x: 0, y: 0, z: 0}
@@ -105430,8 +105427,8 @@ MonoBehaviour:
   springDampening: 0.4
   extendSpeed: 0
   applyHardContactForce: 1
-  hardContactForce: 15
-  hardContactSensitivity: 5
+  hardContactForce: 18
+  hardContactSensitivity: 0
   applyForceAtGroundContact: 1
   leaningForce: 0
   damagePivot: {x: 0, y: 0, z: 0}
@@ -105570,8 +105567,8 @@ MonoBehaviour:
   springDampening: 0.4
   extendSpeed: 0
   applyHardContactForce: 1
-  hardContactForce: 15
-  hardContactSensitivity: 5
+  hardContactForce: 18
+  hardContactSensitivity: 0
   applyForceAtGroundContact: 1
   leaningForce: 0
   damagePivot: {x: 0, y: 0, z: 0}
@@ -105800,8 +105797,8 @@ MonoBehaviour:
   springDampening: 0.4
   extendSpeed: 0
   applyHardContactForce: 1
-  hardContactForce: 15
-  hardContactSensitivity: 5
+  hardContactForce: 18
+  hardContactSensitivity: 0
   applyForceAtGroundContact: 1
   leaningForce: 0
   damagePivot: {x: 0, y: 0, z: 0}

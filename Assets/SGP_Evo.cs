@@ -159,8 +159,6 @@ public class SGP_Evo : MonoBehaviour
 	public Vector3 euler;
 	public float posy;
 	public float tary;
-
-	public Transform target;
 	public float rotationSpeed = 5f;
 	[NonSerialized]
 	public Vector3 localEvoAngularVelocity = Vector3.zero;

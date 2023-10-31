@@ -5,6 +5,7 @@ using UnityEngine.SceneManagement;
 using PathCreation;
 using System.Collections;
 using System.Linq;
+using UnityEngine.UIElements;
 
 namespace RVP
 {
@@ -90,8 +91,10 @@ namespace RVP
 		}
 		public void ExitButton()
 		{
+			
 			if (resultsSeq.gameObject.activeSelf)
 				return;
+			musicPlayer.Stop();
 			countDownSeq.gameObject.SetActive(false);
 			
 			if (Info.s_inEditor)
@@ -115,7 +118,7 @@ namespace RVP
 				if (Info.s_cars[i] == vp)
 					return i + 1;
 			}
-			return 0;
+			return 1;
 		}
 		//Color HDRColor(float r, float g, float b, int intensity = 0)
 		//{
@@ -161,8 +164,8 @@ namespace RVP
 			tireFadeTimeStatic = tireFadeTime;
 
 			musicPlayer = GetComponent<AudioSource>();
-			musicPlayer.clip = Resources.Load<AudioClip>("music/JAP");
-
+			
+			
 			Info.PopulateSFXData();
 			Info.PopulateCarsData();
 			Info.PopulateTrackData();
@@ -191,11 +194,9 @@ namespace RVP
 		}
 		public void StartRace()
 		{
-			float countDownSeconds = 5;
-			Info.s_cars.Clear();
 			Transform startTile = null;
 			int startlines = 0;
-			for(int i=0; i<editorPanel.placedTilesContainer.transform.childCount; ++i)
+			for (int i = 0; i < editorPanel.placedTilesContainer.transform.childCount; ++i)
 			{
 				if (editorPanel.placedTilesContainer.transform.GetChild(i).name == "startline")
 				{
@@ -203,11 +204,15 @@ namespace RVP
 					startTile = editorPanel.placedTilesContainer.transform.GetChild(i);
 				}
 			}
-
 			if (startlines != 1)
 				return;
 
-			Vector3 v = new Vector3(-7, 0, 0);
+			editorPanel.gameObject.SetActive(false);
+			musicPlayer.clip = Resources.Load<AudioClip>("music/" + Info.tracks[Info.s_trackName].envir.ToString());
+			musicPlayer.PlayDelayed(5);
+			float countDownSeconds = 5;
+			Info.s_cars.Clear();
+			Vector3 v = new (-7, 0, 0);
 			for(int i = 0; i< Info.s_rivals+1; ++i)
 			{
 				Vector3 castPos = startTile.TransformPoint(v);
@@ -216,23 +221,23 @@ namespace RVP
 					var carModel = Resources.Load<GameObject>(Info.carModelsPath + "car01");
 					var position = new Vector3(castPos.x, hit.point.y + 2, castPos.z);
 					var newCar = Instantiate(carModel, position, startTile.rotation).GetComponent<VehicleParent>();
-					newCar.SetSponsor((i % Info.Liveries)+1);
+					newCar.SetSponsor(i % Info.Liveries);
 					StartCoroutine(newCar.CountdownTimer(countDownSeconds - newCar.engine.transmission.shiftDelaySeconds));
-					newCar.followAI.AssignPath(racingPath, ref editorPanel.stuntpointsContainer, ref editorPanel.replayCamsContainer);
 					Info.s_cars.Add(newCar);
-
 					if (i == Info.s_rivals)
 					{ // last car is the player
 						newCar.name = Info.s_playerName;
 						cam.enabled = true;
 						cam.Connect(newCar);
 						hud.Connect(newCar);
+						newCar.followAI.SetCPU(true);
 					}
 					else
 					{
-						newCar.name = "CPU" + (i + 1).ToString();
+						newCar.name = "CP" + (i + 1).ToString();
 						newCar.followAI.SetCPU(true);
 					}
+					newCar.followAI.AssignPath(racingPath, ref editorPanel.stuntpointsContainer, ref editorPanel.replayCamsContainer);
 				}
 				else
 				{
@@ -242,7 +247,6 @@ namespace RVP
 				v.x = 7 * ((i % 2 == 0) ? 1 : -1);
 				v.z = -(i * 15);
 			}
-			editorPanel.gameObject.SetActive(false);
 			countDownSeq.CountdownSeconds = countDownSeconds;
 			countDownSeq.gameObject.SetActive(true);
 		}
@@ -272,7 +276,6 @@ namespace RVP
 
 		public void PlayFinishSeq()
 		{
-			Debug.Log("FINISH");
 			resultsSeq.gameObject.SetActive(true);
 			cam.SetMode(CameraControl.Mode.Replay);
 		}
