@@ -3,18 +3,38 @@ using System.Collections;
 using PathCreation;
 using System.Linq;
 using System.Globalization;
-using System;
 using System.Collections.Generic;
+using System;
+using Unity.Collections;
+using Unity.Jobs;
 
 namespace RVP
 {
+	
 	[RequireComponent(typeof(VehicleParent))]
 	[DisallowMultipleComponent]
 	[AddComponentMenu("RVP/AI/Follow AI", 0)]
-
+	
 	// Class for following AI
 	public class FollowAI : MonoBehaviour
 	{
+		//struct PointAtDistanceJob : IJobParallelFor
+		//{
+		//	public NativeArray<float> dists;
+		//	public NativeArray<Vector4> results;
+		//	public Action<float, EndOfPathInstruction, Vector4> processFunction;
+		//	public void Execute(int index)
+		//	{
+		//		// You can perform the same operations as an external method here
+		//		results[index] = processFunction(dists[index], EndOfPathInstruction.Loop);
+		//	}
+
+		//	private Vector3 PerformProcessing(Vector3 input)
+		//	{
+		//		// Your processing logic here
+		//		return input * 2;
+		//	}
+		//}
 		List<int> stuntPoints;
 		public List<ReplayCamStruct> replayCams { get; private set; }
 		[NonSerialized]
@@ -300,7 +320,6 @@ namespace RVP
 				}
 				else
 				{
-					tPos0 = trackPathCreator.path.GetPointAtDistance(dist);
 					if (stuntPoints[curStuntpointIdx] < progress)
 					{
 						if (curStuntpointIdx < stuntPoints.Count - 1)
@@ -321,6 +340,7 @@ namespace RVP
 					//		++curWaypointIdx;
 					//	tPos = trackPathCreator.path.GetPointAtDistance(waypointsContainer[curWaypointIdx]);
 					//}
+					tPos0 = trackPathCreator.path.GetPointAtDistance(dist);
 					tPos = trackPathCreator.path.GetPointAtDistance(dist +  lookAheadBase * lookAheadSteerCurve.Evaluate(vp.velMag));
 					tPos2 = trackPathCreator.path.GetPointAtDistance(dist + lookAheadBase * lookAheadMultCurve.Evaluate(vp.velMag));
 				}
@@ -328,8 +348,8 @@ namespace RVP
 				tPos0.y = transform.position.y;
 				tPos.y = transform.position.y;
 				tPos2.y = transform.position.y;
-				Debug.DrawLine((Vector3)tPos, (Vector3)tPos + 100 * Vector3.up, Color.magenta);
-				Debug.DrawLine((Vector3)tPos2, (Vector3)tPos2 + 100 * Vector3.up, Color.red);
+				//Debug.DrawLine((Vector3)tPos, (Vector3)tPos + 100 * Vector3.up, Color.magenta);
+				//Debug.DrawLine((Vector3)tPos2, (Vector3)tPos2 + 100 * Vector3.up, Color.red);
 
 
 				if (pitsPathCreator)
@@ -341,7 +361,6 @@ namespace RVP
 				}
 				else
 				{
-					{
 						float aheadSpeed = tSpeedExpCurve.Evaluate(Mathf.Abs(tPos2.w));
 						if (aheadSpeed < speedLimit)
 						{
@@ -358,11 +377,10 @@ namespace RVP
 						else
 						{
 							var pos = trackPathCreator.path.GetPointAtDistance(speedLimitDist);
-							Debug.DrawLine((Vector3)pos, (Vector3)pos + 100 * Vector3.up, Color.blue);
+							//Debug.DrawLine((Vector3)pos, (Vector3)pos + 100 * Vector3.up, Color.blue);
 							tSpeed = speedLimit;
 
 						}
-					}
 				}
 
 				// Attempt to reverse if vehicle is stuck

@@ -131,6 +131,8 @@ public class EditorPanel : Sfxable
 	Predicate<Connector> isStuntZonePred = delegate (Connector c) { return c.isStuntZone; };
 	Predicate<Connector> neverMark = delegate (Connector c) { return false; };
 	private Vector3 intersectionSnapLocation = -Vector3.one;
+	private bool isPathClosed;
+
 	void Awake()
 	{
 		mode = Mode.Build;
@@ -346,7 +348,7 @@ public class EditorPanel : Sfxable
 								HideCurrentTile();
 								if (Input.GetMouseButtonDown(0))
 								{
-									InvalidateConnections();
+									SetPathClosed(false);
 									if (hit.transform.gameObject.GetComponent<Tile>() == null)
 										Destroy(hit.transform.parent.gameObject);
 									else
@@ -368,7 +370,7 @@ public class EditorPanel : Sfxable
 								if (Input.GetMouseButtonDown(0))
 								{
 									 // PLACE TILE
-									InvalidateConnections();
+									SetPathClosed(false);
 									currentTile.GetComponent<Tile>().SetPlaced();
 									InstantiateNewTile(currentTileButton.name);
 									placedConnector = null;
@@ -843,6 +845,8 @@ public class EditorPanel : Sfxable
 		}
 		BezierPath bezierPath = new BezierPath(racingLine.ToArray(), true, PathSpace.xyz);
 		pathCreator.bezierPath = bezierPath;
+		SetPathClosed(true);
+		isPathClosed = true;
 		connectButtonImage.color = Color.green;
 		pathFollower.SetActive(true);
 		
@@ -916,10 +920,11 @@ public class EditorPanel : Sfxable
 			//}
 		}
 	}
-	void InvalidateConnections()
+	void SetPathClosed(bool val)
 	{
-		pathFollower.SetActive(false);
-		connectButtonImage.color = Color.yellow;
+		isPathClosed = val;
+		connectButtonImage.color = val ? Color.green : Color.yellow;
+		pathFollower.SetActive(val);
 	}
 	void ClearConnectors()
 	{
@@ -1423,8 +1428,15 @@ public class EditorPanel : Sfxable
 		if (terrain != null)
 			Destroy(terrain.gameObject);
 
-		terrain = envir.transform.GetChild(envir.transform.childCount - 1).GetComponent<Terrain>();
 
+		terrain = envir.transform.Find("Terrain").GetComponent<Terrain>();
+
+		if (Info.s_isNight)
+		{
+			var lights = envir.transform.Find("Lights");
+			if(lights != null)
+				lights.gameObject.SetActive(true);
+		}
 		trackName.text = Info.s_trackName;
 		string path = Path.Combine(Application.streamingAssetsPath, Info.s_trackName + ".data");
 
@@ -1543,9 +1555,13 @@ public class EditorPanel : Sfxable
 	}
 	public void ToValidate()
 	{
-		flyCamera.enabled = false;
 		SwitchTo(Mode.None);
-		raceManager.StartRace();
+
+		if (isPathClosed)
+		{
+			flyCamera.enabled = false;
+			raceManager.StartRace();
+		}
 	}
 	public void HidePanel()
 	{

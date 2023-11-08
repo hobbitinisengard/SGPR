@@ -293,7 +293,7 @@ public class SGP_HUD : MonoBehaviour
 		//}
 		if(racebox.Finished())
 		{
-			raceManager.PlayFinishSeq();
+			StartCoroutine(raceManager.PlayFinishSeq());
 			gameObject.SetActive(false);
 			return;
 		}

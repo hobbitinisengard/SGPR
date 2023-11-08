@@ -17,10 +17,18 @@ public class SGP_Bouncer : MonoBehaviour
 		if (vp.groundedWheels == 0 && rampVel == Vector3.zero && Time.time - lastBounceTime > debounceTime)
 			rampVel = vp.rb.velocity;
 	}
+	void VehicleVehicleBouncer(Collision collision)
+	{
+		if (collision.GetContact(0).otherCollider.gameObject.layer != Info.vehicleLayer)
+			return;
+			rb.AddForceAtPosition(-0.5f*collision.relativeVelocity,
+				collision.GetContact(0).point,
+				ForceMode.VelocityChange);
+	}
 	private void OnCollisionEnter(Collision collision)
 	{
 		if (!collision.GetContact(0).thisCollider.CompareTag("Underside"))
-			return;
+			VehicleVehicleBouncer(collision);
 		if (collision.gameObject.layer != Info.roadLayer)
 			return;
 		if (Time.time - lastBounceTime < debounceTime)

@@ -8,6 +8,7 @@ public class Ghost : MonoBehaviour
 	public Collider[] colliders;
 	public MeshRenderer[] ghostableParts;
 	VehicleParent vp;
+	public Shader transpShader;
 	private void Awake()
 	{
 		vp = GetComponent<VehicleParent>();
@@ -26,9 +27,53 @@ public class Ghost : MonoBehaviour
 		{
 			for(int i=0; i<r.materials.Length; ++i)
 			{
-				r.materials[i] = isHittable ? F.ToOpaqueMode(r.materials[i]) : F.ToFadeMode(r.materials[i]);
+				r.materials[i] = isHittable ? ToOpaqueMode(r.materials[i]) : ToFadeMode(r.materials[i]);
 			}
 		}
+	}
+	public Material ToOpaqueMode(Material material)
+	{
+		material.shader = transpShader;
+		material.SetInt("_ZWrite", 1);
+		material.SetFloat("_IntensityTransparentMap", material.name.Contains("Roof") ? 0.2f : 0);
+
+		material.SetFloat("_Glossiness", 1);
+		material.SetFloat("_SpecularIntensity", .1f);
+		material.SetFloat("_Parallax", 0);
+		//material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
+		//material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.Zero);
+		//material.SetInt("_ZWrite", 1);
+		//material.DisableKeyword("_ALPHATEST_ON");
+		//material.DisableKeyword("_ALPHABLEND_ON");
+		//material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+		//material.renderQueue = -1; // Set it back to the default opaque render queue
+
+		return material;
+	}
+
+	public Material ToFadeMode(Material material)
+	{
+		material.shader = transpShader;
+		material.SetInt("_ZWrite", 1);
+		material.SetFloat("_IntensityTransparentMap", 0.7f);
+
+		material.SetFloat("_Glossiness", 1);
+		material.SetFloat("_SpecularIntensity", .1f);
+		material.SetFloat("_Parallax", 0);
+		//var c = material.color;
+		//c.a = 0.5f;
+		//material.color = c;
+
+		// Set the rendering mode to transparent
+		//material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+		//material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+		//material.SetInt("_ZWrite", 0);
+		//material.DisableKeyword("_ALPHATEST_ON");
+		//material.EnableKeyword("_ALPHABLEND_ON");
+		//material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+		//material.renderQueue = 3500;
+
+		return material;
 	}
 	public IEnumerator ResetSeq()
 	{

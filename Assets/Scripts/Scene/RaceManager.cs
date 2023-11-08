@@ -91,7 +91,6 @@ namespace RVP
 		}
 		public void ExitButton()
 		{
-			
 			if (resultsSeq.gameObject.activeSelf)
 				return;
 			musicPlayer.Stop();
@@ -125,16 +124,20 @@ namespace RVP
 		//	float factor = Mathf.Pow(2, intensity);
 		//	return new Color(r * factor, g * factor, b * factor);
 		//}
+		void SetPartOfDay()
+		{
+			SetPartOfDay(Info.s_isNight ? PartOfDay.Night : PartOfDay.Day);
+		}
 		void SetPartOfDay(PartOfDay pod)
 		{
 			if (pod == PartOfDay.Day)
 			{
-				Sun.SetActive(true);
+				//Sun.SetActive(true);
 				RenderSettings.ambientLight = new Color32(208, 208, 208, 1);
 			}
 			else if (pod == PartOfDay.Night)
 			{
-				Sun.SetActive(false);
+				//Sun.SetActive(false);
 				nightTimeLights.SetActive(true);
 				RenderSettings.ambientLight = new Color32(52, 52, 52, 1);
 			}
@@ -170,6 +173,7 @@ namespace RVP
 			Info.PopulateCarsData();
 			Info.PopulateTrackData();
 			StartCoroutine(editorPanel.LoadTrack());
+			SetPartOfDay();
 			if (Info.s_inEditor)
 			{
 				BackToEditor();
@@ -186,11 +190,10 @@ namespace RVP
 			var carModel = Resources.Load<GameObject>(Info.carModelsPath + "car01");
 			var newCar = Instantiate(carModel, position, rotation).GetComponent<VehicleParent>();
 			Info.s_cars.Add(newCar);
-			cam.enabled = true;
 			cam.Connect(newCar);
-			hud.gameObject.SetActive(true);
 			hud.Connect(newCar);
-			newCar.followAI.AssignPath(racingPath, ref editorPanel.stuntpointsContainer, ref editorPanel.replayCamsContainer);
+			// do not assign path in freeroam as track might not be finished
+			//newCar.followAI.AssignPath(racingPath, ref editorPanel.stuntpointsContainer, ref editorPanel.replayCamsContainer);
 		}
 		public void StartRace()
 		{
@@ -208,6 +211,7 @@ namespace RVP
 				return;
 
 			editorPanel.gameObject.SetActive(false);
+			Debug.Log("Play: " + Info.tracks[Info.s_trackName].envir.ToString());
 			musicPlayer.clip = Resources.Load<AudioClip>("music/" + Info.tracks[Info.s_trackName].envir.ToString());
 			musicPlayer.PlayDelayed(5);
 			float countDownSeconds = 5;
@@ -230,11 +234,13 @@ namespace RVP
 						cam.enabled = true;
 						cam.Connect(newCar);
 						hud.Connect(newCar);
-						newCar.followAI.SetCPU(true);
+						newCar.AddWheelGroup();
+						//newCar.followAI.SetCPU(true);
 					}
 					else
 					{
 						newCar.name = "CP" + (i + 1).ToString();
+						newCar.AddWheelGroup();
 						newCar.followAI.SetCPU(true);
 					}
 					newCar.followAI.AssignPath(racingPath, ref editorPanel.stuntpointsContainer, ref editorPanel.replayCamsContainer);
@@ -268,16 +274,22 @@ namespace RVP
 					Time.fixedDeltaTime = initialFixedTime;
 				}
 			}
-			if (Input.GetKeyDown(KeyCode.Tilde))
-			{
-				SetPartOfDay(PartOfDay.Night);
-			}
 		}
 
-		public void PlayFinishSeq()
+		public IEnumerator PlayFinishSeq()
 		{
 			resultsSeq.gameObject.SetActive(true);
 			cam.SetMode(CameraControl.Mode.Replay);
+			while (resultsSeq.gameObject.activeSelf)
+				yield return null;
+			if (Info.s_inEditor)
+			{
+				BackToEditor();
+			}
+			else
+			{
+				BackToMenu();
+			}
 		}
 		
 	}

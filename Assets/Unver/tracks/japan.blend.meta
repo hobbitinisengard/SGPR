@@ -97,6 +97,11 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: level2_64japflag
+    second: {fileID: 2100000, guid: 892083f70861a3d4d92dd77193477c16, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: level2_64mainbar.png
     second: {fileID: 2100000, guid: 8ab86ef5e9b6d814eab43237f6e42f98, type: 2}
   - first:
@@ -144,6 +149,11 @@ ModelImporter:
       assembly: UnityEngine.CoreModule
       name: level2_psxstairs128.png
     second: {fileID: 2100000, guid: 544f0afe43adff2448d9a16a071036d7, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level5_wall
+    second: {fileID: 2100000, guid: 02be0646962490e41a081acf0f93501e, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

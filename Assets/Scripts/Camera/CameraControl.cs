@@ -110,7 +110,7 @@ namespace RVP
 			// Set the audio listener update mode to fixed, because the camera moves in FixedUpdate
 			// This is necessary for doppler effects to sound correct
 			GetComponent<AudioListener>().velocityUpdateMode = AudioVelocityUpdateMode.Fixed;
-			gameObject.SetActive(true);
+			enabled = true;
 		}
 		float WrapAround180Degs(float degs)
 		{

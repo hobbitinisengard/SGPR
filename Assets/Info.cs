@@ -16,13 +16,13 @@ public static class Info
 	public enum RaceType { Race, Stunt, Drift, Knockout, Survival }
 	public const int RaceTypes = 5;
 	public enum Envir { GER, JAP, SPN, FRA, ENG, USA, ITA, MEX };
-	public static readonly int[] skys = new int[]{1,2,3,4,5,6,7,8};
+	public static readonly int[] skys = new int[]{9,2,9,1,4,9,9,9};
 	
 	public const int Environments = 8;
 	public static readonly string[] EnvirDescs =
 	{
 		"GERMANY\n\nLoud crowd cheering and powerful spotlights..This german arena is really a place to show off.",
-		"JAPAN\n\nHere in this calm japanese dojo placed on the outskirts of a big city you can meditate, or organize a race!",
+		"JAPAN\n\nHere in this calm japanese dojo placed on the outskirts of a big city you can meditate or organize a race!",
 		"SPAIN\n\nBeaches like this usually ooze holidays. This is not an exception: warm sand, palms, and sun.. What could people possibly want more? Maybe a RC car race :)",
 		"FRANCE\n\nThis shadowy warehouse is full of boxes, forklifts and machinery. There are some really dark places here.", 
 		"ENGLAND\n\nEnglish go-kart track is a good location to test your driving skills. This place has a reputation for great races.",
@@ -63,7 +63,7 @@ public static class Info
 	// curr/next session data
 	public static List<VehicleParent> s_cars = new List<VehicleParent>();
 	public static CarSetup[] s_carSetups;
-	public static string s_trackName = "JAP";
+	public static string s_trackName = "ENG";
 	public static string s_playerName = "P1";
 	public static RaceType s_raceType = RaceType.Race;
 	public static int s_laps = 99;
@@ -131,7 +131,7 @@ public static class Info
 		tracks.Add("ENG", new TrackHeader(0, 0, 4, Envir.ENG, null, new int[] { }, null, false));
 		tracks.Add("USA", new TrackHeader(0, 0, 4, Envir.USA, null, new int[] { }, null, false));
 		tracks.Add("ITA", new TrackHeader(0, 0, 4, Envir.ITA, null, new int[] { }, null, false));
-		tracks.Add("MEX", new TrackHeader(0, 0, 4, Envir.MEX, null, new int[] { }, null, false));
+		tracks.Add("MEX", new TrackHeader(0, 0, 4, Envir.MEX, null, new int[] { }, null, false));	
 
 		//tracks.Add("track01", new TrackHeader(1, (CarGroup)2, 6, Envir.FRA, null, new int[] { 2 }, "CRAZY STRAIGHTS\n\nThis long speed track offers opportunity for a number of jump stunts."));
 		//tracks.Add("track02", new TrackHeader(1, (CarGroup)2, 4, Envir.JAP, null, new int[] { 0 }, "BANK JOB\n\nThis short, speedy circuit offers a number of stunt opportunities and high-banks for sneaky overtaking."));

@@ -702,6 +702,13 @@ namespace RVP
 			newMat.name = matName;
 			mr.material = newMat;
 		}
+
+		public void AddWheelGroup()
+		{
+			WheelCheckGroup wcg = new WheelCheckGroup();
+			wcg.wheels = wheels;
+			wheelGroups = new WheelCheckGroup[] { wcg };
+		}
 	}
 
 	// Class for groups of wheels to check each FixedUpdate

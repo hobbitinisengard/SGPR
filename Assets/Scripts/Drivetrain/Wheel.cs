@@ -1,5 +1,7 @@
 using UnityEngine;
 using System.Collections;
+using System.Threading.Tasks;
+using System.Linq;
 
 namespace RVP
 {
@@ -312,6 +314,10 @@ namespace RVP
 
 		void FixedUpdate()
 		{
+			//Task t1 = null;
+			//Task t2 = null;
+			//t1 = new Task(() =>
+			//{
 			upDir = tr.up;
 			actualRadius = popped ? rimRadius : Mathf.Lerp(rimRadius, tireRadius, tirePressure);
 			circumference = Mathf.PI * actualRadius * 2;
@@ -350,7 +356,9 @@ namespace RVP
 			travelDist = suspensionParent.compression < travelDist || grounded ? suspensionParent.compression : Mathf.Lerp(travelDist, suspensionParent.compression, suspensionParent.extendSpeed * Time.fixedDeltaTime);
 
 			PositionWheel();
-
+			//});
+			//t2 = new Task(() =>
+			//{
 			if (connected)
 			{
 				// Update hard collider size upon changed radius or width
@@ -385,63 +393,66 @@ namespace RVP
 
 				GetSlip();
 				ApplyFriction();
+				/*
+			// Burnout spinning
+			//if (vp.burnout > 0 && targetDrive.rpm != 0 && actualEbrake * vp.ebrakeInput == 0 && connected && grounded)
+			//{
+			//	rb.AddForceAtPosition(suspensionParent.forwardDir * -suspensionParent.flippedSideFactor *
+			//		 (vp.steerInput * vp.burnoutSpin * currentRPM * Mathf.Min(0.1f, targetDrive.torque) * 0.001f)
+			//		 * vp.burnout * (popped ? 0.5f : 1) * contactPoint.surfaceFriction, suspensionParent.tr.position
+			//		 , vp.wheelForceMode);
+			//}
 
-				// Burnout spinning
-				if (vp.burnout > 0 && targetDrive.rpm != 0 && actualEbrake * vp.ebrakeInput == 0 && connected && grounded)
-				{
-					rb.AddForceAtPosition(suspensionParent.forwardDir * -suspensionParent.flippedSideFactor *
-						 (vp.steerInput * vp.burnoutSpin * currentRPM * Mathf.Min(0.1f, targetDrive.torque) * 0.001f)
-						 * vp.burnout * (popped ? 0.5f : 1) * contactPoint.surfaceFriction, suspensionParent.tr.position
-						 , vp.wheelForceMode);
-				}
+			// Popping logic
+			//setPopped = popped;
 
-				// Popping logic
-				setPopped = popped;
+			//if (poppedPrev != setPopped)
+			//{
+			//	if (tire)
+			//	{
+			//		tire.gameObject.SetActive(!popped);
+			//	}
 
-				if (poppedPrev != setPopped)
-				{
-					if (tire)
-					{
-						tire.gameObject.SetActive(!popped);
-					}
+			//	updatedPopped = true;
+			//}
+			//else
+			//{
+			//	updatedPopped = false;
+			//}
 
-					updatedPopped = true;
-				}
-				else
-				{
-					updatedPopped = false;
-				}
+			//poppedPrev = setPopped;
 
-				poppedPrev = setPopped;
+			// Air leak logic
+			//if (airLeakTime >= 0)
+			//{
+			//	tirePressure = Mathf.Clamp01(tirePressure - Time.fixedDeltaTime * 0.5f);
 
-				// Air leak logic
-				if (airLeakTime >= 0)
-				{
-					tirePressure = Mathf.Clamp01(tirePressure - Time.fixedDeltaTime * 0.5f);
+			//	if (grounded)
+			//	{
+			//		airLeakTime += Mathf.Max(Mathf.Abs(currentRPM) * 0.001f, localVel.magnitude * 0.1f) * Time.timeScale * TimeMaster.inverseFixedTimeFactor;
 
-					if (grounded)
-					{
-						airLeakTime += Mathf.Max(Mathf.Abs(currentRPM) * 0.001f, localVel.magnitude * 0.1f) * Time.timeScale * TimeMaster.inverseFixedTimeFactor;
+			//		if (airLeakTime > 1000 && tirePressure == 0)
+			//		{
+			//			popped = true;
+			//			airLeakTime = -1;
 
-						if (airLeakTime > 1000 && tirePressure == 0)
-						{
-							popped = true;
-							airLeakTime = -1;
+			//			if (impactSnd && tirePopClip)
+			//			{
+			//				impactSnd.PlayOneShot(tirePopClip);
+			//				impactSnd.pitch = 1;
+			//			}
+			//		}
+			//	}
+			//}
+			*/
 
-							if (impactSnd && tirePopClip)
-							{
-								impactSnd.PlayOneShot(tirePopClip);
-								impactSnd.pitch = 1;
-							}
-						}
-					}
-				}
 			}
+			//});
+			//await Task.WhenAll(new Task[] { t1, t2}.Where(i => i != null));
 		}
 
 		void Update()
 		{
-
 			RotateWheel();
 
 			if (!Application.isPlaying)
@@ -489,35 +500,37 @@ namespace RVP
 		// Use raycasting to find the current contact point for the wheel
 		void GetWheelContact()
 		{
-			float castDist = Mathf.Max(suspensionParent.suspensionDistance * Mathf.Max(0.001f, suspensionParent.targetCompression) + actualRadius, 0.001f);
-			RaycastHit[] wheelHits = Physics.RaycastAll(transform.position, suspensionParent.springDirection, castDist, RaceManager.wheelCastMaskStatic);
-			RaycastHit hit;
-			int hitIndex = 0;
-			bool validHit = false;
-			float hitDist = Mathf.Infinity;
 
-			if (connected)
-			{
-				// Loop through raycast hits to find closest one
-				for (int i = 0; i < wheelHits.Length; i++)
-				{
-					if (!wheelHits[i].transform.IsChildOf(vp.tr) && wheelHits[i].distance < hitDist)
-					{
-						hitIndex = i;
-						hitDist = wheelHits[i].distance;
-						validHit = true;
-					}
-				}
-			}
-			else
-			{
-				validHit = false;
-			}
+			float castDist = Mathf.Max(suspensionParent.suspensionDistance * Mathf.Max(0.001f, suspensionParent.targetCompression) + actualRadius, 0.001f);
+			//RaycastHit[] wheelHits = Physics.RaycastAll(transform.position, suspensionParent.springDirection, castDist, RaceManager.wheelCastMaskStatic);
+			RaycastHit hit;
+			bool validHit = Physics.Raycast(transform.position, suspensionParent.springDirection, out hit, castDist, RaceManager.wheelCastMaskStatic);
+			int hitIndex = 0;
+			//bool validHit = false;
+			//float hitDist = Mathf.Infinity;
+
+			//if (connected)
+			//{
+			//	// Loop through raycast hits to find closest one
+			//	for (int i = 0; i < wheelHits.Length; i++)
+			//	{
+			//		if (!wheelHits[i].transform.IsChildOf(vp.tr) && wheelHits[i].distance < hitDist)
+			//		{
+			//			hitIndex = i;
+			//			hitDist = wheelHits[i].distance;
+			//			validHit = true;
+			//		}
+			//	}
+			//}
+			//else
+			//{
+			//	validHit = false;
+			//}
 
 			// Set contact point variables
 			if (validHit)
 			{
-				hit = wheelHits[hitIndex];
+				//hit = wheelHits[hitIndex];
 
 				if (!grounded && impactSnd && ((tireHitClips.Length > 0 && !popped) || (rimHitClip && popped)))
 				{
@@ -562,10 +575,10 @@ namespace RVP
 					contactPoint.surfaceType = 0;
 				}
 
-				if (contactPoint.col.CompareTag("Pop Tire") && canPop && airLeakTime == -1 && !popped)
-				{
-					Deflate();
-				}
+				//if (canPop && contactPoint.col.CompareTag("Pop Tire") && airLeakTime == -1 && !popped)
+				//{
+				//	Deflate();
+				//}
 			}
 			else
 			{

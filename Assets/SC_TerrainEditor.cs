@@ -67,9 +67,10 @@ public class SC_TerrainEditor : MonoBehaviour
 		spotLight.range = 20;
 
 		tData = terrain.terrainData;
+		float initHeight = tData.GetHeights(0, 0, 1, 1)[0,0];
 		if (tData)
 		{
-			//Save original height data
+			//Save initial height data
 			xRes = tData.heightmapResolution;
 			yRes = tData.heightmapResolution;
 			saved = new float[xRes, yRes];
@@ -78,7 +79,7 @@ public class SC_TerrainEditor : MonoBehaviour
 			{
 				for (int j = 0; j < xRes; j++)
 				{
-					saved[i, j] = 0.5f;
+					saved[i, j] = initHeight;//0.5f
 				}
 			}
 		}
