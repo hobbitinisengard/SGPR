@@ -17,8 +17,8 @@ Shader "Ciconia Studio/CS_Standard/Builtin/Lite/Standard (Specular setup)/Transp
 		_BumpScale("Normal Intensity", Float) = 0.3
 		[Space(35)]_SpecularColor("Specular Color", Color) = (1,1,1,0)
 		_SpecGlossMap("Specular Map -->(Smoothness A)", 2D) = "white" {}
-		_SpecularIntensity("Specular Intensity", Range( 0 , 2)) = 0.2
-		_Glossiness("Smoothness", Range( 0 , 2)) = 0.5
+		_SpecularIntensity("Specular Intensity", Range( 0 , 2)) = 0.1
+		_Glossiness("Smoothness", Range( 0 , 2)) = 1
 		[Space(10)][KeywordEnum(SpecularAlpha,BaseColorAlpha)] _Source("Source", Float) = 0
 		[Space(35)]_ParallaxMap("Height Map", 2D) = "white" {}
 		_Parallax("Height Scale", Range( -0.1 , 0.1)) = 0
@@ -46,10 +46,13 @@ Shader "Ciconia Studio/CS_Standard/Builtin/Lite/Standard (Specular setup)/Transp
 		[Space(35)][Header(Transparent Properties)][Space(15)][Toggle]_InvertTransparent("Invert ", Float) = 0
 		[Toggle]_UseBaseColorAlpha("Use BaseColor Alpha", Float) = 0
 		_TransparentMask("Transparent Mask", 2D) = "white" {}
+
 		_IntensityTransparentMap("Opacity", Range( 0 , 1)) = 0
+
 		[Space(15)]_ContrastTransparentMap("Contrast", Float) = 0
 		_SpreadTransparentMap("Spread", Float) = 0
 		[HideInInspector] __dirty( "", Int ) = 1
+
 	}
 
 	SubShader
@@ -125,14 +128,14 @@ Shader "Ciconia Studio/CS_Standard/Builtin/Lite/Standard (Specular setup)/Transp
 		uniform float _Glossiness;
 		uniform sampler2D _OcclusionMap;
 		uniform float4 _OcclusionMap_ST;
-		uniform float _AoIntensity;
+		float _AoIntensity;
 		uniform float _ContrastTransparentMap;
 		uniform float _InvertTransparent;
 		uniform float _UseBaseColorAlpha;
 		uniform sampler2D _TransparentMask;
 		uniform float4 _TransparentMask_ST;
 		uniform float _SpreadTransparentMap;
-		uniform float _IntensityTransparentMap;
+		float _IntensityTransparentMap;
 
 
 		float4 CalculateContrast( float contrastValue, float4 colorTarget )

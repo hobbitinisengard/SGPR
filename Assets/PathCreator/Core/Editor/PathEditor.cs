@@ -263,7 +263,7 @@ namespace PathCreationEditor
 				using (var check = new EditorGUI.ChangeCheckScope())
 				{
 					data.vertexPathMaxAngleError = EditorGUILayout.Slider(new GUIContent("Max Angle Error"), data.vertexPathMaxAngleError, 0, 45);
-					data.vertexPathMinVertexSpacing = EditorGUILayout.Slider(new GUIContent("Min Vertex Dst"), data.vertexPathMinVertexSpacing, 0, 1);
+					data.vertexPathMinVertexSpacing = EditorGUILayout.Slider(new GUIContent("Min Vertex Dst"), data.vertexPathMinVertexSpacing, 0, 30);
 
 					GUILayout.Space(inspectorSectionSpacing);
 					if (check.changed)

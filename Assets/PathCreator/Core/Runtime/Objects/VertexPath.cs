@@ -1,4 +1,5 @@
 ﻿using PathCreation.Utility;
+using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
 
@@ -201,7 +202,10 @@ namespace PathCreation
 		{
 			return MathUtility.TransformPoint(localPoints[index], transform, space);
 		}
-
+		public Task<Vector4> GetPointAtDistanceAsync(float dst, EndOfPathInstruction endOfPathInstruction = EndOfPathInstruction.Loop)
+		{
+			return new Task<Vector4>(() => GetPointAtDistance(dst, endOfPathInstruction));
+		}
 		/// Gets point on path based on distance travelled.
 		public Vector4 GetPointAtDistance(float dst, EndOfPathInstruction endOfPathInstruction = EndOfPathInstruction.Loop)
 		{

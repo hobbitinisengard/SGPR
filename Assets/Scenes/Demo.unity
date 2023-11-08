@@ -3665,7 +3665,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 51368051}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 62.15, y: 1.59, z: 180.17}
+  m_LocalPosition: {x: 59.62, y: 1.59, z: 180.17}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -4260,7 +4260,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e217891e04d34f04e8f2efd7958d8bb5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  target: {fileID: 0}
   height: 3.5
   targetCamCarDistance: 8.8
   xInput: 0
@@ -4632,7 +4631,7 @@ MonoBehaviour:
     m_Bits: 8256
   damageMask:
     serializedVersion: 2
-    m_Bits: 8257
+    m_Bits: 8769
   frictionlessMat: {fileID: 13400000, guid: d7b4b54ae22f5244998b245005d1d2ac, type: 2}
   tireMarkLength: 50
   tireMarkGap: 0
@@ -34581,7 +34580,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.001472082, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 169.92151, y: -0.008605957}
+  m_AnchoredPosition: {x: 169.92107, y: -0.008605957}
   m_SizeDelta: {x: 32.513794, y: 4.239998}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!212 &602281001
@@ -43823,7 +43822,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 40.384, y: -73.536}
+  m_AnchoredPosition: {x: 40.384003, y: -73.536}
   m_SizeDelta: {x: 504.8, y: 919.2}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &798159100
@@ -64237,7 +64236,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 120.775, y: -189.43251}
+  m_AnchoredPosition: {x: 120.774994, y: -189.43251}
   m_SizeDelta: {x: 241.55, y: 59.325}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1150871548
@@ -72220,7 +72219,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  tSpeedCurve:
+  lookAheadSteerCurve:
     serializedVersion: 2
     m_Curve: []
     m_PreInfinity: 2
@@ -74414,8 +74413,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _version: 0
   _globalWindSpeed: 150
-  _viewpoint: {fileID: 0}
-  _camera: {fileID: 0}
+  _viewpoint: {fileID: 51051511}
+  _camera: {fileID: 51515559}
   _teleportThreshold: 10
   _timeProvider: {fileID: 0}
   _primaryLight: {fileID: 0}
@@ -109170,9 +109169,9 @@ MonoBehaviour:
       - 0
       globalNormalsAngle: 0
       flipNormals: 0
-    vertexPathUpToDate: 1
-    vertexPathMaxAngleError: 1
-    vertexPathMinVertexSpacing: 1
+    vertexPathUpToDate: 0
+    vertexPathMaxAngleError: 5
+    vertexPathMinVertexSpacing: 5
     showTransformTool: 1
     showPathBounds: 0
     showPerSegmentBounds: 0
@@ -109189,7 +109188,7 @@ MonoBehaviour:
     showVertexPathOptions: 1
     showNormals: 0
     showNormalsHelpInfo: 0
-    tabIndex: 0
+    tabIndex: 1
   initialized: 1
 --- !u!1 &1916081626
 GameObject:
@@ -109913,7 +109912,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.001472082, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 169.92151, y: -1.06427}
+  m_AnchoredPosition: {x: 169.92107, y: -1.06427}
   m_SizeDelta: {x: 32.513794, y: 2.1285744}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!212 &1924452706
@@ -113072,7 +113071,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.37627804}
   m_AnchorMax: {x: 0.8853781, y: 0.93455607}
-  m_AnchoredPosition: {x: 0.00012207031, y: 3.5560303}
+  m_AnchoredPosition: {x: 0.00012207031, y: 3.5563965}
   m_SizeDelta: {x: 0, y: -7.1054}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1974015890

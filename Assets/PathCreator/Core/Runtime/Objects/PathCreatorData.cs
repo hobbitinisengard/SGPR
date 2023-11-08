@@ -21,8 +21,8 @@ namespace PathCreation
 		bool vertexPathUpToDate;
 
 		// vertex path settings
-		public float vertexPathMaxAngleError = .3f;
-		public float vertexPathMinVertexSpacing = 0.01f;
+		public float vertexPathMaxAngleError = 5f;
+		public float vertexPathMinVertexSpacing = 5f;
 
 		// bezier display settings
 		public bool showTransformTool = true;

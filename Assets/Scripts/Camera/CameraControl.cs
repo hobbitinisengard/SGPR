@@ -12,6 +12,8 @@ namespace RVP
 	// Class for controlling the camera
 	public class CameraControl : MonoBehaviour
 	{
+		Vector2[] camerasLH = new Vector2[] { new(8.5f, 3.5f), new(4.5f, 2), new(11, 4) };
+		int curCameraLH = 0;
 		public enum Mode { Follow, Replay };
 		Mode mode = Mode.Follow;
 		Transform tr;
@@ -24,7 +26,6 @@ namespace RVP
 
 		public float xInput;
 		public float yInput;
-
 		float smoothYRot;
 		public Vector3 d_vel_norm;
 		public float d_dot;
@@ -86,7 +87,7 @@ namespace RVP
 		}
 		public void Disconnect()
 		{
-			if(lookObj)
+			if (lookObj)
 				Destroy(lookObj.gameObject);
 		}
 		public void Connect(VehicleParent car, Mode mode = Mode.Follow)
@@ -103,12 +104,13 @@ namespace RVP
 			forwardLook = -vp.tr.up;
 			upLook = vp.tr.forward;
 			targetBody = vp.tr.GetComponent<Rigidbody>();
-			tr.SetPositionAndRotation(vp.tr.position, Quaternion.LookRotation(forwardLook,upLook));
-			
+			tr.SetPositionAndRotation(vp.tr.position, Quaternion.LookRotation(forwardLook, upLook));
+
 
 			// Set the audio listener update mode to fixed, because the camera moves in FixedUpdate
 			// This is necessary for doppler effects to sound correct
 			GetComponent<AudioListener>().velocityUpdateMode = AudioVelocityUpdateMode.Fixed;
+			gameObject.SetActive(true);
 		}
 		float WrapAround180Degs(float degs)
 		{
@@ -116,11 +118,21 @@ namespace RVP
 				degs -= 360;
 			return degs;
 		}
+		private void Update()
+		{
+			if (Input.GetKeyDown(KeyCode.C))
+			{
+				curCameraLH++;
+				curCameraLH %= camerasLH.Length;
+				height = camerasLH[curCameraLH].y + vp.cameraHeightChange;
+				targetCamCarDistance = camerasLH[curCameraLH].x + vp.cameraDistanceChange;
+			}
+		}
 		void FixedUpdate()
 		{
 			if (vp && targetBody && vp.tr.gameObject.activeSelf)
 			{
-				if(mode == Mode.Follow)
+				if (mode == Mode.Follow)
 				{
 					FollowCam();
 				}
@@ -196,7 +208,7 @@ namespace RVP
 			lookObj.position = vp.tr.position - forward * targetCamCarDistance + Vector3.up * height;
 			//--------------
 			targetForward = vp.tr.position + cHeight * Vector3.up - lookObj.position; //Quaternion.AngleAxis(9, vp.tr.right) * forward; // targetForward
-																												//camera look-rotation
+																											  //camera look-rotation
 			forwardLook = Vector3.Lerp(forwardLook, targetForward, 0.1f * TimeMaster.inverseFixedTimeFactor);
 			if (Physics.Raycast(vp.tr.position, -targetUp, out RaycastHit hit, 1, castMask))
 			{
@@ -247,13 +259,13 @@ namespace RVP
 				smoothTime = Mathf.Lerp(smoothTime, cameraStopped ? camStoppedSmoothTime : camFollowSmoothTime
 					, (cameraStopped ? 1 : 2) * Time.fixedDeltaTime * smoothTimeSpeed);
 
-				//if (yInput == 0 && xInput == 0)
+				if (yInput == 0 && xInput == 0)
 					newTrPos =
 								Vector3.SmoothDamp(tr.position, lookObj.position, ref velocity,
 								smoothTime, catchUpCamSpeed, Time.fixedDeltaTime * smoothDampRspnvns);
-				//else
-				//	newTrPos = Vector3.SmoothDamp(tr.position, lookObj.position, ref velocity,
-				//				smoothTime, catchUpCamSpeed, Time.fixedDeltaTime * 5*smoothDampRspnvns);
+				else
+					newTrPos = Vector3.SmoothDamp(tr.position, lookObj.position, ref velocity,
+								smoothTime, catchUpCamSpeed, Time.fixedDeltaTime * 10 * smoothDampRspnvns);
 
 				if (cameraStopped)
 				{

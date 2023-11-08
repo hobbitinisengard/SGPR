@@ -70,7 +70,7 @@ public static class Info
 	public static bool s_inEditor = true;
 	public static bool s_isNight = false;
 	public static int s_cpuLevel = 3;
-	public static int s_rivals = 0;
+	public static int s_rivals = 9; // 0-9
 	public static bool s_reversed = false;
 	public static bool s_catchup = true;
 
