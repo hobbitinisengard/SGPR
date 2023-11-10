@@ -1,6 +1,7 @@
 using RVP;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using UnityEngine;
 using static EditorPanel;
@@ -23,8 +24,20 @@ public class Tile : MonoBehaviour
 		if (transform.childCount == 0)
 			mc = gameObject.AddComponent<MeshCollider>();
 		else
-			mc = transform.GetChild(0).gameObject.AddComponent<MeshCollider>();
+		{
+			var childObj = transform.GetChild(0);
+			if (childObj.name == "lights")
+			{
+				mc = gameObject.AddComponent<MeshCollider>();
 
+				for(int i=0; i< childObj.childCount; ++i)
+				{
+					childObj.GetChild(i).gameObject.SetActive(Info.s_isNight);
+				}
+			}
+			else
+				mc = transform.GetChild(0).gameObject.AddComponent<MeshCollider>();
+		}
 		mc.enabled = true;
 
 		for (int i = 1; i < transform.childCount; ++i)
@@ -87,6 +100,24 @@ public class Tile : MonoBehaviour
 		if (mc)
 			mc.sharedMesh = mf.mesh;
 
+		if(transform.childCount>0)
+		{
+			if(transform.GetChild(0).name == "lights")
+			{
+				var lightsObj = transform.GetChild(0);
+				for (int i=0; i< lightsObj.childCount; ++i)
+				{
+					var light = lightsObj.GetChild(i);
+					Vector3 a = transform.InverseTransformPoint(light.position);
+					a.x = -a.x;
+					light.position = transform.TransformPoint(a);
+
+					var lookVector = light.forward;
+					lookVector.x = -lookVector.x;
+					light.rotation = Quaternion.LookRotation(lookVector);
+				}
+			}
+		}
 		for (int i = 1; i < transform.childCount; ++i)
 		{
 			Transform connector = transform.GetChild(i);

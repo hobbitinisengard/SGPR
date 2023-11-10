@@ -3,7 +3,177 @@ guid: 4c56e387681059b479ac821fe8ac8e31
 ModelImporter:
   serializedVersion: 21300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level7_architech256
+    second: {fileID: 2100000, guid: e27c092a49d2cd344b933ece0c7ea91e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level7_b64
+    second: {fileID: 2100000, guid: 7173fa09b6c74684888f4e3a526c0ef1, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level7_bush128
+    second: {fileID: 2100000, guid: 2f9774543e0bc7a4783df77693126216, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level7_bushwall128
+    second: {fileID: 2100000, guid: 4d312bf049eb3704cace50ac20ffabc5, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level7_canfront64
+    second: {fileID: 2100000, guid: ce5488560f8524148a22d29dd5287a72, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level7_canfront64dark
+    second: {fileID: 2100000, guid: 8c8b3222da403334ab72c4cd5e57afe2, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level7_canopy64
+    second: {fileID: 2100000, guid: f886e53a4206fc547b0cac43be5b1808, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level7_canopy64dark
+    second: {fileID: 2100000, guid: 37a401e2e036d034b81e4c135b2a0761, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level7_cobbleroad128
+    second: {fileID: 2100000, guid: 5f34ccb5de17d434aaf0b19c35ce8aff, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level7_cruise256
+    second: {fileID: 2100000, guid: 7359c1cd3ab7c374fbab1096479467ad, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level7_door256
+    second: {fileID: 2100000, guid: c5e958adc98999948b8c4fe97816eca7, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level7_euroflag128
+    second: {fileID: 2100000, guid: ab0803cbe2e74874da51b52e061febba, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level7_facefountain64
+    second: {fileID: 2100000, guid: 1c7e0582defa551469bd0f15d27d4b57, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level7_fountain64
+    second: {fileID: 2100000, guid: f16fe55050fcea94e960b81bd22a5b6b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level7_fountainx64
+    second: {fileID: 2100000, guid: 4bc2b39ca9fb069429d8e49226e3e767, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level7_girl2statue128
+    second: {fileID: 2100000, guid: cec09ebf526a6244f93a99008599e245, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level7_grass128
+    second: {fileID: 2100000, guid: 58e65945bf0cf7847a257b724c64cb18, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level7_grass64
+    second: {fileID: 2100000, guid: 937b30ce97784a24a863e5bb870a50cd, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level7_greywall64
+    second: {fileID: 2100000, guid: f8102920e1d3d734d9fe1d6e1dd382dc, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level7_pavement64
+    second: {fileID: 2100000, guid: 8d19faa515fb074439c9fac00b929af7, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level7_pebbles128
+    second: {fileID: 2100000, guid: bbea03237ffc3f644a740a044b3f7c34, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level7_psx_balcony
+    second: {fileID: 2100000, guid: 35b108277ce590143ab1805baef78a17, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level7_psx_boat1
+    second: {fileID: 2100000, guid: 0df559153202cf84ea84132bfe0055fa, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level7_psx_boatbar
+    second: {fileID: 2100000, guid: 6e08e496117f1584fab87244da6fa84a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level7_psx_furtree128
+    second: {fileID: 2100000, guid: a9897141e0aab72419578c60e1161102, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level7_psx_hotelitaly
+    second: {fileID: 2100000, guid: e93b4639fd7981c4eae72da1b300b945, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level7_redflower64
+    second: {fileID: 2100000, guid: 246a29bc6ab8ec34e89f15f01988b151, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level7_sea128
+    second: {fileID: 2100000, guid: 576059242c8caf64ead7521052a03b80, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level7_sponser1
+    second: {fileID: 2100000, guid: c4ce23aa5f1d05646ab35ea3de389438, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level7_spray64
+    second: {fileID: 2100000, guid: d96345ba8cb2eef4db617e855552885a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level7_stairwallx
+    second: {fileID: 2100000, guid: 51552d51198ed2748ab4789f0d7c649c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level7_wall
+    second: {fileID: 2100000, guid: d716474a4203f6041b2cdae6e2a53586, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level7_watertop128
+    second: {fileID: 2100000, guid: ccf37843a7ac31e498974a068dc2e6f5, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level7_whitewall64
+    second: {fileID: 2100000, guid: 559393a44c5a6e448818919917ea2890, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

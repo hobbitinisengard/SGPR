@@ -320,12 +320,12 @@ namespace RVP
 				}
 				else
 				{
-					if (stuntPoints[curStuntpointIdx] < progress)
+					if (stuntPoints.Count > 0 && stuntPoints[curStuntpointIdx] < progress)
 					{
 						if (curStuntpointIdx < stuntPoints.Count - 1)
 							++curStuntpointIdx;
 					}
-					if (replayCams[curReplayPointIdx].dist < vp.followAI.progress)
+					if (replayCams.Count > 0 && replayCams[curReplayPointIdx].dist < vp.followAI.progress)
 					{
 						if (curReplayPointIdx < replayCams.Count - 1)
 							++curReplayPointIdx;
@@ -449,7 +449,7 @@ namespace RVP
 							}
 						}
 					}
-					if (stuntPoints[curStuntpointIdx] - progress > 0 && stuntPoints[curStuntpointIdx] - progress < 15)
+					if (stuntPoints.Count > 0 && stuntPoints[curStuntpointIdx] - progress > 0 && stuntPoints[curStuntpointIdx] - progress < 15)
 					{
 						if (!aiStuntingProc)
 							StartCoroutine(AIStuntingProc());

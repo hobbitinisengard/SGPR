@@ -8,7 +8,7 @@ ModelImporter:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: level6_floodlight
-    second: {fileID: 2100000, guid: d72473ad02c80944fb158ab4b13537ac, type: 2}
+    second: {fileID: 2100000, guid: ec313e4592af89640ab3bbe0b79fb9b6, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule

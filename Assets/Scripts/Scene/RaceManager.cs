@@ -18,7 +18,7 @@ namespace RVP
 		AudioSource musicPlayer;
 		public PathCreator racingPath;
 		public GameObject Sun;
-		public GameObject nightTimeLights;
+		GameObject nightTimeLights;
 		[Tooltip("Reload the scene with the 'Restart' button in the input manager")]
 		public bool quickRestart = true;
 		float initialFixedTime;
@@ -138,7 +138,6 @@ namespace RVP
 			else if (pod == PartOfDay.Night)
 			{
 				//Sun.SetActive(false);
-				nightTimeLights.SetActive(true);
 				RenderSettings.ambientLight = new Color32(52, 52, 52, 1);
 			}
 		}
@@ -173,6 +172,7 @@ namespace RVP
 			Info.PopulateCarsData();
 			Info.PopulateTrackData();
 			StartCoroutine(editorPanel.LoadTrack());
+
 			SetPartOfDay();
 			if (Info.s_inEditor)
 			{
@@ -214,45 +214,67 @@ namespace RVP
 			Debug.Log("Play: " + Info.tracks[Info.s_trackName].envir.ToString());
 			musicPlayer.clip = Resources.Load<AudioClip>("music/" + Info.tracks[Info.s_trackName].envir.ToString());
 			musicPlayer.PlayDelayed(5);
+			Info.raceStartDate = DateTime.Now;
+			Info.raceStartDate.AddSeconds(5);
 			float countDownSeconds = 5;
 			Info.s_cars.Clear();
-			Vector3 v = new (-7, 0, 0);
-			for(int i = 0; i< Info.s_rivals+1; ++i)
+			int dist = -7;
+			for (int i = 0; i< Info.s_rivals+1; ++i)
 			{
-				Vector3 castPos = startTile.TransformPoint(v);
-				if(Physics.Raycast(castPos + 3 * Vector3.up, Vector3.down, out var hit, Mathf.Infinity,  1 << Info.roadLayer))
+				Vector3 startPos = racingPath.path.GetPointAtDistance(dist);
+				Vector3 dirVec = racingPath.path.GetDirectionAtDistance(dist);
+				Vector3 rotDirVec = Quaternion.AngleAxis(90, Vector3.up) * dirVec;
+				Vector3 leftSide = startPos;
+				Vector3 rightSide = startPos;
+				for(int j=2; j<28; j+=2)//track width is around 30
 				{
-					var carModel = Resources.Load<GameObject>(Info.carModelsPath + "car01");
-					var position = new Vector3(castPos.x, hit.point.y + 2, castPos.z);
-					var newCar = Instantiate(carModel, position, startTile.rotation).GetComponent<VehicleParent>();
-					newCar.SetSponsor(i % Info.Liveries);
-					StartCoroutine(newCar.CountdownTimer(countDownSeconds - newCar.engine.transmission.shiftDelaySeconds));
-					Info.s_cars.Add(newCar);
-					if (i == Info.s_rivals)
-					{ // last car is the player
-						newCar.name = Info.s_playerName;
-						cam.enabled = true;
-						cam.Connect(newCar);
-						hud.Connect(newCar);
-						newCar.AddWheelGroup();
-						//newCar.followAI.SetCPU(true);
+					if (Physics.Raycast(startPos + 5 * Vector3.up + rotDirVec * j, Vector3.down, out var hit, Mathf.Infinity, 1 << Info.roadLayer))
+					{
+						rightSide = hit.point;
 					}
 					else
+						break;
+				}
+				for (int j = 2; j < 28; j += 2)
+				{
+					if (Physics.Raycast(startPos + 5 * Vector3.up - rotDirVec * j, Vector3.down, out var hit, Mathf.Infinity, 1 << Info.roadLayer))
 					{
-						newCar.name = "CP" + (i + 1).ToString();
-						newCar.AddWheelGroup();
-						newCar.followAI.SetCPU(true);
+						leftSide = hit.point;
 					}
-					newCar.followAI.AssignPath(racingPath, ref editorPanel.stuntpointsContainer, ref editorPanel.replayCamsContainer);
+					else
+						break;
+				}
+
+				startPos = Vector3.Lerp(leftSide, rightSide, (i % 2 == 0) ? 0.286f : .714f);
+				Debug.DrawRay(startPos, Vector3.up);
+				var carModel = Resources.Load<GameObject>(Info.carModelsPath + "car01");
+				var position = new Vector3(startPos.x, startPos.y + 3, startPos.z);
+				var rotation = Quaternion.LookRotation(dirVec);
+				var newCar = Instantiate(carModel, position, rotation).GetComponent<VehicleParent>();
+				newCar.SetSponsor(i % Info.Liveries);
+				if (Info.s_isNight)
+					newCar.SetLights();
+				StartCoroutine(newCar.CountdownTimer(countDownSeconds - newCar.engine.transmission.shiftDelaySeconds));
+				Info.s_cars.Add(newCar);
+				if (i == Info.s_rivals)
+				{ // last car is the player
+					newCar.name = Info.s_playerName;
+					cam.enabled = true;
+					cam.Connect(newCar);
+					hud.Connect(newCar);
+					newCar.AddWheelGroup();
+					//newCar.followAI.SetCPU(true);
 				}
 				else
 				{
-					Debug.LogError("placing Info.s_cars cast failed");
-					return;
+					newCar.name = "CP" + (i + 1).ToString();
+					newCar.AddWheelGroup();
+					newCar.followAI.SetCPU(true);
 				}
-				v.x = 7 * ((i % 2 == 0) ? 1 : -1);
-				v.z = -(i * 15);
+				newCar.followAI.AssignPath(racingPath, ref editorPanel.stuntpointsContainer, ref editorPanel.replayCamsContainer);
+				dist -= 10;
 			}
+			Debug.DebugBreak();
 			countDownSeq.CountdownSeconds = countDownSeconds;
 			countDownSeq.gameObject.SetActive(true);
 		}

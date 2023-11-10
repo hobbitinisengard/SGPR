@@ -3,7 +3,282 @@ guid: b93414ac1ef975946a1ac34b6c748daf
 ModelImporter:
   serializedVersion: 21300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level5_bush2
+    second: {fileID: 2100000, guid: d6fd08ca4142a444d9a13cdce0429784, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level5_flagspain64
+    second: {fileID: 2100000, guid: e1c641467fda154449130924ac0e73b8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level5_hotel1
+    second: {fileID: 2100000, guid: 7a6e110fc1af1664a91f5dca4c449c7c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level5_hotel2
+    second: {fileID: 2100000, guid: 91012a19ca2d9d84da4b458ba3ad0a8f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level5_hotel3
+    second: {fileID: 2100000, guid: e343e513d5003164189bda0e25036848, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level5_hotela
+    second: {fileID: 2100000, guid: def0319ad4596684894672967950288a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level5_hotelb
+    second: {fileID: 2100000, guid: 4d577e70be4c5de4099fa80c68dcbc5f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level5_hotelc
+    second: {fileID: 2100000, guid: 6f55ff6bda22632458ab98ca1c1e835f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level5_jetskipage2
+    second: {fileID: 2100000, guid: 5e37bdc55052d9842abe4f792e018c2b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level5_lighthbar
+    second: {fileID: 2100000, guid: 6f7b1f973c7e4e14283f41b9aa08316d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level5_palmbark
+    second: {fileID: 2100000, guid: 3bb212181b9b7974fa3e923e1ece9399, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level5_psx_hotel1
+    second: {fileID: 2100000, guid: e21ede43939dee840b48ee4dcb0bc78e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level5_psx_hotel1x
+    second: {fileID: 2100000, guid: be1b605d729d0c34f8855badc7263110, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level5_rock2
+    second: {fileID: 2100000, guid: 881f2b888f60f1d4abb19de2a27e6c1c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level5_roof
+    second: {fileID: 2100000, guid: cc6c10d7ab8d5584c9b543acf9c96f41, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level5_roofwall
+    second: {fileID: 2100000, guid: b15af6ad3b766a949a13aef8f4b136ad, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level5_sand2sea
+    second: {fileID: 2100000, guid: 8c550efaa2b92834d8f8d09248f0608f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level5_sandrock64
+    second: {fileID: 2100000, guid: 9e723353815c08442917963d23a98f2b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level5_sandsurface
+    second: {fileID: 2100000, guid: 9d09b4b562f05944b8984a4865ac62d4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level5_sea64
+    second: {fileID: 2100000, guid: e3d19b3b6da1c5547bfa0c376ee72721, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level5_seagull64
+    second: {fileID: 2100000, guid: 9d757361a9e93ce4b942b8dc93c37928, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level5_wall
+    second: {fileID: 2100000, guid: 02be0646962490e41a081acf0f93501e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level5_wall2
+    second: {fileID: 2100000, guid: 7d4dbb056ec7725458389d41f3a05eec, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level5_wallnotwhite128
+    second: {fileID: 2100000, guid: 0db940c51be1f0442a04fb80da610495, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level5_wood
+    second: {fileID: 2100000, guid: e77d36b99f211fe4a8c5e5d4fea38db8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level6_beam128
+    second: {fileID: 2100000, guid: 2f2473d2924c7fa4185d3a97fd2e4c58, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level6_bush2n
+    second: {fileID: 2100000, guid: a35700aaefc784044a87acbbb277b8cc, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level6_hotel1n
+    second: {fileID: 2100000, guid: 650df59129dd9764ab26cb88879d6055, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level6_hotel2n
+    second: {fileID: 2100000, guid: e71bd8f4341c8654aa5c6ac7a3cbff40, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level6_hotel3n
+    second: {fileID: 2100000, guid: 54030650cbb60f2449845c072a61f446, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level6_hotel4n
+    second: {fileID: 2100000, guid: 857c8ee47b50981448420e227a410a0c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level6_hotelan
+    second: {fileID: 2100000, guid: 95d5557127104f54ca7dbc962fd755df, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level6_hotelaxn
+    second: {fileID: 2100000, guid: 603e354d2b43e054fb25d97d091d5e13, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level6_hotelbn
+    second: {fileID: 2100000, guid: afa8e49488478ee4093a49226af88e37, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level6_hotelbxn
+    second: {fileID: 2100000, guid: 649765c427e6dee448208cab974fd997, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level6_hotelcn
+    second: {fileID: 2100000, guid: 8fab2356c8bdd264f86cf5408ae35722, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level6_hotelcxn
+    second: {fileID: 2100000, guid: ba095da27e6750b48a4e219986ee2704, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level6_jetskipage2n
+    second: {fileID: 2100000, guid: bf1d7830d848f3347b51895938d9747e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level6_laser64
+    second: {fileID: 2100000, guid: a3f8777c5ef2e3041b920351d9d14485, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level6_neon128
+    second: {fileID: 2100000, guid: c00aafa92e921aa49832ee696f2416d4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level6_palmbarkn
+    second: {fileID: 2100000, guid: f7106e43184198a4aa59af13a0c8dc27, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level6_psx_hotel1n
+    second: {fileID: 2100000, guid: fd5566e3dabc04d42bd81be485b8084b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level6_psx_hotel1xn
+    second: {fileID: 2100000, guid: e7be6df746cc1824a9be72ce3b92a122, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level6_psx_hotel1yn
+    second: {fileID: 2100000, guid: b38ea0decfc192e4e9c28037a5de6558, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level6_rock2n
+    second: {fileID: 2100000, guid: 89dc09c6a991b1b42b2cf4dbd4a76d88, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level6_roofn
+    second: {fileID: 2100000, guid: 812e4e9b720d96642af576eaf0c438db, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level6_roofwalln
+    second: {fileID: 2100000, guid: e39867f0bf97bde4f8591ef0584ab750, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level6_walln
+    second: {fileID: 2100000, guid: f31041e58b5a4884c85fb81a1ffa213d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset01_trk_s0_sandsurface
+    second: {fileID: 2100000, guid: 1d603b9631779fc42b13acccd125b942, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset01_trk_s1_sandinout
+    second: {fileID: 2100000, guid: a45e74dbdf79eef49b7506e2a5f28277, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset01_trk_s2_sandpatch
+    second: {fileID: 2100000, guid: c69e1dd591abe484a8899d3c6258974a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset01_trk_s3_sandhalf
+    second: {fileID: 2100000, guid: eb46fe3bd6954b54495ace399925649c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset01_trk_s4_sandbarr
+    second: {fileID: 2100000, guid: 71f839df2e114344f99cc9d2ec11145c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset01_trk_s4sandbanner
+    second: {fileID: 2100000, guid: 1e3fb34c5fe4edd4ca9af7dbdca659ad, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset01_trk_sidewall_sand
+    second: {fileID: 2100000, guid: 70c2377a584feb84bb9872eb2b514b00, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

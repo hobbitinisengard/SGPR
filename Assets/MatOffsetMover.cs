@@ -5,6 +5,7 @@ public class MatOffsetMover : MonoBehaviour
 	MeshRenderer mr;
 	public float speed = 0.5f;
 	public float val = 0;
+	public Axis axisXY = Axis.Y;
 	void Start()
 	{
 		mr = GetComponent<MeshRenderer>();
@@ -17,7 +18,8 @@ public class MatOffsetMover : MonoBehaviour
 		val %= 1f;
 		for (int i = 0; i < mr.materials.Length; ++i)
 		{
-			mr.materials[i].mainTextureOffset = new Vector4(0, val);
+
+			mr.materials[i].mainTextureOffset = (axisXY == Axis.Y) ? new Vector4(0, val) : new Vector4(val, 0);
 			//mr.materials[i].SetTextureOffset("_BaseMap", new Vector2(0, val));
 			//mr.materials[i].SetVector("_Offset", new Vector4(0, val));
 		}

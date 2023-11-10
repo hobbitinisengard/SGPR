@@ -51,8 +51,10 @@ public class EditorPanel : Sfxable
 	
 
 	public Mode mode { get; private set; }
+	[NonSerialized]
 	public List<int> stuntpointsContainer = new List<int>();
-	public List<int> waypointsContainer = new List<int>(32);
+	//[NonSerialized]
+	//public List<int> waypointsContainer = new List<int>(32);
 	public List<ReplayCamStruct> replayCamsContainer = new List<ReplayCamStruct>(32);
 	public GameObject waypointTriggerPrefab;
 	public GameObject pathFollower;
@@ -92,6 +94,7 @@ public class EditorPanel : Sfxable
 	public Slider WindExtZ;
 	public Slider WindRanX;
 	public Slider WindRanZ;
+	public Button terrainBtn;
 	public float SecurityR;
 	public float SideExt;
 	public float SideInt;
@@ -1429,7 +1432,13 @@ public class EditorPanel : Sfxable
 			Destroy(terrain.gameObject);
 
 
-		terrain = envir.transform.Find("Terrain").GetComponent<Terrain>();
+		var terrainTr = envir.transform.Find("Terrain");
+		if(terrainTr)
+		{
+			terrain = terrainTr.GetComponent<Terrain>();
+		}
+
+		terrainBtn.gameObject.SetActive(terrain != null);
 
 		if (Info.s_isNight)
 		{
@@ -1442,6 +1451,7 @@ public class EditorPanel : Sfxable
 
 		terrainEditor.SetTerrain(terrain);
 
+		invisibleLevel.localScale = Info.invisibleLevelDimensions[(int)Info.tracks[Info.s_trackName].envir];
 		if (!File.Exists(path))
 		{
 			yield break;

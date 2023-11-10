@@ -16,7 +16,17 @@ public static class Info
 	public enum RaceType { Race, Stunt, Drift, Knockout, Survival }
 	public const int RaceTypes = 5;
 	public enum Envir { GER, JAP, SPN, FRA, ENG, USA, ITA, MEX };
-	public static readonly int[] skys = new int[]{9,2,9,1,4,9,9,9};
+	public readonly static Vector3[] invisibleLevelDimensions = new Vector3[]{
+		new (564, 1231,1), //ger
+		new (800, 800,1), //jap
+		new (1462, 1316,1),
+		new (824, 817,1),
+		new (1170, 817,1),
+		new (739, 1060,1),
+		new (1406, 1337,1),// ita
+		new (564, 1231,1), //mex
+	};
+	public static readonly int[] skys = new int[]{8,2,5,1,4,3,7,9};
 	
 	public const int Environments = 8;
 	public static readonly string[] EnvirDescs =
@@ -39,6 +49,7 @@ public static class Info
 	public static Dictionary<string, Car> cars;
 	public static SortedDictionary<string, TrackHeader> tracks;
 	public static Dictionary<string, AudioClip> audioClips;
+	public static DateTime raceStartDate = DateTime.MinValue;
 	public static bool loaded = false;
 	public const int roadLayer = 6;
 	public const int vehicleLayer = 9;
@@ -63,12 +74,12 @@ public static class Info
 	// curr/next session data
 	public static List<VehicleParent> s_cars = new List<VehicleParent>();
 	public static CarSetup[] s_carSetups;
-	public static string s_trackName = "ENG";
+	public static string s_trackName = "GER";
 	public static string s_playerName = "P1";
 	public static RaceType s_raceType = RaceType.Race;
 	public static int s_laps = 99;
 	public static bool s_inEditor = true;
-	public static bool s_isNight = false;
+	public static bool s_isNight = true;
 	public static int s_cpuLevel = 3;
 	public static int s_rivals = 9; // 0-9
 	public static bool s_reversed = false;
