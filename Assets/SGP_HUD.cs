@@ -293,7 +293,8 @@ public class SGP_HUD : MonoBehaviour
 		//}
 		if(racebox.Finished())
 		{
-			StartCoroutine(raceManager.PlayFinishSeq());
+			Debug.Log("finished");
+			raceManager.PlayFinishSeq();
 			gameObject.SetActive(false);
 			return;
 		}
@@ -331,7 +332,7 @@ public class SGP_HUD : MonoBehaviour
 		}
 		if (racebox.GetStuntsSeq(ref stuntData))
 			UpdateStuntSequenceTable(stuntData);
-		if (Input.GetButtonDown("Cancel"))
+		if (Input.GetKeyDown(KeyCode.Escape) && !raceManager.resultsSeq.gameObject.activeSelf)
 		{
 			pauseMenu.gameObject.SetActive(true);
 		}

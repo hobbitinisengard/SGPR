@@ -4,8 +4,9 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using PathCreation;
 using System.Collections;
-using System.Linq;
-using UnityEngine.UIElements;
+using Newtonsoft.Json;
+using System.IO;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace RVP
 {
@@ -18,10 +19,8 @@ namespace RVP
 		AudioSource musicPlayer;
 		public PathCreator racingPath;
 		public GameObject Sun;
-		GameObject nightTimeLights;
 		[Tooltip("Reload the scene with the 'Restart' button in the input manager")]
 		public bool quickRestart = true;
-		float initialFixedTime;
 
 		[Tooltip("Mask for what the wheels collide with")]
 		public LayerMask wheelCastMask;
@@ -68,12 +67,15 @@ namespace RVP
 		public CameraControl cam;
 		public CountDownSeq countDownSeq;
 		public ResultsSeq resultsSeq;
+		public PauseMenuButton sfxButton;
+		public PauseMenuButton musicButton;
+
 		public enum InfoMessage
 		{
 			TAKES_THE_LEAD, NO_ENERGY, SPLIT_TIME,
 		}
-		
-		
+
+
 		public void BackToEditor()
 		{
 			hud.Disconnect();
@@ -87,7 +89,7 @@ namespace RVP
 		}
 		public void RestartButton()
 		{
-
+			StartRace();
 		}
 		public void ExitButton()
 		{
@@ -95,7 +97,7 @@ namespace RVP
 				return;
 			musicPlayer.Stop();
 			countDownSeq.gameObject.SetActive(false);
-			
+
 			if (Info.s_inEditor)
 				BackToEditor();
 			else
@@ -103,7 +105,6 @@ namespace RVP
 		}
 		public void BackToMenu()
 		{
-
 		}
 		public float RaceProgress(VehicleParent vp)
 		{
@@ -112,7 +113,7 @@ namespace RVP
 		public int Position(VehicleParent vp)
 		{
 			Info.s_cars.Sort((carA, carB) => RaceProgress(carB).CompareTo(RaceProgress(carA)));
-			for(int i=0; i<Info.s_cars.Count; ++i)
+			for (int i = 0; i < Info.s_cars.Count; ++i)
 			{
 				if (Info.s_cars[i] == vp)
 					return i + 1;
@@ -152,9 +153,27 @@ namespace RVP
 		}
 		void Start()
 		{
-			worldUpDir = Physics.gravity.sqrMagnitude == 0 ? Vector3.up : -Physics.gravity.normalized;
-			initialFixedTime = Time.fixedDeltaTime;
+
+			// Read PlayerSettings (sfx, music)
+			string path = Path.Combine(Application.streamingAssetsPath, "playerSettings.json");
+			PlayerSettingsData settingsData;
+			if (!File.Exists(path))
+			{
+				settingsData = new PlayerSettingsData();
+				string serializedSettings = JsonConvert.SerializeObject(settingsData);
+				File.WriteAllText(path, serializedSettings);
+			}
+			else
+			{
+				string playerSettings = File.ReadAllText(path);
+				settingsData = JsonConvert.DeserializeObject<PlayerSettingsData>(playerSettings);
+			}
+			sfxButton.soundLevel = settingsData.sfxVol;
+			musicButton.soundLevel = settingsData.musicVol;
+
+
 			// Set static variables
+			worldUpDir = Physics.gravity.sqrMagnitude == 0 ? Vector3.up : -Physics.gravity.normalized;
 			wheelCastMaskStatic = wheelCastMask;
 			groundMaskStatic = groundMask;
 			damageMaskStatic = damageMask;
@@ -167,7 +186,7 @@ namespace RVP
 
 			musicPlayer = GetComponent<AudioSource>();
 			
-			
+
 			Info.PopulateSFXData();
 			Info.PopulateCarsData();
 			Info.PopulateTrackData();
@@ -182,6 +201,7 @@ namespace RVP
 			{
 				StartRace();
 			}
+
 		}
 		public void StartFreeRoam(Vector3 position, Quaternion rotation)
 		{
@@ -197,15 +217,12 @@ namespace RVP
 		}
 		public void StartRace()
 		{
-			Transform startTile = null;
+			musicPlayer.Stop();
 			int startlines = 0;
 			for (int i = 0; i < editorPanel.placedTilesContainer.transform.childCount; ++i)
 			{
 				if (editorPanel.placedTilesContainer.transform.GetChild(i).name == "startline")
-				{
 					startlines++;
-					startTile = editorPanel.placedTilesContainer.transform.GetChild(i);
-				}
 			}
 			if (startlines != 1)
 				return;
@@ -219,14 +236,14 @@ namespace RVP
 			float countDownSeconds = 5;
 			Info.s_cars.Clear();
 			int dist = -7;
-			for (int i = 0; i< Info.s_rivals+1; ++i)
+			for (int i = 0; i < Info.s_rivals + 1; ++i)
 			{
 				Vector3 startPos = racingPath.path.GetPointAtDistance(dist);
 				Vector3 dirVec = racingPath.path.GetDirectionAtDistance(dist);
 				Vector3 rotDirVec = Quaternion.AngleAxis(90, Vector3.up) * dirVec;
 				Vector3 leftSide = startPos;
 				Vector3 rightSide = startPos;
-				for(int j=2; j<28; j+=2)//track width is around 30
+				for (int j = 2; j < 28; j += 2)//track width is around 30
 				{
 					if (Physics.Raycast(startPos + 5 * Vector3.up + rotDirVec * j, Vector3.down, out var hit, Mathf.Infinity, 1 << Info.roadLayer))
 					{
@@ -246,7 +263,7 @@ namespace RVP
 				}
 
 				startPos = Vector3.Lerp(leftSide, rightSide, (i % 2 == 0) ? 0.286f : .714f);
-				Debug.DrawRay(startPos, Vector3.up);
+				//Debug.DrawRay(startPos, Vector3.up);
 				var carModel = Resources.Load<GameObject>(Info.carModelsPath + "car01");
 				var position = new Vector3(startPos.x, startPos.y + 3, startPos.z);
 				var rotation = Quaternion.LookRotation(dirVec);
@@ -280,30 +297,53 @@ namespace RVP
 		}
 		void Update()
 		{
-
 			// DEBUG
 			if (Input.GetKeyDown(KeyCode.K))
 				hud.AddMessage(new Message("CP1 IS RECHARGING!" + 5 * UnityEngine.Random.value, BottomInfoType.PIT_IN));
 			if (Input.GetKeyDown(KeyCode.M))
 				hud.AddMessage(new Message("CP2 TAKES THE LEAD!" + 5 * UnityEngine.Random.value, BottomInfoType.NEW_LEADER));
 			// Quickly restart scene with a button press
-			if (quickRestart)
-			{
-				if (Input.GetButtonDown("Restart"))
-				{
-					SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-					Time.timeScale = 1;
-					Time.fixedDeltaTime = initialFixedTime;
-				}
-			}
+			//if (quickRestart)
+			//{
+			//	if (Input.GetButtonDown("Restart"))
+			//	{
+			//		SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+			//		Time.timeScale = 1;
+			//		Time.fixedDeltaTime = initialFixedTime;
+			//	}
+			//}
 		}
 
-		public IEnumerator PlayFinishSeq()
+		public void PlayFinishSeq()
 		{
+			StartCoroutine(FinishSeq());
+		}
+		IEnumerator FinishSeq()
+		{
+			musicPlayer.Stop();
 			resultsSeq.gameObject.SetActive(true);
 			cam.SetMode(CameraControl.Mode.Replay);
+
 			while (resultsSeq.gameObject.activeSelf)
+			{
 				yield return null;
+			}
+			if(Info.tracks.ContainsKey(Info.s_trackName))
+			{
+				//lap
+				if((float)hud.vp.raceBox.bestLapTime.TotalSeconds < Info.tracks[Info.s_trackName].records[0].secondsOrPts)
+					Info.tracks[Info.s_trackName].records[0].secondsOrPts = (float)hud.vp.raceBox.bestLapTime.TotalSeconds;
+				//race
+				if ((float)hud.vp.raceBox.raceTime.TotalSeconds > Info.tracks[Info.s_trackName].records[1].secondsOrPts)
+					Info.tracks[Info.s_trackName].records[1].secondsOrPts = (float)hud.vp.raceBox.raceTime.TotalSeconds;
+				//stunt
+				if ((float)hud.vp.raceBox.aero/Info.s_laps > Info.tracks[Info.s_trackName].records[2].secondsOrPts)
+					Info.tracks[Info.s_trackName].records[2].secondsOrPts = (float)hud.vp.raceBox.aero / Info.s_laps;
+				//drift
+				if (hud.vp.raceBox.driftPts > Info.tracks[Info.s_trackName].records[3].secondsOrPts)
+					Info.tracks[Info.s_trackName].records[3].secondsOrPts = hud.vp.raceBox.driftPts;
+			}
+			countDownSeq.gameObject.SetActive(false);
 			if (Info.s_inEditor)
 			{
 				BackToEditor();
@@ -313,6 +353,5 @@ namespace RVP
 				BackToMenu();
 			}
 		}
-		
 	}
 }

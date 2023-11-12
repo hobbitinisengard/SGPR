@@ -1,5 +1,4 @@
 using System;
-using System.Security.Cryptography;
 using UnityEngine;
 
 public class SC_TerrainEditor : MonoBehaviour
@@ -48,7 +47,8 @@ public class SC_TerrainEditor : MonoBehaviour
 	public void SetTerrain(Terrain terrain)
 	{
 		this.terrain = terrain;
-		tData = this.terrain.terrainData;
+		if(terrain != null)
+			tData = this.terrain.terrainData;
 	}
 	void Start()
 	{
@@ -92,7 +92,7 @@ public class SC_TerrainEditor : MonoBehaviour
 
 	void FixedUpdate()
 	{
-		if (uiTest.PointerOverUI())
+		if (uiTest.PointerOverUI() || terrain == null)
 			return;
 		raycastHit();
 		wheelValuesControl();

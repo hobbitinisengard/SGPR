@@ -10,11 +10,11 @@ using Unity.Jobs;
 
 namespace RVP
 {
-	
+
 	[RequireComponent(typeof(VehicleParent))]
 	[DisallowMultipleComponent]
 	[AddComponentMenu("RVP/AI/Follow AI", 0)]
-	
+
 	// Class for following AI
 	public class FollowAI : MonoBehaviour
 	{
@@ -218,7 +218,7 @@ namespace RVP
 				Debug.Break();
 				return;
 			}
-			if(vp.countdownTimer>0 && isCPU)
+			if (vp.countdownTimer > 0 && isCPU)
 			{
 				vp.SetAccel(UnityEngine.Random.value > 0.5 ? 1 : 0);
 				return;
@@ -266,7 +266,7 @@ namespace RVP
 
 				if (pitsDist < pitsProgress)
 					pitsDist = pitsProgress;
-				pitsProgress = pitsDist;			//pitsProgress
+				pitsProgress = pitsDist;         //pitsProgress
 
 				if (pitsDist + lookAheadBase > pitsPathCreator.path.length)
 				{
@@ -290,7 +290,7 @@ namespace RVP
 				}
 				var racingPathHits = Physics.OverlapSphere(transform.position, radius, 1 << Info.racingLineLayer);
 
-				dist = GetDist(racingPathHits); 
+				dist = GetDist(racingPathHits);
 
 				if (dist < progress)
 				{
@@ -304,7 +304,7 @@ namespace RVP
 				{
 					outOfTrackTime += Time.fixedDeltaTime;
 				}
-				
+
 			}
 			if (selfDriving)
 			{
@@ -341,7 +341,7 @@ namespace RVP
 					//	tPos = trackPathCreator.path.GetPointAtDistance(waypointsContainer[curWaypointIdx]);
 					//}
 					tPos0 = trackPathCreator.path.GetPointAtDistance(dist);
-					tPos = trackPathCreator.path.GetPointAtDistance(dist +  lookAheadBase * lookAheadSteerCurve.Evaluate(vp.velMag));
+					tPos = trackPathCreator.path.GetPointAtDistance(dist + lookAheadBase * lookAheadSteerCurve.Evaluate(vp.velMag));
 					tPos2 = trackPathCreator.path.GetPointAtDistance(dist + lookAheadBase * lookAheadMultCurve.Evaluate(vp.velMag));
 				}
 
@@ -354,33 +354,33 @@ namespace RVP
 
 				if (pitsPathCreator)
 				{
-					if(pitsProgress > 25)
+					if (pitsProgress > 25)
 						tSpeed = 22f;
 					if (pitsProgress > 225)
 						tSpeed = 80;
 				}
 				else
 				{
-						float aheadSpeed = tSpeedExpCurve.Evaluate(Mathf.Abs(tPos2.w));
-						if (aheadSpeed < speedLimit)
-						{
-							speedLimit = aheadSpeed;
-							speedLimitDist = (dist + lookAheadBase * lookAheadMultCurve.Evaluate(vp.velMag));
-						}
+					float aheadSpeed = tSpeedExpCurve.Evaluate(Mathf.Abs(tPos2.w));
+					if (aheadSpeed < speedLimit)
+					{
+						speedLimit = aheadSpeed;
+						speedLimitDist = (dist + lookAheadBase * lookAheadMultCurve.Evaluate(vp.velMag));
+					}
 
-						if (dist > speedLimitDist)
-						{
-							tSpeed = tSpeedExpCurve.Evaluate(Mathf.Abs(tPos0.w));
-							speedLimit = 999;
-							speedLimitDist = -1;
-						}
-						else
-						{
-							var pos = trackPathCreator.path.GetPointAtDistance(speedLimitDist);
-							//Debug.DrawLine((Vector3)pos, (Vector3)pos + 100 * Vector3.up, Color.blue);
-							tSpeed = speedLimit;
+					if (dist > speedLimitDist)
+					{
+						tSpeed = tSpeedExpCurve.Evaluate(Mathf.Abs(tPos0.w));
+						speedLimit = 999;
+						speedLimitDist = -1;
+					}
+					else
+					{
+						var pos = trackPathCreator.path.GetPointAtDistance(speedLimitDist);
+						//Debug.DrawLine((Vector3)pos, (Vector3)pos + 100 * Vector3.up, Color.blue);
+						tSpeed = speedLimit;
 
-						}
+					}
 				}
 
 				// Attempt to reverse if vehicle is stuck
@@ -408,7 +408,7 @@ namespace RVP
 				reverseTime = Mathf.Max(0, reverseTime - Time.fixedDeltaTime);
 
 
-				if(vp.groundedWheels > 0)
+				if (vp.groundedWheels > 0)
 				{
 					if (vp.velMag < tSpeed && reverseTime == 0)
 					{
@@ -476,7 +476,7 @@ namespace RVP
 		{
 			aiStuntingProc = true;
 			float waitTimer = 1;
-			while(waitTimer > 0)
+			while (waitTimer > 0)
 			{
 				float stuntTimer = .5f;
 				vp.SetSGPShift(true);
@@ -487,11 +487,11 @@ namespace RVP
 					vp.SetAccel(0);
 					vp.SetBrake(0);
 					waitTimer = 0;
-					int type = Mathf.RoundToInt(3*UnityEngine.Random.value);
+					int type = Mathf.RoundToInt(3 * UnityEngine.Random.value);
 					int val = (type > 1) ? 1 : (UnityEngine.Random.value > 0.5f) ? 1 : -1;
 					while (stuntTimer > 0)
 					{
-						switch(type)
+						switch (type)
 						{
 							case 0:
 								vp.SetRoll(val); // -1 or 1
@@ -532,7 +532,7 @@ namespace RVP
 			stoppedTime = 0;
 			float resetDist = progress;
 			Vector3 resetPos = trackPathCreator.path.GetPointAtDistance(resetDist);
-			while(!Physics.Raycast(resetPos + Vector3.up, Vector3.down, out var _, Mathf.Infinity,  1 << Info.roadLayer))
+			while (!Physics.Raycast(resetPos + Vector3.up, Vector3.down, out var _, Mathf.Infinity, 1 << Info.roadLayer))
 			{
 				resetDist += 30;
 				resetPos = trackPathCreator.path.GetPointAtDistance(resetDist);

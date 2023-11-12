@@ -244,7 +244,7 @@ public class EditorPanel : Sfxable
 	{
 		currentTile.transform.RotateAround(currentTile.transform.position, axis, angle);
 	}
-	async void Update()
+	void Update()
 	{
 		if (Input.GetKeyDown(KeyCode.Escape))
 		{
@@ -1214,7 +1214,7 @@ public class EditorPanel : Sfxable
 	}
 	public void SaveTrack()
 	{
-		if (trackNameInputField.text.Length < 2)
+		if (trackNameInputField.text.Length <= 3)
 			trackNameInputField.text = "Untitled";
 		trackName.text = trackNameInputField.text;
 
@@ -1314,7 +1314,7 @@ public class EditorPanel : Sfxable
 			icons.Add(3);
 		if (crossCount >= 4)
 			icons.Add(4);
-		if (pitsCount >= 1)
+		if (pitsCount == 0)
 			icons.Add(5);
 		if (jumpCount == 0)
 			icons.Add(6);
@@ -1343,6 +1343,7 @@ public class EditorPanel : Sfxable
 		TrackHeader header = new TrackHeader();
 		header.unlocked = true;
 		header.preferredCarClass = (Info.CarGroup)carGroupDropdown.value;
+		header.difficulty = trackDifficultyDropdown.value;
 		header.envir = Info.tracks[Info.s_trackName].envir;
 		header.author = trackAuthorInputField.text;
 		header.icons = icons.ToArray();
@@ -1356,6 +1357,15 @@ public class EditorPanel : Sfxable
 			Info.tracks.Add(trackName.text, header);
 		else
 			Info.tracks[trackName.text] = header;
+	}
+	public void SetPylonVisibility(bool isVisible)
+	{
+		for(int i=0; i<placedTilesContainer.transform.childCount; ++i)
+		{
+			var tile = placedTilesContainer.transform.GetChild(i).gameObject;
+			if(tile.name.Contains("pylon") || tile.name == "reflector")
+				tile.SetActive(isVisible);
+		}
 	}
 	//HeightsSavableWrapper ConvertHeights(float[,] heights)
 	//{
@@ -1388,7 +1398,8 @@ public class EditorPanel : Sfxable
 	//}
 	public float[,] GetHeightsmap()
 	{
-
+		if (terrain == null)
+			return null;
 		var resXY = terrain.terrainData.heightmapResolution;
 		var heights = terrain.terrainData.GetHeights(0, 0, resXY, resXY);
 		foreach(var h in heights)
@@ -1431,7 +1442,6 @@ public class EditorPanel : Sfxable
 		if (terrain != null)
 			Destroy(terrain.gameObject);
 
-
 		var terrainTr = envir.transform.Find("Terrain");
 		if(terrainTr)
 		{
@@ -1443,14 +1453,14 @@ public class EditorPanel : Sfxable
 		if (Info.s_isNight)
 		{
 			var lights = envir.transform.Find("Lights");
-			if(lights != null)
+			if (lights != null)
 				lights.gameObject.SetActive(true);
 		}
 		trackName.text = Info.s_trackName;
 		string path = Path.Combine(Application.streamingAssetsPath, Info.s_trackName + ".data");
 
 		terrainEditor.SetTerrain(terrain);
-
+		
 		invisibleLevel.localScale = Info.invisibleLevelDimensions[(int)Info.tracks[Info.s_trackName].envir];
 		if (!File.Exists(path))
 		{
@@ -1460,13 +1470,16 @@ public class EditorPanel : Sfxable
 		string trackJson = File.ReadAllText(path);
 		TrackSavableData TRACK = JsonConvert.DeserializeObject<TrackSavableData>(trackJson);
 
+		trackNameInputField.text = trackName.text;
+		trackNameInputFieldPlaceholder.text = trackName.text;
+
 		trackDescInputField.text = Info.tracks[Info.s_trackName].desc;
 		trackDescInputFieldPlaceholder.text = Info.tracks[Info.s_trackName].desc;
 
 		trackAuthorInputField.text = Info.tracks[Info.s_trackName].author;
 		trackAuthorInputFieldPlaceholder.text = Info.tracks[Info.s_trackName].author;
 
-		trackDifficultyDropdown.value = Info.tracks[Info.s_trackName].difficulty-4;
+		trackDifficultyDropdown.value = Info.tracks[Info.s_trackName].difficulty;
 
 		carGroupDropdown.value = (int)Info.tracks[Info.s_trackName].preferredCarClass;
 
@@ -1488,8 +1501,7 @@ public class EditorPanel : Sfxable
 		{
 			foreach (var tile in TRACK.tiles)
 			{ // add tiles to scene
-				InstantiateNewTile(TRACK.tileNames[tile.name_id], tile.position, tile.rotation, 
-					tile.mirrored, tile.length, tile.url);
+				InstantiateNewTile(TRACK.tileNames[tile.name_id], tile.position, tile.rotation, tile.mirrored, tile.length, tile.url);
 				currentTile.SetPlaced();
 			}
 		}

@@ -1966,12 +1966,12 @@ Cloth:
   m_GameObject: {fileID: 4520294301007989944}
   m_Enabled: 1
   m_StretchingStiffness: 1
-  m_BendingStiffness: 1
+  m_BendingStiffness: 0
   m_UseTethers: 1
   m_UseGravity: 1
   m_Damping: 0
-  m_ExternalAcceleration: {x: 0, y: 0, z: 0}
-  m_RandomAcceleration: {x: 0, y: 0, z: 0}
+  m_ExternalAcceleration: {x: 50, y: 0, z: 50}
+  m_RandomAcceleration: {x: 25, y: 0, z: 25}
   m_WorldVelocityScale: 1
   m_WorldAccelerationScale: 1
   m_Friction: 0.5
@@ -3685,6 +3685,7 @@ GameObject:
   - component: {fileID: 4520294301469688553}
   - component: {fileID: 4520294301469688535}
   - component: {fileID: 4520294301469688552}
+  - component: {fileID: 6985278257031640706}
   m_Layer: 0
   m_Name: main
   m_TagString: Untagged
@@ -3774,6 +3775,20 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!64 &6985278257031640706
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4520294301469688554}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 4
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: -3011979744758549955, guid: e18d9815e01ee7441a412d0722210416, type: 3}
 --- !u!1 &4520294301504001277
 GameObject:
   m_ObjectHideFlags: 0

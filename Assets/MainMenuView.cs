@@ -28,7 +28,6 @@ public class MainMenuView : Sfxable
 			firstButtonToBeSelected.Select();
 		dimmer = transform.FindParentComponent<ViewSwitcher>();
 		dimmer.SwitchBackgroundTo(bgTile);
-
 	}
 	void Update()
 	{

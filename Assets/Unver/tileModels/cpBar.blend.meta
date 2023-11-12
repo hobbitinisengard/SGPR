@@ -13,7 +13,7 @@ ModelImporter:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: trackset00_trk_tubemetal
-    second: {fileID: 2100000, guid: de978267e2ca657468591802699e6ed0, type: 2}
+    second: {fileID: 2100000, guid: 76b7e9a691cca954c8c2c83452ea46b3, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

@@ -10,20 +10,35 @@ public class GerTimer : MonoBehaviour
 	void Update()
 	{
 		if (Info.raceStartDate == DateTime.MinValue)
-			return;
-		TimeSpan timediff = DateTime.Now - Info.raceStartDate;
-		// minutes : seconds : ff
-		int minutes = timediff.Minutes;
-		digits[0].sprite = sprites[minutes / 10];
-		digits[1].sprite = sprites[minutes % 10];
+		{
+			var timeNow = DateTime.Now;
+			int val = timeNow.Hour;
+			digits[0].sprite = sprites[val / 10];
+			digits[1].sprite = sprites[val % 10];
+			val = timeNow.Minute;
+			digits[2].sprite = sprites[val / 10];
+			digits[3].sprite = sprites[val % 10];
+			val = timeNow.Second;
+			digits[4].sprite = sprites[val / 10];
+			digits[5].sprite = sprites[val % 10];
+			digitColon.sprite = colons[(val % 2 == 0) ? 0 : 1];
+		}
+		else
+		{
+			TimeSpan timediff = DateTime.Now - Info.raceStartDate;
+			// minutes : seconds : ff
+			int val = timediff.Minutes;
+			digits[0].sprite = sprites[val / 10];
+			digits[1].sprite = sprites[val % 10];
 
-		int seconds = timediff.Seconds;
-		digits[2].sprite = sprites[seconds / 10];
-		digits[3].sprite = sprites[seconds % 10];
-
-		int tens = timediff.Milliseconds / 10;
-		digits[4].sprite = sprites[tens / 10];
-		digits[5].sprite = sprites[tens % 10];
-		digitColon.sprite = colons[(tens < 50) ? 0 : 1];
+			val = timediff.Seconds;
+			digits[2].sprite = sprites[val / 10];
+			digits[3].sprite = sprites[val % 10];
+			digitColon.sprite = colons[(val % 2 == 0) ? 0 : 1];
+			val = timediff.Milliseconds / 10;
+			digits[4].sprite = sprites[val / 10];
+			digits[5].sprite = sprites[val % 10];
+			
+		}
 	}
 }

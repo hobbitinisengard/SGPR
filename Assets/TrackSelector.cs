@@ -6,6 +6,8 @@ using UnityEngine.UI;
 using System.Linq;
 using static TrackHeader;
 using TMPro;
+using Newtonsoft.Json.Linq;
+using System.IO;
 
 public class TrackSelector : Sfxable
 {
@@ -126,23 +128,6 @@ public class TrackSelector : Sfxable
 	{
 		bool[] existingTrackClasses = new bool[2];
 
-		//-----------------
-		void AddTrackImage(in string key, in TrackHeader value)
-		{
-			if(value.unlocked)
-			{
-				int trackOrigin = value.TrackOrigin();
-				var newtrack = Instantiate(trackImageTemplate, trackContent.GetChild(trackOrigin));
-				newtrack.name = key;
-				newtrack.GetComponent<Image>().sprite = Resources.Load<Sprite>(Info.trackImagesPath + key);
-				newtrack.SetActive(true);
-				existingTrackClasses[trackOrigin] = true;
-				if (persistentSelectedTrack != null && persistentSelectedTrack == key)
-					selectedTrack = newtrack.transform;
-			}
-		}
-		//-------------------
-
 		for (int i = 0; i < trackContent.childCount; ++i)
 		{ // remove tracks from previous entry
 			Transform trackClass = trackContent.GetChild(i);
@@ -158,8 +143,21 @@ public class TrackSelector : Sfxable
 			sortedTracks = Info.tracks.OrderBy(t => t.Key).Select(kv => kv.Key).ToArray();
 		else //if(curSortingCondition == SortingCond.Difficulty)
 			sortedTracks = Info.tracks.OrderBy(t => t.Value.difficulty).Select(kv => kv.Key).ToArray();
-		foreach (var tname in sortedTracks)
-			AddTrackImage(tname, Info.tracks[tname]);
+		foreach (var trackName in sortedTracks)
+		{
+			TrackHeader track = Info.tracks[trackName];
+			if (track.unlocked && track.valid)
+			{
+				int trackOrigin = track.TrackOrigin();
+				var newtrack = Instantiate(trackImageTemplate, trackContent.GetChild(trackOrigin));
+				newtrack.name = trackName;
+				newtrack.GetComponent<Image>().sprite = IMG2Sprite.LoadNewSprite(Path.Combine(Application.streamingAssetsPath, trackName+".png"));
+				newtrack.SetActive(true);
+				existingTrackClasses[trackOrigin] = true;
+				if (persistentSelectedTrack != null && persistentSelectedTrack == trackName)
+					selectedTrack = newtrack.transform;
+			}
+		}
 		return existingTrackClasses;
 	}
 	IEnumerator Load()
@@ -188,7 +186,7 @@ public class TrackSelector : Sfxable
 		}
 		else
 		{
-			trackDescText.text = Info.tracks[selectedTrack.name].desc;
+			trackDescText.text = selectedTrack.name + "\n\n" + Info.tracks[selectedTrack.name].desc;
 			radial.SetAnimTo(selectedTrack.parent.GetSiblingIndex());
 		}
 		
@@ -247,7 +245,7 @@ public class TrackSelector : Sfxable
 
 		AddTile(Enum.GetName(typeof(Info.CarGroup),Info.tracks[selectedTrack.name].preferredCarClass));
 		AddTile(Enum.GetName(typeof(Info.Envir), Info.tracks[selectedTrack.name].envir));
-		AddTile(Info.tracks[selectedTrack.name].difficulty.ToString());
+		AddTile((Info.tracks[selectedTrack.name].difficulty+4).ToString());
 		foreach (var flag in Info.tracks[selectedTrack.name].icons)
 			AddTile(Info.IconNames[flag]);
 	}
@@ -291,7 +289,7 @@ public class TrackSelector : Sfxable
 				}
 				// new track has been selected
 				// set description
-				trackDescText.text = Info.tracks[selectedTrack.name].desc;
+				trackDescText.text = selectedTrack.name + "\n\n" + Info.tracks[selectedTrack.name].desc;
 				radial.SetAnimTo(selectedTrack.parent.GetSiblingIndex());
 				SetTiles();
 				SetRecords();

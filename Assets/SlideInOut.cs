@@ -91,14 +91,14 @@ public class SlideInOut : MonoBehaviour
 		else
 		{
 			if (inSlideDirection.y > 0)
-				startPos = rt.anchoredPosition.y + screenPos.y;
+				startPos = rt.anchoredPosition.y - screenPos.y - rt.rect.height;
 			else
-				startPos = rt.anchoredPosition.y + Screen.height-screenPos.y-rt.rect.height;
+				startPos = rt.anchoredPosition.y + Screen.height - screenPos.y - rt.rect.height;
 		}
 	}
 	void SetContentsTransp(float a)
 	{
-		if(type== Type.ButtonContainer)
+		if(type== Type.ButtonContainer || type == Type.Button)
 		{
 			for (int i = 0; i < imgs.Length; ++i)
 			{

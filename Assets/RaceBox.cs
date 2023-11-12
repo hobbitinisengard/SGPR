@@ -303,7 +303,7 @@ public class RaceBox : MonoBehaviour
 	}
 	void DeclineStunt()
 	{
-		Debug.Log(vp.tr.name + " Decline");
+		//Debug.Log(vp.tr.name + " Decline");
 		stableLandingTimer = -1;
 		prevStuntPai = null;
 		StuntPaiReset();
@@ -317,7 +317,7 @@ public class RaceBox : MonoBehaviour
 			SetGrantedComboTime(5 + 0.5f * starLevel);
 			vp.battery = Mathf.Clamp01(vp.battery + vp.engine.batteryStuntIncrease);
 			aero += stuntPai.score / 10f;
-			Debug.Log(vp.tr.name + " Accept");
+			//Debug.Log(vp.tr.name + " Accept");
 			prevStuntPai = new PtsAnimInfo(stuntPai);
 			StuntPaiReset();
 		}

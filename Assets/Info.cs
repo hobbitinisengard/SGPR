@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using static Info;
+
 public static class Info
 {
 	public readonly static string userdata_path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Stunt GP Reloaded\\userdata.txt";
@@ -74,12 +75,12 @@ public static class Info
 	// curr/next session data
 	public static List<VehicleParent> s_cars = new List<VehicleParent>();
 	public static CarSetup[] s_carSetups;
-	public static string s_trackName = "GER";
+	public static string s_trackName = "USA";
 	public static string s_playerName = "P1";
 	public static RaceType s_raceType = RaceType.Race;
-	public static int s_laps = 99;
+	public static int s_laps = 1;
 	public static bool s_inEditor = true;
-	public static bool s_isNight = true;
+	public static bool s_isNight = false;
 	public static int s_cpuLevel = 3;
 	public static int s_rivals = 9; // 0-9
 	public static bool s_reversed = false;
@@ -89,18 +90,19 @@ public static class Info
 
 	public static readonly string[] IconNames =
 	{
-		"Stunty", "Loop", "Jumpy", "Windy", "Intersecting", "No_pit", "No_jumps", "Icy", "Sandy", "Offroad"
+		"Stunty", "Loop", "Jumpy", "Windy", "Intersecting", "No_pits", "No_jumps", "Icy", "Sandy", "Offroad"
 	};
 
 	internal static Sprite[] icons;
-	
+	internal static readonly string version = "0.1";
+
 	public static void PopulateCarsData()
 	{
 		if (cars == null)
 			cars = new Dictionary<string, Car>();
 		else
 			return;  
-		cars.Add("car01", new Car(0,CarGroup.Speed, "MEAN STREAK\n\nFast, light and agile, this racer offers much for those who wish to modify their vehicle."));
+		cars.Add("car01", new Car(1,CarGroup.Speed, "MEAN STREAK\n\nFast, light and agile, this racer offers much for those who wish to modify their vehicle."));
 		cars.Add("car02", new Car(0,CarGroup.Wild, "THE HUSTLER\n\nSturdy 4x4 pick-up truck with an eye for the outrageous!"));
 		cars.Add("car03", new Car(0,CarGroup.Aero, "TWIN EAGLE\n\nTake flight with this light and speedy stuntcar."));
 		cars.Add("car04", new Car(0,CarGroup.Aero, "SKY HAWK\n\nGet airborne with this very versatile stunt car."));
@@ -116,10 +118,10 @@ public static class Info
 		cars.Add("car14", new Car(0,CarGroup.Aero, "FLYING MANTIS\n\nSuper light and very fast."));
 		cars.Add("car15", new Car(0,CarGroup.Aero, "STUNT MONKEY\n\nMonkey see, monkey do! Go bananas with this wild ride!"));
 		cars.Add("car16", new Car(0,CarGroup.Speed, "INFERNO\n\nThis speed demon is on fire!"));
-		cars.Add("car17", new Car(1,CarGroup.Team, "THE FORKSTER\n\nDespite its looks, it moves like fork lightning!"));
+		cars.Add("car17", new Car(0,CarGroup.Team, "THE FORKSTER\n\nDespite its looks, it moves like fork lightning!"));
 		cars.Add("car18", new Car(0,CarGroup.Team, "WORMS MOBILE\n\nSuper Speedy Buggy!"));
 		cars.Add("car19", new Car(0,CarGroup.Team, "FORMULA 17\n\nIncredibly fast racing car."));
-		cars.Add("car20", new Car(1,CarGroup.Team, "TEAM MACHINE\n\nThe ultimate, hugely versatile stock car."));
+		cars.Add("car20", new Car(0,CarGroup.Team, "TEAM MACHINE\n\nThe ultimate, hugely versatile stock car."));
 	}
 	
 	public static void AddCar()
@@ -185,7 +187,8 @@ public static class Info
 			string trackJson = File.ReadAllText(path);
 			string name = Path.GetFileNameWithoutExtension(path);
 			TrackHeader header = JsonConvert.DeserializeObject<TrackHeader>(trackJson);
-			tracks.Add(name, header);
+			if(header.valid && header.unlocked)
+				tracks.Add(name, header);
 		}
 	}
 	public static float InGroupPos(Transform child)
@@ -262,7 +265,10 @@ public class TrackHeader
 	public string desc;
 	public bool valid;
 	public Envir envir;
-	public CarGroup preferredCarClass;//
+	public CarGroup preferredCarClass;
+	/// <summary>
+	/// starts from 0 (sprites are from 4!)
+	/// </summary>
 	public int difficulty;//
 	public bool unlocked;//
 	public int[] icons;
@@ -330,5 +336,50 @@ public class CarSetup
 	public Livery livery;
 }
 
+public static class IMG2Sprite
+{
 
+	//Static class instead of _instance
+	// Usage from any other script:
+	// MySprite = IMG2Sprite.LoadNewSprite(FilePath, [PixelsPerUnit (optional)], [spriteType(optional)])
+
+	public static Sprite LoadNewSprite(string FilePath, float PixelsPerUnit = 100.0f, SpriteMeshType spriteType = SpriteMeshType.Tight)
+	{
+
+		// Load a PNG or JPG image from disk to a Texture2D, assign this texture to a new sprite and return its reference
+
+		Texture2D SpriteTexture = LoadTexture(FilePath);
+		Sprite NewSprite = Sprite.Create(SpriteTexture, new Rect(0, 0, SpriteTexture.width, SpriteTexture.height), new Vector2(0, 0), PixelsPerUnit, 0, spriteType);
+
+		return NewSprite;
+	}
+
+	public static Sprite ConvertTextureToSprite(Texture2D texture, float PixelsPerUnit = 100.0f, SpriteMeshType spriteType = SpriteMeshType.Tight)
+	{
+		// Converts a Texture2D to a sprite, assign this texture to a new sprite and return its reference
+
+		Sprite NewSprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0, 0), PixelsPerUnit, 0, spriteType);
+
+		return NewSprite;
+	}
+
+	public static Texture2D LoadTexture(string FilePath)
+	{
+
+		// Load a PNG or JPG file from disk to a Texture2D
+		// Returns null if load fails
+
+		Texture2D Tex2D;
+		byte[] FileData;
+
+		if (File.Exists(FilePath))
+		{
+			FileData = File.ReadAllBytes(FilePath);
+			Tex2D = new Texture2D(2, 2);           // Create new "empty" texture
+			if (Tex2D.LoadImage(FileData))           // Load the imagedata into the texture (size is set automatically)
+				return Tex2D;                 // If data = readable -> return texture
+		}
+		return null;                     // Return null if load failed
+	}
+}
 

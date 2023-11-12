@@ -1387,6 +1387,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  initialOwnDelay: 0
+  ForceNextNode: 0
   EasingUnchanged: 0
   inSlideDirection: {x: -1, y: 0}
   mult: 1
@@ -2022,6 +2024,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  initialOwnDelay: 0
+  ForceNextNode: 0
   EasingUnchanged: 0
   inSlideDirection: {x: -1, y: 0}
   mult: 1
@@ -2404,6 +2408,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  initialOwnDelay: 0
+  ForceNextNode: 0
   EasingUnchanged: 0
   inSlideDirection: {x: -1, y: 0}
   mult: 1
@@ -4899,6 +4905,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  initialOwnDelay: 0
+  ForceNextNode: 0
   EasingUnchanged: 0
   inSlideDirection: {x: -1, y: 0}
   mult: 1
@@ -5343,6 +5351,11 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1568550709}
     m_Modifications:
+    - target: {fileID: 2580781573012994474, guid: 5fbe097fbb9f8f14f90c43482d70db7f,
+        type: 3}
+      propertyPath: m_PreserveAspect
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8008391774863635962, guid: 5fbe097fbb9f8f14f90c43482d70db7f,
         type: 3}
       propertyPath: m_Pivot.x
@@ -6321,6 +6334,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  initialOwnDelay: 0
+  ForceNextNode: 0
   EasingUnchanged: 0
   inSlideDirection: {x: -1, y: 0}
   mult: 1
@@ -7099,7 +7114,7 @@ GameObject:
   - component: {fileID: 542183225}
   - component: {fileID: 542183226}
   m_Layer: 0
-  m_Name: Content
+  m_Name: Desc
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7122,8 +7137,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -0.42999268, y: -0.4699707}
-  m_SizeDelta: {x: -110.64, y: -58.54}
+  m_AnchoredPosition: {x: -0.42999268, y: -4.700012}
+  m_SizeDelta: {x: -110.6, y: -67.3}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &542183225
 CanvasRenderer:
@@ -7153,11 +7168,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'BANK JOB
-
-
-    This short, speedy circuit offers a bunch of opportunities
-    and high banks for sneaky overtaking'
+  m_text: BANK JOB\n\nThis short, speedy circuit offers a bunch of opportunities
+    and high banks for sneaky overtaking
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 6f7a7029a598e874cba8af41bec2f652, type: 2}
   m_sharedMaterial: {fileID: 7913625639079845202, guid: 6f7a7029a598e874cba8af41bec2f652,
@@ -8650,6 +8662,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  initialOwnDelay: 0
+  ForceNextNode: 0
   EasingUnchanged: 0
   inSlideDirection: {x: -1, y: 0}
   mult: 1
@@ -9699,6 +9713,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  initialOwnDelay: 0
+  ForceNextNode: 0
   EasingUnchanged: 0
   inSlideDirection: {x: 1, y: 0}
   mult: 1
@@ -10289,6 +10305,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  initialOwnDelay: 0
+  ForceNextNode: 0
   EasingUnchanged: 0
   inSlideDirection: {x: -1, y: 0}
   mult: 1
@@ -10653,6 +10671,16 @@ PrefabInstance:
       propertyPath: dyndakSpriteOnSelect
       value: 
       objectReference: {fileID: 0}
+    - target: {fileID: 5467448467423509279, guid: c45b5db04fef3904d8289011e629a352,
+        type: 3}
+      propertyPath: m_Color.a
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5467448467423509279, guid: c45b5db04fef3904d8289011e629a352,
+        type: 3}
+      propertyPath: m_PreserveAspect
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c45b5db04fef3904d8289011e629a352, type: 3}
 --- !u!224 &766381313 stripped
@@ -10987,6 +11015,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  initialOwnDelay: 0
+  ForceNextNode: 0
   EasingUnchanged: 0
   inSlideDirection: {x: 0, y: 1}
   mult: 1
@@ -11323,6 +11353,11 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1568550709}
     m_Modifications:
+    - target: {fileID: 2580781573012994474, guid: 5fbe097fbb9f8f14f90c43482d70db7f,
+        type: 3}
+      propertyPath: m_PreserveAspect
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8008391774863635962, guid: 5fbe097fbb9f8f14f90c43482d70db7f,
         type: 3}
       propertyPath: m_Pivot.x
@@ -11938,6 +11973,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  initialOwnDelay: 0
+  ForceNextNode: 0
   EasingUnchanged: 0
   inSlideDirection: {x: -1, y: 0}
   mult: 1
@@ -12300,6 +12337,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  initialOwnDelay: 0
+  ForceNextNode: 0
   EasingUnchanged: 0
   inSlideDirection: {x: 1, y: 0}
   mult: 1
@@ -13247,8 +13286,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 997339243}
-  - component: {fileID: 997339244}
   - component: {fileID: 997339246}
+  - component: {fileID: 997339247}
   m_Layer: 5
   m_Name: MenuContainer
   m_TagString: Untagged
@@ -13281,7 +13320,19 @@ RectTransform:
   m_AnchoredPosition: {x: -254.05743, y: -182.09999}
   m_SizeDelta: {x: -857.74005, y: -1080}
   m_Pivot: {x: 0.51, y: 0.5}
---- !u!114 &997339244
+--- !u!114 &997339246
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 997339242}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ae925bcaacac15d4b987595e9cea77a5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &997339247
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -13298,20 +13349,8 @@ MonoBehaviour:
     m_Right: 0
     m_Top: 0
     m_Bottom: 0
-  m_ChildAlignment: 1
+  m_ChildAlignment: 0
   offset: 0
---- !u!114 &997339246
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 997339242}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ae925bcaacac15d4b987595e9cea77a5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &999174689
 GameObject:
   m_ObjectHideFlags: 0
@@ -13549,6 +13588,11 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1785217459}
     m_Modifications:
+    - target: {fileID: 2580781573012994474, guid: 5fbe097fbb9f8f14f90c43482d70db7f,
+        type: 3}
+      propertyPath: m_PreserveAspect
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8008391774863635962, guid: 5fbe097fbb9f8f14f90c43482d70db7f,
         type: 3}
       propertyPath: m_Pivot.x
@@ -13587,7 +13631,7 @@ PrefabInstance:
     - target: {fileID: 8008391774863635962, guid: 5fbe097fbb9f8f14f90c43482d70db7f,
         type: 3}
       propertyPath: m_SizeDelta.x
-      value: 218.95001
+      value: 223.945
       objectReference: {fileID: 0}
     - target: {fileID: 8008391774863635962, guid: 5fbe097fbb9f8f14f90c43482d70db7f,
         type: 3}
@@ -14224,6 +14268,11 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1677256635}
     m_Modifications:
+    - target: {fileID: 2580781573012994474, guid: 5fbe097fbb9f8f14f90c43482d70db7f,
+        type: 3}
+      propertyPath: m_PreserveAspect
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8008391774863635962, guid: 5fbe097fbb9f8f14f90c43482d70db7f,
         type: 3}
       propertyPath: m_Pivot.x
@@ -14606,6 +14655,26 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 997339243}
     m_Modifications:
+    - target: {fileID: 2580781573012994474, guid: 5fbe097fbb9f8f14f90c43482d70db7f,
+        type: 3}
+      propertyPath: m_Color.a
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2580781573012994474, guid: 5fbe097fbb9f8f14f90c43482d70db7f,
+        type: 3}
+      propertyPath: m_PreserveAspect
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3538900202911691945, guid: 5fbe097fbb9f8f14f90c43482d70db7f,
+        type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -0.000030517578
+      objectReference: {fileID: 0}
+    - target: {fileID: 3538900202911691945, guid: 5fbe097fbb9f8f14f90c43482d70db7f,
+        type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7507641604461036208, guid: 5fbe097fbb9f8f14f90c43482d70db7f,
         type: 3}
       propertyPath: inSlideDirection.x
@@ -15126,6 +15195,11 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1785217459}
     m_Modifications:
+    - target: {fileID: 2580781573012994474, guid: 5fbe097fbb9f8f14f90c43482d70db7f,
+        type: 3}
+      propertyPath: m_PreserveAspect
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8008391774863635962, guid: 5fbe097fbb9f8f14f90c43482d70db7f,
         type: 3}
       propertyPath: m_Pivot.x
@@ -15164,7 +15238,7 @@ PrefabInstance:
     - target: {fileID: 8008391774863635962, guid: 5fbe097fbb9f8f14f90c43482d70db7f,
         type: 3}
       propertyPath: m_SizeDelta.x
-      value: 218.95001
+      value: 223.945
       objectReference: {fileID: 0}
     - target: {fileID: 8008391774863635962, guid: 5fbe097fbb9f8f14f90c43482d70db7f,
         type: 3}
@@ -15209,7 +15283,7 @@ PrefabInstance:
     - target: {fileID: 8008391774863635962, guid: 5fbe097fbb9f8f14f90c43482d70db7f,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 218.95001
+      value: 223.945
       objectReference: {fileID: 0}
     - target: {fileID: 8008391774863635962, guid: 5fbe097fbb9f8f14f90c43482d70db7f,
         type: 3}
@@ -15919,6 +15993,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  initialOwnDelay: 0
+  ForceNextNode: 0
   EasingUnchanged: 0
   inSlideDirection: {x: -1, y: 0}
   mult: 1
@@ -17278,6 +17354,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  initialOwnDelay: 0
+  ForceNextNode: 0
   EasingUnchanged: 0
   inSlideDirection: {x: -1, y: 0}
   mult: 1
@@ -17535,6 +17613,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  initialOwnDelay: 0
+  ForceNextNode: 0
   EasingUnchanged: 0
   inSlideDirection: {x: -1, y: 0}
   mult: 1
@@ -18501,6 +18581,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  initialOwnDelay: 0
+  ForceNextNode: 0
   EasingUnchanged: 0
   inSlideDirection: {x: -1, y: 0}
   mult: 1
@@ -19950,6 +20032,11 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1677256635}
     m_Modifications:
+    - target: {fileID: 2580781573012994474, guid: 5fbe097fbb9f8f14f90c43482d70db7f,
+        type: 3}
+      propertyPath: m_PreserveAspect
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8008391774863635962, guid: 5fbe097fbb9f8f14f90c43482d70db7f,
         type: 3}
       propertyPath: m_Pivot.x
@@ -20618,6 +20705,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  initialOwnDelay: 0
+  ForceNextNode: 0
   EasingUnchanged: 0
   inSlideDirection: {x: 0, y: 1}
   mult: 1
@@ -20977,6 +21066,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  initialOwnDelay: 0
+  ForceNextNode: 0
   EasingUnchanged: 0
   inSlideDirection: {x: -1, y: 0}
   mult: 1
@@ -21363,6 +21454,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  initialOwnDelay: 0
+  ForceNextNode: 0
   EasingUnchanged: 0
   inSlideDirection: {x: -1, y: 0}
   mult: 1
@@ -21787,6 +21880,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  initialOwnDelay: 0
+  ForceNextNode: 0
   EasingUnchanged: 0
   inSlideDirection: {x: 1, y: 0}
   mult: 1
@@ -22286,6 +22381,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  initialOwnDelay: 0
+  ForceNextNode: 0
   EasingUnchanged: 0
   inSlideDirection: {x: 0, y: 1}
   mult: 1
@@ -22674,6 +22771,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  initialOwnDelay: 0
+  ForceNextNode: 0
   EasingUnchanged: 0
   inSlideDirection: {x: 0, y: 1}
   mult: 1
@@ -23005,6 +23104,11 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1645947031}
     m_Modifications:
+    - target: {fileID: 2580781573012994474, guid: 5fbe097fbb9f8f14f90c43482d70db7f,
+        type: 3}
+      propertyPath: m_PreserveAspect
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8008391774863635962, guid: 5fbe097fbb9f8f14f90c43482d70db7f,
         type: 3}
       propertyPath: m_Pivot.x
@@ -23873,7 +23977,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 437.90002, y: 57.600006}
+  m_SizeDelta: {x: 447.89, y: 57.600006}
   m_Pivot: {x: 0, y: 0}
 --- !u!114 &1785217460
 MonoBehaviour:
@@ -23913,6 +24017,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  initialOwnDelay: 0
+  ForceNextNode: 0
   EasingUnchanged: 0
   inSlideDirection: {x: 0, y: 1}
   mult: 1
@@ -26626,6 +26732,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  initialOwnDelay: 0
+  ForceNextNode: 0
   EasingUnchanged: 0
   inSlideDirection: {x: -1, y: 0}
   mult: 1
@@ -27079,6 +27187,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  initialOwnDelay: 0
+  ForceNextNode: 0
   EasingUnchanged: 0
   inSlideDirection: {x: -1, y: 0}
   mult: 1
@@ -27403,6 +27513,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ee6bf1ea878f49478734447065e0290, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  initialOwnDelay: 0
+  ForceNextNode: 0
   EasingUnchanged: 0
   inSlideDirection: {x: -1, y: 0}
   mult: 1

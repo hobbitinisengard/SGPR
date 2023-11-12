@@ -60,7 +60,10 @@ public class RadialOneVisible : MonoBehaviour
 			return;
 		}
 		if (child == selected)
+		{
+			SetColor(selected, 1);
 			return;
+		}
 
 		if (!selected)
 			prevSelected = child;

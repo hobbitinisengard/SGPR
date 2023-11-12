@@ -1,11 +1,14 @@
 ﻿using RVP;
+using System;
 using UnityEngine;
+using UnityEngine.TextCore;
 using UnityEngine.UI;
 
 public class PauseMenu : Sfxable
 {
 	public RaceManager rm;
 	public Button firstButton;
+	public GameObject restartButton;
 	public Image veil;
 	Color startColor;
 	public Color blackColor;
@@ -13,10 +16,6 @@ public class PauseMenu : Sfxable
 	float timeElapsed;
 	private void Update()
 	{
-		if (Input.GetButtonDown("Cancel"))
-		{
-			gameObject.SetActive(false);
-		}
 		if (timeElapsed < duration)
 		{
 			// fade background
@@ -27,6 +26,7 @@ public class PauseMenu : Sfxable
 	private void OnEnable()
 	{
 		Time.timeScale = 0;
+		restartButton.SetActive(Info.raceStartDate != DateTime.MinValue);
 		startColor = veil.color;
 		firstButton.Select();
 	}

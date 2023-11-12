@@ -75,9 +75,19 @@ namespace RVP
 		public float replayCamAgility = 1;
 		public void SetMode(Mode mode)
 		{
-			this.mode = mode;
-			if (mode == Mode.Follow)
-				tr.position = vp.tr.position;
+			switch (mode)
+			{
+				case Mode.Follow:
+					tr.position = vp.tr.position;
+					this.mode = mode;
+					break;
+				case Mode.Replay:
+					if (vp.followAI.replayCams.Count > 0)
+						this.mode = mode;
+					break;
+				default:
+					break;
+			}
 		}
 		void Awake()
 		{

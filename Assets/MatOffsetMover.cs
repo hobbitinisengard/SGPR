@@ -11,17 +11,24 @@ public class MatOffsetMover : MonoBehaviour
 		mr = GetComponent<MeshRenderer>();
 	}
 
-	// Update is called once per frame
-	void Update()
+	void FixedUpdate()
 	{
-		val += Time.deltaTime * speed;
-		val %= 1f;
+		val += Time.fixedDeltaTime * speed;
+		val %= 2f;
 		for (int i = 0; i < mr.materials.Length; ++i)
 		{
-
-			mr.materials[i].mainTextureOffset = (axisXY == Axis.Y) ? new Vector4(0, val) : new Vector4(val, 0);
-			//mr.materials[i].SetTextureOffset("_BaseMap", new Vector2(0, val));
-			//mr.materials[i].SetVector("_Offset", new Vector4(0, val));
+			switch (axisXY)
+			{
+				case Axis.X:
+					mr.materials[i].mainTextureOffset = new Vector4(val-1, 0);
+					break;
+				case Axis.Y:
+					mr.materials[i].mainTextureOffset = new Vector4(0, val-1);
+					break;
+				case Axis.Z:
+					mr.materials[i].mainTextureOffset = new Vector4(val-1, val-1);
+					break;
+			}
 		}
 	}
 }
