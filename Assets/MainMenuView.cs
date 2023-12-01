@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using RVP;
 using System;
+using TMPro;
 
 public class MainMenuView : Sfxable
 {
@@ -9,7 +10,7 @@ public class MainMenuView : Sfxable
 	public GameObject prevView;
 	public Image dyndak;
 	public Button firstButtonToBeSelected;
-	public Text bottomText;
+	public TextMeshProUGUI bottomText;
 	public Sprite bgTile;
 	public AudioClip music;
 	ViewSwitcher dimmer;
@@ -46,13 +47,36 @@ public class MainMenuView : Sfxable
 		}
 		dimmer.PlayDimmer(gameObject, view);
 	}
-	
 	public void ToRaceScene()
 	{
-		PlaySFX("fe-gameload");
+		if (Info.s_trackName == null)
+			PlaySFX("fe-cardserror");
+		else
+		{
+			PlaySFX("fe-gameload");
+			if (Info.s_roadType == Info.PavementType.Random)
+				Info.s_roadType = (Info.PavementType)Mathf.RoundToInt(Info.pavementTypes * UnityEngine.Random.value);
+
+			for (int i = 0; i < transform.childCount; ++i)
+			{
+				if (transform.GetChild(i).gameObject.activeSelf)
+					F.PlaySlideOutOnChildren(transform.GetChild(i));
+			}
+			Info.s_inEditor = false;
+			dimmer.PlayDimmerToWorld();
+		}
+		
 	}
 	public void ToEditorScene()
 	{
-		
+		if (Info.s_trackName == null)
+			PlaySFX("fe-cardserror");
+		else
+		{
+			Info.s_roadType = Info.PavementType.Highway;
+			Info.s_inEditor = true;
+			Info.s_spectator = false;
+			dimmer.PlayDimmerToWorld();
+		}
 	}
 }

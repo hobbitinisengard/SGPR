@@ -235,7 +235,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6457121441695959639}
-  m_RootOrder: 19
+  m_RootOrder: 20
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!82 &215197293
 AudioSource:
@@ -462,7 +462,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6457121441695959639}
-  m_RootOrder: 24
+  m_RootOrder: 25
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!82 &423706907
 AudioSource:
@@ -592,7 +592,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6457121441695959639}
-  m_RootOrder: 18
+  m_RootOrder: 19
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &499604299
 MeshFilter:
@@ -646,7 +646,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6457121441695959639}
-  m_RootOrder: 20
+  m_RootOrder: 21
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!82 &515682680
 AudioSource:
@@ -776,7 +776,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6457121441695959639}
-  m_RootOrder: 22
+  m_RootOrder: 23
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!198 &861023731
 ParticleSystem:
@@ -5678,7 +5678,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6457121441695959639}
-  m_RootOrder: 23
+  m_RootOrder: 24
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!82 &1329346153
 AudioSource:
@@ -5806,7 +5806,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6457121441695959639}
-  m_RootOrder: 17
+  m_RootOrder: 18
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1636816400
 GameObject:
@@ -5838,7 +5838,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6457121441695959639}
-  m_RootOrder: 21
+  m_RootOrder: 22
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!82 &1636816402
 AudioSource:
@@ -5897,7 +5897,7 @@ AudioSource:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 1
+      value: 0.829
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -11671,7 +11671,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: c21282b6642dd6749b3efc0940cf485a, type: 2}
+  - {fileID: 2100000, guid: 1474093c909278d4badf4ec821a4de5d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -21460,7 +21460,7 @@ MonoBehaviour:
   suspension: {fileID: 6779875395547520792}
   isHub: 0
   connectObj: {fileID: 8124181089221298307}
-  connectPoint: {x: 0.46477517, y: 0.9569874, z: -0.75373864}
+  connectPoint: {x: 0.4647751, y: 0.9569874, z: -0.7537384}
   rotate: 1
   stretch: 1
   solidAxle: 0
@@ -40534,7 +40534,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: c21282b6642dd6749b3efc0940cf485a, type: 2}
+  - {fileID: 2100000, guid: 1474093c909278d4badf4ec821a4de5d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -41387,7 +41387,7 @@ ParticleSystem:
     rateOverTime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 10
+      scalar: 40
       minScalar: 10
       maxCurve:
         serializedVersion: 2
@@ -50859,7 +50859,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: c21282b6642dd6749b3efc0940cf485a, type: 2}
+  - {fileID: 2100000, guid: 1474093c909278d4badf4ec821a4de5d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -51025,7 +51025,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: c21282b6642dd6749b3efc0940cf485a, type: 2}
+  - {fileID: 2100000, guid: 1474093c909278d4badf4ec821a4de5d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -84642,7 +84642,7 @@ MonoBehaviour:
   suspension: {fileID: 6779875395547520792}
   isHub: 0
   connectObj: {fileID: 8124181089221298307}
-  connectPoint: {x: 0.000005906215, y: 0.26231194, z: -1.2062695}
+  connectPoint: {x: 0.0000076293945, y: 0.26231194, z: -1.2062683}
   rotate: 1
   stretch: 0
   solidAxle: 0
@@ -84713,7 +84713,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: c21282b6642dd6749b3efc0940cf485a, type: 2}
+  - {fileID: 2100000, guid: 1474093c909278d4badf4ec821a4de5d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -89562,6 +89562,7 @@ Transform:
   - {fileID: 6779875394764497534}
   - {fileID: 6779875395059661317}
   - {fileID: 4839766354100498788}
+  - {fileID: 2629108676709033793}
   - {fileID: 308385472089571290}
   - {fileID: 1531201486}
   - {fileID: 499604297}
@@ -89583,8 +89584,8 @@ Rigidbody:
   m_GameObject: {fileID: 5969412531493064941}
   serializedVersion: 2
   m_Mass: 1.5
-  m_Drag: 0.05
-  m_AngularDrag: 0.15
+  m_Drag: 0.1
+  m_AngularDrag: 0.1
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
@@ -89603,6 +89604,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bodyObj: {fileID: 7136051627190437502}
+  originalDrag: 0
+  steerInput: 0
   frontLights:
   - {fileID: 2712850293685523867}
   rearLights:
@@ -89623,18 +89626,25 @@ MonoBehaviour:
   - {fileID: 1465737922}
   - {fileID: 839933645}
   battery: 1
-  batteryLoadDelta: 0.2
-  batteryBurnDelta: 0.01
+  batteryLoadDelta: 0.05
+  batteryBurnDelta: 0.005
   lowBatteryLevel: 0.2
-  boostBurnRate: 0.005
+  boostBurnRate: 0.0025
   wheels:
   - {fileID: 6779875394929326516}
   - {fileID: 6779875396295812404}
   - {fileID: 6779875396142811108}
   - {fileID: 6779875395201521068}
   hoverWheels: []
-  wheelGroups: []
+  wheelGroups:
+  - wheels:
+    - {fileID: 6779875394929326516}
+    - {fileID: 6779875396295812404}
+    - {fileID: 6779875396142811108}
+    - {fileID: 6779875395201521068}
+    hoverWheels: []
   hover: 0
+  reallyGroundedWheels: 0
   suspensionCenterOfMass: 1
   centerOfMassObj: {fileID: 1531201486}
   wheelForceMode: 0
@@ -89652,8 +89662,7 @@ MonoBehaviour:
   cameraDistanceChange: 0
   cameraHeightChange: 0
   steeringControl: {fileID: 6779875395873480448}
-  inAirFriction: 1
-  d_R: 0
+  countdownTimer: 0
 --- !u!114 &5969412531493064935
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -89667,9 +89676,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   basedOnWheelsGrounded: 1
-  driftSpinAssist: 15
+  driftSpinAssist: 10
   driftSpinSpeed: 1
-  driftSpinExponent: 2
+  driftSpinExponent: 1
   autoSteerDrift: 0
   maxDriftAngle: 70
   driftSpinCurve:
@@ -89859,7 +89868,7 @@ MonoBehaviour:
       outWeight: 0.33333334
     - serializedVersion: 3
       time: 80
-      value: 10
+      value: 7
       inSlope: 0.02304861
       outSlope: 0.02304861
       tangentMode: 0
@@ -89917,20 +89926,20 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 0.01
       value: 55
-      inSlope: -1559.4692
-      outSlope: -1559.4692
+      inSlope: -1020.5333
+      outSlope: -1020.5333
       tangentMode: 136
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 0.039763905
-      value: 19.078382
-      inSlope: -976.7288
-      outSlope: -976.7288
+      time: 0.039236423
+      value: 37.97496
+      inSlope: -277.96957
+      outSlope: -277.96957
       tangentMode: 0
       weightedMode: 0
-      inWeight: 0.13853326
+      inWeight: 0.46953413
       outWeight: 0.33333334
     m_PreInfinity: 2
     m_PostInfinity: 2
@@ -89941,6 +89950,8 @@ MonoBehaviour:
   curStuntpointIdx: 0
   curReplayPointIdx: 0
   aiStuntingProc: 0
+  cpuSmoothCoeff: 10
+  cpuFastCoeff: 50
 --- !u!114 &8319369162350912230
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -89953,6 +89964,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4004a853526701343b191aaf6c4b56c8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  lastBounceTime: 0
 --- !u!114 &865657811856999447
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -89975,6 +89987,10 @@ MonoBehaviour:
   - {fileID: 7939150304631603867}
   - {fileID: 2743996718150263175}
   - {fileID: 8746739494003343115}
+  - {fileID: 5823232406785712099}
+  - {fileID: 5715247988994545434}
+  - {fileID: 8908699561723997585}
+  - {fileID: 5582764275981958382}
   transpShader: {fileID: 4800000, guid: bbb29bc6f1f0b704d989cac34a3a1b7e, type: 3}
 --- !u!1 &6179087285394029084
 GameObject:
@@ -94674,6 +94690,73 @@ ParticleSystemRenderer:
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
   m_MaskInteraction: 0
+--- !u!1 &6192630529381075353
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2629108676709033793}
+  - component: {fileID: 4550495899934621397}
+  - component: {fileID: 7897177921273408970}
+  - component: {fileID: 5487136178977274613}
+  m_Layer: 25
+  m_Name: AerodTunnel
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2629108676709033793
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6192630529381075353}
+  m_LocalRotation: {x: 0.7071068, y: -0, z: -0, w: 0.7071068}
+  m_LocalPosition: {x: 0, y: 0.8299999, z: -1.147995}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6457121441695959639}
+  m_RootOrder: 16
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!33 &4550495899934621397
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6192630529381075353}
+  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!65 &7897177921273408970
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6192630529381075353}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 2.07, y: 20, z: 1.36}
+  m_Center: {x: 0, y: -10.01, z: 0}
+--- !u!114 &5487136178977274613
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6192630529381075353}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1931d7a5c70ded943a8caa9359661f84, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &6324269704076400167
 GameObject:
   m_ObjectHideFlags: 0
@@ -100203,7 +100286,7 @@ ParticleSystem:
     rateOverTime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 10
+      scalar: 40
       minScalar: 10
       maxCurve:
         serializedVersion: 2
@@ -104514,7 +104597,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   wheel: {fileID: 6779875394929326516}
-  generateHardCollider: 0
+  generateHardCollider: 1
   hardColliderRadiusFactor: 1
   brakeForce: 0.01
   ebrakeForce: 0
@@ -104688,13 +104771,80 @@ MonoBehaviour:
     m_RotationOrder: 4
   rpmBiasCurveLimit: Infinity
   axleFriction: 0.001
-  frictionSmoothness: 0.509
-  forwardFriction: 11
-  sidewaysFriction: 10
+  frictionSmoothness: 0.5
+  forwardFriction: 12
+  sidewaysFriction: 12
   forwardRimFriction: 1
   sidewaysRimFriction: 1
-  forwardCurveStretch: 8
-  sidewaysCurveStretch: 8
+  forwardCurveStretch: 10
+  sidewaysCurveStretch: 10
+  forwardFrictionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0.3
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.15
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0.9
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  sidewaysFrictionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0.3
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.15
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0.9
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  slipThreshold: 5
   sidewaysSlip: 0
   slipDependence: 1
   forwardSlipDependence: 2
@@ -104723,11 +104873,11 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  compressionFrictionFactor: 0.5
+  compressionFrictionFactor: 0
   tireRadius: 0.27552992
-  rimRadius: 0.13776496
+  rimRadius: 0.2
   tireWidth: 0.1946347
-  rimWidth: 0.09731735
+  rimWidth: 0.1946347
   tirePressure: 1
   popped: 0
   canPop: 0
@@ -104760,7 +104910,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa37c8e43a21b6a4b9de225076d22143, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  slipThreshold: 0.01
   alwaysScrape: 0
   calculateTangents: 0
   tireMarkMaterials:
@@ -105111,13 +105260,80 @@ MonoBehaviour:
     m_RotationOrder: 4
   rpmBiasCurveLimit: Infinity
   axleFriction: 0.001
-  frictionSmoothness: 0.509
-  forwardFriction: 11
-  sidewaysFriction: 11
+  frictionSmoothness: 0.5
+  forwardFriction: 12
+  sidewaysFriction: 12
   forwardRimFriction: 1
   sidewaysRimFriction: 1
-  forwardCurveStretch: 8
-  sidewaysCurveStretch: 8
+  forwardCurveStretch: 10
+  sidewaysCurveStretch: 10
+  forwardFrictionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0.3
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.15
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0.9
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  sidewaysFrictionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0.3
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.15
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0.9
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  slipThreshold: 5
   sidewaysSlip: 0
   slipDependence: 1
   forwardSlipDependence: 2
@@ -105146,11 +105362,11 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  compressionFrictionFactor: 0.5
+  compressionFrictionFactor: 0
   tireRadius: 0.4070304
-  rimRadius: 0.2035152
+  rimRadius: 0.3
   tireWidth: 0.28752625
-  rimWidth: 0.14376312
+  rimWidth: 0.2875262
   tirePressure: 1
   popped: 0
   canPop: 0
@@ -105181,7 +105397,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa37c8e43a21b6a4b9de225076d22143, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  slipThreshold: 0.01
   alwaysScrape: 0
   calculateTangents: 0
   tireMarkMaterials:
@@ -105376,7 +105591,7 @@ MonoBehaviour:
   startGear: 1
   skipNeutral: 0
   autoCalculateRpmRanges: 1
-  shiftDelaySeconds: 0.5
+  shiftDelaySeconds: 0.4
   d_feedback: 0
   d_rpm: 0
   actualFeedbackRPM: 0
@@ -105441,7 +105656,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   wheel: {fileID: 6779875395201521068}
-  generateHardCollider: 0
+  generateHardCollider: 1
   hardColliderRadiusFactor: 1
   brakeForce: 0
   ebrakeForce: 0
@@ -105581,7 +105796,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   wheel: {fileID: 6779875396142811108}
-  generateHardCollider: 0
+  generateHardCollider: 1
   hardColliderRadiusFactor: 1
   brakeForce: 0
   ebrakeForce: 0
@@ -105713,43 +105928,57 @@ MonoBehaviour:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 3
-      time: 0
-      value: 1
-      inSlope: -0.045253858
-      outSlope: -0.032454666
+      time: 0.066669315
+      value: 0.5
+      inSlope: 0
+      outSlope: -0.020016484
       tangentMode: 1
       weightedMode: 0
       inWeight: 0
-      outWeight: 0.03247775
+      outWeight: 0.07754011
     - serializedVersion: 3
-      time: 50
+      time: 25.067322
       value: 0.1
-      inSlope: -0.0034181008
-      outSlope: -0.0034181008
-      tangentMode: 0
+      inSlope: -0.014169787
+      outSlope: -0.012028831
+      tangentMode: 1
       weightedMode: 0
-      inWeight: 0.06294487
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 70.05115
-      value: 0.05
-      inSlope: -0.002493623
-      outSlope: -0.002493623
-      tangentMode: 34
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.047755472
+      inWeight: 0.09574518
+      outWeight: 0.037539925
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
   steerLimitCurveCoeff: 1
   steerAngle: 0
+  holdDuration: 0
   steerLimit: 0
-  steerStepScale: 1
-  rotate: 1
   maxDegreesRotation: 0
-  d_angleSteer: 0
-  unfiltered: 0
+  keyboardInputCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  secsForMaxSteering: 1.5
+  durationSmoothedSteer: 0
 --- !u!1 &6779875396000727283
 GameObject:
   m_ObjectHideFlags: 0
@@ -105811,7 +106040,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   wheel: {fileID: 6779875396295812404}
-  generateHardCollider: 0
+  generateHardCollider: 1
   hardColliderRadiusFactor: 1
   brakeForce: 0.01
   ebrakeForce: 0
@@ -106030,7 +106259,7 @@ MonoBehaviour:
   limit2kRPM: 10.5
   limitkRPM: 10.35
   minkRPM: 0.45
-  maxTorque: 0.6
+  maxTorque: 0.5
   outputDrives:
   - {fileID: 6779875395388755403}
   driveDividePower: 3
@@ -106231,13 +106460,80 @@ MonoBehaviour:
     m_RotationOrder: 4
   rpmBiasCurveLimit: Infinity
   axleFriction: 0.001
-  frictionSmoothness: 0.509
-  forwardFriction: 11
-  sidewaysFriction: 11
+  frictionSmoothness: 0.5
+  forwardFriction: 12
+  sidewaysFriction: 12
   forwardRimFriction: 1
   sidewaysRimFriction: 1
-  forwardCurveStretch: 8
-  sidewaysCurveStretch: 8
+  forwardCurveStretch: 10
+  sidewaysCurveStretch: 10
+  forwardFrictionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0.3
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.15
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0.9
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  sidewaysFrictionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0.3
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.15
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0.9
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  slipThreshold: 5
   sidewaysSlip: 0
   slipDependence: 1
   forwardSlipDependence: 2
@@ -106266,11 +106562,11 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  compressionFrictionFactor: 0.5
+  compressionFrictionFactor: 0
   tireRadius: 0.4070304
-  rimRadius: 0.2035152
+  rimRadius: 0.3
   tireWidth: 0.2875262
-  rimWidth: 0.14376314
+  rimWidth: 0.2875262
   tirePressure: 1
   popped: 0
   canPop: 0
@@ -106301,7 +106597,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa37c8e43a21b6a4b9de225076d22143, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  slipThreshold: 0.01
   alwaysScrape: 0
   calculateTangents: 0
   tireMarkMaterials:
@@ -106523,13 +106818,80 @@ MonoBehaviour:
     m_RotationOrder: 4
   rpmBiasCurveLimit: Infinity
   axleFriction: 0.001
-  frictionSmoothness: 0.509
-  forwardFriction: 11
-  sidewaysFriction: 10
+  frictionSmoothness: 0.5
+  forwardFriction: 12
+  sidewaysFriction: 12
   forwardRimFriction: 1
   sidewaysRimFriction: 1
-  forwardCurveStretch: 8
-  sidewaysCurveStretch: 8
+  forwardCurveStretch: 10
+  sidewaysCurveStretch: 10
+  forwardFrictionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0.3
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.15
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0.9
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  sidewaysFrictionCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0.3
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.15
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0.9
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  slipThreshold: 5
   sidewaysSlip: 0
   slipDependence: 1
   forwardSlipDependence: 2
@@ -106558,11 +106920,11 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  compressionFrictionFactor: 0.5
+  compressionFrictionFactor: 0
   tireRadius: 0.27552992
-  rimRadius: 0.13776496
+  rimRadius: 0.2
   tireWidth: 0.1946347
-  rimWidth: 0.09731735
+  rimWidth: 0.1946347
   tirePressure: 1
   popped: 0
   canPop: 0
@@ -106593,7 +106955,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa37c8e43a21b6a4b9de225076d22143, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  slipThreshold: 0.01
   alwaysScrape: 0
   calculateTangents: 0
   tireMarkMaterials:
@@ -107367,7 +107728,7 @@ MonoBehaviour:
   suspension: {fileID: 6779875395547520792}
   isHub: 0
   connectObj: {fileID: 8349597596461134795}
-  connectPoint: {x: -0.030135386, y: -0.09433174, z: -0.39385659}
+  connectPoint: {x: -0.030135982, y: -0.09433174, z: -0.39385992}
   rotate: 1
   stretch: 0
   solidAxle: 0
@@ -112244,7 +112605,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: c21282b6642dd6749b3efc0940cf485a, type: 2}
+  - {fileID: 2100000, guid: 1474093c909278d4badf4ec821a4de5d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -113468,7 +113829,7 @@ ParticleSystem:
     rateOverTime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 10
+      scalar: 40
       minScalar: 10
       maxCurve:
         serializedVersion: 2
@@ -118601,7 +118962,7 @@ ParticleSystem:
     rateOverTime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 10
+      scalar: 40
       minScalar: 10
       maxCurve:
         serializedVersion: 2
@@ -119793,7 +120154,7 @@ ParticleSystem:
     m_Curve:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 10
+      scalar: 100
       minScalar: 0
       maxCurve:
         serializedVersion: 2
@@ -122600,7 +122961,7 @@ PrefabInstance:
     - target: {fileID: 4376822998477129306, guid: f300b2b32f46e3e4c887eacc114d2e3a,
         type: 3}
       propertyPath: m_RootOrder
-      value: 16
+      value: 17
       objectReference: {fileID: 0}
     - target: {fileID: 4376822998477129306, guid: f300b2b32f46e3e4c887eacc114d2e3a,
         type: 3}

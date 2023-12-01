@@ -67,7 +67,6 @@ public class SC_TerrainEditor : MonoBehaviour
 		spotLight.range = 20;
 
 		tData = terrain.terrainData;
-		float initHeight = tData.GetHeights(0, 0, 1, 1)[0,0];
 		if (tData)
 		{
 			//Save initial height data
@@ -79,14 +78,14 @@ public class SC_TerrainEditor : MonoBehaviour
 			{
 				for (int j = 0; j < xRes; j++)
 				{
-					saved[i, j] = initHeight;//0.5f
+					saved[i, j] = 0.5f;
 				}
 			}
 		}
 
 		terrain.gameObject.layer = Info.terrainLayer;
-		strength = 2;
-		area = 2;
+		strength = 13;
+		area = 13;
 		brushScaling();
 	}
 
@@ -325,7 +324,7 @@ public class SC_TerrainEditor : MonoBehaviour
 		GUILayout.Space(10f);
 		GUILayout.BeginHorizontal();
 		GUILayout.Label("Area:", new GUILayoutOption[] { GUILayout.Width(75f) });
-		area = GUILayout.HorizontalSlider(area, 1f, 13f, new GUILayoutOption[] { GUILayout.Width(250f), GUILayout.Height(15f) });
+		area = GUILayout.HorizontalSlider(area, 10f, 40f, new GUILayoutOption[] { GUILayout.Width(250f), GUILayout.Height(15f) });
 		GUILayout.Label((Mathf.Round(area * 100f) / 100f).ToString(), new GUILayoutOption[] { GUILayout.Width(250f), GUILayout.Height(20f) });
 		//Change brush texture size if area value was changed
 		if (GUI.changed)
@@ -337,7 +336,7 @@ public class SC_TerrainEditor : MonoBehaviour
 		GUILayout.Space(10f);
 		GUILayout.BeginHorizontal();
 		GUILayout.Label("Strength:", new GUILayoutOption[] { GUILayout.Width(75f) });
-		strength = GUILayout.HorizontalSlider(strength, 1f, 13f, new GUILayoutOption[] { GUILayout.Width(250f), GUILayout.Height(15f) });
+		strength = GUILayout.HorizontalSlider(strength, 2f, 30f, new GUILayoutOption[] { GUILayout.Width(250f), GUILayout.Height(15f) });
 		GUILayout.Label((Mathf.Round(strength * 100f) / 100f).ToString(), new GUILayoutOption[] { GUILayout.Width(250f), GUILayout.Height(20f) });
 		GUILayout.EndHorizontal();
 

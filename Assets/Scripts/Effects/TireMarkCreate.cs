@@ -35,9 +35,7 @@ namespace RVP
 
 		bool popped = false;
 		bool poppedPrev = false;
-
-		[Tooltip("How much the tire must slip before marks are created")]
-		public float slipThreshold;
+		
 		public float alwaysScrape;
 
 		public bool calculateTangents = true;
@@ -75,15 +73,16 @@ namespace RVP
 		}
 		public bool PowerSliding()
 		{
-			return Mathf.Abs(w.forwardSlip) > slipThreshold;
+			return Mathf.Abs(w.forwardSlip) > w.slipThreshold;
 		}
 		void Update()
 		{
+			
 			// Check for continuous marking
 			if (w.grounded)
 			{
 				alwaysScrape = GroundSurfaceMaster.surfaceTypesStatic[w.contactPoint.surfaceType].alwaysScrape ?
-					(slipThreshold + w.vp.engine.targetPitch) : 0;
+					(w.slipThreshold + w.vp.engine.targetPitch) : 0;
 			}
 			else
 			{
@@ -91,7 +90,7 @@ namespace RVP
 			}
 
 			// Create mark
-			if (w.grounded && (Mathf.Abs(F.MaxAbs(w.sidewaysSlip, w.forwardSlip)) > slipThreshold || alwaysScrape > 0) && w.connected)
+			if (w.grounded && (Mathf.Abs(F.MaxAbs(w.sidewaysSlip, w.forwardSlip)) > w.slipThreshold || alwaysScrape > 0) && w.connected)
 			{
 				w.sliding = true;
 				prevSurface = curSurface;
@@ -151,14 +150,14 @@ namespace RVP
 							{
 								em = sparks.emission;
 								em.rateOverTime = new ParticleSystem.MinMaxCurve(initialEmissionRates[debrisParticles.Length] * 
-									Mathf.Clamp01(Mathf.Abs(F.MaxAbs(w.sidewaysSlip, w.forwardSlip, alwaysScrape)) - slipThreshold));
+									Mathf.Clamp01(Mathf.Abs(F.MaxAbs(w.sidewaysSlip, w.forwardSlip, alwaysScrape)) - w.slipThreshold));
 							}
 						}
 						else
 						{
 							em = debrisParticles[ps].emission;
 							em.rateOverTime = new ParticleSystem.MinMaxCurve(initialEmissionRates[ps] * 
-								Mathf.Clamp01(Mathf.Abs(F.MaxAbs(w.sidewaysSlip, w.forwardSlip, alwaysScrape)) - slipThreshold));
+								Mathf.Clamp01(Mathf.Abs(F.MaxAbs(w.sidewaysSlip, w.forwardSlip, alwaysScrape)) - w.slipThreshold));
 
 							if (sparks)
 							{
@@ -190,6 +189,8 @@ namespace RVP
 		// Start creating a mark
 		void StartMark()
 		{
+			if (!w.contactPoint.col)
+				return;
 			creatingMark = true;
 			curMark = new GameObject("Tire Mark");
 			curMarkTr = curMark.transform;
@@ -246,8 +247,8 @@ namespace RVP
 			{
 				float alpha = (curEdge < RaceManager.tireMarkLengthStatic - 2 && curEdge > 5 ? 1 : 0) *
 					 Random.Range(
-						  Mathf.Clamp01(Mathf.Abs(F.MaxAbs(w.sidewaysSlip, w.forwardSlip, alwaysScrape)) - slipThreshold) * 0.9f,
-						  Mathf.Clamp01(Mathf.Abs(F.MaxAbs(w.sidewaysSlip, w.forwardSlip, alwaysScrape)) - slipThreshold));
+						  Mathf.Clamp01(F.MaxAbs(w.sidewaysCurveStretch * w.sidewaysSlip, w.forwardCurveStretch * w.forwardSlip, alwaysScrape) - w.slipThreshold),
+						  Mathf.Clamp01(F.MaxAbs(w.sidewaysCurveStretch * w.sidewaysSlip, w.forwardCurveStretch * w.forwardSlip, alwaysScrape) - w.slipThreshold));
 				gapDelay = RaceManager.tireMarkGapStatic;
 				curEdge += 2;
 

@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
 namespace RVP
@@ -222,7 +223,12 @@ namespace RVP
 				 && UnityEditor.PrefabUtility.GetPrefabAssetType(componentOrGameObject) != UnityEditor.PrefabAssetType.MissingAsset;
 		}
 
-		
+		internal static float FlatDistance(Vector3 a, Vector3 b)
+		{
+			return Mathf.Sqrt(Mathf.Pow(a.x - b.x, 2) + Mathf.Pow(a.z - b.z, 2));
+		}
+
+
 #endif
 	}
 }

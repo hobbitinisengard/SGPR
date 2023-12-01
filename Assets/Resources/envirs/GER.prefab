@@ -13486,6 +13486,11 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 9181683226690783094, guid: 9f3e456fcac1ff440adbdd00004e458a,
+        type: 3}
+      propertyPath: m_CastShadows
+      value: 2
+      objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 6002589956459917997, guid: 9f3e456fcac1ff440adbdd00004e458a, type: 3}
     - {fileID: 3162666450655719867, guid: 9f3e456fcac1ff440adbdd00004e458a, type: 3}

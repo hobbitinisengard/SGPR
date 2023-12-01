@@ -149,25 +149,28 @@ namespace RVP
 					else if (curr_engine_krpm >= 0.99f * limit2kRPM && transmission.currentGear != transmission.gears.Length - 1)
 					{
 						rpmTooHigh = true;
-						targetDrive.torque = 0;
+						actualInput = 0;
 					}
 					else
 					{
 						if (targetDrive.feedbackRPM > targetDrive.rpm)
 						{
-							targetDrive.torque = 0;
+							//actualInput = 0;
 						}
 						else
 						{
-							targetDrive.torque = maxTorque * torqueCurve.Evaluate(curr_engine_krpm) *
+							//then
+						}
+					}
+				}
+				else
+					actualInput = 0;
+				targetDrive.torque = maxTorque * torqueCurve.Evaluate(curr_engine_krpm) *
 							Mathf.Lerp(targetDrive.torque,
 							Mathf.Abs(actualInput) * maxTorque,
 							inertia * Time.timeScale * health);
 
-							targetDrive.torque = Mathf.Clamp(targetDrive.torque, 0, float.MaxValue);
-						}
-					}
-				}
+				targetDrive.torque = Mathf.Clamp(targetDrive.torque, 0, float.MaxValue);
 				// Send RPM and torque through drivetrain
 				if (outputDrives.Length > 0)
 				{

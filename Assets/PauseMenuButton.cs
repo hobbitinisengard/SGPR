@@ -20,10 +20,8 @@ public class PauseMenuButton : Sfxable, ISelectHandler, IDeselectHandler
 		{
 			// add battery sliders
 			batteryMask = transform.GetChild(1).GetChild(0);
-			float inVal;
-			audioMixer.GetFloat("volume", out inVal);
-			soundLevel = Mathf.Pow(10, inVal / 20f);
-			soundLevel = Mathf.Floor((int)(soundLevel * 10)) / 10f; // steps by 0.1
+			soundLevel = Info.ReadMixerLevel(audioMixer);
+			SetBatteryGUI(soundLevel);
 		}
 	}
 	private void OnEnable()
@@ -47,13 +45,17 @@ public class PauseMenuButton : Sfxable, ISelectHandler, IDeselectHandler
 					soundLevel = soundLevel + 0.1f;
 					if (soundLevel > 1.05f)
 						soundLevel = 0;
-					audioMixer.SetFloat("volume", Mathf.Log10(soundLevel) * 20);
-					Vector3 pos = batteryMask.GetComponent<RectTransform>().anchoredPosition;
-					pos.x = Mathf.Lerp(0, 70, soundLevel);
-					batteryMask.GetComponent<RectTransform>().anchoredPosition = pos;
+					Info.WriteMusicLevel(soundLevel, audioMixer);
+					SetBatteryGUI(soundLevel);
 				}
 			}
 		}
+	}
+	void SetBatteryGUI(float val01)
+	{
+		Vector3 pos = batteryMask.GetComponent<RectTransform>().anchoredPosition;
+		pos.x = Mathf.Lerp(0, 70, val01);
+		batteryMask.GetComponent<RectTransform>().anchoredPosition = pos;
 	}
 	public void OnSelect(BaseEventData eventData)
 	{

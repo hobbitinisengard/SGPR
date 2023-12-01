@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using RVP;
 using System.Collections;
+using TMPro;
 
 public class MainMenuButton : Sfxable, ISelectHandler, IDeselectHandler, ISubmitHandler
 {
@@ -10,13 +11,13 @@ public class MainMenuButton : Sfxable, ISelectHandler, IDeselectHandler, ISubmit
 	static Color32 selectedColor = new Color32(255, 255, 255, 255);
 	public Sprite dyndakSpriteOnSelect;
 	public string BottomTextOnSelect;
-	Text text;
+	TextMeshProUGUI text;
 	MainMenuView mainMenuView;
 	[System.NonSerialized]
 	public Button buttonComponent;
 	void Awake()
 	{
-		text = transform.GetChild(0).GetComponent<Text>();
+		text = transform.GetChild(0).GetComponent<TextMeshProUGUI>();
 		text.color = deselectedColor;
 		buttonComponent = GetComponent<Button>();
 		mainMenuView = transform.FindParentComponent<MainMenuView>();

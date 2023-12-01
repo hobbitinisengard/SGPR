@@ -17,10 +17,18 @@ public enum StuntSeqStatus { None, Ongoing, Ended };
 
 public class RaceBox : MonoBehaviour
 {
+	[NonSerialized]
+	public RaceManager raceManager;
 	public VehicleParent vp { get; private set; }
-	SGP_Evo evoModule;
+
+	public SGP_Evo evoModule { get; private set; }
 	public float distance { get; private set; }
-	public float aero { get; private set; }
+	private float aero;
+	public float Aero
+	{
+		get { return 10 * aero; }
+		private set { aero = value; }
+	}
 	private DateTime lapStartTime;
 	public TimeSpan bestLapTime { get; private set; }
 	/// <summary>
@@ -50,10 +58,10 @@ public class RaceBox : MonoBehaviour
 	private float jumpTimer;
 	private PtsAnimInfo stuntPai;
 	private PtsAnimInfo prevStuntPai;
-
 	private PtsAnimInfo jumpPai;
 	public Vector3 elecTunnelCameraPos = -Vector3.one;
 	private DateTime raceStartTime;
+
 	public PtsAnimInfo JumpPai
 	{
 		get
@@ -79,21 +87,23 @@ public class RaceBox : MonoBehaviour
 	{
 		vp = GetComponent<VehicleParent>();
 		evoModule = GetComponent<SGP_Evo>();
-		lapStartTime = DateTime.MinValue;
-		if (Info.tracks[Info.s_trackName].records[0].secondsOrPts > 0)
-			bestLapTime = new TimeSpan(0, 0, (int)Info.tracks[Info.s_trackName].records[0].secondsOrPts);
-		else
-			bestLapTime = TimeSpan.MaxValue;
-		raceTime = TimeSpan.MinValue;
 
-		curLap = 0;
-		starLevel = 0;
 		//rots = new Stack<StuntRotInfo>(32);
 		var globalcontrol = GameObject.Find("Canvas");
 		var stuntTable = globalcontrol.transform.GetComponent<StuntManager>().allPossibleFlips;
 		stunts = new Stunt[stuntTable.Length];
-		for(int i=0; i< stuntTable.Length; ++i)
+		for (int i = 0; i < stuntTable.Length; ++i)
 			stunts[i] = new RotationStunt(stuntTable[i]);
+	}
+	private void OnEnable()
+	{
+		raceStartTime = DateTime.Now;
+		lapStartTime = DateTime.MinValue;
+		bestLapTime = TimeSpan.FromMilliseconds(Info.tracks[Info.s_trackName].records[0].secondsOrPts*1000);
+		raceTime = TimeSpan.MinValue;
+
+		curLap = 0;
+		starLevel = 0;
 		stuntPai = new PtsAnimInfo(0, PtsAnimType.Evo, -1);
 	}
 	public string Result(Info.RecordType recordType)
@@ -103,7 +113,7 @@ public class RaceBox : MonoBehaviour
 			case Info.RecordType.BestLap:
 				if (bestLapTime == TimeSpan.MaxValue)
 					return "-";
-				if(bestLapTime.Hours > 0)
+				if (bestLapTime.Hours > 0)
 					return bestLapTime.ToString(@"hh\:mm\:ss\.ff");
 				return bestLapTime.ToString(@"mm\:ss\.ff");
 			case Info.RecordType.RaceTime:
@@ -113,7 +123,7 @@ public class RaceBox : MonoBehaviour
 					return raceTime.ToString(@"hh\:mm\:ss\.ff");
 				return raceTime.ToString(@"mm\:ss\.ff");
 			case Info.RecordType.StuntScore:
-				return ((int)(aero*10)).ToString();
+				return ((int)(aero * 10)).ToString();
 			case Info.RecordType.DriftScore:
 				return driftPts.ToString();
 			default:
@@ -124,16 +134,13 @@ public class RaceBox : MonoBehaviour
 	{
 		return curLap > Info.s_laps;
 	}
-	private void OnEnable()
-	{
-		raceStartTime = DateTime.Now;
-	}
+
 	private void FixedUpdate()
 	{
-		if (vp.groundedWheels == 0)
+		if (vp.reallyGroundedWheels == 0)
 			lastTimeInAir = Time.time;
 
-		if(!Finished())
+		if (!Finished())
 		{
 			StuntDetector();
 			JumpDetector();
@@ -153,7 +160,7 @@ public class RaceBox : MonoBehaviour
 
 	void StuntDetector()
 	{
-		if (vp.groundedWheels == 0)
+		if (vp.reallyGroundedWheels == 0)
 		{
 			if (!prevGroundedWheels0)
 			{
@@ -281,7 +288,7 @@ public class RaceBox : MonoBehaviour
 				prevGroundedWheels0 = false;
 				stableLandingTimer = .5f;
 			}
-			if (stableLandingTimer > 0 && vp.groundedWheels == 4)
+			if (stableLandingTimer > 0 && vp.reallyGroundedWheels == 4)
 				stableLandingTimer -= Time.fixedDeltaTime;
 
 			if (stableLandingTimer != -1 && vp.velMag < 14)
@@ -289,10 +296,10 @@ public class RaceBox : MonoBehaviour
 
 			if (stableLandingTimer != -1 && stableLandingTimer <= 0)
 				AcceptStunt();
-			
+
 			if (grantedComboTime > 0)
 			{
-				if(vp.groundedWheels > 0 && stableLandingTimer == -1)
+				if (vp.reallyGroundedWheels > 0 && stableLandingTimer == -1)
 					grantedComboTime -= Time.fixedDeltaTime;
 			}
 			else
@@ -355,14 +362,14 @@ public class RaceBox : MonoBehaviour
 		{
 			// aero meter movements
 			aeroMeterVelocity = Mathf.Lerp(aeroMeterVelocity,
-			(vp.groundedWheels == 0 && !vp.colliding) ? maxAeroMeterVelocity : minAeroMeterVelocity
+			(vp.reallyGroundedWheels == 0 && !vp.colliding) ? maxAeroMeterVelocity : minAeroMeterVelocity
 			, Time.deltaTime * aeroMeterResponsiveness);
 			aero += aeroMeterVelocity;
 
 			// jump detector
-			if (vp.groundedWheels == 0)
+			if (vp.reallyGroundedWheels == 0)
 			{
-				if (!vp.colliding)
+				if (!vp.crashing)
 				{
 					bool traf = Physics.Raycast(vp.tr.position, Vector3.down, out var hit, float.MaxValue, 1 << Info.roadLayer);
 					if (!traf || Vector3.Distance(vp.tr.position, hit.point) < 4)
@@ -429,7 +436,7 @@ public class RaceBox : MonoBehaviour
 	}
 	public void NextLap()
 	{
-		if (curLap == 0 || vp.followAI.ProgressPercent() > 0.8f)
+		if (curLap == 0 || vp.followAI.ProgressPercent() > 0.8f || vp.followAI.pitsProgress > 0)
 		{
 			vp.followAI.progress = 0.1f;
 			vp.followAI.curWaypointIdx = 0;
@@ -438,22 +445,30 @@ public class RaceBox : MonoBehaviour
 			vp.followAI.speedLimitDist = -1;
 			var curlaptime = CurLapTime();
 			lapStartTime = DateTime.Now;
-			curLap++;
-			if (curLap > Info.s_laps)
+			if (curLap < Info.s_laps + 1)
+				curLap++;
+			if (curlaptime.HasValue)
+			{
+				if (bestLapTime > curlaptime)
+					bestLapTime = curlaptime.Value;
+
+				if (!vp.followAI.isCPU && bestLapTime < vp.raceBox.raceManager.hud.bestLapTime)
+					vp.raceBox.raceManager.hud.bestLapTime = bestLapTime;
+			}
+			if (curLap == Info.s_laps + 1)
 			{ // race finished
+				int curPos = raceManager.Position(vp);
+				if (curPos == 1)
+				{
+					raceManager.hud.AddMessage(new(vp.tr.name + " WINS THE RACE!", BottomInfoType.CAR_WINS));
+				}
+				// in racemode after ending of race, cars still run around the track, ghosts overtake each other. Don't let it change results
+				curLap += 100 * (Info.s_rivals+1 - curPos);
 				GetComponent<Ghost>().SetHittable(false);
 				raceTime = DateTime.Now - raceStartTime;
 				vp.followAI.SetCPU(true);
 			}
-			else if (curlaptime.HasValue)
-			{
-				var recordTable = Info.tracks[Info.s_trackName].records;
 
-				if (curlaptime.Value.TotalSeconds < recordTable[0].secondsOrPts)
-					recordTable[0].secondsOrPts = (float)curlaptime.Value.TotalSeconds;
-				if (bestLapTime > curlaptime)
-					bestLapTime = curlaptime.Value;
-			}
 		}
 	}
 }

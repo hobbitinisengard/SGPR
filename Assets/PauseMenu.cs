@@ -1,7 +1,6 @@
 ﻿using RVP;
 using System;
 using UnityEngine;
-using UnityEngine.TextCore;
 using UnityEngine.UI;
 
 public class PauseMenu : Sfxable

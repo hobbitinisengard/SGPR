@@ -63,10 +63,12 @@ namespace RVP
 		// better
 		//static double[] SGPFrictionData = { 1, 0.99707, 0.994141, 0.991211, 0.988281, 0.985645, 0.983008, 0.980371, 0.979164257, 0.974241466, 0.969177728, 0.963976612, 0.958641683, 0.953176512, 0.947584665, 0.94186971, 0.936035216, 0.930084751, 0.924021882, 0.917850177, 0.911573204, 0.905194531, 0.898717726, 0.892146358, 0.885483993, 0.878734201, 0.871900548, 0.864986602, 0.857995933, 0.850932107, 0.843798693, 0.836599258, 0.829337371, 0.822016599, 0.81464051, 0.807212672, 0.799736654, 0.792216023, 0.784654347, 0.777055194, 0.769422132, 0.761758728, 0.754068552, 0.74635517, 0.738622151, 0.730873062, 0.723111472, 0.715340949, 0.70756506, 0.699787373, 0.692011456, 0.684240878, 0.676479206, 0.668730008, 0.660996852, 0.653283306, 0.645592938, 0.637929316, 0.630296007, 0.62269658, 0.615134603, 0.607613643, 0.600137269, 0.592709049, 0.58533255, 0.57801134, 0.570748987, 0.563549059, 0.556415125, 0.549350752, 0.542359508, 0.53544496, 0.528610678, 0.521860228, 0.515197179, 0.508625099, 0.502147556, 0.495768117, 0.48949035, 0.483317824, 0.477254106, 0.471302765, 0.465467367, 0.459751482, 0.454158678, 0.448692521, 0.44335658, 0.438154423, 0.433089618, 0.428165732, 0.423386335, 0.418754993, 0.414275274, 0.409950747, 0.40578498, 0.40178154, 0.397943996, 0.394275914, 0.390780864, 0.387462413, 0.384324129, 0.38136958, 0.378602334, 0.376025959, 0.373644023, 0.371460094, 0.369477739, 0.367700527, 0.366132025, 0.364775802, 0.363635426, 0.361, 0.359, 0.357, 0.357, 0.356, 0.354, 0.352, 0.35, 0.349, 0.347192, 0.347593, 0.347994, 0.348395, 0.348796, 0.349198, 0.349599, 0.35 };
 		[Tooltip("X-axis = slip, y-axis = friction")]
-		AnimationCurve forwardFrictionCurve = AnimationCurve.EaseInOut(0, 1, 1, 0.35f);
+		public AnimationCurve forwardFrictionCurve;// = AnimationCurve.EaseInOut(0, 1, 1, 0.35f);
 
 		[Tooltip("X-axis = slip, y-axis = friction")]
-		AnimationCurve sidewaysFrictionCurve = AnimationCurve.EaseInOut(0, 1, 1, 0.35f);
+		public AnimationCurve sidewaysFrictionCurve;// = AnimationCurve.EaseInOut(0, 1, 1, 0.35f);
+		[Tooltip("How much the tire must slip before marks are created")]
+		public float slipThreshold = 0.8f;
 		[System.NonSerialized]
 		public float forwardSlip;
 		//[System.NonSerialized]
@@ -156,6 +158,7 @@ namespace RVP
 		public bool getContact = true; // Should the wheel try to get contact info?
 		[System.NonSerialized]
 		public bool grounded;
+		public bool groundedReally { get; private set; }
 		float airTime;
 		[System.NonSerialized]
 		public float travelDist;
@@ -204,7 +207,7 @@ namespace RVP
 		public PhysicMaterial detachedTireMaterial;
 		public PhysicMaterial detachedRimMaterial;
 		public ParticleSystem airGreenParticleSystem;
-		private float prevVel;
+		
 
 		//AnimationCurve GenerateFrictionCurve(bool moreGrip = false)
 		//{
@@ -229,10 +232,7 @@ namespace RVP
 			travelDist = suspensionParent.targetCompression;
 			canDetach = detachForce < Mathf.Infinity && Application.isPlaying;
 			initialTirePressure = tirePressure;
-
-			//sidewaysFrictionCurve = GenerateFrictionCurve();
-			//forwardFrictionCurve = GenerateFrictionCurve();
-
+			
 			if (tr.childCount > 0)
 			{
 				// Get rim
@@ -314,10 +314,6 @@ namespace RVP
 
 		void FixedUpdate()
 		{
-			//Task t1 = null;
-			//Task t2 = null;
-			//t1 = new Task(() =>
-			//{
 			upDir = tr.up;
 			actualRadius = popped ? rimRadius : Mathf.Lerp(rimRadius, tireRadius, tirePressure);
 			circumference = Mathf.PI * actualRadius * 2;
@@ -356,9 +352,7 @@ namespace RVP
 			travelDist = suspensionParent.compression < travelDist || grounded ? suspensionParent.compression : Mathf.Lerp(travelDist, suspensionParent.compression, suspensionParent.extendSpeed * Time.fixedDeltaTime);
 
 			PositionWheel();
-			//});
-			//t2 = new Task(() =>
-			//{
+
 			if (connected)
 			{
 				// Update hard collider size upon changed radius or width
@@ -447,8 +441,6 @@ namespace RVP
 			*/
 
 			}
-			//});
-			//await Task.WhenAll(new Task[] { t1, t2}.Where(i => i != null));
 		}
 
 		void Update()
@@ -463,7 +455,6 @@ namespace RVP
 			{
 				if (airGreenParticleSystem != null)
 				{
-					prevVel = vp.rb.velocity.y;
 					if (!grounded && vp.rb.velocity.y < 0 && !vp.colliding)
 					{
 						if (!airGreenParticleSystem.isPlaying)
@@ -503,9 +494,7 @@ namespace RVP
 
 			float castDist = Mathf.Max(suspensionParent.suspensionDistance * Mathf.Max(0.001f, suspensionParent.targetCompression) + actualRadius, 0.001f);
 			//RaycastHit[] wheelHits = Physics.RaycastAll(transform.position, suspensionParent.springDirection, castDist, RaceManager.wheelCastMaskStatic);
-			RaycastHit hit;
-			bool validHit = Physics.Raycast(transform.position, suspensionParent.springDirection, out hit, castDist, RaceManager.wheelCastMaskStatic);
-			int hitIndex = 0;
+			bool validHit = Physics.Raycast(transform.position, suspensionParent.springDirection, out RaycastHit hit, castDist, RaceManager.wheelCastMaskStatic);
 			//bool validHit = false;
 			//float hitDist = Mathf.Infinity;
 
@@ -539,6 +528,7 @@ namespace RVP
 				}
 
 				grounded = true;
+				groundedReally = true;
 				contactPoint.distance = hit.distance - actualRadius;
 				contactPoint.point = hit.point + localVel * Time.fixedDeltaTime;
 				contactPoint.grounded = true;
@@ -582,16 +572,35 @@ namespace RVP
 			}
 			else
 			{
-				grounded = false;
-				contactPoint.distance = suspensionParent.suspensionDistance;
-				contactPoint.point = Vector3.zero;
-				contactPoint.grounded = false;
-				contactPoint.normal = upDir;
-				contactPoint.relativeVelocity = Vector3.zero;
-				contactPoint.col = null;
-				contactVelocity = Vector3.zero;
-				contactPoint.surfaceFriction = 0;
-				contactPoint.surfaceType = 0;
+
+				if (vp.followAI.isCPU && !vp.raceBox.evoModule.stunting && !vp.crashing)
+				{ // steering in air
+					grounded = true;
+					groundedReally = false;
+					contactPoint.distance = suspensionParent.suspensionDistance;
+					contactPoint.point = suspensionParent.transform.position - suspensionParent.upDir * suspensionParent.suspensionDistance;
+					contactPoint.grounded = true;
+					contactPoint.normal = Vector3.up;
+					contactPoint.relativeVelocity = tr.InverseTransformDirection(localVel);
+					contactPoint.col = null;
+					contactVelocity = Vector3.zero;
+					contactPoint.surfaceFriction = GroundSurfaceMaster.AirSteeringFriction;
+					contactPoint.surfaceType = GroundSurfaceMaster.AirSteeringSurfaceType;
+				}
+				else
+				{ 
+					grounded = false;
+					groundedReally = false;
+					contactPoint.distance = suspensionParent.suspensionDistance;
+					contactPoint.point = Vector3.zero;
+					contactPoint.grounded = false;
+					contactPoint.normal = upDir;
+					contactPoint.relativeVelocity = Vector3.zero;
+					contactPoint.col = null;
+					contactVelocity = Vector3.zero;
+					contactPoint.surfaceFriction = 0;
+					contactPoint.surfaceType = 0;
+				}
 			}
 			d_surface = contactPoint.surfaceType;
 		}
@@ -614,8 +623,11 @@ namespace RVP
 		{
 			if (grounded)
 			{
-				sidewaysSlip = (contactPoint.relativeVelocity.z * 0.1f) / sidewaysCurveStretch;
-				forwardSlip = (0.01f * (rawRPM - currentRPM)) / forwardCurveStretch;
+				sidewaysSlip = 10 * (contactPoint.relativeVelocity.z) / sidewaysCurveStretch;
+				if (groundedReally)
+					forwardSlip = (rawRPM - currentRPM) / forwardCurveStretch;
+				else
+					forwardSlip = 0;
 			}
 			else
 			{
@@ -641,13 +653,6 @@ namespace RVP
 
 				Vector3 targetForce = tr.TransformDirection(targetForceX, 0, targetForceZ);
 				float wheelFriction = contactPoint.surfaceFriction;
-				//if (contactPoint.grounded)
-				//    wheelFriction = contactPoint.surfaceFriction;
-				//else
-				//{
-				//    wheelFriction = vp.inAirFriction;
-				//    targetForce.z = 0;
-				//}
 
 				float targetForceMultiplier = ((1 - compressionFrictionFactor) + (1 - suspensionParent.compression) * compressionFrictionFactor
 					 * Mathf.Clamp01(Mathf.Abs(suspensionParent.tr.InverseTransformDirection(localVel).z) * 2)) * wheelFriction;
@@ -655,7 +660,7 @@ namespace RVP
 				rb.AddForceAtPosition(frictionForce, forceApplicationPoint, vp.wheelForceMode);
 
 				// If resting on a rigidbody, apply opposing force to it
-				if (contactPoint.col.attachedRigidbody)
+				if (contactPoint.col && contactPoint.col.attachedRigidbody)
 				{
 					contactPoint.col.attachedRigidbody.AddForceAtPosition(-frictionForce, contactPoint.point, vp.wheelForceMode);
 				}

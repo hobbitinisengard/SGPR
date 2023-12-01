@@ -1,10 +1,7 @@
 using RVP;
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using UnityEngine;
-using static EditorPanel;
 
 [DisallowMultipleComponent]
 public class Tile : MonoBehaviour
@@ -18,6 +15,18 @@ public class Tile : MonoBehaviour
 
 	MeshCollider mc;
 
+	GameObject lightObj;
+
+	public void UpdateLights()
+	{
+		if(lightObj)
+		{
+			for (int i = 0; i < lightObj.transform.childCount; ++i)
+			{
+				lightObj.transform.GetChild(i).gameObject.SetActive(Info.s_isNight);
+			}
+		}
+	}
 	private void Awake()
 	{
 		// add mesh collider to 'main' mesh 
@@ -30,16 +39,29 @@ public class Tile : MonoBehaviour
 			{
 				mc = gameObject.AddComponent<MeshCollider>();
 
-				for(int i=0; i< childObj.childCount; ++i)
-				{
-					childObj.GetChild(i).gameObject.SetActive(Info.s_isNight);
-				}
+				lightObj = childObj.gameObject;
+				UpdateLights();
 			}
 			else
 				mc = transform.GetChild(0).gameObject.AddComponent<MeshCollider>();
 		}
 		mc.enabled = true;
 
+		if(Info.s_roadType != Info.PavementType.Highway)
+		{
+			var mr = mc.transform.GetComponent<MeshRenderer>();
+			string replacementStr = "0" + ((int)Info.s_roadType).ToString();
+			var materials = mr.materials;
+			for (int i = 0; i < materials.Length; ++i)
+			{
+				if (materials[i].name.Contains("00"))
+				{
+					var newName = materials[i].name.Replace("00", replacementStr).Split(' ')[0];
+					materials[i] = Resources.Load<Material>("materials/" + newName);
+				}
+			}
+			mr.materials = materials;
+		}
 		for (int i = 1; i < transform.childCount; ++i)
 		{
 			var connector = transform.GetChild(i).gameObject;

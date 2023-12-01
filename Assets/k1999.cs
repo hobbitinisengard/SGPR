@@ -84,10 +84,10 @@ public class K1999
 			tLane[i] = -0.2;
 		else if (tLane[i] > 1.2)
 			tLane[i] = 1.2;*/
-		if (tLane[i] < 0.1f)
-			tLane[i] = 0.1f;
-		else if (tLane[i] > 0.9f)
-			tLane[i] = 0.9f;
+		if (tLane[i] < 0.2f)
+			tLane[i] = 0.2f;
+		else if (tLane[i] > 0.8f)
+			tLane[i] = 0.8f;
 
 		UpdateTxTy(i);
 

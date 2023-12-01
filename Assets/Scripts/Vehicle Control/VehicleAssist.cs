@@ -85,9 +85,9 @@ namespace RVP
 
 		void FixedUpdate()
 		{
-			if (vp.groundedWheels > 0)
+			if (vp.reallyGroundedWheels > 0)
 			{
-				groundedFactor = basedOnWheelsGrounded ? vp.groundedWheels / (vp.hover ? vp.hoverWheels.Length : vp.wheels.Length) : 1;
+				groundedFactor = basedOnWheelsGrounded ? vp.reallyGroundedWheels / (vp.hover ? vp.hoverWheels.Length : vp.wheels.Length) : 1;
 
 				angDragTime = 20;
 				rb.angularDrag = initialAngularDrag;
@@ -170,7 +170,7 @@ namespace RVP
 		// Apply downforce
 		void ApplyDownforce()
 		{
-			if (vp.groundedWheels > 0 || applyDownforceInAir)
+			if (vp.reallyGroundedWheels > 0 || applyDownforceInAir)
 			{
 				rb.AddRelativeForce(
 					 new Vector3(0, downforceCurve.Evaluate(Mathf.Abs(vp.localVelocity.z)) * -downforce * (applyDownforceInAir ? 1 : groundedFactor) * (invertDownforceInReverse ? Mathf.Sign(vp.localVelocity.z) : 1), 0),
@@ -192,8 +192,8 @@ namespace RVP
 			//RaycastHit rollHit;
 
 			// Check if rolled over
-			rolledOver = (vp.groundedWheels == 0 && vp.colliding);
-			//if (vp.groundedWheels == 0 && vp.velMag < rollSpeedThreshold && vp.upDot < 0.8 && rollCheckDistance > 0) {
+			rolledOver = vp.reallyGroundedWheels == 0 && vp.colliding;
+			//if (vp.reallyGroundedWheels == 0 && vp.velMag < rollSpeedThreshold && vp.upDot < 0.8 && rollCheckDistance > 0) {
 			//    if (Physics.Raycast(tr.position, vp.upDir, out rollHit, rollCheckDistance, RaceManager.groundMaskStatic)
 			//        || Physics.Raycast(tr.position, vp.rightDir, out rollHit, rollCheckDistance, RaceManager.groundMaskStatic)
 			//        || Physics.Raycast(tr.position, -vp.rightDir, out rollHit, rollCheckDistance, RaceManager.groundMaskStatic)) {

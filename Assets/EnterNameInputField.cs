@@ -16,6 +16,19 @@ public class EnterNameInputField : Sfxable
 	{
 		glg = GetComponent<GridLayoutGroup>();
 	}
+	public string GetInputField()
+	{
+		string s = "";
+		for(int i=1; i<transform.childCount-1; ++i)
+		{
+			s += transform.GetChild(i).name;
+		}
+		return s;
+	}
+	public void SetName()
+	{
+		Info.s_playerName = GetInputField();
+	}
 	void Update()
 	{
 		if(Input.GetKeyDown(KeyCode.Backspace) && len > 0)
@@ -34,12 +47,12 @@ public class EnterNameInputField : Sfxable
 			{
 				if (Input.GetKeyDown(allowedKeys[i]))
 				{
-
 					PlaySFX("fe-keypressed");
 
 					var newletter = Instantiate(letterTemplate, transform);
 					newletter.GetComponent<Image>().sprite = allowedKeysSprites[i];
 					newletter.SetActive(true);
+					newletter.name = allowedKeys[i].ToString();
 					selector.SetAsLastSibling();
 					len++;
 					selector.GetComponent<Image>().sprite = (len >= 3) ? endSprite : allowedKeysSprites[0];
@@ -52,17 +65,17 @@ public class EnterNameInputField : Sfxable
 			}
 		}
 	}
-	private void OnEnable()
-	{
-		len = 0;
-		OKButton.transform.gameObject.SetActive(false);
-		selector.gameObject.SetActive(false);
-		for(int i=0; i<transform.childCount; ++i)
-		{
-			if (transform.GetChild(i).gameObject.activeSelf)
-				Destroy(transform.GetChild(i).gameObject);
-		}
-		selector.gameObject.SetActive(true);
-	}
+	//private void OnEnable()
+	//{
+	//	len = 0;
+	//	OKButton.transform.gameObject.SetActive(false);
+	//	selector.gameObject.SetActive(false);
+	//	for(int i=0; i<transform.childCount; ++i)
+	//	{
+	//		if (transform.GetChild(i).gameObject.activeSelf)
+	//			Destroy(transform.GetChild(i).gameObject);
+	//	}
+	//	selector.gameObject.SetActive(true);
+	//}
 	
 }

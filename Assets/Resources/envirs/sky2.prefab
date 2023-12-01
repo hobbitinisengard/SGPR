@@ -95,7 +95,7 @@ GameObject:
   - component: {fileID: 4516235187493725644}
   - component: {fileID: 1821728797343224070}
   - component: {fileID: 6541084077064871074}
-  m_Layer: 0
+  m_Layer: 26
   m_Name: sky2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -9910,7 +9910,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &8163874368746891654
 Transform:
   m_ObjectHideFlags: 0

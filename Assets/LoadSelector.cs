@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using System.Linq;
 using static TrackHeader;
 using TMPro;
+using System.IO;
 
 public class LoadSelector : Sfxable
 {
@@ -49,6 +50,31 @@ public class LoadSelector : Sfxable
 		if (loadCo)
 			StopCoroutine(Load());
 		StartCoroutine(Load());
+		
+	}
+	public void RemoveCurrentTrack()
+	{
+		if (selectedTrack.parent.GetSiblingIndex() == 0 || selectedTrack == null)
+		{
+			PlaySFX("fe-cardserror");
+			return;
+		}
+		
+		Info.tracks.Remove(selectedTrack.name);
+		File.Delete(Info.documents_sgpr_path + selectedTrack.name + ".track");
+		File.Delete(Info.documents_sgpr_path + selectedTrack.name + ".data");
+		File.Delete(Info.documents_sgpr_path + selectedTrack.name + ".png");
+
+		int children = selectedTrack.parent.childCount;
+		int index = Mathf.Clamp(selectedTrack.GetSiblingIndex(),0,children-2);
+		Destroy(selectedTrack.gameObject);
+		if (selectedTrack.parent.childCount == 0)
+			selectedTrack = null;
+		else
+			selectedTrack = trackContent.GetChild(1).GetChild(index);
+
+		StartCoroutine(Load());
+		//containerCo = StartCoroutine(MoveToTrack());
 	}
 	bool[] PopulateContent()
 	{
@@ -62,11 +88,14 @@ public class LoadSelector : Sfxable
 				int trackOrigin = value.TrackOrigin();
 				var newtrack = Instantiate(trackImageTemplate, trackContent.GetChild(trackOrigin));
 				newtrack.name = key;
-				newtrack.GetComponent<Image>().sprite = Resources.Load<Sprite>(Info.trackImagesPath + key);
+				newtrack.GetComponent<Image>().sprite = IMG2Sprite.LoadNewSprite(Path.Combine(Info.documents_sgpr_path, newtrack.name + ".png"));
 				newtrack.SetActive(true);
 				existingTrackClasses[trackOrigin] = true;
 				if (persistentSelectedTrack != null && persistentSelectedTrack == key)
+				{
 					selectedTrack = newtrack.transform;
+					Info.s_trackName = selectedTrack.name;
+				}
 			}
 		}
 		//-------------------
@@ -97,11 +126,16 @@ public class LoadSelector : Sfxable
 		//Debug.Log(menuButtons[0] + " " + menuButtons[1] + " " + menuButtons[2] + " " + menuButtons[3]);
 
 		yield return null; // wait for one frame for active objects to refresh
-
 		for (int i = 0; i < existingTrackClasses.Length; ++i)
 		{
 			if (selectedTrack == null && existingTrackClasses[i])
-				selectedTrack = trackContent.GetChild(i).GetChild(0);
+			{
+				if(trackContent.GetChild(i).childCount > 0)
+				{
+					selectedTrack = trackContent.GetChild(i).GetChild(0);
+					Info.s_trackName = selectedTrack.name;
+				}
+			}
 			// disable track classes without children (required for sliders to work)
 			trackContent.GetChild(i).gameObject.SetActive(existingTrackClasses[i]);
 		}
@@ -114,10 +148,10 @@ public class LoadSelector : Sfxable
 			trackDescText.text = "No tracks available";
 		else
 		{
-			trackDescText.text = Info.tracks[selectedTrack.name].desc;
+			trackDescText.text = selectedTrack.name + "\n\n" + Info.tracks[selectedTrack.name].desc;
 			radial.SetAnimTo(selectedTrack.parent.GetSiblingIndex());
 		}
-
+		
 		containerCo = StartCoroutine(MoveToTrack());
 		radial.SetChildrenActive(existingTrackClasses);
 
@@ -129,32 +163,34 @@ public class LoadSelector : Sfxable
 		for (int i = 0; i < recordsContainer.childCount; ++i)
 		{
 			Transform record = recordsContainer.GetChild(i);
-			Record recordData = Info.tracks[selectedTrack.name].records[i];
 
-			string valueStr = (recordData == null || recordData.playerName == null) ? "-" : recordData.playerName;
+			Record recordData = selectedTrack ? Info.tracks[selectedTrack.name].records[i] : new Record(null,0,0);
+
+			string valueStr = (recordData == null || recordData.playerName == null) ? "" : recordData.playerName;
 			record.GetChild(1).GetComponent<Text>().text = valueStr;
-			if (recordData == null || recordData.secondsOrPts == 0)
-				valueStr = "-";
+			if (recordData == null || recordData.secondsOrPts == 0 || recordData.secondsOrPts == 35999)
+				valueStr = "";
 			else
 			{
-				if (recordData.isTime)
-					valueStr = TimeSpan.FromSeconds(recordData.secondsOrPts).ToString(@"hh\:mm\:ss\:ff");
+				if (i <= 1) // lap, race, stunt, grip
+					valueStr = Info.ToLaptimeStr(TimeSpan.FromSeconds(recordData.secondsOrPts));
 				else
-					valueStr = recordData.secondsOrPts.ToString();
+					valueStr = Mathf.RoundToInt(recordData.secondsOrPts).ToString();
 			}
 			record.GetChild(2).GetComponent<Text>().text = valueStr;
 
-			if (recordData != null && recordData.secondsOrPts > recordData.requiredSecondsOrPts)
+			if (recordData != null && (i>0 && recordData.secondsOrPts > recordData.requiredSecondsOrPts) 
+				|| (i == 0 && recordData.secondsOrPts < recordData.requiredSecondsOrPts))
 				record.GetChild(2).GetComponent<Text>().color = Color.yellow;
 			else
 				record.GetChild(2).GetComponent<Text>().color = Color.white;
-
 		}
 	}
 	void SetTiles()
 	{
 		void AddTile(string spriteName)
 		{
+
 			var tile = Instantiate(tilesContainer.GetChild(0).gameObject, tilesContainer);
 			tile.SetActive(true);
 			tile.name = spriteName;
@@ -171,11 +207,14 @@ public class LoadSelector : Sfxable
 		for (int i = 1; i < tilesContainer.childCount; ++i)
 			Destroy(tilesContainer.GetChild(i).gameObject);
 
-		AddTile(Enum.GetName(typeof(Info.CarGroup), Info.tracks[selectedTrack.name].preferredCarClass));
-		AddTile(Enum.GetName(typeof(Info.Envir), Info.tracks[selectedTrack.name].envir));
-		AddTile(Info.tracks[selectedTrack.name].difficulty.ToString());
-		foreach (var flag in Info.tracks[selectedTrack.name].icons)
-			AddTile(Info.IconNames[flag]);
+		if(selectedTrack)
+		{
+			AddTile(Enum.GetName(typeof(Info.CarGroup), Info.tracks[selectedTrack.name].preferredCarClass));
+			AddTile(Enum.GetName(typeof(Info.Envir), Info.tracks[selectedTrack.name].envir));
+			AddTile((Info.tracks[selectedTrack.name].difficulty + 4).ToString());
+			foreach (var flag in Info.tracks[selectedTrack.name].icons)
+				AddTile(Info.IconNames[flag]);
+		}
 	}
 
 	void Update()
@@ -213,11 +252,12 @@ public class LoadSelector : Sfxable
 				if (tempSelectedTrack != null && tempSelectedTrack != selectedTrack)
 				{
 					selectedTrack = tempSelectedTrack;
+					Info.s_trackName = selectedTrack.name;
 					PlaySFX("fe-bitmapscroll");
 				}
 				// new track has been selected
 				// set description
-				trackDescText.text = Info.tracks[selectedTrack.name].desc;
+				trackDescText.text = selectedTrack.name + "\n\n" + Info.tracks[selectedTrack.name].desc;
 				radial.SetAnimTo(selectedTrack.parent.GetSiblingIndex());
 				SetTiles();
 				SetRecords();

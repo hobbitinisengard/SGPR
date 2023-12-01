@@ -43,7 +43,6 @@ public class SlideInOut : MonoBehaviour
 	}
 	void Awake()
 	{
-		
 		if(mainCamera == null)
 		{
 			mainCamera = F.GetTopmostParentComponent<Canvas>(transform).worldCamera;
@@ -79,21 +78,21 @@ public class SlideInOut : MonoBehaviour
 		initEndPos = GetPos();
 		endPos = initEndPos;
 
-		var screenPos = mainCamera.WorldToScreenPoint(transform.TransformPoint(rt.anchoredPosition3D));
+		//var screenPos = mainCamera.WorldToScreenPoint(rt.TransformPoint(rt.anchoredPosition3D));
 
 		if (inSlideDirection.x != 0)
 		{
 			if (inSlideDirection.x > 0)
-				startPos = -(screenPos.x+rt.rect.width);
+				startPos = -2*rt.rect.width;//-(screenPos.x+rt.rect.width);
 			else
-				startPos = Screen.width-screenPos.x + rt.rect.width;
+				startPos = 2*rt.rect.width; //Screen.width-screenPos.x + rt.rect.width;
 		}
 		else
 		{
 			if (inSlideDirection.y > 0)
-				startPos = rt.anchoredPosition.y - screenPos.y - rt.rect.height;
+				startPos = -rt.rect.height;
 			else
-				startPos = rt.anchoredPosition.y + Screen.height - screenPos.y - rt.rect.height;
+				startPos = rt.rect.height;
 		}
 	}
 	void SetContentsTransp(float a)
@@ -144,6 +143,7 @@ public class SlideInOut : MonoBehaviour
 	}
 	public void PlaySlideIn()
 	{
+		timer = 0;
 		endPos = initEndPos;
 		PlaySlide(Dir.In);
 	}
@@ -172,7 +172,6 @@ public class SlideInOut : MonoBehaviour
 	void OnEnable()
 	{
 		rt = GetComponent<RectTransform>();
-		timer = 0;
 		PlaySlideIn();
 	}
 	IEnumerator Play()

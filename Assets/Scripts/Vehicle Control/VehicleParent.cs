@@ -4,6 +4,8 @@ using System;
 
 namespace RVP
 {
+	public enum CatchupStatus { NoCatchup, Speeding, Slowing };
+
 	[RequireComponent(typeof(Rigidbody))]
 	[DisallowMultipleComponent]
 	[AddComponentMenu("RVP/Vehicle Controllers/Vehicle Parent", 0)]
@@ -16,6 +18,7 @@ namespace RVP
 		static AnimationCurve brakeCurve;
 		[System.NonSerialized]
 		public Rigidbody rb;
+		public float originalDrag;
 		[System.NonSerialized]
 		public Transform tr;
 		[System.NonSerialized]
@@ -25,7 +28,7 @@ namespace RVP
 		public float accelInput;
 		[System.NonSerialized]
 		public float brakeInput;
-		[System.NonSerialized]
+		[Range(-1,1)]
 		public float steerInput;
 		[System.NonSerialized]
 		public float ebrakeInput;
@@ -77,9 +80,9 @@ namespace RVP
 		public float battery = 1;
 		public float batteryLoadDelta = 0.2f;//*Time.fixedDeltaTime
 		[Range(0.001f, 0.05f)]
-		public float batteryBurnDelta = 0.01f;
-		public float lowBatteryLevel = 0.2f;
-		public float boostBurnRate = 0.005f;
+		public float batteryBurnDelta = .005f;
+		public float lowBatteryLevel = .2f;
+		public float boostBurnRate = .00025f;
 		bool stopUpshift;
 		bool stopDownShift;
 
@@ -114,6 +117,7 @@ namespace RVP
 		public bool hover;
 		[System.NonSerialized]
 		public int groundedWheels; // Number of wheels grounded
+		public int reallyGroundedWheels; // Number of really grounded wheels (cars can steer in air)
 		[System.NonSerialized]
 		public Vector3 wheelNormalAverage; // Average normal of the wheel contact points
 		Vector3 wheelContactsVelocity; // Average velocity of wheel contact points
@@ -121,7 +125,6 @@ namespace RVP
 		[Tooltip("Lower center of mass by suspension height")]
 		public bool suspensionCenterOfMass;
 		public Transform centerOfMassObj;
-		Vector3 centerOfMassOffset;
 
 		public ForceMode wheelForceMode = ForceMode.Acceleration;
 		public ForceMode suspensionForceMode = ForceMode.Acceleration;
@@ -157,22 +160,80 @@ namespace RVP
 		public SteeringControl steeringControl;
 		private float brakeStart;
 		internal bool colliding;
-		[Tooltip("Sideways friction when vehicle is in air. 0=no steering in air")]
-		public float inAirFriction = 0.25f;
-		public float d_R;
+		//[Tooltip("Sideways friction when vehicle is in air. 0=no steering in air")]
+		//public float inAirFriction = 0.25f;
 		[NonSerialized]
 		public GameObject customCam;
+		private float lastNoBatteryMessage;
+
 		/// <summary>
 		/// allowed values: 0-6
 		/// </summary>
 		public int sponsor { get; private set; }
 
-		public float countdownTimer { get; private set; }
+		public float countdownTimer; /*{ get; private set; }*/
 
 		public FollowAI followAI { get; private set; }
 		public RaceBox raceBox { get; private set; }
 
 		public float carLen { get; private set; }
+		float catchupGripMult = 2;
+		public CatchupStatus catchupStatus { get; private set; }
+		public void SetCatchup(CatchupStatus newStatus)
+		{
+			if(Info.s_catchup)
+			{
+				switch (newStatus)
+				{
+					case CatchupStatus.NoCatchup:
+						for (int i = 0; i < 4; ++i)
+						{
+							if (catchupStatus == CatchupStatus.Speeding)
+							{
+								wheels[i].sidewaysFriction /= catchupGripMult;
+								wheels[i].forwardFriction /= catchupGripMult;
+							}
+							if (catchupStatus == CatchupStatus.Slowing)
+							{
+								wheels[i].sidewaysFriction *= catchupGripMult;
+								wheels[i].forwardFriction *= catchupGripMult;
+							}
+						}
+						break;
+					case CatchupStatus.Speeding:
+						for (int i = 0; i < 4; ++i)
+						{
+							if (catchupStatus == CatchupStatus.NoCatchup)
+							{
+								wheels[i].sidewaysFriction *= catchupGripMult;
+								wheels[i].forwardFriction *= catchupGripMult;
+							}
+							if (catchupStatus == CatchupStatus.Slowing)
+							{
+								wheels[i].sidewaysFriction *= catchupGripMult * catchupGripMult;
+								wheels[i].forwardFriction *= catchupGripMult * catchupGripMult;
+							}
+						}
+						break;
+					case CatchupStatus.Slowing:
+						for (int i = 0; i < 4; ++i)
+						{
+							if (catchupStatus == CatchupStatus.NoCatchup)
+							{
+								wheels[i].sidewaysFriction /= catchupGripMult;
+								wheels[i].forwardFriction /= catchupGripMult;
+							}
+							if (catchupStatus == CatchupStatus.Speeding)
+							{
+								wheels[i].sidewaysFriction /= catchupGripMult * catchupGripMult;
+								wheels[i].forwardFriction /= catchupGripMult * catchupGripMult;
+							}
+						}
+						break;
+				}
+				catchupStatus = newStatus;
+			}
+		}
 
 		public void SetBatteryLoading(bool status)
 		{
@@ -207,7 +268,7 @@ namespace RVP
 			raceBox = GetComponent<RaceBox>();
 			tr = transform;
 			rb = GetComponent<Rigidbody>();
-			
+			originalDrag = rb.drag;
 		}
 		void Start()
 		{
@@ -237,17 +298,20 @@ namespace RVP
 				sparks.transform.parent = null;
 			}
 
-			if (wheelGroups.Length > 0)
-			{
-				StartCoroutine(WheelCheckLoop());
-			}
+			//if (wheelGroups.Length > 0)
+			//{
+			//	StartCoroutine(WheelCheckLoop());
+			//}
 		}
 
 		void Update()
 		{
-			//float friction = wheels[0].contactPoint.surfaceFriction;
-			d_R = carLen / (2 * Mathf.Sin(steeringControl.steerAngle * steeringControl.steeredWheels[0].steerRangeMax * Mathf.Deg2Rad));
-			//d_force = rb.mass * velMag * velMag / R;//Mathf.Sqrt(R / (rb.mass));
+			if (Physics.Raycast(tr.position, rb.velocity, 200, 1 << Info.trailLayer))
+			{ // aerodynamic tunnel
+				rb.drag = 0;
+			}
+			else
+				rb.drag = originalDrag;
 			// Shift single frame pressing logic
 			if (stopUpshift)
 			{
@@ -276,8 +340,8 @@ namespace RVP
 				InheritInputOneShot();
 			}
 
-			if (groundedWheels == 0)
-				roadNoiseSnd.volume = groundedWheels == 0 ? 0 : Mathf.Lerp(0, 80, velMag);
+			if (reallyGroundedWheels == 0)
+				roadNoiseSnd.volume = reallyGroundedWheels == 0 ? 0 : Mathf.Lerp(0, 80, velMag);
 
 			if (brakeInput > 0 && !reversing)
 			{
@@ -322,7 +386,7 @@ namespace RVP
 
 			GetGroundedWheels();
 
-			if (groundedWheels > 0)
+			if (reallyGroundedWheels > 1)
 			{
 				crashing = false;
 			}
@@ -338,10 +402,10 @@ namespace RVP
 			rightDot = Vector3.Dot(rightDir, RaceManager.worldUpDir);
 			upDot = Vector3.Dot(upDir, RaceManager.worldUpDir);
 			norm.transform.position = tr.position;
-			norm.transform.rotation = Quaternion.LookRotation(groundedWheels == 0 ? upDir : wheelNormalAverage, forwardDir);
+			norm.transform.rotation = Quaternion.LookRotation(reallyGroundedWheels == 0 ? upDir : wheelNormalAverage, forwardDir);
 
 			// Check if performing a burnout
-			if (groundedWheels > 0 && !hover && !accelAxisIsBrake && burnoutThreshold >= 0 && accelInput > burnoutThreshold && brakeInput > burnoutThreshold)
+			if (reallyGroundedWheels > 0 && !hover && !accelAxisIsBrake && burnoutThreshold >= 0 && accelInput > burnoutThreshold && brakeInput > burnoutThreshold)
 			{
 				burnout = Mathf.Lerp(burnout, ((5 - Mathf.Min(5, Mathf.Abs(localVelocity.z))) / 5) * Mathf.Abs(accelInput), Time.fixedDeltaTime * (1 - burnoutSmoothness) * 10);
 			}
@@ -368,10 +432,17 @@ namespace RVP
 		// Set accel input
 		public void SetAccel(float f)
 		{
-
+			if (raceBox.Finished())
+				battery = 1;
+			else if(battery < lowBatteryLevel && Time.time - lastNoBatteryMessage > 60)
+			{
+				raceBox.raceManager.hud.AddMessage(new Message(name + " IS OUT OF BATTERY!", BottomInfoType.NO_BATT));
+				lastNoBatteryMessage = Time.time;
+			}
 			f = Mathf.Clamp(f, -1, (battery < lowBatteryLevel) ? 0.75f : 1);
 			accelInput = f;
 			battery -= accelInput * batteryBurnDelta * Time.deltaTime;
+			battery = Mathf.Clamp01(battery);
 		}
 
 		// Set brake input
@@ -538,6 +609,7 @@ namespace RVP
 		void GetGroundedWheels()
 		{
 			groundedWheels = 0;
+			reallyGroundedWheels = 0;
 			wheelContactsVelocity = Vector3.zero;
 
 			if (hover)
@@ -548,10 +620,6 @@ namespace RVP
 					if (hoverWheels[i].grounded)
 					{
 						wheelNormalAverage = i == 0 ? hoverWheels[i].contactPoint.normal : (wheelNormalAverage + hoverWheels[i].contactPoint.normal).normalized;
-					}
-
-					if (hoverWheels[i].grounded)
-					{
 						groundedWheels++;
 					}
 				}
@@ -564,11 +632,11 @@ namespace RVP
 					{
 						wheelContactsVelocity = i == 0 ? wheels[i].contactVelocity : (wheelContactsVelocity + wheels[i].contactVelocity) * 0.5f;
 						wheelNormalAverage = i == 0 ? wheels[i].contactPoint.normal : (wheelNormalAverage + wheels[i].contactPoint.normal).normalized;
-					}
-
-					if (wheels[i].grounded)
-					{
 						groundedWheels++;
+					}
+					if (wheels[i].groundedReally)
+					{
+						reallyGroundedWheels++;
 					}
 				}
 			}
@@ -615,7 +683,7 @@ namespace RVP
 		// Continuous collision checking
 		void OnCollisionStay(Collision col)
 		{
-			if (col.contacts.Length > 0 && groundedWheels == 0)
+			if (col.contacts.Length > 0 && reallyGroundedWheels == 0)
 			{
 				foreach (ContactPoint curCol in col.contacts)
 				{

@@ -1646,6 +1646,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: sky7
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 0656f1fe85a25f942b2975295437ebfd,
+        type: 3}
+      propertyPath: m_Layer
+      value: 26
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0656f1fe85a25f942b2975295437ebfd, type: 3}
 --- !u!1 &8214112597978058259 stripped
@@ -1666,6 +1671,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1803864aabf84cf41b3fecf56d966720, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _Sun: {fileID: 0}
   nightTimeLights: {fileID: 8028448575225720792}
 --- !u!4 &8842170598000645289 stripped
 Transform:

@@ -4,16 +4,23 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using UnityEngine.Audio;
 using static Info;
 
 public static class Info
 {
-	public readonly static string userdata_path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Stunt GP Reloaded\\userdata.txt";
+	public readonly static string userdata_path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Stunt GP Reloaded\\userdata.json";
 	public readonly static string path_path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Stunt GP Reloaded\\path.txt";
-	public readonly static string documents_sgpr_path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Stunt GP Reloaded";
+	public readonly static string documents_sgpr_path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Stunt GP Reloaded\\";
 	public enum Livery { Special=1, TGR, Rline, Itex, Caltex, Titan, Mysuko }
 	public const int Liveries = 7;
 	public enum RecordType { BestLap, RaceTime, StuntScore, DriftScore }
+	public enum PavementType { Highway, RedSand, Asphalt, Electric, TimeTrial, Japanese, GreenSand, Random}
+	/// <summary>
+	/// valid pavements from 0 to ..
+	/// </summary>
+	public const int pavementTypes = 6;
+
 	public enum RaceType { Race, Stunt, Drift, Knockout, Survival }
 	public const int RaceTypes = 5;
 	public enum Envir { GER, JAP, SPN, FRA, ENG, USA, ITA, MEX };
@@ -33,7 +40,7 @@ public static class Info
 	public static readonly string[] EnvirDescs =
 	{
 		"GERMANY\n\nLoud crowd cheering and powerful spotlights..This german arena is really a place to show off.",
-		"JAPAN\n\nHere in this calm japanese dojo placed on the outskirts of a big city you can meditate or organize a race!",
+		"JAPAN\n\nHere in this calm japanese dojo placed on the outskirts of japanese Kyoto you can meditate or organize a race!",
 		"SPAIN\n\nBeaches like this usually ooze holidays. This is not an exception: warm sand, palms, and sun.. What could people possibly want more? Maybe a RC car race :)",
 		"FRANCE\n\nThis shadowy warehouse is full of boxes, forklifts and machinery. There are some really dark places here.", 
 		"ENGLAND\n\nEnglish go-kart track is a good location to test your driving skills. This place has a reputation for great races.",
@@ -64,6 +71,7 @@ public static class Info
 	public const int pitsZoneLayer = 18;
 	public const int grindTrigger = 19;
 	public const int ghostLayer = 24;
+	public const int trailLayer = 25;
 	
 	public const int firstExternalSurface = 4;
 
@@ -73,17 +81,18 @@ public static class Info
 	public const int selectionLayer = 20;
 
 	// curr/next session data
+	public static bool s_spectator;
 	public static List<VehicleParent> s_cars = new List<VehicleParent>();
 	public static CarSetup[] s_carSetups;
 	public static string s_trackName = "USA";
 	public static string s_playerName = "P1";
 	public static RaceType s_raceType = RaceType.Race;
-	public static int s_laps = 1;
+	public static int s_laps = 3;
 	public static bool s_inEditor = true;
 	public static bool s_isNight = false;
-	public static int s_cpuLevel = 3;
-	public static int s_rivals = 9; // 0-9
-	public static bool s_reversed = false;
+	public static int s_cpuLevel = 0;
+	public static int s_rivals = 0; // 0-9
+	public static PavementType s_roadType = PavementType.Random;
 	public static bool s_catchup = true;
 
 	public static int s_resultPos = 3;
@@ -172,24 +181,35 @@ public static class Info
 		//tracks.Add("track24", new TrackHeader(1, (CarGroup)2,4, Envir.FRA, null, new int[] { 0 }, "THE CHRONOZONE\n\nA very fast track with burns and a very sharp turn."));
 
 		// lap race stunt drift
-		TrackHeader.Record[] records = new TrackHeader.Record[]
-		{
-			new TrackHeader.Record("Viatrufka", 87.3f, true),
-			new TrackHeader.Record("T17", 187.3f, true),
-			new TrackHeader.Record(null, 0, true),
-			new TrackHeader.Record("Via", 3500, false),
-		};
+		//TrackHeader.Record[] records = new TrackHeader.Record[]
+		//{
+		//	new TrackHeader.Record("Viatrufka", 87.3f),
+		//	new TrackHeader.Record("T17", 187.3f),
+		//	new TrackHeader.Record(null, 0),
+		//	new TrackHeader.Record("Via", 3500),
+		//};
 		//tracks["track02"].records = records;
 
-		string[] trackFiles = Directory.GetFiles(Application.streamingAssetsPath, "*.track");
+		string[] trackFiles = Directory.GetFiles(documents_sgpr_path, "*.track");
 		foreach(var path in trackFiles)
 		{
 			string trackJson = File.ReadAllText(path);
 			string name = Path.GetFileNameWithoutExtension(path);
 			TrackHeader header = JsonConvert.DeserializeObject<TrackHeader>(trackJson);
-			if(header.valid && header.unlocked)
-				tracks.Add(name, header);
+			tracks.Add(name, header);
 		}
+	}
+	public static float ReadMixerLevel(AudioMixer mixer)
+	{
+		mixer.GetFloat("volume", out float inVal);
+
+		inVal = Mathf.Pow(10, inVal / 20f);
+		inVal = Mathf.Floor((int)(inVal * 10)) / 10f; // steps by 0.1
+		return inVal;
+	}
+	public static void WriteMusicLevel(float val01, in AudioMixer mixer)
+	{
+		mixer.SetFloat("volume", Mathf.Log10(val01) * 20);
 	}
 	public static float InGroupPos(Transform child)
 	{
@@ -227,7 +247,7 @@ public static class Info
 	}
 
 	/// <summary>
-	/// Saves latest path to Documents\Crashday 3D Editor\path.txt
+	/// Saves latest path to My Documents\path.txt
 	/// </summary>
 	public static void SaveLastFolderPath(string path)
 	{
@@ -241,6 +261,14 @@ public static class Info
 		w.WriteLine(path);
 		w.Close();
 	}
+	public static string ToLaptimeStr(this TimeSpan t)
+	{
+		string shortForm = "";
+		if (t.Hours > 0)
+			shortForm += string.Format("{0:D2}.", t.Hours);
+		shortForm += string.Format("{0:D2}:{1:D2}.{2:D2}", t.Minutes, t.Seconds, Mathf.RoundToInt(t.Milliseconds / 10f));
+		return shortForm;
+	}
 }
 [Serializable]
 public class TrackHeader
@@ -251,13 +279,27 @@ public class TrackHeader
 		public string playerName;
 		public float secondsOrPts;
 		public float requiredSecondsOrPts;
-		public bool isTime;
-		public Record(string playerName, float secondsOrPts, bool isTime, float requiredSecondsOrPts = 1e6f)
+		public Record(string playerName, float secondsOrPts, float requiredSecondsOrPts = 0)
 		{
 			this.playerName = playerName;
 			this.secondsOrPts = secondsOrPts;
 			this.requiredSecondsOrPts = requiredSecondsOrPts;
-			this.isTime = isTime;
+		}
+		private Record()
+		{
+			this.playerName = null;
+			this.secondsOrPts = 0;
+			this.requiredSecondsOrPts = 0;
+		}
+		public static Record[] RecordTemplate()
+		{
+			return new Record[]
+			{
+				new Record(null, 35999,35999),
+				new Record(null, 0),
+				new Record(null, 0),
+				new Record(null, 0),
+			};
 		}
 	}
 
@@ -282,10 +324,10 @@ public class TrackHeader
 		// lap race stunt drift
 		records = new Record[]
 		{
-			new Record(null, 3600*9+59*60+59+0.99f, true),
-			new Record(null, 3600*9+59*60+59+0.99f, true),
-			new Record(null, 0, false),
-			new Record(null, 0, false),
+			new Record(null, 3599),
+			new Record(null, 0),
+			new Record(null, 0),
+			new Record(null, 0)
 		};
 	}
 	public TrackHeader(int unlocked, CarGroup prefCarClass, int trackDifficulty, 

@@ -21,10 +21,12 @@ public class EnvirSelector : Sfxable
 	{
 		startButton.Select();
 		selectedEnvir = envirContent.GetChild(0).GetChild(persistentSelectedEnvir);
+		Info.s_trackName = selectedEnvir.name;
 		if (containerCo != null)
 			StopCoroutine(containerCo);
 		envirDescText.text = Info.EnvirDescs[selectedEnvir.GetSiblingIndex()];
 		containerCo = StartCoroutine(MoveToEnvir());
+		Info.s_inEditor = true;
 	}
 
 	void SetTile()
@@ -55,6 +57,7 @@ public class EnvirSelector : Sfxable
 				if (tempSelectedEnvir != null && tempSelectedEnvir != selectedEnvir)
 				{
 					selectedEnvir = tempSelectedEnvir;
+					Info.s_trackName = selectedEnvir.name;
 					Debug.Log(selectedEnvir);
 					PlaySFX("fe-bitmapscroll");
 				}

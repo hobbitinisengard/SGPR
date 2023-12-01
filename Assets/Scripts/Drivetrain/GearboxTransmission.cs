@@ -43,7 +43,7 @@ namespace RVP
 		public override void Start()
 		{
 			base.Start();
-			shiftDelay = shiftDelaySeconds / Time.fixedDeltaTime;
+			shiftDelay = shiftDelaySeconds;
 			gears = new Gear[]
 			{
 				new Gear(-3.21f),
@@ -84,7 +84,7 @@ namespace RVP
 		void FixedUpdate()
 		{
 			health = Mathf.Clamp01(health);
-			shiftTime = Mathf.Max(0, shiftTime - Time.timeScale * TimeMaster.inverseFixedTimeFactor);
+			shiftTime = Mathf.Max(0, shiftTime - Time.timeScale * Time.fixedDeltaTime);
 			d_feedback = targetDrive.feedbackRPM;
 			d_rpm = targetDrive.rpm;
 			if (shiftTime == 0 || currentGear < 2)
@@ -96,23 +96,29 @@ namespace RVP
 				actualFeedbackRPM = targetDrive.feedbackRPM / (curOutputRatio == 0 ? 1 : Mathf.Abs(curOutputRatio));
 
 				int upGearOffset = 1;
-				//int downGearOffset = 1;
+				int downGearOffset = 1;
+
+				while (currentGear - downGearOffset > 1 && vp.localVelocity.z < gears[currentGear- downGearOffset].minSpeed)
+				{
+					downGearOffset++;
+				}
 
 				//while (/*(skipNeutral || automatic) && 
-    //                gears[Mathf.Clamp(currentGear + upGearOffset, 0, gears.Length - 1)].ratio == 0
-    //                && */currentGear + upGearOffset != 0 && currentGear + upGearOffset < gears.Length - 1)
+				//                gears[Mathf.Clamp(currentGear + upGearOffset, 0, gears.Length - 1)].ratio == 0
+				//                && */currentGear + upGearOffset != 0 && currentGear + upGearOffset < gears.Length - 1)
 				//{
 				//	upGearOffset++;
 				//}
 
-				//while (/*(skipNeutral || automatic) && 
-    //                gears[Mathf.Clamp(currentGear - downGearOffset, 0, gears.Length - 1)].ratio == 0 
-    //                && */ currentGear - downGearOffset != 0 && currentGear - downGearOffset > 0)
-				//{
-				//	downGearOffset++;
-				//}
+				while ((skipNeutral || automatic) &&
+						  gears[Mathf.Clamp(currentGear - downGearOffset, 0, gears.Length - 1)].ratio == 0
+						  && currentGear - downGearOffset != 0 && currentGear - downGearOffset > 0)
+				{
+					downGearOffset++;
+				}
 
 				upperGear = gears[Mathf.Min(gears.Length - 1, currentGear + upGearOffset)];
+				
 				//Gear lowerGear = gears[Mathf.Max(0, selectedGear - downGearOffset)];
 
 				// Perform RPM calculations
@@ -135,7 +141,7 @@ namespace RVP
 
 						//if (Mathf.Abs(vp.localVelocity.z) > 1 || vp.accelInput > 0 || (vp.brakeInput > 0 && vp.brakeIsReverse)) 
 						//{
-						if (Time.time - wheelsNotGroundedTime > 1 && currentGear < gears.Length - 1)
+						if (/*Time.time - wheelsNotGroundedTime > 1 &&*/ currentGear < gears.Length - 1)
 						{
 							if (!(vp.brakeInput > 0 && vp.brakeIsReverse && upperGear.ratio >= 0)
 							&& !(vp.localVelocity.z < 0 && vp.accelInput == 0))
@@ -155,7 +161,7 @@ namespace RVP
 								//Mathf.Abs(vp.localVelocity.y) < gears[currentGear].minSpeed)
 								|| (vp.velMag < 1 && vp.brakeInput > 0 && vp.brakeIsReverse))
 							{
-								Shift(-1);
+								Shift(-downGearOffset);
 							}
 						}
 						//}
@@ -206,7 +212,7 @@ namespace RVP
 		{
 			if (health > 0)
 			{
-				shiftTime = shiftDelay;
+				shiftTime = shiftDelaySeconds;
 				selectedGear += dir;
 				if (audioShift)
 					audioShift.Play();
@@ -224,7 +230,7 @@ namespace RVP
 		{
 			if (health > 0)
 			{
-				shiftTime = shiftDelay;
+				shiftTime = shiftDelaySeconds;
 				selectedGear = Mathf.Clamp(gear, 0, gears.Length - 1);
 			}
 		}

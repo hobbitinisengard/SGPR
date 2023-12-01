@@ -48,7 +48,7 @@ ModelImporter:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: trackset00_trk_tubeglass
-    second: {fileID: 2100000, guid: d7bc4fd8f3a080841a7a518b322859f8, type: 2}
+    second: {fileID: 2100000, guid: 961f19ee509323548ae8bec04042b577, type: 2}
   materials:
     materialImportMode: 1
     materialName: 0

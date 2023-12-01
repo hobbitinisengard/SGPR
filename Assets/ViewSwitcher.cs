@@ -1,3 +1,5 @@
+using RVP;
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Audio;
@@ -9,7 +11,9 @@ public class ViewSwitcher : MonoBehaviour
 	public BackgroundTiles background;
 	public AudioMixerGroup audioMusic;
 	public AudioMixerGroup audioSFX;
-	AudioSource backgroundMusic;
+	public GameObject world;
+	public GameObject menu;
+	AudioSource menuMusic;
 
 	float timer = 0;
 	float duration;
@@ -17,13 +21,14 @@ public class ViewSwitcher : MonoBehaviour
 	GameObject viewB;
 	private void Awake()
 	{
-		backgroundMusic = GetComponent<AudioSource>();
+		menuMusic = GetComponent<AudioSource>();
 		duration = dimCurve.keys[dimCurve.length - 1].time;
 	}
 	public void SwitchBackgroundTo(in Sprite sprite) => background.SwitchBackgroundTo(sprite);
-	IEnumerator Play()
+	IEnumerator Play(Action method = null)
 	{
-		while(true)
+		timer = 0;
+		while (true)
 		{
 			if (timer >= duration)
 			{
@@ -32,16 +37,22 @@ public class ViewSwitcher : MonoBehaviour
 			}
 			else if (viewA.activeSelf && timer >= 0.5f * duration)
 			{
+				method?.Invoke();
 				//Debug.Log("switch");
 				viewA.SetActive(false);
 				viewB.SetActive(true);
 			}
-			var c = blackness.color;
-			c.a = dimCurve.Evaluate(timer);
-			blackness.color = c;
+			SetBlacknessColor(dimCurve.Evaluate(timer));
 			timer += Time.deltaTime;
+			blackness.gameObject.SetActive(true);
 			yield return null;
 		}
+	}
+	void SetBlacknessColor(float a)
+	{
+		var c = blackness.color;
+		c.a = a;
+		blackness.color = c;
 	}
 	public void PlayDimmer(GameObject viewA, GameObject viewB)
 	{
@@ -51,14 +62,40 @@ public class ViewSwitcher : MonoBehaviour
 		var Acomp = viewA.GetComponent<MainMenuView>();
 		if (!Bcomp.prevView)
 			Bcomp.prevView = viewA;
-		blackness.gameObject.SetActive(true);
 		// switch music if
 		if (Bcomp.music && (!Acomp.music || Acomp.music != Bcomp.music))
 		{
-			backgroundMusic.clip = Bcomp.music;
-			backgroundMusic.Play();
+			menuMusic.clip = Bcomp.music;
+			menuMusic.Play();
 		}
-		timer = 0;
+		
 		StartCoroutine(Play());
+	}
+	/// <summary>
+	/// switch between world <---> menu
+	/// </summary>
+	public void PlayDimmerWorldMenu(GameObject viewA, GameObject viewB)
+	{
+		this.viewA = viewA;
+		this.viewB = viewB;
+		// switch music if
+		StartCoroutine(Play());
+	}
+	/// <summary>
+	/// Dims to targetVisibility. 0 = menu fully visible, 1 = blackness
+	/// </summary>
+	public void PlayDimmerToWorld()
+	{
+		menuMusic.Stop();
+		this.viewA = menu;
+		this.viewB = world;
+		StartCoroutine(Play());
+	}
+	public void PlayDimmerToMenu()
+	{
+		menuMusic.Stop();
+		this.viewA = world;
+		this.viewB = menu;
+		StartCoroutine(Play(() => { world.GetComponent<RaceManager>().BackToEditor(); }));
 	}
 }

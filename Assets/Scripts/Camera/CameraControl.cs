@@ -34,8 +34,6 @@ namespace RVP
 		Vector3 upLook;
 		Vector3 targetForward;
 		Vector3 targetUp;
-		[Tooltip("Should the camera stay flat? (Local y-axis always points up)")]
-		public bool stayFlat = false;
 
 		[Tooltip("Mask for which objects will be checked in between the camera and target vehicle")]
 		public LayerMask castMask;
@@ -73,6 +71,11 @@ namespace RVP
 		public float smoothRotCoeff = 0.01f;
 		public int curReplayCamIdx;
 		public float replayCamAgility = 1;
+		float forwardLookCoeff = 10;
+		float upLookCoeff = 1f;
+		Vector3 forward;
+		public float xyInputCamSpeedCoeff = 5;
+
 		public void SetMode(Mode mode)
 		{
 			switch (mode)
@@ -103,6 +106,7 @@ namespace RVP
 		public void Connect(VehicleParent car, Mode mode = Mode.Follow)
 		{
 			this.mode = mode;
+			
 			if (!lookObj)
 			{// lookObj is an object used to help position and rotate the camera
 				GameObject lookTemp = new GameObject("Camera Looker");
@@ -116,7 +120,8 @@ namespace RVP
 			targetBody = vp.tr.GetComponent<Rigidbody>();
 			tr.SetPositionAndRotation(vp.tr.position, Quaternion.LookRotation(forwardLook, upLook));
 
-
+			if (this.mode == Mode.Replay && vp.followAI.replayCams.Count == 0)
+				this.mode = Mode.Follow;
 			// Set the audio listener update mode to fixed, because the camera moves in FixedUpdate
 			// This is necessary for doppler effects to sound correct
 			GetComponent<AudioListener>().velocityUpdateMode = AudioVelocityUpdateMode.Fixed;
@@ -130,7 +135,7 @@ namespace RVP
 		}
 		private void Update()
 		{
-			if (Input.GetKeyDown(KeyCode.C))
+			if (mode == Mode.Follow && Input.GetKeyDown(KeyCode.C))
 			{
 				curCameraLH++;
 				curCameraLH %= camerasLH.Length;
@@ -162,7 +167,7 @@ namespace RVP
 		{
 			pitchAngle = WrapAround180Degs(vp.tr.localEulerAngles.x);
 			bool pitchLocked = pitchAngle < -maxPitch;
-			if (vp.groundedWheels == 4)
+			if (vp.reallyGroundedWheels == 4)
 			{
 				if (pitchLocked)
 				{
@@ -200,32 +205,35 @@ namespace RVP
 			rollAngleDeg = smoothedRollAngle * 15f * Mathf.Lerp(0, 15, targetBody.velocity.magnitude) / 15f;
 			Vector3 rollUp = Quaternion.AngleAxis(-rollAngleDeg, vp.tr.forward) * Vector3.up;
 			//-----------
-
 			//camera look-position
 			// cos(45d) = 0.7f cos(0d) = 1 cos(90deg) = 0
 			//d_vel_norm = vp.rb.velocity.normalized;
 			//d_dot = Vector3.Dot(vp.tr.forward, vp.rb.velocity.normalized);
-			Vector3 forward;
+			//Vector3 forward;
 			if (vp.rb.velocity.magnitude < 1)
 				forward = vp.tr.forward;
 			else
-				forward = (vp.groundedWheels > 0)
+				forward = (vp.reallyGroundedWheels > 0)
 				 ? vp.tr.forward : vp.rb.velocity.normalized;
 
-			smoothYRot = Mathf.Lerp(smoothYRot, smoothRotCoeff * vp.rb.angularVelocity.y, 0.01f * Time.fixedDeltaTime);
-			forward = Quaternion.AngleAxis(Time.fixedDeltaTime * smoothYRot * Mathf.Rad2Deg, vp.tr.up) * forward;//Mathf.Abs(smoothYRot) * new Vector3(Mathf.Sin(smoothYRot), 0, Mathf.Cos(smoothYRot)).normalized;
+			xInput = Input.GetKey(KeyCode.A) ? -1 : Input.GetKey(KeyCode.D) ? 1 : 0;
+			yInput = Input.GetKey(KeyCode.S) ? -1 : 0;
+
+			smoothYRot = Mathf.Lerp(smoothYRot, smoothRotCoeff * vp.rb.angularVelocity.y, Time.fixedDeltaTime);
 			forward = Quaternion.AngleAxis(xInput * 90 + yInput * 180, vp.tr.up) * forward;
+			forward = Quaternion.AngleAxis(Time.fixedDeltaTime * smoothYRot * Mathf.Rad2Deg, vp.tr.up) * forward;//Mathf.Abs(smoothYRot) * new Vector3(Mathf.Sin(smoothYRot), 0, Mathf.Cos(smoothYRot)).normalized;
 			lookObj.position = vp.tr.position - forward * targetCamCarDistance + Vector3.up * height;
 			//--------------
+			
 			targetForward = vp.tr.position + cHeight * Vector3.up - lookObj.position; //Quaternion.AngleAxis(9, vp.tr.right) * forward; // targetForward
 																											  //camera look-rotation
-			forwardLook = Vector3.Lerp(forwardLook, targetForward, 0.1f * TimeMaster.inverseFixedTimeFactor);
+			forwardLook = Vector3.Lerp(forwardLook, targetForward, forwardLookCoeff * Time.fixedDeltaTime);
 			if (Physics.Raycast(vp.tr.position, -targetUp, out RaycastHit hit, 1, castMask))
 			{
 				float dot = Vector3.Dot(targetUp, hit.normal);
 				// 0.9848 = cos(15d)
 				upLook = Vector3.Lerp(
-					 upLook, (dot < 0.9848077 && pitchLocked ? targetUp : hit.normal), 0.02f * TimeMaster.inverseFixedTimeFactor);
+					 upLook, dot < 0.9848077 && pitchLocked ? targetUp : hit.normal, upLookCoeff * Time.fixedDeltaTime);
 			}
 			lookObj.rotation = Quaternion.LookRotation(forwardLook, upLook + rollUp);
 			//-------------
@@ -234,7 +242,7 @@ namespace RVP
 			dampOffset = Vector3.SmoothDamp(dampOffset, lookObj.position, ref fastVelocity,
 				 camFollowSmoothTime, catchUpCamSpeed, Time.fixedDeltaTime * smoothDampRspnvns);
 
-			if (vp.groundedWheels == 0) // when car airborne
+			if (vp.reallyGroundedWheels == 0) // when car airborne
 			{
 				offsetCarDistance = Vector3.Distance(dampOffset, vp.tr.position);
 				camOffsetDistance = Vector3.Distance(tr.position, dampOffset);
@@ -275,7 +283,7 @@ namespace RVP
 								smoothTime, catchUpCamSpeed, Time.fixedDeltaTime * smoothDampRspnvns);
 				else
 					newTrPos = Vector3.SmoothDamp(tr.position, lookObj.position, ref velocity,
-								smoothTime, catchUpCamSpeed, Time.fixedDeltaTime * 10 * smoothDampRspnvns);
+								smoothTime, catchUpCamSpeed, xyInputCamSpeedCoeff *Time.fixedDeltaTime * smoothDampRspnvns);
 
 				if (cameraStopped)
 				{
@@ -286,7 +294,7 @@ namespace RVP
 				else
 				{
 					rotation = Quaternion.Lerp(tr.rotation, lookObj.rotation,
-						 (vp.groundedWheels > 1 ? 12f : 3f) * Time.fixedDeltaTime);
+						 (vp.reallyGroundedWheels > 1 ? 12f : 3f) * Time.fixedDeltaTime);
 				}
 			}
 			tr.SetPositionAndRotation(newTrPos, rotation);
@@ -294,6 +302,8 @@ namespace RVP
 		// function for setting the rotation input of the camera
 		public void SetInput(float x, float y)
 		{
+			if (x == 0)
+				Debug.Log("0");
 			xInput = x;
 			yInput = y;
 		}

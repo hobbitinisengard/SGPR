@@ -13,7 +13,6 @@ namespace RVP
 		AudioSource snd;
 		VehicleParent vp;
 		Wheel[] wheels;
-		float slipThreshold;
 		GroundSurface surfaceType;
 
 		void Start()
@@ -28,8 +27,8 @@ namespace RVP
 				wheels[i] = vp.wheels[i];
 				if (vp.wheels[i].GetComponent<TireMarkCreate>())
 				{
-					float newThreshold = vp.wheels[i].GetComponent<TireMarkCreate>().slipThreshold;
-					slipThreshold = i == 0 ? newThreshold : (slipThreshold + newThreshold) * 0.5f;
+					float newThreshold = vp.wheels[i].slipThreshold;
+					wheels[i].slipThreshold = i == 0 ? newThreshold : (wheels[i].slipThreshold + newThreshold) * 0.5f;
 				}
 			}
 		}
@@ -45,7 +44,7 @@ namespace RVP
 			{
 				if (wheels[i].connected)
 				{
-					if (Mathf.Abs(F.MaxAbs(wheels[i].sidewaysSlip, wheels[i].forwardSlip, alwaysScrape)) - slipThreshold > 0)
+					if (Mathf.Abs(F.MaxAbs(wheels[i].sidewaysSlip, wheels[i].forwardSlip, alwaysScrape)) - wheels[i].slipThreshold > 0)
 					{
 						if (wheels[i].popped)
 						{
@@ -63,12 +62,12 @@ namespace RVP
 
 						if (surfaceType.alwaysScrape)
 						{
-							alwaysScrape = slipThreshold + Mathf.Min(0.5f, Mathf.Abs(wheels[i].rawRPM * 0.001f));
+							alwaysScrape = wheels[i].slipThreshold + Mathf.Min(0.5f, Mathf.Abs(wheels[i].rawRPM * 0.001f));
 						}
 					}
 
 					screechAmount = Mathf.Max(screechAmount, Mathf.Pow(Mathf.Clamp01(Mathf.Abs(F.MaxAbs(
-						4 * wheels[i].sidewaysSlip, 4 * wheels[i].forwardSlip, 1.5f * alwaysScrape)) - slipThreshold), 2));
+						wheels[i].sidewaysSlip, wheels[i].forwardSlip, alwaysScrape)) - wheels[i].slipThreshold), 2));
 				}
 			}
 
@@ -89,7 +88,7 @@ namespace RVP
 				else
 				{
 					snd.volume = Mathf.Lerp(snd.volume,
-						screechAmount * ((vp.groundedWheels * 1.0f) / (wheels.Length * 1.0f)), 8 * Time.deltaTime);
+						screechAmount * ((vp.reallyGroundedWheels * 1.0f) / (wheels.Length * 1.0f)), 8 * Time.deltaTime);
 					//snd.pitch = Mathf.Lerp(snd.pitch, 0.5f + screechAmount * 0.9f, 2 * Time.deltaTime);
 				}
 			}

@@ -1,21 +1,34 @@
 using RVP;
+using System.Collections;
 using UnityEngine;
 public class SGP_Bouncer : MonoBehaviour
 {
 	Rigidbody rb;
 	VehicleParent vp;
-	float lastBounceTime;
-	Vector3 rampVel;
-	float debounceTime = .3f;
+	public float lastBounceTime;
+	float debounceTime = .5f;
 	private void Awake()
 	{
 		rb = GetComponent<Rigidbody>();
 		vp = GetComponent<VehicleParent>();
 	}
-	private void Update()
+	private void FixedUpdate()
 	{
-		if (vp.groundedWheels == 0 && rampVel == Vector3.zero && Time.time - lastBounceTime > debounceTime)
-			rampVel = vp.rb.velocity;
+		if (vp.reallyGroundedWheels == 0)
+		{
+			if(lastBounceTime == 0)
+				lastBounceTime = Time.time;
+		}
+		else
+		{
+			if (Time.time - lastBounceTime > 0.5f)
+				StartCoroutine(ZeroizeLastBounceTime());
+		}
+	}
+	IEnumerator ZeroizeLastBounceTime()
+	{
+		yield return new WaitForFixedUpdate();
+		lastBounceTime = 0;
 	}
 	void VehicleVehicleBouncer(Collision collision)
 	{
@@ -27,46 +40,31 @@ public class SGP_Bouncer : MonoBehaviour
 	}
 	private void OnCollisionEnter(Collision collision)
 	{
-		if (!collision.GetContact(0).thisCollider.CompareTag("Underside"))
-			VehicleVehicleBouncer(collision);
+		//if (!collision.GetContact(0).thisCollider.CompareTag("Underside"))
+		//	VehicleVehicleBouncer(collision);
 		if (collision.gameObject.layer != Info.roadLayer)
 			return;
-		if (Time.time - lastBounceTime < debounceTime)
-			return;
-		lastBounceTime = Time.time;
-		//Debug.Log(Time.time);
-		//Debug.DrawRay(collision.GetContact(0).point, colNormal, Color.red, 5);
 		vp.colliding = true;
-
 		var norm = collision.GetContact(0).normal;
-		float velMagn=0;
+		Vector3 addForce;
+		Vector3 direction;
 		if(norm.y <0.1f) // sideways force based on car's velocity
 		{
 			//Debug.Log("sideways");
-			Vector3 addForce = ProjectOnVector(collision.relativeVelocity, norm);
-			velMagn = addForce.magnitude;
+			addForce = Vector3.Project(collision.relativeVelocity, -norm);
+			direction = Quaternion.AngleAxis(88, vp.tr.right) * norm;
 		}
 		else
 		{ // vertical force based on car's previous ramp speed
-			
-			if(rampVel.magnitude>0)
-			{
-				//Debug.Log("vertical");
-				Vector3 addForce = ProjectOnVector(rampVel, norm);
-				velMagn = addForce.magnitude;
-				rampVel = Vector3.zero;
-			}
-			
+			if (lastBounceTime == 0 || Time.time - lastBounceTime < debounceTime)
+				return;
+			addForce = Vector3.Project(collision.relativeVelocity, -norm);
+			direction = (vp.rb.velocity - addForce).normalized;
+			lastBounceTime = 0;
 		}
-		Vector3 direction = Quaternion.AngleAxis(90, vp.rightDir) * norm;//new(vp.forwardDir.x, 0, vp.forwardDir.z);//
-		rb.AddForceAtPosition(direction * velMagn,
+		rb.AddForceAtPosition(direction * addForce.magnitude,
 			vp.transform.position,//collision.GetContact(0).point,
 			ForceMode.VelocityChange);
-	}
-	public static Vector3 ProjectOnVector(in Vector3 force, in Vector3 direction)
-	{
-		float dot = Vector3.Dot(force.normalized, direction.normalized);
-		return  dot * force;
 	}
 	private void OnCollisionExit(Collision collision)
 	{

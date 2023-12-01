@@ -282,7 +282,7 @@ namespace RVP
 			if (wheel.grounded && wheel.connected)
 			{
 				// Get velocity of ground to offset from local vertical velocity
-				Rigidbody groundBody = wheel.contactPoint.col.attachedRigidbody;
+				Rigidbody groundBody = wheel.contactPoint.col ? wheel.contactPoint.col.attachedRigidbody : null;
 				Vector3 groundVel = Vector3.zero;
 				if (groundBody)
 				{

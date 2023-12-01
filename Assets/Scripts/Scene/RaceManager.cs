@@ -1,12 +1,10 @@
-﻿using System.Collections.Generic;
-using System;
+﻿using System;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using PathCreation;
 using System.Collections;
 using Newtonsoft.Json;
 using System.IO;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using UnityEngine.Audio;
 
 namespace RVP
 {
@@ -17,8 +15,12 @@ namespace RVP
 	public class RaceManager : MonoBehaviour
 	{
 		AudioSource musicPlayer;
-		public PathCreator racingPath;
 		public GameObject Sun;
+		public AudioMixer sfx;
+		public AudioMixer music;
+		public ViewSwitcher viewSwitcher;
+		public PathCreator racingPath;
+		//public GameObject Sun;
 		[Tooltip("Reload the scene with the 'Restart' button in the input manager")]
 		public bool quickRestart = true;
 
@@ -59,8 +61,6 @@ namespace RVP
 		public static float tireFadeTimeStatic;
 
 		public PartOfDay pod = PartOfDay.Day;
-		[NonSerialized]
-		bool initialized = false;
 		public float trackDistance = 1000;
 		public SGP_HUD hud;
 		public EditorPanel editorPanel;
@@ -69,15 +69,30 @@ namespace RVP
 		public ResultsSeq resultsSeq;
 		public PauseMenuButton sfxButton;
 		public PauseMenuButton musicButton;
+		public GameObject DemoSGPLogo;
+		private VehicleParent leader;
+		VehicleParent playerCar;
 
 		public enum InfoMessage
 		{
 			TAKES_THE_LEAD, NO_ENERGY, SPLIT_TIME,
 		}
 
-
+		public void SaveMusicLevels()
+		{
+			float musicLvl = Info.ReadMixerLevel(music);
+			float sfxLvl = Info.ReadMixerLevel(sfx);
+			string serializedSettings = JsonConvert.SerializeObject(new PlayerSettingsData()
+			{
+				musicVol = musicLvl,
+				sfxVol = sfxLvl,
+				lastPlayerName = Info.s_playerName
+			});
+			File.WriteAllText(Info.userdata_path, serializedSettings);
+		}
 		public void BackToEditor()
 		{
+			SaveMusicLevels();
 			hud.Disconnect();
 			hud.gameObject.SetActive(false);
 			cam.Disconnect();
@@ -85,11 +100,20 @@ namespace RVP
 			foreach (var c in Info.s_cars)
 				Destroy(c.gameObject);
 			Info.s_cars.Clear();
+
 			editorPanel.gameObject.SetActive(true);
+		}
+		public void BackToMenu()
+		{
+			SaveMusicLevels();
+			foreach (var c in Info.s_cars)
+				Destroy(c.gameObject);
+			Info.s_cars.Clear();
+			viewSwitcher.PlayDimmerToMenu();
 		}
 		public void RestartButton()
 		{
-			StartRace();
+			StartCoroutine(StartRace());
 		}
 		public void ExitButton()
 		{
@@ -103,16 +127,31 @@ namespace RVP
 			else
 				BackToMenu();
 		}
-		public void BackToMenu()
-		{
-		}
+
 		public float RaceProgress(VehicleParent vp)
 		{
+			switch (Info.s_raceType)
+			{
+				case Info.RaceType.Stunt:
+					break;
+				case Info.RaceType.Drift:
+					break;
+				case Info.RaceType.Race:
+				case Info.RaceType.Knockout:
+				case Info.RaceType.Survival:
+				default:
+					return vp.raceBox.curLap + vp.followAI.ProgressPercent();
+			}
 			return vp.raceBox.curLap + vp.followAI.ProgressPercent();
 		}
 		public int Position(VehicleParent vp)
 		{
 			Info.s_cars.Sort((carA, carB) => RaceProgress(carB).CompareTo(RaceProgress(carA)));
+			if (leader != Info.s_cars[0])
+			{
+				leader = Info.s_cars[0];
+				hud.AddMessage(new(leader.name + " TAKES THE LEAD!", BottomInfoType.NEW_LEADER));
+			}
 			for (int i = 0; i < Info.s_cars.Count; ++i)
 			{
 				if (Info.s_cars[i] == vp)
@@ -125,7 +164,7 @@ namespace RVP
 		//	float factor = Mathf.Pow(2, intensity);
 		//	return new Color(r * factor, g * factor, b * factor);
 		//}
-		void SetPartOfDay()
+		public void SetPartOfDay()
 		{
 			SetPartOfDay(Info.s_isNight ? PartOfDay.Night : PartOfDay.Day);
 		}
@@ -133,45 +172,17 @@ namespace RVP
 		{
 			if (pod == PartOfDay.Day)
 			{
-				//Sun.SetActive(true);
+				Sun.SetActive(true);
 				RenderSettings.ambientLight = new Color32(208, 208, 208, 1);
 			}
 			else if (pod == PartOfDay.Night)
 			{
-				//Sun.SetActive(false);
+				Sun.SetActive(false);
 				RenderSettings.ambientLight = new Color32(52, 52, 52, 1);
 			}
 		}
-		public bool Initialized()
+		void Awake()
 		{
-			return initialized;
-		}
-		public void Initialize(VehicleParent[] cars)
-		{
-			Info.s_cars.AddRange(cars);
-			initialized = true;
-		}
-		void Start()
-		{
-
-			// Read PlayerSettings (sfx, music)
-			string path = Path.Combine(Application.streamingAssetsPath, "playerSettings.json");
-			PlayerSettingsData settingsData;
-			if (!File.Exists(path))
-			{
-				settingsData = new PlayerSettingsData();
-				string serializedSettings = JsonConvert.SerializeObject(settingsData);
-				File.WriteAllText(path, serializedSettings);
-			}
-			else
-			{
-				string playerSettings = File.ReadAllText(path);
-				settingsData = JsonConvert.DeserializeObject<PlayerSettingsData>(playerSettings);
-			}
-			sfxButton.soundLevel = settingsData.sfxVol;
-			musicButton.soundLevel = settingsData.musicVol;
-
-
 			// Set static variables
 			worldUpDir = Physics.gravity.sqrMagnitude == 0 ? Vector3.up : -Physics.gravity.normalized;
 			wheelCastMaskStatic = wheelCastMask;
@@ -185,13 +196,20 @@ namespace RVP
 			tireFadeTimeStatic = tireFadeTime;
 
 			musicPlayer = GetComponent<AudioSource>();
-			
 
 			Info.PopulateSFXData();
 			Info.PopulateCarsData();
 			Info.PopulateTrackData();
+		}
+		private void OnDisable()
+		{
+			playerCar = null;
+		}
+		private void OnEnable()
+		{
+			Info.raceStartDate = DateTime.MinValue;
 			StartCoroutine(editorPanel.LoadTrack());
-
+			
 			SetPartOfDay();
 			if (Info.s_inEditor)
 			{
@@ -199,9 +217,8 @@ namespace RVP
 			}
 			else
 			{
-				StartRace();
+				StartCoroutine(StartRace());
 			}
-
 		}
 		public void StartFreeRoam(Vector3 position, Quaternion rotation)
 		{
@@ -212,20 +229,34 @@ namespace RVP
 			Info.s_cars.Add(newCar);
 			cam.Connect(newCar);
 			hud.Connect(newCar);
+			newCar.raceBox.raceManager = this;
 			// do not assign path in freeroam as track might not be finished
 			//newCar.followAI.AssignPath(racingPath, ref editorPanel.stuntpointsContainer, ref editorPanel.replayCamsContainer);
 		}
-		public void StartRace()
+		public IEnumerator StartRace()
 		{
+			foreach (var c in Info.s_cars)
+				Destroy(c.gameObject);
+			Info.s_cars.Clear();
+
 			musicPlayer.Stop();
 			int startlines = 0;
+			while (editorPanel.loadingTrack)
+			{
+				Debug.Log("loading");
+				yield return null;
+			}
+			editorPanel.pathFollower.SetActive(false);
 			for (int i = 0; i < editorPanel.placedTilesContainer.transform.childCount; ++i)
 			{
 				if (editorPanel.placedTilesContainer.transform.GetChild(i).name == "startline")
 					startlines++;
 			}
 			if (startlines != 1)
-				return;
+			{
+				editorPanel.DisplayMessageFor("Exactly 1 startline needed", 3);
+				yield break;
+			}
 
 			editorPanel.gameObject.SetActive(false);
 			Debug.Log("Play: " + Info.tracks[Info.s_trackName].envir.ToString());
@@ -234,8 +265,7 @@ namespace RVP
 			Info.raceStartDate = DateTime.Now;
 			Info.raceStartDate.AddSeconds(5);
 			float countDownSeconds = 5;
-			Info.s_cars.Clear();
-			int dist = -7;
+			int dist = -10;
 			for (int i = 0; i < Info.s_rivals + 1; ++i)
 			{
 				Vector3 startPos = racingPath.path.GetPointAtDistance(dist);
@@ -268,50 +298,59 @@ namespace RVP
 				var position = new Vector3(startPos.x, startPos.y + 3, startPos.z);
 				var rotation = Quaternion.LookRotation(dirVec);
 				var newCar = Instantiate(carModel, position, rotation).GetComponent<VehicleParent>();
+				Info.s_cars.Add(newCar);
 				newCar.SetSponsor(i % Info.Liveries);
 				if (Info.s_isNight)
 					newCar.SetLights();
 				StartCoroutine(newCar.CountdownTimer(countDownSeconds - newCar.engine.transmission.shiftDelaySeconds));
-				Info.s_cars.Add(newCar);
+				newCar.followAI.AssignPath(racingPath, ref editorPanel.stuntpointsContainer, ref editorPanel.replayCamsContainer, ref editorPanel.waypointsContainer);
 				if (i == Info.s_rivals)
 				{ // last car is the player
-					newCar.name = Info.s_playerName;
 					cam.enabled = true;
-					cam.Connect(newCar);
-					hud.Connect(newCar);
-					newCar.AddWheelGroup();
-					//newCar.followAI.SetCPU(true);
+					if (Info.s_spectator)
+					{
+						newCar.name = "CP" + (i + 1).ToString();
+						newCar.followAI.SetCPU(true);
+						cam.Connect(newCar, CameraControl.Mode.Replay);
+						DemoSGPLogo.SetActive(true);
+					}
+					else
+					{
+						playerCar = newCar;
+						newCar.name = Info.s_playerName;
+						cam.Connect(newCar);
+						hud.Connect(newCar);
+						DemoSGPLogo.SetActive(false);
+						//newCar.followAI.SetCPU(true); // CPU drives player's car
+					}
 				}
 				else
 				{
 					newCar.name = "CP" + (i + 1).ToString();
-					newCar.AddWheelGroup();
 					newCar.followAI.SetCPU(true);
 				}
-				newCar.followAI.AssignPath(racingPath, ref editorPanel.stuntpointsContainer, ref editorPanel.replayCamsContainer);
+				newCar.raceBox.raceManager = this;
 				dist -= 10;
 			}
-			Debug.DebugBreak();
+			leader = Info.s_cars[0];
 			countDownSeq.CountdownSeconds = countDownSeconds;
-			countDownSeq.gameObject.SetActive(true);
+			countDownSeq.gameObject.SetActive(!Info.s_spectator);
+			StartCoroutine(SpectatorLoop());
 		}
-		void Update()
+		IEnumerator SpectatorLoop()
 		{
-			// DEBUG
-			if (Input.GetKeyDown(KeyCode.K))
-				hud.AddMessage(new Message("CP1 IS RECHARGING!" + 5 * UnityEngine.Random.value, BottomInfoType.PIT_IN));
-			if (Input.GetKeyDown(KeyCode.M))
-				hud.AddMessage(new Message("CP2 TAKES THE LEAD!" + 5 * UnityEngine.Random.value, BottomInfoType.NEW_LEADER));
-			// Quickly restart scene with a button press
-			//if (quickRestart)
-			//{
-			//	if (Input.GetButtonDown("Restart"))
-			//	{
-			//		SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-			//		Time.timeScale = 1;
-			//		Time.fixedDeltaTime = initialFixedTime;
-			//	}
-			//}
+			while (true)
+			{
+				if (Info.s_spectator)
+				{
+					if ((DateTime.Now - Info.raceStartDate).TotalSeconds > 60 || Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Escape))
+					{
+						BackToMenu();
+						yield break;
+					}
+				}
+				yield return null;
+			}
 		}
 
 		public void PlayFinishSeq()
@@ -324,32 +363,86 @@ namespace RVP
 			resultsSeq.gameObject.SetActive(true);
 			cam.SetMode(CameraControl.Mode.Replay);
 
+			if (playerCar != null)
+			{
+				if (Info.s_inEditor)
+				{ // lap, race, stunt, drift
+					if (editorPanel.records == null)
+						editorPanel.records = TrackHeader.Record.RecordTemplate();
+					//lap
+					if ((float)playerCar.raceBox.bestLapTime.TotalSeconds < editorPanel.records[0].secondsOrPts)
+					{
+						Info.tracks[Info.s_trackName].records[0].playerName = Info.s_playerName;
+						Info.tracks[Info.s_trackName].records[0].requiredSecondsOrPts = (float)playerCar.raceBox.bestLapTime.TotalSeconds;
+					}
+					//race
+					if ((float)playerCar.raceBox.raceTime.TotalSeconds > editorPanel.records[1].secondsOrPts)
+					{
+						Info.tracks[Info.s_trackName].records[1].playerName = Info.s_playerName;
+						Info.tracks[Info.s_trackName].records[1].requiredSecondsOrPts = (float)playerCar.raceBox.raceTime.TotalSeconds;
+					}
+					//stunt
+					if (playerCar.raceBox.Aero > editorPanel.records[2].secondsOrPts)
+					{
+						Info.tracks[Info.s_trackName].records[2].playerName = Info.s_playerName;
+						Info.tracks[Info.s_trackName].records[2].requiredSecondsOrPts = playerCar.raceBox.Aero;
+					}
+					//drift
+					if (playerCar.raceBox.driftPts > editorPanel.records[3].secondsOrPts)
+					{
+						Info.tracks[Info.s_trackName].records[3].playerName = Info.s_playerName;
+						Info.tracks[Info.s_trackName].records[3].requiredSecondsOrPts = playerCar.raceBox.driftPts;
+					}
+				}
+				else
+				{
+					//lap
+					if ((float)playerCar.raceBox.bestLapTime.TotalSeconds < Info.tracks[Info.s_trackName].records[0].secondsOrPts)
+					{
+						Info.tracks[Info.s_trackName].records[0].playerName = Info.s_playerName;
+						Info.tracks[Info.s_trackName].records[0].secondsOrPts = (float)playerCar.raceBox.bestLapTime.TotalSeconds;
+					}
+					//race
+					if ((float)playerCar.raceBox.raceTime.TotalSeconds > Info.tracks[Info.s_trackName].records[1].secondsOrPts)
+					{
+						Info.tracks[Info.s_trackName].records[1].playerName = Info.s_playerName;
+						Info.tracks[Info.s_trackName].records[1].secondsOrPts = (float)playerCar.raceBox.raceTime.TotalSeconds;
+					}
+					//stunt
+					if (playerCar.raceBox.Aero > Info.tracks[Info.s_trackName].records[2].secondsOrPts)
+					{
+						Info.tracks[Info.s_trackName].records[2].secondsOrPts = playerCar.raceBox.Aero;
+						Info.tracks[Info.s_trackName].records[2].playerName = Info.s_playerName;
+					}
+					//drift
+					if (playerCar.raceBox.driftPts > Info.tracks[Info.s_trackName].records[3].secondsOrPts)
+					{
+						Info.tracks[Info.s_trackName].records[3].playerName = Info.s_playerName;
+						Info.tracks[Info.s_trackName].records[3].secondsOrPts = playerCar.raceBox.driftPts;
+					}
+					// immediately update track header
+					if (Info.tracks.ContainsKey(Info.s_trackName))
+					{
+						var trackJson = JsonConvert.SerializeObject(Info.tracks[Info.s_trackName]);
+						var path = Path.Combine(Info.documents_sgpr_path, Info.s_trackName + ".track");
+						File.WriteAllText(path, trackJson);
+					}
+				}
+			}
+
 			while (resultsSeq.gameObject.activeSelf)
 			{
 				yield return null;
 			}
-			if(Info.tracks.ContainsKey(Info.s_trackName))
-			{
-				//lap
-				if((float)hud.vp.raceBox.bestLapTime.TotalSeconds < Info.tracks[Info.s_trackName].records[0].secondsOrPts)
-					Info.tracks[Info.s_trackName].records[0].secondsOrPts = (float)hud.vp.raceBox.bestLapTime.TotalSeconds;
-				//race
-				if ((float)hud.vp.raceBox.raceTime.TotalSeconds > Info.tracks[Info.s_trackName].records[1].secondsOrPts)
-					Info.tracks[Info.s_trackName].records[1].secondsOrPts = (float)hud.vp.raceBox.raceTime.TotalSeconds;
-				//stunt
-				if ((float)hud.vp.raceBox.aero/Info.s_laps > Info.tracks[Info.s_trackName].records[2].secondsOrPts)
-					Info.tracks[Info.s_trackName].records[2].secondsOrPts = (float)hud.vp.raceBox.aero / Info.s_laps;
-				//drift
-				if (hud.vp.raceBox.driftPts > Info.tracks[Info.s_trackName].records[3].secondsOrPts)
-					Info.tracks[Info.s_trackName].records[3].secondsOrPts = hud.vp.raceBox.driftPts;
-			}
 			countDownSeq.gameObject.SetActive(false);
 			if (Info.s_inEditor)
 			{
+				Debug.Log("back to editor");
 				BackToEditor();
 			}
 			else
 			{
+				Debug.Log("back to menu");
 				BackToMenu();
 			}
 		}

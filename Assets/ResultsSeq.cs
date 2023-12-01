@@ -35,6 +35,10 @@ public class ResultsSeq : Sfxable
 		//pulseCurve.AddKey(1, 1);
 		audioSource = GetComponent<AudioSource>();
 	}
+	private void OnDisable()
+	{
+		RowsBlinkColor(Color.yellow);
+	}
 	private void OnEnable()
 	{
 		rightBoxLabelInt = 0;
@@ -50,7 +54,6 @@ public class ResultsSeq : Sfxable
 
 		cosArg = 0;
 		playerResultPosition = playerHUD.raceManager.Position(playerHUD.vp);
-		Debug.Log(playerResultPosition);
 		imgResult.sprite = ResultPositionSprites[playerResultPosition - 1];
 		imgResult.transform.GetChild(0).gameObject.SetActive(playerResultPosition > 3);
 		minImgResultPos = -Screen.height / 2f - imgResult.transform.GetComponent<RectTransform>().sizeDelta.y / 2f;

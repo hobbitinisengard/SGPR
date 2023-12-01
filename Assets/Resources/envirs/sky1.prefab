@@ -109,7 +109,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1756042720160211135
 Transform:
   m_ObjectHideFlags: 0
@@ -288,6 +288,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: sky1
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: c2644c1d28da0cc489f0e5a11bb501c2,
+        type: 3}
+      propertyPath: m_Layer
+      value: 26
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c2644c1d28da0cc489f0e5a11bb501c2, type: 3}
 --- !u!4 &4632478847221350199 stripped
@@ -314,4 +319,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1803864aabf84cf41b3fecf56d966720, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _Sun: {fileID: 0}
   nightTimeLights: {fileID: 2020308101516570898}
