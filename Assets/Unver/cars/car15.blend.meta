@@ -3,7 +3,27 @@ guid: 41da013851660b540bbb8e37300a549f
 ModelImporter:
   serializedVersion: 21300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: cars_car15_b15grid7
+    second: {fileID: 2100000, guid: b06595cb3f4b6eb4f8ee51a0c498e793, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: cars_misc_jet
+    second: {fileID: 2100000, guid: 554984cfb0a008549a5e71cde3bd6121, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: cars_misc_reflect
+    second: {fileID: 2100000, guid: b61e3a629d430264e84f8770158ff470, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: cars_misc_tyre1
+    second: {fileID: 2100000, guid: f95eb13c38d4193408e2f6752e878e99, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -35,7 +55,7 @@ ModelImporter:
     isReadable: 0
   meshes:
     lODScreenPercentages: []
-    globalScale: 1
+    globalScale: 0.01
     meshCompression: 0
     addColliders: 0
     useSRGBMaterialColor: 1
@@ -88,7 +108,7 @@ ModelImporter:
     armStretch: 0.05
     legStretch: 0.05
     feetSpacing: 0
-    globalScale: 1
+    globalScale: 0.01
     rootMotionBoneName: 
     hasTranslationDoF: 0
     hasExtraRoot: 0

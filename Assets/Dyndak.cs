@@ -1,32 +1,25 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
-public class Dyndak : MonoBehaviour
+public class Dyndak : Sfxable
 {
-    Sprite singlePlayerSprite;
-    Sprite multiPlayerSprite;
-    float posy;
-    RectTransform rt;
-    float begintime = 0;
-    // Start is called before the first frame update
-    void Start()
-    {
-        rt = GetComponent<RectTransform>();
-        posy = rt.anchoredPosition.y;
-        begintime = Time.time;
-    }
+	float posy;
+	RectTransform rt;
+	float begintime = 0;
+	void Awake()
+	{
+		rt = GetComponent<RectTransform>();
+		posy = rt.anchoredPosition.y;
+		begintime = Time.time;
+	}
+	private void OnEnable()
+	{
+		PlaySFX("fe-iconappear");
+	}
 
-    // Update is called once per frame
-    void Update()
-    {
-        Vector3 pos = rt.anchoredPosition;
-        pos.y = posy + 2*40 * Mathf.Abs(Mathf.Sin((Time.time - begintime) * 0.8f * Mathf.PI));
-        rt.anchoredPosition = pos;
-    }
-    void SetSprite(Sprite sprite)
-    {
-
-    }
+	void Update()
+	{
+		Vector3 pos = rt.anchoredPosition;
+		pos.y = posy + 2 * 40 * Mathf.Abs(Mathf.Sin((Time.time - begintime) * 0.8f * Mathf.PI));
+		rt.anchoredPosition = pos;
+	}
 }

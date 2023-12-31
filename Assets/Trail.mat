@@ -8,16 +8,18 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Trail
-  m_Shader: {fileID: 46, guid: 0000000000000000f000000000000000, type: 0}
+  m_Shader: {fileID: 4800000, guid: 0e0019510d6142644b412d07db9dee4e, type: 3}
   m_ValidKeywords:
-  - _ALPHAPREMULTIPLY_ON
-  m_InvalidKeywords: []
+  - _SOURCE_SPECULARALPHA
+  m_InvalidKeywords:
+  - _ALPHABLEND_ON
+  - _BLENDMAINNORMAL_ON
+  - _USEBASECOLORALPHA_ON
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: 3000
-  stringTagMap:
-    RenderType: Transparent
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
   disabledShaderPasses: []
   m_SavedProperties:
     serializedVersion: 3
@@ -27,6 +29,10 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BumpMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _CutoutMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -47,8 +53,8 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: 6a4da6c5af08b8046962c6ac937a4fa2, type: 3}
-        m_Scale: {x: 1, y: 1}
+        m_Texture: {fileID: 2800000, guid: 58d4916ca2012df498a15b3dc2c03197, type: 3}
+        m_Scale: {x: 1, y: 0.52}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
         m_Texture: {fileID: 0}
@@ -62,29 +68,71 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _SpecGlossMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _TransparentMask:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _texcoord:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
     - PixelSnap: 0
+    - _AoIntensity: 1
+    - _BlendMainNormal: 1
+    - _Brightness: 1
     - _BumpScale: 1
-    - _Cutoff: 0.219
+    - _ContrastDetailMap: 0
+    - _ContrastTransparentMap: 0
+    - _Cull: 0
+    - _Cutoff: 0.545
+    - _DetailBrightness: 1
     - _DetailNormalMapScale: 1
+    - _DetailSaturation: 0
     - _DstBlend: 10
+    - _EmissionIntensity: 2
+    - _EnableDetailMask: 0
     - _EnableExternalAlpha: 0
     - _GlossMapScale: 1
     - _Glossiness: 1
     - _GlossyReflections: 1
+    - _IntensityCutoutMap: 0.623
+    - _IntensityMask: 1
+    - _IntensityTransparentMap: 0
+    - _InvertABaseColor: 0
+    - _InvertCutout: 0
+    - _InvertMask: 0
+    - _InvertTransparent: 0
     - _Metallic: 0
-    - _Mode: 3
+    - _Mode: 2
     - _OcclusionStrength: 1
     - _Parallax: 0.02
+    - _Saturation: 0
     - _SmoothnessTextureChannel: 0
+    - _Source: 0
+    - _SourceMask: 0
     - _SpecularHighlights: 1
-    - _SrcBlend: 1
+    - _SpecularIntensity: 0.2
+    - _SpreadDetailMap: 0
+    - _SpreadTransparentMap: 0
+    - _SrcBlend: 5
     - _UVSec: 0
-    - _ZWrite: 0
+    - _UseBaseColorAlpha: 1
+    - _VisualizeMask: 0
+    - _ZTest: 4
+    - _ZWrite: 1
+    - __dirty: 1
     m_Colors:
-    - _Color: {r: 1, g: 1, b: 1, a: 0.39215687}
-    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _DetailColor: {r: 1, g: 1, b: 1, a: 0}
+    - _EmissionColor: {r: 0.03125, g: 0, b: 0, a: 0}
     - _Flip: {r: 1, g: 1, b: 1, a: 1}
+    - _GlobalXYTilingXYZWOffsetXY: {r: 1, g: 1, b: 0, a: 0}
     - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
+    - _SpecularColor: {r: 1, g: 1, b: 1, a: 0}
   m_BuildTextureStacks: []

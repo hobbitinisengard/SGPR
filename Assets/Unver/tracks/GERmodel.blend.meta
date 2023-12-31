@@ -1,0 +1,271 @@
+fileFormatVersion: 2
+guid: 9f3e456fcac1ff440adbdd00004e458a
+ModelImporter:
+  serializedVersion: 21300
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level8_chimney64
+    second: {fileID: 2100000, guid: 184a62769cbe9674eb7d587d07adb5b7, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level8_chimney64a
+    second: {fileID: 2100000, guid: ef6004279d92b9343951134df79fb08c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level8_digital
+    second: {fileID: 2100000, guid: 6f53bdb47e473a64381184661e367c27, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level8_experiment2
+    second: {fileID: 2100000, guid: bd4ef62180660fa4f9d8c8c3e91c2934, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level8_fence128x
+    second: {fileID: 2100000, guid: fa00b5e07e28c304eadf21067496e8fa, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level8_fencead
+    second: {fileID: 2100000, guid: a585d63175051c642805a619827a62d2, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level8_floor64
+    second: {fileID: 2100000, guid: fcb34a29c08de7648b1dbb38cee52777, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level8_flooredge128x
+    second: {fileID: 2100000, guid: 5d5a990be51404f4e89a2b9ed46f7cc7, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level8_office64
+    second: {fileID: 2100000, guid: 006774db7f6f7bd4a8f400b362bbae98, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level8_psx_outside64
+    second: {fileID: 2100000, guid: 1fe8cce0e4c55ff4291fb7f0859bec94, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level8_psx_standseats
+    second: {fileID: 2100000, guid: de022a00a851efa409c25ed2f671cc9c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level8_psx_standstairs
+    second: {fileID: 2100000, guid: 4acbf9d824561d64ab5d37f7a814944d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level8_psx_standstairsx
+    second: {fileID: 2100000, guid: 50f39cf2eae6fae4c822f7872afdbfe8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level8_roof128z
+    second: {fileID: 2100000, guid: 911fa1ec405b8d945a24f73bc68e0e56, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level8_roofcen128
+    second: {fileID: 2100000, guid: 1681b136daaa5e04c9bafb7cbc1510eb, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level8_roofcenvent128
+    second: {fileID: 2100000, guid: 607afedea5cba41448a2bf1fb19787a7, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level8_roofedge64
+    second: {fileID: 2100000, guid: 3e6752b6f4c5058428bac96da7514679, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level8_rooflight128
+    second: {fileID: 2100000, guid: 6f7c71c77c3bc3c429962b52603bda9f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level8_roofvent128
+    second: {fileID: 2100000, guid: dcafb3db85db7aa48bc71b342d952f86, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level8_sgpfloor
+    second: {fileID: 2100000, guid: 89d36e718476d4a408b0472cceaf0397, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level8_sgpneon128
+    second: {fileID: 2100000, guid: 9df94cb6d456644479a5c874e3ea75f4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level8_smoke64
+    second: {fileID: 2100000, guid: a518d89f92303514a9cbda30f0b376d5, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level8_spotlights128
+    second: {fileID: 2100000, guid: ac59db90d8e55ed4da3d51b8b157123b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level8_stands128x
+    second: {fileID: 2100000, guid: 4bc17b31dc99ed540bfc1a9c9dc61943, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level8_standsad
+    second: {fileID: 2100000, guid: 6e61f48ca58d37840a563239e29d86b9, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level8_suplight64x
+    second: {fileID: 2100000, guid: 4619c2822cadf37468f047f12e493295, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level8_support64x
+    second: {fileID: 2100000, guid: 105ae627341d7f644ab113cabb9edffc, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level8_tv21a
+    second: {fileID: 2100000, guid: ea72a6942b2f03c449d98c84d8e3ef10, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level8_tv21b
+    second: {fileID: 2100000, guid: 66307f300919fab4cb41570c08f8eab9, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level8_tv21c
+    second: {fileID: 2100000, guid: c5bbea3c77fec794d89ae3f4dfa07faa, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level8_walla128
+    second: {fileID: 2100000, guid: c4c0b4692c1ca4643bb703d47758e21d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level8_wallc128
+    second: {fileID: 2100000, guid: 778a9b3e4b239bd4eb41a75c10678936, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level8_window128
+    second: {fileID: 2100000, guid: bbf0d7ca7e1fea647bf66237fd1bdd1a, type: 2}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    removeConstantScaleCurves: 1
+    motionNodeName: 
+    rigImportErrors: 
+    rigImportWarnings: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    importAnimatedCustomProperties: 0
+    importConstraints: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    extraUserProperties: []
+    clipAnimations: []
+    isReadable: 0
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    useSRGBMaterialColor: 1
+    sortHierarchyByName: 1
+    importVisibility: 1
+    importBlendShapes: 1
+    importCameras: 1
+    importLights: 1
+    nodeNameCollisionStrategy: 1
+    fileIdsGeneration: 2
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    keepQuads: 0
+    weldVertices: 1
+    bakeAxisConversion: 0
+    preserveHierarchy: 0
+    skinWeightsMode: 0
+    maxBonesPerVertex: 4
+    minBoneWeight: 0.001
+    optimizeBones: 1
+    meshOptimizationFlags: -1
+    indexFormat: 0
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVMarginMethod: 1
+    secondaryUVMinLightmapResolution: 40
+    secondaryUVMinObjectScale: 1
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalCalculationMode: 4
+    legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0
+    blendShapeNormalImportMode: 1
+    normalSmoothingSource: 0
+  referencedClips: []
+  importAnimation: 1
+  humanDescription:
+    serializedVersion: 3
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    globalScale: 1
+    rootMotionBoneName: 
+    hasTranslationDoF: 0
+    hasExtraRoot: 0
+    skeletonHasParents: 1
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  autoGenerateAvatarMappingIfUnspecified: 1
+  animationType: 2
+  humanoidOversampling: 1
+  avatarSetup: 0
+  addHumanoidExtraRootOnlyWhenUsingAvatar: 1
+  remapMaterialsIfMaterialImportModeIsNone: 0
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

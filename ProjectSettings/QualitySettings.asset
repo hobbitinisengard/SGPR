@@ -193,7 +193,7 @@ QualitySettings:
     shadowResolution: 0
     shadowProjection: 1
     shadowCascades: 4
-    shadowDistance: 150
+    shadowDistance: 1000
     shadowNearPlaneOffset: 2
     shadowCascade2Split: 0.33333334
     shadowCascade4Split: {x: 0.06666667, y: 0.19999999, z: 0.46666664}
@@ -204,7 +204,7 @@ QualitySettings:
     antiAliasing: 2
     softParticles: 0
     softVegetation: 1
-    realtimeReflectionProbes: 0
+    realtimeReflectionProbes: 1
     billboardsFaceCameraPosition: 1
     vSyncCount: 1
     lodBias: 2

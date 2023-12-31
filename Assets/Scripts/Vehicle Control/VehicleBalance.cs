@@ -63,7 +63,7 @@ namespace RVP
         void ApplyLean() {
             if (vp.groundedWheels > 0) {
                 Vector3 inverseWorldUp;
-                inverseWorldUp = vp.norm.InverseTransformDirection(Vector3.Dot(vp.wheelNormalAverage, GlobalControl.worldUpDir) <= 0 ? vp.wheelNormalAverage : Vector3.Lerp(GlobalControl.worldUpDir, vp.wheelNormalAverage, Mathf.Abs(Vector3.Dot(vp.norm.up, GlobalControl.worldUpDir)) * 2));
+                inverseWorldUp = vp.norm.InverseTransformDirection(Vector3.Dot(vp.wheelNormalAverage, RaceManager.worldUpDir) <= 0 ? vp.wheelNormalAverage : Vector3.Lerp(RaceManager.worldUpDir, vp.wheelNormalAverage, Mathf.Abs(Vector3.Dot(vp.norm.up, RaceManager.worldUpDir)) * 2));
                 Debug.DrawRay(tr.position, vp.norm.TransformDirection(inverseWorldUp), Color.white);
 
                 // Calculate target lean direction

@@ -3,7 +3,27 @@ guid: ec251ecc16cf8264396faedd1d63ec3f
 ModelImporter:
   serializedVersion: 21300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: cars_car20_b20grid2
+    second: {fileID: 2100000, guid: 567fb7431628d8944ba027cfd2399a71, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: cars_misc_jet
+    second: {fileID: 2100000, guid: 554984cfb0a008549a5e71cde3bd6121, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: cars_misc_reflect
+    second: {fileID: 2100000, guid: b61e3a629d430264e84f8770158ff470, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: cars_misc_tyre1
+    second: {fileID: 2100000, guid: 47d27000dd5fd834ab71de8a6f1346e9, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

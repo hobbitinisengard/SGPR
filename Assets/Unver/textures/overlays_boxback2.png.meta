@@ -126,7 +126,7 @@ TextureImporter:
         height: 1013
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      border: {x: 0, y: 0, z: 465, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
@@ -164,11 +164,11 @@ TextureImporter:
         serializedVersion: 2
         x: 5
         y: 2357
-        width: 2934
+        width: 2602
         height: 710
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      border: {x: 344, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
@@ -185,11 +185,11 @@ TextureImporter:
         serializedVersion: 2
         x: 0
         y: 1797
-        width: 1756
+        width: 1755
         height: 550
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      border: {x: 292, y: 2, z: 254, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
@@ -210,7 +210,7 @@ TextureImporter:
         height: 731
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      border: {x: 357, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
@@ -225,13 +225,13 @@ TextureImporter:
       name: overlays_boxback2_24
       rect:
         serializedVersion: 2
-        x: 1768
+        x: 1753
         y: 1804
-        width: 1723
+        width: 1738
         height: 546
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      border: {x: 291, y: 0, z: 252, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0

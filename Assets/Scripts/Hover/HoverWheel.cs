@@ -125,7 +125,7 @@ namespace RVP
         void GetWheelContact() {
             RaycastHit hit = new RaycastHit();
             Vector3 localVel = rb.GetPointVelocity(tr.position);
-            RaycastHit[] wheelHits = Physics.RaycastAll(tr.position, -upDir, hoverDistance, GlobalControl.wheelCastMaskStatic);
+            RaycastHit[] wheelHits = Physics.RaycastAll(tr.position, -upDir, hoverDistance, RaceManager.wheelCastMaskStatic);
             bool validHit = false;
             float hitDist = Mathf.Infinity;
 

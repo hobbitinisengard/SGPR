@@ -17,15 +17,10 @@ namespace RVP
 
         [System.NonSerialized]
         public float score;
-        List<Stunt> stunts = new List<Stunt>();
-        List<Stunt> doneStunts = new List<Stunt>();
         bool drifting;
         float driftDist;
         float driftScore;
         float endDriftTime; // Time during which drifting counts even if the vehicle is not actually drifting
-        float jumpDist;
-        float jumpTime;
-        Vector3 jumpStart;
 
         public bool detectDrift = true;
         public bool detectJump = true;
@@ -39,13 +34,29 @@ namespace RVP
 
         public Motor engine;
 
+        public float lastGrindTime = 0;
+        public float grindTimer = 0;
         void Start() {
             tr = transform;
             rb = GetComponent<Rigidbody>();
             vp = GetComponent<VehicleParent>();
         }
 
+        private void OnTriggerEnter(Collider other)
+        {
+            if(vp.groundedWheels == 0)
+            {
+                lastGrindTime = Time.time;
+                grindTimer += Time.fixedDeltaTime;
+            }
+        }
         void FixedUpdate() {
+            // Detect grinds
+            if(grindTimer > 0 && Time.time - lastGrindTime > 1)
+            { // grind ended
+                grindTimer = 0;
+            }
+
             // Detect drifts
             if (detectDrift && !vp.crashing) {
                 DetectDrift();
@@ -58,23 +69,16 @@ namespace RVP
             }
 
             // Detect jumps
-            if (detectJump && !vp.crashing) {
-                DetectJump();
-            }
-            else {
-                jumpTime = 0;
-                jumpDist = 0;
-                jumpString = "";
-            }
+            //if (detectJump && !vp.crashing) {
+            //    DetectJump();
+            //}
+            //else {
+            //    jumpTime = 0;
+            //    jumpDist = 0;
+            //    jumpString = "";
+            //}
 
-            // Detect flips
-            if (detectFlips && !vp.crashing) {
-                DetectFlips();
-            }
-            else {
-                stunts.Clear();
-                flipString = "";
-            }
+            
 
             // Combine strings into final stunt string
             stuntString = vp.crashing ? "Crashed" : driftString + jumpString + (string.IsNullOrEmpty(flipString) || string.IsNullOrEmpty(jumpString) ? "" : " + ") + flipString;
@@ -91,7 +95,7 @@ namespace RVP
                 driftString = "Drift: " + driftDist.ToString("n0") + " m";
 
                 if (engine) {
-                    engine.battery += (StuntManager.driftBoostAddStatic * Mathf.Abs(vp.localVelocity.x)) * Time.timeScale * 0.0002f * TimeMaster.inverseFixedTimeFactor;
+                    //vp.batteryRemaining += (StuntManager.driftBoostAddStatic * Mathf.Abs(vp.localVelocity.x)) * Time.timeScale * 0.0002f * TimeMaster.inverseFixedTimeFactor;
                 }
             }
             else {
@@ -103,96 +107,31 @@ namespace RVP
         }
 
         // Logic for detecting and tracking jumps
-        void DetectJump() {
-            if (vp.groundedWheels == 0) {
-                jumpDist = Vector3.Distance(jumpStart, tr.position);
-                jumpTime += Time.fixedDeltaTime;
-                jumpString = "Jump: " + jumpDist.ToString("n0") + " m";
+        //void DetectJump() {
+        //    if (vp.groundedWheels == 0) {
+        //        jumpDist = Vector3.Distance(jumpStart, tr.position);
+        //        jumpTime += Time.fixedDeltaTime;
+        //        jumpString = "Jump: " + jumpDist.ToString("n0") + " m";
 
-                if (engine) {
-                    engine.battery += StuntManager.jumpBoostAddStatic * Time.timeScale * 0.01f * TimeMaster.inverseFixedTimeFactor;
-                }
-            }
-            else {
-                score += (jumpDist + jumpTime) * StuntManager.jumpScoreRateStatic;
+        //        if (engine) {
+        //            vp.battery += StuntManager.jumpBoostAddStatic * Time.timeScale * 0.01f * TimeMaster.inverseFixedTimeFactor;
+        //        }
+        //    }
+        //    else {
+        //        score += (jumpDist + jumpTime) * StuntManager.jumpScoreRateStatic;
 
-                if (engine) {
-                    engine.battery += (jumpDist + jumpTime) * StuntManager.jumpBoostAddStatic * Time.timeScale * 0.01f * TimeMaster.inverseFixedTimeFactor;
-                }
+        //        if (engine) {
+        //            vp.battery += (jumpDist + jumpTime) * StuntManager.jumpBoostAddStatic * Time.timeScale * 0.01f * TimeMaster.inverseFixedTimeFactor;
+        //        }
 
-                jumpStart = tr.position;
-                jumpDist = 0;
-                jumpTime = 0;
-                jumpString = "";
-            }
-        }
+        //        jumpStart = tr.position;
+        //        jumpDist = 0;
+        //        jumpTime = 0;
+        //        jumpString = "";
+        //    }
+        //}
 
         // Logic for detecting and tracking flips
-        void DetectFlips() {
-            if (vp.groundedWheels == 0) {
-                // Check to see if vehicle is performing a stunt and add it to the stunts list
-                foreach (Stunt curStunt in StuntManager.stuntsStatic) {
-                    if (Vector3.Dot(vp.localAngularVel.normalized, curStunt.rotationAxis) >= curStunt.precision) {
-                        bool stuntExists = false;
-
-                        foreach (Stunt checkStunt in stunts) {
-                            if (curStunt.name == checkStunt.name) {
-                                stuntExists = true;
-                                break;
-                            }
-                        }
-
-                        if (!stuntExists) {
-                            stunts.Add(new Stunt(curStunt));
-                        }
-                    }
-                }
-
-                // Check the progress of stunts and compile the flip string listing all stunts
-                foreach (Stunt curStunt2 in stunts) {
-                    if (Vector3.Dot(vp.localAngularVel.normalized, curStunt2.rotationAxis) >= curStunt2.precision) {
-                        curStunt2.progress += rb.angularVelocity.magnitude * Time.fixedDeltaTime;
-                    }
-
-                    if (curStunt2.progress * Mathf.Rad2Deg >= curStunt2.angleThreshold) {
-                        bool stuntDoneExists = false;
-
-                        foreach (Stunt curDoneStunt in doneStunts) {
-                            if (curDoneStunt == curStunt2) {
-                                stuntDoneExists = true;
-                                break;
-                            }
-                        }
-
-                        if (!stuntDoneExists) {
-                            doneStunts.Add(curStunt2);
-                        }
-                    }
-                }
-
-                string stuntCount = "";
-                flipString = "";
-
-                foreach (Stunt curDoneStunt2 in doneStunts) {
-                    stuntCount = curDoneStunt2.progress * Mathf.Rad2Deg >= curDoneStunt2.angleThreshold * 2 ? " x" + Mathf.FloorToInt((curDoneStunt2.progress * Mathf.Rad2Deg) / curDoneStunt2.angleThreshold).ToString() : "";
-                    flipString = string.IsNullOrEmpty(flipString) ? curDoneStunt2.name + stuntCount : flipString + " + " + curDoneStunt2.name + stuntCount;
-                }
-            }
-            else {
-                // Add stunt points to the score
-                foreach (Stunt curStunt in stunts) {
-                    score += curStunt.progress * Mathf.Rad2Deg * curStunt.scoreRate * Mathf.FloorToInt((curStunt.progress * Mathf.Rad2Deg) / curStunt.angleThreshold) * curStunt.multiplier;
-
-                    // Add boost to the engine
-                    if (engine) {
-                        engine.battery += curStunt.progress * Mathf.Rad2Deg * curStunt.boostAdd * curStunt.multiplier * 0.01f;
-                    }
-                }
-
-                stunts.Clear();
-                doneStunts.Clear();
-                flipString = "";
-            }
-        }
+        
     }
 }

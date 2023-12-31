@@ -6,6 +6,8 @@ TagManager:
   tags:
   - Pop Tire
   - Underside
+  - CP
+  - START
   layers:
   - Default
   - TransparentFX
@@ -13,27 +15,27 @@ TagManager:
   - 
   - Water
   - UI
-  - 
+  - Road
   - 
   - Ignore Wheel Cast
   - Vehicles
   - Detachable Part
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
+  - Connector
+  - InvisibleLevel
+  - Terrain
+  - TrackCamera
+  - Flag
+  - Racingline
+  - PitsLine
+  - PitsZone
+  - GrindTrigger
+  - Selection
+  - DecreasedGravityZone
+  - VehicleTrigger
+  - Underside
+  - Ghost
+  - Trail
+  - Skybox
   - 
   - 
   - 

@@ -125,7 +125,7 @@ TextureImporter:
         width: 1031
         height: 955
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -143,10 +143,10 @@ TextureImporter:
         serializedVersion: 2
         x: 1036
         y: 1044
-        width: 1012
+        width: 986
         height: 1004
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -164,10 +164,10 @@ TextureImporter:
         serializedVersion: 2
         x: 1004
         y: 0
-        width: 1044
+        width: 1036
         height: 1017
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -183,12 +183,12 @@ TextureImporter:
       name: frontend_icons_bank3-add_3
       rect:
         serializedVersion: 2
-        x: 0
+        x: 27
         y: 0
-        width: 988
+        width: 961
         height: 1015
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []

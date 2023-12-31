@@ -2,12 +2,7 @@
 Menu - wyścig
 	
 Dopalacz
-	a) - dopalacz: wizualnie i technicznie (dopalacz zmiękcza zawieszenie i zwiększa moc, ale nie moment)
-		
-Ewolucje
-	a) właściwe tempo ewolucji
-	b) wykonywanie dwóch ewolucji naraz powoduje dwukrotne zwolnienie tempa obrotu wzłuż każdej z osi
-	c) wykrywanie ewolucji - salto, obrót, beczka
+	a) - dopalacz: wizualnie i technicznie (zwiększa moc, ale nie moment)
 			
 B. Bateria
 	a) jazda zużywa baterię
@@ -30,10 +25,11 @@ Dźwięk
 
 AI - przeciwnicy
 
-Sekwencja powtórki - 
+Sekwencja powtórki
 
 Tuning
 - również wizualny
+
 POWER------
 MASS ------
 EVO  ------

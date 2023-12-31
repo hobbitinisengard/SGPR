@@ -1,29 +1,50 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
+using UnityEngine.Audio;
 using UnityEngine.UI;
 
-public class PauseMenu : MonoBehaviour
+public class PauseMenu : Sfxable
 {
-    public RaceManager rm;
-    public Button resumeButton;
-    public Image veil;
-    private void Update()
-    {
-        if (Input.GetButtonDown("Cancel"))
-        {
-            gameObject.SetActive(false);
-        }
-    }
-    private void OnEnable()
-    {
-        veil.CrossFadeAlpha(0.99f, 3, true);
-        Time.timeScale = 0;
-        resumeButton.Select();   
-    }
-    private void OnDisable()
-    {
-        var clr = veil.color;
-        clr.a = 0;
-        veil.color = clr;
-        Time.timeScale = 1;
-    }
+	public Button firstButton;
+	public GameObject restartButton;
+	public Image veil;
+	public AudioMixer mainMixer;
+	AudioSource clickSoundEffect;
+	Color startColor;
+	public Color blackColor;
+	public float duration = 3;
+	float timeElapsed = 0;
+	private void Awake()
+	{
+		clickSoundEffect = GetComponent<AudioSource>();
+		clickSoundEffect.ignoreListenerPause = true;
+	}
+	private void Update()
+	{
+		if (timeElapsed < duration)
+		{
+			// fade background
+			veil.color = Color.Lerp(startColor, blackColor, timeElapsed / duration);
+		}
+		timeElapsed += Time.unscaledDeltaTime;
+	}
+	private void OnEnable()
+	{
+		Info.gamePaused = true;
+		Time.timeScale = 0;
+		timeElapsed = 0;
+		restartButton.SetActive(Info.raceStartDate != DateTime.MinValue);
+		startColor = veil.color;
+		firstButton.Select();
+	}
+	private void OnDisable()
+	{
+		Info.gamePaused = false;
+		Time.timeScale = 1;
+		Info.SaveSettingsDataToJson(mainMixer);
+		clickSoundEffect.Play();
+		veil.color = startColor;
+		Info.raceStartDate = Info.raceStartDate.AddSeconds(timeElapsed);
+		timeElapsed = 0;
+	}
 }
