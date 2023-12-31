@@ -30,9 +30,6 @@ public class ResultsSeq : Sfxable
 
 	private void Awake()
 	{
-		//pulseCurve.AddKey(0, 1);
-		//pulseCurve.AddKey(0.5f, 0);
-		//pulseCurve.AddKey(1, 1);
 		audioSource = GetComponent<AudioSource>();
 	}
 	private void OnDisable()

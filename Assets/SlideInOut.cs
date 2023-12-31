@@ -1,4 +1,3 @@
-using RVP;
 using System.Collections;
 using TMPro;
 using UnityEngine;
@@ -12,11 +11,11 @@ public class SlideInOut : MonoBehaviour
 	public enum Dir { In = 1, Out = -1 };
 	Dir dir = Dir.In;
 	bool canAnimate = false;
-	public float initialOwnDelay = 0;
+	public float initialOwnDelay = 0.01f;
 	float ownDelay;
 	public bool ForceNextNode = false;
 	public bool EasingUnchanged = false;
-	public float timer { get; private set; }
+	float timer;
 	public Vector2 inSlideDirection = Vector2.right;
 	float endPos;
 	float startPos;
@@ -26,7 +25,6 @@ public class SlideInOut : MonoBehaviour
 	Image[] imgs;
 	SlideInOut nextNode;
 	float initEndPos;
-	static Camera mainCamera;
 	float GetPos()
 	{
 		if (inSlideDirection.x != 0)
@@ -43,10 +41,6 @@ public class SlideInOut : MonoBehaviour
 	}
 	void Awake()
 	{
-		if(mainCamera == null)
-		{
-			mainCamera = F.GetTopmostParentComponent<Canvas>(transform).worldCamera;
-		}
 		rt = GetComponent<RectTransform>();
 
 		if (GetComponent<Button>())
@@ -78,8 +72,6 @@ public class SlideInOut : MonoBehaviour
 		initEndPos = GetPos();
 		endPos = initEndPos;
 
-		//var screenPos = mainCamera.WorldToScreenPoint(rt.TransformPoint(rt.anchoredPosition3D));
-
 		if (inSlideDirection.x != 0)
 		{
 			if (inSlideDirection.x > 0)
@@ -94,6 +86,7 @@ public class SlideInOut : MonoBehaviour
 			else
 				startPos = rt.rect.height;
 		}
+		SetPos(startPos);
 	}
 	void SetContentsTransp(float a)
 	{
@@ -166,8 +159,10 @@ public class SlideInOut : MonoBehaviour
 	}
 	private void OnDisable()
 	{
+		SetPos(startPos);
 		canAnimate = false;
 		ownDelay = initialOwnDelay;
+		SetContentsTransp(0);
 	}
 	void OnEnable()
 	{
@@ -176,8 +171,7 @@ public class SlideInOut : MonoBehaviour
 	}
 	IEnumerator Play()
 	{
-
-		while(true)
+		while (true)
 		{
 			if (canAnimate)
 			{

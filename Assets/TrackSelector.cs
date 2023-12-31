@@ -39,9 +39,9 @@ public class TrackSelector : Sfxable
 	{
 		curSortingCondition = (SortingCond)(((int)curSortingCondition + 1) % 2);
 		if(curSortingCondition == SortingCond.Name)
-			sortButton.transform.GetChild(0).GetComponent<Text>().text = "Sorted by track's name";
+			sortButton.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "Sorted by track's name";
 		else
-			sortButton.transform.GetChild(0).GetComponent<Text>().text = "Sorted by track's difficulty";
+			sortButton.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "Sorted by track's difficulty";
 		// reload 
 		if (loadCo)
 			StopCoroutine(Load());
@@ -116,9 +116,10 @@ public class TrackSelector : Sfxable
 		if (!init)
 		{
 			int dir = Input.GetKey(KeyCode.LeftShift) ? -1 : 1;
-			Info.s_roadType = (Info.PavementType)Mathf.Clamp((int)(Info.s_roadType + dir) % (Info.pavementTypes + 1), 0, Info.pavementTypes + 1);
+			Info.s_roadType = (Info.PavementType)Mathf.Clamp(
+				(int)(Info.s_roadType + dir) % (Info.pavementTypes + 1), 0, Info.pavementTypes + 1);
 		}
-		wayButtonText.text = "Way: " + Enum.GetName(typeof(Info.PavementType), Info.s_roadType);
+		wayButtonText.text = "Tex: " + Enum.GetName(typeof(Info.PavementType), Info.s_roadType);
 	}
 	public void SwitchCatchup(bool init = false)
 	{
@@ -165,7 +166,7 @@ public class TrackSelector : Sfxable
 				int trackOrigin = track.TrackOrigin();
 				var newtrack = Instantiate(trackImageTemplate, trackContent.GetChild(trackOrigin));
 				newtrack.name = trackName;
-				newtrack.GetComponent<Image>().sprite = IMG2Sprite.LoadNewSprite(Path.Combine(Info.documents_sgpr_path, trackName+".png"));
+				newtrack.GetComponent<Image>().sprite = IMG2Sprite.LoadNewSprite(Path.Combine(Info.documentsSGPRpath, trackName+".png"));
 				newtrack.SetActive(true);
 				existingTrackClasses[trackOrigin] = true;
 				if (persistentSelectedTrack != null && persistentSelectedTrack == trackName)

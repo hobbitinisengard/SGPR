@@ -95,7 +95,7 @@ namespace RVP
                 driftString = "Drift: " + driftDist.ToString("n0") + " m";
 
                 if (engine) {
-                    vp.battery += (StuntManager.driftBoostAddStatic * Mathf.Abs(vp.localVelocity.x)) * Time.timeScale * 0.0002f * TimeMaster.inverseFixedTimeFactor;
+                    //vp.batteryRemaining += (StuntManager.driftBoostAddStatic * Mathf.Abs(vp.localVelocity.x)) * Time.timeScale * 0.0002f * TimeMaster.inverseFixedTimeFactor;
                 }
             }
             else {

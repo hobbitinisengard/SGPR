@@ -1,7 +1,5 @@
-﻿using UnityEngine;
-using UnityEngine.Experimental;
-using UnityEngine.UIElements;
-using UnityEngine.UIElements.Experimental;
+﻿using System;
+using UnityEngine;
 
 namespace RVP
 {
@@ -12,7 +10,18 @@ namespace RVP
 	public class GearboxTransmission : Transmission
 	{
 		public AudioSource audioShift;
-		public Gear[] gears { get; private set; }
+		Gear[] gears;
+		public Gear[] Gears
+		{
+			get => gears;
+			set
+			{
+				maxRPM = -1;
+				autoCalculateRpmRanges = true;
+				gears = value;
+			}
+		}
+
 		public int startGear;
 		[System.NonSerialized]
 		public int currentGear;
@@ -32,7 +41,32 @@ namespace RVP
 		public float d_rpm;
 		public float actualFeedbackRPM;
 		Gear upperGear; // Next gear above current
+		public enum DriveType { FWD, RWD, AWD }
+		DriveType drive;
+		public DriveType Drive
+		{ 
+			get => drive;
+			set {
+				drive = value;
+				switch (drive)
+				{
+					case DriveType.FWD:
+						outputDrives = new DriveForce[] { vp.wheels[0].suspensionParent.targetDrive, vp.wheels[1].suspensionParent.targetDrive };
+						break;
+					case DriveType.RWD:
+						outputDrives = new DriveForce[] { vp.wheels[2].suspensionParent.targetDrive, vp.wheels[3].suspensionParent.targetDrive };
+						break;
+					case DriveType.AWD:
+						outputDrives = new DriveForce[] { vp.wheels[0].suspensionParent.targetDrive, vp.wheels[1].suspensionParent.targetDrive,
+																 vp.wheels[2].suspensionParent.targetDrive, vp.wheels[3].suspensionParent.targetDrive };
+						break;
+					default:
+						break;
+				}
+			}
+		}
 
+		//public Drive Drive
 		//[Tooltip("Multiplier for comparisons in automatic shifting calculations, should be 2 in most cases")]
 		//float shiftThreshold = 2;
 		public int selectedGear { get; private set; }
@@ -61,7 +95,6 @@ namespace RVP
 			wheelsNotGroundedTime = Time.time;
 			shiftTime = 0;
 		}
-
 		void Update()
 		{
 			if (vp.groundedWheels == 0)
@@ -198,15 +231,15 @@ namespace RVP
 				}
 			}
 		}
-		/// <summary>
-		/// speed in m/s
-		/// </summary>
-		/// <param name="spd"></param>
-		/// <returns></returns>
-		float RPM4Speed(float spd)
-		{
-			return spd * 30 * 3.6f / (Mathf.PI * vp.wheels[2].tireRadius);
-		}
+		///// <summary>
+		///// speed in m/s
+		///// </summary>
+		///// <param name="spd"></param>
+		///// <returns></returns>
+		//float RPM4Speed(float spd)
+		//{
+		//	return spd * 30 * 3.6f / (Mathf.PI * vp.wheels[2].tireRadius);
+		//}
 		// Shift gears by the number entered
 		public void Shift(int dir)
 		{

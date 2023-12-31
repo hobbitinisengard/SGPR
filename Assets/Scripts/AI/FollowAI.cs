@@ -214,7 +214,8 @@ namespace RVP
 				vp.raceBox.raceManager.hud.AddMessage(new Message(vp.name + " RETURNS ON TRACK!", BottomInfoType.PIT_OUT));
 				speedLimit = 1024;
 				speedLimitDist = -1;
-				pitsProgress = pitsPathCreator.path.length;
+				if(pitsPathCreator)
+					pitsProgress = pitsPathCreator.path.length;
 				pitsPathCreator = null;
 				searchForPits = false;
 				if (!isCPU)
@@ -352,7 +353,7 @@ namespace RVP
 			}
 			if (selfDriving)
 			{
-				if (vp.battery < 0.2f)
+				if (vp.BatteryPercent < 0.2f)
 				{
 					searchForPits = true;
 				}
@@ -384,7 +385,7 @@ namespace RVP
 					//		++curWaypointIdx;
 					//	tPos = trackPathCreator.path.GetPointAtDistance(waypointsContainer[curWaypointIdx]);
 					//}
-					Debug.DrawLine((Vector3)tPos, (Vector3)tPos + 100 * Vector3.up, Color.blue);
+					//Debug.DrawLine((Vector3)tPos, (Vector3)tPos + 100 * Vector3.up, Color.blue);
 					tPos0 = trackPathCreator.path.GetPointAtDistance(dist);
 					tPos = trackPathCreator.path.GetPointAtDistance(dist + lookAheadBase * lookAheadSteerCurve.Evaluate(vp.velMag));
 					tPos2 = trackPathCreator.path.GetPointAtDistance(dist + lookAheadBase * lookAheadMultCurve.Evaluate(vp.velMag));
@@ -512,7 +513,7 @@ namespace RVP
 					//Vector3 targetDir = F.FlatDistance(tPos0, vp.tr.position) < 2 ? curTrackpathDir : toTPosDir;
 					//Vector3 targetDir = Vector3.Lerp(curTrackpathDir,toTPosDir, F.FlatDistance(tPos0, vp.tr.position)/);
 					Vector3 targetDir = toTPosDir;
-					Debug.DrawRay(transform.position + Vector3.up * 2, targetDir);
+					//Debug.DrawRay(transform.position + Vector3.up * 2, targetDir);
 					steerAngle = Vector3.SignedAngle(F.Vec3Flatten(tr.forward), F.Vec3Flatten(targetDir), Vector3.up);
 					if(!aiStuntingProc)
 						vp.SetSGPShift(steerAngle > 30);
@@ -525,7 +526,7 @@ namespace RVP
 					{
 						vp.SetSteer(-targetSteer);
 					}
-					vp.SetBoost(steerAngle < 2 && vp.battery > 0.5f);
+					vp.SetBoost(steerAngle < 2 && vp.BatteryPercent > 0.5f);
 				}
 			}
 		}
@@ -579,9 +580,11 @@ namespace RVP
 		{
 			if (progress == 0)
 				yield break;
+
 			OutOfPits();
 			GetComponent<RaceBox>().ResetOnTrack();
 			vp.engine.transmission.ShiftToGear(2);
+			vp.ResetOnTrackBatteryPenalty();
 			rolledOverTime = 0;
 			pitsProgress = 0;
 			reverseAttempts = 0;
@@ -596,15 +599,19 @@ namespace RVP
 				resetDist += 30;
 				resetPos = trackPathCreator.path.GetPointAtDistance(resetDist);
 			}
-			tr.position = resetPos + Vector3.up;
-			tr.rotation = Quaternion.LookRotation(trackPathCreator.path.GetDirectionAtDistance(progress), Vector3.up);
+
+			// resetting sequence. Has to be done this way to prevent the car from occasional rolling
+			tr.position = resetPos;
+			yield return new WaitForFixedUpdate();
+			tr.rotation = Quaternion.LookRotation(trackPathCreator.path.GetDirectionAtDistance(progress));
+			rb.velocity = Vector3.zero;
+			rb.angularVelocity = Vector3.zero;
+			
 			if (ghostCo != null)
 				StopCoroutine(ghostCo);
 			ghostCo = StartCoroutine(GetComponent<Ghost>().ResetSeq());
-			yield return new WaitForFixedUpdate();
-			rb.velocity = Vector3.zero;
-			rb.angularVelocity = Vector3.zero;
 		}
+		
 		//IEnumerator ResetRotation()
 		//{
 		//	stoppedTime = 0;

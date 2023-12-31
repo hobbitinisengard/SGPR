@@ -24,11 +24,12 @@ public class GreetingLogo : MonoBehaviour
 	private bool toDemo;
 	private int lastTryCo;
 	MainMenuView view;
-	// Start is called before the first frame update
 	void Start()
 	{
 		rt = GetComponent<RectTransform>();
-		transform.GetChild(0).GetComponent<RectTransform>().localPosition = new Vector2(transform.parent.GetComponent<RectTransform>().rect.width, 0);
+		float screenWidth = Screen.width;//transform.parent.GetComponent<RectTransform>().rect.width;
+		transform.GetChild(0).GetComponent<RectTransform>().localPosition = 
+			new Vector2(screenWidth, 0);
 		view = transform.parent.GetComponent<MainMenuView>();
 	}
 	private void OnEnable()
@@ -41,7 +42,6 @@ public class GreetingLogo : MonoBehaviour
 		goingUpSeq = false;
 		startButton.Select();
 	}
-	// Update is called once per frame
 	void Update()
 	{
 		if (goingUpSeq)
@@ -140,7 +140,7 @@ public class GreetingLogo : MonoBehaviour
 
 			timer += Time.deltaTime;
 			rt.localPosition = pos;
-			if (jumps == 8)//80
+			if (jumps == 80)//80 or 8
 			{ // up move
 				goingUpSeq = true;
 				toDemo = true;

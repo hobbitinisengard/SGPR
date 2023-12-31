@@ -87,6 +87,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b84bb76c1b4c804b8ec131d5e92c350, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  url: 
+--- !u!64 &8386024568804678062
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 189547400484955464}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 4
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 1344337027531075907, guid: 1f8d4e4b9725edb4a84c122a7f782e6f, type: 3}
 --- !u!1 &1944556350568000809 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -7738184474359630544, guid: 1f8d4e4b9725edb4a84c122a7f782e6f,

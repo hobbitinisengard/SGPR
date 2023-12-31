@@ -61,9 +61,9 @@ public class LoadSelector : Sfxable
 		}
 		
 		Info.tracks.Remove(selectedTrack.name);
-		File.Delete(Info.documents_sgpr_path + selectedTrack.name + ".track");
-		File.Delete(Info.documents_sgpr_path + selectedTrack.name + ".data");
-		File.Delete(Info.documents_sgpr_path + selectedTrack.name + ".png");
+		File.Delete(Info.documentsSGPRpath + selectedTrack.name + ".track");
+		File.Delete(Info.documentsSGPRpath + selectedTrack.name + ".data");
+		File.Delete(Info.documentsSGPRpath + selectedTrack.name + ".png");
 
 		int children = selectedTrack.parent.childCount;
 		int index = Mathf.Clamp(selectedTrack.GetSiblingIndex(),0,children-2);
@@ -88,7 +88,7 @@ public class LoadSelector : Sfxable
 				int trackOrigin = value.TrackOrigin();
 				var newtrack = Instantiate(trackImageTemplate, trackContent.GetChild(trackOrigin));
 				newtrack.name = key;
-				newtrack.GetComponent<Image>().sprite = IMG2Sprite.LoadNewSprite(Path.Combine(Info.documents_sgpr_path, newtrack.name + ".png"));
+				newtrack.GetComponent<Image>().sprite = IMG2Sprite.LoadNewSprite(Path.Combine(Info.documentsSGPRpath, newtrack.name + ".png"));
 				newtrack.SetActive(true);
 				existingTrackClasses[trackOrigin] = true;
 				if (persistentSelectedTrack != null && persistentSelectedTrack == key)

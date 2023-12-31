@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace RVP
 {
@@ -46,8 +47,9 @@ namespace RVP
 
 		// distance between target-camera-position and car
 		[Header("Debug")]
+		public float distRequiredToCamAtCarLookRotation = 100;
 		public float camOffsetDistance = -1;
-		public float offsetCarDistance;
+		public float carOffsetDistance;
 		public float scaledTurnAngle;
 		public float EffectiveTurnAngle;
 		public float smoothedRollAngle;
@@ -59,7 +61,7 @@ namespace RVP
 		private Vector3 dampOffset;
 		private Vector3 velocity = Vector3.zero;
 		private Vector3 fastVelocity = Vector3.zero;
-		public bool cameraStopped = false;
+		public bool slowCamera = false;
 		private float smoothDampRspnvns = 10f;
 		public float smoothTime = 1f;
 		private Vector3 newTrPos;
@@ -239,25 +241,34 @@ namespace RVP
 			//-------------
 
 			// this.tr chases lookObj
-			dampOffset = Vector3.SmoothDamp(dampOffset, lookObj.position, ref fastVelocity,
+			if(vp.ghostComponent.justResetted)
+			{
+				dampOffset = lookObj.position;
+				fastVelocity = Vector3.zero;
+			}
+			else
+			{
+				dampOffset = Vector3.SmoothDamp(dampOffset, lookObj.position, ref fastVelocity,
 				 camFollowSmoothTime, catchUpCamSpeed, Time.fixedDeltaTime * smoothDampRspnvns);
+			}
 
+			camOffsetDistance = Vector3.Distance(tr.position, dampOffset);
+			carOffsetDistance = Vector3.Distance(dampOffset, vp.tr.position);
 			if (vp.reallyGroundedWheels == 0) // when car airborne
 			{
-				offsetCarDistance = Vector3.Distance(dampOffset, vp.tr.position);
-				camOffsetDistance = Vector3.Distance(tr.position, dampOffset);
 				if (camOffsetDistance < 2)
 				{
-					cameraStopped = true;
+					slowCamera = true;
 				}
-				else if (camOffsetDistance > .5f * offsetCarDistance)
+				else
 				{
-					cameraStopped = false;
+					if (camOffsetDistance > .5f * carOffsetDistance)
+						slowCamera = false;
 				}
 			}
 			else
 			{
-				cameraStopped = false;
+				slowCamera = false;
 			}
 
 			Quaternion rotation;
@@ -274,8 +285,8 @@ namespace RVP
 					lookObj.position = hit.point + (vp.tr.position - lookObj.position).normalized * (cam.nearClipPlane + 0.1f);
 				}
 
-				smoothTime = Mathf.Lerp(smoothTime, cameraStopped ? camStoppedSmoothTime : camFollowSmoothTime
-					, (cameraStopped ? 1 : 2) * Time.fixedDeltaTime * smoothTimeSpeed);
+				smoothTime = Mathf.Lerp(smoothTime, slowCamera ? camStoppedSmoothTime : camFollowSmoothTime
+					, (slowCamera ? 1 : 2) * Time.fixedDeltaTime * smoothTimeSpeed);
 
 				if (yInput == 0 && xInput == 0)
 					newTrPos =
@@ -285,16 +296,25 @@ namespace RVP
 					newTrPos = Vector3.SmoothDamp(tr.position, lookObj.position, ref velocity,
 								smoothTime, catchUpCamSpeed, xyInputCamSpeedCoeff *Time.fixedDeltaTime * smoothDampRspnvns);
 
-				if (cameraStopped)
-				{
+
+				//float camCarDistance = Vector3.Distance(tr.position, vp.tr.position);
+				if (slowCamera)
+				{ // cam lets car go ahead
 					Quaternion cameraStoppedRotation = Quaternion.LookRotation(vp.tr.position - tr.position, rollUp);
-					rotation = Quaternion.Lerp(tr.rotation, cameraStoppedRotation,
-						 2 * Time.fixedDeltaTime);
+					rotation = Quaternion.Lerp(tr.rotation, cameraStoppedRotation,2 * Time.fixedDeltaTime);
 				}
 				else
 				{
-					rotation = Quaternion.Lerp(tr.rotation, lookObj.rotation,
+					if(camOffsetDistance > carOffsetDistance)
+					{
+						Quaternion cameraStoppedRotation = Quaternion.LookRotation(vp.tr.position - tr.position, rollUp);
+						rotation = Quaternion.Lerp(tr.rotation, cameraStoppedRotation, 6 * Time.fixedDeltaTime);
+					}
+					else
+					{// camera right behind car
+						rotation = Quaternion.Lerp(tr.rotation, lookObj.rotation,
 						 (vp.reallyGroundedWheels > 1 ? 12f : 3f) * Time.fixedDeltaTime);
+					}
 				}
 			}
 			tr.SetPositionAndRotation(newTrPos, rotation);

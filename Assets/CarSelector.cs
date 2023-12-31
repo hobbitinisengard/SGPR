@@ -28,6 +28,7 @@ public class CarSelector : Sfxable
 	private void OnDisable()
 	{ // in unity, 
 		persistentSelectedCar = selectedCar.name;
+		Info.s_playerCarName = selectedCar.name;
 		Debug.Log("Disable "+persistentSelectedCar);
 	}
 	private void OnEnable()
@@ -51,16 +52,17 @@ public class CarSelector : Sfxable
 				Destroy(carClass.GetChild(j).gameObject);
 			}
 		}
-		foreach (var car in Info.cars)
+		for(int i=0; i<Info.cars.Length; ++i)
 		{ // populate car grid
-			if (car.Value.unlocked)
+			var car = Info.cars[i];
+			if (car.unlocked)
 			{
-				var newcar = Instantiate(carImageTemplate, carContent.GetChild((int)car.Value.carClass));
-				newcar.name = car.Key;
-				newcar.GetComponent<Image>().sprite = Resources.Load<Sprite>(Info.carImagesPath + car.Key);
+				var newcar = Instantiate(carImageTemplate, carContent.GetChild((int)car.category));
+				newcar.name = "car"+(i+1).ToString("D2");
+				newcar.GetComponent<Image>().sprite = Resources.Load<Sprite>(Info.carImagesPath + newcar.name);
 				newcar.SetActive(true);
-				menuButtons[(int)car.Value.carClass] = true;
-				if (persistentSelectedCar != null && persistentSelectedCar == car.Key)
+				menuButtons[(int)car.category] = true;
+				if (persistentSelectedCar != null && persistentSelectedCar == newcar.name)
 					selectedCar = newcar.transform;
 			}
 		}
@@ -87,7 +89,7 @@ public class CarSelector : Sfxable
 		else
 		{
 			buttonsContainer.GetChild(selectedCar.parent.GetSiblingIndex()).GetComponent<MainMenuButton>().Select();
-			carDescText.text = Info.cars[selectedCar.name].desc;
+			carDescText.text = Info.Car(selectedCar.name).desc;
 		}
 		radial.gameObject.SetActive(selectedCar);
 
@@ -133,7 +135,7 @@ public class CarSelector : Sfxable
 				}
 				// new car has been selected
 				// set description
-				carDescText.text = Info.cars[selectedCar.name].desc;
+				carDescText.text = Info.Car(selectedCar.name).desc;
 				// set bars
 				if (barsAndRadialCo != null)
 					StopCoroutine(barsAndRadialCo);
@@ -179,7 +181,7 @@ public class CarSelector : Sfxable
 	{
 		if(selectedCar)
 			radial.SetAnimTo(selectedCar.parent.GetSiblingIndex());
-		float[] targetSgpBars = selectedCar ? Info.cars[selectedCar.name].sgpBars : new float[] { .03f, .03f, .03f };
+		float[] targetSgpBars = selectedCar ? Info.Car(selectedCar.name).config.SGP : new float[] { .03f, .03f, .03f };
 		float[] initSgpBars = new float[3];
 
 		for (int i = 0; i < 3; i++)

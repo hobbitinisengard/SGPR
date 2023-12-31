@@ -5,6 +5,7 @@ using UnityEngine;
 public class Ghost : MonoBehaviour
 {
 	public bool hittable { get; private set; }
+	public bool justResetted { get; private set; }
 	public Collider[] colliders;
 	public MeshRenderer[] ghostableParts;
 	VehicleParent vp;
@@ -79,6 +80,7 @@ public class Ghost : MonoBehaviour
 	{
 		float timer = 5;
 		float prev = 9;
+		justResetted = true;
 		SetHittable(false);
 		while (timer > 0)
 		{
@@ -98,8 +100,9 @@ public class Ghost : MonoBehaviour
 			}
 			
 			yield return null;
+			justResetted = false;
 		}
-		if(!vp.raceBox.Finished())
+		if(!vp.raceBox.Finished)
 			SetHittable(true);
 	}
 }

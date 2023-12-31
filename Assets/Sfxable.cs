@@ -1,16 +1,12 @@
 ﻿using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class Sfxable : MonoBehaviour
 {
 	static GameObject mainCameraObj;
-	static string curSceneName;
 	private void Awake()
 	{
-		if(!mainCameraObj || curSceneName != SceneManager.GetActiveScene().name)
-		{
+		if(!mainCameraObj)
 			mainCameraObj = GameObject.Find("MainCamera");
-		}
 	}
 	protected AudioSource PlaySFX(string name, bool ignorePause = false)
 	{
@@ -22,7 +18,6 @@ public class Sfxable : MonoBehaviour
 		{
 			audioSource.ignoreListenerPause = true;
 			//a.GetComponent<AudioSource>().ignoreListenerVolume = true;
-
 		}
 		audioSource.Play();
 		go.name = name;

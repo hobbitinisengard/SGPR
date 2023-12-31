@@ -80,15 +80,15 @@ namespace RVP
 
 		public void SaveMusicLevels()
 		{
-			float musicLvl = Info.ReadMixerLevel(music);
-			float sfxLvl = Info.ReadMixerLevel(sfx);
+			float musicLvl = Info.ReadMixerLevelLog("musicVol", music);
+			float sfxLvl = Info.ReadMixerLevelLog("sfxVol", sfx);
 			string serializedSettings = JsonConvert.SerializeObject(new PlayerSettingsData()
 			{
 				musicVol = musicLvl,
 				sfxVol = sfxLvl,
 				lastPlayerName = Info.s_playerName
 			});
-			File.WriteAllText(Info.userdata_path, serializedSettings);
+			File.WriteAllText(Info.userdataPath, serializedSettings);
 		}
 		public void BackToEditor()
 		{
@@ -198,7 +198,7 @@ namespace RVP
 			musicPlayer = GetComponent<AudioSource>();
 
 			Info.PopulateSFXData();
-			Info.PopulateCarsData();
+			Info.ReloadCarsData();
 			Info.PopulateTrackData();
 		}
 		private void OnDisable()
@@ -233,6 +233,16 @@ namespace RVP
 			// do not assign path in freeroam as track might not be finished
 			//newCar.followAI.AssignPath(racingPath, ref editorPanel.stuntpointsContainer, ref editorPanel.replayCamsContainer);
 		}
+		void SetPitsLayer(int layer)
+		{
+			Transform t = editorPanel.placedTilesContainer.transform;
+			int tilesCount = t.childCount;
+			for (int i=0; i< tilesCount; ++i)
+			{
+				if (t.GetChild(i).name == "pits")
+					t.GetChild(i).GetChild(0).gameObject.layer = layer;
+			}
+		}
 		public IEnumerator StartRace()
 		{
 			foreach (var c in Info.s_cars)
@@ -265,7 +275,10 @@ namespace RVP
 			Info.raceStartDate = DateTime.Now;
 			Info.raceStartDate.AddSeconds(5);
 			float countDownSeconds = 5;
-			int dist = -10;
+			int dist = -20;
+			int initialRandomLivery = UnityEngine.Random.Range(0, Info.Liveries);
+
+			SetPitsLayer(0);
 			for (int i = 0; i < Info.s_rivals + 1; ++i)
 			{
 				Vector3 startPos = racingPath.path.GetPointAtDistance(dist);
@@ -273,9 +286,11 @@ namespace RVP
 				Vector3 rotDirVec = Quaternion.AngleAxis(90, Vector3.up) * dirVec;
 				Vector3 leftSide = startPos;
 				Vector3 rightSide = startPos;
-				for (int j = 2; j < 28; j += 2)//track width is around 30
+
+				for (int j = 0; j < 28; j += 2)//track width is around 30
 				{
-					if (Physics.Raycast(startPos + 5 * Vector3.up + rotDirVec * j, Vector3.down, out var hit, Mathf.Infinity, 1 << Info.roadLayer))
+					if (Physics.Raycast(startPos + 5 * Vector3.up + rotDirVec * j, Vector3.down, out var hit, 
+						10, 1 << Info.roadLayer))
 					{
 						rightSide = hit.point;
 					}
@@ -284,7 +299,8 @@ namespace RVP
 				}
 				for (int j = 2; j < 28; j += 2)
 				{
-					if (Physics.Raycast(startPos + 5 * Vector3.up - rotDirVec * j, Vector3.down, out var hit, Mathf.Infinity, 1 << Info.roadLayer))
+					if (Physics.Raycast(startPos + 5 * Vector3.up - rotDirVec * j, Vector3.down, out var hit, 
+						10, 1 << Info.roadLayer))
 					{
 						leftSide = hit.point;
 					}
@@ -292,14 +308,16 @@ namespace RVP
 						break;
 				}
 
-				startPos = Vector3.Lerp(leftSide, rightSide, (i % 2 == 0) ? 0.286f : .714f);
+				startPos = Vector3.Lerp(leftSide, rightSide, (i % 2 == 0) ? .286f : .714f);
 				//Debug.DrawRay(startPos, Vector3.up);
-				var carModel = Resources.Load<GameObject>(Info.carModelsPath + "car01");
+				string carName = (i == Info.s_rivals) ? Info.s_playerCarName : "car" + UnityEngine.Random.Range(1, 11).ToString("D2");
+				var carModel = Resources.Load<GameObject>(Info.carModelsPath + carName);
 				var position = new Vector3(startPos.x, startPos.y + 3, startPos.z);
 				var rotation = Quaternion.LookRotation(dirVec);
 				var newCar = Instantiate(carModel, position, rotation).GetComponent<VehicleParent>();
+				newCar.carName = carName;
 				Info.s_cars.Add(newCar);
-				newCar.SetSponsor(i % Info.Liveries);
+				newCar.SetSponsor((initialRandomLivery + i) % Info.Liveries);
 				if (Info.s_isNight)
 					newCar.SetLights();
 				StartCoroutine(newCar.CountdownTimer(countDownSeconds - newCar.engine.transmission.shiftDelaySeconds));
@@ -307,6 +325,7 @@ namespace RVP
 				if (i == Info.s_rivals)
 				{ // last car is the player
 					cam.enabled = true;
+
 					if (Info.s_spectator)
 					{
 						newCar.name = "CP" + (i + 1).ToString();
@@ -332,10 +351,21 @@ namespace RVP
 				newCar.raceBox.raceManager = this;
 				dist -= 10;
 			}
+			SetPitsLayer(Info.roadLayer);
 			leader = Info.s_cars[0];
 			countDownSeq.CountdownSeconds = countDownSeconds;
 			countDownSeq.gameObject.SetActive(!Info.s_spectator);
-			StartCoroutine(SpectatorLoop());
+			hud.gameObject.SetActive(!Info.s_spectator);
+			Debug.Log("RaceManager: StartRace() succedeed");
+			if(Info.s_spectator)
+				StartCoroutine(SpectatorLoop());
+
+			yield return null;
+
+			foreach (var car in Info.s_cars)
+			{
+				Info.Car(car.carName).config.Apply(car);
+			}
 		}
 		IEnumerator SpectatorLoop()
 		{
@@ -424,7 +454,7 @@ namespace RVP
 					if (Info.tracks.ContainsKey(Info.s_trackName))
 					{
 						var trackJson = JsonConvert.SerializeObject(Info.tracks[Info.s_trackName]);
-						var path = Path.Combine(Info.documents_sgpr_path, Info.s_trackName + ".track");
+						var path = Path.Combine(Info.documentsSGPRpath, Info.s_trackName + ".track");
 						File.WriteAllText(path, trackJson);
 					}
 				}

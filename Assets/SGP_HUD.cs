@@ -31,6 +31,7 @@ public class SGP_HUD : MonoBehaviour
 	RaceBox racebox;
 	readonly int minRpmRotation = 122;
 	readonly int maxRpmRotation = -63;
+	public ComponentPanel componentPanel;
 	public LapRecordSeq lapRecordSeq;
 	public PtsAnim ptsAnim;
 	public RaceManager raceManager;
@@ -271,12 +272,23 @@ public class SGP_HUD : MonoBehaviour
 		carProgressIcons[vp].SetSiblingIndex(9);
 		carProgressIcons[vp].localScale = Vector3.one;
 	}
-	
+	private void Update()
+	{
+		if (Input.GetKeyDown(KeyCode.F3) && Info.s_rivals == 0)
+		{
+			componentPanel.gameObject.SetActive(!componentPanel.gameObject.activeSelf);
+		}
+		if (Input.GetKeyDown(KeyCode.Escape) && (DateTime.Now - Info.raceStartDate).TotalSeconds > 5 
+			&& !componentPanel.gameObject.activeSelf && !raceManager.resultsSeq.gameObject.activeSelf)
+		{
+			pauseMenu.gameObject.SetActive(true);
+		}
+	}
 	void FixedUpdate()
 	{
 		if (!vp)
 			return;
-
+		
 		// debug stunt UI
 		//if (Input.GetKeyDown(KeyCode.T)) // update overlay
 		//{
@@ -299,7 +311,7 @@ public class SGP_HUD : MonoBehaviour
 		//{
 		//    EndStuntSeq(false);
 		//}
-		if(racebox.Finished())
+		if(racebox.Finished)
 		{
 			Debug.Log("finished");
 			raceManager.PlayFinishSeq();
@@ -340,10 +352,7 @@ public class SGP_HUD : MonoBehaviour
 		}
 		if (racebox.GetStuntsSeq(ref stuntData))
 			UpdateStuntSequenceTable(stuntData);
-		if (Input.GetKeyDown(KeyCode.Escape) && !raceManager.resultsSeq.gameObject.activeSelf)
-		{
-			pauseMenu.gameObject.SetActive(true);
-		}
+		
 
 		// Bottom Info
 		bool msgAwaits = liveMessages.TryPeek(out curMsgInQueue);
@@ -408,7 +417,7 @@ public class SGP_HUD : MonoBehaviour
 		}
 		// Update battery level
 		Vector3 batteryLackPosition = batteryLack.GetComponent<RectTransform>().anchoredPosition;
-		if (vp.battery < engine.batteryCutOffLevel)
+		if (vp.BatteryPercent < vp.lowBatteryLevel)
 		{  // low battery level blink
 			if (batteryCutOffTimer == 0 || Time.time - batteryCutOffTimer > 1)
 				batteryCutOffTimer = Time.time;
@@ -416,10 +425,10 @@ public class SGP_HUD : MonoBehaviour
 			if (Time.time - batteryCutOffTimer < 0.5f)
 				batteryLackPosition.x = maxBatteryLack;
 			else
-				batteryLackPosition.x = Mathf.Lerp(maxBatteryLack, minBatteryLack, vp.battery);
+				batteryLackPosition.x = Mathf.Lerp(maxBatteryLack, minBatteryLack, vp.BatteryPercent);
 		}
 		else
-			batteryLackPosition.x = Mathf.Lerp(maxBatteryLack, minBatteryLack, vp.battery);
+			batteryLackPosition.x = Mathf.Lerp(maxBatteryLack, minBatteryLack, vp.BatteryPercent);
 		batteryLack.GetComponent<RectTransform>().anchoredPosition = batteryLackPosition;
 
 		// Update position (1st to 10th)
@@ -441,7 +450,7 @@ public class SGP_HUD : MonoBehaviour
 		//{
 		//    racebox.NextLap();
 		//}
-		TimeSpan? curLapTime = racebox.CurLapTime();
+		TimeSpan? curLapTime = racebox.CurLaptime;
 		if (curLapTime.HasValue)
 		{
 			SetRollers(curLapTime.Value, ref lapRollers, true);

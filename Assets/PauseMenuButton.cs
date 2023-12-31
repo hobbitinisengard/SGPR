@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Audio;
 
-public class PauseMenuButton : Sfxable, ISelectHandler, IDeselectHandler
+public class PauseMenuButton : MonoBehaviour, ISelectHandler, IDeselectHandler
 {
 	static Color32 redColor = new Color32(255, 0, 0, 255);
 	static Color32 blackColor = new Color32(0, 0, 0, 255);
@@ -11,16 +11,20 @@ public class PauseMenuButton : Sfxable, ISelectHandler, IDeselectHandler
 	Text text;
 	float timeStart = 0;
 	Transform batteryMask;
+	AudioSource clickSoundEffect;
 	public AudioMixer audioMixer;
+	public string exposedParameter;
 	public float soundLevel = 0.5f;
 	private void Start()
 	{
+		clickSoundEffect = GetComponent<AudioSource>();
+		clickSoundEffect.ignoreListenerPause = true;
 		text = transform.GetChild(0).GetComponent<Text>();
 		if (audioMixer)
 		{
 			// add battery sliders
 			batteryMask = transform.GetChild(1).GetChild(0);
-			soundLevel = Info.ReadMixerLevel(audioMixer);
+			soundLevel = Info.ReadMixerLevelLog(exposedParameter, audioMixer);
 			SetBatteryGUI(soundLevel);
 		}
 	}
@@ -42,10 +46,11 @@ public class PauseMenuButton : Sfxable, ISelectHandler, IDeselectHandler
 			{
 				if (Input.GetButtonDown("Submit"))
 				{
-					soundLevel = soundLevel + 0.1f;
+					//soundLevel = (soundLevel + 0.1f) % 1.1f;
+					soundLevel += 0.1f;
 					if (soundLevel > 1.05f)
 						soundLevel = 0;
-					Info.WriteMusicLevel(soundLevel, audioMixer);
+					Info.SetMixerLevelLog(exposedParameter, soundLevel, audioMixer);
 					SetBatteryGUI(soundLevel);
 				}
 			}
@@ -63,7 +68,7 @@ public class PauseMenuButton : Sfxable, ISelectHandler, IDeselectHandler
 	}
 	public void OnDeselect(BaseEventData eventData)
 	{
-		PlaySFX("menublip1", true);
+		clickSoundEffect.Play();
 		selected = false;
 		text.color = new Color32(255, 255, 255, 255);
 	}

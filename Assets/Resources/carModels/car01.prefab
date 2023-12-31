@@ -10665,7 +10665,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 24371594, guid: 36e40e79cbecd9449800bb1288274833,
     type: 2}
-  m_audioClip: {fileID: 8300000, guid: 903569e461f549741b0e5cb793de6057, type: 3}
+  m_audioClip: {fileID: 8300000, guid: a34bb0d66cd21bf4f9474d6daf9b3481, type: 3}
   m_PlayOnAwake: 1
   m_Volume: 1
   m_Pitch: 1
@@ -89604,7 +89604,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bodyObj: {fileID: 7136051627190437502}
-  originalDrag: 0
   steerInput: 0
   frontLights:
   - {fileID: 2712850293685523867}
@@ -89625,11 +89624,11 @@ MonoBehaviour:
   batteryLoadingParticleSystems:
   - {fileID: 1465737922}
   - {fileID: 839933645}
-  battery: 1
-  batteryLoadDelta: 0.05
-  batteryBurnDelta: 0.005
+  batteryRemaining: 1000
+  batteryCapacity: 1000
+  batteryChargingSpeed: 200
   lowBatteryLevel: 0.2
-  boostBurnRate: 0.0025
+  batteryStuntIncreasePercent: 0.1
   wheels:
   - {fileID: 6779875394929326516}
   - {fileID: 6779875396295812404}
@@ -104667,7 +104666,7 @@ MonoBehaviour:
   springExponent: 1
   springDampening: 0.4
   extendSpeed: 0
-  applyHardContactForce: 1
+  applyHardContactForce: 0
   hardContactForce: 25
   hardContactSensitivity: 0
   applyForceAtGroundContact: 1
@@ -104776,8 +104775,8 @@ MonoBehaviour:
   sidewaysFriction: 12
   forwardRimFriction: 1
   sidewaysRimFriction: 1
-  forwardCurveStretch: 10
-  sidewaysCurveStretch: 10
+  forwardCurveStretch: 1
+  sidewaysCurveStretch: 1
   forwardFrictionCurve:
     serializedVersion: 2
     m_Curve:
@@ -105265,8 +105264,8 @@ MonoBehaviour:
   sidewaysFriction: 12
   forwardRimFriction: 1
   sidewaysRimFriction: 1
-  forwardCurveStretch: 10
-  sidewaysCurveStretch: 10
+  forwardCurveStretch: 1
+  sidewaysCurveStretch: 1
   forwardFrictionCurve:
     serializedVersion: 2
     m_Curve:
@@ -105365,7 +105364,7 @@ MonoBehaviour:
   compressionFrictionFactor: 0
   tireRadius: 0.4070304
   rimRadius: 0.3
-  tireWidth: 0.28752625
+  tireWidth: 0.25
   rimWidth: 0.2875262
   tirePressure: 1
   popped: 0
@@ -105726,7 +105725,7 @@ MonoBehaviour:
   springExponent: 1
   springDampening: 0.4
   extendSpeed: 0
-  applyHardContactForce: 1
+  applyHardContactForce: 0
   hardContactForce: 25
   hardContactSensitivity: 0
   applyForceAtGroundContact: 1
@@ -105866,7 +105865,7 @@ MonoBehaviour:
   springExponent: 1
   springDampening: 0.4
   extendSpeed: 0
-  applyHardContactForce: 1
+  applyHardContactForce: 0
   hardContactForce: 25
   hardContactSensitivity: 0
   applyForceAtGroundContact: 1
@@ -105919,37 +105918,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d07c3ba93f8c45243a96fbd399ee977f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  limitSteer: 0
   servoAudio: {fileID: 1636816402}
   steeredWheels:
   - {fileID: 6779875394792814007}
   - {fileID: 6779875396000727281}
-  steerLimitCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0.066669315
-      value: 0.5
-      inSlope: 0
-      outSlope: -0.020016484
-      tangentMode: 1
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0.07754011
-    - serializedVersion: 3
-      time: 25.067322
-      value: 0.1
-      inSlope: -0.014169787
-      outSlope: -0.012028831
-      tangentMode: 1
-      weightedMode: 0
-      inWeight: 0.09574518
-      outWeight: 0.037539925
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
   steerLimitCurveCoeff: 1
-  steerAngle: 0
   holdDuration: 0
   steerLimit: 0
   maxDegreesRotation: 0
@@ -106110,7 +106083,7 @@ MonoBehaviour:
   springExponent: 1
   springDampening: 0.4
   extendSpeed: 0
-  applyHardContactForce: 1
+  applyHardContactForce: 0
   hardContactForce: 25
   hardContactSensitivity: 0
   applyForceAtGroundContact: 1
@@ -106219,8 +106192,8 @@ MonoBehaviour:
   strength: 1
   damagePitchWiggle: 0
   smoke: {fileID: 0}
+  jetConsumption: 0
   boostActivatedTime: 0
-  batteryStuntIncrease: 0.1
   torqueCurve:
     serializedVersion: 2
     m_Curve:
@@ -106266,7 +106239,6 @@ MonoBehaviour:
   actualAccel: 0
   transmission: {fileID: 6779875395388755402}
   engineSmoke: {fileID: 1642738044}
-  batteryCutOffLevel: 0.1
   boostEval: 0
 --- !u!82 &4634947501902952183
 AudioSource:
@@ -106279,7 +106251,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 24371594, guid: 36e40e79cbecd9449800bb1288274833,
     type: 2}
-  m_audioClip: {fileID: 8300000, guid: 20f171b6047f9944db5dd473fbf0e09f, type: 3}
+  m_audioClip: {fileID: 8300000, guid: a34bb0d66cd21bf4f9474d6daf9b3481, type: 3}
   m_PlayOnAwake: 1
   m_Volume: 1
   m_Pitch: 1
@@ -106465,8 +106437,8 @@ MonoBehaviour:
   sidewaysFriction: 12
   forwardRimFriction: 1
   sidewaysRimFriction: 1
-  forwardCurveStretch: 10
-  sidewaysCurveStretch: 10
+  forwardCurveStretch: 1
+  sidewaysCurveStretch: 1
   forwardFrictionCurve:
     serializedVersion: 2
     m_Curve:
@@ -106565,7 +106537,7 @@ MonoBehaviour:
   compressionFrictionFactor: 0
   tireRadius: 0.4070304
   rimRadius: 0.3
-  tireWidth: 0.2875262
+  tireWidth: 0.25
   rimWidth: 0.2875262
   tirePressure: 1
   popped: 0
@@ -106823,8 +106795,8 @@ MonoBehaviour:
   sidewaysFriction: 12
   forwardRimFriction: 1
   sidewaysRimFriction: 1
-  forwardCurveStretch: 10
-  sidewaysCurveStretch: 10
+  forwardCurveStretch: 1
+  sidewaysCurveStretch: 1
   forwardFrictionCurve:
     serializedVersion: 2
     m_Curve:
@@ -107273,6 +107245,7 @@ MeshRenderer:
   m_Materials:
   - {fileID: 2100000, guid: 47d27000dd5fd834ab71de8a6f1346e9, type: 2}
   - {fileID: 2100000, guid: c21282b6642dd6749b3efc0940cf485a, type: 2}
+  - {fileID: 2100000, guid: 005e97c6a1b64224a869785b13972931, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -117777,6 +117750,7 @@ MeshRenderer:
   m_Materials:
   - {fileID: 2100000, guid: 47d27000dd5fd834ab71de8a6f1346e9, type: 2}
   - {fileID: 2100000, guid: c21282b6642dd6749b3efc0940cf485a, type: 2}
+  - {fileID: 2100000, guid: 005e97c6a1b64224a869785b13972931, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -117861,6 +117835,7 @@ MeshRenderer:
   m_Materials:
   - {fileID: 2100000, guid: 47d27000dd5fd834ab71de8a6f1346e9, type: 2}
   - {fileID: 2100000, guid: c21282b6642dd6749b3efc0940cf485a, type: 2}
+  - {fileID: 2100000, guid: 005e97c6a1b64224a869785b13972931, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -122910,6 +122885,7 @@ MeshRenderer:
   m_Materials:
   - {fileID: 2100000, guid: 47d27000dd5fd834ab71de8a6f1346e9, type: 2}
   - {fileID: 2100000, guid: c21282b6642dd6749b3efc0940cf485a, type: 2}
+  - {fileID: 2100000, guid: 005e97c6a1b64224a869785b13972931, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

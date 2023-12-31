@@ -5,9 +5,9 @@ using UnityEngine;
 public enum Direction { ANTICLOCK = -1, CLOCK = 1 };
 public class RotationDampStruct
 {
-	readonly float evoSmoothTime = 0.07f;
-	readonly float staticEvoMaxSpeed = 1100; // 400 = hustler max speed. 1500 = dart max speed
-	readonly float evoAcceleration = 15; // 15 = hustler max acc.  57 = dart max acc
+	public float evoSmoothTime = 0.07f;
+	public float staticEvoMaxSpeed = 1100; // 400 = hustler max speed. 1500 = dart max speed
+	public float evoAcceleration = 15; // 15 = hustler max acc.  57 = dart max acc
 
 	// increases when holding shift
 	float evoMaxSpeed = 0;
@@ -171,6 +171,21 @@ public class SGP_Evo : MonoBehaviour
 		vp = GetComponent<VehicleParent>();
 		r = F.InitializeArray<RotationDampStruct>(3);
 	}
+	public void SetStuntCoeffs(float evoSmoothTime, float staticEvoMaxSpeed, float evoAcceleration)
+	{
+		foreach(var rds in r)
+		{
+			rds.evoSmoothTime = evoSmoothTime;
+			rds.staticEvoMaxSpeed = staticEvoMaxSpeed;
+			rds.evoAcceleration = evoAcceleration;
+		}
+	}
+	public void GetStuntCoeffs(ref float evoSmoothTime, ref float staticEvoMaxSpeed, ref float evoAcceleration)
+	{
+		evoSmoothTime = r[0].evoSmoothTime;
+		staticEvoMaxSpeed = r[0].staticEvoMaxSpeed;
+		evoAcceleration = r[0].evoAcceleration;
+	}
 	public bool IsStunting()
 	{
 		return stunting;
@@ -270,5 +285,7 @@ public class SGP_Evo : MonoBehaviour
 	
 		prevSGPShiftButton = vp.SGPshiftbutton;
 	}
+
+	
 }
 

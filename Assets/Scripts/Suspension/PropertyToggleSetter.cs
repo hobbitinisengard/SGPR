@@ -32,10 +32,6 @@ namespace RVP
         public void ChangePreset(int preset) {
             currentPreset = preset % (presets.Length);
 
-            if (steerer) {
-                steerer.limitSteer = presets[currentPreset].limitSteer;
-            }
-
             if (transmission) {
                 transmission.skidSteerDrive = presets[currentPreset].skidSteerTransmission;
             }

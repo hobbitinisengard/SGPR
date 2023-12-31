@@ -32,11 +32,6 @@ public class EnergyTransfer : MonoBehaviour
 	private void OnTriggerStay(Collider other)
 	{
 		var vp = other.attachedRigidbody.transform.GetComponent<VehicleParent>();
-		if (!vp.batteryLoadingSnd.isPlaying)
-		{
-			vp.batteryLoadingSnd.clip = Info.audioClips["elec" + Mathf.RoundToInt(3 * Random.value)];
-			vp.batteryLoadingSnd.Play();
-		}
-		vp.battery = Mathf.Clamp01(vp.battery + vp.batteryLoadDelta*Time.deltaTime);
+		vp.ChargeBattery();
 	}
 }

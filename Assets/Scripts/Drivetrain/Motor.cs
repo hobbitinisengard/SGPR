@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System;
 
 namespace RVP
 {
@@ -14,7 +14,7 @@ namespace RVP
 		protected float actualInput; // Input after applying the input curve
 
 		protected AudioSource engineAudio;
-		private AudioSource idlingEngineAudio;
+		protected AudioSource idlingEngineAudio;
 		[Header("Engine Audio")]
 
 		public float minPitch;
@@ -22,15 +22,12 @@ namespace RVP
 		public float targetPitch;
 		protected float pitchFactor;
 		protected float airPitch;
-
 		[Header("Nitrous Boost")]
-
 		public bool canBoost = true;
 		public GameObject[] jets;
 		public bool boosting;
 		
 		bool boostReleased;
-		bool boostPrev;
 		public float maxBoost = 0.5f;
 		protected AnimationCurve boostPowerCurve = AnimationCurve.EaseInOut(0, 0, 0.5f, 1);
 		
@@ -52,8 +49,8 @@ namespace RVP
 		float boostVel;
 		float SinArg = 0;
 		float SinJetCoeff = 11f;
+		public float jetConsumption;
 		public float boostActivatedTime;
-		public float batteryStuntIncrease = 0.1f;
 		static AnimationCurve idlingEngineAudioCurve = AnimationCurve.Linear(0, .5f, 1, 0);
 
 		public virtual void Start()
@@ -76,10 +73,7 @@ namespace RVP
 		public virtual void FixedUpdate()
 		{
 			health = Mathf.Clamp01(health);
-			// Boost logic
-			boostPrev = boosting;
-
-			if (canBoost && ignition && health > 0 && vp.battery > 0 &&
+			if (canBoost && ignition && health > 0 && 
 				 (vp.hover ? vp.accelInput != 0 || Mathf.Abs(vp.localVelocity.z) > 1 : vp.accelInput > 0))
 			{
 				if (((boostReleased && !boosting) || boosting) && vp.boostButton)

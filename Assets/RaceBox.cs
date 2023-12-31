@@ -20,7 +20,6 @@ public class RaceBox : MonoBehaviour
 	[NonSerialized]
 	public RaceManager raceManager;
 	public VehicleParent vp { get; private set; }
-
 	public SGP_Evo evoModule { get; private set; }
 	public float distance { get; private set; }
 	private float aero;
@@ -29,12 +28,25 @@ public class RaceBox : MonoBehaviour
 		get { return 10 * aero; }
 		private set { aero = value; }
 	}
-	private DateTime lapStartTime;
+	private float lapTimer;
+	public TimeSpan? CurLaptime
+	{
+		get 
+		{
+			if (lapTimer == 0 || curLap == 0)
+				return null;
+			return TimeSpan.FromSeconds(lapTimer);
+		}
+	}
 	public TimeSpan bestLapTime { get; private set; }
 	/// <summary>
 	/// set only after the race
 	/// </summary>
 	public TimeSpan raceTime { get; private set; }
+	public bool Finished
+	{
+		get { return curLap > Info.s_laps; }
+	}
 	public int curLap { get; private set; }
 
 	public float w_A_dot;
@@ -60,7 +72,6 @@ public class RaceBox : MonoBehaviour
 	private PtsAnimInfo prevStuntPai;
 	private PtsAnimInfo jumpPai;
 	public Vector3 elecTunnelCameraPos = -Vector3.one;
-	private DateTime raceStartTime;
 
 	public PtsAnimInfo JumpPai
 	{
@@ -97,11 +108,9 @@ public class RaceBox : MonoBehaviour
 	}
 	private void OnEnable()
 	{
-		raceStartTime = DateTime.Now;
-		lapStartTime = DateTime.MinValue;
-		bestLapTime = TimeSpan.FromMilliseconds(Info.tracks[Info.s_trackName].records[0].secondsOrPts*1000);
+		lapTimer = 0;
+		bestLapTime = TimeSpan.FromSeconds(36000);//TimeSpan.FromSeconds(Info.tracks[Info.s_trackName].records[0].secondsOrPts);
 		raceTime = TimeSpan.MinValue;
-
 		curLap = 0;
 		starLevel = 0;
 		stuntPai = new PtsAnimInfo(0, PtsAnimType.Evo, -1);
@@ -130,17 +139,16 @@ public class RaceBox : MonoBehaviour
 				return "-";
 		}
 	}
-	public bool Finished()
-	{
-		return curLap > Info.s_laps;
-	}
+	
 
 	private void FixedUpdate()
 	{
+		if(!Info.gamePaused && curLap > 0)
+			lapTimer += Time.fixedDeltaTime;
 		if (vp.reallyGroundedWheels == 0)
 			lastTimeInAir = Time.time;
 
-		if (!Finished())
+		if (!Finished)
 		{
 			StuntDetector();
 			JumpDetector();
@@ -318,11 +326,11 @@ public class RaceBox : MonoBehaviour
 	void AcceptStunt()
 	{
 		stableLandingTimer = -1;
-
 		if (stuntPai.score > 0)
 		{
 			SetGrantedComboTime(5 + 0.5f * starLevel);
-			vp.battery = Mathf.Clamp01(vp.battery + vp.engine.batteryStuntIncrease);
+			vp.ChargeBatteryByStunt();
+			
 			aero += stuntPai.score / 10f;
 			//Debug.Log(vp.tr.name + " Accept");
 			prevStuntPai = new PtsAnimInfo(stuntPai);
@@ -428,12 +436,7 @@ public class RaceBox : MonoBehaviour
 		grantedComboTime = seconds;
 		starLevel = Mathf.Clamp(++starLevel, 0, 10);
 	}
-	public TimeSpan? CurLapTime()
-	{
-		if (lapStartTime == DateTime.MinValue)
-			return null;
-		return DateTime.Now - lapStartTime;
-	}
+	
 	public void NextLap()
 	{
 		if (curLap == 0 || vp.followAI.ProgressPercent() > 0.8f || vp.followAI.pitsProgress > 0)
@@ -443,17 +446,20 @@ public class RaceBox : MonoBehaviour
 			vp.followAI.curStuntpointIdx = 0;
 			vp.followAI.curReplayPointIdx = 0;
 			vp.followAI.speedLimitDist = -1;
-			var curlaptime = CurLapTime();
-			lapStartTime = DateTime.Now;
+			var curlaptime = CurLaptime;
 			if (curLap < Info.s_laps + 1)
 				curLap++;
+			lapTimer = 0;
 			if (curlaptime.HasValue)
 			{
 				if (bestLapTime > curlaptime)
 					bestLapTime = curlaptime.Value;
 
 				if (!vp.followAI.isCPU && bestLapTime < vp.raceBox.raceManager.hud.bestLapTime)
+				{
 					vp.raceBox.raceManager.hud.bestLapTime = bestLapTime;
+					raceManager.hud.lapRecordSeq.gameObject.SetActive(true);
+				}
 			}
 			if (curLap == Info.s_laps + 1)
 			{ // race finished
@@ -462,10 +468,10 @@ public class RaceBox : MonoBehaviour
 				{
 					raceManager.hud.AddMessage(new(vp.tr.name + " WINS THE RACE!", BottomInfoType.CAR_WINS));
 				}
-				// in racemode after ending of race, cars still run around the track, ghosts overtake each other. Don't let it change results
+				// in racemode after the end of a race, cars still run around the track, ghosts overtake each other. Don't let it change results
 				curLap += 100 * (Info.s_rivals+1 - curPos);
-				GetComponent<Ghost>().SetHittable(false);
-				raceTime = DateTime.Now - raceStartTime;
+				vp.ghostComponent.SetHittable(false);
+				raceTime = DateTime.Now - Info.raceStartDate;
 				vp.followAI.SetCPU(true);
 			}
 

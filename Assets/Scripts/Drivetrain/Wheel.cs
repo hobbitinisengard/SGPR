@@ -1,7 +1,4 @@
 using UnityEngine;
-using System.Collections;
-using System.Threading.Tasks;
-using System.Linq;
 
 namespace RVP
 {
@@ -623,7 +620,7 @@ namespace RVP
 		{
 			if (grounded)
 			{
-				sidewaysSlip = 10 * (contactPoint.relativeVelocity.z) / sidewaysCurveStretch;
+				sidewaysSlip = (contactPoint.relativeVelocity.z) / sidewaysCurveStretch;
 				if (groundedReally)
 					forwardSlip = (rawRPM - currentRPM) / forwardCurveStretch;
 				else
