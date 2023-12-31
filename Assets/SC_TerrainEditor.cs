@@ -5,20 +5,23 @@ public class SC_TerrainEditor : MonoBehaviour
 {
 	public enum DeformMode { RaiseLower, Flatten, Smooth }
 	DeformMode deformMode = DeformMode.RaiseLower;
-	string[] deformModeNames = new string[] { "Raise Lower", "Flatten", "Smooth" };
+	//string[] deformModeNames = new string[] { "Raise Lower", "Flatten", "Smooth" };
+	public SliderValue areaSliderVal;
+	public SliderValue strengthSliderVal;
+	public GameObject terrainSculptor;
 	[NonSerialized]
 	Terrain terrain;
 	public Texture2D deformTexture;
-	public float strength = 1;
-	public float area = 1;
-	public bool showHelp;
+	//public float strength = 1;
+	//public float area = 1;
+	//public bool showHelp;
 
 	Transform buildTarget;
 	Vector3 buildTargPos;
 	Light spotLight;
 
 	//GUI
-	Rect windowRect = new Rect(10, 10, 400, 185);
+	//Rect windowRect = new Rect(10, 10, 400, 185);
 	bool onWindow = false;
 	bool onTerrain;
 	Texture2D newTex;
@@ -41,8 +44,16 @@ public class SC_TerrainEditor : MonoBehaviour
 	{
 		get
 		{
-			return (strength) / 9.0f;
+			return (strengthSliderVal.slider.value) / 9.0f;
 		}
+	}
+	private void OnEnable()
+	{
+		terrainSculptor.SetActive(true);
+	}
+	private void OnDisable()
+	{
+		terrainSculptor.SetActive(false);
 	}
 	public void SetTerrain(Terrain terrain)
 	{
@@ -84,11 +95,17 @@ public class SC_TerrainEditor : MonoBehaviour
 		}
 
 		terrain.gameObject.layer = Info.terrainLayer;
-		strength = 13;
-		area = 13;
+		strengthSliderVal.slider.value = 13;
+		areaSliderVal.slider.value = 13;
 		brushScaling();
 	}
-
+	void Update()
+	{
+		if(Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.R))
+		{
+			ResetTerrain();
+		}
+	}
 	void FixedUpdate()
 	{
 		if (uiTest.PointerOverUI() || terrain == null)
@@ -102,14 +119,13 @@ public class SC_TerrainEditor : MonoBehaviour
 		}
 
 		//Update Spot Light Angle according to the Area value
-		spotLight.spotAngle = area * 25f;
+		spotLight.spotAngle = areaSliderVal.slider.value * 25f;
 	}
 
 	//Raycast
 	//______________________________________________________________________________________________________________________________
 	void raycastHit()
 	{
-		
 		Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 		hit = new RaycastHit();
 		//Do Raycast hit only against terrain layer
@@ -153,11 +169,11 @@ public class SC_TerrainEditor : MonoBehaviour
 
 			if (Input.GetKey(KeyCode.LeftShift))
 			{
-				strengthSave = strength;
+				strengthSave = strengthSliderVal.slider.value;
 			}
 			else
 			{
-				strengthSave = -strength;
+				strengthSave = -strengthSliderVal.slider.value;
 			}
 
 			if (newTex && tData && craterData != null)
@@ -207,6 +223,7 @@ public class SC_TerrainEditor : MonoBehaviour
 	void brushScaling()
 	{
 		//Apply current deform texture resolution 
+		float area = areaSliderVal.slider.value;
 		newTex = Instantiate(deformTexture) as Texture2D;
 		TextureScale.Point(newTex, deformTexture.width * (int)area / 10, deformTexture.height * (int)area / 10);
 		newTex.Apply();
@@ -223,24 +240,24 @@ public class SC_TerrainEditor : MonoBehaviour
 				//More
 				if (!Input.GetKey(KeyCode.LeftShift))
 				{
-					if (area < 13)
+					if (areaSliderVal.slider.value < 40)
 					{
-						area += 0.5f;
+						areaSliderVal.slider.value = areaSliderVal.slider.value + 0.5f;
 					}
 					else
 					{
-						area = 13;
+						areaSliderVal.slider.value = 40;
 					}
 				}
 				else
 				{
-					if (strength < 13)
+					if (strengthSliderVal.slider.value < 30)
 					{
-						strength += 0.5f;
+						strengthSliderVal.slider.value = strengthSliderVal.slider.value + 0.5f;
 					}
 					else
 					{
-						strength = 13;
+						strengthSliderVal.slider.value = 30;
 					}
 				}
 			}
@@ -249,111 +266,119 @@ public class SC_TerrainEditor : MonoBehaviour
 				//Less
 				if (!Input.GetKey(KeyCode.LeftShift))
 				{
-					if (area > 1)
+					if (areaSliderVal.slider.value > 10)
 					{
-						area -= 0.5f;
+						areaSliderVal.slider.value = areaSliderVal.slider.value - 0.5f;
 					}
 					else
 					{
-						area = 1;
+						areaSliderVal.slider.value = 10;
 					}
 				}
 				else
 				{
-					if (strength > 1)
+					if (strengthSliderVal.slider.value > 2)
 					{
-						strength -= 0.5f;
+						strengthSliderVal.slider.value = strengthSliderVal.slider.value - 0.5f;
 					}
 					else
 					{
-						strength = 1;
+						strengthSliderVal.slider.value = 2;
 					}
 				}
 			}
-			if (area > 1)
+			if (areaSliderVal.slider.value > 10)
 				brushScaling();
 		}
 	}
 
 	//GUI
 	//______________________________________________________________________________________________________________________________
-	void OnGUI()
-	{
-		windowRect = GUI.Window(0, windowRect, TerrainEditorWindow, "Terrain Sculptor");
+	//void OnGUI()
+	//{
+	//	windowRect = GUI.Window(0, windowRect, TerrainEditorWindow, "Terrain Sculptor");
 
-		GUILayout.BeginArea(new Rect(Screen.width - 70, 10, 60, 30));
-		showHelp = GUILayout.Toggle(showHelp, "(Help)", new GUILayoutOption[] { GUILayout.Width(60.0f), GUILayout.Height(30.0f) });
-		GUILayout.EndArea();
+	//	GUILayout.BeginArea(new Rect(Screen.width - 70, 10, 60, 30));
+	//	showHelp = GUILayout.Toggle(showHelp, "(Help)", new GUILayoutOption[] { GUILayout.Width(60.0f), GUILayout.Height(30.0f) });
+	//	GUILayout.EndArea();
 
-		if (showHelp)
-		{
-			//Help window properties
-			GUI.Window(1, new Rect(Screen.width - 410, 50, 400, 120), HelpWindow, "Help Window");
-		}
-	}
+	//	if (showHelp)
+	//	{
+	//		//Help window properties
+	//		GUI.Window(1, new Rect(Screen.width - 410, 50, 400, 120), HelpWindow, "Help Window");
+	//	}
+	//}
 
 	//Help window display tips and tricks
-	void HelpWindow(int windowId)
+	//void HelpWindow(int windowId)
+	//{
+	//	GUILayout.BeginVertical("box");
+	//	{
+	//		GUILayout.Label("- Mouse wheel - area change");
+	//		GUILayout.Label("- Mouse wheel + Shift - strength change");
+	//		GUILayout.Label("- Hold Shift in RaiseLower mode to lower terrain");
+	//	}
+	//	GUILayout.EndVertical();
+	//}
+	public void SetDeformMode(int value)
 	{
-		GUILayout.BeginVertical("box");
-		{
-			GUILayout.Label("- Mouse wheel - area change");
-			GUILayout.Label("- Mouse wheel + Shift - strength change");
-			GUILayout.Label("- Hold Shift in RaiseLower mode to lower terrain");
-		}
-		GUILayout.EndVertical();
+		deformMode = (DeformMode)value;
 	}
-
-	void TerrainEditorWindow(int windowId)
+	public void ResetTerrain()
 	{
-		//Detect when mouse cursor inside region (TerrainEditorWindow)
-		GUILayout.BeginArea(new Rect(0, 0, 400, 240));
-		if (GUILayoutUtility.GetRect(10, 50, 400, 240).Contains(Event.current.mousePosition))
-		{
-			onWindow = true;
-		}
-		else
-		{
-			onWindow = false;
-		}
-		GUILayout.EndArea();
+		tData.SetHeights(0, 0, saved);
+	}
+	//void TerrainEditorWindow(int windowId)
+	//{
 
-		GUILayout.BeginVertical();
+		////Detect when mouse cursor inside region (TerrainEditorWindow)
+		//GUILayout.BeginArea(new Rect(0, 0, 400, 240));
+		//if (GUILayoutUtility.GetRect(10, 50, 400, 240).Contains(Event.current.mousePosition))
+		//{
+		//	onWindow = true;
+		//}
+		//else
+		//{
+		//	onWindow = false;
+		//}
+		//GUILayout.EndArea();
+
+		//GUILayout.BeginVertical();
 
 		//Shared GUI
-		GUILayout.Space(10f);
-		GUILayout.BeginHorizontal();
-		GUILayout.Label("Area:", new GUILayoutOption[] { GUILayout.Width(75f) });
-		area = GUILayout.HorizontalSlider(area, 10f, 40f, new GUILayoutOption[] { GUILayout.Width(250f), GUILayout.Height(15f) });
-		GUILayout.Label((Mathf.Round(area * 100f) / 100f).ToString(), new GUILayoutOption[] { GUILayout.Width(250f), GUILayout.Height(20f) });
+		//GUILayout.Space(10f);
+		//GUILayout.BeginHorizontal();
+		//GUILayout.Label("Area:", new GUILayoutOption[] { GUILayout.Width(75f) });
+		//area = GUILayout.HorizontalSlider(area, 10f, 40f, new GUILayoutOption[] { GUILayout.Width(250f), GUILayout.Height(15f) });
+		//GUILayout.Label((Mathf.Round(area * 100f) / 100f).ToString(), new GUILayoutOption[] { GUILayout.Width(250f), GUILayout.Height(20f) });
 		//Change brush texture size if area value was changed
-		if (GUI.changed)
-		{
-			brushScaling();
-		}
-		GUILayout.EndHorizontal();
+		//if (GUI.changed)
+		//{
+		//	brushScaling();
+		//}
+		//GUILayout.EndHorizontal();
 
-		GUILayout.Space(10f);
-		GUILayout.BeginHorizontal();
-		GUILayout.Label("Strength:", new GUILayoutOption[] { GUILayout.Width(75f) });
-		strength = GUILayout.HorizontalSlider(strength, 2f, 30f, new GUILayoutOption[] { GUILayout.Width(250f), GUILayout.Height(15f) });
-		GUILayout.Label((Mathf.Round(strength * 100f) / 100f).ToString(), new GUILayoutOption[] { GUILayout.Width(250f), GUILayout.Height(20f) });
-		GUILayout.EndHorizontal();
+		//GUILayout.Space(10f);
+		//GUILayout.BeginHorizontal();
+		//GUILayout.Label("Strength:", new GUILayoutOption[] { GUILayout.Width(75f) });
+		//strength = GUILayout.HorizontalSlider(strength, 2f, 30f, new GUILayoutOption[] { GUILayout.Width(250f), GUILayout.Height(15f) });
+		//GUILayout.Label((Mathf.Round(strength * 100f) / 100f).ToString(), new GUILayoutOption[] { GUILayout.Width(250f), GUILayout.Height(20f) });
+		//GUILayout.EndHorizontal();
 
-		//Deform GUI
-		GUILayout.Space(10);
+		////Deform GUI
+		//GUILayout.Space(10);
 
-		deformMode = (DeformMode)GUILayout.Toolbar((int)deformMode, deformModeNames, GUILayout.Height(25));
+		//deformMode = (DeformMode)GUILayout.Toolbar((int)deformMode, deformModeNames, GUILayout.Height(25));
 
-		GUILayout.Space(10);
+		//GUILayout.Space(10);
 
-		GUILayout.BeginHorizontal();
-		if (GUILayout.Button("Reset Terrain Height", new GUILayoutOption[] { GUILayout.Height(30f) }))
-		{
-			tData.SetHeights(0, 0, saved);
-		}
-		GUILayout.EndHorizontal();
+		//GUILayout.BeginHorizontal();
+		//if (GUILayout.Button("Reset Terrain Height", new GUILayoutOption[] { GUILayout.Height(30f) }))
+		//{
+		//	tData.SetHeights(0, 0, saved);
+		//}
+		//GUILayout.EndHorizontal();
 
-		GUILayout.EndVertical();
-	}
+		//GUILayout.EndVertical();
+	//}
 }

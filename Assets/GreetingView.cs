@@ -2,11 +2,24 @@ using System.IO;
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.UI;
-
 public class GreetingView : Sfxable
 {
 	public Text versionText;
 	public AudioMixer masterMixer;
+	private static void CopyFilesRecursively(string sourcePath, string targetPath)
+	{
+		//Now Create all of the directories
+		foreach (string dirPath in Directory.GetDirectories(sourcePath, "*", SearchOption.AllDirectories))
+		{
+			Directory.CreateDirectory(dirPath.Replace(sourcePath, targetPath));
+		}
+
+		//Copy all the files & Replaces any files with the same name
+		foreach (string newPath in Directory.GetFiles(sourcePath, "*.*", SearchOption.AllDirectories))
+		{
+			File.Copy(newPath, newPath.Replace(sourcePath, targetPath), true);
+		}
+	}
 	private void Awake()
 	{
 		versionText.text = Info.version;
@@ -14,10 +27,7 @@ public class GreetingView : Sfxable
 		if (!Directory.Exists(Info.documentsSGPRpath))
 		{
 			Directory.CreateDirectory(Info.documentsSGPRpath);
-		}
-		if (!Directory.Exists(Info.partsPath))
-		{
-			Directory.CreateDirectory(Info.partsPath);
+			CopyFilesRecursively(Application.streamingAssetsPath, Info.documentsSGPRpath);
 		}
 		Info.ReloadCarPartsData();
 		Debug.Log("Loaded parts: " + Info.carParts.Count);
