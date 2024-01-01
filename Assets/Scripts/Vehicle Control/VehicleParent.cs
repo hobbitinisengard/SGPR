@@ -151,8 +151,7 @@ namespace RVP
 		[System.NonSerialized]
 		public VehicleParent inputInherit; // Vehicle which to inherit input from
 
-		[System.NonSerialized]
-		public bool crashing;
+		
 
 		[Header("Crashing")]
 
@@ -175,7 +174,10 @@ namespace RVP
 		[Header("Steering wheel")]
 		public SteeringControl steeringControl;
 		private float brakeStart;
-		internal bool colliding;
+		[NonSerialized]
+		public bool colliding;
+		[NonSerialized]
+		public bool crashing;
 		//[Tooltip("Sideways friction when vehicle is in air. 0=no steering in air")]
 		//public float inAirFriction = 0.25f;
 		[NonSerialized]

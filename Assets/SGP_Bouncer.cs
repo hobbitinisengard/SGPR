@@ -6,11 +6,20 @@ public class SGP_Bouncer : MonoBehaviour
 	Rigidbody rb;
 	VehicleParent vp;
 	public float lastBounceTime;
+	public float lastSideBounceTime;
 	float debounceTime = .5f;
+	static AnimationCurve multCurve;
 	private void Awake()
 	{
 		rb = GetComponent<Rigidbody>();
 		vp = GetComponent<VehicleParent>();
+		Keyframe[] kf = new Keyframe[] 
+		{
+			new Keyframe(0,0),
+			new Keyframe(45,1),
+			new Keyframe(90,0),
+		};
+		multCurve = new AnimationCurve(kf);
 	}
 	private void FixedUpdate()
 	{
@@ -53,9 +62,14 @@ public class SGP_Bouncer : MonoBehaviour
 		Vector3 direction;
 		if (norm.y < 0.1f) // sideways force based on car's velocity
 		{
+			if (Time.time - lastSideBounceTime < debounceTime)
+				return;
 			//Debug.Log("sideways");
-			addForce = Vector3.Project(collision.relativeVelocity, -norm);
-			direction = Quaternion.AngleAxis(88, vp.tr.right) * norm;
+			float mult = multCurve.Evaluate(Mathf.Abs(Vector3.Angle(-norm, vp.tr.forward)));
+			Debug.Log(mult);
+			addForce = mult * collision.relativeVelocity;
+			direction = (norm + vp.tr.up).normalized;//Quaternion.AngleAxis(88, vp.tr.right) * norm;
+			lastSideBounceTime = Time.time;
 		}
 		else
 		{ // vertical force based on car's previous ramp speed
