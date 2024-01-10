@@ -28,25 +28,22 @@ public class ViewSwitcher : MonoBehaviour
 	IEnumerator Play(Action method = null)
 	{
 		timer = 0;
-		while (true)
+		
+		while (timer < duration)
 		{
-			if (timer >= duration)
+			if (viewA.activeSelf && timer >= 0.5f * duration)
 			{
-				blackness.gameObject.SetActive(false);
-				yield break;
-			}
-			else if (viewA.activeSelf && timer >= 0.5f * duration)
-			{
-				method?.Invoke();
 				//Debug.Log("switch");
 				viewA.SetActive(false);
 				viewB.SetActive(true);
+				method?.Invoke();
 			}
-			SetBlacknessColor(dimCurve.Evaluate(timer));
 			timer += Time.deltaTime;
+			SetBlacknessColor(dimCurve.Evaluate(timer));
 			blackness.gameObject.SetActive(true);
 			yield return null;
 		}
+		blackness.gameObject.SetActive(false);
 	}
 	void SetBlacknessColor(float a)
 	{
@@ -85,7 +82,7 @@ public class ViewSwitcher : MonoBehaviour
 	/// Dims to targetVisibility. 0 = menu fully visible, 1 = blackness
 	/// </summary>
 	public void PlayDimmerToWorld()
-	{
+	{ 
 		menuMusic.Stop();
 		this.viewA = menu;
 		this.viewB = world;
@@ -96,6 +93,6 @@ public class ViewSwitcher : MonoBehaviour
 		menuMusic.Stop();
 		this.viewA = world;
 		this.viewB = menu;
-		StartCoroutine(Play(() => { world.GetComponent<RaceManager>().BackToEditor(); }));
+		StartCoroutine(Play(world.GetComponent<RaceManager>().BackToEditor));
 	}
 }

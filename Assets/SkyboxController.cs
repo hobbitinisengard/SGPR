@@ -5,13 +5,25 @@ public class SkyboxController : MonoBehaviour
 {
 	[SerializeField] Transform _Sun = default;
 	//[SerializeField] Transform _Moon = default;
-	public GameObject nightTimeLights;
+	GameObject nightTimeLights;
+	public GameObject nightSkybox;
+	private void Awake()
+	{
+		if (transform.childCount > 0)
+			nightTimeLights = transform.GetChild(0).gameObject;
+	}
 	private void OnEnable()
 	{
-		nightTimeLights.SetActive(Info.s_isNight);
+		SetNightTimeLights();
 	}
-	void LateUpdate()
+	public void SetNightTimeLights()
 	{
+		nightSkybox.SetActive(Info.s_isNight);
+		if (nightTimeLights)
+			nightTimeLights.SetActive(Info.s_isNight);
+	}
+	//void LateUpdate()
+	//{
 		// Directions are defined to point towards the object
 
 		// Sun
@@ -19,5 +31,5 @@ public class SkyboxController : MonoBehaviour
 
 		// Moon
 		//Shader.SetGlobalVector("_MoonDir", -_Moon.transform.forward);
-	}
+	//}
 }

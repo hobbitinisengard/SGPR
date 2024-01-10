@@ -31,8 +31,8 @@ public class PauseMenu : Sfxable
 	private void OnEnable()
 	{
 		Info.gamePaused = true;
-		Time.timeScale = 0;
 		timeElapsed = 0;
+		Time.timeScale = 0;
 		restartButton.SetActive(Info.raceStartDate != DateTime.MinValue);
 		startColor = veil.color;
 		firstButton.Select();
@@ -42,7 +42,7 @@ public class PauseMenu : Sfxable
 		Info.gamePaused = false;
 		Time.timeScale = 1;
 		Info.SaveSettingsDataToJson(mainMixer);
-		clickSoundEffect.Play();
+		PlaySFX("menublip2",true);
 		veil.color = startColor;
 		Info.raceStartDate = Info.raceStartDate.AddSeconds(timeElapsed);
 		timeElapsed = 0;

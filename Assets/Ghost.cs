@@ -14,6 +14,11 @@ public class Ghost : MonoBehaviour
 	{
 		vp = GetComponent<VehicleParent>();
 	}
+	// debug ghost
+	//private void Start()
+	//{
+	//	SetHittable(false);
+	//}
 	public void SetHittable(bool isHittable, bool updateColliders = true)
 	{
 		if (updateColliders)
@@ -21,7 +26,11 @@ public class Ghost : MonoBehaviour
 			hittable = isHittable;
 			foreach (var c in colliders)
 			{
-				c.gameObject.layer = hittable ? Info.vehicleLayer : Info.ghostLayer;
+				c.gameObject.layer = isHittable ? Info.vehicleLayer : Info.ghostLayer;
+			}
+			foreach (var w in vp.wheels)
+			{
+				w.SetColliderLayer(isHittable ? Info.vehicleLayer : Info.ghostLayer);
 			}
 		}
 		foreach (var r in ghostableParts)
@@ -102,7 +111,7 @@ public class Ghost : MonoBehaviour
 			yield return null;
 			justResetted = false;
 		}
-		if(!vp.raceBox.Finished)
+		if (!vp.raceBox.Finished)
 			SetHittable(true);
 	}
 }

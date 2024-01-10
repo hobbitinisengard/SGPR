@@ -3,12 +3,17 @@ guid: 11a9b7af654609343965b25b06f9d50f
 ModelImporter:
   serializedVersion: 21300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level3_heli128
+    second: {fileID: 2100000, guid: 8420f14de246f7d4687a4a91072dc2ca, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
     materialSearch: 1
-    materialLocation: 0
+    materialLocation: 1
   animations:
     legacyGenerateAnimations: 4
     bakeSimulation: 0

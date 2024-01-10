@@ -49,6 +49,7 @@ public class SGP_Bouncer : MonoBehaviour
 	}
 	private void OnCollisionEnter(Collision collision)
 	{
+		
 		ContactPoint contact = collision.GetContact(0);
 		//if (contact.thisCollider.transform.parent != contact.otherCollider.transform.parent &&
 		//	contact.otherCollider.gameObject.layer == Info.vehicleLayer && 
@@ -66,7 +67,6 @@ public class SGP_Bouncer : MonoBehaviour
 				return;
 			//Debug.Log("sideways");
 			float mult = multCurve.Evaluate(Mathf.Abs(Vector3.Angle(-norm, vp.tr.forward)));
-			Debug.Log(mult);
 			addForce = mult * collision.relativeVelocity;
 			direction = (norm + vp.tr.up).normalized;//Quaternion.AngleAxis(88, vp.tr.right) * norm;
 			lastSideBounceTime = Time.time;

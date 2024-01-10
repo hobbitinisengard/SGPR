@@ -1,8 +1,10 @@
 using RVP;
 using System;
 using UnityEngine;
-using System.Linq;
 using static PtsAnim;
+using System.Collections.Generic;
+using System.Collections;
+using UnityEngine.SocialPlatforms.Impl;
 
 public class StuntRotInfo
 {
@@ -13,6 +15,65 @@ public class StuntRotInfo
 		return (axis > 1 ? 'Z' : (axis == 0 ? 'X' : 'Y')) + rotation.ToString();
 	}
 }
+public class StuntsData : IEnumerable<Stunt>
+{
+    public enum ExtraName
+    {
+        Trikstart,Wheelie, Stoppie, Looper, Grind, SideGrind
+    };
+   public bool availableForFrontend;
+	public Flip[] flipData; // Meteor X1 | Backflip 360
+	public Stunt[] driftData; // Slide x1 123 & Powerslide x1 456
+	public Stunt[] extraData;
+	public StuntsData(Flip[] flipData)
+	{
+		// deep copy
+		this.flipData = new Flip[flipData.Length];
+		for (int i = 0; i < flipData.Length; ++i)
+			this.flipData[i] = new Flip(flipData[i]);
+
+		driftData = new Stunt[]
+		{
+			new Stunt("SLIDE", 350),
+			new Stunt("POWERSLIDE", 600),
+		};
+		
+		for (int i = 0; i < driftData.Length; ++i)
+			driftData[i] = new Stunt(driftData[i]);
+
+		extraData = new Stunt[]
+		{
+			new Stunt("TRICKSTART", 250),
+			new Stunt("WHEELIE", 550),
+			new Stunt("STOPPIE", 550),
+			new Stunt("SUPER LOOPER", 1750),
+			new Stunt("GRIND", 2000),
+			new Stunt("SIDE GRIND", 400),
+		};
+	}
+
+	IEnumerator<Stunt> IEnumerable<Stunt>.GetEnumerator()
+	{
+		foreach (var item in flipData)
+		{
+			yield return item;
+		}
+		foreach (var item in driftData)
+		{
+			yield return item;
+		}
+		foreach (var item in extraData)
+		{
+			yield return item;
+		}
+	}
+
+	IEnumerator IEnumerable.GetEnumerator()
+	{
+		throw new NotImplementedException();
+	}
+}
+
 public enum StuntSeqStatus { None, Ongoing, Ended };
 
 public class RaceBox : MonoBehaviour
@@ -28,10 +89,10 @@ public class RaceBox : MonoBehaviour
 		get { return 10 * aero; }
 		private set { aero = value; }
 	}
-	private float lapTimer;
+	float lapTimer;
 	public TimeSpan? CurLaptime
 	{
-		get 
+		get
 		{
 			if (lapTimer == 0 || curLap == 0)
 				return null;
@@ -60,9 +121,8 @@ public class RaceBox : MonoBehaviour
 	float aeroMeterResponsiveness = 1f;
 	bool prevGroundedWheels0 = false;
 	Vector3 w;
-	//Stack<StuntRotInfo> rots;
-	Stunt[] stunts;
-	private bool stuntsAvailableForFrontend = false;
+	StuntsData stuntsData;
+	public Stunt[] stunts { get; private set; }
 	public float lastTimeInAir;
 	[SerializeField]
 	float stableLandingTimer = -1;
@@ -72,6 +132,12 @@ public class RaceBox : MonoBehaviour
 	private PtsAnimInfo prevStuntPai;
 	private PtsAnimInfo jumpPai;
 	public Vector3 elecTunnelCameraPos = -Vector3.one;
+	public float carStoppedTime;
+	public float stoppieTimer;
+	public float wheelieTimer;
+	float lastLooperTime;
+	private float sideGrindTimer;
+	public float d_positiveProgress;
 
 	public PtsAnimInfo JumpPai
 	{
@@ -102,9 +168,7 @@ public class RaceBox : MonoBehaviour
 		//rots = new Stack<StuntRotInfo>(32);
 		var globalcontrol = GameObject.Find("Canvas");
 		var stuntTable = globalcontrol.transform.GetComponent<StuntManager>().allPossibleFlips;
-		stunts = new Stunt[stuntTable.Length];
-		for (int i = 0; i < stuntTable.Length; ++i)
-			stunts[i] = new RotationStunt(stuntTable[i]);
+		stuntsData = new StuntsData(stuntTable);
 	}
 	private void OnEnable()
 	{
@@ -139,11 +203,11 @@ public class RaceBox : MonoBehaviour
 				return "-";
 		}
 	}
-	
+
 
 	private void FixedUpdate()
 	{
-		if(!Info.gamePaused && curLap > 0)
+		if (!Info.gamePaused && curLap > 0)
 			lapTimer += Time.fixedDeltaTime;
 		if (vp.reallyGroundedWheels == 0)
 			lastTimeInAir = Time.time;
@@ -152,22 +216,187 @@ public class RaceBox : MonoBehaviour
 		{
 			StuntDetector();
 			JumpDetector();
+			DriftDetector();
 		}
 	}
-	public bool GetStuntsSeq(ref Stunt[] stunts)
+	public bool GetStuntSeq(ref StuntsData outStuntsData)
 	{
-		if (stuntsAvailableForFrontend)
+		if (stuntsData.availableForFrontend)
 		{
-			stuntsAvailableForFrontend = false;
-			stunts = this.stunts;
+			stuntsData.availableForFrontend = false;
+			outStuntsData = stuntsData;
 			return true;
 		}
 		else
 			return false;
 	}
+	
+	IEnumerator AddExtraStuntCo(StuntsData.ExtraName name)
+	{
+		var stunt = stuntsData.extraData[(int)name];
+		stunt.updateOverlay = true;
+		stunt.doneTimes++;
+		stuntsData.availableForFrontend = true;
+		
+		stuntPai.level++;
+		stuntPai.score += (int)((starLevel + 1) * 1.5f * stunt.score);
+			
+		AcceptExtraStunt();
+		yield return null;
+		stunt.doneTimes = 0;
+	}
+	public void AddLooper()
+	{
+		if(Time.time - lastLooperTime > 1)
+		{
+			StartCoroutine(AddExtraStuntCo(StuntsData.ExtraName.Looper));
+			lastLooperTime = Time.time;
+		}
+	}
+	void ProgressDrift(StuntsData.ExtraName name, float addProgress, bool addCombo = false)
+	{
+		var stunt = stuntsData.extraData[(int)name];
+		if (addProgress > 0)
+		{
+			stunt.updateOverlay = true;
+			stuntsData.availableForFrontend = true;
 
+			if (addCombo)
+			{
+				stunt.doneTimes++;
+				stunt.positiveProgress = 0;
+				Debug.Log("doneTimes++");
+			}
+			else
+			{
+				stunt.positiveProgress += addProgress;
+			}
+		}
+		else if(stunt.positiveProgress > 0)
+		{
+			stunt.positiveProgress += addProgress;
+			if (stunt.positiveProgress < 0)
+			{
+				if (stunt.doneTimes > 0)
+				{
+					stuntPai.level++;
+					stuntPai.score += (int)((starLevel + 1) * 1.5f * stunt.score);
+					AcceptExtraStunt();
+				}
+				else
+				{
+					stunt.positiveProgress = 0;
+					stunt.doneTimes = 0;
+					stunt.updateOverlay = false;
+				}
+			}
+		}
+		d_positiveProgress = stunt.positiveProgress;
+	}
+	void DriftDetector()
+	{
+		//if (Info.s_raceType != Info.RaceType.Drift)
+		//{
+		//	drifting = false;
+		//	driftDist = 0;
+		//	driftScore = 0;
+		//	driftString = "";
+		//	return;
+		//}
+		//endDriftTime = vp.groundedWheels > 0 ? (Mathf.Abs(vp.localVelocity.x) > 5 ? StuntManager.driftConnectDelayStatic : Mathf.Max(0, endDriftTime - Time.timeScale * TimeMaster.inverseFixedTimeFactor)) : 0;
+		//drifting = endDriftTime > 0;
+
+		//if (drifting)
+		//{
+		//	driftScore += (StuntManager.driftScoreRateStatic * Mathf.Abs(vp.localVelocity.x)) * Time.timeScale * TimeMaster.inverseFixedTimeFactor;
+		//	driftDist += vp.velMag * Time.fixedDeltaTime;
+		//	driftString = "Drift: " + driftDist.ToString("n0") + " m";
+
+		//	if (engine)
+		//	{
+		//		//vp.batteryRemaining += (StuntManager.driftBoostAddStatic * Mathf.Abs(vp.localVelocity.x)) * Time.timeScale * 0.0002f * TimeMaster.inverseFixedTimeFactor;
+		//	}
+		//}
+		//else
+		//{
+		//	score += driftScore;
+		//	driftDist = 0;
+		//	driftScore = 0;
+		//	driftString = "";
+		//}
+		// side grind detector -> change into drifts
+		// 2s - gives side grind score (400)
+		if (vp.colliding && vp.reallyGroundedWheels > 2)
+		{
+			ProgressDrift(StuntsData.ExtraName.SideGrind, 200 * Time.fixedDeltaTime);
+			if (sideGrindTimer > 2)
+			{
+				ProgressDrift(StuntsData.ExtraName.SideGrind, 200 * Time.fixedDeltaTime);
+			}
+		}
+		else
+		{
+			ProgressDrift(StuntsData.ExtraName.SideGrind, -200 * Time.fixedDeltaTime);
+		}
+	}
 	void StuntDetector()
 	{
+		// grind detector
+		//if(vp.reallyGroundedWheels < 2 && )
+
+		// side grind detector
+		// 2s - gives side grind score (400)
+		if (vp.colliding && vp.reallyGroundedWheels > 2)
+		{
+			sideGrindTimer += Time.fixedDeltaTime;
+			if (sideGrindTimer > 2)
+			{
+				StartCoroutine(AddExtraStuntCo(StuntsData.ExtraName.SideGrind));
+				sideGrindTimer = 0;
+			}
+		}
+		else
+		{
+			sideGrindTimer = 0;
+		}
+
+		// trickstart/wheelie/stoppie detection
+		if (vp.velMag < .5f)
+			carStoppedTime = Time.time;
+
+		if (vp.reallyGroundedWheels == 2)
+		{
+			if (vp.wheels[0].groundedReally && vp.wheels[1].groundedReally)
+				stoppieTimer += Time.fixedDeltaTime;
+			else if (vp.wheels[2].groundedReally && vp.wheels[3].groundedReally)
+				wheelieTimer += Time.fixedDeltaTime;
+
+			if (wheelieTimer > .6f)
+			{
+				if (Time.time - carStoppedTime < 2)
+				{
+					StartCoroutine(AddExtraStuntCo(StuntsData.ExtraName.Trikstart));
+					wheelieTimer = -99;
+				}
+				else
+				{
+					StartCoroutine(AddExtraStuntCo(StuntsData.ExtraName.Wheelie));
+					wheelieTimer = -99;
+				}
+			}
+			else if (stoppieTimer > .6f)
+			{
+				StartCoroutine(AddExtraStuntCo(StuntsData.ExtraName.Stoppie));
+				stoppieTimer = -99;
+			}
+		}
+		else
+		{
+			wheelieTimer = 0;
+			stoppieTimer = 0;
+		}
+
+		// stunt detection
 		if (vp.reallyGroundedWheels == 0)
 		{
 			if (!prevGroundedWheels0)
@@ -178,7 +407,7 @@ public class RaceBox : MonoBehaviour
 				w = w.normalized;
 
 				prevGroundedWheels0 = true;
-				foreach (RotationStunt stunt in stunts.Cast<RotationStunt>())
+				foreach (Flip stunt in stuntsData.flipData)
 				{
 					stunt.positiveProgress = 0;
 					stunt.negativeProgress = 0;
@@ -196,11 +425,11 @@ public class RaceBox : MonoBehaviour
 				//Debug.DrawRay(vp.transform.position, lA, Color.red, 10);
 				Vector3 foundMoves = Vector3.zero;
 				int i = 0;
-				foreach (RotationStunt stunt in stunts)
+				foreach (Flip stunt in stuntsData.flipData)
 				{
 					//w_A_dot = Mathf.Abs(Vector3.Dot(w, normA));
 					bool w_A_test = stunt.req_w_and_Angular_relation == VectorRelationship.None ||
-						RotationStunt.GetRelationship(w, normA) == stunt.req_w_and_Angular_relation;
+						Flip.GetRelationship(w, normA) == stunt.req_w_and_Angular_relation;
 					if (!w_A_test)
 					{
 						//if (i == 1)
@@ -209,7 +438,7 @@ public class RaceBox : MonoBehaviour
 
 					}
 					bool gY_A_test = stunt.req_globalY_and_Angular_relation == VectorRelationship.None ||
-						RotationStunt.GetRelationship(Vector3.up, normA) == stunt.req_globalY_and_Angular_relation;
+						Flip.GetRelationship(Vector3.up, normA) == stunt.req_globalY_and_Angular_relation;
 					if (!gY_A_test)
 					{
 						//if(i==1)
@@ -217,7 +446,7 @@ public class RaceBox : MonoBehaviour
 						continue;
 
 					}
-					var relationship = RotationStunt.GetRelationship(normlA, stunt.rotationAxis);
+					var relationship = Flip.GetRelationship(normlA, stunt.rotationAxis);
 					bool lA_car_test = relationship == VectorRelationship.None || relationship == VectorRelationship.Parallel;
 					if (!lA_car_test)
 					{
@@ -259,12 +488,12 @@ public class RaceBox : MonoBehaviour
 						&& stunt.negativeProgress * Mathf.Rad2Deg >= stunt.angleThreshold / 2f
 						&& stunt.CarAlignmentConditionFulfilled(vp))
 					{ // done half rotation two-directions
-						stuntsAvailableForFrontend = true;
+						stuntsData.availableForFrontend = true;
 						stunt.ResetProgress();
 						stunt.updateOverlay = true;
 
 						bool reverse = stunt.IsReverse(vp) && stunt.canBeReverse;
-						stunt.WriteHalfOverlayName(reverse, !evoModule.IsStunting());
+						stunt.WriteHalfOverlayName(reverse);
 						stuntPai.level++;
 						stuntPai.score += (int)((starLevel + 1) * 1.5f * stunt.score * (reverse ? 2 : 1) * (!evoModule.IsStunting() ? 2 : 1));
 					}
@@ -272,7 +501,7 @@ public class RaceBox : MonoBehaviour
 						|| stunt.negativeProgress * Mathf.Rad2Deg >= stunt.angleThreshold)
 						&& stunt.CarAlignmentConditionFulfilled(vp))
 					{ // done full rotation
-						stuntsAvailableForFrontend = true;
+						stuntsData.availableForFrontend = true;
 						stunt.doneTimes++;
 						stunt.updateOverlay = true;
 						bool reverse = stunt.IsReverse(vp) && stunt.canBeReverse;
@@ -288,10 +517,11 @@ public class RaceBox : MonoBehaviour
 		{
 			if (prevGroundedWheels0) // first frame on road after landing
 			{
-				foreach (RotationStunt stunt in stunts)
+				foreach (Flip stunt in stuntsData.flipData)
 				{
 					stunt.positiveProgress = 0;
 					stunt.negativeProgress = 0;
+					stunt.doneTimes = 0;
 				}
 				prevGroundedWheels0 = false;
 				stableLandingTimer = .5f;
@@ -323,6 +553,16 @@ public class RaceBox : MonoBehaviour
 		prevStuntPai = null;
 		StuntPaiReset();
 	}
+	void AcceptExtraStunt()
+	{
+		if (stuntPai.score > 0 && stableLandingTimer == -1)
+		{
+			aero += stuntPai.score / 10f;
+			prevStuntPai = new PtsAnimInfo(stuntPai);
+			vp.ChargeBatteryByStunt();
+		}
+		StuntPaiReset();
+	}
 	void AcceptStunt()
 	{
 		stableLandingTimer = -1;
@@ -330,12 +570,17 @@ public class RaceBox : MonoBehaviour
 		{
 			SetGrantedComboTime(5 + 0.5f * starLevel);
 			vp.ChargeBatteryByStunt();
-			
+
 			aero += stuntPai.score / 10f;
 			//Debug.Log(vp.tr.name + " Accept");
 			prevStuntPai = new PtsAnimInfo(stuntPai);
 			StuntPaiReset();
 		}
+	}
+	void SetGrantedComboTime(float seconds)
+	{
+		grantedComboTime = seconds;
+		starLevel = Mathf.Clamp(++starLevel, 0, 10);
 	}
 	void StuntPaiReset()
 	{
@@ -431,15 +676,11 @@ public class RaceBox : MonoBehaviour
 			}
 		}
 	}
-	void SetGrantedComboTime(float seconds)
-	{
-		grantedComboTime = seconds;
-		starLevel = Mathf.Clamp(++starLevel, 0, 10);
-	}
 	
+
 	public void NextLap()
 	{
-		if (curLap == 0 || vp.followAI.ProgressPercent() > 0.8f || vp.followAI.pitsProgress > 0)
+		if (curLap == 0 || vp.followAI.ProgressPercent() > 0.9f || vp.followAI.pitsProgress > 0)
 		{
 			vp.followAI.progress = 0.1f;
 			vp.followAI.curWaypointIdx = 0;
@@ -469,12 +710,13 @@ public class RaceBox : MonoBehaviour
 					raceManager.hud.AddMessage(new(vp.tr.name + " WINS THE RACE!", BottomInfoType.CAR_WINS));
 				}
 				// in racemode after the end of a race, cars still run around the track, ghosts overtake each other. Don't let it change results
-				curLap += 100 * (Info.s_rivals+1 - curPos);
+				curLap += 100 * (Info.s_rivals + 1 - curPos);
 				vp.ghostComponent.SetHittable(false);
 				raceTime = DateTime.Now - Info.raceStartDate;
 				vp.followAI.SetCPU(true);
 			}
-
 		}
 	}
+
+	
 }

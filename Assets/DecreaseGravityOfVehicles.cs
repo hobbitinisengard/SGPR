@@ -1,17 +1,15 @@
+using RVP;
 using UnityEngine;
 
 public class DecreaseGravityOfVehicles : MonoBehaviour
 {
-	//private void OnTriggerEnter(Collider car)
-	//{
-	//	car.attachedRigidbody.useGravity = false;
-	//}
+	// used only in loops
 	private void OnTriggerStay(Collider car)
 	{
 		car.attachedRigidbody.AddRelativeForce(Vector3.down * 10);
 	}
-	//private void OnTriggerExit(Collider car)
-	//{
-	//	car.attachedRigidbody.useGravity = true;
-	//}
+	private void OnTriggerExit(Collider carCollider)
+	{
+		carCollider.attachedRigidbody.transform.GetComponent<VehicleParent>().customCam = null;
+	}
 }

@@ -31,9 +31,9 @@ public class LoadSelector : Sfxable
 	{
 		curSortingCondition = (SortingCond)(((int)curSortingCondition + 1) % 2);
 		if (curSortingCondition == SortingCond.Name)
-			sortButton.transform.GetChild(0).GetComponent<Text>().text = "Sorted by track's name";
+			sortButton.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "Sorted by track's name";
 		else
-			sortButton.transform.GetChild(0).GetComponent<Text>().text = "Sorted by track's difficulty";
+			sortButton.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "Sorted by track's difficulty";
 		// reload 
 		if (loadCo)
 			StopCoroutine(Load());
@@ -61,9 +61,9 @@ public class LoadSelector : Sfxable
 		}
 		
 		Info.tracks.Remove(selectedTrack.name);
-		File.Delete(Info.documentsSGPRpath + selectedTrack.name + ".track");
-		File.Delete(Info.documentsSGPRpath + selectedTrack.name + ".data");
-		File.Delete(Info.documentsSGPRpath + selectedTrack.name + ".png");
+		File.Delete(Info.tracksPath + selectedTrack.name + ".track");
+		File.Delete(Info.tracksPath + selectedTrack.name + ".data");
+		File.Delete(Info.tracksPath + selectedTrack.name + ".png");
 
 		int children = selectedTrack.parent.childCount;
 		int index = Mathf.Clamp(selectedTrack.GetSiblingIndex(),0,children-2);
@@ -88,7 +88,7 @@ public class LoadSelector : Sfxable
 				int trackOrigin = value.TrackOrigin();
 				var newtrack = Instantiate(trackImageTemplate, trackContent.GetChild(trackOrigin));
 				newtrack.name = key;
-				newtrack.GetComponent<Image>().sprite = IMG2Sprite.LoadNewSprite(Path.Combine(Info.documentsSGPRpath, newtrack.name + ".png"));
+				newtrack.GetComponent<Image>().sprite = IMG2Sprite.LoadNewSprite(Path.Combine(Info.tracksPath, newtrack.name + ".png"));
 				newtrack.SetActive(true);
 				existingTrackClasses[trackOrigin] = true;
 				if (persistentSelectedTrack != null && persistentSelectedTrack == key)

@@ -129,13 +129,7 @@ namespace RVP
 				actualFeedbackRPM = targetDrive.feedbackRPM / (curOutputRatio == 0 ? 1 : Mathf.Abs(curOutputRatio));
 
 				int upGearOffset = 1;
-				int downGearOffset = 1;
-
-				while (currentGear - downGearOffset > 1 && vp.localVelocity.z < gears[currentGear- downGearOffset].minSpeed)
-				{
-					downGearOffset++;
-				}
-
+				
 				//while (/*(skipNeutral || automatic) && 
 				//                gears[Mathf.Clamp(currentGear + upGearOffset, 0, gears.Length - 1)].ratio == 0
 				//                && */currentGear + upGearOffset != 0 && currentGear + upGearOffset < gears.Length - 1)
@@ -143,12 +137,13 @@ namespace RVP
 				//	upGearOffset++;
 				//}
 
-				while ((skipNeutral || automatic) &&
-						  gears[Mathf.Clamp(currentGear - downGearOffset, 0, gears.Length - 1)].ratio == 0
-						  && currentGear - downGearOffset != 0 && currentGear - downGearOffset > 0)
-				{
-					downGearOffset++;
-				}
+				//while ((skipNeutral || automatic) &&
+				//		  gears[Mathf.Clamp(currentGear - downGearOffset, 0, gears.Length - 1)].ratio == 0
+				//		  && currentGear - downGearOffset != 0 && currentGear - downGearOffset > 0)
+				//{
+				//	downGearOffset++;
+				//}
+
 
 				upperGear = gears[Mathf.Min(gears.Length - 1, currentGear + upGearOffset)];
 				
@@ -188,12 +183,14 @@ namespace RVP
 						}
 						if (currentGear > 0)
 						{
-							if ((vp.groundedWheels > 0 && vp.localVelocity.z < gears[currentGear].minSpeed
-								&& vp.localVelocity.z > 0 && !vp.AnyWheelsPowerSliding())
-								//|| (vp.groundedWheels == 0 && currentGear > 3 && vp.localVelocity.y < 0 && vp.localVelocity.y > -40 && 
-								//Mathf.Abs(vp.localVelocity.y) < gears[currentGear].minSpeed)
-								|| (vp.velMag < 1 && vp.brakeInput > 0 && vp.brakeIsReverse))
+							if ((vp.reallyGroundedWheels > 0 && vp.velMag < gears[currentGear].minSpeed)
+								|| (vp.velMag < 2 && vp.brakeInput > 0 && vp.brakeIsReverse))
 							{
+								int downGearOffset = 1;
+								while (currentGear - downGearOffset > 1 && vp.localVelocity.magnitude < gears[currentGear - downGearOffset].minSpeed)
+								{
+									downGearOffset++;
+								}
 								Shift(-downGearOffset);
 							}
 						}

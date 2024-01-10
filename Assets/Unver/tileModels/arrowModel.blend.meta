@@ -8,7 +8,8 @@ ModelImporter:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: ArrowMat
-    second: {fileID: 2100000, guid: d7bc4fd8f3a080841a7a518b322859f8, type: 2}
+    second: {fileID: -3330971231033356920, guid: 145fe57700747ec448449eef490f1647,
+      type: 3}
   materials:
     materialImportMode: 2
     materialName: 0

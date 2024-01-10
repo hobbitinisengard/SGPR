@@ -2,16 +2,15 @@ using RVP;
 using System;
 using UnityEngine;
 /* connectors act as:
- * - connections between tiles for raceline (connection)
- * - points of reference when scaling tiles (scalator)
- * - stunt zones for AI (isStuntZone)
+ * - connections between tiles for raceline and editor(connection)
+ * - stunt zones for AI (isStuntZone), cameras points
 */
 public class Connector : MonoBehaviour
 {
 	[NonSerialized]
 	public Connector connection;
 	[NonSerialized]
-	public TrackCamera trackCamera; // po GetChild
+	public TrackCamera trackCamera;
 	Tile tile;
 	public static Material blue;
 	public static Material red;
@@ -148,7 +147,7 @@ public class Connector : MonoBehaviour
 		{
 			if (!tile.placed)
 			{
-				tile.panel.placedConnector = otherCollider.transform.position;
+				tile.panel.SetPlacedConnector(otherCollider.transform.position);
 			}
 			else
 			{
@@ -158,7 +157,7 @@ public class Connector : MonoBehaviour
 					connection = otherCollider.GetComponent<Connector>();
 				}
 				else
-					tile.panel.floatingConnector = otherCollider.transform.position;
+					tile.panel.SetFloatingConnector(otherCollider.transform.position);
 			}
 		}
 	}
@@ -168,11 +167,11 @@ public class Connector : MonoBehaviour
 		{
 			if (!tile.placed)
 			{
-				tile.panel.placedConnector = null;
+				tile.panel.SetPlacedConnector(null);
 			}
 			else
 			{
-				tile.panel.floatingConnector = null;
+				tile.panel.SetFloatingConnector(null);
 			}
 		}
 	}

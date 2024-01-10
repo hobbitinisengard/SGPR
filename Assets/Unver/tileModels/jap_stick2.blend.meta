@@ -8,7 +8,7 @@ ModelImporter:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: level2_256pillargate
-    second: {fileID: 2100000, guid: 4a9d645bc2233b4438637291cfd443f9, type: 2}
+    second: {fileID: 2100000, guid: 36e2acf4311ba93419ec03ad1628bd87, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

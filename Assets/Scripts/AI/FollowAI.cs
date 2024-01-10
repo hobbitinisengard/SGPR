@@ -34,7 +34,7 @@ namespace RVP
 		//	}
 		//}
 		List<int> stuntPoints;
-		List<int> waypointsContainer;
+		int racingLineLayerNumber;
 		public List<ReplayCamStruct> replayCams { get; private set; }
 		[NonSerialized]
 		public PathCreator trackPathCreator;
@@ -163,9 +163,9 @@ namespace RVP
 				}
 			}
 		}
-		public void AssignPath(in PathCreator path, ref List<int> stuntpointsContainer, ref List<ReplayCamStruct> replayCams, ref List<int> waypointsContainer)
+		public void AssignPath(in PathCreator path, ref List<int> stuntpointsContainer, ref List<ReplayCamStruct> replayCams, int racingLineLayerNumber)
 		{
-			this.waypointsContainer = waypointsContainer;
+			this.racingLineLayerNumber = racingLineLayerNumber;
 			this.stuntPoints = stuntpointsContainer;
 			this.replayCams = replayCams;
 			trackPathCreator = path;
@@ -180,7 +180,7 @@ namespace RVP
 		private void OnEnable()
 		{
 			maxPhysicalSteerAngle = vp.steeringControl.steeredWheels[0].steerRangeMax;
-			var racingPathHits = Physics.OverlapSphere(transform.position, radius, 1 << Info.racingLineLayer);
+			var racingPathHits = Physics.OverlapSphere(transform.position, radius, 1 << racingLineLayerNumber);
 			dist = GetDist(racingPathHits);
 			progress = dist;
 			SetCPU(isCPU);
@@ -285,8 +285,10 @@ namespace RVP
 			else
 				outOfTrackTime += Time.fixedDeltaTime;
 
+
+			// wrong way driving
 			if (vp.reallyGroundedWheels == 4 && vp.velMag > 10 && Vector3.Dot(vp.forwardDir, trackPathCreator.path.GetDirectionAtDistance(dist)) < -0.5f)
-			{ // wrong way driving
+			{ 
 				outOfTrackTime += Time.fixedDeltaTime;
 			}
 			if (outOfTrackTime > outOfTrackRequiredTime)
@@ -320,7 +322,7 @@ namespace RVP
 			{
 				if (searchForPits)
 				{
-					pitsPathHits = Physics.OverlapSphere(transform.position, radius, 1 << Info.pitsLineLayer);
+					pitsPathHits = Physics.OverlapSphere(transform.position, radius, 1 << racingLineLayerNumber);
 
 					if (pitsPathHits.Length > 0)
 					{
@@ -331,7 +333,7 @@ namespace RVP
 						inPitsTime = Time.time;
 					}
 				}
-				var racingPathHits = Physics.OverlapSphere(transform.position, radius, 1 << Info.racingLineLayer);
+				var racingPathHits = Physics.OverlapSphere(transform.position, radius, 1 << racingLineLayerNumber);
 
 				dist = GetDist(racingPathHits);
 
@@ -349,8 +351,9 @@ namespace RVP
 				{
 					outOfTrackTime += Time.fixedDeltaTime;
 				}
-
 			}
+
+
 			if (selfDriving)
 			{
 				if (vp.BatteryPercent < 0.2f)
@@ -394,8 +397,8 @@ namespace RVP
 				tPos0.y = transform.position.y;
 				tPos.y = transform.position.y;
 				tPos2.y = transform.position.y;
-				//Debug.DrawLine((Vector3)tPos, (Vector3)tPos + 100 * Vector3.up, Color.magenta);
-				//Debug.DrawLine((Vector3)tPos2, (Vector3)tPos2 + 100 * Vector3.up, Color.red);
+				Debug.DrawLine((Vector3)tPos, (Vector3)tPos + 100 * Vector3.up, Color.magenta);
+				Debug.DrawLine((Vector3)tPos2, (Vector3)tPos2 + 100 * Vector3.up, Color.red);
 
 
 				if (pitsPathCreator)
@@ -463,7 +466,6 @@ namespace RVP
 					{
 						vp.SetAccel(0f);
 					}
-
 					// Set brake input
 					if (reverseTime == 0 && brakeTime == 0)
 					{
@@ -580,7 +582,7 @@ namespace RVP
 		{
 			if (progress == 0)
 				yield break;
-
+			vp.customCam = null;
 			OutOfPits();
 			GetComponent<RaceBox>().ResetOnTrack();
 			vp.engine.transmission.ShiftToGear(2);

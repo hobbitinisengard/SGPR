@@ -79,4 +79,8 @@ public class MainMenuView : Sfxable
 			dimmer.PlayDimmerToWorld();
 		}
 	}
+	public void QuitGame()
+	{
+		Application.Quit();
+	}
 }

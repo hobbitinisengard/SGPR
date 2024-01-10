@@ -23,7 +23,7 @@ public class ButtonLayout : LayoutGroup
 	protected override void OnValidate()
 	{
 		base.OnValidate();
-		Calculate();
+		//Calculate();
 	}
 #endif
 	protected override void OnEnable()

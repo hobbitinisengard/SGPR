@@ -16,10 +16,8 @@ namespace RVP
 	{
 		AudioSource musicPlayer;
 		public GameObject Sun;
-		public AudioMixer sfx;
-		public AudioMixer music;
 		public ViewSwitcher viewSwitcher;
-		public PathCreator racingPath;
+		public PathCreator[] racingPaths;
 		//public GameObject Sun;
 		[Tooltip("Reload the scene with the 'Restart' button in the input manager")]
 		public bool quickRestart = true;
@@ -77,22 +75,9 @@ namespace RVP
 		{
 			TAKES_THE_LEAD, NO_ENERGY, SPLIT_TIME,
 		}
-
-		public void SaveMusicLevels()
-		{
-			float musicLvl = Info.ReadMixerLevelLog("musicVol", music);
-			float sfxLvl = Info.ReadMixerLevelLog("sfxVol", sfx);
-			string serializedSettings = JsonConvert.SerializeObject(new PlayerSettingsData()
-			{
-				musicVol = musicLvl,
-				sfxVol = sfxLvl,
-				lastPlayerName = Info.s_playerName
-			});
-			File.WriteAllText(Info.userdataPath, serializedSettings);
-		}
+		
 		public void BackToEditor()
 		{
-			SaveMusicLevels();
 			hud.Disconnect();
 			hud.gameObject.SetActive(false);
 			cam.Disconnect();
@@ -105,10 +90,9 @@ namespace RVP
 		}
 		public void BackToMenu()
 		{
-			SaveMusicLevels();
-			foreach (var c in Info.s_cars)
-				Destroy(c.gameObject);
-			Info.s_cars.Clear();
+			//foreach (var c in Info.s_cars)
+			//	Destroy(c.gameObject);
+			//Info.s_cars.Clear();
 			viewSwitcher.PlayDimmerToMenu();
 		}
 		public void RestartButton()
@@ -230,8 +214,6 @@ namespace RVP
 			cam.Connect(newCar);
 			hud.Connect(newCar);
 			newCar.raceBox.raceManager = this;
-			// do not assign path in freeroam as track might not be finished
-			//newCar.followAI.AssignPath(racingPath, ref editorPanel.stuntpointsContainer, ref editorPanel.replayCamsContainer);
 		}
 		void SetPitsLayer(int layer)
 		{
@@ -281,8 +263,8 @@ namespace RVP
 			SetPitsLayer(0);
 			for (int i = 0; i < Info.s_rivals + 1; ++i)
 			{
-				Vector3 startPos = racingPath.path.GetPointAtDistance(dist);
-				Vector3 dirVec = racingPath.path.GetDirectionAtDistance(dist);
+				Vector3 startPos = racingPaths[0].path.GetPointAtDistance(dist);
+				Vector3 dirVec = racingPaths[0].path.GetDirectionAtDistance(dist);
 				Vector3 rotDirVec = Quaternion.AngleAxis(90, Vector3.up) * dirVec;
 				Vector3 leftSide = startPos;
 				Vector3 rightSide = startPos;
@@ -316,12 +298,17 @@ namespace RVP
 				var rotation = Quaternion.LookRotation(dirVec);
 				var newCar = Instantiate(carModel, position, rotation).GetComponent<VehicleParent>();
 				newCar.carName = carName;
-				Info.s_cars.Add(newCar);
 				newCar.SetSponsor((initialRandomLivery + i) % Info.Liveries);
+				Info.s_cars.Add(newCar);
 				if (Info.s_isNight)
 					newCar.SetLights();
+
 				StartCoroutine(newCar.CountdownTimer(countDownSeconds - newCar.engine.transmission.shiftDelaySeconds));
-				newCar.followAI.AssignPath(racingPath, ref editorPanel.stuntpointsContainer, ref editorPanel.replayCamsContainer, ref editorPanel.waypointsContainer);
+
+				int racingLineNumber = UnityEngine.Random.Range(0, 3);
+				newCar.followAI.AssignPath(racingPaths[racingLineNumber], ref editorPanel.stuntpointsContainer, 
+					ref editorPanel.replayCamsContainer, Info.racingLineLayers[racingLineNumber]);
+
 				if (i == Info.s_rivals)
 				{ // last car is the player
 					cam.enabled = true;
@@ -340,7 +327,7 @@ namespace RVP
 						cam.Connect(newCar);
 						hud.Connect(newCar);
 						DemoSGPLogo.SetActive(false);
-						//newCar.followAI.SetCPU(true); // CPU drives player's car
+						newCar.followAI.SetCPU(true); // CPU drives player's car
 					}
 				}
 				else
@@ -450,11 +437,11 @@ namespace RVP
 						Info.tracks[Info.s_trackName].records[3].playerName = Info.s_playerName;
 						Info.tracks[Info.s_trackName].records[3].secondsOrPts = playerCar.raceBox.driftPts;
 					}
-					// immediately update track header
+					// immediately set track header
 					if (Info.tracks.ContainsKey(Info.s_trackName))
 					{
 						var trackJson = JsonConvert.SerializeObject(Info.tracks[Info.s_trackName]);
-						var path = Path.Combine(Info.documentsSGPRpath, Info.s_trackName + ".track");
+						var path = Path.Combine(Info.tracksPath, Info.s_trackName + ".track");
 						File.WriteAllText(path, trackJson);
 					}
 				}

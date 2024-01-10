@@ -3,7 +3,12 @@ guid: e576ca60bf70a1149a317afc8d84a6cf
 ModelImporter:
   serializedVersion: 21300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: trackset01_trk_startline.png
+    second: {fileID: 2100000, guid: 62538eb4bcf27b940be1ff201c266387, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

@@ -220,6 +220,12 @@ namespace RVP
 		//    }
 		//    return new AnimationCurve(keys);
 		//}
+		public void SetColliderLayer(int layer)
+		{
+			gameObject.layer = layer;
+			if(sphereColTr)
+				sphereColTr.gameObject.layer = layer;
+		}
 		void Start()
 		{
 			tr = transform;
@@ -569,22 +575,22 @@ namespace RVP
 			}
 			else
 			{
-
-				if (vp.followAI.isCPU && !vp.raceBox.evoModule.stunting && !vp.crashing)
-				{ // steering in air
-					grounded = true;
-					groundedReally = false;
-					contactPoint.distance = suspensionParent.suspensionDistance;
-					contactPoint.point = suspensionParent.transform.position - suspensionParent.upDir * suspensionParent.suspensionDistance;
-					contactPoint.grounded = true;
-					contactPoint.normal = Vector3.up;
-					contactPoint.relativeVelocity = tr.InverseTransformDirection(localVel);
-					contactPoint.col = null;
-					contactVelocity = Vector3.zero;
-					contactPoint.surfaceFriction = GroundSurfaceMaster.AirSteeringFriction;
-					contactPoint.surfaceType = GroundSurfaceMaster.AirSteeringSurfaceType;
-				}
-				else
+				//if (vp.followAI.isCPU && !vp.raceBox.evoModule.stunting && !vp.crashing 
+				//	&& Vector3.Dot(vp.tr.up,Vector3.up) > 0)
+				//{ // steering in air
+				//	grounded = true;
+				//	groundedReally = false;
+				//	contactPoint.distance = suspensionParent.suspensionDistance;
+				//	contactPoint.point = suspensionParent.transform.position - suspensionParent.upDir * suspensionParent.suspensionDistance;
+				//	contactPoint.grounded = true;
+				//	contactPoint.normal = Vector3.up;
+				//	contactPoint.relativeVelocity = tr.InverseTransformDirection(localVel);
+				//	contactPoint.col = null;
+				//	contactVelocity = Vector3.zero;
+				//	contactPoint.surfaceFriction = GroundSurfaceMaster.AirSteeringFriction;
+				//	contactPoint.surfaceType = GroundSurfaceMaster.AirSteeringSurfaceType;
+				//}
+				//else
 				{ 
 					grounded = false;
 					groundedReally = false;

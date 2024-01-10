@@ -7,8 +7,18 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: level2_128flag
+    second: {fileID: 2100000, guid: a25e510e7b3813646a330ce5b3500be8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: level2_128flag.png
     second: {fileID: 2100000, guid: f80ff456dc095284eb778bf7698abbca, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_128gardenrock
+    second: {fileID: 2100000, guid: 7d4c93bcdd6e0f9438054ed71dfbd5e6, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
@@ -17,8 +27,18 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: level2_128gate
+    second: {fileID: 2100000, guid: 4d83d9dd3e9391e42b0293ad7270e239, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: level2_128gate.png
     second: {fileID: 2100000, guid: 9b4db94b78eff1c419ab1f8974229314, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_128gateroof
+    second: {fileID: 2100000, guid: 594325276ed42b246a75b22907c7d3df, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
@@ -27,8 +47,18 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: level2_128mainwall2
+    second: {fileID: 2100000, guid: 7cc49d82449c93a41834e089eccae425, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: level2_128mainwall2.png
     second: {fileID: 2100000, guid: a88462da224d0eb4e8707e84236795e0, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_128mainwallx
+    second: {fileID: 2100000, guid: dce363a09547bc64688b1bd308fe677d, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
@@ -37,8 +67,18 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: level2_128plantsjap
+    second: {fileID: 2100000, guid: cfac805a4181963468ba1b4819d7c75d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: level2_128plantsjap.png
     second: {fileID: 2100000, guid: 5c07d2759b801504ba9ac8a23507283f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_128tembarrier
+    second: {fileID: 2100000, guid: a3a625653f1bc1e4e93ae184ee1996b5, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
@@ -47,8 +87,18 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: level2_128temple2
+    second: {fileID: 2100000, guid: 23b3c65467cb87a4092f066e40c0f2ec, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: level2_128temple2.png
     second: {fileID: 2100000, guid: 94f9c0be714637a40954c3ea75b1bd98, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_128tree1
+    second: {fileID: 2100000, guid: e0dbfaa5f542015449325a56fcd19f08, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
@@ -57,8 +107,18 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: level2_128woodwall
+    second: {fileID: 2100000, guid: a4a3a2b47c66ad24281fdf88331db76a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: level2_128woodwall.png
     second: {fileID: 2100000, guid: 96968a6e4d75cc54d810bde03300cb7a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_256blossom
+    second: {fileID: 2100000, guid: 84a35460a6071524a8d71a5f8f3e67a7, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
@@ -67,8 +127,18 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: level2_256japcastle
+    second: {fileID: 2100000, guid: 5b6af6d248b2aef4189dc4607129a389, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: level2_256japcastle.png
     second: {fileID: 2100000, guid: b89a4b75df952ac45a0f9ee990627dbb, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_256pagoda
+    second: {fileID: 2100000, guid: fb33995271f5f9547a6615838a6295be, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
@@ -77,8 +147,18 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: level2_256pillargate
+    second: {fileID: 2100000, guid: 36e2acf4311ba93419ec03ad1628bd87, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: level2_256pillargate.png
     second: {fileID: 2100000, guid: 4a9d645bc2233b4438637291cfd443f9, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_256roof
+    second: {fileID: 2100000, guid: 237794f2f37d819429c3c625a115d406, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
@@ -87,8 +167,18 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: level2_256wall3
+    second: {fileID: 2100000, guid: 27f3d43a53ae2c2498637401657baf5d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: level2_256wall3.png
     second: {fileID: 2100000, guid: d1d770ca7e11f8a439b333d36bc0b481, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_64grassgate
+    second: {fileID: 2100000, guid: 861d29c89c5ad364d8365f4aca622ad1, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
@@ -102,8 +192,18 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: level2_64mainbar
+    second: {fileID: 2100000, guid: e9b5ab25f7228604d889878fe25d5fa4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: level2_64mainbar.png
     second: {fileID: 2100000, guid: 8ab86ef5e9b6d814eab43237f6e42f98, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_64pepbles
+    second: {fileID: 2100000, guid: d573f593c60ff9e47ba9888dc83f0f44, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
@@ -112,8 +212,18 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: level2_64roof2
+    second: {fileID: 2100000, guid: 7cbd8918eb1ff7349a9e16078f85ed35, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: level2_64roof2.png
     second: {fileID: 2100000, guid: 31625c6aa9caaaa41a20431818425fd7, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_64spray
+    second: {fileID: 2100000, guid: dfb3dd274fb38f8409db212a6911abcc, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
@@ -122,8 +232,18 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: level2_64tembit1
+    second: {fileID: 2100000, guid: 287fa1ebe925deb40af7c86717c03bc1, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: level2_64tembit1.png
     second: {fileID: 2100000, guid: 3abfe4fea62015a44b9600d79182fd10, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_64temrfwood
+    second: {fileID: 2100000, guid: 05505edad7c3a9a4692b176a96439996, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
@@ -132,8 +252,18 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: level2_64temroofu
+    second: {fileID: 2100000, guid: ac5728f112c25cb4bb2be231c6c9cf75, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: level2_64temroofu.png
     second: {fileID: 2100000, guid: b9c9c4111bc709147b21a717982cfe39, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_64wallroof
+    second: {fileID: 2100000, guid: 1eaef87de96e81d41a323087cf04cd67, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
@@ -142,8 +272,18 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: level2_64waterfall
+    second: {fileID: 2100000, guid: cce206dc0a140c3489dc2875f61fd429, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: level2_64waterfall.png
     second: {fileID: 2100000, guid: cce206dc0a140c3489dc2875f61fd429, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: level2_psxstairs128
+    second: {fileID: 2100000, guid: f042d4bfe5a00f045bc79f8fddd969c0, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule

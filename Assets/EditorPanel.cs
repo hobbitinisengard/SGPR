@@ -12,13 +12,21 @@ using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using static SlideInOut;
 
 public struct ReplayCamStruct
 {
 	public int dist;
 	public TrackCamera cam;
 }
+[Serializable]
+public class RacingPathParams
+{
+	public float SecurityR;
+	public float SideDistExt;
+	public float SideDistInt;
+	public int Iterations;
+}
+
 public class EditorPanel : Sfxable
 {
 	const int connectorRadius = 5;
@@ -98,13 +106,18 @@ public class EditorPanel : Sfxable
 	public GameObject tileGroups;
 	public GameObject arrowModel;
 	GameObject arrow;
-	public Vector3? placedConnector;
-	public Vector3? floatingConnector;
+	/// <summary>
+	/// Connector of a placed tile
+	/// </summary>
+	Vector3? placedConnector;
+	/// <summary>
+	/// Connector of the currentTile (not placed yet)
+	/// </summary>
+	Vector3? floatingConnector;
 	public GameObject cameraMenu;
 	public GameObject cameraPrefab;
 	public GameObject infoText;
 	public GameObject fillMenu;
-	public PathCreator pathCreator;
 	public GameObject replayCamerasContainer;
 	public Image connectButtonImage;
 	public Image scalatorButtonImage;
@@ -113,10 +126,7 @@ public class EditorPanel : Sfxable
 	public Slider WindRanX;
 	public Slider WindRanZ;
 	public Button terrainBtn;
-	public float SecurityR;
-	public float SideExt;
-	public float SideInt;
-	public int iterations = 500;
+	public RacingPathParams[] racingPathParams;//20,0,0,50
 	Vector3? lastEditorCameraPosition;
 	Quaternion lastEditorCameraRotation;
 	Dictionary<string, GameObject> cachedTiles = new Dictionary<string, GameObject>();
@@ -132,7 +142,11 @@ public class EditorPanel : Sfxable
 	CSelector selector;
 	bool curMirror;
 	public GameObject placedTilesContainer { get; private set; }
-	GameObject racingLineContainer;
+
+	PathCreator[] pathCreators;
+	GameObject[] racingLineContainers;
+	Vector4[] racingLine;
+
 	public bool initialized { get; private set; }
 	Vector3 curPosition;
 	List<Connector> connectors = new List<Connector>();
@@ -143,7 +157,6 @@ public class EditorPanel : Sfxable
 	private GameObject selectedCamera;
 	private GameObject newCamera;
 	private Transform selectedFlag;
-	Vector4[] racingLine;
 	Vector3 windExternal, windRandom;
 	const int maxWind = 300;
 	GameObject skybox;
@@ -155,7 +168,6 @@ public class EditorPanel : Sfxable
 	private bool isPathClosed;
 	[NonSerialized]
 	public TrackHeader.Record[] records = TrackHeader.Record.RecordTemplate();
-	private GameObject nightSkybox;
 
 	public bool loadingTrack { get; private set; }
 
@@ -171,6 +183,7 @@ public class EditorPanel : Sfxable
 	}
 	private void Initialize()
 	{
+
 		mode = Mode.Build;
 		selector = new CSelector(scalatorButtonImage);
 		uiTest = GetComponent<UITest>();
@@ -183,8 +196,22 @@ public class EditorPanel : Sfxable
 		buttonAnimationCurve.AddKey(new Keyframe(.25f, .8f));
 		buttonAnimationCurve.AddKey(new Keyframe(.5f, 1));
 		placedTilesContainer = new GameObject("placedTilesContainer");
-		racingLineContainer = new GameObject("racingLineContainer");
+
+		pathCreators = raceManager.racingPaths;
+		racingLineContainers = new GameObject[pathCreators.Length];
+		for (int i=0; i<pathCreators.Length; ++i)
+		{
+			racingLineContainers[i] = new GameObject("racingLine"+i.ToString());
+		}
 		initialized = true;
+	}
+	public void SetPlacedConnector(Vector3? position)
+	{
+		placedConnector = position;
+	}
+	public void SetFloatingConnector(Vector3? position)
+	{
+		floatingConnector = position;
 	}
 	void DeselectIconAndRemoveCurrentTile()
 	{
@@ -280,7 +307,8 @@ public class EditorPanel : Sfxable
 		{
 			Info.s_isNight = !Info.s_isNight;
 			raceManager.SetPartOfDay();
-			skybox.GetComponent<SkyboxController>().nightTimeLights.SetActive(Info.s_isNight);
+			skybox.GetComponent<SkyboxController>().SetNightTimeLights();
+			SetEnvirLights();
 			for (int i = 0; i < placedTilesContainer.transform.childCount; ++i)
 			{
 				placedTilesContainer.transform.GetChild(i).GetComponent<Tile>().UpdateLights();
@@ -793,6 +821,7 @@ public class EditorPanel : Sfxable
 	IEnumerator ClosingPath()
 	{
 		connectors.Clear();
+		
 		List<Vector3> Lpath = new List<Vector3>(100);
 		List<Vector3> Rpath = new List<Vector3>(100);
 		List<LoopReplacement> replacements = new List<LoopReplacement>();
@@ -876,98 +905,122 @@ public class EditorPanel : Sfxable
 			}
 		}
 
-		K1999 k1999 = new K1999(SecurityR, SideExt, SideInt, iterations);
-		k1999.LoadData(Lpath, Rpath);
-		k1999.CalcRaceLine();
-		racingLine = k1999.GetRacingLine(Lpath, Rpath);
-
-		if (replacements != null)
+		bool trackPathDuplicates = false;
+		for (int i = 1; i < Rpath.Count; ++i)
 		{
-			foreach (var r in replacements)
+			if (Rpath[i] == Rpath[i - 1])
 			{
-				for (int i = 0; i < r.points.Length; ++i)
+				Debug.DrawLine(Rpath[i], Rpath[i] + Vector3.up * 100, Color.red, 10);
+				trackPathDuplicates = true;
+			}
+			if(Lpath[i] == Lpath[i - 1])
+			{
+				Debug.DrawLine(Lpath[i], Lpath[i] + Vector3.up * 100, Color.red, 10);
+				trackPathDuplicates = true;
+			}
+		}
+		if (trackPathDuplicates)
+		{
+			Debug.LogError("Rpath duplicate found");
+			yield break;
+		}
+		for(int i=0; i<pathCreators.Length; ++i)
+		{
+			K1999 k1999 = new (racingPathParams[i]);
+			k1999.LoadData(Lpath, Rpath);
+			k1999.CalcRaceLine();
+			racingLine = k1999.GetRacingLine(Lpath, Rpath);
+
+			if (replacements != null)
+			{
+				foreach (var r in replacements)
 				{
-					racingLine[r.offset + i].x = r.points[i].x;
-					racingLine[r.offset + i].y = r.points[i].y;
-					racingLine[r.offset + i].z = r.points[i].z;
-					racingLine[r.offset + i].w = 0; // as if no turns -> makes car go fast
+					for (int j = 0; j < r.points.Length; ++j)
+					{
+						racingLine[r.offset + j].x = r.points[j].x;
+						racingLine[r.offset + j].y = r.points[j].y;
+						racingLine[r.offset + j].z = r.points[j].z;
+						racingLine[r.offset + j].w = 0; // as if no turns -> makes car go fast
+					}
 				}
 			}
-		}
-		BezierPath bezierPath = new BezierPath(racingLine.ToArray(), true, PathSpace.xyz);
-		pathCreator.bezierPath = bezierPath;
-		SetPathClosed(true);
-		isPathClosed = true;
-		connectButtonImage.color = Color.green;
-		pathFollower.SetActive(true);
+			BezierPath bezierPath = new BezierPath(racingLine.ToArray(), true, PathSpace.xyz);
+			pathCreators[i].bezierPath = bezierPath;
+			SetPathClosed(true);
+			connectButtonImage.color = Color.green;
+			pathFollower.SetActive(true);
 
-		// destroy old castable points
-		for (int i = 0; i < racingLineContainer.transform.childCount; ++i)
-		{
-			GameObject.Destroy(racingLineContainer.transform.GetChild(i).gameObject);
-		}
-		// Create castable points
-		float progress = 0;
-		if (pathCreator.path.length > 10000)
-			Debug.LogError("Path > 10000");
-		else
-		{
-			for (int i = 0; i < 10000 && progress < pathCreator.path.length; ++i)
+			// destroy old castable points
+			for (int j = 0; j < racingLineContainers[i].transform.childCount; ++j)
 			{
-				GameObject castable = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-				Destroy(castable.GetComponent<MeshRenderer>());
-				castable.transform.position = pathCreator.path.GetPointAtDistance(progress);
-				castable.transform.parent = racingLineContainer.transform;
-				var col = castable.GetComponent<SphereCollider>();
-				col.radius = 1;
-				col.isTrigger = true;
-				castable.layer = 16;//Info.racingLineLayer;
-				castable.name = progress.ToString(CultureInfo.InvariantCulture);
-				progress += 3;
+				GameObject.Destroy(racingLineContainers[i].transform.GetChild(j).gameObject);
 			}
-
-			// generate stuntpoints for cars
-			stuntpointsContainer.Clear();
-			replayCamsContainer.Clear();
-			foreach (var c in connectors)
+			// Create castable points
+			float progress = 0;
+			if (pathCreators[i].path.length > 10000)
 			{
-				if (c.isStuntZone || c.trackCamera != null)
+				Debug.LogError("Path > 10000");
+				yield break;
+			}
+			else
+			{
+				for (int j = 0; j < 10000 && progress < pathCreators[i].path.length; ++j)
 				{
-					var hits = Physics.OverlapSphere(c.transform.position + Vector3.up, 30, 1 << Info.racingLineLayer);
-					float min = 999;
-					int closestIdx = 0;
-					for (int i = 0; i < hits.Length; ++i)
+					GameObject castable = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+					Destroy(castable.GetComponent<MeshRenderer>());
+					castable.transform.position = pathCreators[i].path.GetPointAtDistance(progress);
+					castable.transform.parent = racingLineContainers[i].transform;
+					var col = castable.GetComponent<SphereCollider>();
+					col.radius = 1;
+					col.isTrigger = true;
+					castable.layer = Info.racingLineLayers[i];
+					castable.name = progress.ToString(CultureInfo.InvariantCulture);
+					progress += 3;
+				}
+
+				// generate stuntpoints for cars
+				stuntpointsContainer.Clear();
+				replayCamsContainer.Clear();
+				foreach (var c in connectors)
+				{
+					if (c.isStuntZone || c.trackCamera != null)
 					{
-						float distance = Vector3.Distance(hits[i].transform.position, c.transform.position);
-						if (distance < min)
+						var hits = Physics.OverlapSphere(c.transform.position + Vector3.up, 30, 1 << Info.racingLineLayers[i]);
+						float min = 999;
+						int closestIdx = 0;
+						for (int j = 0; j < hits.Length; ++j)
 						{
-							min = distance;
-							closestIdx = i;
+							float distance = Vector3.Distance(hits[j].transform.position, c.transform.position);
+							if (distance < min)
+							{
+								min = distance;
+								closestIdx = j;
+							}
+						}
+						if (c.isStuntZone)
+							stuntpointsContainer.Add(int.Parse(hits[closestIdx].name));
+						if (c.trackCamera != null)
+						{
+							replayCamsContainer.Add(new ReplayCamStruct { cam = c.trackCamera, dist = int.Parse(hits[closestIdx].name) });
 						}
 					}
-					if (c.isStuntZone)
-						stuntpointsContainer.Add(int.Parse(hits[closestIdx].name));
-					if (c.trackCamera != null)
-					{
-						replayCamsContainer.Add(new ReplayCamStruct { cam = c.trackCamera, dist = int.Parse(hits[closestIdx].name) });
-					}
 				}
-			}
 
-			// generate waypoints for cars
-			waypointsContainer.Clear();
-			float maxDot = Mathf.Cos(10 * Mathf.Deg2Rad);
-			Vector3 curWayDir = pathCreator.path.GetDirectionAtDistance(0);
-			waypointsContainer.Add(0);
-			for (int i = 5; i < pathCreator.path.length; i += 10)
-			{
-				Vector3 newWayDir = pathCreator.path.GetDirectionAtDistance(i);
-				float dot = Vector3.Dot(F.Vec3Flatten(curWayDir), F.Vec3Flatten(newWayDir));
-				if (Mathf.Abs(dot) <= maxDot)
-				{
-					waypointsContainer.Add(i);
-					curWayDir = newWayDir;
-				}
+				//// generate waypoints for cars
+				//waypointsContainer.Clear();
+				//float maxDot = Mathf.Cos(10 * Mathf.Deg2Rad);
+				//Vector3 curWayDir = pathCreators[i].path.GetDirectionAtDistance(0);
+				//waypointsContainer.Add(0);
+				//for (int j = 5; j < pathCreators[i].path.length; j += 10)
+				//{
+				//	Vector3 newWayDir = pathCreator.path.GetDirectionAtDistance(j);
+				//	float dot = Vector3.Dot(F.Vec3Flatten(curWayDir), F.Vec3Flatten(newWayDir));
+				//	if (Mathf.Abs(dot) <= maxDot)
+				//	{
+				//		waypointsContainer.Add(j);
+				//		curWayDir = newWayDir;
+				//	}
+				//}
 			}
 		}
 	}
@@ -976,6 +1029,8 @@ public class EditorPanel : Sfxable
 		isPathClosed = val;
 		connectButtonImage.color = val ? Color.green : Color.yellow;
 		pathFollower.SetActive(val);
+		if(!val)
+			racingLine = null;
 	}
 	void ClearConnectors()
 	{
@@ -1043,21 +1098,19 @@ public class EditorPanel : Sfxable
 
 		currentTile.transform.position = position == null ? curPosition : position.Value;
 
-		if (rotation == null)
-			rotation = Quaternion.Euler(new Vector3(
-				((currentTile.transform.GetComponent<MeshFilter>() != null) ? -90 : 0) + xRot, yRot, zRot));
+		rotation ??= Quaternion.Euler(new Vector3(
+			((currentTile.transform.GetComponent<MeshFilter>() != null) ? -90 : 0) + xRot, yRot, zRot));
 
 		currentTile.transform.rotation = rotation.Value;
 		currentTile.GetComponent<Tile>().panel = this;
 
-		if (mirror == null)
-			mirror = curMirror;
+		mirror ??= curMirror;
 
 		if (mirror.Value)
 			currentTile.MirrorTile();
 
-		if (distance == null)
-			distance = selector.Distance;
+		distance ??= selector.Distance;
+
 		currentTile.AdjustScale(distance.Value);
 
 		if (url != null)
@@ -1388,12 +1441,12 @@ public class EditorPanel : Sfxable
 		// save image
 		Texture2D tex = F.toTexture2D(renderTexture);
 		byte[] textureData = tex.EncodeToPNG();
-		string path = Path.Combine(Info.documentsSGPRpath, trackName.text + ".png");
+		string path = Path.Combine(Info.tracksPath, trackName.text + ".png");
 		File.WriteAllBytes(path, textureData);
 
 		// save track editor data
 		string trackJson = JsonConvert.SerializeObject(TRACK);
-		path = Path.Combine(Info.documentsSGPRpath, trackName.text + ".data");
+		path = Path.Combine(Info.tracksPath, trackName.text + ".data");
 		File.WriteAllText(path, trackJson);
 
 		// save track header
@@ -1414,7 +1467,7 @@ public class EditorPanel : Sfxable
 			DisplayMessageFor("Drive at least once to validate track", 3);
 		}
 		trackJson = JsonConvert.SerializeObject(header, Formatting.Indented);
-		path = Path.Combine(Info.documentsSGPRpath, trackName.text + ".track");
+		path = Path.Combine(Info.tracksPath, trackName.text + ".track");
 		File.WriteAllText(path, trackJson);
 		if (!Info.tracks.ContainsKey(trackName.text))
 			Info.tracks.Add(trackName.text, header);
@@ -1495,8 +1548,18 @@ public class EditorPanel : Sfxable
 			terrain.terrainData.SetHeights(0, 0, hmap);
 		}
 	}
+	public void SetEnvirLights()
+	{
+		if (envir)
+		{
+			var lights = envir.transform.Find("Lights");
+			if (lights != null)
+				lights.gameObject.SetActive(Info.s_isNight);
+		}
+	}
 	public IEnumerator LoadTrack()
 	{
+		gameObject.SetActive(true);
 		loadingTrack = true;
 		records = TrackHeader.Record.RecordTemplate();
 		if (!initialized)
@@ -1506,17 +1569,7 @@ public class EditorPanel : Sfxable
 		if (skybox != null)
 			Destroy(skybox);
 		skybox = Instantiate(Resources.Load<GameObject>("envirs/" + "sky" + skyboxNumber.ToString()));
-		if (Info.s_isNight)
-		{
-			if (nightSkybox == null)
-				nightSkybox = Instantiate(Resources.Load<GameObject>("envirs/" + "sky6"));
-			nightSkybox.SetActive(true);
-		}
-		else
-		{
-			if (nightSkybox != null)
-				nightSkybox.SetActive(false);
-		}
+		
 		if (envir != null)
 			Destroy(envir);
 		envir = Instantiate(Resources.Load<GameObject>("envirs/" + envirName));
@@ -1531,14 +1584,9 @@ public class EditorPanel : Sfxable
 
 		terrainBtn.gameObject.SetActive(terrain != null);
 
-		if (Info.s_isNight)
-		{
-			var lights = envir.transform.Find("Lights");
-			if (lights != null)
-				lights.gameObject.SetActive(true);
-		}
+		SetEnvirLights();
 		trackName.text = Info.s_trackName;
-		string path = Path.Combine(Info.documentsSGPRpath, Info.s_trackName + ".data");
+		string path = Path.Combine(Info.tracksPath, Info.s_trackName + ".data");
 
 		terrainEditor.SetTerrain(terrain);
 
@@ -1644,7 +1692,7 @@ public class EditorPanel : Sfxable
 			return;
 
 		string filepath = StandaloneFileBrowser.OpenFilePanel("Select track",
-			Info.documentsSGPRpath, "track", false)[0];
+			Info.tracksPath, "track", false)[0];
 		if (filepath.Length > 0)
 		{
 			string newTrackName = Path.GetFileNameWithoutExtension(filepath);

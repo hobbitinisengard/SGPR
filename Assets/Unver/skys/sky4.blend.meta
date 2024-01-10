@@ -3,12 +3,22 @@ guid: 4657d96973d9fc2438975f6e8deb5e15
 ModelImporter:
   serializedVersion: 21300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: misc_clouds4
+    second: {fileID: 2100000, guid: 4fdfa7ff2bf1fc345b9c860b9e8097ac, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: misc_clouds4top
+    second: {fileID: 2100000, guid: a3a5ad8f750ef4843bd925b2e5a46044, type: 2}
   materials:
     materialImportMode: 1
     materialName: 0
     materialSearch: 1
-    materialLocation: 0
+    materialLocation: 1
   animations:
     legacyGenerateAnimations: 4
     bakeSimulation: 0

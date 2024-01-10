@@ -88,22 +88,30 @@ public class SlideInOut : MonoBehaviour
 		}
 		SetPos(startPos);
 	}
+
 	void SetContentsTransp(float a)
 	{
-		if(type== Type.ButtonContainer || type == Type.Button)
-		{
+		if(type == Type.ButtonContainer || type == Type.Button)
+		{ // imgs is white background that dims; texts are becoming visible
 			for (int i = 0; i < imgs.Length; ++i)
 			{
 				var c = imgs[i].color;
-				c.a = a;
+				c.a = 1-a;
 				imgs[i].color = c;
+			}
+			var allTexts = transform.GetComponentsInChildren<TextMeshProUGUI>();
+			foreach (var child in allTexts)
+			{
+				var c = child.color;
+				c.a = a;
+				child.color = c;
 			}
 		}
 		else
-		{
+		{// imgs are textures, texts are becoming visible
 			var allImages = transform.GetComponentsInChildren<Image>();
 			var allTexts = transform.GetComponentsInChildren<TextMeshProUGUI>();
-			foreach(var child in allImages)
+			foreach (var child in allImages)
 			{
 				var c = child.color;
 				c.a = a;
@@ -138,6 +146,7 @@ public class SlideInOut : MonoBehaviour
 	{
 		timer = 0;
 		endPos = initEndPos;
+		SetContentsTransp(0);
 		PlaySlide(Dir.In);
 	}
 	public void PlaySlideOut(bool disableAfterEndOfAnim = false)
@@ -186,7 +195,7 @@ public class SlideInOut : MonoBehaviour
 				SetPos(Mathf.Lerp(startPos, endPos, step));
 
 				//On simple images img var is an image. On buttons img is a white texture
-				SetContentsTransp((type == Type.Image) ? step :1 - step);
+				SetContentsTransp(step);
 
 				if ((dir < 0 && timer < 0) || (dir > 0 && timer > 1))
 				{

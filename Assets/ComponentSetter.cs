@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class ComponentSetter : MonoBehaviour
 {
+	bool initializing;
 	PartType partType;
 	Action<PartType,string> userSelectedDropdownAction;
 	string customString = "Custom";
@@ -14,12 +15,14 @@ public class ComponentSetter : MonoBehaviour
 	public void Initialize(PartType type, List<string> options, int selectOption, 
 		Action<PartType, string> userSelectedDropdownAction)
 	{
+		initializing = true;
 		partType = type;
 		dropdown.ClearOptions();
 		options.Add(customString);
 		dropdown.AddOptions(options);
 		dropdown.value = (selectOption == -1) ? (options.Count-1) : selectOption;
 		this.userSelectedDropdownAction = userSelectedDropdownAction;
+		initializing = false;
 	}
 	public string GetComponentName()
 	{
@@ -28,7 +31,7 @@ public class ComponentSetter : MonoBehaviour
 	}
 	public void UpdateValue(int value)
 	{
-		if (userSelectedDropdownAction == null)
+		if (initializing || userSelectedDropdownAction == null)
 			return;
 		string partName = dropdown.options[value].text;
 		if (partName == customString)

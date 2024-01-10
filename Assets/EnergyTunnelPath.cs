@@ -1,6 +1,4 @@
 using PathCreation;
-using System;
-using System.Globalization;
 using UnityEngine;
 
 public class EnergyTunnelPath : MonoBehaviour

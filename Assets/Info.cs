@@ -12,6 +12,7 @@ public static class Info
 {
 	public readonly static string documentsSGPRpath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Stunt GP Reloaded\\";
 	public readonly static string partsPath = documentsSGPRpath + "parts\\";
+	public readonly static string tracksPath = documentsSGPRpath + "tracks\\";
 	public readonly static string userdataPath = documentsSGPRpath + "userdata.json";
 	public readonly static string lastPath = documentsSGPRpath + "path.txt";
 	public static PlayerSettingsData ReadSettingsDataFromJson()
@@ -85,7 +86,7 @@ public static class Info
 	public static readonly string[] EnvirDescs =
 	{
 		"GERMANY\n\nLoud crowd cheering and powerful spotlights..This german arena is really a place to show off.",
-		"JAPAN\n\nHere in this calm japanese dojo placed on the outskirts of japanese Kyoto you can meditate or organize a race!",
+		"JAPAN\n\nHere in this calm japanese dojo placed on the outskirts of Kyoto you can meditate or organize a race!",
 		"SPAIN\n\nBeaches like this usually ooze holidays. This is not an exception: warm sand, palms, and sun.. What could people possibly want more? Maybe a RC car race :)",
 		"FRANCE\n\nThis shadowy warehouse is full of boxes, forklifts and machinery. There are some really dark places here.",
 		"ENGLAND\n\nEnglish go-kart track is a good location to test your driving skills. This place has a reputation for great races.",
@@ -107,13 +108,14 @@ public static class Info
 	public static DateTime raceStartDate = DateTime.MinValue;
 	public static bool loaded = false;
 	public const int roadLayer = 6;
+	public const int ignoreWheelCastLayer = 8;
 	public const int vehicleLayer = 9;
 	public const int connectorLayer = 11;
 	public const int invisibleLevelLayer = 12;
 	public const int terrainLayer = 13;
 	public const int cameraLayer = 14;
 	public const int flagLayer = 15;
-	public const int racingLineLayer = 16;
+	public static readonly int[] racingLineLayers = new int[] {16,25,27};
 	public const int pitsLineLayer = 17;
 	public const int pitsZoneLayer = 18;
 	public const int grindTrigger = 19;
@@ -149,7 +151,7 @@ public static class Info
 	};
 	public static Sprite[] icons;
 	public static bool gamePaused;
-	public static readonly string version = "0.1";
+	public static readonly string version = "0.2b";
 	public static Car Car(string name)
 	{ // i.e. car05
 		int i = int.Parse(name[3..]);
@@ -271,7 +273,7 @@ public static class Info
 		//};
 		//tracks["track02"].records = records;
 
-		string[] trackFiles = Directory.GetFiles(documentsSGPRpath, "*.track");
+		string[] trackFiles = Directory.GetFiles(tracksPath, "*.track");
 		foreach (var path in trackFiles)
 		{
 			string trackJson = File.ReadAllText(path);
@@ -427,7 +429,7 @@ public class TrackHeader
 	}
 	public int TrackOrigin()
 	{
-		return Convert.ToInt32(author != null);
+		return (author != "Team17") ? 1 : 0;
 	}
 }
 
