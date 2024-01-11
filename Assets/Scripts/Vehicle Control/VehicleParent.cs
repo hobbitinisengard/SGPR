@@ -339,7 +339,7 @@ namespace RVP
 
 		void Update()
 		{
-			if (Physics.Raycast(tr.position, rb.velocity, 200, 1 << Info.trailLayer))
+			if (Physics.Raycast(tr.position, rb.velocity, 200, 1 << Info.aeroTunnel))
 			{ // aerodynamic tunnel
 				rb.drag = 0;
 			}

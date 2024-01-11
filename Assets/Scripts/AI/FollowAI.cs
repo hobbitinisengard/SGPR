@@ -61,9 +61,9 @@ namespace RVP
 		public float stoppedTime;
 		public float reverseTime;
 		public float brakeTime;
-		public float progress;
+		public int progress;
 		public float pitsProgress;
-		public float dist = 0;
+		public int dist = 0;
 		public float speedLimit = 999;
 		public float speedLimitDist = 0;
 		public float hardCornerDot = 0.7f;
@@ -163,12 +163,13 @@ namespace RVP
 				}
 			}
 		}
-		public void AssignPath(in PathCreator path, ref List<int> stuntpointsContainer, ref List<ReplayCamStruct> replayCams, int racingLineLayerNumber)
+		public void AssignPath(in PathCreator racingLinePath, in PathCreator universalPath, 
+			ref List<int> stuntpointsContainer, ref List<ReplayCamStruct> replayCams, int racingLineLayerNumber)
 		{
 			this.racingLineLayerNumber = racingLineLayerNumber;
 			this.stuntPoints = stuntpointsContainer;
 			this.replayCams = replayCams;
-			trackPathCreator = path;
+			trackPathCreator = racingLinePath;
 			this.enabled = true;
 		}
 		private void Awake()
@@ -185,7 +186,7 @@ namespace RVP
 			progress = dist;
 			SetCPU(isCPU);
 		}
-		float GetDist(Collider[] racingPathHits)
+		int GetDist(Collider[] racingPathHits)
 		{
 			float dist = 0;
 			string closestLen = null;
@@ -200,12 +201,22 @@ namespace RVP
 				}
 			}
 			if (closestLen != null)
-				dist = float.Parse(closestLen, CultureInfo.InvariantCulture.NumberFormat);
-			else
 			{
-				//Debug.LogError("OverlapSphere failed");
+				try
+				{
+					dist = int.Parse(closestLen);
+				}
+				catch
+				{
+
+				}
 			}
-			return dist;
+				
+			//else
+			//{
+			//	Debug.LogError("OverlapSphere failed");
+			//}
+			return (int)dist;
 		}
 		void OutOfPits()
 		{
@@ -397,8 +408,8 @@ namespace RVP
 				tPos0.y = transform.position.y;
 				tPos.y = transform.position.y;
 				tPos2.y = transform.position.y;
-				Debug.DrawLine((Vector3)tPos, (Vector3)tPos + 100 * Vector3.up, Color.magenta);
-				Debug.DrawLine((Vector3)tPos2, (Vector3)tPos2 + 100 * Vector3.up, Color.red);
+				//Debug.DrawLine((Vector3)tPos, (Vector3)tPos + 100 * Vector3.up, Color.magenta);
+				//Debug.DrawLine((Vector3)tPos2, (Vector3)tPos2 + 100 * Vector3.up, Color.red);
 
 
 				if (pitsPathCreator)

@@ -4,7 +4,6 @@ using UnityEngine;
 using static PtsAnim;
 using System.Collections.Generic;
 using System.Collections;
-using UnityEngine.SocialPlatforms.Impl;
 
 public class StuntRotInfo
 {
@@ -346,19 +345,19 @@ public class RaceBox : MonoBehaviour
 
 		// side grind detector
 		// 2s - gives side grind score (400)
-		if (vp.colliding && vp.reallyGroundedWheels > 2)
-		{
-			sideGrindTimer += Time.fixedDeltaTime;
-			if (sideGrindTimer > 2)
-			{
-				StartCoroutine(AddExtraStuntCo(StuntsData.ExtraName.SideGrind));
-				sideGrindTimer = 0;
-			}
-		}
-		else
-		{
-			sideGrindTimer = 0;
-		}
+		//if (vp.colliding && vp.reallyGroundedWheels > 2)
+		//{
+		//	sideGrindTimer += Time.fixedDeltaTime;
+		//	if (sideGrindTimer > 2)
+		//	{
+		//		StartCoroutine(AddExtraStuntCo(StuntsData.ExtraName.SideGrind));
+		//		sideGrindTimer = 0;
+		//	}
+		//}
+		//else
+		//{
+		//	sideGrindTimer = 0;
+		//}
 
 		// trickstart/wheelie/stoppie detection
 		if (vp.velMag < .5f)
@@ -682,7 +681,7 @@ public class RaceBox : MonoBehaviour
 	{
 		if (curLap == 0 || vp.followAI.ProgressPercent() > 0.9f || vp.followAI.pitsProgress > 0)
 		{
-			vp.followAI.progress = 0.1f;
+			vp.followAI.progress = 1;
 			vp.followAI.curWaypointIdx = 0;
 			vp.followAI.curStuntpointIdx = 0;
 			vp.followAI.curReplayPointIdx = 0;

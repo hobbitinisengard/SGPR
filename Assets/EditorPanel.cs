@@ -824,7 +824,7 @@ public class EditorPanel : Sfxable
 		
 		List<Vector3> Lpath = new List<Vector3>(100);
 		List<Vector3> Rpath = new List<Vector3>(100);
-		List<LoopReplacement> replacements = new List<LoopReplacement>();
+		List<LoopReplacement> replacements = new();
 		Transform startline = null;
 		for (int i = 0; i < placedTilesContainer.transform.childCount; ++i)
 		{
@@ -975,7 +975,7 @@ public class EditorPanel : Sfxable
 					col.isTrigger = true;
 					castable.layer = Info.racingLineLayers[i];
 					castable.name = progress.ToString(CultureInfo.InvariantCulture);
-					progress += 3;
+					progress += 10;
 				}
 
 				// generate stuntpoints for cars

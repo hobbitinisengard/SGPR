@@ -305,8 +305,8 @@ namespace RVP
 
 				StartCoroutine(newCar.CountdownTimer(countDownSeconds - newCar.engine.transmission.shiftDelaySeconds));
 
-				int racingLineNumber = UnityEngine.Random.Range(0, 3);
-				newCar.followAI.AssignPath(racingPaths[racingLineNumber], ref editorPanel.stuntpointsContainer, 
+				int racingLineNumber = i % racingPaths.Length;
+				newCar.followAI.AssignPath(racingPaths[racingLineNumber], racingPaths[0], ref editorPanel.stuntpointsContainer, 
 					ref editorPanel.replayCamsContainer, Info.racingLineLayers[racingLineNumber]);
 
 				if (i == Info.s_rivals)
@@ -327,7 +327,7 @@ namespace RVP
 						cam.Connect(newCar);
 						hud.Connect(newCar);
 						DemoSGPLogo.SetActive(false);
-						newCar.followAI.SetCPU(true); // CPU drives player's car
+						//newCar.followAI.SetCPU(true); // CPU drives player's car
 					}
 				}
 				else

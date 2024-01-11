@@ -94579,7 +94579,7 @@ GameObject:
   - component: {fileID: 4550495899934621397}
   - component: {fileID: 7897177921273408970}
   - component: {fileID: 5487136178977274613}
-  m_Layer: 25
+  m_Layer: 19
   m_Name: AerodTunnel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -105827,8 +105827,8 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  secsForMaxSteering: 1.5
   durationSmoothedSteer: 0
+  steerCoeff: 0.25
 --- !u!1 &6779875396000727283
 GameObject:
   m_ObjectHideFlags: 0

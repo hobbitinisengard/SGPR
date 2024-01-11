@@ -118,9 +118,8 @@ public static class Info
 	public static readonly int[] racingLineLayers = new int[] {16,25,27};
 	public const int pitsLineLayer = 17;
 	public const int pitsZoneLayer = 18;
-	public const int grindTrigger = 19;
+	public const int aeroTunnel = 19;
 	public const int ghostLayer = 24;
-	public const int trailLayer = 25;
 
 	public const int firstExternalSurface = 4;
 
