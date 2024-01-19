@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Audio;
 using static Info;
@@ -54,7 +55,8 @@ public static class Info
 		new PartInfo("Mysuko", "jetcfg"),
 		new PartInfo("Rline", "tyrcfg"),
 		new PartInfo("TGR", "drvcfg"),
-		new PartInfo("", "carcfg")
+		new PartInfo("Titan", "hnkcfg"),
+		new PartInfo("", "carcfg"),
 	};
 	//public static string[] extensionsSuffixes = new string[] { "suscfg", "bmscfg", "batcfg",
 	//		"engcfg", "chacfg", "grscfg", "jetcfg", "tyrcfg", "drvcfg", "carcfg" };
@@ -67,8 +69,8 @@ public static class Info
 	/// </summary>
 	public const int pavementTypes = 6;
 
-	public enum RaceType { Race, Stunt, Drift, Knockout, Survival }
-	public const int RaceTypes = 5;
+	public enum RaceType { Race, Knockout, Stunt, Drift }
+	public const int RaceTypes = 4;
 	public enum Envir { GER, JAP, SPN, FRA, ENG, USA, ITA, MEX };
 	public readonly static Vector3[] invisibleLevelDimensions = new Vector3[]{
 		new (564, 1231,1), //ger
@@ -120,8 +122,6 @@ public static class Info
 	public const int pitsZoneLayer = 18;
 	public const int aeroTunnel = 19;
 	public const int ghostLayer = 24;
-
-	public const int firstExternalSurface = 4;
 
 	/// <summary>
 	/// Only one object at the time can have this layer
@@ -201,7 +201,7 @@ public static class Info
 		}
 		ReloadCarConfigs();
 	}
-	public static void ReloadCarConfigs()
+	public static async void ReloadCarConfigs()
 	{
 		string carSuffix = partInfos[^1].fileExtension;
 		string[] filepaths = Directory.GetFiles(Info.partsPath)
@@ -210,9 +210,12 @@ public static class Info
 
 		for (int i = 0; i < cars.Length; ++i)
 		{
-			string filepath = Info.partsPath + "car" + (i + 1).ToString() + "." + partInfos[^1].fileExtension;
-			string jsonText = File.ReadAllText(filepath);
-			cars[i].config = new CarConfig(null, null, jsonText);
+			await Task.Run(() => 
+			{
+				string filepath = Info.partsPath + "car" + (i + 1).ToString() + "." + partInfos[^1].fileExtension;
+				string jsonText = File.ReadAllText(filepath);
+				cars[i].config = new CarConfig(null, null, jsonText);
+			}); 
 		}
 	}
 	public static void AddCar()
@@ -291,6 +294,7 @@ public static class Info
 		float toLogLevel = 80 * 2 / 3f * Mathf.Log10(val01);
 		if (toLogLevel < -80)
 			toLogLevel = -80;
+		Debug.Log("set" + exposedParameter + " to level:" + toLogLevel.ToString());
 		mixer.SetFloat(exposedParameter, toLogLevel);
 	}
 	public static float InGroupPos(Transform child)

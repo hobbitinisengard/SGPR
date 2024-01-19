@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace RVP
@@ -10,8 +11,9 @@ namespace RVP
 	// Class for the wheel
 	public class Wheel : MonoBehaviour
 	{
-		public int d_surface = 0;
-		[System.NonSerialized]
+		[NonSerialized]
+		public int curSurfaceType = 0;
+		[NonSerialized]
 		public Transform tr;
 		[System.NonSerialized]
 		public bool sliding;
@@ -46,11 +48,25 @@ namespace RVP
 		public float axleFriction;
 
 		[Header("Friction")]
-
-		[Range(0, 1)]
-		public float frictionSmoothness = 0.5f;
+		float frictionSmoothness = 0.5f;
+		/// <summary>
+		/// To set basic frictions use SetInitFrictions()
+		/// </summary>
 		public float forwardFriction = 1;
+		/// <summary>
+		/// To set basic frictions use SetInitFrictions()
+		/// </summary>
 		public float sidewaysFriction = 1;
+		public float initForwardFriction { get; private set; }
+		public float initSidewaysFriction { get; private set; }
+		public void SetInitFrictions(float forward, float sideways)
+		{
+			initForwardFriction = forward;
+			forwardFriction = forward;
+			initSidewaysFriction = sideways;
+			sidewaysFriction = sideways;
+		}
+
 		public float forwardRimFriction = 0.5f;
 		public float sidewaysRimFriction = 0.5f;
 		public float forwardCurveStretch = 1;
@@ -206,6 +222,7 @@ namespace RVP
 		public ParticleSystem airGreenParticleSystem;
 		
 
+
 		//AnimationCurve GenerateFrictionCurve(bool moreGrip = false)
 		//{
 		//    Keyframe[] keys = new Keyframe[SGPFrictionData.Length];
@@ -313,6 +330,9 @@ namespace RVP
 
 			targetDrive = GetComponent<DriveForce>();
 			currentRPM = 0;
+
+			if (Info.s_raceType == Info.RaceType.Drift)
+				slipDependence = SlipDependenceMode.independent;
 		}
 
 		void FixedUpdate()
@@ -526,7 +546,7 @@ namespace RVP
 
 				if (!grounded && impactSnd && ((tireHitClips.Length > 0 && !popped) || (rimHitClip && popped)))
 				{
-					impactSnd.PlayOneShot(popped ? rimHitClip : tireHitClips[Mathf.RoundToInt(Random.Range(0, tireHitClips.Length - 1))], Mathf.Clamp01(airTime * airTime));
+					impactSnd.PlayOneShot(popped ? rimHitClip : tireHitClips[Mathf.RoundToInt(UnityEngine.Random.Range(0, tireHitClips.Length - 1))], Mathf.Clamp01(airTime * airTime));
 					impactSnd.pitch = Mathf.Clamp(airTime * 0.2f + 0.8f, 0.8f, 1);
 				}
 
@@ -605,7 +625,7 @@ namespace RVP
 					contactPoint.surfaceType = 0;
 				}
 			}
-			d_surface = contactPoint.surfaceType;
+			curSurfaceType = contactPoint.surfaceType;
 		}
 
 		// Calculate what the RPM of the wheel would be based purely on its velocity
@@ -703,13 +723,15 @@ namespace RVP
 			// Set final RPM
 			if (!suspensionParent.jammed && connected)
 			{
-				bool validTorque = (!(Mathf.Approximately(actualTorque, 0) && Mathf.Abs(actualTargetRPM) < 0.01f) && !Mathf.Approximately(actualTargetRPM, 0)) || brakeForce + actualEbrake * vp.ebrakeInput > 0;
+				bool validTorque = (!(Mathf.Approximately(actualTorque, 0) && Mathf.Abs(actualTargetRPM) < 0.01f) 
+					&& !Mathf.Approximately(actualTargetRPM, 0)) || brakeForce + actualEbrake * vp.ebrakeInput > 0;
 
 				currentRPM = Mathf.Lerp(rawRPM,
 					 Mathf.Lerp(
 					 Mathf.Lerp(rawRPM, actualTargetRPM, validTorque ? EvaluateTorque(actualTorque) : actualTorque),
 					 0, Mathf.Max(brakeForce, actualEbrake * vp.ebrakeInput)),
-				validTorque ? EvaluateTorque(actualTorque + brakeForce + actualEbrake * vp.ebrakeInput) : actualTorque + brakeForce + actualEbrake * vp.ebrakeInput);
+				validTorque ? EvaluateTorque(actualTorque + brakeForce + actualEbrake * vp.ebrakeInput) 
+					: actualTorque + brakeForce + actualEbrake * vp.ebrakeInput);
 
 				targetDrive.feedbackRPM = Mathf.Lerp(currentRPM, rawRPM, feedbackRpmBias);
 			}

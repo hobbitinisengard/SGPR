@@ -93,10 +93,11 @@ public class ResultsSeq : MonoBehaviour
 				audioSource.loop = true;
 				audioSource.Play();
 			}
-			if (Input.GetKeyDown(KeyCode.Return))
-				timer = 3.5f;
+			
 			if (timer >= 3.5f)
 				ImgResultSetAlpha(new Color(1, 1, 1, 1 - Mathf.InverseLerp(3.5f, 4, timer)));
+			else if (Input.GetKeyDown(KeyCode.Return))
+				timer = 3.5f;
 
 			cosArg += 2 * Mathf.PI * Time.deltaTime;
 			var p = imgResult.transform.localPosition;
@@ -209,6 +210,10 @@ public class ResultsSeq : MonoBehaviour
 	void RowsBlinkColor(Color color)
 	{
 		bottomBoxLabel.color = color;
+
+		// Acknowledge already set transparency of boxes. Set only color.
+		var a = rightRow.GetChild(playerResultPosition - 1).GetChild(0).GetChild(0).GetComponent<TextMeshProUGUI>().color.a;
+		color.a = a;
 		rightRow.GetChild(playerResultPosition - 1).GetChild(0).GetChild(0).GetComponent<TextMeshProUGUI>().color = color;
 		leftRow.GetChild(playerResultPosition - 1).GetChild(0).GetChild(0).GetComponent<TextMeshProUGUI>().color = color;
 	}
@@ -222,7 +227,5 @@ public class ResultsSeq : MonoBehaviour
 			rightRow.GetChild(i).GetChild(0).GetChild(0)
 						.GetComponent<TextMeshProUGUI>().text = Info.s_cars[i].raceBox.Result((Info.RecordType)rightBoxLabelInt);
 		}
-		
 	}
-
 }

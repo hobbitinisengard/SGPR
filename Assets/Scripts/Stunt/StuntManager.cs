@@ -51,7 +51,7 @@ namespace RVP
 		public bool updateOverlay = false;
 		[System.NonSerialized]
 		public float positiveProgress;
-		public string overlayName { get; protected set; }
+		public string overlayName;
 		public static bool Parallel(in Vector3 norm_a, in Vector3 norm_b)
 		{
 			return Mathf.Abs(Vector3.Dot(norm_a, norm_b)) >= 0.9f;// angle is 0 deg +- 25deg
@@ -62,7 +62,7 @@ namespace RVP
 		}
 		public virtual string PostfixText()
 		{
-			string progressStr = (positiveProgress == 0) ? "" : positiveProgress.ToString();
+			string progressStr = (positiveProgress == 0) ? "" : positiveProgress.ToString("F0");
 			string doneTimesStr = (doneTimes > 1) ? " x" + doneTimes.ToString() : "";
 			return progressStr + doneTimesStr;
 		}
@@ -77,6 +77,19 @@ namespace RVP
 			this.name = name;
 			overlayName = name;
 			this.score = score;
+		}
+	}
+	[System.Serializable]
+	public class Drift : Stunt
+	{
+		public Drift(string name, float score) : base(name, score)
+		{
+		}
+		public override string PostfixText()
+		{
+			string progressStr = (positiveProgress == 0) ? "" : positiveProgress.ToString("F0");
+			//string doneTimesStr = (doneTimes > 1) ? " x" + doneTimes.ToString() : "";
+			return progressStr;
 		}
 	}
 	[System.Serializable]
@@ -209,14 +222,12 @@ namespace RVP
 			}
 			overlayName += name;
 		}
-
-
 		public override string PostfixText()
 		{
 			if (isHalfRotation)// is null when halfoverlay was written
 			{
 				if (doneTimes > 1)
-					return " x" + doneTimes.ToString(); 
+					return " x" + doneTimes.ToString();
 				return "";
 			}
 			return (360 * doneTimes).ToString();

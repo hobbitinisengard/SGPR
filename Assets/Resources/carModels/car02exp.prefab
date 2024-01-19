@@ -89301,6 +89301,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1e173e117282a9d41a1c848fb0281a21, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  honkerAudio: {fileID: 0}
+  carNumber: 2
   bodyObj: {fileID: 7136051627190437502}
   steerInput: 0
   frontLights:
@@ -89358,6 +89360,8 @@ MonoBehaviour:
   cameraDistanceChange: 0
   cameraHeightChange: 0
   steeringControl: {fileID: 6779875395873480448}
+  colliding: 0
+  crashing: 0
   countdownTimer: 0
 --- !u!114 &5969412531493064935
 MonoBehaviour:
@@ -89457,6 +89461,7 @@ MonoBehaviour:
   boostButton: Boost
   upshiftButton: Upshift
   downshiftButton: Downshift
+  honkButton: Honker
   rollAxis: Roll
   shiftSGPButton: Evo
   lightsButton: Lights
@@ -89501,6 +89506,12 @@ MonoBehaviour:
   lastTimeInAir: 0
   stableLandingTimer: -1
   elecTunnelCameraPos: {x: -1, y: -1, z: -1}
+  carStoppedTime: 0
+  stoppieTimer: 0
+  wheelieTimer: 0
+  d_effectiveTurnAngle: 0
+  driftingTime: 0
+  driftingTimer: 0
 --- !u!114 &1803491810
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -89661,6 +89672,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   lastBounceTime: 0
+  lastSideBounceTime: 0
+  lastVVBounceTime: 0
 --- !u!114 &865657811856999447
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -104438,7 +104451,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ecbf6806518860b4ba6e32c8e44407ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  d_surface: 0
   generateHardCollider: 1
   feedbackRpmBias: 0
   rpmBiasCurve:
@@ -104467,7 +104479,6 @@ MonoBehaviour:
     m_RotationOrder: 4
   rpmBiasCurveLimit: Infinity
   axleFriction: 0.001
-  frictionSmoothness: 0.5
   forwardFriction: 12
   sidewaysFriction: 12
   forwardRimFriction: 1
@@ -104617,11 +104628,6 @@ MonoBehaviour:
   - {fileID: 2100000, guid: e9c6c2dc73c348b43b82b190b5773cb0, type: 2}
   - {fileID: 2100000, guid: cbe7e29c9a737934ba76dd3aa63ae8f7, type: 2}
   - {fileID: 2100000, guid: 924e1fe7ec9ad5c46854caa913b495ce, type: 2}
-  debrisParticles:
-  - {fileID: 5435983785343170089}
-  - {fileID: 8134535137243919330}
-  - {fileID: 222083090909818561}
-  - {fileID: 803583389691275861}
   sparks: {fileID: 0}
 --- !u!82 &1288089623
 AudioSource:
@@ -104927,7 +104933,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ecbf6806518860b4ba6e32c8e44407ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  d_surface: 0
   generateHardCollider: 1
   feedbackRpmBias: 0
   rpmBiasCurve:
@@ -104956,7 +104961,6 @@ MonoBehaviour:
     m_RotationOrder: 4
   rpmBiasCurveLimit: Infinity
   axleFriction: 0.001
-  frictionSmoothness: 0.5
   forwardFriction: 12
   sidewaysFriction: 12
   forwardRimFriction: 1
@@ -105104,11 +105108,6 @@ MonoBehaviour:
   - {fileID: 2100000, guid: e9c6c2dc73c348b43b82b190b5773cb0, type: 2}
   - {fileID: 2100000, guid: cbe7e29c9a737934ba76dd3aa63ae8f7, type: 2}
   - {fileID: 2100000, guid: 924e1fe7ec9ad5c46854caa913b495ce, type: 2}
-  debrisParticles:
-  - {fileID: 24423027127830019}
-  - {fileID: 2577339853310977628}
-  - {fileID: 6300547363039176995}
-  - {fileID: 1800573675264435804}
   sparks: {fileID: 0}
 --- !u!82 &25445861
 AudioSource:
@@ -105619,6 +105618,7 @@ MonoBehaviour:
   steeredWheels:
   - {fileID: 6779875394792814007}
   - {fileID: 6779875396000727281}
+  holdDuration: 0
   steerLimit: 0
   maxDegreesRotation: 0
   keyboardInputCurve:
@@ -105645,8 +105645,58 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  secsForMaxSteering: 1.5
-  durationSmoothedSteer: 0
+  holdComebackSpeed: 0
+  holdKeyboardCurveSteer: 0
+  steerAdd: 0.25
+  frontFrictionSteerIncrease: 1
+  steerLimitCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 55
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  steerComebackCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: -0.016363636
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 55
+      value: 0.1
+      inSlope: -0.016363636
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &6779875396000727283
 GameObject:
   m_ObjectHideFlags: 0
@@ -106098,7 +106148,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ecbf6806518860b4ba6e32c8e44407ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  d_surface: 0
   generateHardCollider: 1
   feedbackRpmBias: 0
   rpmBiasCurve:
@@ -106127,7 +106176,6 @@ MonoBehaviour:
     m_RotationOrder: 4
   rpmBiasCurveLimit: Infinity
   axleFriction: 0.001
-  frictionSmoothness: 0.5
   forwardFriction: 12
   sidewaysFriction: 12
   forwardRimFriction: 1
@@ -106275,11 +106323,6 @@ MonoBehaviour:
   - {fileID: 2100000, guid: e9c6c2dc73c348b43b82b190b5773cb0, type: 2}
   - {fileID: 2100000, guid: cbe7e29c9a737934ba76dd3aa63ae8f7, type: 2}
   - {fileID: 2100000, guid: 924e1fe7ec9ad5c46854caa913b495ce, type: 2}
-  debrisParticles:
-  - {fileID: 5725421686097764696}
-  - {fileID: 4605294050014934194}
-  - {fileID: 3565980765810437063}
-  - {fileID: 8284800065534048661}
   sparks: {fileID: 0}
 --- !u!82 &412100011
 AudioSource:
@@ -106456,7 +106499,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ecbf6806518860b4ba6e32c8e44407ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  d_surface: 0
   generateHardCollider: 1
   feedbackRpmBias: 0
   rpmBiasCurve:
@@ -106485,7 +106527,6 @@ MonoBehaviour:
     m_RotationOrder: 4
   rpmBiasCurveLimit: Infinity
   axleFriction: 0.001
-  frictionSmoothness: 0.5
   forwardFriction: 12
   sidewaysFriction: 12
   forwardRimFriction: 1
@@ -106633,11 +106674,6 @@ MonoBehaviour:
   - {fileID: 2100000, guid: e9c6c2dc73c348b43b82b190b5773cb0, type: 2}
   - {fileID: 2100000, guid: cbe7e29c9a737934ba76dd3aa63ae8f7, type: 2}
   - {fileID: 2100000, guid: 924e1fe7ec9ad5c46854caa913b495ce, type: 2}
-  debrisParticles:
-  - {fileID: 8908131754023302986}
-  - {fileID: 8118983020378363301}
-  - {fileID: 1961976813661113847}
-  - {fileID: 6011428375081215695}
   sparks: {fileID: 0}
 --- !u!82 &377426217
 AudioSource:

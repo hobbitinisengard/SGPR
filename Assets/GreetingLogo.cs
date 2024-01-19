@@ -140,7 +140,7 @@ public class GreetingLogo : MonoBehaviour
 
 			timer += Time.deltaTime;
 			rt.localPosition = pos;
-			if (jumps == 80)//80 or 8
+			if (jumps == 8)//80 or 8
 			{ // up move
 				goingUpSeq = true;
 				toDemo = true;

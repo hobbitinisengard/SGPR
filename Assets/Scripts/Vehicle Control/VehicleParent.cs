@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System;
+using JetBrains.Annotations;
 
 namespace RVP
 {
@@ -13,11 +14,27 @@ namespace RVP
 	// Vehicle root class
 	public class VehicleParent : MonoBehaviour
 	{
+		public AudioSource honkerAudio;
+		CarConfig carCfg;
+		public CarConfig carConfig
+		{
+			get
+			{
+				if (carCfg == null)
+					return Info.cars[carNumber - 1].config;
+				else
+					return carCfg;
+			}
+			set
+			{
+				carCfg = value;
+				carCfg.Apply(this);
+			}
+		}
 		/// <summary>
-		/// e.g. car05
+		/// from 1 to 20
 		/// </summary>
-		[NonSerialized]
-		public string carName;
+		public int carNumber;
 		[NonSerialized]
 		public Ghost ghostComponent;
 		public GameObject bodyObj;
@@ -36,6 +53,8 @@ namespace RVP
 
 		[System.NonSerialized]
 		public float accelInput;
+		[System.NonSerialized]
+		public bool honkInput;
 		[System.NonSerialized]
 		public float brakeInput;
 		[Range(-1,1)]
@@ -151,8 +170,6 @@ namespace RVP
 		[System.NonSerialized]
 		public VehicleParent inputInherit; // Vehicle which to inherit input from
 
-		
-
 		[Header("Crashing")]
 
 		public bool canCrash = true;
@@ -193,7 +210,7 @@ namespace RVP
 		public RaceBox raceBox { get; private set; }
 
 		public float carLen { get; private set; }
-		float catchupGripMult = 2;
+		float catchupGripMult = 1.1f;
 
 		public CatchupStatus catchupStatus { get; private set; }
 
@@ -204,10 +221,6 @@ namespace RVP
 			batteryChargingSpeed = chargingSpeed;
 			lowBatteryLevel = lowBatPercent;
 			batteryStuntIncreasePercent = evoBountyPercent;
-		}
-		public float GetBatteryCapacity()
-		{
-			return batteryCapacity;
 		}
 
 		public void SetCatchup(CatchupStatus newStatus)
@@ -462,6 +475,25 @@ namespace RVP
 			else if (localVelocity.z >= 0 || burnout > 0)
 				reversing = false;
 		}
+		public void SetHonkerInput(bool f)
+		{
+			honkInput = f;
+			if (honkInput)
+			{
+				if(!honkerAudio.isPlaying)
+					honkerAudio.Play();
+			}
+			else
+				honkerAudio.Stop();
+		}
+		/// <summary>
+		/// Type is clamped to <1;6>
+		/// </summary>
+		public void SetHonkerAudio(int type)
+		{
+			type = Mathf.Clamp(type, 1, 6);
+			honkerAudio.clip = Info.audioClips["hornloop0" + type.ToString()];
+		}
 		// Set accel input
 		public void SetAccel(float f)
 		{
@@ -499,16 +531,6 @@ namespace RVP
 					brakeInput = Mathf.Lerp(brakeInput, 1, Time.fixedDeltaTime * brakeCurve.Evaluate(Time.time - brakeStart));
 				}
 			}
-		}
-		public bool AnyWheelsPowerSliding()
-		{
-			// TODO: Check not only rear wheels (i=0)
-			for (int i = 2; i < wheels.Length; i++)
-			{
-				if (wheels[i].GetComponent<TireMarkCreate>().PowerSliding())
-					return true;
-			}
-			return false;
 		}
 		// Set steer input
 		public void SetSteer(float f)

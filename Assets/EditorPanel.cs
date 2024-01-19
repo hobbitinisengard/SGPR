@@ -175,7 +175,6 @@ public class EditorPanel : Sfxable
 	{
 		if (!initialized)
 			Initialize();
-
 	}
 	private void OnDisable()
 	{
@@ -345,7 +344,7 @@ public class EditorPanel : Sfxable
 							var arrow_rot = arrow.transform.rotation;
 							flyCamera.enabled = false;
 							SwitchTo(Mode.None);
-							raceManager.StartFreeRoam(arrow_pos, arrow_rot);
+							StartCoroutine(raceManager.StartFreeRoam(arrow_pos, arrow_rot));
 							return;
 						}
 					}
@@ -1557,6 +1556,15 @@ public class EditorPanel : Sfxable
 				lights.gameObject.SetActive(Info.s_isNight);
 		}
 	}
+	public void RemoveTrackLeftovers()
+	{
+		if (skybox != null)
+			Destroy(skybox);
+		if (envir != null)
+			Destroy(envir);
+		if (terrain != null)
+			Destroy(terrain.gameObject);
+	}
 	public IEnumerator LoadTrack()
 	{
 		gameObject.SetActive(true);
@@ -1566,16 +1574,9 @@ public class EditorPanel : Sfxable
 			Initialize();
 		int skyboxNumber = Info.skys[(int)Info.tracks[Info.s_trackName].envir];
 		string envirName = Info.tracks[Info.s_trackName].envir.ToString();
-		if (skybox != null)
-			Destroy(skybox);
+		RemoveTrackLeftovers();
 		skybox = Instantiate(Resources.Load<GameObject>("envirs/" + "sky" + skyboxNumber.ToString()));
-		
-		if (envir != null)
-			Destroy(envir);
 		envir = Instantiate(Resources.Load<GameObject>("envirs/" + envirName));
-		if (terrain != null)
-			Destroy(terrain.gameObject);
-
 		var terrainTr = envir.transform.Find("Terrain");
 		if (terrainTr)
 		{
@@ -1727,4 +1728,6 @@ public class EditorPanel : Sfxable
 			return;
 		}
 	}
+
+	
 }

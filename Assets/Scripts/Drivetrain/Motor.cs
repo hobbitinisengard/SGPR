@@ -47,8 +47,8 @@ namespace RVP
 		float initialSmokeEmission;
 		float baseJetScale = 0;
 		float boostVel;
-		float SinArg = 0;
-		float SinJetCoeff = 11f;
+		float sinArg = 0;
+		float sinArgSpd = 22f;
 		public float jetConsumption;
 		public float boostActivatedTime;
 		static AnimationCurve idlingEngineAudioCurve = AnimationCurve.Linear(0, .5f, 1, 0);
@@ -103,26 +103,28 @@ namespace RVP
 			if (jets != null)
 			{
 				// boosting visuals
-				foreach (GameObject jet in jets)
+				baseJetScale = Mathf.SmoothDamp(baseJetScale, boosting ? 1f : 0f, ref boostVel,
+						 Time.fixedDeltaTime, 1);
+				float sine = Mathf.Sin(sinArg);
+				if (baseJetScale > 0.01f) // ~0
 				{
-					baseJetScale = Mathf.SmoothDamp(baseJetScale, boosting ? 1f : 0f, ref boostVel,
-						 0.1f, 0.3f);
-					float sine = Mathf.Sin(SinArg);
-					jet.transform.localScale = (1 + 0.1f * sine) * baseJetScale * Vector3.one;
-
-					if (jet.transform.localScale.x > 0.01f) // ~0
+					boostLoopSnd.volume = Mathf.InverseLerp(0.1f, 0.3f, baseJetScale);
+					if (!boostLoopSnd.isPlaying)
+						boostLoopSnd.Play();
+					sinArg += Time.fixedDeltaTime * sinArgSpd;
+					foreach (var jet in jets)
 					{
-						boostLoopSnd.volume = Mathf.InverseLerp(0.1f, 0.3f, baseJetScale);
-						if (!boostLoopSnd.isPlaying)
-							boostLoopSnd.Play();
+						jet.transform.localScale = (1 + 0.1f * sine) * baseJetScale * Vector3.one;
 						jet.SetActive(true);
-						SinArg += Time.fixedDeltaTime * SinJetCoeff;
-						jet.GetComponent<MeshRenderer>().material.SetVector("_Offset", new Vector4(0, Mathf.Sin(SinArg / 30f)));
+						jet.GetComponent<MeshRenderer>().material.SetVector("_Offset", new Vector4(0, Mathf.Sin(sinArg / 30f)));
 					}
-					else
+				}
+				else
+				{
+					boostLoopSnd.Stop();
+					sinArg = 0;
+					foreach (var jet in jets)
 					{
-						boostLoopSnd.Stop();
-						SinArg = 0;
 						jet.SetActive(false);
 					}
 				}

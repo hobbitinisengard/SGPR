@@ -93,6 +93,10 @@ public class ViewSwitcher : MonoBehaviour
 		menuMusic.Stop();
 		this.viewA = world;
 		this.viewB = menu;
-		StartCoroutine(Play(world.GetComponent<RaceManager>().BackToEditor));
+			
+		StartCoroutine(Play(() => { 
+			world.GetComponent<RaceManager>().BackToEditor();
+			world.GetComponent<RaceManager>().editorPanel.RemoveTrackLeftovers();
+		}));
 	}
 }

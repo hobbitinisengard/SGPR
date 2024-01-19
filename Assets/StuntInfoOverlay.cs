@@ -1,7 +1,6 @@
 using UnityEngine.UI;
 using UnityEngine;
 using RVP;
-using System;
 
 public class StuntInfoOverlay : MonoBehaviour
 {
@@ -13,15 +12,11 @@ public class StuntInfoOverlay : MonoBehaviour
 	RectTransform rt;
 	float postfixObjAnimStartTime;
 	float stuntObjAnimStartTime;
-	/// <summary>
-	/// How many times has this stunt been done without interruptions by other stunts
-	/// </summary>
-	int localDoneTimes = 0;
 	int originalPostfixFontSize;
 	private void Initialize()
 	{
-		postfixObj = transform.GetChild(0).gameObject;
-		stuntObj = transform.GetChild(0).GetChild(0).gameObject;
+		postfixObj = transform.GetChild(0).GetChild(0).gameObject;
+		stuntObj = transform.GetChild(0).gameObject; 
 
 		postfixObjText = postfixObj.GetComponent<Text>();
 		stuntObjText = stuntObj.GetComponent<Text>();
@@ -63,10 +58,10 @@ public class StuntInfoOverlay : MonoBehaviour
 		switch (stunt)
 		{
 			case Flip flip:
-				postfixObjText.text = flip.PostfixText();
+				postfixObjText.text = " " + flip.PostfixText();
 				break;
 			default:
-				postfixObjText.text = stunt.PostfixText();
+				postfixObjText.text = " " + stunt.PostfixText();
 				break;
 		}
 		postfixObjAnimStartTime = Time.time;

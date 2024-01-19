@@ -25,7 +25,6 @@ namespace RVP
 		public int startGear;
 		[System.NonSerialized]
 		public int currentGear;
-		int firstGear;
 
 		public bool skipNeutral;
 
@@ -36,7 +35,6 @@ namespace RVP
 		public float shiftDelay { get; private set; }
 		public float shiftTime { get; private set; }
 		public float shiftDelaySeconds = 0.5f;
-		private float wheelsNotGroundedTime;
 		public float d_feedback;
 		public float d_rpm;
 		public float actualFeedbackRPM;
@@ -44,9 +42,10 @@ namespace RVP
 		public enum DriveType { FWD, RWD, AWD }
 		DriveType drive;
 		public DriveType Drive
-		{ 
+		{
 			get => drive;
-			set {
+			set
+			{
 				drive = value;
 				switch (drive)
 				{
@@ -90,18 +89,12 @@ namespace RVP
 			};
 			currentGear = Mathf.Clamp(startGear, 0, gears.Length - 1);
 			selectedGear = currentGear;
-			// Get gear number 1 (first one above neutral)
-			GetFirstGear();
-			wheelsNotGroundedTime = Time.time;
 			shiftTime = 0;
 		}
 		void Update()
 		{
-			if (vp.groundedWheels == 0)
-				wheelsNotGroundedTime = Time.time;
-
 			// Check for manual shift button presses
-			if (!automatic && vp.countdownTimer<=0)
+			if (!automatic)
 			{
 				if (vp.upshiftPressed && currentGear < gears.Length - 1)
 				{
@@ -122,14 +115,14 @@ namespace RVP
 			d_rpm = targetDrive.rpm;
 			if (shiftTime == 0 || currentGear < 2)
 			{
-				if(shiftTime == 0)
+				if (shiftTime == 0)
 					currentGear = selectedGear;
 
 				float curOutputRatio = gears[currentGear].ratio;
 				actualFeedbackRPM = targetDrive.feedbackRPM / (curOutputRatio == 0 ? 1 : Mathf.Abs(curOutputRatio));
 
 				int upGearOffset = 1;
-				
+
 				//while (/*(skipNeutral || automatic) && 
 				//                gears[Mathf.Clamp(currentGear + upGearOffset, 0, gears.Length - 1)].ratio == 0
 				//                && */currentGear + upGearOffset != 0 && currentGear + upGearOffset < gears.Length - 1)
@@ -146,7 +139,7 @@ namespace RVP
 
 
 				upperGear = gears[Mathf.Min(gears.Length - 1, currentGear + upGearOffset)];
-				
+
 				//Gear lowerGear = gears[Mathf.Max(0, selectedGear - downGearOffset)];
 
 				// Perform RPM calculations
@@ -159,23 +152,17 @@ namespace RVP
 						CalculateRpmRanges();
 					}
 				}
-				if (automatic && vp.countdownTimer<=0)
+				if (automatic && vp.countdownTimer < shiftDelay && vp.reallyGroundedWheels >= 2)
 				{
 					if (selectedGear == currentGear)
 					{
-						// Perform automatic shifting
-						//upshiftDifference = gears[selectedGear].maxRPM - upperGear.minRPM;
-						//downshiftDifference = lowerGear.maxRPM - gears[selectedGear].minRPM;
-
-						//if (Mathf.Abs(vp.localVelocity.z) > 1 || vp.accelInput > 0 || (vp.brakeInput > 0 && vp.brakeIsReverse)) 
-						//{
-						if (/*Time.time - wheelsNotGroundedTime > 1 &&*/ currentGear < gears.Length - 1)
+						if (currentGear < gears.Length - 1)
 						{
-							if (!(vp.brakeInput > 0 && vp.brakeIsReverse && upperGear.ratio >= 0)
+							if (!(vp.brakeInput > 0 && vp.brakeIsReverse && upperGear.ratio == 0)
 							&& !(vp.localVelocity.z < 0 && vp.accelInput == 0))
 							{
 								if ((actualFeedbackRPM > 0.9f * gears[currentGear].maxRPM && vp.velMag > upperGear.minSpeed)
-									 || (vp.localVelocity.z < 1 && vp.localVelocity.z > -1 && vp.accelInput > 0 && currentGear == 1))
+									 || (vp.localVelocity.z < 3 && vp.localVelocity.z > -3 && vp.accelInput > 0 && currentGear < 2))
 								{
 									Shift(1);
 								}
@@ -183,23 +170,19 @@ namespace RVP
 						}
 						if (currentGear > 0)
 						{
-							if ((vp.reallyGroundedWheels > 0 && vp.velMag < gears[currentGear].minSpeed)
-								|| (vp.velMag < 2 && vp.brakeInput > 0 && vp.brakeIsReverse))
+							if ((vp.velMag < gears[currentGear].minSpeed)
+								|| (vp.localVelocity.z < 5 && vp.brakeIsReverse && vp.brakeInput > 0))
 							{
 								int downGearOffset = 1;
-								while (currentGear - downGearOffset > 1 && vp.localVelocity.magnitude < gears[currentGear - downGearOffset].minSpeed)
+								while (
+									((skipNeutral && currentGear - downGearOffset >= 0) || currentGear - downGearOffset > 0)
+									&& (vp.velMag < gears[currentGear - downGearOffset].minSpeed))
 								{
 									downGearOffset++;
 								}
 								Shift(-downGearOffset);
 							}
 						}
-						//}
-					}
-					else if (currentGear != firstGear)
-					{
-						// Shift into first gear if skid steering or burning out
-						//ShiftToGear(firstGear);
 					}
 				}
 				curOutputRatio = gears[currentGear].ratio;
@@ -215,12 +198,12 @@ namespace RVP
 			}
 			else
 			{ // switch gear with clutch-like action
-				// 0 = completed, 1 = just began
+			  // 0 = completed, 1 = just began
 				float sequenceComplt = shiftTime / shiftDelay;
 				// perform shift sequence
 				if (sequenceComplt > 0.5f)
 				{
-					SetOutputDrives(gears[currentGear].ratio, Mathf.Abs(-shiftDelay + shiftTime) / shiftDelay); // 1 -> 0.5 | 0 -> 1
+					SetOutputDrives(gears[currentGear].ratio, Mathf.InverseLerp(1, 0.5f, sequenceComplt));//Mathf.Abs(-shiftDelay + shiftTime) / shiftDelay); // 0 -> 1
 				}
 				else
 				{
@@ -240,19 +223,17 @@ namespace RVP
 		// Shift gears by the number entered
 		public void Shift(int dir)
 		{
-			if (health > 0)
-			{
-				shiftTime = shiftDelaySeconds;
-				selectedGear += dir;
-				if (audioShift)
-					audioShift.Play();
-				//while ((skipNeutral || automatic) && gears[Mathf.Clamp(currentGear, 0, gears.Length - 1)].ratio == 0
-				//    && selectedGear != 0 && selectedGear != gears.Length - 1) {
-				//    selectedGear += dir;
-				//}
+			Debug.Log(dir);
+			shiftTime = shiftDelaySeconds;
+			selectedGear += dir;
+			if (audioShift)
+				audioShift.Play();
+			//while ((skipNeutral || automatic) && gears[Mathf.Clamp(currentGear, 0, gears.Length - 1)].ratio == 0
+			//    && selectedGear != 0 && selectedGear != gears.Length - 1) {
+			//    selectedGear += dir;
+			//}
 
-				selectedGear = Mathf.Clamp(selectedGear, 0, gears.Length - 1);
-			}
+			selectedGear = Mathf.Clamp(selectedGear, 0, gears.Length - 1);
 		}
 
 		// Shift straight to the gear specified
@@ -269,26 +250,25 @@ namespace RVP
 		public void CalculateRpmRanges()
 		{
 			bool cantCalc = false;
-			if (!Application.isPlaying)
-			{
-				GasMotor engine = transform.GetTopmostParentComponent<VehicleParent>().GetComponentInChildren<GasMotor>();
+			//if (!Application.isPlaying)
+			//{ }
+			GasMotor engine = transform.GetTopmostParentComponent<VehicleParent>().GetComponentInChildren<GasMotor>();
 
-				if (engine)
-				{
-					maxRPM = engine.torqueCurve.keys[engine.torqueCurve.length - 1].time;
-				}
-				else
-				{
-					Debug.LogError("There is no <GasMotor> in the vehicle to get RPM info from.", this);
-					cantCalc = true;
-				}
+			if (!engine)
+			{
+				Debug.LogError("There is no <GasMotor> in the vehicle to get RPM info from.", this);
+				cantCalc = true;
 			}
+			else
+			{
+				maxRPM = engine.limit2kRPM * 1000;
+			}
+
 
 			if (!cantCalc)
 			{
 				float prevGearRatio;
 				float nextGearRatio;
-				float actualMaxRPM = maxRPM * 1000;
 
 				for (int i = 0; i < gears.Length; i++)
 				{
@@ -297,7 +277,7 @@ namespace RVP
 
 					if (gears[i].ratio < 0)
 					{
-						gears[i].minRPM = actualMaxRPM / gears[i].ratio;
+						gears[i].minRPM = maxRPM / gears[i].ratio;
 
 						if (nextGearRatio == 0)
 						{
@@ -305,12 +285,12 @@ namespace RVP
 						}
 						else
 						{
-							gears[i].maxRPM = actualMaxRPM / nextGearRatio + (actualMaxRPM / nextGearRatio - gears[i].minRPM) * 0.5f;
+							gears[i].maxRPM = maxRPM / nextGearRatio + (maxRPM / nextGearRatio - gears[i].minRPM) * 0.5f;
 						}
 					}
 					else if (gears[i].ratio > 0)
 					{
-						gears[i].maxRPM = actualMaxRPM / gears[i].ratio;
+						gears[i].maxRPM = maxRPM / gears[i].ratio;
 
 						if (prevGearRatio == 0)
 						{
@@ -318,30 +298,17 @@ namespace RVP
 						}
 						else
 						{
-							gears[i].minRPM = actualMaxRPM / prevGearRatio - (gears[i].maxRPM - actualMaxRPM / prevGearRatio) * 0.5f;
+							gears[i].minRPM = maxRPM / prevGearRatio - (gears[i].maxRPM - maxRPM / prevGearRatio) * 0.5f;
 						}
+						// I have no idea why cofficients '0.45f' and '3.6f' are working. 
+						gears[i].minSpeed = 0.45f * gears[i - 1].maxRPM / 60 * 2 * Mathf.PI * vp.wheels[2].tireRadius / 3.6f;
 					}
 					else
 					{
 						gears[i].minRPM = 0;
 						gears[i].maxRPM = 0;
 					}
-					gears[i].minRPM *= 0.6f;
-					gears[i].minSpeed = 0.8f * gears[i].minRPM / 60 * 2 * Mathf.PI * vp.wheels[2].tireRadius / 3.6f;
-					//gears[i].maxRPM *= 0.55f;
-				}
-			}
-		}
-
-		// Returns the first gear (first gear above neutral)
-		public void GetFirstGear()
-		{
-			for (int i = 0; i < gears.Length; i++)
-			{
-				if (gears[i].ratio == 0)
-				{
-					firstGear = i + 1;
-					return;
+					gears[i].minRPM *= 0.6f; // why? (it works though)
 				}
 			}
 		}

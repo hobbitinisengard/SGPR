@@ -16,7 +16,30 @@ namespace RVP
 		Vector2[] camerasLH = new Vector2[] { new(8.5f, 3.5f), new(4.5f, 2), new(11, 4) };
 		int curCameraLH = 0;
 		public enum Mode { Follow, Replay };
-		Mode mode = Mode.Follow;
+		Mode _mode;
+		public Mode mode
+		{
+			get { return _mode; }
+			set
+			{
+				switch (value)
+				{
+					case Mode.Follow:
+						cam.fieldOfView = 54;
+						if(vp)
+							tr.position = vp.tr.position;
+						_mode = value;
+						break;
+					case Mode.Replay:
+						if(vp.followAI.replayCams.Count > 0)
+						{
+							cam.fieldOfView = 24;
+							_mode = value;
+						}
+						break;
+				}
+			}
+		}
 		Transform tr;
 		Camera cam;
 		VehicleParent vp;
@@ -41,7 +64,7 @@ namespace RVP
 
 		[Header("Experimental")]
 		public float maxEffectiveRollTurnAngle = 5;
-		float rollCoeff = 4f;
+		float rollCoeff = 8f;
 		float catchUpCamSpeed = 10f;
 
 
@@ -51,7 +74,7 @@ namespace RVP
 		public float camOffsetDistance = -1;
 		public float carOffsetDistance;
 		public float scaledTurnAngle;
-		public float EffectiveTurnAngle;
+		public float effectiveTurnAngle;
 		public float smoothedRollAngle;
 		public float rollAngleDeg;
 		public float pitchAngle;
@@ -78,22 +101,6 @@ namespace RVP
 		Vector3 forward;
 		public float xyInputCamSpeedCoeff = 5;
 
-		public void SetMode(Mode mode)
-		{
-			switch (mode)
-			{
-				case Mode.Follow:
-					tr.position = vp.tr.position;
-					this.mode = mode;
-					break;
-				case Mode.Replay:
-					if (vp.followAI.replayCams.Count > 0)
-						this.mode = mode;
-					break;
-				default:
-					break;
-			}
-		}
 		void Awake()
 		{
 			tr = transform;
@@ -107,8 +114,6 @@ namespace RVP
 		}
 		public void Connect(VehicleParent car, Mode mode = Mode.Follow)
 		{
-			this.mode = mode;
-
 			if (!lookObj)
 			{// lookObj is an object used to help position and rotate the camera
 				GameObject lookTemp = new GameObject("Camera Looker");
@@ -128,6 +133,7 @@ namespace RVP
 			// This is necessary for doppler effects to sound correct
 			GetComponent<AudioListener>().velocityUpdateMode = AudioVelocityUpdateMode.Fixed;
 			enabled = true;
+			this.mode = mode;
 		}
 		float WrapAround180Degs(float degs)
 		{
@@ -194,17 +200,17 @@ namespace RVP
 			{
 				Vector3 locVel = vp.localVelocity;
 				locVel.y = 0;
-				EffectiveTurnAngle = Vector3.SignedAngle(Vector3.forward, locVel, Vector3.up);
-				EffectiveTurnAngle = Mathf.Clamp(EffectiveTurnAngle, -maxEffectiveRollTurnAngle, maxEffectiveRollTurnAngle);
-				scaledTurnAngle = EffectiveTurnAngle / maxEffectiveRollTurnAngle;
+				effectiveTurnAngle = Vector3.SignedAngle(Vector3.forward, locVel, Vector3.up);
+				effectiveTurnAngle = Mathf.Clamp(effectiveTurnAngle, -maxEffectiveRollTurnAngle, maxEffectiveRollTurnAngle);
+				scaledTurnAngle = effectiveTurnAngle / maxEffectiveRollTurnAngle;
 			}
 			else
 			{
-				EffectiveTurnAngle = 0;
+				effectiveTurnAngle = 0;
 				scaledTurnAngle = 0;
 			}
 			smoothedRollAngle = Mathf.Lerp(smoothedRollAngle, scaledTurnAngle, rollCoeff * Time.fixedDeltaTime);
-			rollAngleDeg = smoothedRollAngle * 15f * Mathf.Lerp(0, 15, targetBody.velocity.magnitude) / 15f;
+			rollAngleDeg = smoothedRollAngle * Mathf.Lerp(0, 15, targetBody.velocity.magnitude);
 			Vector3 rollUp = Quaternion.AngleAxis(-rollAngleDeg, vp.tr.forward) * Vector3.up;
 			//-----------
 			//camera look-position

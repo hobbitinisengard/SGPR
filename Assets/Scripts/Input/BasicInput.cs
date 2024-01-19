@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
 
 namespace RVP
 {
@@ -18,6 +17,8 @@ namespace RVP
 		public string boostButton;
 		public string upshiftButton;
 		public string downshiftButton;
+		public string honkButton;
+
 		//public string pitchAxis;
 		//public string yawAxis;
 		public string rollAxis;
@@ -58,6 +59,7 @@ namespace RVP
 		void FixedUpdate()
 		{
 			// Get constant inputs
+			
 			if (!string.IsNullOrEmpty(accelAxis))
 			{
 				vp.SetAccel(Input.GetAxis(accelAxis));
@@ -77,7 +79,10 @@ namespace RVP
 			{
 				vp.SetEbrake(Input.GetAxis(ebrakeAxis));
 			}
-
+			if (!string.IsNullOrEmpty(honkButton))
+			{
+				vp.SetHonkerInput(Input.GetButton(honkButton));
+			}
 			if (!string.IsNullOrEmpty(boostButton))
 			{
 				vp.SetBoost(Input.GetButton(boostButton));

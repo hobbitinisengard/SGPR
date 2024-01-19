@@ -2,7 +2,6 @@
 using System.Collections;
 using PathCreation;
 using System.Linq;
-using System.Globalization;
 using System.Collections.Generic;
 using System;
 
@@ -34,6 +33,7 @@ namespace RVP
 		//	}
 		//}
 		List<int> stuntPoints;
+		PathCreator universalPath;
 		int racingLineLayerNumber;
 		public List<ReplayCamStruct> replayCams { get; private set; }
 		[NonSerialized]
@@ -69,6 +69,8 @@ namespace RVP
 		public float hardCornerDot = 0.7f;
 		public float slowingCoeff = 1;
 		float maxPhysicalSteerAngle = 5;
+		private int universalPathLayer;
+
 		// CPU settings
 		float tyreMult = 1;
 		float lowSpeed = 30;
@@ -105,9 +107,18 @@ namespace RVP
 		public float cpuFastCoeff = 50;
 		private bool revvingCo;
 
-		public float ProgressPercent()
+		public float ProgressPercent
 		{
-			return progress / trackPathCreator.path.length;
+			get
+			{
+				var hits = Physics.OverlapSphere(transform.position, radius, 1 << universalPathLayer);
+				int universalPathProgress = GetDist(hits);
+				if (universalPathProgress > progress + 2 * radius)
+					universalPathProgress = progress;
+				if (progress == 1) // when driving directly past startline
+					return 0;
+				return universalPathProgress / universalPath.path.length;
+			}
 		}
 		public void SetCPU(bool val)
 		{
@@ -119,35 +130,30 @@ namespace RVP
 			if (isCPU)
 			{
 				GetComponent<BasicInput>().enabled = false;
-				if (cpuLevel > 75) // elite
+				if (cpuLevel == 3) // elite
 				{
 					lowSpeed = UnityEngine.Random.value * 2 + 38; // 38-40
-					tyreMult = 2f;
+					tyreMult = 1.2f;
 				}
-				else if (cpuLevel > 50) //hard
+				else if (cpuLevel == 2) //hard
 				{
 					lowSpeed = UnityEngine.Random.value * 2 + 36; // 36-38
-					tyreMult = 1.5f;
+					tyreMult = 1.2f;
 				}
-				else if (cpuLevel > 25) // medium
+				else if (cpuLevel == 1) // medium
 				{
 					lowSpeed = UnityEngine.Random.value * 2 + 30; // 30-32
 					tyreMult = 1.2f;
 				}
-				else if (cpuLevel > 0) // easy
+				else // easy
 				{
-					lowSpeed = UnityEngine.Random.value * 2 + 28; // 28-30
-					tyreMult = 1f;
-				}
-				else // beginner
-				{
-					lowSpeed = UnityEngine.Random.value * 3 + 25; // 25-28
-					tyreMult = 1f;
+					lowSpeed = UnityEngine.Random.value * 2 + 28; // 30-32
+					tyreMult = .9f;
 				}
 				for (int i = 0; i < 4; ++i)
 				{
-					vp.wheels[i].sidewaysFriction *= tyreMult;
-					vp.wheels[i].forwardFriction *= tyreMult;
+					vp.wheels[i].sidewaysFriction = tyreMult * vp.wheels[i].initSidewaysFriction;
+					vp.wheels[i].forwardFriction = tyreMult * vp.wheels[i].initForwardFriction;
 				}
 				var keys = tSpeedExpCurve.keys;
 				keys[keys.Count() - 1].value = lowSpeed;
@@ -158,14 +164,15 @@ namespace RVP
 				GetComponent<BasicInput>().enabled = true;
 				for (int i = 0; i < 4; ++i)
 				{
-					vp.wheels[i].sidewaysFriction /= tyreMult;
-					vp.wheels[i].forwardFriction /= tyreMult;
+					vp.wheels[i].sidewaysFriction = vp.wheels[i].initSidewaysFriction;
+					vp.wheels[i].forwardFriction = vp.wheels[i].initForwardFriction;
 				}
 			}
 		}
-		public void AssignPath(in PathCreator racingLinePath, in PathCreator universalPath, 
+		public void AssignPath(in PathCreator racingLinePath, in PathCreator universalPath,
 			ref List<int> stuntpointsContainer, ref List<ReplayCamStruct> replayCams, int racingLineLayerNumber)
 		{
+			this.universalPath = universalPath;
 			this.racingLineLayerNumber = racingLineLayerNumber;
 			this.stuntPoints = stuntpointsContainer;
 			this.replayCams = replayCams;
@@ -181,6 +188,7 @@ namespace RVP
 		private void OnEnable()
 		{
 			maxPhysicalSteerAngle = vp.steeringControl.steeredWheels[0].steerRangeMax;
+			universalPathLayer = Info.racingLineLayers[0];
 			var racingPathHits = Physics.OverlapSphere(transform.position, radius, 1 << racingLineLayerNumber);
 			dist = GetDist(racingPathHits);
 			progress = dist;
@@ -211,7 +219,7 @@ namespace RVP
 
 				}
 			}
-				
+
 			//else
 			//{
 			//	Debug.LogError("OverlapSphere failed");
@@ -225,7 +233,7 @@ namespace RVP
 				vp.raceBox.raceManager.hud.AddMessage(new Message(vp.name + " RETURNS ON TRACK!", BottomInfoType.PIT_OUT));
 				speedLimit = 1024;
 				speedLimitDist = -1;
-				if(pitsPathCreator)
+				if (pitsPathCreator)
 					pitsProgress = pitsPathCreator.path.length;
 				pitsPathCreator = null;
 				searchForPits = false;
@@ -239,9 +247,9 @@ namespace RVP
 		IEnumerator RevvingCoroutine()
 		{
 			revvingCo = true;
-			float targetRev =0;
+			float targetRev = 0;
 			bool revHigher = true;
-			while(vp.countdownTimer > 0)
+			while (vp.countdownTimer > 0)
 			{
 				if (vp.countdownTimer < 0.5f)
 					vp.SetAccel(1);
@@ -250,7 +258,7 @@ namespace RVP
 					if ((revHigher && vp.engine.targetPitch > targetRev) || (!revHigher && vp.engine.targetPitch < targetRev))
 					{
 						revHigher = !revHigher;
-						targetRev = 0.1f +  0.4f * UnityEngine.Random.value + (revHigher ? 0.4f : 0);
+						targetRev = 0.1f + 0.4f * UnityEngine.Random.value + (revHigher ? 0.4f : 0);
 					}
 					vp.SetAccel(revHigher ? 1 : 0);
 				}
@@ -268,7 +276,7 @@ namespace RVP
 			}
 			if (vp.countdownTimer > 0)
 			{
-				if(isCPU)
+				if (isCPU)
 				{
 					if (!revvingCo)
 						StartCoroutine(RevvingCoroutine());
@@ -299,7 +307,7 @@ namespace RVP
 
 			// wrong way driving
 			if (vp.reallyGroundedWheels == 4 && vp.velMag > 10 && Vector3.Dot(vp.forwardDir, trackPathCreator.path.GetDirectionAtDistance(dist)) < -0.5f)
-			{ 
+			{
 				outOfTrackTime += Time.fixedDeltaTime;
 			}
 			if (outOfTrackTime > outOfTrackRequiredTime)
@@ -348,15 +356,19 @@ namespace RVP
 
 				dist = GetDist(racingPathHits);
 
+
 				if (dist < progress)
-				{
 					dist = progress;
-				}
 
 				if (dist < progress + 2 * radius || (pitsPathCreator && pitsProgress == pitsPathCreator.path.length))
 				{
 					progress = dist;
 					pitsProgress = 0;
+				}
+				else if (progress == 1)
+				{
+					dist = progress;
+					outOfTrackTime += 0.1f*Time.fixedDeltaTime;
 				}
 				else
 				{
@@ -414,7 +426,7 @@ namespace RVP
 
 				if (pitsPathCreator)
 				{
-					if (pitsProgress > 25)
+					if (pitsProgress > 0)
 						tSpeed = 22f;
 					if (pitsProgress > 225)
 						tSpeed = 80;
@@ -518,27 +530,21 @@ namespace RVP
 				//	vp.SetAccel(0);
 				//	vp.SetBrake(0);
 				//}
-				if(!vp.raceBox.evoModule.stunting)
+				if (!vp.raceBox.evoModule.stunting)
 				{
 					//Vector3 curTrackpathDir = trackPathCreator.path.GetDirectionAtDistance(progress);
 					//curTrackpathDir.y = 0;
-					Vector3 toTPosDir = ((Vector3)tPos - transform.position).normalized;
+					Vector3 targetDir = F.Vec3Flat((Vector3)tPos - transform.position).normalized;
 					//Vector3 targetDir = F.FlatDistance(tPos0, vp.tr.position) < 2 ? curTrackpathDir : toTPosDir;
 					//Vector3 targetDir = Vector3.Lerp(curTrackpathDir,toTPosDir, F.FlatDistance(tPos0, vp.tr.position)/);
-					Vector3 targetDir = toTPosDir;
 					//Debug.DrawRay(transform.position + Vector3.up * 2, targetDir);
-					steerAngle = Vector3.SignedAngle(F.Vec3Flatten(tr.forward), F.Vec3Flatten(targetDir), Vector3.up);
-					if(!aiStuntingProc)
+					steerAngle = Vector3.SignedAngle(F.Vec3Flat(tr.forward).normalized, targetDir, Vector3.up);
+
+					if (!aiStuntingProc)
 						vp.SetSGPShift(steerAngle > 30);
+
 					float targetSteer = Mathf.Sign(steerAngle) * Mathf.InverseLerp(0, maxPhysicalSteerAngle, Mathf.Abs(steerAngle));
-					if (reverseTime == 0)
-					{
-						vp.SetSteer(targetSteer);
-					}
-					else
-					{
-						vp.SetSteer(-targetSteer);
-					}
+					vp.SetSteer(((reverseTime == 0) ? 1 : -1) * targetSteer);
 					vp.SetBoost(steerAngle < 2 && vp.BatteryPercent > 0.5f);
 				}
 			}
@@ -606,7 +612,7 @@ namespace RVP
 			stoppedTime = 0;
 			float resetDist = progress;
 			Vector3 resetPos = trackPathCreator.path.GetPointAtDistance(resetDist);
-			while (!Physics.Raycast(resetPos + Vector3.up, Vector3.down, out var h, Mathf.Infinity, 1 << Info.roadLayer)
+			while (!Physics.Raycast(resetPos + 5*Vector3.up, Vector3.down, out var h, Mathf.Infinity, 1 << Info.roadLayer)
 				|| Vector3.Dot(h.normal, Vector3.up) < -0.5f) // while not hit road or hit culled face (backface raycasts are on)
 			{
 				resetDist += 30;
@@ -619,22 +625,21 @@ namespace RVP
 			tr.rotation = Quaternion.LookRotation(trackPathCreator.path.GetDirectionAtDistance(progress));
 			rb.velocity = Vector3.zero;
 			rb.angularVelocity = Vector3.zero;
-			
+
 			if (ghostCo != null)
 				StopCoroutine(ghostCo);
 			ghostCo = StartCoroutine(GetComponent<Ghost>().ResetSeq());
 		}
-		
-		//IEnumerator ResetRotation()
-		//{
-		//	stoppedTime = 0;
-		//	yield return new WaitForFixedUpdate();
-		//	tr.position = tPos;
-		//	tr.eulerAngles = new Vector3(0, transform.eulerAngles.y, 0);
-		//	tr.Translate(Vector3.up, Space.World);
-		//	rb.velocity = Vector3.zero;
-		//	rb.angularVelocity = Vector3.zero;
-		//}
+
+		private void OnDisable()
+		{
+			if(Info.s_raceType == Info.RaceType.Knockout)
+			{
+				SetCPU(false);
+				GetComponent<BasicInput>().enabled = false;
+				vp.raceBox.SetRacetime();
+			}
+		}
 		public void DriveThruPits(in PathCreator pitsPathCreator)
 		{
 			inPitsTime = Time.time;

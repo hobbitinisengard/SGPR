@@ -6,7 +6,6 @@ using UnityEngine.UI;
 using System.Linq;
 using static TrackHeader;
 using TMPro;
-using Newtonsoft.Json.Linq;
 using System.IO;
 
 public class TrackSelector : Sfxable
@@ -38,7 +37,7 @@ public class TrackSelector : Sfxable
 	public void SortTrackList()
 	{
 		curSortingCondition = (SortingCond)(((int)curSortingCondition + 1) % 2);
-		if(curSortingCondition == SortingCond.Name)
+		if (curSortingCondition == SortingCond.Name)
 			sortButton.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "Sorted by track's name";
 		else
 			sortButton.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "Sorted by track's difficulty";
@@ -47,69 +46,91 @@ public class TrackSelector : Sfxable
 			StopCoroutine(Load());
 		StartCoroutine(Load());
 	}
-	public void SwitchRaceType(bool init=false)
+	public void SwitchRaceType(bool init = false)
 	{
-		var next = init ? (int)Info.s_raceType : (int)Info.s_raceType+1;
+		var next = init ? (int)Info.s_raceType : (int)Info.s_raceType + 1;
 		next %= Info.RaceTypes;
 		Info.s_raceType = (Info.RaceType)next;
+		if (Info.s_raceType == Info.RaceType.Knockout)
+		{
+			lapsButtonText.transform.parent.GetComponent<Button>().interactable = false;
+			SwitchRivals(true);
+		}
+		else
+		{
+			lapsButtonText.transform.parent.GetComponent<Button>().interactable = true;
+		}
 		raceTypeButtonText.text = Enum.GetName(typeof(Info.RaceType), Info.s_raceType);
 	}
 	public void SwitchLaps(bool init = false)
 	{
-		if(!init)
+		if (!init)
 		{
 			if (Input.GetKey(KeyCode.LeftShift))
 				Info.s_laps -= 3;
 			else
-				Info.s_laps += 3;
-			if (Input.GetKey(KeyCode.LeftAlt))
-				Info.s_laps -= 1;
+			{
+				if (Input.GetKey(KeyCode.LeftControl))
+					Info.s_laps -= 1;
+				else if (Input.GetKey(KeyCode.LeftAlt))
+					Info.s_laps += 1;
+				else
+					Info.s_laps += 3;
+			}
 		}
 		Info.s_laps = Mathf.Clamp(Info.s_laps, 1, 30);
 		lapsButtonText.text = "Laps: " + Info.s_laps.ToString();
 	}
 	public void SwitchDayNight(bool init = false)
 	{
-		if(!init)
+		if (!init)
 			Info.s_isNight = !Info.s_isNight;
 		nightButtonText.text = Info.s_isNight ? "Night" : "Daytime";
 	}
 	public void SwitchCPULevel(bool init = false)
 	{
-		if(!init)
+		if (!init)
 		{
 			if (Input.GetKey(KeyCode.LeftShift))
-				Info.s_cpuLevel -= 25;
+				Info.s_cpuLevel -= 1;
 			else
-				Info.s_cpuLevel += 25;
+				Info.s_cpuLevel += 1;
 		}
-		
-		Info.s_cpuLevel = Mathf.Abs(Info.s_cpuLevel % 125);
+
+		Info.s_cpuLevel = Mathf.Clamp(Info.s_cpuLevel % 4, 0, 4);
 		string cpuLevelStr;
-		if(Info.s_cpuLevel == 0)
-			cpuLevelStr = "Beginner";
-		else if (Info.s_cpuLevel <= 25)
-			cpuLevelStr = "Easy";
-		else if (Info.s_cpuLevel <= 50)
-			cpuLevelStr = "Medium";
-		else if (Info.s_cpuLevel <= 75)
-			cpuLevelStr = "Hard";
-		else
-			cpuLevelStr = "Elite";
+		switch (Info.s_cpuLevel)
+		{
+			case 0:
+				cpuLevelStr = "Easy";
+				break;
+			case 1:
+				cpuLevelStr = "Medium";
+				break;
+			case 2:
+				cpuLevelStr = "Hard";
+				break;
+			case 3:
+				cpuLevelStr = "Elite";
+				break;
+			default:
+				cpuLevelStr = "Elite";
+				break;
+		}
 		CPULevelButtonText.text = "CPU: " + cpuLevelStr;
 	}
 	public void SwitchRivals(bool init = false)
 	{
-		if(!init)
-		{
-			if (Input.GetKey(KeyCode.LeftShift))
-				Info.s_rivals -= 1;
-			else
-				Info.s_rivals += 1;
-		}
-		Info.s_rivals %= 10;
-		Info.s_rivals = Mathf.Clamp(Info.s_rivals, 0, 9);
+		int dir = 0;
+		if (!init)
+			dir = Input.GetKey(KeyCode.LeftShift) ? -1 : 1;
+		Info.s_rivals = Mathf.Clamp((Info.s_rivals + dir) % 10, (Info.s_raceType == Info.RaceType.Knockout) ? 1 : 0, 9);
 		rivalsButtonText.text = "Opponents: " + Info.s_rivals.ToString();
+		if (Info.s_raceType == Info.RaceType.Knockout)
+		{
+			Info.s_laps = Info.s_rivals;
+			SwitchLaps(true);
+		}
 	}
 	public void SwitchRoadType(bool init = false)
 	{
@@ -123,7 +144,7 @@ public class TrackSelector : Sfxable
 	}
 	public void SwitchCatchup(bool init = false)
 	{
-		if(!init)
+		if (!init)
 			Info.s_catchup = !Info.s_catchup;
 		catchupButtonText.text = "Catchup: " + (Info.s_catchup ? "Yes" : "No");
 	}
@@ -166,7 +187,7 @@ public class TrackSelector : Sfxable
 				int trackOrigin = track.TrackOrigin();
 				var newtrack = Instantiate(trackImageTemplate, trackContent.GetChild(trackOrigin));
 				newtrack.name = trackName;
-				newtrack.GetComponent<Image>().sprite = IMG2Sprite.LoadNewSprite(Path.Combine(Info.tracksPath, trackName+".png"));
+				newtrack.GetComponent<Image>().sprite = IMG2Sprite.LoadNewSprite(Path.Combine(Info.tracksPath, trackName + ".png"));
 				newtrack.SetActive(true);
 				existingTrackClasses[trackOrigin] = true;
 				if (persistentSelectedTrack != null && persistentSelectedTrack == trackName)
@@ -209,13 +230,13 @@ public class TrackSelector : Sfxable
 		else
 		{
 			trackDescText.text = selectedTrack.name + "\n\n" + Info.tracks[selectedTrack.name].desc;
-			
+
 			radial.SetAnimTo(selectedTrack.parent.GetSiblingIndex());
 		}
-		
+
 		containerCo = StartCoroutine(MoveToTrack());
 		radial.SetChildrenActive(existingTrackClasses);
-			
+
 		Debug.Log(selectedTrack);
 		loadCo = false;
 
@@ -233,7 +254,7 @@ public class TrackSelector : Sfxable
 		{
 			Transform record = recordsContainer.GetChild(i);
 
-			Record recordData = selectedTrack ? Info.tracks[selectedTrack.name].records[i] : new Record(null,0,0);
+			Record recordData = selectedTrack ? Info.tracks[selectedTrack.name].records[i] : new Record(null, 0, 0);
 
 			string valueStr = (recordData == null || recordData.playerName == null) ? "" : recordData.playerName;
 			record.GetChild(1).GetComponent<Text>().text = valueStr;
@@ -274,7 +295,7 @@ public class TrackSelector : Sfxable
 
 		for (int i = 1; i < tilesContainer.childCount; ++i)
 			Destroy(tilesContainer.GetChild(i).gameObject);
-		if(selectedTrack)
+		if (selectedTrack)
 		{
 			AddTile(Enum.GetName(typeof(Info.CarGroup), Info.tracks[selectedTrack.name].preferredCarClass));
 			AddTile(Enum.GetName(typeof(Info.Envir), Info.tracks[selectedTrack.name].envir));
@@ -283,7 +304,7 @@ public class TrackSelector : Sfxable
 				AddTile(Info.IconNames[flag]);
 		}
 	}
-	
+
 	void Update()
 	{
 		if (!selectedTrack || loadCo)
@@ -296,11 +317,11 @@ public class TrackSelector : Sfxable
 
 		if (x != 0 || y != 0 || gotoHome || gotoEnd)
 		{
-			int posx = gotoHome ? 0 : gotoEnd ? selectedTrack.parent.childCount-1 : x + selectedTrack.GetSiblingIndex();
+			int posx = gotoHome ? 0 : gotoEnd ? selectedTrack.parent.childCount - 1 : x + selectedTrack.GetSiblingIndex();
 			if (posx < 0)
 				posx = 0;
 			int posy = y + selectedTrack.parent.GetSiblingIndex();
-			if (posy >= 0 && posy <= 3 && posx>=0)
+			if (posy >= 0 && posy <= 3 && posx >= 0)
 			{
 				Transform tempSelectedTrack = null;
 				for (int i = posy; i < trackContent.childCount && i >= 0;)
@@ -316,7 +337,7 @@ public class TrackSelector : Sfxable
 					}
 					i = (y > 0) ? (i + 1) : (i - 1);
 				}
-				if(tempSelectedTrack != null && tempSelectedTrack != selectedTrack)
+				if (tempSelectedTrack != null && tempSelectedTrack != selectedTrack)
 				{
 					selectedTrack = tempSelectedTrack;
 					Info.s_trackName = selectedTrack.name;

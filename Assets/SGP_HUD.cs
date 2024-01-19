@@ -5,9 +5,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public enum BottomInfoType { NEW_LEADER, NO_BATT, PIT_OUT, PIT_IN, STUNT, CAR_WINS };
-
-
+public enum BottomInfoType { NEW_LEADER, NO_BATT, PIT_OUT, PIT_IN, STUNT, CAR_WINS, ELIMINATED };
 
 public class Message
 {
@@ -24,6 +22,15 @@ public class Message
 }
 public class SGP_HUD : MonoBehaviour
 {
+
+	public GameObject AEROText;
+	public GameObject DRIFTText;
+	public GameObject AERODisplay;
+	public GameObject progressDisplay;
+	public GameObject positionDisplay;
+	public GameObject TIMEDisplay;
+	public GameObject RECDisplay;
+	public GameObject LAPDisplay;
 	public VehicleParent vp { get; private set; }
 	GearboxTransmission trans;
 	//StuntDetect stunter;
@@ -155,10 +162,9 @@ public class SGP_HUD : MonoBehaviour
 		// if previous stunt table hasn't ended dimming yet
 		if (dimStuntTableTimer > 0)
 		{	
-			Debug.Log("prev hasn't dimming. Hiding now.");
+			Debug.Log("prev hasn't stopped dimming");
 			dimStuntTableTimer = 0;
 			ClearStuntInfo();
-			StuntInfo.SetActive(false);
 		}
 		foreach(Stunt stunt in sData)
 		{
@@ -182,13 +188,12 @@ public class SGP_HUD : MonoBehaviour
 						if (stuntEntriesCount == 7)
 							Destroy(StuntInfo.transform.GetChild(1).gameObject);
 						AddStunt(stunt);
-						stunt.doneTimes = 0;
 					}
 				}
 			}
 			stunt.updateOverlay = false;
 		}
-		if (StuntInfo.transform.childCount > 2)
+		if (StuntInfo.transform.childCount > ((Info.s_raceType == Info.RaceType.Drift) ? 1 : 2))
 			StuntInfo.SetActive(true);
 	}
 	public void AddStunt(in Stunt stunt)
@@ -221,11 +226,15 @@ public class SGP_HUD : MonoBehaviour
 		}
 		ClearStuntInfo();
 		liveMessages.Clear();
+		curMsgInQueue = null;
 		carProgressIcons.Clear();
 		infoText.gameObject.SetActive(false);
 	}
 	private void OnEnable()
 	{
+		AEROText.SetActive(Info.s_raceType != Info.RaceType.Drift);
+		DRIFTText.SetActive(Info.s_raceType == Info.RaceType.Drift);
+
 		infoText.gameObject.SetActive(true);
 		if (Info.tracks[Info.s_trackName].records[0].secondsOrPts > 0)
 			bestLapTime = new TimeSpan(0,0, 0, (int)Info.tracks[Info.s_trackName].records[0].secondsOrPts, (int)(100*(Info.tracks[Info.s_trackName].records[0].secondsOrPts%1f)));
@@ -272,6 +281,13 @@ public class SGP_HUD : MonoBehaviour
 		}
 		carProgressIcons[vp].SetSiblingIndex(9);
 		carProgressIcons[vp].localScale = Vector3.one;
+
+		AERODisplay.SetActive(!Info.s_inEditor);
+		progressDisplay.SetActive(!Info.s_inEditor);
+		positionDisplay.SetActive(!Info.s_inEditor);
+		TIMEDisplay.SetActive(!Info.s_inEditor);
+		RECDisplay.SetActive(!Info.s_inEditor);
+		LAPDisplay.SetActive(!Info.s_inEditor);
 	}
 	private void Update()
 	{
@@ -342,12 +358,14 @@ public class SGP_HUD : MonoBehaviour
 			}
 			else if (stuntPai != null)
 			{ // show animation and stunt info
-				if (StuntInfo.transform.childCount < 3)
+				if (Info.s_raceType != Info.RaceType.Drift && StuntInfo.transform.childCount < 3)
 				{
 					AddMessage(new Message(StuntInfo.transform.GetChild(1).GetComponent<StuntInfoOverlay>().ToString(), BottomInfoType.STUNT));
 				}
 				else
+				{
 					dimStuntTableTimer = dimmingStuntTableTime;
+				}
 				ptsAnim.Play(stuntPai);
 			}
 		}
@@ -376,14 +394,8 @@ public class SGP_HUD : MonoBehaviour
 
 		// HUD vibrates along with dampers
 		Vector3 hudPos = rt.anchoredPosition;
-		try
-		{
+		if (vp.wheels != null)
 			compression = vp.wheels[0].suspensionParent.compression;
-		}
-		catch
-		{
-
-		}
 		float target = Mathf.Lerp(hudPos0, hudHeight - hudPos0, compression);
 		damper_spring(ref spring_pos, ref spring_v, target, spring_maxV);
 		hudPos.y = spring_pos;
@@ -431,12 +443,14 @@ public class SGP_HUD : MonoBehaviour
 			batteryLackPosition.x = Mathf.Lerp(maxBatteryLack, minBatteryLack, vp.BatteryPercent);
 		batteryLack.GetComponent<RectTransform>().anchoredPosition = batteryLackPosition;
 
-		// Update position (1st to 10th)
-		int racePosition = raceManager.Position(vp);
-		positionImage.sprite = positionsSprites[racePosition];
-		positionImage.SetNativeSize();
-		positionSuffixImage.SetActive(racePosition > 3);
 
+		if (positionDisplay.activeSelf)
+		{  // Update position (1st to 10th)
+			int racePosition = raceManager.Position(vp);
+			positionImage.sprite = positionsSprites[racePosition];
+			positionImage.SetNativeSize();
+			positionSuffixImage.SetActive(racePosition > 3);
+		}
 		// debug LAP rollers
 		//if (Input.GetKeyDown(KeyCode.Alpha0))
 		//    racebox.lapStartTime = DateTime.Now.AddSeconds(-55);
@@ -450,138 +464,211 @@ public class SGP_HUD : MonoBehaviour
 		//{
 		//    racebox.NextLap();
 		//}
-		TimeSpan? curLapTime = racebox.CurLaptime;
-		if (curLapTime.HasValue)
+		if(LAPDisplay.activeSelf)
 		{
-			SetRollers(curLapTime.Value, ref lapRollers, true);
-		}
-		else
-		{
-			foreach (var roller in lapRollers)
-				roller.SetActive(false);
-		}
-
-		// REC rollers
-		if (bestLapTime == TimeSpan.MaxValue)
-		{
-			foreach (var roller in recRollers)
-				roller.SetActive(false);
-		}
-		else
-		{
-			SetRollers(bestLapTime, ref recRollers);
-		}
-
-		// LAP rollers
-		if(racebox.curLap > 0)
-		{
-			lapNoRollers[1].SetValue(racebox.curLap % 10); // ones
-			lapNoRollers[0].SetValue(racebox.curLap / 10); // tens
-
-			lapNoRollers[3].SetValue(Info.s_laps % 10); // ones
-			lapNoRollers[2].SetValue(Info.s_laps / 10); // tens
-		}
-		else
-		{
-			foreach (var roller in lapNoRollers)
-				roller.SetActive(false);
-		}
-
-		// Stars
-		if (racebox.starLevel > carStarLevel)
-		{
-			StartCoroutine(SetStarVisible(starsParent.GetChild(racebox.starLevel-1).GetComponent<Image>(), true));
-		}
-		else if (racebox.starLevel < carStarLevel)
-		{
-			for(int i=0; i<carStarLevel; ++i)
+			TimeSpan? curLapTime = racebox.CurLaptime;
+			if (curLapTime.HasValue)
 			{
-				StartCoroutine(SetStarVisible(starsParent.GetChild(i).GetComponent<Image>(), false));
+				SetRollers(curLapTime.Value, ref lapRollers, true);
+			}
+			else
+			{
+				foreach (var roller in lapRollers)
+					roller.SetActive(false);
 			}
 		}
-		carStarLevel = racebox.starLevel;
-
-		// Original AERO movement
-		float score = racebox.Aero;	
-		for (int i = 6; i >= 0; --i)
+		
+		if(RECDisplay.activeSelf)
 		{
-			mainRollers[i].SetFrac(score % 10f / 10f);
-			score /= 10;
-		}
-
-		// Alternative AERO movement
-		//int score = (int)racebox.aero;
-		//mainRollers[6].SetFrac(score % 10f/10f);
-		//for (int i = 5; i >= 0; --i)
-		//{
-		//	mainRollers[i].SetValue(score % 10);
-		//	score /= 10;
-		//}
-
-		// Combo Blinker
-		if (racebox.grantedComboTime > 0)
-		{
-			if (blinkerStart == 0 || Time.time - blinkerStart >= 1)
-				blinkerStart = Time.time;
-
-			Color clr = Color.Lerp(Color.red, Color.green, racebox.grantedComboTime / 3f);
-			clr.a = Mathf.Lerp(.5f, 1, Mathf.Abs(Mathf.Sin(2 * Mathf.PI * (Time.time - blinkerStart))));
-			blinker.color = clr;
-		}
-		else
-		{
-			blinker.color = Color.red;
-		}
-
-		// Progress bar
-		if (Info.s_cars.Count > 1 && Time.time - progressBarUpdateTime > .5f)
-		{
-			progressBarUpdateTime = Time.time;
-			float playerDistance = vp.raceBox.curLap + vp.followAI.ProgressPercent();
-			foreach(var car in Info.s_cars)
+			if (bestLapTime == TimeSpan.MaxValue)
 			{
-				float distance = car.raceBox.curLap + car.followAI.ProgressPercent();
-				float diff = Mathf.Clamp(distance - playerDistance, -1, 1);
-				if(Info.s_catchup)
+				foreach (var roller in recRollers)
+					roller.SetActive(false);
+			}
+			else
+			{
+				SetRollers(bestLapTime, ref recRollers);
+			}
+		}
+		
+		if(LAPDisplay.activeSelf)
+		{
+			if (racebox.curLap > 0)
+			{
+				lapNoRollers[1].SetValue(racebox.curLap % 10); // ones
+				lapNoRollers[0].SetValue(racebox.curLap / 10); // tens
+
+				lapNoRollers[3].SetValue(Info.s_laps % 10); // ones
+				lapNoRollers[2].SetValue(Info.s_laps / 10); // tens
+			}
+			else
+			{
+				foreach (var roller in lapNoRollers)
+					roller.SetActive(false);
+			}
+		}
+		
+		if(AERODisplay.activeSelf)
+		{
+
+			
+			if (DRIFTText.activeSelf)
+			{
+				//----------------------------------------------------------------------------------------------
+				// DRIFT UPPER PANEL
+				//----------------------------------------------------------------------------------------------
+
+				// Stars
+				if (racebox.starLevel > carStarLevel)
 				{
-					if(vp.catchupStatus != CatchupStatus.NoCatchup && distance - playerDistance < 50)
-					{ // normal cpus when speeding to player
-						car.SetCatchup(CatchupStatus.NoCatchup);
-					}
-					else if(distance - playerDistance > 500 && vp.catchupStatus != CatchupStatus.Slowing)
+					for (int i = 0; i < racebox.starLevel; ++i)
 					{
-						car.SetCatchup(CatchupStatus.Slowing);
-					}
-					else if(playerDistance - distance > 500 && vp.catchupStatus != CatchupStatus.Speeding)
-					{
-						car.SetCatchup(CatchupStatus.Speeding);
+						StartCoroutine(SetStarVisible(i, true));
 					}
 				}
-				Vector3 pos = carProgressIcons[car].GetComponent<RectTransform>().anchoredPosition;
-				pos.x = 62 * diff; // from -62 to -62
-				carProgressIcons[car].GetComponent<RectTransform>().anchoredPosition = pos;
+				else if (racebox.starLevel < carStarLevel)
+				{
+					for (int i = 0; i < carStarLevel; ++i)
+					{
+						StartCoroutine(SetStarVisible(i, false));
+					}
+				}
+				carStarLevel = racebox.starLevel;
+
+				float score = racebox.drift;
+				for (int i = 6; i >= 0; --i)
+				{
+					mainRollers[i].SetFrac(score % 10f / 10f);
+					score /= 10;
+				}
+
+				// Combo Blinker
+				if (racebox.grantedComboTime > 0)
+				{
+					if (blinkerStart == 0 || Time.time - blinkerStart >= 1)
+						blinkerStart = Time.time;
+
+					Color clr = Color.Lerp(Color.red, Color.green, racebox.grantedComboTime / 3f);
+					clr.a = Mathf.Lerp(.5f, 1, Mathf.Abs(Mathf.Sin(2 * Mathf.PI * (Time.time - blinkerStart))));
+					blinker.color = clr;
+				}
+				else
+				{
+					blinker.color = Color.red;
+				}
+			}
+			else
+			{
+				//----------------------------------------------------------------------------------------------
+				// AERO UPPER PANEL
+				//----------------------------------------------------------------------------------------------
+				// Stars
+				if (racebox.starLevel > carStarLevel)
+				{
+					StartCoroutine(SetStarVisible(racebox.starLevel - 1, true));
+				}
+				else if (racebox.starLevel < carStarLevel)
+				{
+					for (int i = 0; i < carStarLevel; ++i)
+					{
+						StartCoroutine(SetStarVisible(i, false));
+					}
+				}
+				carStarLevel = racebox.starLevel;
+
+				// Original AERO movement
+				float score = racebox.Aero;
+				for (int i = 6; i >= 0; --i)
+				{
+					mainRollers[i].SetFrac(score % 10f / 10f);
+					score /= 10;
+				}
+				// Alternative AERO movement
+				//int score = (int)racebox.aero;
+				//mainRollers[6].SetFrac(score % 10f/10f);
+				//for (int i = 5; i >= 0; --i)
+				//{
+				//	mainRollers[i].SetValue(score % 10);
+				//	score /= 10;
+				//}
+
+				// Combo Blinker
+				if (racebox.grantedComboTime > 0)
+				{
+					if (blinkerStart == 0 || Time.time - blinkerStart >= 1)
+						blinkerStart = Time.time;
+
+					Color clr = Color.Lerp(Color.red, Color.green, racebox.grantedComboTime / 3f);
+					clr.a = Mathf.Lerp(.5f, 1, Mathf.Abs(Mathf.Sin(2 * Mathf.PI * (Time.time - blinkerStart))));
+					blinker.color = clr;
+				}
+				else
+				{
+					blinker.color = Color.red;
+				}
+			}
+		}
+		
+		if(progressDisplay.activeSelf)
+		{
+			// Progress bar
+			if (Info.s_cars.Count > 1 && Time.time - progressBarUpdateTime > .5f)
+			{
+				progressBarUpdateTime = Time.time;
+				float playerDistance = vp.raceBox.curLap + vp.followAI.ProgressPercent;
+				foreach (var car in Info.s_cars)
+				{
+					float distance = car.raceBox.curLap + car.followAI.ProgressPercent;
+					float diff = Mathf.Clamp(distance - playerDistance, -1, 1);
+					if (Info.s_catchup)
+					{
+						if (vp.catchupStatus != CatchupStatus.NoCatchup && distance - playerDistance < 50)
+						{ // normal cpus when speeding to player
+							car.SetCatchup(CatchupStatus.NoCatchup);
+						}
+						else if (distance - playerDistance > 500 && vp.catchupStatus != CatchupStatus.Slowing)
+						{
+							car.SetCatchup(CatchupStatus.Slowing);
+						}
+						else if (playerDistance - distance > 500 && vp.catchupStatus != CatchupStatus.Speeding)
+						{
+							car.SetCatchup(CatchupStatus.Speeding);
+						}
+					}
+					Vector3 pos = carProgressIcons[car].GetComponent<RectTransform>().anchoredPosition;
+					pos.x = 62 * diff; // from -62 to -62
+					carProgressIcons[car].GetComponent<RectTransform>().anchoredPosition = pos;
+				}
 			}
 		}
 	}
-
-	IEnumerator SetStarVisible(Image starObj, bool targetVisiblity)
+	bool[] starsVisibilityCoroutines = new bool[10];
+	IEnumerator SetStarVisible(int starNumber, bool shouldBeVisible)
 	{
+		// don't start coroutine if another one is already running
+		if (shouldBeVisible && starsVisibilityCoroutines[starNumber])
+			yield break;
+
+		starsVisibilityCoroutines[starNumber] = shouldBeVisible;
+		Image starImg = starsParent.GetChild(starNumber).GetComponent<Image>();
 		float timer = 0;
 		while(timer<.5f)
 		{
-			if(targetVisiblity==true)
+			if(shouldBeVisible==true)
 			{
-				starObj.gameObject.SetActive(true);
-				starObj.transform.localScale = Mathf.Lerp(2, 1, timer * 2) * Vector3.one;
+				starImg.gameObject.SetActive(true);
+				starImg.transform.localScale = Mathf.Lerp(2, 1, timer * 2) * Vector3.one;
 			}
-			var c= starObj.color;
-			c.a = targetVisiblity ? 2*timer : (1 - 2*timer);
-			starObj.color = c;
+			var c= starImg.color;
+			c.a = shouldBeVisible ? 2*timer : (1 - 2*timer);
+			starImg.color = c;
 			timer += Time.deltaTime;
 			yield return null;
 		}
-		if(targetVisiblity == false)
-			starObj.gameObject.SetActive(false);
+		if(shouldBeVisible == false)
+			starImg.gameObject.SetActive(false);
+
+		starsVisibilityCoroutines[starNumber] = false;
 	}
 
 	void SetRollers(in TimeSpan timespan, ref Roller[] rollers, bool millisecondsAsFrac = false)

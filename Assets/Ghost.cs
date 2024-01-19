@@ -100,18 +100,17 @@ public class Ghost : MonoBehaviour
 					prev = (int)(timer * 10);
 					SetHittable(prev % 2 == 0, false);
 				}
-				if(!Physics.CheckSphere(transform.position, 1.5f, 1<<Info.vehicleLayer))
+				if(!Info.gamePaused && !Physics.CheckSphere(transform.position, 1.5f, 1<<Info.vehicleLayer))
 					timer -= Time.deltaTime;
 			}
 			else
 			{
-				timer -= Time.deltaTime;
+				if(!Info.gamePaused)
+					timer -= Time.deltaTime;
 			}
-			
 			yield return null;
 			justResetted = false;
 		}
-		if (!vp.raceBox.Finished)
-			SetHittable(true);
+		SetHittable(!vp.raceBox.Finished);
 	}
 }
