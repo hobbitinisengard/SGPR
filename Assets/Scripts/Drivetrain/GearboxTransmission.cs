@@ -152,7 +152,7 @@ namespace RVP
 						CalculateRpmRanges();
 					}
 				}
-				if (automatic && vp.countdownTimer < shiftDelay && vp.reallyGroundedWheels >= 2)
+				if (automatic && vp.countdownTimer <= shiftDelay && vp.reallyGroundedWheels >= 2)
 				{
 					if (selectedGear == currentGear)
 					{
@@ -164,7 +164,10 @@ namespace RVP
 								if ((actualFeedbackRPM > 0.9f * gears[currentGear].maxRPM && vp.velMag > upperGear.minSpeed)
 									 || (vp.localVelocity.z < 3 && vp.localVelocity.z > -3 && vp.accelInput > 0 && currentGear < 2))
 								{
-									Shift(1);
+									if (currentGear == 0 && skipNeutral)
+										Shift(2);
+									else
+										Shift(1);
 								}
 							}
 						}
@@ -175,8 +178,8 @@ namespace RVP
 							{
 								int downGearOffset = 1;
 								while (
-									((skipNeutral && currentGear - downGearOffset >= 0) || currentGear - downGearOffset > 0)
-									&& (vp.velMag < gears[currentGear - downGearOffset].minSpeed))
+									((skipNeutral && currentGear - downGearOffset > 0) || currentGear - downGearOffset > 1)
+									&& (currentGear - downGearOffset < 2 || vp.velMag < gears[currentGear - downGearOffset].minSpeed))
 								{
 									downGearOffset++;
 								}
@@ -223,7 +226,6 @@ namespace RVP
 		// Shift gears by the number entered
 		public void Shift(int dir)
 		{
-			Debug.Log(dir);
 			shiftTime = shiftDelaySeconds;
 			selectedGear += dir;
 			if (audioShift)

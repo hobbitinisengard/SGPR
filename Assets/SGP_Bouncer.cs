@@ -1,5 +1,4 @@
 using RVP;
-using System.Collections;
 using UnityEngine;
 public class SGP_Bouncer : MonoBehaviour
 {
@@ -25,49 +24,14 @@ public class SGP_Bouncer : MonoBehaviour
 			multCurve = new AnimationCurve(kf);
 		}
 	}
-	private void FixedUpdate()
-	{
-		if (vp.reallyGroundedWheels == 0)
-		{
-			if (lastBounceTime == 0)
-				lastBounceTime = Time.time;
-		}
-		else
-		{
-			if (Time.time - lastBounceTime > 0.5f)
-				StartCoroutine(ZeroizeLastBounceTime());
-		}
-	}
-	IEnumerator ZeroizeLastBounceTime()
-	{
-		yield return new WaitForFixedUpdate();
-		lastBounceTime = 0;
-	}
-	void VehicleVehicleBouncer(Collision collision)
-	{
-		if (Time.time - lastVVBounceTime < debounceTime)
-			return;
-		lastVVBounceTime = Time.time;
-		Vector3 bounceDir;
-		bounceDir = (/*collision.relativeVelocity.normalized + .1f **/ collision.transform.up).normalized;
-		Debug.Log("VVB: " + collision.relativeVelocity.magnitude.ToString());
-		rb.AddForceAtPosition(0.25f * collision.relativeVelocity.magnitude * bounceDir,
-			vp.transform.position,//collision.GetContact(0).point,
-			ForceMode.VelocityChange);
-	}
 	private void OnCollisionEnter(Collision collision)
 	{
 		ContactPoint contact = collision.GetContact(0);
-		//if (
-		//	contact.otherCollider.gameObject.layer == Info.vehicleLayer &&
-		//	contact.thisCollider.gameObject.layer == Info.vehicleLayer)
-		//{
-		//	VehicleVehicleBouncer(collision);
-		//	return;
-		//}
-		if (collision.gameObject.layer != Info.roadLayer)
+		if (vp.countdownTimer > 0)
 			return;
-		vp.colliding = true;
+		if (contact.otherCollider.gameObject.layer != Info.roadLayer)
+			return;
+		vp.colliding  = true;
 		Vector3 norm = contact.normal;
 		Vector3 addForce;
 		Vector3 direction;
@@ -88,18 +52,21 @@ public class SGP_Bouncer : MonoBehaviour
 		}
 		else
 		{ // vertical force based on car's previous ramp speed
-			if (lastBounceTime == 0 || Time.time - lastBounceTime < debounceTime)
+			if (vp.brakeInput > 0)
+				return;
+			if (Time.time - lastBounceTime < debounceTime)
 				return;
 			addForce = Vector3.Project(collision.relativeVelocity, -norm);
-			Vector3 rightV = Vector3.Cross(-F.Vec3Flat(vp.rb.velocity),Vector3.up).normalized;
+			Vector3 rightV = Vector3.Cross(-vp.rb.velocity.normalized,norm).normalized;
 			direction = Vector3.Cross(rightV, norm).normalized;//(vp.rb.velocity - addForce).normalized;
-			Debug.DrawRay(vp.tr.position, direction, Color.red, 4);
-			lastBounceTime = 0;
+			//Debug.DrawRay(vp.centerOfMassObj.position, direction, Color.magenta, 4);
+			//Debug.DrawRay(vp.centerOfMassObj.position, -norm, Color.white, 4);
+			//Debug.Log(addForce.magnitude);
+			lastBounceTime = Time.time;
 			rb.AddForceAtPosition(direction * addForce.magnitude,
 			vp.centerOfMassObj.position,//collision.GetContact(0).point,
 			ForceMode.VelocityChange);
 		}
-
 	}
 	private void OnCollisionExit(Collision collision)
 	{

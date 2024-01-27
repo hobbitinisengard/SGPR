@@ -49,7 +49,10 @@ public class PauseMenu : Sfxable
 		Info.SaveSettingsDataToJson(mainMixer);
 		PlaySFX("menublip2",true);
 		veil.color = startColor;
-		Info.raceStartDate = Info.raceStartDate.AddSeconds(timeElapsed);
+
+		if(!Info.s_inEditor)
+			Info.raceStartDate = Info.raceStartDate.AddSeconds(timeElapsed);
+		
 		timeElapsed = 0;
 	}
 }

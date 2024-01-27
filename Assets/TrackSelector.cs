@@ -89,34 +89,24 @@ public class TrackSelector : Sfxable
 	}
 	public void SwitchCPULevel(bool init = false)
 	{
+		int dir = 0;
 		if (!init)
 		{
 			if (Input.GetKey(KeyCode.LeftShift))
-				Info.s_cpuLevel -= 1;
+				dir = -1;
 			else
-				Info.s_cpuLevel += 1;
+				dir = 1;
 		}
 
-		Info.s_cpuLevel = Mathf.Clamp(Info.s_cpuLevel % 4, 0, 4);
-		string cpuLevelStr;
-		switch (Info.s_cpuLevel)
+		Info.s_cpuLevel = (Info.CpuLevel)(Mathf.Clamp(((int)Info.s_cpuLevel+dir) % 4, 0, 4));
+		string cpuLevelStr = Info.s_cpuLevel switch
 		{
-			case 0:
-				cpuLevelStr = "Easy";
-				break;
-			case 1:
-				cpuLevelStr = "Medium";
-				break;
-			case 2:
-				cpuLevelStr = "Hard";
-				break;
-			case 3:
-				cpuLevelStr = "Elite";
-				break;
-			default:
-				cpuLevelStr = "Elite";
-				break;
-		}
+			Info.CpuLevel.Easy => "Easy",
+			Info.CpuLevel.Medium => "Medium",
+			Info.CpuLevel.Hard => "Hard",
+			Info.CpuLevel.Elite => "Elite",
+			_ => "Elite",
+		};
 		CPULevelButtonText.text = "CPU: " + cpuLevelStr;
 	}
 	public void SwitchRivals(bool init = false)

@@ -126,8 +126,8 @@ namespace RVP
 			upLook = vp.tr.forward;
 			targetBody = vp.tr.GetComponent<Rigidbody>();
 			tr.SetPositionAndRotation(vp.tr.position, Quaternion.LookRotation(forwardLook, upLook));
-
-			if (this.mode == Mode.Replay && vp.followAI.replayCams.Count == 0)
+			dampOffset = vp.tr.position;
+			if (this.mode == Mode.Replay && vp.followAI.replayCams?.Count == 0)
 				this.mode = Mode.Follow;
 			// Set the audio listener update mode to fixed, because the camera moves in FixedUpdate
 			// This is necessary for doppler effects to sound correct
@@ -312,7 +312,7 @@ namespace RVP
 				}
 				else
 				{
-					if (camOffsetDistance > (carOffsetDistance + 0.1f))
+					if (camOffsetDistance > carOffsetDistance)
 					{
 						Quaternion cameraStoppedRotation = Quaternion.LookRotation(vp.tr.position - tr.position, rollUp);
 						rotation = Quaternion.Lerp(tr.rotation, cameraStoppedRotation, 6 * Time.fixedDeltaTime);

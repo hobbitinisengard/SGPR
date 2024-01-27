@@ -669,9 +669,12 @@ namespace RVP
 				float forwardSlipDependenceFactor = Mathf.Clamp01(forwardSlipDependence - Mathf.Clamp01(Mathf.Abs(sidewaysSlip)));
 				float sidewaysSlipDependenceFactor = Mathf.Clamp01(sidewaysSlipDependence - Mathf.Clamp01(Mathf.Abs(forwardSlip)));
 
-				float targetForceX = forwardFrictionCurve.Evaluate(Mathf.Abs(forwardSlipFactor)) * -System.Math.Sign(forwardSlip) * (popped ? forwardRimFriction : forwardFriction) * forwardSlipDependenceFactor * -suspensionParent.flippedSideFactor;
-				float targetForceZ = sidewaysFrictionCurve.Evaluate(Mathf.Abs(sidewaysSlipFactor)) * -System.Math.Sign(sidewaysSlip) * (popped ? sidewaysRimFriction : sidewaysFriction) * sidewaysSlipDependenceFactor *
-					 normalFrictionCurve.Evaluate(Mathf.Clamp01(Vector3.Dot(contactPoint.normal, RaceManager.worldUpDir))) *
+				float targetForceX = forwardFrictionCurve.Evaluate(Mathf.Abs(forwardSlipFactor))
+					* -System.Math.Sign(forwardSlip) * (popped ? forwardRimFriction : forwardFriction)
+					* forwardSlipDependenceFactor * -suspensionParent.flippedSideFactor;
+				float targetForceZ = sidewaysFrictionCurve.Evaluate(Mathf.Abs(sidewaysSlipFactor))
+					* -System.Math.Sign(sidewaysSlip) * (popped ? sidewaysRimFriction : sidewaysFriction)
+					* sidewaysSlipDependenceFactor * normalFrictionCurve.Evaluate(Mathf.Clamp01(Vector3.Dot(contactPoint.normal, RaceManager.worldUpDir))) *
 					 (vp.burnout > 0 && Mathf.Abs(targetDrive.rpm) != 0 && actualEbrake * vp.ebrakeInput == 0 && grounded ? (1 - vp.burnout) * (1 - Mathf.Abs(vp.accelInput)) : 1);
 
 				Vector3 targetForce = tr.TransformDirection(targetForceX, 0, targetForceZ);
@@ -727,8 +730,7 @@ namespace RVP
 					&& !Mathf.Approximately(actualTargetRPM, 0)) || brakeForce + actualEbrake * vp.ebrakeInput > 0;
 
 				currentRPM = Mathf.Lerp(rawRPM,
-					 Mathf.Lerp(
-					 Mathf.Lerp(rawRPM, actualTargetRPM, validTorque ? EvaluateTorque(actualTorque) : actualTorque),
+						Mathf.Lerp(Mathf.Lerp(rawRPM, actualTargetRPM, validTorque ? EvaluateTorque(actualTorque) : actualTorque),
 					 0, Mathf.Max(brakeForce, actualEbrake * vp.ebrakeInput)),
 				validTorque ? EvaluateTorque(actualTorque + brakeForce + actualEbrake * vp.ebrakeInput) 
 					: actualTorque + brakeForce + actualEbrake * vp.ebrakeInput);

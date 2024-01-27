@@ -116,7 +116,13 @@ public class SC_TerrainEditor : MonoBehaviour
 	void FixedUpdate()
 	{
 		if (uiTest.PointerOverUI() || terrain == null)
+		{
+			spotLight.spotAngle = 0;
 			return;
+		}
+		else
+			spotLight.spotAngle = areaSliderVal.slider.value;
+
 		raycastHit();
 		wheelValuesControl();
 
@@ -126,7 +132,7 @@ public class SC_TerrainEditor : MonoBehaviour
 		}
 
 		//Update Spot Light Angle according to the Area value
-		spotLight.spotAngle = areaSliderVal.slider.value * 25f;
+		
 	}
 
 	//Raycast

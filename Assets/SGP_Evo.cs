@@ -286,6 +286,9 @@ public class SGP_Evo : MonoBehaviour
 		prevSGPShiftButton = vp.SGPshiftbutton;
 	}
 
-	
+	internal void Reset()
+	{
+		stunting = false;
+	}
 }
 

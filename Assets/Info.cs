@@ -98,7 +98,7 @@ public static class Info
 	};
 	public enum CarGroup { Wild, Aero, Speed, Team };
 	public enum TrackOrigin { Original, Custom };
-	public static readonly string carModelsPath = "carModels/";
+	public static readonly string carPrefabsPath = "carModels/";
 	public static readonly string carImagesPath = "carImages/";
 	public static readonly string trackImagesPath = "trackImages/";
 	public static readonly string editorTilesPath = "tiles/objects/";
@@ -122,6 +122,7 @@ public static class Info
 	public const int pitsZoneLayer = 18;
 	public const int aeroTunnel = 19;
 	public const int ghostLayer = 24;
+	public const int carCarCollisionLayer = 26;
 
 	/// <summary>
 	/// Only one object at the time can have this layer
@@ -138,7 +139,8 @@ public static class Info
 	public static int s_laps = 3;
 	public static bool s_inEditor = true;
 	public static bool s_isNight = false;
-	public static int s_cpuLevel = 0;
+	public enum CpuLevel { Easy, Medium, Hard, Elite};
+	public static CpuLevel s_cpuLevel = 0;
 	public static int s_rivals = 0; // 0-9
 	public static PavementType s_roadType = PavementType.Random;
 	public static bool s_catchup = true;
@@ -151,6 +153,15 @@ public static class Info
 	public static Sprite[] icons;
 	public static bool gamePaused;
 	public static readonly string version = "0.2b";
+
+	public static bool InRace 
+	{ 
+		get
+		{
+			return !s_inEditor || s_cars.Count > 1;
+		}
+	}
+
 	public static Car Car(string name)
 	{ // i.e. car05
 		int i = int.Parse(name[3..]);
@@ -187,16 +198,16 @@ public static class Info
 			new Car(1,CarGroup.Speed, "NITRO LIGHTNIN''\n\nSupercharged super speed. Easy does it!"),
 			new Car(1,CarGroup.Speed, "ALLEY KAT\n\nSleek and powerful, this cat is ready to roar."),
 			new Car(1,CarGroup.Wild, "SAND SHARK\n\nThis beachcomber is at home on any stunt circuit."),
-			new Car(0,CarGroup.Wild, "THE BRUTE\n\nUnleash the Brute for no-nonsense on the road!"),
-			new Car(0,CarGroup.Aero, "WILD DART\n\nFly fast and true with this stuntcar."),
-			new Car(0,CarGroup.Wild, "RAGING BULL\n\nPowerful and fast, this streetwise 4x4 is incredible."),
-			new Car(0,CarGroup.Aero, "FLYING MANTIS\n\nSuper light and very fast."),
-			new Car(0,CarGroup.Aero, "STUNT MONKEY\n\nMonkey see, monkey do! Go bananas with this wild ride!"),
-			new Car(0,CarGroup.Speed, "INFERNO\n\nThis speed demon is on fire!"),
-			new Car(0,CarGroup.Team, "THE FORKSTER\n\nDespite its looks, it moves like fork lightning!"),
-			new Car(0,CarGroup.Team, "WORMS MOBILE\n\nSuper Speedy Buggy!"),
-			new Car(0,CarGroup.Team, "FORMULA 17\n\nIncredibly fast racing car."),
-			new Car(0,CarGroup.Team, "TEAM MACHINE\n\nThe ultimate, hugely versatile stock car.")
+			//new Car(0,CarGroup.Wild, "THE BRUTE\n\nUnleash the Brute for no-nonsense on the road!"),
+			//new Car(0,CarGroup.Aero, "WILD DART\n\nFly fast and true with this stuntcar."),
+			//new Car(0,CarGroup.Wild, "RAGING BULL\n\nPowerful and fast, this streetwise 4x4 is incredible."),
+			//new Car(0,CarGroup.Aero, "FLYING MANTIS\n\nSuper light and very fast."),
+			//new Car(0,CarGroup.Aero, "STUNT MONKEY\n\nMonkey see, monkey do! Go bananas with this wild ride!"),
+			//new Car(0,CarGroup.Speed, "INFERNO\n\nThis speed demon is on fire!"),
+			//new Car(0,CarGroup.Team, "THE FORKSTER\n\nDespite its looks, it moves like fork lightning!"),
+			//new Car(0,CarGroup.Team, "WORMS MOBILE\n\nSuper Speedy Buggy!"),
+			//new Car(0,CarGroup.Team, "FORMULA 17\n\nIncredibly fast racing car."),
+			//new Car(0,CarGroup.Team, "TEAM MACHINE\n\nThe ultimate, hugely versatile stock car.")
 			};
 		}
 		ReloadCarConfigs();

@@ -59,7 +59,6 @@ namespace RVP
 		public static float tireFadeTimeStatic;
 
 		public PartOfDay pod = PartOfDay.Day;
-		public float trackDistance = 1000;
 		public SGP_HUD hud;
 		public EditorPanel editorPanel;
 		public CameraControl cam;
@@ -82,7 +81,7 @@ namespace RVP
 				int activeCars = 0;
 				foreach (var car in Info.s_cars)
 				{
-					if (car.followAI.enabled)
+					if (car.raceBox.enabled)
 						activeCars++;
 				}
 				return activeCars;
@@ -111,7 +110,7 @@ namespace RVP
 		}
 		public void RestartButton()
 		{
-			StartCoroutine(StartRace());
+			StartRace();
 		}
 		public void ExitButton()
 		{
@@ -157,14 +156,22 @@ namespace RVP
 			VehicleParent eliminatedCar = null;
 			for (int i=Info.s_cars.Count-1; i>=0; --i)
 			{
-				if (Info.s_cars[i].followAI.enabled)
+				if (Info.s_cars[i].raceBox.enabled)
 				{
 					eliminatedCar = Info.s_cars[i];
 					break;
 				}
 			}
 			Debug.Assert(eliminatedCar != null);
-			eliminatedCar.followAI.enabled = false;
+
+			eliminatedCar.raceBox.enabled = false;
+			eliminatedCar.followAI.SetCPU(false);
+			eliminatedCar.followAI.selfDriving = false;
+			eliminatedCar.followAI.GetComponent<BasicInput>().enabled = false;
+			eliminatedCar.SetAccel(0);
+			eliminatedCar.SetBrake(0);
+			eliminatedCar.raceBox.SetRacetime();
+
 			hud.AddMessage(new(eliminatedCar.transform.name + " IS ELIMINATED!", BottomInfoType.ELIMINATED));
 		}
 		//Color HDRColor(float r, float g, float b, int intensity = 0)
@@ -212,6 +219,7 @@ namespace RVP
 		private void OnDisable()
 		{
 			playerCar = null;
+			DemoSGPLogo.SetActive(false);
 		}
 		private void OnEnable()
 		{
@@ -225,21 +233,28 @@ namespace RVP
 			}
 			else
 			{
-				StartCoroutine(StartRace());
+				StartRace();
 			}
 		}
-		public IEnumerator StartFreeRoam(Vector3 position, Quaternion rotation)
+		IEnumerator StartFreeroamCo(Vector3 position, Quaternion rotation)
 		{
 			position.y += 1;
 			editorPanel.gameObject.SetActive(false);
-			var carModel = Resources.Load<GameObject>(Info.carModelsPath + "car01");
+			Info.s_raceType = Info.RaceType.Race;
+			var carModel = Resources.Load<GameObject>(Info.carPrefabsPath + Info.s_playerCarName);
 			var newCar = Instantiate(carModel, position, rotation).GetComponent<VehicleParent>();
 			Info.s_cars.Add(newCar);
 			cam.Connect(newCar);
 			hud.Connect(newCar);
+			newCar.followAI.enabled = true;
 			newCar.raceBox.raceManager = this;
+			newCar.raceBox.enabled = false;
 			yield return null;
-			Info.cars[newCar.carNumber-1].config.Apply(newCar);
+			Info.cars[newCar.carNumber - 1].config.Apply(newCar);
+		}
+		public void StartFreeRoam(Vector3 position, Quaternion rotation)
+		{
+			StartCoroutine(StartFreeroamCo(position, rotation));
 		}
 		void SetPitsLayer(int layer)
 		{
@@ -251,7 +266,11 @@ namespace RVP
 					t.GetChild(i).GetChild(0).gameObject.layer = layer;
 			}
 		}
-		public IEnumerator StartRace()
+		public void StartRace()
+		{
+			StartCoroutine(StartRaceCoroutine());
+		}
+		IEnumerator StartRaceCoroutine()
 		{
 			foreach (var c in Info.s_cars)
 				Destroy(c.gameObject);
@@ -295,7 +314,7 @@ namespace RVP
 
 				for (int j = 0; j < 28; j += 2)//track width is around 30
 				{
-					if (Physics.Raycast(startPos + 5 * Vector3.up + rotDirVec * j, Vector3.down, out var hit, 
+					if (Physics.Raycast(startPos + 5 * Vector3.up + rotDirVec * j, Vector3.down, out var hit,
 						10, 1 << Info.roadLayer))
 					{
 						rightSide = hit.point;
@@ -305,7 +324,7 @@ namespace RVP
 				}
 				for (int j = 2; j < 28; j += 2)
 				{
-					if (Physics.Raycast(startPos + 5 * Vector3.up - rotDirVec * j, Vector3.down, out var hit, 
+					if (Physics.Raycast(startPos + 5 * Vector3.up - rotDirVec * j, Vector3.down, out var hit,
 						10, 1 << Info.roadLayer))
 					{
 						leftSide = hit.point;
@@ -316,8 +335,9 @@ namespace RVP
 
 				startPos = Vector3.Lerp(leftSide, rightSide, (i % 2 == 0) ? .286f : .714f);
 				//Debug.DrawRay(startPos, Vector3.up);
-				string carName = (i == Info.s_rivals) ? Info.s_playerCarName : "car" + UnityEngine.Random.Range(1, 11).ToString("D2");
-				var carModel = Resources.Load<GameObject>(Info.carModelsPath + carName);
+				string carName = (i == Info.s_rivals) ? Info.s_playerCarName : "car" + UnityEngine.Random.Range(1, Info.cars.Length + 1).ToString("D2");
+				//string carName = "car01";
+				var carModel = Resources.Load<GameObject>(Info.carPrefabsPath + carName);
 				var position = new Vector3(startPos.x, startPos.y + 3, startPos.z);
 				var rotation = Quaternion.LookRotation(dirVec);
 				var newCar = Instantiate(carModel, position, rotation).GetComponent<VehicleParent>();
@@ -329,7 +349,7 @@ namespace RVP
 				StartCoroutine(newCar.CountdownTimer(countDownSeconds));
 
 				int racingLineNumber = i % racingPaths.Length;
-				newCar.followAI.AssignPath(racingPaths[racingLineNumber], racingPaths[0], ref editorPanel.stuntpointsContainer, 
+				newCar.followAI.AssignPath(racingPaths[racingLineNumber], racingPaths[0], ref editorPanel.stuntpointsContainer,
 					ref editorPanel.replayCamsContainer, Info.racingLineLayers[racingLineNumber]);
 
 				if (i == Info.s_rivals)
@@ -339,7 +359,7 @@ namespace RVP
 					if (Info.s_spectator)
 					{
 						newCar.name = "CP" + (i + 1).ToString();
-						
+
 						cam.Connect(newCar, CameraControl.Mode.Replay);
 						DemoSGPLogo.SetActive(true);
 					}
@@ -366,18 +386,19 @@ namespace RVP
 			countDownSeq.CountdownSeconds = countDownSeconds;
 			countDownSeq.gameObject.SetActive(!Info.s_spectator);
 			hud.gameObject.SetActive(!Info.s_spectator);
-			if(Info.s_spectator)
+			if (Info.s_spectator)
 				StartCoroutine(SpectatorLoop());
 
 			yield return null;
 
 			foreach (var car in Info.s_cars)
 			{
-				Info.cars[car.carNumber-1].config.Apply(car);
-				if(car.name.Contains("CP"))
+				Info.cars[car.carNumber - 1].config.Apply(car);
+				if (car.name.Contains("CP"))
 					car.followAI.SetCPU(true);
 			}
 		}
+		
 		IEnumerator SpectatorLoop()
 		{
 			while (true)

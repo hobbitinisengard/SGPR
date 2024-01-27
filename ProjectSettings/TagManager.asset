@@ -6,8 +6,7 @@ TagManager:
   tags:
   - Pop Tire
   - Underside
-  - CP
-  - START
+  - carBody
   layers:
   - Default
   - TransparentFX
@@ -35,7 +34,7 @@ TagManager:
   - Underside
   - Ghost
   - Racingline2
-  - Skybox
+  - CarCarCollision
   - Racingline3
   - 
   - 

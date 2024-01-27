@@ -88,7 +88,7 @@ Material:
     - _EmissionIntensity: 1
     - _EnableDetailMask: 0
     - _GlossMapScale: 1
-    - _Glossiness: 0.5
+    - _Glossiness: 0
     - _GlossyReflections: 1
     - _IntensityCutoutMap: 0.545
     - _IntensityMask: 1
@@ -98,13 +98,13 @@ Material:
     - _Metallic: 0
     - _Mode: 1
     - _OcclusionStrength: 1
-    - _Parallax: 0.02
+    - _Parallax: 0
     - _Saturation: 0
     - _SmoothnessTextureChannel: 0
     - _Source: 0
     - _SourceMask: 0
     - _SpecularHighlights: 1
-    - _SpecularIntensity: 0.2
+    - _SpecularIntensity: 0
     - _SpreadDetailMap: 0
     - _SrcBlend: 1
     - _UVSec: 0

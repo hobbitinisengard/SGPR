@@ -69,7 +69,7 @@ public class MainMenuView : Sfxable
 	}
 	public void ToEditorScene()
 	{
-		if (Info.s_trackName == null)
+		if (Info.s_trackName == "MEX")
 			PlaySFX("fe-cardserror");
 		else
 		{

@@ -57,7 +57,7 @@ namespace RVP
 		public bool honkInput;
 		[System.NonSerialized]
 		public float brakeInput;
-		[Range(-1,1)]
+		[Range(-1, 1)]
 		public float steerInput;
 		[System.NonSerialized]
 		public float ebrakeInput;
@@ -175,6 +175,7 @@ namespace RVP
 		public bool canCrash = true;
 		public AudioSource roadNoiseSnd;
 		public AudioSource crashSnd;
+		public AudioSource scrapeSnd;
 		public AudioSource batteryLoadingSnd;
 		public AudioClip[] crashClips;
 		[System.NonSerialized]
@@ -191,8 +192,11 @@ namespace RVP
 		[Header("Steering wheel")]
 		public SteeringControl steeringControl;
 		private float brakeStart;
+		/// <summary>
+		/// touching anything
+		/// </summary>
 		public bool colliding;
-		public bool crashing;
+		public bool crashing; // serious impact
 		//[Tooltip("Sideways friction when vehicle is in air. 0=no steering in air")]
 		//public float inAirFriction = 0.25f;
 		[NonSerialized]
@@ -211,6 +215,7 @@ namespace RVP
 
 		public float carLen { get; private set; }
 		float catchupGripMult = 1.1f;
+		
 
 		public CatchupStatus catchupStatus { get; private set; }
 
@@ -225,7 +230,7 @@ namespace RVP
 
 		public void SetCatchup(CatchupStatus newStatus)
 		{
-			if(Info.s_catchup)
+			if (Info.s_catchup)
 			{
 				switch (newStatus)
 				{
@@ -281,7 +286,7 @@ namespace RVP
 
 		public void SetBatteryLoading(bool status)
 		{
-			foreach(var ps in batteryLoadingParticleSystems)
+			foreach (var ps in batteryLoadingParticleSystems)
 			{
 				if (status)
 				{
@@ -327,7 +332,7 @@ namespace RVP
 			norm = normTemp.transform;
 			carLen = tr.GetChild(0).GetComponent<MeshFilter>().mesh.bounds.extents.z * 2;
 			SetCenterOfMass();
-			
+
 			// Instantiate tow vehicle
 			if (towVehicle)
 			{
@@ -339,10 +344,10 @@ namespace RVP
 				newTow.GetComponent<VehicleParent>().inputInherit = this;
 			}
 
-			if (sparks)
-			{
-				sparks.transform.parent = null;
-			}
+			//if (sparks)
+			//{
+			//	sparks.transform.parent = null;
+			//}
 
 			//if (wheelGroups.Length > 0)
 			//{
@@ -432,11 +437,6 @@ namespace RVP
 
 			GetGroundedWheels();
 
-			if (reallyGroundedWheels > 1)
-			{
-				crashing = false;
-			}
-
 			localVelocity = tr.InverseTransformDirection(rb.velocity - wheelContactsVelocity);
 			localAngularVel = tr.InverseTransformDirection(rb.angularVelocity);
 			velMag = rb.velocity.magnitude;
@@ -480,7 +480,7 @@ namespace RVP
 			honkInput = f;
 			if (honkInput)
 			{
-				if(!honkerAudio.isPlaying)
+				if (!honkerAudio.isPlaying)
 					honkerAudio.Play();
 			}
 			else
@@ -497,38 +497,45 @@ namespace RVP
 		// Set accel input
 		public void SetAccel(float f)
 		{
-			if (raceBox.Finished)
+			if (!raceBox.enabled)
 				energyRemaining = batteryCapacity;
-			else if(BatteryPercent < lowBatteryLevel && Time.time - lastNoBatteryMessage > 60)
+			else if (BatteryPercent < lowBatteryLevel && Time.time - lastNoBatteryMessage > 60)
 			{
 				raceBox.raceManager.hud.AddMessage(new Message(name + " IS OUT OF BATTERY!", BottomInfoType.NO_BATT));
 				lastNoBatteryMessage = Time.time;
 			}
 			f = Mathf.Clamp(f, -1, (BatteryPercent < lowBatteryLevel) ? 0.75f : 1);
 			accelInput = f;
-			if(energyRemaining>0)
+			if (energyRemaining > 0)
 				energyRemaining -= accelInput * engine.fuelConsumption * Time.deltaTime;
 		}
 
 		// Set brake input
 		public void SetBrake(float f)
 		{
-			if (f == 0)
+			if (followAI.selfDriving)
 			{
-				brakeStart = 0;
-				brakeInput = 0;
+				brakeInput = f;
 			}
 			else
 			{
-				if (brakeIsReverse && reversing)
-					brakeInput = 1;
+				if (f == 0)
+				{
+					brakeStart = 0;
+					brakeInput = 0;
+				}
 				else
 				{
-					if (brakeStart == 0)
+					if (brakeIsReverse && reversing)
+						brakeInput = 1;
+					else
 					{
-						brakeStart = Time.time;
+						if (brakeStart == 0)
+						{
+							brakeStart = Time.time;
+						}
+						brakeInput = Mathf.Lerp(brakeInput, 1, Time.fixedDeltaTime * brakeCurve.Evaluate(Time.time - brakeStart));
 					}
-					brakeInput = Mathf.Lerp(brakeInput, 1, Time.fixedDeltaTime * brakeCurve.Evaluate(Time.time - brakeStart));
 				}
 			}
 		}
@@ -550,12 +557,16 @@ namespace RVP
 				ebrakeInput = Mathf.Clamp01(f);
 			}
 		}
-		
-		// Set boost input
+
 		public void SetBoost(bool b)
 		{
 			if (b && BatteryPercent > lowBatteryLevel)
+			{
 				energyRemaining -= Time.deltaTime * engine.jetConsumption;
+			}
+			else
+				b = false;
+
 			boostButton = b;
 		}
 		public void SetSGPShift(bool b)
@@ -707,30 +718,19 @@ namespace RVP
 				{
 					if (curCol.thisCollider.gameObject.layer != RaceManager.ignoreWheelCastLayer)
 					{
-						if (Vector3.Dot(curCol.normal, col.relativeVelocity.normalized) > 0.2f && col.relativeVelocity.sqrMagnitude > 20)
+						if (Mathf.Abs(Vector3.Dot(curCol.normal, col.relativeVelocity.normalized)) > 0.1f && col.relativeVelocity.magnitude > 10)
 						{
-							bool checkTow = true;
-							//if (newTow)
-							//{
-							//	checkTow = !curCol.otherCollider.transform.IsChildOf(newTow.transform);
-							//}
+							crashSnd.PlayOneShot(crashClips[UnityEngine.Random.Range(0, crashClips.Length)], 
+								Mathf.Clamp01(col.relativeVelocity.magnitude * 0.1f));
+							crashing = canCrash;
+						}
 
-							if (checkTow)
-							{
-								crashing = canCrash;
-
-								if (crashSnd && crashClips.Length > 0 && playCrashSounds)
-								{
-									crashSnd.PlayOneShot(crashClips[UnityEngine.Random.Range(0, crashClips.Length)], Mathf.Clamp01(col.relativeVelocity.magnitude * 0.1f));
-								}
-
-								if (sparks && playCrashSparks)
-								{
-									sparks.transform.position = curCol.point;
-									sparks.transform.rotation = Quaternion.LookRotation(col.relativeVelocity.normalized, curCol.normal);
-									sparks.Play();
-								}
-							}
+						if (sparks && playCrashSparks)
+						{
+							// play sparks
+							sparks.transform.position = curCol.point;
+							sparks.transform.rotation = Quaternion.LookRotation(col.relativeVelocity.normalized, curCol.normal);
+							sparks.Play();
 						}
 					}
 				}
@@ -739,29 +739,35 @@ namespace RVP
 		// Continuous collision checking
 		void OnCollisionStay(Collision col)
 		{
-			if (col.contacts.Length > 0 && reallyGroundedWheels == 0)
+			bool nowCrashing = false;
+			if (col.contacts.Length > 0)
 			{
 				foreach (ContactPoint curCol in col.contacts)
 				{
-					if (!curCol.thisCollider.CompareTag("Underside") && curCol.thisCollider.gameObject.layer != RaceManager.ignoreWheelCastLayer)
+					if (!curCol.thisCollider.CompareTag("Underside") 
+						&& curCol.thisCollider.gameObject.layer != RaceManager.ignoreWheelCastLayer)
 					{
-						if (col.relativeVelocity.sqrMagnitude < 5)
+						nowCrashing = canCrash;
+
+						//if (reallyGroundedWheels >= 2)
 						{
-							bool checkTow = true;
-
-							if (newTow)
-							{
-								checkTow = !curCol.otherCollider.transform.IsChildOf(newTow.transform);
-							}
-
-							if (checkTow)
-							{
-								crashing = canCrash;
-							}
+							scrapeSnd.Play();
+							// play sparks
+							sparks.transform.position = curCol.point;
+							sparks.transform.rotation = Quaternion.LookRotation(col.relativeVelocity.normalized, curCol.normal);
+							if(!sparks.isPlaying)
+								sparks.Play();
 						}
 					}
 				}
+				crashing = nowCrashing;
 			}
+			if (!(colliding || crashing))
+				scrapeSnd.Stop();
+		}
+		private void OnCollisionExit(Collision collision)
+		{
+			crashing = false;
 		}
 
 		void OnDestroy()
@@ -806,7 +812,7 @@ namespace RVP
 		{
 			countdownTimer = v;
 			GetComponent<SGP_Bouncer>().enabled = false;
-			while (countdownTimer>0)
+			while (countdownTimer > 0)
 			{
 				SetEbrake(1);
 				countdownTimer -= Time.deltaTime;
@@ -818,11 +824,11 @@ namespace RVP
 
 		public void SetSponsor(int v)
 		{
-			v = Mathf.Clamp(v, 0, Info.Liveries-1);
+			v = Mathf.Clamp(v, 0, Info.Liveries - 1);
 			sponsor = v;
 			var mr = bodyObj.GetComponent<MeshRenderer>();
 			string matName = mr.sharedMaterial.name;
-			matName = matName.Substring(0, matName.Length - 1) + (v+1).ToString();
+			matName = matName.Substring(0, matName.Length - 1) + (v + 1).ToString();
 			Material newMat = Resources.Load<Material>("materials/" + matName);
 			newMat.name = matName;
 			mr.material = newMat;

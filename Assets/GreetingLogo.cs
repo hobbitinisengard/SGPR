@@ -60,10 +60,12 @@ public class GreetingLogo : MonoBehaviour
 							if (track.Key.Length > 3 && track.Value.valid && track.Value.unlocked)
 							{
 								Info.s_spectator = true;
+								Info.s_rivals = 5;
 								Info.s_inEditor = false;
+								Info.s_cpuLevel = Info.CpuLevel.Elite;
 								Info.s_trackName = track.Key;
 								Info.s_isNight = (UnityEngine.Random.value > 0.5f) ? true : false;
-								Info.s_laps = 99;
+								Info.s_laps = 9;
 								break;
 							}
 							else

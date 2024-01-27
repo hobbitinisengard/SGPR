@@ -192,7 +192,9 @@ namespace RVP
 			base.Update();
 		}
 
-		// Calculates the max RPM and propagates its effects
+		/// <summary>
+		/// Calculates the max RPM and propagates its effects
+		/// </summary>
 		public void GetMaxRPM()
 		{
 			if (outputDrives.Length > 0)

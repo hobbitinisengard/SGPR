@@ -18,7 +18,7 @@ public class StuntsData : IEnumerable<Stunt>
 {
 	public enum ExtraName
 	{
-		Trikstart, Wheelie, Stoppie, Looper, Grind, Slide, Powerslide,
+		Trikstart, Wheelie, Handstand, Looper, Grind, Slide, Powerslide,
 		SidewinderLeft,
 		SidewinderRight
 	}
@@ -38,13 +38,13 @@ public class StuntsData : IEnumerable<Stunt>
 		{
 			new Stunt("TRICKSTART", 550),
 			new Stunt("WHEELIE", 350),
-			new Stunt("STOPPIE", 350),
+			new Stunt("HANDSTAND", 350),
 			new Stunt("SUPER LOOPER", 1750),
 			new Stunt("GRIND", 2000),
 			new Stunt("SLIDE", 350),
 			new Stunt("POWERSLIDE", 600),
-			new Stunt("SIDEWINDER LEFT", 250),
-			new Stunt("SIDEWINDER RIGHT", 250),
+			new Stunt("SIDEWINDER LEFT", 550),
+			new Stunt("SIDEWINDER RIGHT", 550),
 		};
 	}
 
@@ -99,13 +99,13 @@ public class RaceBox : MonoBehaviour
 	/// set only after the race
 	/// </summary>
 	public TimeSpan raceTime { get; private set; }
-	public bool Finished
-	{
-		get
-		{
-			return curLap > Info.s_laps || !vp.followAI.enabled;
-		}
-	}
+	//public bool Finished
+	//{
+	//	get
+	//	{
+	//		return curLap > Info.s_laps || (!Info.s_inEditor && !enabled);
+	//	}
+	//}
 	public int curLap { get; private set; }
 
 	public float w_A_dot;
@@ -130,7 +130,7 @@ public class RaceBox : MonoBehaviour
 	private PtsAnimInfo jumpPai;
 	public Vector3 elecTunnelCameraPos = -Vector3.one;
 	public float carStoppedTime;
-	public float stoppieTimer;
+	public float handstandTimer;
 	public float wheelieTimer;
 	float lastLooperTime;
 	//public float d_positiveProgress;
@@ -215,15 +215,12 @@ public class RaceBox : MonoBehaviour
 		if (vp.reallyGroundedWheels == 0)
 			lastTimeInAir = Time.time;
 
-		if (!Finished)
-		{
-			JumpDetector();
-			StuntDetector();
-			DriftDetector();
+		JumpDetector();
+		StuntDetector();
+		DriftDetector();
 
-			if (Info.s_raceType != Info.RaceType.Drift)
-				FlipDetector();
-		}
+		if (Info.s_raceType != Info.RaceType.Drift)
+			FlipDetector();
 	}
 	public bool GetStuntSeq(ref StuntsData outStuntsData)
 	{
@@ -268,11 +265,11 @@ public class RaceBox : MonoBehaviour
 		else if (driftingTimer <= 4)
 			overlayName = "Powerslide";
 		else if (driftingTimer <= 6)
-			overlayName = "Drift";
+			overlayName = "Superslide";
 		else if (driftingTimer <= 8)
-			overlayName = "Powerdrift";
+			overlayName = "Megaslide";
 		else
-			overlayName = "Master drift";
+			overlayName = "Masterslide";
 
 		drift.overlayName = overlayName;
 
@@ -285,7 +282,7 @@ public class RaceBox : MonoBehaviour
 		if (!addCombo)
 		{
 			drift.positiveProgress += addProgress;
-			Debug.Log(drift.positiveProgress + " " + drift.doneTimes);
+			//Debug.Log(drift.positiveProgress + " " + drift.doneTimes);
 		}
 		else
 		{
@@ -334,12 +331,13 @@ public class RaceBox : MonoBehaviour
 		{
 			if (vp.crashing)
 			{
-				Debug.LogError("crashed");
+				//Debug.LogError("crashed");
 				ResetDrift();
 			}
 
+
 			float addDriftPoints = 0;
-			if (vp.reallyGroundedWheels >= 3 && Mathf.Abs(smoothedDriftAngle) > 5)
+			if (vp.reallyGroundedWheels >= 3 && Mathf.Abs(smoothedDriftAngle) > 5 && vp.velMag > 30)
 			{ // drifting
 				float comboMult = (int)(9 / 8f * Mathf.Clamp(driftingTimer, 0, 8));
 				addDriftPoints = Time.fixedDeltaTime * vp.velMag * Mathf.InverseLerp(0, 60, Mathf.Abs(smoothedDriftAngle));
@@ -355,7 +353,7 @@ public class RaceBox : MonoBehaviour
 				ResetDrift();
 
 			topMeterSpeed = Mathf.Lerp(topMeterSpeed,
-				(vp.reallyGroundedWheels == 4 && !vp.crashing) ? addDriftPoints : 0,
+				(vp.reallyGroundedWheels >= 3) ? addDriftPoints : 0,
 				Time.fixedDeltaTime * aeroMeterResponsiveness);
 			drift += topMeterSpeed;
 
@@ -391,41 +389,27 @@ public class RaceBox : MonoBehaviour
 		}
 		else
 		{
-			if (Mathf.Abs(smoothedDriftAngle) > 5)
+			if (Mathf.Abs(smoothedDriftAngle) > 5 && vp.velMag > 30 && !vp.colliding)
 			{
 				driftingTime = Time.time;
 				driftingTimer += Time.fixedDeltaTime;
 			}
 			if (driftingTimer > 0 && Time.time - driftingTime > .3f)
 			{
-				if (driftingTimer > 2)
-				{
-					StartCoroutine(AddExtraStuntCo(StuntsData.ExtraName.Slide));
-					drift += stuntsData.extraData[(int)StuntsData.ExtraName.Slide].score;
-				}
 				if (driftingTimer > 3)
 				{
 					StartCoroutine(AddExtraStuntCo(StuntsData.ExtraName.Powerslide));
 					drift += stuntsData.extraData[(int)StuntsData.ExtraName.Powerslide].score;
 				}
+				else if (driftingTimer > 2)
+				{
+					StartCoroutine(AddExtraStuntCo(StuntsData.ExtraName.Slide));
+					drift += stuntsData.extraData[(int)StuntsData.ExtraName.Slide].score;
+				}
 				driftingTime = 0;
 				driftingTimer = 0;
 			}
 		}
-
-		// side grind detector -> change into drifts
-		//if (vp.colliding && vp.reallyGroundedWheels > 2)
-		//{
-		//	ProgressDrift(StuntsData.ExtraName.SideGrind, 200 * Time.fixedDeltaTime);
-		//	if (sideGrindTimer > 2)
-		//	{
-		//		ProgressDrift(StuntsData.ExtraName.SideGrind, 200 * Time.fixedDeltaTime);
-		//	}
-		//}
-		//else
-		//{
-		//	ProgressDrift(StuntsData.ExtraName.SideGrind, -200 * Time.fixedDeltaTime);
-		//}
 	}
 	void StuntDetector()
 	{
@@ -437,7 +421,7 @@ public class RaceBox : MonoBehaviour
 		{
 			if(vp.wheels[0].groundedReally)
 				if(vp.wheels[1].groundedReally)
-					stoppieTimer += Time.fixedDeltaTime;
+					handstandTimer += Time.fixedDeltaTime;
 				else if(vp.wheels[2].groundedReally)
 					sidewinderLeftTimer += Time.fixedDeltaTime;
 
@@ -460,10 +444,10 @@ public class RaceBox : MonoBehaviour
 					wheelieTimer = -99;
 				}
 			}
-			else if (stoppieTimer > .6f)
+			else if (handstandTimer > 1)
 			{
-				StartCoroutine(AddExtraStuntCo(StuntsData.ExtraName.Stoppie));
-				stoppieTimer = -99;
+				StartCoroutine(AddExtraStuntCo(StuntsData.ExtraName.Handstand));
+				handstandTimer = -99;
 			}
 			else if(sidewinderLeftTimer > 1)
 			{
@@ -479,7 +463,7 @@ public class RaceBox : MonoBehaviour
 		else
 		{
 			wheelieTimer = 0;
-			stoppieTimer = 0;
+			handstandTimer = 0;
 			sidewinderRightTimer = 0;
 			sidewinderLeftTimer = 0;
 		}
@@ -542,7 +526,6 @@ public class RaceBox : MonoBehaviour
 						//if (i == 1)
 						//	Debug.Log("lA_car_test");
 						continue;
-
 					}
 					bool Y_ok = stunt.StuntingCarAlignmentConditionFulfilled(vp);
 					if (!Y_ok)
@@ -679,6 +662,7 @@ public class RaceBox : MonoBehaviour
 	public void ResetOnTrack()
 	{
 		StuntPaiReset();
+		evoModule.Reset();
 		grantedComboTime = 0;
 		starLevel = 0;
 		stableLandingTimer = -1;
@@ -816,6 +800,7 @@ public class RaceBox : MonoBehaviour
 			if (curLap == Info.s_laps + 1) // race finished
 			{
 				GoToGhostDrive();
+				enabled = false;
 			}
 		}
 	}

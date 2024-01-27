@@ -263,6 +263,7 @@ public class EditorPanel : Sfxable
 	}
 	private void OnEnable()
 	{
+		ResetScale();
 		YouSurePanel.gameObject.SetActive(false);
 		flyCamera.enabled = true;
 		if (lastEditorCameraPosition.HasValue)
@@ -300,9 +301,10 @@ public class EditorPanel : Sfxable
 	{
 		currentTile.transform.RotateAround(currentTile.transform.position, axis, angle);
 	}
+
 	void Update()
 	{
-		if (Input.GetKeyDown(KeyCode.P))
+		if (Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.N))
 		{
 			Info.s_isNight = !Info.s_isNight;
 			raceManager.SetPartOfDay();
@@ -344,7 +346,7 @@ public class EditorPanel : Sfxable
 							var arrow_rot = arrow.transform.rotation;
 							flyCamera.enabled = false;
 							SwitchTo(Mode.None);
-							StartCoroutine(raceManager.StartFreeRoam(arrow_pos, arrow_rot));
+							raceManager.StartFreeRoam(arrow_pos, arrow_rot);
 							return;
 						}
 					}
@@ -354,13 +356,7 @@ public class EditorPanel : Sfxable
 				{
 					if (Input.GetKeyDown(KeyCode.Alpha1))
 					{
-						selector.Reset(true);
-						scalatorButtonImage.color = Color.white;
-						if (currentTile)
-						{
-							Destroy(currentTile.gameObject);
-							InstantiateNewTile(currentTileButton.name);
-						}
+						ResetScale();
 					}
 					float scroll = SetInvisibleLevelByScroll();
 
@@ -446,10 +442,8 @@ public class EditorPanel : Sfxable
 								SetPathClosed(false);
 								currentTile.GetComponent<Tile>().SetPlaced();
 								InstantiateNewTile(currentTileButton.name);
-								placedConnector = null;
-								floatingConnector = null;
-								anchor = null;
-								intersectionSnapLocation = -Vector3.one;
+								StartCoroutine(ResetAnchors());
+								
 								return;
 							}
 
@@ -727,6 +721,27 @@ public class EditorPanel : Sfxable
 				break;
 		}
 	}
+
+	private void ResetScale()
+	{
+		selector.Reset(true);
+		scalatorButtonImage.color = Color.white;
+		if (currentTile)
+		{
+			Destroy(currentTile.gameObject);
+			InstantiateNewTile(currentTileButton.name);
+		}
+	}
+
+	IEnumerator ResetAnchors()
+	{
+		yield return null;
+		placedConnector = null;
+		floatingConnector = null;
+		anchor = null;
+		intersectionSnapLocation = -Vector3.one;
+	}
+
 	/// <summary>
 	/// Returns center of connector's tile surface
 	/// </summary>
@@ -1712,6 +1727,8 @@ public class EditorPanel : Sfxable
 	{
 		SwitchTo(Mode.None);
 		Info.s_laps = 3;
+		Info.s_rivals = 3;
+		Info.s_raceType = Info.RaceType.Race;
 		if (trackName.text.Length == 3)
 		{
 			DisplayMessageFor("Save track!", 2);
@@ -1720,7 +1737,7 @@ public class EditorPanel : Sfxable
 		if (isPathClosed)
 		{
 			flyCamera.enabled = false;
-			StartCoroutine(raceManager.StartRace());
+			raceManager.StartRace();
 		}
 		else
 		{

@@ -23657,7 +23657,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &4419983782433411450
 Transform:
   m_ObjectHideFlags: 0
@@ -23784,7 +23784,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6573964843871141080}
   m_LocalRotation: {x: 0.000000029802322, y: -0.000000014901161, z: 0.70394176, w: 0.7102577}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0.97, y: 86.92, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -33205,7 +33205,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1803864aabf84cf41b3fecf56d966720, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _Sun: {fileID: 0}
   nightSkybox: {fileID: 2632338823383600418}
 --- !u!1001 &5822092900691095790
 PrefabInstance:

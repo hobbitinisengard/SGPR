@@ -66,7 +66,7 @@ public class Tile : MonoBehaviour
 		{
 			var connector = transform.GetChild(i).gameObject;
 			var col = connector.AddComponent<SphereCollider>();
-			col.radius = 4;
+			col.radius = 3;
 			col.isTrigger = true;
 			var rb = connector.AddComponent<Rigidbody>();
 			rb.useGravity = false;
