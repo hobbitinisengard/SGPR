@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System;
 
 namespace RVP
 {
@@ -35,7 +35,7 @@ namespace RVP
 
 		bool popped = false;
 		bool poppedPrev = false;
-		
+
 		public float alwaysScrape;
 
 		public bool calculateTangents = true;
@@ -47,11 +47,24 @@ namespace RVP
 		public Material[] rimMarkMaterials;
 
 		[Tooltip("Particles in array correspond to indices in surface types in GroundSurfaceMaster")]
+		[NonSerialized]
 		public ParticleSystem[] debrisParticles;
 		public ParticleSystem sparks;
 		float[] initialEmissionRates;
 		ParticleSystem.MinMaxCurve zeroEmission = new ParticleSystem.MinMaxCurve(0);
-
+		private void Awake()
+		{
+			debrisParticles = new ParticleSystem[]
+			{
+				transform.GetChild(1).GetComponent<ParticleSystem>(),//smoke
+				transform.GetChild(2).GetComponent<ParticleSystem>(),//mud
+				transform.GetChild(3).GetComponent<ParticleSystem>(),//dirt
+				transform.GetChild(4).GetComponent<ParticleSystem>(),//ice
+				transform.GetChild(2).GetComponent<ParticleSystem>(),//extmud
+				transform.GetChild(3).GetComponent<ParticleSystem>(),//exdirt
+				transform.GetChild(4).GetComponent<ParticleSystem>(),//exice
+			};
+		}
 
 		void Start()
 		{
@@ -77,7 +90,7 @@ namespace RVP
 		}
 		void Update()
 		{
-			
+
 			// Check for continuous marking
 			if (w.grounded)
 			{
@@ -149,14 +162,14 @@ namespace RVP
 							if (sparks)
 							{
 								em = sparks.emission;
-								em.rateOverTime = new ParticleSystem.MinMaxCurve(initialEmissionRates[debrisParticles.Length] * 
+								em.rateOverTime = new ParticleSystem.MinMaxCurve(initialEmissionRates[debrisParticles.Length] *
 									Mathf.Clamp01(Mathf.Abs(F.MaxAbs(w.sidewaysSlip, w.forwardSlip, alwaysScrape)) - w.slipThreshold));
 							}
 						}
 						else
 						{
 							em = debrisParticles[ps].emission;
-							em.rateOverTime = new ParticleSystem.MinMaxCurve(initialEmissionRates[ps] * 
+							em.rateOverTime = new ParticleSystem.MinMaxCurve(initialEmissionRates[ps] *
 								Mathf.Clamp01(Mathf.Abs(F.MaxAbs(w.sidewaysSlip, w.forwardSlip, alwaysScrape)) - w.slipThreshold));
 
 							if (sparks)
@@ -246,7 +259,7 @@ namespace RVP
 			if (gapDelay == 0)
 			{
 				float alpha = (curEdge < RaceManager.tireMarkLengthStatic - 2 && curEdge > 5 ? 1 : 0) *
-					 Random.Range(
+					 UnityEngine.Random.Range(
 						  Mathf.Clamp01(F.MaxAbs(w.sidewaysCurveStretch * w.sidewaysSlip, w.forwardCurveStretch * w.forwardSlip, alwaysScrape) - w.slipThreshold),
 						  Mathf.Clamp01(F.MaxAbs(w.sidewaysCurveStretch * w.sidewaysSlip, w.forwardCurveStretch * w.forwardSlip, alwaysScrape) - w.slipThreshold));
 				gapDelay = RaceManager.tireMarkGapStatic;
@@ -329,54 +342,6 @@ namespace RVP
 			else if (mesh != null)
 			{
 				Destroy(mesh);
-			}
-		}
-	}
-
-	// Class for tire mark instances
-	public class TireMark : MonoBehaviour
-	{
-		[System.NonSerialized]
-		public float fadeTime = -1;
-		bool fading;
-		float alpha = 1;
-		[System.NonSerialized]
-		public Mesh mesh;
-		[System.NonSerialized]
-		public Color[] colors;
-
-		// Fade the tire mark and then destroy it
-		void Update()
-		{
-			if (fading)
-			{
-				if (alpha <= 0)
-				{
-					Destroy(mesh);
-					Destroy(gameObject);
-				}
-				else
-				{
-					alpha -= Time.deltaTime;
-
-					for (int i = 0; i < colors.Length; i++)
-					{
-						colors[i].a -= Time.deltaTime;
-					}
-
-					mesh.colors = colors;
-				}
-			}
-			else
-			{
-				if (fadeTime > 0)
-				{
-					fadeTime = Mathf.Max(0, fadeTime - Time.deltaTime);
-				}
-				else if (fadeTime == 0)
-				{
-					fading = true;
-				}
 			}
 		}
 	}

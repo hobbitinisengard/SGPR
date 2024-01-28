@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace RVP
@@ -10,8 +11,9 @@ namespace RVP
 	// Class for the wheel
 	public class Wheel : MonoBehaviour
 	{
-		public int d_surface = 0;
-		[System.NonSerialized]
+		[NonSerialized]
+		public int curSurfaceType = 0;
+		[NonSerialized]
 		public Transform tr;
 		[System.NonSerialized]
 		public bool sliding;
@@ -46,11 +48,25 @@ namespace RVP
 		public float axleFriction;
 
 		[Header("Friction")]
-
-		[Range(0, 1)]
-		public float frictionSmoothness = 0.5f;
+		float frictionSmoothness = 0.5f;
+		/// <summary>
+		/// To set basic frictions use SetInitFrictions()
+		/// </summary>
 		public float forwardFriction = 1;
+		/// <summary>
+		/// To set basic frictions use SetInitFrictions()
+		/// </summary>
 		public float sidewaysFriction = 1;
+		public float initForwardFriction { get; private set; }
+		public float initSidewaysFriction { get; private set; }
+		public void SetInitFrictions(float forward, float sideways)
+		{
+			initForwardFriction = forward;
+			forwardFriction = forward;
+			initSidewaysFriction = sideways;
+			sidewaysFriction = sideways;
+		}
+
 		public float forwardRimFriction = 0.5f;
 		public float sidewaysRimFriction = 0.5f;
 		public float forwardCurveStretch = 1;
@@ -65,7 +81,8 @@ namespace RVP
 		[Tooltip("X-axis = slip, y-axis = friction")]
 		public AnimationCurve sidewaysFrictionCurve;// = AnimationCurve.EaseInOut(0, 1, 1, 0.35f);
 		[Tooltip("How much the tire must slip before marks are created")]
-		public float slipThreshold = 0.8f;
+		[NonSerialized]
+		public float slipThreshold = 0.5f;
 		[System.NonSerialized]
 		public float forwardSlip;
 		//[System.NonSerialized]
@@ -206,6 +223,7 @@ namespace RVP
 		public ParticleSystem airGreenParticleSystem;
 		
 
+
 		//AnimationCurve GenerateFrictionCurve(bool moreGrip = false)
 		//{
 		//    Keyframe[] keys = new Keyframe[SGPFrictionData.Length];
@@ -220,6 +238,12 @@ namespace RVP
 		//    }
 		//    return new AnimationCurve(keys);
 		//}
+		public void SetColliderLayer(int layer)
+		{
+			gameObject.layer = layer;
+			if(sphereColTr)
+				sphereColTr.gameObject.layer = layer;
+		}
 		void Start()
 		{
 			tr = transform;
@@ -307,6 +331,9 @@ namespace RVP
 
 			targetDrive = GetComponent<DriveForce>();
 			currentRPM = 0;
+
+			if (Info.s_raceType == Info.RaceType.Drift)
+				slipDependence = SlipDependenceMode.independent;
 		}
 
 		void FixedUpdate()
@@ -520,7 +547,7 @@ namespace RVP
 
 				if (!grounded && impactSnd && ((tireHitClips.Length > 0 && !popped) || (rimHitClip && popped)))
 				{
-					impactSnd.PlayOneShot(popped ? rimHitClip : tireHitClips[Mathf.RoundToInt(Random.Range(0, tireHitClips.Length - 1))], Mathf.Clamp01(airTime * airTime));
+					impactSnd.PlayOneShot(popped ? rimHitClip : tireHitClips[Mathf.RoundToInt(UnityEngine.Random.Range(0, tireHitClips.Length - 1))], Mathf.Clamp01(airTime * airTime));
 					impactSnd.pitch = Mathf.Clamp(airTime * 0.2f + 0.8f, 0.8f, 1);
 				}
 
@@ -569,22 +596,22 @@ namespace RVP
 			}
 			else
 			{
-
-				if (vp.followAI.isCPU && !vp.raceBox.evoModule.stunting && !vp.crashing)
-				{ // steering in air
-					grounded = true;
-					groundedReally = false;
-					contactPoint.distance = suspensionParent.suspensionDistance;
-					contactPoint.point = suspensionParent.transform.position - suspensionParent.upDir * suspensionParent.suspensionDistance;
-					contactPoint.grounded = true;
-					contactPoint.normal = Vector3.up;
-					contactPoint.relativeVelocity = tr.InverseTransformDirection(localVel);
-					contactPoint.col = null;
-					contactVelocity = Vector3.zero;
-					contactPoint.surfaceFriction = GroundSurfaceMaster.AirSteeringFriction;
-					contactPoint.surfaceType = GroundSurfaceMaster.AirSteeringSurfaceType;
-				}
-				else
+				//if (vp.followAI.isCPU && !vp.raceBox.evoModule.stunting && !vp.crashing 
+				//	&& Vector3.Dot(vp.tr.up,Vector3.up) > 0)
+				//{ // steering in air
+				//	grounded = true;
+				//	groundedReally = false;
+				//	contactPoint.distance = suspensionParent.suspensionDistance;
+				//	contactPoint.point = suspensionParent.transform.position - suspensionParent.upDir * suspensionParent.suspensionDistance;
+				//	contactPoint.grounded = true;
+				//	contactPoint.normal = Vector3.up;
+				//	contactPoint.relativeVelocity = tr.InverseTransformDirection(localVel);
+				//	contactPoint.col = null;
+				//	contactVelocity = Vector3.zero;
+				//	contactPoint.surfaceFriction = GroundSurfaceMaster.AirSteeringFriction;
+				//	contactPoint.surfaceType = GroundSurfaceMaster.AirSteeringSurfaceType;
+				//}
+				//else
 				{ 
 					grounded = false;
 					groundedReally = false;
@@ -599,7 +626,7 @@ namespace RVP
 					contactPoint.surfaceType = 0;
 				}
 			}
-			d_surface = contactPoint.surfaceType;
+			curSurfaceType = contactPoint.surfaceType;
 		}
 
 		// Calculate what the RPM of the wheel would be based purely on its velocity
@@ -643,9 +670,12 @@ namespace RVP
 				float forwardSlipDependenceFactor = Mathf.Clamp01(forwardSlipDependence - Mathf.Clamp01(Mathf.Abs(sidewaysSlip)));
 				float sidewaysSlipDependenceFactor = Mathf.Clamp01(sidewaysSlipDependence - Mathf.Clamp01(Mathf.Abs(forwardSlip)));
 
-				float targetForceX = forwardFrictionCurve.Evaluate(Mathf.Abs(forwardSlipFactor)) * -System.Math.Sign(forwardSlip) * (popped ? forwardRimFriction : forwardFriction) * forwardSlipDependenceFactor * -suspensionParent.flippedSideFactor;
-				float targetForceZ = sidewaysFrictionCurve.Evaluate(Mathf.Abs(sidewaysSlipFactor)) * -System.Math.Sign(sidewaysSlip) * (popped ? sidewaysRimFriction : sidewaysFriction) * sidewaysSlipDependenceFactor *
-					 normalFrictionCurve.Evaluate(Mathf.Clamp01(Vector3.Dot(contactPoint.normal, RaceManager.worldUpDir))) *
+				float targetForceX = forwardFrictionCurve.Evaluate(Mathf.Abs(forwardSlipFactor))
+					* -System.Math.Sign(forwardSlip) * (popped ? forwardRimFriction : forwardFriction)
+					* forwardSlipDependenceFactor * -suspensionParent.flippedSideFactor;
+				float targetForceZ = sidewaysFrictionCurve.Evaluate(Mathf.Abs(sidewaysSlipFactor))
+					* -System.Math.Sign(sidewaysSlip) * (popped ? sidewaysRimFriction : sidewaysFriction)
+					* sidewaysSlipDependenceFactor * normalFrictionCurve.Evaluate(Mathf.Clamp01(Vector3.Dot(contactPoint.normal, RaceManager.worldUpDir))) *
 					 (vp.burnout > 0 && Mathf.Abs(targetDrive.rpm) != 0 && actualEbrake * vp.ebrakeInput == 0 && grounded ? (1 - vp.burnout) * (1 - Mathf.Abs(vp.accelInput)) : 1);
 
 				Vector3 targetForce = tr.TransformDirection(targetForceX, 0, targetForceZ);
@@ -697,13 +727,14 @@ namespace RVP
 			// Set final RPM
 			if (!suspensionParent.jammed && connected)
 			{
-				bool validTorque = (!(Mathf.Approximately(actualTorque, 0) && Mathf.Abs(actualTargetRPM) < 0.01f) && !Mathf.Approximately(actualTargetRPM, 0)) || brakeForce + actualEbrake * vp.ebrakeInput > 0;
+				bool validTorque = (!(Mathf.Approximately(actualTorque, 0) && Mathf.Abs(actualTargetRPM) < 0.01f) 
+					&& !Mathf.Approximately(actualTargetRPM, 0)) || brakeForce + actualEbrake * vp.ebrakeInput > 0;
 
 				currentRPM = Mathf.Lerp(rawRPM,
-					 Mathf.Lerp(
-					 Mathf.Lerp(rawRPM, actualTargetRPM, validTorque ? EvaluateTorque(actualTorque) : actualTorque),
+						Mathf.Lerp(Mathf.Lerp(rawRPM, actualTargetRPM, validTorque ? EvaluateTorque(actualTorque) : actualTorque),
 					 0, Mathf.Max(brakeForce, actualEbrake * vp.ebrakeInput)),
-				validTorque ? EvaluateTorque(actualTorque + brakeForce + actualEbrake * vp.ebrakeInput) : actualTorque + brakeForce + actualEbrake * vp.ebrakeInput);
+				validTorque ? EvaluateTorque(actualTorque + brakeForce + actualEbrake * vp.ebrakeInput) 
+					: actualTorque + brakeForce + actualEbrake * vp.ebrakeInput);
 
 				targetDrive.feedbackRPM = Mathf.Lerp(currentRPM, rawRPM, feedbackRpmBias);
 			}

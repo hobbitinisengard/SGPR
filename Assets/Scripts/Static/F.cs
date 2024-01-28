@@ -209,7 +209,7 @@ namespace RVP
 				}
 			}
 		}
-		public static Vector3 Vec3Flatten(in Vector3 v)
+		public static Vector3 Vec3Flat(in Vector3 v)
 		{
 			return new Vector3(v.x, 0, v.z).normalized;
 		}

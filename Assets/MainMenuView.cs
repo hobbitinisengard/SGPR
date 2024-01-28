@@ -69,7 +69,7 @@ public class MainMenuView : Sfxable
 	}
 	public void ToEditorScene()
 	{
-		if (Info.s_trackName == null)
+		if (Info.s_trackName == "MEX")
 			PlaySFX("fe-cardserror");
 		else
 		{
@@ -78,5 +78,9 @@ public class MainMenuView : Sfxable
 			Info.s_spectator = false;
 			dimmer.PlayDimmerToWorld();
 		}
+	}
+	public void QuitGame()
+	{
+		Application.Quit();
 	}
 }

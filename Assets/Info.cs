@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Audio;
 using static Info;
@@ -12,6 +13,7 @@ public static class Info
 {
 	public readonly static string documentsSGPRpath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Stunt GP Reloaded\\";
 	public readonly static string partsPath = documentsSGPRpath + "parts\\";
+	public readonly static string tracksPath = documentsSGPRpath + "tracks\\";
 	public readonly static string userdataPath = documentsSGPRpath + "userdata.json";
 	public readonly static string lastPath = documentsSGPRpath + "path.txt";
 	public static PlayerSettingsData ReadSettingsDataFromJson()
@@ -53,7 +55,8 @@ public static class Info
 		new PartInfo("Mysuko", "jetcfg"),
 		new PartInfo("Rline", "tyrcfg"),
 		new PartInfo("TGR", "drvcfg"),
-		new PartInfo("", "carcfg")
+		new PartInfo("Titan", "hnkcfg"),
+		new PartInfo("", "carcfg"),
 	};
 	//public static string[] extensionsSuffixes = new string[] { "suscfg", "bmscfg", "batcfg",
 	//		"engcfg", "chacfg", "grscfg", "jetcfg", "tyrcfg", "drvcfg", "carcfg" };
@@ -66,8 +69,8 @@ public static class Info
 	/// </summary>
 	public const int pavementTypes = 6;
 
-	public enum RaceType { Race, Stunt, Drift, Knockout, Survival }
-	public const int RaceTypes = 5;
+	public enum RaceType { Race, Knockout, Stunt, Drift }
+	public const int RaceTypes = 4;
 	public enum Envir { GER, JAP, SPN, FRA, ENG, USA, ITA, MEX };
 	public readonly static Vector3[] invisibleLevelDimensions = new Vector3[]{
 		new (564, 1231,1), //ger
@@ -85,7 +88,7 @@ public static class Info
 	public static readonly string[] EnvirDescs =
 	{
 		"GERMANY\n\nLoud crowd cheering and powerful spotlights..This german arena is really a place to show off.",
-		"JAPAN\n\nHere in this calm japanese dojo placed on the outskirts of japanese Kyoto you can meditate or organize a race!",
+		"JAPAN\n\nHere in this calm japanese dojo placed on the outskirts of Kyoto you can meditate or organize a race!",
 		"SPAIN\n\nBeaches like this usually ooze holidays. This is not an exception: warm sand, palms, and sun.. What could people possibly want more? Maybe a RC car race :)",
 		"FRANCE\n\nThis shadowy warehouse is full of boxes, forklifts and machinery. There are some really dark places here.",
 		"ENGLAND\n\nEnglish go-kart track is a good location to test your driving skills. This place has a reputation for great races.",
@@ -95,7 +98,7 @@ public static class Info
 	};
 	public enum CarGroup { Wild, Aero, Speed, Team };
 	public enum TrackOrigin { Original, Custom };
-	public static readonly string carModelsPath = "carModels/";
+	public static readonly string carPrefabsPath = "carModels/";
 	public static readonly string carImagesPath = "carImages/";
 	public static readonly string trackImagesPath = "trackImages/";
 	public static readonly string editorTilesPath = "tiles/objects/";
@@ -107,20 +110,19 @@ public static class Info
 	public static DateTime raceStartDate = DateTime.MinValue;
 	public static bool loaded = false;
 	public const int roadLayer = 6;
+	public const int ignoreWheelCastLayer = 8;
 	public const int vehicleLayer = 9;
 	public const int connectorLayer = 11;
 	public const int invisibleLevelLayer = 12;
 	public const int terrainLayer = 13;
 	public const int cameraLayer = 14;
 	public const int flagLayer = 15;
-	public const int racingLineLayer = 16;
+	public static readonly int[] racingLineLayers = new int[] {16,25,27};
 	public const int pitsLineLayer = 17;
 	public const int pitsZoneLayer = 18;
-	public const int grindTrigger = 19;
+	public const int aeroTunnel = 19;
 	public const int ghostLayer = 24;
-	public const int trailLayer = 25;
-
-	public const int firstExternalSurface = 4;
+	public const int carCarCollisionLayer = 26;
 
 	/// <summary>
 	/// Only one object at the time can have this layer
@@ -137,7 +139,8 @@ public static class Info
 	public static int s_laps = 3;
 	public static bool s_inEditor = true;
 	public static bool s_isNight = false;
-	public static int s_cpuLevel = 0;
+	public enum CpuLevel { Easy, Medium, Hard, Elite};
+	public static CpuLevel s_cpuLevel = CpuLevel.Elite;
 	public static int s_rivals = 0; // 0-9
 	public static PavementType s_roadType = PavementType.Random;
 	public static bool s_catchup = true;
@@ -149,7 +152,16 @@ public static class Info
 	};
 	public static Sprite[] icons;
 	public static bool gamePaused;
-	public static readonly string version = "0.1";
+	public static readonly string version = "0.2b";
+
+	public static bool InRace 
+	{ 
+		get
+		{
+			return !s_inEditor || s_cars.Count > 1;
+		}
+	}
+
 	public static Car Car(string name)
 	{ // i.e. car05
 		int i = int.Parse(name[3..]);
@@ -186,21 +198,21 @@ public static class Info
 			new Car(1,CarGroup.Speed, "NITRO LIGHTNIN''\n\nSupercharged super speed. Easy does it!"),
 			new Car(1,CarGroup.Speed, "ALLEY KAT\n\nSleek and powerful, this cat is ready to roar."),
 			new Car(1,CarGroup.Wild, "SAND SHARK\n\nThis beachcomber is at home on any stunt circuit."),
-			new Car(0,CarGroup.Wild, "THE BRUTE\n\nUnleash the Brute for no-nonsense on the road!"),
-			new Car(0,CarGroup.Aero, "WILD DART\n\nFly fast and true with this stuntcar."),
-			new Car(0,CarGroup.Wild, "RAGING BULL\n\nPowerful and fast, this streetwise 4x4 is incredible."),
-			new Car(0,CarGroup.Aero, "FLYING MANTIS\n\nSuper light and very fast."),
-			new Car(0,CarGroup.Aero, "STUNT MONKEY\n\nMonkey see, monkey do! Go bananas with this wild ride!"),
-			new Car(0,CarGroup.Speed, "INFERNO\n\nThis speed demon is on fire!"),
-			new Car(0,CarGroup.Team, "THE FORKSTER\n\nDespite its looks, it moves like fork lightning!"),
-			new Car(0,CarGroup.Team, "WORMS MOBILE\n\nSuper Speedy Buggy!"),
-			new Car(0,CarGroup.Team, "FORMULA 17\n\nIncredibly fast racing car."),
-			new Car(0,CarGroup.Team, "TEAM MACHINE\n\nThe ultimate, hugely versatile stock car.")
+			//new Car(0,CarGroup.Wild, "THE BRUTE\n\nUnleash the Brute for no-nonsense on the road!"),
+			//new Car(0,CarGroup.Aero, "WILD DART\n\nFly fast and true with this stuntcar."),
+			//new Car(0,CarGroup.Wild, "RAGING BULL\n\nPowerful and fast, this streetwise 4x4 is incredible."),
+			//new Car(0,CarGroup.Aero, "FLYING MANTIS\n\nSuper light and very fast."),
+			//new Car(0,CarGroup.Aero, "STUNT MONKEY\n\nMonkey see, monkey do! Go bananas with this wild ride!"),
+			//new Car(0,CarGroup.Speed, "INFERNO\n\nThis speed demon is on fire!"),
+			//new Car(0,CarGroup.Team, "THE FORKSTER\n\nDespite its looks, it moves like fork lightning!"),
+			//new Car(0,CarGroup.Team, "WORMS MOBILE\n\nSuper Speedy Buggy!"),
+			//new Car(0,CarGroup.Team, "FORMULA 17\n\nIncredibly fast racing car."),
+			//new Car(0,CarGroup.Team, "TEAM MACHINE\n\nThe ultimate, hugely versatile stock car.")
 			};
 		}
 		ReloadCarConfigs();
 	}
-	public static void ReloadCarConfigs()
+	public static async void ReloadCarConfigs()
 	{
 		string carSuffix = partInfos[^1].fileExtension;
 		string[] filepaths = Directory.GetFiles(Info.partsPath)
@@ -209,9 +221,12 @@ public static class Info
 
 		for (int i = 0; i < cars.Length; ++i)
 		{
-			string filepath = Info.partsPath + "car" + (i + 1).ToString() + "." + partInfos[^1].fileExtension;
-			string jsonText = File.ReadAllText(filepath);
-			cars[i].config = new CarConfig(null, null, jsonText);
+			await Task.Run(() => 
+			{
+				string filepath = Info.partsPath + "car" + (i + 1).ToString() + "." + partInfos[^1].fileExtension;
+				string jsonText = File.ReadAllText(filepath);
+				cars[i].config = new CarConfig(null, null, jsonText);
+			}); 
 		}
 	}
 	public static void AddCar()
@@ -271,7 +286,7 @@ public static class Info
 		//};
 		//tracks["track02"].records = records;
 
-		string[] trackFiles = Directory.GetFiles(documentsSGPRpath, "*.track");
+		string[] trackFiles = Directory.GetFiles(tracksPath, "*.track");
 		foreach (var path in trackFiles)
 		{
 			string trackJson = File.ReadAllText(path);
@@ -290,6 +305,7 @@ public static class Info
 		float toLogLevel = 80 * 2 / 3f * Mathf.Log10(val01);
 		if (toLogLevel < -80)
 			toLogLevel = -80;
+		Debug.Log("set" + exposedParameter + " to level:" + toLogLevel.ToString());
 		mixer.SetFloat(exposedParameter, toLogLevel);
 	}
 	public static float InGroupPos(Transform child)
@@ -427,7 +443,7 @@ public class TrackHeader
 	}
 	public int TrackOrigin()
 	{
-		return Convert.ToInt32(author != null);
+		return (author != "Team17") ? 1 : 0;
 	}
 }
 

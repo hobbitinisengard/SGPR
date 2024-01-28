@@ -9,6 +9,8 @@ public class PauseMenu : Sfxable
 	public GameObject restartButton;
 	public Image veil;
 	public AudioMixer mainMixer;
+	public AudioMixerSnapshot paused;
+	public AudioMixerSnapshot unPaused;
 	AudioSource clickSoundEffect;
 	Color startColor;
 	public Color blackColor;
@@ -30,21 +32,27 @@ public class PauseMenu : Sfxable
 	}
 	private void OnEnable()
 	{
-		Info.gamePaused = true;
 		Time.timeScale = 0;
+		Info.gamePaused = true;
+		paused.TransitionTo(0);
 		timeElapsed = 0;
 		restartButton.SetActive(Info.raceStartDate != DateTime.MinValue);
 		startColor = veil.color;
 		firstButton.Select();
+		PlaySFX("menublip2", true);
 	}
 	private void OnDisable()
 	{
+		unPaused.TransitionTo(0);
 		Info.gamePaused = false;
 		Time.timeScale = 1;
 		Info.SaveSettingsDataToJson(mainMixer);
-		clickSoundEffect.Play();
+		PlaySFX("menublip2",true);
 		veil.color = startColor;
-		Info.raceStartDate = Info.raceStartDate.AddSeconds(timeElapsed);
+
+		if(!Info.s_inEditor)
+			Info.raceStartDate = Info.raceStartDate.AddSeconds(timeElapsed);
+		
 		timeElapsed = 0;
 	}
 }

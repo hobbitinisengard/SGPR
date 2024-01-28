@@ -193,7 +193,7 @@ public class SGP_Evo : MonoBehaviour
 
 	void FixedUpdate()
 	{
-		if (stunting && (vp.reallyGroundedWheels > 0))
+		if (stunting && ((vp.reallyGroundedWheels > 0) || vp.crashing))
 		{
 			stunting = false;
 			//Debug.LogWarning("OFF");
@@ -207,7 +207,7 @@ public class SGP_Evo : MonoBehaviour
 				//Debug.Log("INIT");
 			}
 		}
-		if (!stunting && !vp.crashing && vp.reallyGroundedWheels == 0 && Time.time - shiftPressTime < maxTimeToInit)
+		if (!stunting && !vp.colliding && vp.reallyGroundedWheels == 0 && Time.time - shiftPressTime < maxTimeToInit)
 		{
 			evoBloorp.Play();
 			stunting = true;
@@ -286,6 +286,9 @@ public class SGP_Evo : MonoBehaviour
 		prevSGPShiftButton = vp.SGPshiftbutton;
 	}
 
-	
+	internal void Reset()
+	{
+		stunting = false;
+	}
 }
 

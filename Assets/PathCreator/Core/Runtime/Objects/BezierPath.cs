@@ -287,6 +287,9 @@ namespace PathCreation
 			Vector4 secondControlForOldLastAnchor = points[lastAnchorIndex] + secondControlForOldLastAnchorOffset;
 			Vector4 controlForNewAnchor = (anchorPos + secondControlForOldLastAnchor) * .5f;
 
+			secondControlForOldLastAnchor.y = anchorPos.y; // viatrufka
+			controlForNewAnchor.y = anchorPos.y; // viatrufka
+
 			points.Add(secondControlForOldLastAnchor);
 			points.Add(controlForNewAnchor);
 			points.Add(anchorPos);
@@ -415,14 +418,14 @@ namespace PathCreation
 		public void MovePoint(int i, Vector4 pointPos, bool suppressPathModifiedEvent = false)
 		{
 
-			if (space == PathSpace.xy)
-			{
-				pointPos.z = 0;
-			}
-			else if (space == PathSpace.xz)
-			{
-				pointPos.y = 0;
-			}
+			//if (space == PathSpace.xy)
+			//{
+			//	pointPos.z = 0;
+			//}
+			//else if (space == PathSpace.xz)
+			//{
+			//	pointPos.y = 0;
+			//}
 			Vector4 deltaMove = pointPos - points[i];
 			bool isAnchorPoint = i % 3 == 0;
 
@@ -494,7 +497,7 @@ namespace PathCreation
 				Vector4[] p = GetPointsInSegment(i);
 				for (int j = 0; j < p.Length; j++)
 				{
-					p[j] = MathUtility.TransformPoint(p[j], transform, space);
+					p[j] = MathUtility.TransformPoint(p[j], transform, PathSpace.xyz/*space*/);
 				}
 
 				minMax.AddValue(p[0]);
@@ -675,7 +678,13 @@ namespace PathCreation
 				int controlIndex = anchorIndex + i * 2 - 1;
 				if (controlIndex >= 0 && controlIndex < points.Count || isClosed)
 				{
-					points[LoopIndex(controlIndex)] = anchorPos + dir * neighbourDistances[i] * autoControlLength;
+					// original code
+					//points[LoopIndex(controlIndex)] = anchorPos + dir * neighbourDistances[i] * autoControlLength;
+
+					// viatrufka - ignore smoothing of Y axis
+					var newPoint = anchorPos + dir * neighbourDistances[i] * autoControlLength;
+					newPoint.y = anchorPos.y + dir.y * neighbourDistances[i] * 0.3f * autoControlLength;
+					points[LoopIndex(controlIndex)] = newPoint;
 				}
 			}
 		}

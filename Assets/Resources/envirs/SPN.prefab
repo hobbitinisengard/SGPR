@@ -3840,6 +3840,7 @@ GameObject:
   - component: {fileID: 650735859}
   - component: {fileID: 650735861}
   - component: {fileID: 650735860}
+  - component: {fileID: 3712711430014425660}
   m_Layer: 13
   m_Name: Terrain
   m_TagString: Untagged
@@ -3907,6 +3908,19 @@ TerrainCollider:
   m_Enabled: 1
   m_TerrainData: {fileID: 15600000, guid: 72d3eaf6c6628c348b3551fc6078eb7c, type: 2}
   m_EnableTreeColliders: 1
+--- !u!114 &3712711430014425660
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 650735858}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a913f46a2393e24a8d0a5a11cb76d54, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  surfaceType: 5
 --- !u!1 &658509262
 GameObject:
   m_ObjectHideFlags: 0
@@ -8336,6 +8350,7 @@ GameObject:
   - component: {fileID: 1411854425}
   - component: {fileID: 1411854427}
   - component: {fileID: 1411854426}
+  - component: {fileID: 6937230046394956910}
   m_Layer: 0
   m_Name: WaterClip
   m_TagString: Untagged
@@ -8351,7 +8366,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1411854424}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -69, y: 0.2, z: -473}
+  m_LocalPosition: {x: -69, y: 0.2, z: -122.4}
   m_LocalScale: {x: 1251, y: 1, z: 1246.4}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -8388,6 +8403,20 @@ MonoBehaviour:
   _inverted: 0
   _disableClipSurfaceWhenTooFarFromSurface: 0
   _animatedWavesDisplacementSamplingIterations: 4
+--- !u!64 &6937230046394956910
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1411854424}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 4
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!1 &1414230602
 GameObject:
   m_ObjectHideFlags: 0
@@ -13938,6 +13967,21 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -7788104117239286413, guid: b93414ac1ef975946a1ac34b6c748daf,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -3.46
+      objectReference: {fileID: 0}
+    - target: {fileID: -7788104117239286413, guid: b93414ac1ef975946a1ac34b6c748daf,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 5.17
+      objectReference: {fileID: 0}
+    - target: {fileID: -7788104117239286413, guid: b93414ac1ef975946a1ac34b6c748daf,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.58
+      objectReference: {fileID: 0}
     - target: {fileID: -7634346075721663184, guid: b93414ac1ef975946a1ac34b6c748daf,
         type: 3}
       propertyPath: m_RootOrder
@@ -14021,7 +14065,7 @@ PrefabInstance:
     - target: {fileID: 329111104556720423, guid: b93414ac1ef975946a1ac34b6c748daf,
         type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 506557632988223715, guid: b93414ac1ef975946a1ac34b6c748daf,
         type: 3}
@@ -14164,6 +14208,26 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: 1872717861323974240, guid: b93414ac1ef975946a1ac34b6c748daf, type: 3}
+--- !u!1 &4292889335038323896 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: -5489590183629222310, guid: b93414ac1ef975946a1ac34b6c748daf,
+    type: 3}
+  m_PrefabInstance: {fileID: 595151123456369378}
+  m_PrefabAsset: {fileID: 0}
+--- !u!64 &6973532252075864454
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4292889335038323896}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 4
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: -2309648222454496063, guid: b93414ac1ef975946a1ac34b6c748daf, type: 3}
 --- !u!1 &6343774376431963721 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 5785995104690465963, guid: b93414ac1ef975946a1ac34b6c748daf,

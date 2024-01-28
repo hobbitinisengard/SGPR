@@ -30,15 +30,12 @@ namespace RVP
 		[Tooltip("Can the engine turn backwards?")]
 		public bool canReverse;
 		DriveForce targetDrive;
-		[System.NonSerialized]
-		public float maxkRPM;
 
 		public float limit2kRPM = 11.5f; // in 1000s
 		public float limitkRPM = 11.35f; // in 1000s
 		public float minkRPM = 0.45f; // in 1000s
 		public float maxTorque = 0.28F; // in 100s
 
-		float[] wheelForwardFrictions;
 		public DriveForce[] outputDrives;
 
 		[Tooltip("Exponent for torque output on each wheel")]
@@ -70,9 +67,6 @@ namespace RVP
 			targetDrive = GetComponent<DriveForce>();
 			torqueCurve = GenerateTorqueCurve(1);
 			GetMaxRPM();
-			wheelForwardFrictions = new float[outputDrives.Length];
-			for (int i = 0; i < outputDrives.Length; ++i)
-				wheelForwardFrictions[i] = transmission.outputDrives[i].transform.GetComponent<Suspension>().wheel.forwardFriction;
 		}
 
 		public override void FixedUpdate()
@@ -97,8 +91,9 @@ namespace RVP
 				// nitro increases wheel friction and decreases mass
 				for (int i = 0; i < outputDrives.Length; ++i)
 				{
-					transmission.outputDrives[i].transform.GetComponent<Suspension>().wheel.forwardFriction = (1 + boostEval) * wheelForwardFrictions[i];
-					transmission.outputDrives[i].transform.GetComponent<Suspension>().wheel.sidewaysFriction = (1 + boostEval) * wheelForwardFrictions[i];
+					Wheel w = transmission.outputDrives[i].transform.GetComponent<Suspension>().wheel;
+					w.forwardFriction = (1 + boostEval) * w.initForwardFriction;
+					w.sidewaysFriction = (1 + boostEval) * w.initSidewaysFriction;
 				}
 				vp.rb.mass = vp.originalMass * (1 - boostEval);
 
@@ -106,7 +101,7 @@ namespace RVP
 				if (rpmTooHigh || actualInput == 0 || (transmission.IsShifting() && transmission.selectedGear > 2))
 					targetRPM = Mathf.Max(minkRPM * 1000, targetDrive.feedbackRPM - 2000);
 				else
-					targetRPM = actualInput * maxkRPM * 1000;
+					targetRPM = actualInput * limit2kRPM * 1000;
 
 				//if (!transmission.IsShifting() || transmission.currentGear == 1)
 				targetDrive.rpm = Mathf.Lerp(targetDrive.rpm, targetRPM, inertia * 20 * Time.fixedDeltaTime);
@@ -115,7 +110,7 @@ namespace RVP
 
 				if (engineSmoke != null)
 				{
-					if (curr_engine_krpm <= 0.3f * maxkRPM)
+					if (curr_engine_krpm <= 0.3f * limit2kRPM)
 					{
 						if (!engineSmoke.isPlaying)
 						{
@@ -129,7 +124,7 @@ namespace RVP
 						engineSmoke.Stop(true, ParticleSystemStopBehavior.StopEmitting);
 				}
 
-				if (curr_engine_krpm < maxkRPM)
+				if (curr_engine_krpm < limit2kRPM)
 				{
 					if (rpmTooHigh)
 					{
@@ -143,17 +138,7 @@ namespace RVP
 						rpmTooHigh = true;
 						actualInput = 0;
 					}
-					else
-					{
-						if (targetDrive.feedbackRPM > targetDrive.rpm)
-						{
-							//actualInput = 0;
-						}
-						else
-						{
-							//then
-						}
-					}
+					
 				}
 				else
 					actualInput = 0;
@@ -207,11 +192,11 @@ namespace RVP
 			base.Update();
 		}
 
-		// Calculates the max RPM and propagates its effects
+		/// <summary>
+		/// Calculates the max RPM and propagates its effects
+		/// </summary>
 		public void GetMaxRPM()
 		{
-			maxkRPM = torqueCurve.keys[torqueCurve.length - 1].time;
-
 			if (outputDrives.Length > 0)
 			{
 				foreach (DriveForce curOutput in outputDrives)

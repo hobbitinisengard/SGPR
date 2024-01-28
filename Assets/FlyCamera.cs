@@ -14,7 +14,10 @@ public class FlyCamera : MonoBehaviour
 	private Vector3 lastMouse = new Vector3(0, 0, 0); //kind of in the middle of the screen, rather than at the top (play)
 	private float totalRun = 1.0f;
 	private int flag = 0;
-
+	private void OnEnable()
+	{
+		Camera.main.fieldOfView = 54;
+	}
 	void Update()
 	{
 		if (Input.GetKeyUp(KeyCode.BackQuote))

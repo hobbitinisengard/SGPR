@@ -6,8 +6,7 @@ TagManager:
   tags:
   - Pop Tire
   - Underside
-  - CP
-  - START
+  - carBody
   layers:
   - Default
   - TransparentFX
@@ -28,15 +27,15 @@ TagManager:
   - Racingline
   - PitsLine
   - PitsZone
-  - GrindTrigger
+  - AeroTunnel
   - Selection
   - DecreasedGravityZone
   - VehicleTrigger
   - Underside
   - Ghost
-  - Trail
-  - Skybox
-  - 
+  - Racingline2
+  - CarCarCollision
+  - Racingline3
   - 
   - 
   - 

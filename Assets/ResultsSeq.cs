@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.UIElements.Experimental;
 
-public class ResultsSeq : Sfxable
+public class ResultsSeq : MonoBehaviour
 {
 	public SGP_HUD playerHUD;
 	public Sprite[] ResultPositionSprites;
@@ -26,7 +26,6 @@ public class ResultsSeq : Sfxable
 	public float d_invLerp;
 	public float d_minMax;
 	float cosArg;
-	AudioSource podiumMusic;
 
 	private void Awake()
 	{
@@ -69,7 +68,9 @@ public class ResultsSeq : Sfxable
 		dimCo = showResultCo = showTableCo = null;
 		seq = StartCoroutine(Seq());
 		audioSource.volume = 1;
-		podiumMusic = PlaySFX(playerResultPosition <= 3 ? "RacePodium" : "RaceNotPodium");
+		audioSource.clip = Info.audioClips[(playerResultPosition <= 3) ? "RacePodium" : "RaceNotPodium"];
+		audioSource.loop = false;
+		audioSource.Play();
 	}
 	void ImgResultSetAlpha(in Color c)
 	{
@@ -87,11 +88,16 @@ public class ResultsSeq : Sfxable
 				ImgResultSetAlpha(new Color(1, 1, 1, timer));
 			}
 			if (!audioSource.isPlaying)
+			{
+				audioSource.clip = Info.audioClips["RaceResults"];
+				audioSource.loop = true;
 				audioSource.Play();
-			if (Input.GetKeyDown(KeyCode.Return))
-				timer = 3.5f;
+			}
+			
 			if (timer >= 3.5f)
 				ImgResultSetAlpha(new Color(1, 1, 1, 1 - Mathf.InverseLerp(3.5f, 4, timer)));
+			else if (Input.GetKeyDown(KeyCode.Return))
+				timer = 3.5f;
 
 			cosArg += 2 * Mathf.PI * Time.deltaTime;
 			var p = imgResult.transform.localPosition;
@@ -111,8 +117,9 @@ public class ResultsSeq : Sfxable
 			if (timer < 8 && Input.GetKey(KeyCode.Return))
 			{
 				timer = 8;
-				if (podiumMusic != null)
-					podiumMusic.Stop();
+				if (audioSource != null)
+					audioSource.Stop();
+
 				yield return null;
 			}
 
@@ -192,7 +199,7 @@ public class ResultsSeq : Sfxable
 		float timer = 2;
 		while (timer > 0)
 		{
-			dimmer.color = new Color(0,0,0, 1-timer/2f);
+			//dimmer.color = new Color(0,0,0, 1-timer/2f);
 			audioSource.volume = timer / 2f;
 			timer -= Time.deltaTime;
 			yield return null;
@@ -203,6 +210,10 @@ public class ResultsSeq : Sfxable
 	void RowsBlinkColor(Color color)
 	{
 		bottomBoxLabel.color = color;
+
+		// Acknowledge already set transparency of boxes. Set only color.
+		var a = rightRow.GetChild(playerResultPosition - 1).GetChild(0).GetChild(0).GetComponent<TextMeshProUGUI>().color.a;
+		color.a = a;
 		rightRow.GetChild(playerResultPosition - 1).GetChild(0).GetChild(0).GetComponent<TextMeshProUGUI>().color = color;
 		leftRow.GetChild(playerResultPosition - 1).GetChild(0).GetChild(0).GetComponent<TextMeshProUGUI>().color = color;
 	}
@@ -216,7 +227,5 @@ public class ResultsSeq : Sfxable
 			rightRow.GetChild(i).GetChild(0).GetChild(0)
 						.GetComponent<TextMeshProUGUI>().text = Info.s_cars[i].raceBox.Result((Info.RecordType)rightBoxLabelInt);
 		}
-		
 	}
-
 }

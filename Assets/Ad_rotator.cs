@@ -8,7 +8,7 @@ public class Ad_rotator : MonoBehaviour
 	public Axis rotateAlong = Axis.Z;
 	private void Start()
 	{
-		init_rot = transform.rotation.eulerAngles;
+		init_rot = transform.localRotation.eulerAngles;
 	}
 	float degs(float deg)
 	{
@@ -26,13 +26,16 @@ public class Ad_rotator : MonoBehaviour
 		switch (rotateAlong)
 		{
 			case Axis.X:
-				transform.rotation = Quaternion.Euler(pos, init_rot.y, init_rot.z);
+				transform.localRotation = Quaternion.Euler(pos, init_rot.y, init_rot.z);
+				//transform.rotation = Quaternion.Euler(pos, init_rot.y, init_rot.z);
 				break;
 			case Axis.Y:
-				transform.rotation = Quaternion.Euler(init_rot.x, pos, init_rot.z);
+				transform.localRotation = Quaternion.Euler(init_rot.x, pos, init_rot.z);
+				//transform.rotation = Quaternion.Euler(init_rot.x, pos, init_rot.z);
 				break;
 			case Axis.Z:
-				transform.rotation = Quaternion.Euler(init_rot.x, init_rot.y, pos);
+				transform.localRotation = Quaternion.Euler(init_rot.x, init_rot.y, pos);
+				//transform.rotation = Quaternion.Euler(init_rot.x, init_rot.y, pos);
 				break;
 		}
 	}

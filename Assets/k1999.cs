@@ -11,17 +11,22 @@ public class K1999
 	float[] tLane;
 	float[] tRInverse;
 	int Divs = 0;
-	readonly float SecurityR = 2f;     // Security radius
-	readonly float SideDistExt = 1f;  // Security distance wrt outside
-	readonly float SideDistInt = 1f;  // Security distance wrt inside
-	readonly int Iterations = 500;    // Number of smoothing operations
-	public K1999(float SecurityR, float SideDistExt, float SideDistInt, int iterations)
+	readonly RacingPathParams data;
+	//readonly float SecurityR = 2f;     // Security radius
+	//readonly float SideDistExt = 1f;  // Security distance wrt outside
+	//readonly float SideDistInt = 1f;  // Security distance wrt inside
+	//readonly int Iterations = 500;    // Number of smoothing operations
+	public K1999(RacingPathParams data)
 	{
-		this.SecurityR = SecurityR;
-		this.SideDistExt = SideDistExt;
-		this.SideDistInt = SideDistInt;
-		this.Iterations = iterations;
+		this.data = data;
 	}
+	//public K1999(float SecurityR, float SideDistExt, float SideDistInt, int iterations)
+	//{
+	//	this.SecurityR = SecurityR;
+	//	this.SideDistExt = SideDistExt;
+	//	this.SideDistInt = SideDistInt;
+	//	this.Iterations = iterations;
+	//}
 	void UpdateTxTy(int i)
 	{
 		tx[i] = tLane[i] * txRight[i] + (1 - tLane[i]) * txLeft[i];
@@ -105,8 +110,8 @@ public class K1999
 		{
 			tLane[i] += (dLane / dRInverse) * TargetRInverse;
 
-			float ExtLane = (SideDistExt + Security) / Width;
-			float IntLane = (SideDistInt + Security) / Width;
+			float ExtLane = (data.SideDistExt + Security) / Width;
+			float IntLane = (data.SideDistInt + Security) / Width;
 			if (ExtLane > 0.5)
 				ExtLane = 0.5f;
 			if (IntLane > 0.5)
@@ -164,7 +169,7 @@ public class K1999
 
 			float TargetRInverse = (lNext * ri0 + lPrev * ri1) / (lNext + lPrev);
 
-			float Security = lPrev * lNext / (8 * SecurityR);
+			float Security = lPrev * lNext / (8 * data.SecurityR);
 			AdjustRadius(prev, i, next, TargetRInverse, Security);
 
 			prevprev = prev;
@@ -220,7 +225,7 @@ public class K1999
 		// Smoothing loop
 		for (int Step = stepsize; (Step /= 2) > 0;)
 		{
-			for (int i = Iterations * ((int)Mathf.Sqrt(Step)); --i >= 0;)
+			for (int i = data.Iterations * ((int)Mathf.Sqrt(Step)); --i >= 0;)
 				Smooth(Step);
 			Interpolate(Step);
 		}

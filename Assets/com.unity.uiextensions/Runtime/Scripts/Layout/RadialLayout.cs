@@ -52,7 +52,7 @@ namespace UnityEngine.UI.Extensions
 		protected override void OnValidate()
 		{
 			base.OnValidate();
-			CalculateRadial();
+			//CalculateRadial();
 		}
 #endif
 

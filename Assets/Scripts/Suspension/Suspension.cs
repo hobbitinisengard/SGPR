@@ -152,7 +152,6 @@ namespace RVP
 		public float jamForce = Mathf.Infinity;
 		[System.NonSerialized]
 		public bool jammed;
-		private Vector3 lastAppliedSuspForce;
 		public Vector3 appliedSuspensionForce;
 
 		void Start()

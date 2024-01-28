@@ -890,7 +890,7 @@ TextureImporter:
         width: 207
         height: 208
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -898,6 +898,27 @@ TextureImporter:
       bones: []
       spriteID: c65361d9e4c7fde4a8d40544bec47e47
       internalID: -628248341
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Offroad
+      rect:
+        serializedVersion: 2
+        x: 910
+        y: 754
+        width: 208
+        height: 208
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3550d8c995c5b294fb943996a427ca7f
+      internalID: 1954692959
       vertices: []
       indices: 
       edges: []
@@ -940,6 +961,7 @@ TextureImporter:
       MEX: -90433104
       No_jumps: 749395949
       No_pits: 1753598309
+      Offroad: 1954692959
       SPN: -728725714
       Sandy: -1964055179
       Speed: 362428555

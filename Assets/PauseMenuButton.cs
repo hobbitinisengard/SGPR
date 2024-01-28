@@ -51,6 +51,7 @@ public class PauseMenuButton : MonoBehaviour, ISelectHandler, IDeselectHandler
 					if (soundLevel > 1.05f)
 						soundLevel = 0;
 					Info.SetMixerLevelLog(exposedParameter, soundLevel, audioMixer);
+					clickSoundEffect.Play();
 					SetBatteryGUI(soundLevel);
 				}
 			}

@@ -66,7 +66,7 @@ public class Tile : MonoBehaviour
 		{
 			var connector = transform.GetChild(i).gameObject;
 			var col = connector.AddComponent<SphereCollider>();
-			col.radius = 5;
+			col.radius = 3;
 			col.isTrigger = true;
 			var rb = connector.AddComponent<Rigidbody>();
 			rb.useGravity = false;
@@ -140,6 +140,24 @@ public class Tile : MonoBehaviour
 				}
 			}
 		}
+		if(transform.childCount > 0)
+		{
+			var mainMeshTr = transform.GetChild(0);
+			if (mainMeshTr.childCount > 0)
+			{
+				for (int i = 0; i < mainMeshTr.childCount; ++i)
+				{
+					var pos = mainMeshTr.GetChild(i).transform.localPosition;
+					pos.x = -pos.x;
+					mainMeshTr.GetChild(i).transform.localPosition = pos;
+					var euler = mainMeshTr.GetChild(i).transform.localEulerAngles;
+					euler.y = -euler.y;
+					euler.z = -euler.z;
+					mainMeshTr.GetChild(i).transform.localRotation = Quaternion.Euler(euler);
+				}
+			}
+		}
+		
 		for (int i = 1; i < transform.childCount; ++i)
 		{
 			Transform connector = transform.GetChild(i);
@@ -212,15 +230,23 @@ public class Tile : MonoBehaviour
 		for (int i = 1; i < transform.childCount; ++i)
 		{
 			var connector = transform.GetChild(i);
-			connector.transform.localScale = new Vector3(1, 1 / scale, 1);
-			//for (int j = 0; j < connector.childCount; ++j)
-			//{
-			//	var pathParent = connector.GetChild(j);
-			//	for (int k = 0; k < pathParent.childCount; ++k)
-			//	{
-			//		pathParent.GetChild(k).transform.localScale = new Vector3(1, 1, newScale);
-			//	}
-			//}
+			
+			if (connector.childCount > 0)
+			{
+				GameObject[] children = new GameObject[connector.childCount];
+				for(int j = 0; j< children.Length; ++j)
+				{ // every time you change parent of a prev child, you pick 0th child 
+					children[j] = connector.GetChild(0).gameObject;
+					children[j].transform.parent = connector.parent;
+				}
+				connector.localScale = new Vector3(1, 1 / scale, 1);
+				foreach (var c in children)
+				{
+					c.transform.parent = connector;
+				}
+			}
+			else
+				connector.localScale = new Vector3(1, 1 / scale, 1);
 		}
 	}
 }
