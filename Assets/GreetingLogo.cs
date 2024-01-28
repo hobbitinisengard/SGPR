@@ -31,6 +31,7 @@ public class GreetingLogo : MonoBehaviour
 		transform.GetChild(0).GetComponent<RectTransform>().localPosition = 
 			new Vector2(screenWidth, 0);
 		view = transform.parent.GetComponent<MainMenuView>();
+		Cursor.visible = false;
 	}
 	private void OnEnable()
 	{
@@ -64,7 +65,7 @@ public class GreetingLogo : MonoBehaviour
 								Info.s_inEditor = false;
 								Info.s_cpuLevel = Info.CpuLevel.Elite;
 								Info.s_trackName = track.Key;
-								Info.s_isNight = (UnityEngine.Random.value > 0.5f) ? true : false;
+								Info.s_isNight = UnityEngine.Random.value > 0.5f;
 								Info.s_laps = 9;
 								break;
 							}
@@ -84,8 +85,8 @@ public class GreetingLogo : MonoBehaviour
 						goingUpSeq = false;
 					}
 				}
-				else
-					view.GoToView(nextMenu);
+				//else
+				//	view.GoToView(nextMenu);
 			}
 			rt.localPosition = Vector2.Lerp(outMoveInitPos, outMoveTargetPos, F.curve.Evaluate(timer));
 			if (timer < 1)

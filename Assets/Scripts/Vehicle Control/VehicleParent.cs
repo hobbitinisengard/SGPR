@@ -654,7 +654,7 @@ namespace RVP
 				{
 					for (int i = 0; i < hoverWheels.Length; i++)
 					{
-						susAverage = i == 0 ? hoverWheels[i].hoverDistance : (susAverage + hoverWheels[i].hoverDistance) * 0.5f;
+						susAverage = (i == 0) ? hoverWheels[i].hoverDistance : (susAverage + hoverWheels[i].hoverDistance) * 0.5f;
 					}
 				}
 				else
@@ -662,11 +662,10 @@ namespace RVP
 					for (int i = 0; i < wheels.Length; i++)
 					{
 						float newSusDist = wheels[i].transform.parent.GetComponent<Suspension>().suspensionDistance;
-						susAverage = i == 0 ? newSusDist : (susAverage + newSusDist) * 0.5f;
+						susAverage = (i == 0) ? newSusDist : (susAverage + newSusDist) * 0.5f;
 					}
 				}
 			}
-
 			rb.centerOfMass = centerOfMassObj.localPosition + new Vector3(0, susAverage, 0);
 			//Debug.Log(transform.name + rb.centerOfMass);
 			rb.inertiaTensor = rb.inertiaTensor; // This is required due to decoupling of inertia tensor from center of mass in Unity 5.3
@@ -697,8 +696,8 @@ namespace RVP
 				{
 					if (wheels[i].grounded)
 					{
-						wheelContactsVelocity = i == 0 ? wheels[i].contactVelocity : (wheelContactsVelocity + wheels[i].contactVelocity) * 0.5f;
-						wheelNormalAverage = i == 0 ? wheels[i].contactPoint.normal : (wheelNormalAverage + wheels[i].contactPoint.normal).normalized;
+						wheelContactsVelocity = (i == 0) ? wheels[i].contactVelocity : (wheelContactsVelocity + wheels[i].contactVelocity) * 0.5f;
+						wheelNormalAverage = (i == 0) ? wheels[i].contactPoint.normal : (wheelNormalAverage + wheels[i].contactPoint.normal).normalized;
 						groundedWheels++;
 					}
 					if (wheels[i].groundedReally)
@@ -760,14 +759,10 @@ namespace RVP
 						}
 					}
 				}
-				crashing = nowCrashing;
 			}
+			crashing = nowCrashing;
 			if (!(colliding || crashing))
 				scrapeSnd.Stop();
-		}
-		private void OnCollisionExit(Collision collision)
-		{
-			crashing = false;
 		}
 
 		void OnDestroy()

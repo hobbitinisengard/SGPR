@@ -220,7 +220,7 @@ public class SGP_HUD : MonoBehaviour
 		engine = null;
 		racebox = null;
 	}
-	public void OnDisable()
+	public void Reset()
 	{
 		for (int i = 0; i < progressBar.childCount; ++i)
 		{
@@ -231,6 +231,10 @@ public class SGP_HUD : MonoBehaviour
 		curMsgInQueue = null;
 		carProgressIcons.Clear();
 		infoText.gameObject.SetActive(false);
+	}
+	public void OnDisable()
+	{
+		Reset();
 	}
 	private void OnEnable()
 	{
@@ -261,11 +265,14 @@ public class SGP_HUD : MonoBehaviour
 	}
 	public void Connect(VehicleParent newVehicle)
 	{
+		
 		if (!newVehicle)
 		{
 			Debug.LogError("newVehicle is null");
 			return;
 		}
+		Reset();
+
 		vp = newVehicle;
 
 		trans = newVehicle.GetComponentInChildren<Transmission>() as GearboxTransmission;
@@ -530,7 +537,7 @@ public class SGP_HUD : MonoBehaviour
 			carStarLevel = racebox.starLevel;
 
 			// Original AERO movement
-			float score = racebox.Aero;
+			float score = (Info.s_raceType == Info.RaceType.Drift) ? racebox.drift : racebox.Aero;
 			for (int i = 6; i >= 0; --i)
 			{
 				mainRollers[i].SetFrac(score % 10f / 10f);

@@ -207,7 +207,20 @@ public class RaceBox : MonoBehaviour
 		}
 	}
 
-
+	private void OnDisable()
+	{
+		if(Info.s_raceType == Info.RaceType.Drift)
+		{
+			var drift = stuntsData.driftData;
+			if (drift.doneTimes > 0)
+			{
+				stuntPai.level = (int)Mathf.Clamp((drift.doneTimes - 1) / 2f, 0, 4);
+				stuntPai.score = (int)(drift.positiveProgress * drift.doneTimes);
+				grantedComboTime = -1;
+				AcceptStunt();
+			}
+		}
+	}
 	private void FixedUpdate()
 	{
 		if (!Info.gamePaused && curLap > 0)
@@ -370,6 +383,7 @@ public class RaceBox : MonoBehaviour
 
 			if (grantedComboTime == 0)
 			{ // no drifting for long
+
 				var drift = stuntsData.driftData;
 				if (drift.doneTimes > 0)
 				{

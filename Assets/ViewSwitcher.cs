@@ -15,7 +15,7 @@ public class ViewSwitcher : MonoBehaviour
 	public GameObject menu;
 	AudioSource menuMusic;
 
-	float timer = 0;
+	public float timer = 0;
 	float duration;
 	GameObject viewA;
 	GameObject viewB;
@@ -28,17 +28,18 @@ public class ViewSwitcher : MonoBehaviour
 	IEnumerator Play(Action method = null)
 	{
 		timer = 0;
-		
+		// Action method can take place over multiple frames which disrupts the transition. That's why we don't use deltaTime;
+		float delta = 0.01f;
 		while (timer < duration)
 		{
-			if (viewA.activeSelf && timer >= 0.5f * duration)
+			if (timer >= 0.5f * duration && viewA.activeSelf)
 			{
 				//Debug.Log("switch");
+				method?.Invoke();
 				viewA.SetActive(false);
 				viewB.SetActive(true);
-				method?.Invoke();
 			}
-			timer += Time.deltaTime;
+			timer += delta;
 			SetBlacknessColor(dimCurve.Evaluate(timer));
 			blackness.gameObject.SetActive(true);
 			yield return null;

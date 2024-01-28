@@ -314,7 +314,7 @@ namespace RVP
 				{
 					if (camOffsetDistance > carOffsetDistance)
 					{
-						Quaternion cameraStoppedRotation = Quaternion.LookRotation(vp.tr.position - tr.position, rollUp);
+						Quaternion cameraStoppedRotation = Quaternion.LookRotation(vp.tr.position + 2*Vector3.up - tr.position, rollUp);
 						rotation = Quaternion.Lerp(tr.rotation, cameraStoppedRotation, 6 * Time.fixedDeltaTime);
 					}
 					else

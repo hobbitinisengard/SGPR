@@ -100034,9 +100034,9 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  slipThreshold: 5
+  slipThreshold: 0.5
   sidewaysSlip: 0
-  slipDependence: 1
+  slipDependence: 3
   forwardSlipDependence: 2
   sidewaysSlipDependence: 2
   normalFrictionCurve:
@@ -100519,9 +100519,9 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  slipThreshold: 5
+  slipThreshold: 0.5
   sidewaysSlip: 0
-  slipDependence: 1
+  slipDependence: 3
   forwardSlipDependence: 2
   sidewaysSlipDependence: 2
   normalFrictionCurve:
@@ -101736,9 +101736,9 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  slipThreshold: 5
+  slipThreshold: 0.5
   sidewaysSlip: 0
-  slipDependence: 1
+  slipDependence: 3
   forwardSlipDependence: 2
   sidewaysSlipDependence: 2
   normalFrictionCurve:
@@ -102090,9 +102090,9 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  slipThreshold: 5
+  slipThreshold: 0.5
   sidewaysSlip: 0
-  slipDependence: 1
+  slipDependence: 3
   forwardSlipDependence: 2
   sidewaysSlipDependence: 2
   normalFrictionCurve:

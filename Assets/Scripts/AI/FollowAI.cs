@@ -278,11 +278,12 @@ namespace RVP
 				}
 				return;
 			}
-
-			rolledOverTime = (vp.colliding || vp.crashing) ? rolledOverTime + Time.fixedDeltaTime : 0;
+			
+			rolledOverTime = Mathf.Clamp((vp.reallyGroundedWheels < 3 && vp.crashing) ? rolledOverTime + Time.fixedDeltaTime
+				: rolledOverTime - 2*Time.fixedDeltaTime, 0, rollResetTime);
 
 			// Reset if stuck rolled over
-			if (rolledOverTime > rollResetTime && rollResetTime >= 0)
+			if (rolledOverTime >= rollResetTime)
 			{
 				StartCoroutine(ResetOnTrack());
 			}

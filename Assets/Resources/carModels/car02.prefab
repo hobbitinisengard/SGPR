@@ -35414,7 +35414,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2289872253119390461}
-  m_Mesh: {fileID: 4116762958910619516, guid: 91d2b4fd3ac5840409d21ec8e2bab3d5, type: 3}
+  m_Mesh: {fileID: 5112762847976256864, guid: 7150fb89df7da25469ed649d5e6f8594, type: 3}
 --- !u!23 &3195331430902128946
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -99676,9 +99676,8 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  slipThreshold: 5
   sidewaysSlip: 0
-  slipDependence: 1
+  slipDependence: 3
   forwardSlipDependence: 2
   sidewaysSlipDependence: 2
   normalFrictionCurve:
@@ -100161,9 +100160,8 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  slipThreshold: 5
   sidewaysSlip: 0
-  slipDependence: 1
+  slipDependence: 3
   forwardSlipDependence: 2
   sidewaysSlipDependence: 2
   normalFrictionCurve:
@@ -101378,9 +101376,8 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  slipThreshold: 5
   sidewaysSlip: 0
-  slipDependence: 1
+  slipDependence: 3
   forwardSlipDependence: 2
   sidewaysSlipDependence: 2
   normalFrictionCurve:
@@ -101732,9 +101729,8 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  slipThreshold: 5
   sidewaysSlip: 0
-  slipDependence: 1
+  slipDependence: 3
   forwardSlipDependence: 2
   sidewaysSlipDependence: 2
   normalFrictionCurve:

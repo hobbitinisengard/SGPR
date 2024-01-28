@@ -670,7 +670,7 @@ public class TyreSavable : PartSavable
 		frontFrictionStretch = front.sidewaysCurveStretch;
 		rearFrictionStretch = rear.sidewaysCurveStretch;
 		squeakSlipThreshold = rear.slipThreshold;
-		slipDependence = (rear.slipDependence == Wheel.SlipDependenceMode.forward) ? 0 : 1;
+		slipDependence = 2;
 		axleFriction = rear.axleFriction;
 	}
 
@@ -686,14 +686,17 @@ public class TyreSavable : PartSavable
 			else
 			{
 				if(Info.s_raceType == Info.RaceType.Drift)
-					w.SetInitFrictions(frontFriction-2, frontFriction - 2);
+				{
+					float value = Mathf.Min(rearFriction, frontFriction - 2);
+					w.SetInitFrictions(value, value);
+				}
 				else
 					w.SetInitFrictions(rearFriction, rearFriction);
 			}
 			w.forwardCurveStretch = (i < 2) ? frontFrictionStretch : rearFrictionStretch;
 			w.sidewaysCurveStretch = (i < 2) ? frontFrictionStretch : rearFrictionStretch;
 			w.slipThreshold = squeakSlipThreshold;
-			w.slipDependence = (Info.s_raceType == Info.RaceType.Drift) ? Wheel.SlipDependenceMode.forward : Wheel.SlipDependenceMode.independent;
+			w.slipDependence = Wheel.SlipDependenceMode.independent;
 			w.axleFriction = axleFriction;
 			// update materials
 			//var mr = w.transform.GetChild(0).GetComponent<MeshRenderer>();
@@ -959,7 +962,7 @@ public class EngineSavable : PartSavable
 		vp.engine.maxPitch = audioMaxPitch;
 		vp.engine.minPitch = audioMinPitch;
 		vp.engine.inertia = inertia;
-		vp.engine.maxTorque = torque;
+		vp.engine.maxTorque = (Info.s_raceType == Info.RaceType.Drift) ? Mathf.Max(torque, .4f) : torque;
 		vp.engine.limitkRPM = redlineKRPM;
 		vp.engine.limit2kRPM = cutoffKRPM;
 		vp.engine.torqueCurve = vp.engine.GenerateTorqueCurve((int)torqueCurveType);
@@ -1061,7 +1064,7 @@ public class BmsSavable : PartSavable
 		bms.driftSpinExponent = driftSpinExponent;
 		bms.maxDriftAngle = maxDriftAngle;
 		bms.autoSteerDrift = autoSteerDrift == 1;
-		bms.driftPush = driftPush;
+		bms.driftPush = (Info.s_raceType == Info.RaceType.Drift) ? Mathf.Max(driftPush, 1) : driftPush;
 		bms.downforce = downforce;
 		vp.wheels[0].suspensionParent.brakeForce = frontBrakeForce;
 		vp.wheels[1].suspensionParent.brakeForce = frontBrakeForce;

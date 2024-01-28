@@ -152,7 +152,7 @@ namespace RVP
 						CalculateRpmRanges();
 					}
 				}
-				if (automatic && vp.countdownTimer <= shiftDelay && vp.reallyGroundedWheels >= 2)
+				if (automatic && vp.countdownTimer <= shiftDelaySeconds && vp.reallyGroundedWheels >= 2)
 				{
 					if (selectedGear == currentGear)
 					{

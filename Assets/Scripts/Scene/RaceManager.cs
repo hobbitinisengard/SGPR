@@ -280,9 +280,10 @@ namespace RVP
 			int startlines = 0;
 			while (editorPanel.loadingTrack)
 			{
-				Debug.Log("loading");
 				yield return null;
 			}
+			yield return null;
+			Debug.Log("editor loaded Track. StartRace()");
 			editorPanel.pathFollower.SetActive(false);
 			for (int i = 0; i < editorPanel.placedTilesContainer.transform.childCount; ++i)
 			{
@@ -348,7 +349,8 @@ namespace RVP
 
 				StartCoroutine(newCar.CountdownTimer(countDownSeconds));
 
-				int racingLineNumber = i % racingPaths.Length;
+				
+				int racingLineNumber = 0;// i % racingPaths.Length;
 				newCar.followAI.AssignPath(racingPaths[racingLineNumber], racingPaths[0], ref editorPanel.stuntpointsContainer,
 					ref editorPanel.replayCamsContainer, Info.racingLineLayers[racingLineNumber]);
 

@@ -75,6 +75,7 @@ public class EditorPanel : Sfxable
 		StuntZonesTool,
 		Cross
 	}
+	public GameObject bottomMenu;
 	public Mode mode { get; private set; }
 	[NonSerialized]
 	public List<int> stuntpointsContainer = new List<int>();
@@ -171,17 +172,21 @@ public class EditorPanel : Sfxable
 
 	public bool loadingTrack { get; private set; }
 
-	void Awake()
-	{
-		if (!initialized)
-			Initialize();
-	}
 	private void OnDisable()
 	{
+		tileGroups.SetActive(false);
+		bottomMenu.SetActive(false);
+
 		flyCamera.enabled = false;
+		Cursor.visible = false;
 	}
 	private void Initialize()
 	{
+		tileGroups.SetActive(Info.s_inEditor);
+		bottomMenu.SetActive(Info.s_inEditor);
+
+		if (initialized)
+			return;
 
 		mode = Mode.Build;
 		selector = new CSelector(scalatorButtonImage);
@@ -263,6 +268,9 @@ public class EditorPanel : Sfxable
 	}
 	private void OnEnable()
 	{
+		if(Info.s_inEditor)
+			Initialize();
+		Cursor.visible = true;
 		ResetScale();
 		YouSurePanel.gameObject.SetActive(false);
 		flyCamera.enabled = true;
@@ -834,6 +842,7 @@ public class EditorPanel : Sfxable
 
 	IEnumerator ClosingPath()
 	{
+		Debug.Log("begin closing path");
 		connectors.Clear();
 		
 		List<Vector3> Lpath = new List<Vector3>(100);
@@ -851,6 +860,7 @@ public class EditorPanel : Sfxable
 		if (startline == null)
 		{
 			Debug.Log("No startline");
+			loadingTrack = false;
 			yield break;
 		}
 
@@ -915,6 +925,7 @@ public class EditorPanel : Sfxable
 			//Debug.Log("elements traversed: " + i);
 			if (i > 100 || i < 2)
 			{
+				loadingTrack = false;
 				yield break;
 			}
 		}
@@ -936,6 +947,7 @@ public class EditorPanel : Sfxable
 		if (trackPathDuplicates)
 		{
 			Debug.LogError("Rpath duplicate found");
+			loadingTrack = false;
 			yield break;
 		}
 		for(int i=0; i<pathCreators.Length; ++i)
@@ -974,6 +986,7 @@ public class EditorPanel : Sfxable
 			if (pathCreators[i].path.length > 10000)
 			{
 				Debug.LogError("Path > 10000");
+				loadingTrack = false;
 				yield break;
 			}
 			else
@@ -1037,6 +1050,8 @@ public class EditorPanel : Sfxable
 				//}
 			}
 		}
+		Debug.Log("end closing path");
+		loadingTrack = false;
 	}
 	void SetPathClosed(bool val)
 	{
@@ -1582,11 +1597,12 @@ public class EditorPanel : Sfxable
 	}
 	public IEnumerator LoadTrack()
 	{
+		if (!initialized)
+			Initialize();
 		gameObject.SetActive(true);
 		loadingTrack = true;
 		records = TrackHeader.Record.RecordTemplate();
-		if (!initialized)
-			Initialize();
+		
 		int skyboxNumber = Info.skys[(int)Info.tracks[Info.s_trackName].envir];
 		string envirName = Info.tracks[Info.s_trackName].envir.ToString();
 		RemoveTrackLeftovers();
@@ -1700,7 +1716,7 @@ public class EditorPanel : Sfxable
 		ApplyWindToCloths();
 		SetHeightsmap(TRACK.heights);
 		SwitchToConnect();
-		loadingTrack = false;
+		
 	}
 	public void OpenLoadTrackFileBrowser()
 	{

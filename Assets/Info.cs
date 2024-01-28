@@ -140,7 +140,7 @@ public static class Info
 	public static bool s_inEditor = true;
 	public static bool s_isNight = false;
 	public enum CpuLevel { Easy, Medium, Hard, Elite};
-	public static CpuLevel s_cpuLevel = 0;
+	public static CpuLevel s_cpuLevel = CpuLevel.Elite;
 	public static int s_rivals = 0; // 0-9
 	public static PavementType s_roadType = PavementType.Random;
 	public static bool s_catchup = true;

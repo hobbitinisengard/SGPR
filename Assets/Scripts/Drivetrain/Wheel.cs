@@ -81,7 +81,8 @@ namespace RVP
 		[Tooltip("X-axis = slip, y-axis = friction")]
 		public AnimationCurve sidewaysFrictionCurve;// = AnimationCurve.EaseInOut(0, 1, 1, 0.35f);
 		[Tooltip("How much the tire must slip before marks are created")]
-		public float slipThreshold = 0.8f;
+		[NonSerialized]
+		public float slipThreshold = 0.5f;
 		[System.NonSerialized]
 		public float forwardSlip;
 		//[System.NonSerialized]
