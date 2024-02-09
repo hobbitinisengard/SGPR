@@ -323,7 +323,7 @@ public class EditorPanel : Sfxable
 				placedTilesContainer.transform.GetChild(i).GetComponent<Tile>().UpdateLights();
 			}
 		}
-		if (Input.GetKeyDown(KeyCode.Escape))
+		if (Input.GetButtonDown("Cancel"))
 		{
 			SwitchTo(Mode.None);
 		}

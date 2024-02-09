@@ -11,7 +11,6 @@ namespace RVP
 	{
 		VehicleParent vp;
 		public string accelAxis;
-		public string brakeAxis;
 		public string steerAxis;
 		public string ebrakeAxis;
 		public string boostButton;
@@ -71,12 +70,10 @@ namespace RVP
 				//		startedAccelInputTime = Time.time;
 				//	input = 2*(Time.time - startedAccelInputTime);
 				//}
-				vp.SetAccel(input);
-			}
-
-			if (!string.IsNullOrEmpty(brakeAxis))
-			{
-				vp.SetBrake(Input.GetAxis(brakeAxis));
+				if(input>=0)
+					vp.SetAccel(input);
+				if(input <= 0)
+					vp.SetBrake(Mathf.Abs(input));
 			}
 
 			if (!string.IsNullOrEmpty(steerAxis))

@@ -21,6 +21,9 @@ public class CarSelector : Sfxable
 	Coroutine containerCo;
 	bool loadCo;
 	public bool d_co;
+	float horizontal;
+	float vertical;
+
 	void Awake()
 	{
 		initBarSizeDelta = bars[0].sizeDelta.x;
@@ -104,49 +107,59 @@ public class CarSelector : Sfxable
 		if (!selectedCar || loadCo)
 			return;
 		d_co = containerCo == null;
-		int x = Input.GetKeyDown(KeyCode.RightArrow) ? 1 : Input.GetKeyDown(KeyCode.LeftArrow) ? -1 : 0;
-		int y = Input.GetKeyDown(KeyCode.UpArrow) ? -1 : Input.GetKeyDown(KeyCode.DownArrow) ? 1 : 0;
 
-		if (x != 0 || y != 0)
+		if (Mathf.Abs(horizontal) < 0.1f && Mathf.Abs(vertical) < 0.1f)
 		{
-			int posx = x + selectedCar.GetSiblingIndex();
-			int posy = y + selectedCar.parent.GetSiblingIndex();
-			if (posy >= 0 && posy <= 3 && posx>=0)
+			horizontal = Input.GetAxis("Horizontal");
+			vertical = Input.GetAxis("Vertical");
+			int x = horizontal > 0.1f ? 1 : horizontal < 0.1f ? -1 : 0;
+			int y = vertical > 0.1f ? -1 : horizontal < 0.1f ? 1 : 0;
+
+			if (x != 0 || y != 0)
 			{
-				Transform tempSelectedCar = null;
-				for (int i = posy; i < carContent.childCount && i >= 0;)
+				int posx = x + selectedCar.GetSiblingIndex();
+				int posy = y + selectedCar.parent.GetSiblingIndex();
+				if (posy >= 0 && posy <= 3 && posx >= 0)
 				{
-					Transform selectedClass = carContent.GetChild(i);
-					
-					if (selectedClass.childCount > 0)
+					Transform tempSelectedCar = null;
+					for (int i = posy; i < carContent.childCount && i >= 0;)
 					{
-						if (posx >= selectedClass.childCount)
-							posx = selectedClass.childCount - 1;
-						tempSelectedCar = selectedClass.GetChild(posx);
-						Debug.Log(tempSelectedCar);
-						break;
+						Transform selectedClass = carContent.GetChild(i);
+
+						if (selectedClass.childCount > 0)
+						{
+							if (posx >= selectedClass.childCount)
+								posx = selectedClass.childCount - 1;
+							tempSelectedCar = selectedClass.GetChild(posx);
+							Debug.Log(tempSelectedCar);
+							break;
+						}
+						i = (y > 0) ? (i + 1) : (i - 1);
 					}
-					i = (y > 0) ? (i + 1) : (i - 1);
+					if (tempSelectedCar != null && tempSelectedCar != selectedCar)
+					{
+						selectedCar = tempSelectedCar;
+						PlaySFX("fe-bitmapscroll");
+					}
+					// new car has been selected
+					// set description
+					carDescText.text = Info.Car(selectedCar.name).desc;
+					// set bars
+					if (barsAndRadialCo != null)
+						StopCoroutine(barsAndRadialCo);
+					barsAndRadialCo = StartCoroutine(SetPerformanceBarsAndRadial());
+					// focus on car
+					if (containerCo != null)
+						StopCoroutine(containerCo);
+					containerCo = StartCoroutine(MoveToCar());
 				}
-				if(tempSelectedCar != null && tempSelectedCar != selectedCar)
-				{
-					selectedCar = tempSelectedCar;
-					PlaySFX("fe-bitmapscroll");
-				}
-				// new car has been selected
-				// set description
-				carDescText.text = Info.Car(selectedCar.name).desc;
-				// set bars
-				if (barsAndRadialCo != null)
-					StopCoroutine(barsAndRadialCo);
-				barsAndRadialCo = StartCoroutine(SetPerformanceBarsAndRadial());
-				// focus on car
-				if (containerCo != null)
-					StopCoroutine(containerCo);
-				containerCo = StartCoroutine(MoveToCar());
 			}
 		}
+
+		horizontal = Input.GetAxis("Horizontal");
+		vertical = Input.GetAxis("Vertical");
 	}
+
 	IEnumerator MoveToCar()
 	{
 		yield return null;

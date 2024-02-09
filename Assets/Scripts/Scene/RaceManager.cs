@@ -407,7 +407,7 @@ namespace RVP
 			{
 				if (Info.s_spectator)
 				{
-					if ((DateTime.Now - Info.raceStartDate).TotalSeconds > 60 || Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Escape))
+					if ((DateTime.Now - Info.raceStartDate).TotalSeconds > 60 || Input.GetButtonDown("Submit") || Input.GetButtonDown("Cancel"))
 					{
 						BackToMenu();
 						yield break;

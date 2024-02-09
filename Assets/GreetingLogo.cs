@@ -95,7 +95,7 @@ public class GreetingLogo : MonoBehaviour
 		}
 		else
 		{
-			if (Input.GetKeyDown(KeyCode.Return))
+			if (Input.GetButtonDown("Submit"))
 			{
 				goingUpSeq = true;
 				toDemo = false;

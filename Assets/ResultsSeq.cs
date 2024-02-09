@@ -96,7 +96,7 @@ public class ResultsSeq : MonoBehaviour
 			
 			if (timer >= 3.5f)
 				ImgResultSetAlpha(new Color(1, 1, 1, 1 - Mathf.InverseLerp(3.5f, 4, timer)));
-			else if (Input.GetKeyDown(KeyCode.Return))
+			else if (Input.GetButtonDown("Submit"))
 				timer = 3.5f;
 
 			cosArg += 2 * Mathf.PI * Time.deltaTime;
@@ -114,7 +114,7 @@ public class ResultsSeq : MonoBehaviour
 		while (true)
 		{
 			timer += Time.deltaTime;
-			if (timer < 8 && Input.GetKey(KeyCode.Return))
+			if (timer < 8 && Input.GetButtonDown("Submit"))
 			{
 				timer = 8;
 				if (audioSource != null)
@@ -125,7 +125,7 @@ public class ResultsSeq : MonoBehaviour
 
 			if (timer > 8 && timer < 12)
 			{
-				if (Input.GetKeyDown(KeyCode.Return))
+				if (Input.GetButtonDown("Submit"))
 					timer = 11.5f;
 				if(showResultCo == null)
 					showResultCo = StartCoroutine(ShowResult());
@@ -168,7 +168,7 @@ public class ResultsSeq : MonoBehaviour
 
 		while(true)
 		{
-			if (Input.GetKeyDown(KeyCode.Return) && dimCo == null) // closing seq
+			if (Input.GetButtonDown("Submit") && dimCo == null) // closing seq
 			{
 				for (int i = 0; i < Info.s_cars.Count; ++i)
 				{ 

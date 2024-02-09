@@ -32,7 +32,8 @@ public class MainMenuView : Sfxable
 	}
 	void Update()
 	{
-		if (prevView && Input.GetKeyDown(KeyCode.Escape))
+		Debug.Log(Input.GetAxis("Vertical"));
+		if (prevView && Input.GetButtonDown("Cancel"))
 		{
 			GoToView(prevView);
 			PlaySFX("fe-dialogcancel");

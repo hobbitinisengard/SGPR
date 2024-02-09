@@ -222,8 +222,13 @@ public class LoadSelector : Sfxable
 		if (!selectedTrack || loadCo)
 			return;
 		int mult = Input.GetKey(KeyCode.LeftShift) ? 5 : 1;
-		int x = Input.GetKeyDown(KeyCode.D) ? mult : Input.GetKeyDown(KeyCode.A) ? -mult : 0;
-		int y = Input.GetKeyDown(KeyCode.W) ? -mult : Input.GetKeyDown(KeyCode.S) ? mult : 0;
+		//int x = Input.GetKeyDown(KeyCode.D) ? mult : Input.GetKeyDown(KeyCode.A) ? -mult : 0;
+		//int y = Input.GetKeyDown(KeyCode.W) ? -mult : Input.GetKeyDown(KeyCode.S) ? mult : 0;
+
+		float horizontal = Input.GetAxis("Horizontal2");
+		float vertical = Input.GetAxis("Accel");
+		int x = horizontal > 0.1f ? 1 : horizontal < 0.1f ? -1 : 0;
+		int y = vertical > 0.1f ? -1 : horizontal < 0.1f ? 1 : 0;
 		bool gotoHome = Input.GetKeyDown(KeyCode.Home);
 		bool gotoEnd = Input.GetKeyDown(KeyCode.End);
 

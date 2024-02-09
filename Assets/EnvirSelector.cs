@@ -38,8 +38,8 @@ public class EnvirSelector : Sfxable
 	{
 		if (!selectedEnvir)
 			return;
-		int x = Input.GetKeyDown(KeyCode.RightArrow) ? 1 : Input.GetKeyDown(KeyCode.LeftArrow) ? -1 : 0;
-
+		float horizontal = Input.GetAxis("Horizontal");
+		int x = horizontal > 0.1f ? 1 : horizontal < 0.1f ? -1 : 0;
 		if (x != 0)
 		{
 			int posx = x + selectedEnvir.GetSiblingIndex();

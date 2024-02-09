@@ -311,7 +311,7 @@ public class SGP_HUD : MonoBehaviour
 		{
 			componentPanel.gameObject.SetActive(!componentPanel.gameObject.activeSelf);
 		}
-		if (Input.GetKeyDown(KeyCode.Escape) && (DateTime.Now - Info.raceStartDate).TotalSeconds > 5
+		if (Input.GetButtonDown("Cancel") && (DateTime.Now - Info.raceStartDate).TotalSeconds > 5
 			&& !componentPanel.gameObject.activeSelf && !raceManager.resultsSeq.gameObject.activeSelf)
 		{
 			pauseMenu.gameObject.SetActive(true);
