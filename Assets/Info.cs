@@ -65,7 +65,7 @@ public static class Info
 	public enum RecordType { BestLap, RaceTime, StuntScore, DriftScore }
 	public enum PavementType { Highway, RedSand, Asphalt, Electric, TimeTrial, Japanese, GreenSand, Random }
 	/// <summary>
-	/// valid pavements from 0 to ..
+	/// Number of track textures. Set pavementTypes+1 for random texture.
 	/// </summary>
 	public const int pavementTypes = 6;
 

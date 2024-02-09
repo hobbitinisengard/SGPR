@@ -39,6 +39,7 @@ public class ComponentPanel : MonoBehaviour
 	CarConfig carConfig;
 	private void OnEnable()
 	{
+		Cursor.visible = true;
 		paused.TransitionTo(0);
 		Time.timeScale = 0;
 		Info.gamePaused = true;
@@ -47,6 +48,7 @@ public class ComponentPanel : MonoBehaviour
 	}
 	void OnDisable()
 	{
+		Cursor.visible = false;
 		unPaused.TransitionTo(0);
 		Time.timeScale = 1;
 		Info.gamePaused = false;
@@ -578,7 +580,7 @@ public class HonkSavable : PartSavable
 [Serializable]
 public class DriveSavable : PartSavable
 {
-	// tier 0=FWD, 1=RWD, 2=AWD
+	// tier 0=RWD, 1=FWD, 2=AWD
 	public float driveType;
 	public float steerAdd;
 	public float holdComebackSpeed;

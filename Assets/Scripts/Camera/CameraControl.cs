@@ -276,22 +276,8 @@ namespace RVP
 			{
 				slowCamera = false;
 			}
-
-			if (vp.customCam)
-			{
+			if(vp.customCam)
 				lookObj.position = vp.customCam.transform.position;
-			}
-			else
-			{
-				bool badpos = Physics.Linecast(vp.tr.position + cHeight * Vector3.up, lookObj.position, out hit, castMask);
-				if (badpos)
-				{ //Check if there is an object between the camera and target vehicle and move the camera in front of it
-					lookObj.position = hit.point + (vp.tr.position - lookObj.position).normalized * (cam.nearClipPlane + 0.1f);
-				}
-			}
-
-			smoothTime = Mathf.Lerp(smoothTime, slowCamera ? camStoppedSmoothTime : camFollowSmoothTime
-				, (slowCamera ? 1 : 2) * Time.fixedDeltaTime * smoothTimeSpeed);
 
 			if (yInput == 0 && xInput == 0)
 				newTrPos =
@@ -300,6 +286,14 @@ namespace RVP
 			else
 				newTrPos = Vector3.SmoothDamp(tr.position, lookObj.position, ref velocity,
 							smoothTime, catchUpCamSpeed, xyInputCamSpeedCoeff * Time.fixedDeltaTime * smoothDampRspnvns);
+
+			//bool badpos = Physics.Linecast(vp.tr.position + cHeight * Vector3.up, newTrPos, out hit, castMask);
+			//if (badpos)
+			//{ //Check if there is an object between the camera and target vehicle and move the camera in front of it
+			//	newTrPos = hit.point + (vp.tr.position + cHeight * Vector3.up - newTrPos).normalized * (cam.nearClipPlane + 0.1f);
+			//}
+			smoothTime = Mathf.Lerp(smoothTime, slowCamera ? camStoppedSmoothTime : camFollowSmoothTime
+				, (slowCamera ? 1 : 2) * Time.fixedDeltaTime * smoothTimeSpeed);
 
 			Quaternion rotation;
 			if (!vp.customCam)

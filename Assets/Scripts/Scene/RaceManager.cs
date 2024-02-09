@@ -337,7 +337,7 @@ namespace RVP
 				startPos = Vector3.Lerp(leftSide, rightSide, (i % 2 == 0) ? .286f : .714f);
 				//Debug.DrawRay(startPos, Vector3.up);
 				string carName = (i == Info.s_rivals) ? Info.s_playerCarName : "car" + UnityEngine.Random.Range(1, Info.cars.Length + 1).ToString("D2");
-				//string carName = "car01";
+				//string carName = "car06";
 				var carModel = Resources.Load<GameObject>(Info.carPrefabsPath + carName);
 				var position = new Vector3(startPos.x, startPos.y + 3, startPos.z);
 				var rotation = Quaternion.LookRotation(dirVec);

@@ -26,6 +26,8 @@ namespace RVP
 		//public string lockSGPButton;
 		public string lightsButton;
 		public string resetOnTrackButton;
+		public float startedAccelInputTime;
+
 		void Start()
 		{
 			vp = GetComponent<VehicleParent>();
@@ -62,7 +64,14 @@ namespace RVP
 			
 			if (!string.IsNullOrEmpty(accelAxis))
 			{
-				vp.SetAccel(Input.GetAxis(accelAxis));
+				float input = Input.GetAxis(accelAxis);
+				//if (input == 1)
+				//{
+				//	if(vp.accelInput == 0)
+				//		startedAccelInputTime = Time.time;
+				//	input = 2*(Time.time - startedAccelInputTime);
+				//}
+				vp.SetAccel(input);
 			}
 
 			if (!string.IsNullOrEmpty(brakeAxis))

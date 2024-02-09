@@ -8,11 +8,11 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: trackset04_trk_tubemetal
-  m_Shader: {fileID: 46, guid: 0000000000000000f000000000000000, type: 0}
-  m_ValidKeywords: []
+  m_Shader: {fileID: 4800000, guid: ed04895971c00fc498c346df2ac0e9b4, type: 3}
+  m_ValidKeywords:
+  - _SOURCE_SPECULARALPHA
   m_InvalidKeywords:
   - _BLENDMAINNORMAL_ON
-  - _SOURCE_SPECULARALPHA
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -43,7 +43,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: 08aee16b4d13c2149a6be7d9131091a8, type: 3}
+        m_Texture: {fileID: 2800000, guid: 1c7ada823ad9d4e42bbde835a22a82d1, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
@@ -84,7 +84,7 @@ Material:
     - _Contrast: 1
     - _ContrastDetailMap: 0
     - _ContributeNormal: 0.05
-    - _Cull: 0
+    - _Cull: 2
     - _Cutoff: 0.5
     - _DetailBrightness: 1
     - _DetailNormalMapScale: 1
@@ -98,7 +98,7 @@ Material:
     - _IntensityMask: 1
     - _InvertABaseColor: 0
     - _InvertMask: 0
-    - _Metallic: 0.515
+    - _Metallic: 1
     - _Mode: 0
     - _OcclusionStrength: 1
     - _Parallax: 0

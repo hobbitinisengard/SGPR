@@ -4,7 +4,9 @@ public class SGP_Bouncer : MonoBehaviour
 {
 	Rigidbody rb;
 	VehicleParent vp;
+	float carCarUpCoeff = .5f;
 	public float lastBounceTime;
+	public float lastCarCarBounceTime;
 	public float lastSideBounceTime;
 	public float lastVVBounceTime;
 	float debounceTime = .5f;
@@ -17,15 +19,42 @@ public class SGP_Bouncer : MonoBehaviour
 		{
 			Keyframe[] kf = new Keyframe[]
 			{
-				new Keyframe(0,0),
-				new Keyframe(45,1),
-				new Keyframe(90,0),
+				new (0,0),
+				new (45,1),
+				new (90,0),
 			};
 			multCurve = new AnimationCurve(kf);
 		}
 	}
+	void BounceCars(Collision collision)
+	{
+		lastCarCarBounceTime = Time.time;
+		// move body up
+		//int dir = vp.tr.InverseTransformPoint(contact.point).x > 0 ? 1 : -1;
+		//rb.AddRelativeTorque(dir * Vector3.forward * vp.rb.mass * carCarUpCoeff);
+
+		// bounce cars apart
+		if (Time.time - lastCarCarBounceTime > lastCarCarBounceTime)
+			rb.AddForceAtPosition(vp.rb.mass * collision.relativeVelocity.magnitude *
+				(collision.relativeVelocity.normalized + Vector3.up).normalized,
+				collision.GetContact(0).point//vp.rb.centerOfMass);
+				);
+
+		// tilt car
+		//rb.AddForceAtPosition(vp.rb.mass * carCarUpCoeff * Vector3.up, collision.GetContact(0).point, ForceMode.Force);
+	}
+	private void OnCollisionStay(Collision collision)
+	{
+		if (collision.GetContact(0).otherCollider.gameObject.layer == Info.carCarCollisionLayer)
+			BounceCars(collision);
+	}
 	private void OnCollisionEnter(Collision collision)
 	{
+		if(collision.GetContact(0).otherCollider.gameObject.layer == Info.carCarCollisionLayer)
+		{
+			BounceCars(collision);
+			return;
+		}
 		ContactPoint contact = collision.GetContact(0);
 		if (vp.countdownTimer > 0)
 			return;

@@ -921,10 +921,10 @@ public class EditorPanel : Sfxable
 					i++;
 				}
 			}
-
-			//Debug.Log("elements traversed: " + i);
-			if (i > 100 || i < 2)
+			
+			if (i >= 10000 || i < 2)
 			{
+				//Debug.Log("elements traversed: " + i);
 				loadingTrack = false;
 				yield break;
 			}

@@ -74,7 +74,7 @@ namespace RVP
 			base.FixedUpdate();
 
 			// Calculate proper input
-			actualAccel = Mathf.Lerp(vp.brakeIsReverse && vp.reversing && vp.accelInput <= 0 ? vp.brakeInput : vp.accelInput, Mathf.Max(vp.accelInput, vp.burnout), vp.burnout);
+			actualAccel = vp.brakeIsReverse && vp.reversing && vp.accelInput <= 0 ? vp.brakeInput : vp.accelInput;
 			float accelGet = canReverse ? actualAccel : Mathf.Clamp01(actualAccel);
 			actualInput = inputCurve.Evaluate(Mathf.Abs(accelGet)) * Mathf.Sign(accelGet);
 

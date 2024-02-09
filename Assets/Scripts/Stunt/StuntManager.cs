@@ -112,6 +112,8 @@ namespace RVP
 		bool isHalfRotation;
 		public bool canBeReverse { get; private set; }
 		[NonSerialized]
+		public bool isReverse;
+		[NonSerialized]
 		public Vector3 w;
 
 		public Flip(Flip rs)
@@ -184,20 +186,19 @@ namespace RVP
 			Debug.LogError("Shouldn't come here");
 			return false;
 		}
-		public void WriteHalfOverlayName(bool reverse)
+		public void WriteHalfOverlayName()
 		{
 			isHalfRotation = true;
-			overlayName = (reverse ? "REVERSE " : "");
 			if (lastWriteWasPositive)
-				overlayName += halfFirstNegativeName; // first .x/.y/.z lA < 0
+				overlayName = halfFirstNegativeName; // first .x/.y/.z lA < 0
 			else
-				overlayName += halfFirstPositiveName; // first .x/.y/.z lA > 0
+				overlayName = halfFirstPositiveName; // first .x/.y/.z lA > 0
 		}
-		public void WriteOverlayName(bool reverse, bool natural)
+		public void WriteOverlayName(bool natural)
 		{
 			isHalfRotation = false;
 			overlayName = (natural ? "NATURAL " : "");
-			if (reverse)
+			if (isReverse)
 				overlayName += "REVERSE ";
 			if (rotationAxis.x != 0)
 			{

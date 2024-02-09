@@ -246,7 +246,6 @@ public class SGP_HUD : MonoBehaviour
 		for (int i = 0; i < 10; i++)
 			StartCoroutine(SetStarVisible(i));
 
-		infoText.gameObject.SetActive(true);
 		if (Info.tracks[Info.s_trackName].records[0].secondsOrPts > 0)
 			bestLapTime = new TimeSpan(0, 0, 0, (int)Info.tracks[Info.s_trackName].records[0].secondsOrPts, (int)(100 * (Info.tracks[Info.s_trackName].records[0].secondsOrPts % 1f)));
 	}
@@ -272,6 +271,8 @@ public class SGP_HUD : MonoBehaviour
 			return;
 		}
 		Reset();
+
+		infoText.gameObject.SetActive(true);
 
 		vp = newVehicle;
 

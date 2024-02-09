@@ -113,8 +113,7 @@ namespace RVP
 			{
 				if (universalPath == null)
 					return 0;
-				var hits = Physics.OverlapSphere(transform.position, radius, 1 << universalPathLayer);
-				int universalPathProgress = GetDist(hits);
+				int universalPathProgress = GetDist(1 << universalPathLayer);
 				if (universalPathProgress > progress + 2 * radius || universalPathProgress < progress - 2 * radius)
 					universalPathProgress = progress;
 				if (progress == 1) // when driving directly past startline
@@ -190,41 +189,40 @@ namespace RVP
 		{
 			maxPhysicalSteerAngle = vp.steeringControl.steeredWheels[0].steerRangeMax;
 			universalPathLayer = Info.racingLineLayers[0];
-			var racingPathHits = Physics.OverlapSphere(transform.position, radius, 1 << racingLineLayerNumber);
-			dist = GetDist(racingPathHits);
+			
+			dist = GetDist(1 << racingLineLayerNumber);
 			progress = dist;
 			SetCPU(isCPU);
 		}
-		int GetDist(Collider[] racingPathHits)
+		int GetDist(int layer)
 		{
 			float dist = 0;
 			string closestLen = null;
 			float min = 3 * radius;
-			foreach (var hit in racingPathHits)
+			if (Physics.Raycast(transform.position + Vector3.up, Vector3.down, out RaycastHit h, Mathf.Infinity,
+				1 | 1 << Info.roadLayer | 1 << Info.terrainLayer))
 			{
-				dist = Vector3.Distance(transform.position, hit.transform.position);
-				if (dist < min)
+				var racingPathHits = Physics.OverlapSphere(h.point, radius, layer);
+				foreach (var hit in racingPathHits)
 				{
-					min = dist;
-					closestLen = hit.transform.name;
+					dist = Vector3.Distance(transform.position, hit.transform.position);
+					if (dist < min)
+					{
+						min = dist;
+						closestLen = hit.transform.name;
+					}
+				}
+				if (closestLen != null)
+				{
+					try
+					{
+						dist = int.Parse(closestLen);
+					}
+					catch
+					{
+					}
 				}
 			}
-			if (closestLen != null)
-			{
-				try
-				{
-					dist = int.Parse(closestLen);
-				}
-				catch
-				{
-
-				}
-			}
-
-			//else
-			//{
-			//	Debug.LogError("OverlapSphere failed");
-			//}
 			return (int)dist;
 		}
 		void OutOfPits()
@@ -320,8 +318,7 @@ namespace RVP
 					OutOfPits();
 					StartCoroutine(ResetOnTrack());
 				}
-				pitsPathHits = Physics.OverlapSphere(transform.position, radius, 1 << Info.pitsLineLayer);
-				pitsDist = GetDist(pitsPathHits); // pitsDist
+				pitsDist = GetDist(1 << Info.pitsLineLayer); // pitsDist
 
 				if (pitsDist < pitsProgress)
 					pitsDist = pitsProgress;
@@ -347,9 +344,7 @@ namespace RVP
 						inPitsTime = Time.time;
 					}
 				}
-				var racingPathHits = Physics.OverlapSphere(transform.position, radius, 1 << racingLineLayerNumber);
-
-				dist = GetDist(racingPathHits);
+				dist = GetDist(1 << racingLineLayerNumber);
 
 
 				if (dist < progress)

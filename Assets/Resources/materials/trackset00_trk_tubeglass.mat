@@ -111,13 +111,13 @@ Material:
     - _Metallic: 0
     - _Mode: 3
     - _OcclusionStrength: 1
-    - _Parallax: 0.02
+    - _Parallax: 0
     - _Saturation: 0
     - _SmoothnessTextureChannel: 0
     - _Source: 0
     - _SourceMask: 0
     - _SpecularHighlights: 1
-    - _SpecularIntensity: 0.2
+    - _SpecularIntensity: 0
     - _SpreadDetailMap: 0
     - _SpreadTransparentMap: -0.21
     - _SrcBlend: 1

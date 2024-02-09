@@ -67,6 +67,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: glassBrg
       objectReference: {fileID: 0}
+    - target: {fileID: 9181683226690783094, guid: f18313735152ed848b9aebfd8bed541c,
+        type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 049ccdbdf8aab624caafa616949272b9, type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f18313735152ed848b9aebfd8bed541c, type: 3}
 --- !u!1 &2423305332424658332 stripped
@@ -87,3 +92,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b84bb76c1b4c804b8ec131d5e92c350, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  url: 

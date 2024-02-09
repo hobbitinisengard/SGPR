@@ -343,9 +343,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 289683229}
-  - component: {fileID: 289683231}
-  - component: {fileID: 289683230}
-  - component: {fileID: 289683232}
+  - component: {fileID: 1874081472933871018}
   m_Layer: 23
   m_Name: undercollider
   m_TagString: Underside
@@ -362,64 +360,14 @@ Transform:
   m_GameObject: {fileID: 289683228}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0.202, z: 0.09}
-  m_LocalScale: {x: 1, y: 1, z: 0.4}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6457121441695959639}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &289683231
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 289683228}
-  m_Mesh: {fileID: -8961170315861744775, guid: 91d2b4fd3ac5840409d21ec8e2bab3d5, type: 3}
---- !u!23 &289683230
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 289683228}
-  m_Enabled: 0
-  m_CastShadows: 0
-  m_ReceiveShadows: 0
-  m_DynamicOccludee: 0
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: d7bc4fd8f3a080841a7a518b322859f8, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &289683232
-MeshCollider:
+--- !u!65 &1874081472933871018
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -428,10 +376,9 @@ MeshCollider:
   m_Material: {fileID: 13400000, guid: 08902764f932ecf42be716989db24f1b, type: 2}
   m_IsTrigger: 0
   m_Enabled: 1
-  serializedVersion: 4
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: -8961170315861744775, guid: 91d2b4fd3ac5840409d21ec8e2bab3d5, type: 3}
+  serializedVersion: 2
+  m_Size: {x: 2.0231228, y: 0.06239319, z: 2.854942}
+  m_Center: {x: 0.038392812, y: -0.032238, z: -0.23224804}
 --- !u!1 &423706905
 GameObject:
   m_ObjectHideFlags: 0
@@ -6548,7 +6495,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1064619902052324677}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.5, y: 0.617, z: -0.16700059}
+  m_LocalPosition: {x: -0.5, y: 0.6399988, z: -0.167}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6573,7 +6520,7 @@ CapsuleCollider:
   m_Material: {fileID: 13400000, guid: 54a777298baef2c4f9c84ebdc5c57029, type: 2}
   m_IsTrigger: 0
   m_Enabled: 1
-  m_Radius: 0.495
+  m_Radius: 0.4
   m_Height: 2.7
   m_Direction: 2
   m_Center: {x: 0, y: 0, z: 0}
@@ -40422,7 +40369,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3593420137372425439}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.5, y: 0.6170006, z: -0.167}
+  m_LocalPosition: {x: 0.5, y: 0.64, z: -0.167}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -40447,7 +40394,7 @@ CapsuleCollider:
   m_Material: {fileID: 13400000, guid: 54a777298baef2c4f9c84ebdc5c57029, type: 2}
   m_IsTrigger: 0
   m_Enabled: 1
-  m_Radius: 0.495
+  m_Radius: 0.4
   m_Height: 2.7
   m_Direction: 2
   m_Center: {x: 0, y: 0, z: 0}
@@ -83848,6 +83795,7 @@ MonoBehaviour:
   honkerAudio: {fileID: 6771916806463915155}
   carNumber: 5
   bodyObj: {fileID: 7136051627190437502}
+  accelInput: 0
   steerInput: 0
   frontLights:
   - {fileID: 2712850293685523867}
@@ -84011,6 +83959,7 @@ MonoBehaviour:
   shiftSGPButton: Evo
   lightsButton: Lights
   resetOnTrackButton: ResetOnTrack
+  startedAccelInputTime: 0
 --- !u!114 &4194641081301078446
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -84217,6 +84166,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   lastBounceTime: 0
+  lastCarCarBounceTime: 0
   lastSideBounceTime: 0
   lastVVBounceTime: 0
 --- !u!114 &865657811856999447
@@ -99097,7 +99047,6 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  slipThreshold: 5
   sidewaysSlip: 0
   slipDependence: 1
   forwardSlipDependence: 2
@@ -99582,7 +99531,6 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  slipThreshold: 5
   sidewaysSlip: 0
   slipDependence: 1
   forwardSlipDependence: 2
@@ -100798,7 +100746,6 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  slipThreshold: 5
   sidewaysSlip: 0
   slipDependence: 1
   forwardSlipDependence: 2
@@ -101152,7 +101099,6 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  slipThreshold: 5
   sidewaysSlip: 0
   slipDependence: 1
   forwardSlipDependence: 2

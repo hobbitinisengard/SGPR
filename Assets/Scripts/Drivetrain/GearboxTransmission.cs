@@ -39,7 +39,7 @@ namespace RVP
 		public float d_rpm;
 		public float actualFeedbackRPM;
 		Gear upperGear; // Next gear above current
-		public enum DriveType { FWD, RWD, AWD }
+		public enum DriveType { RWD, FWD, AWD }
 		DriveType drive;
 		public DriveType Drive
 		{

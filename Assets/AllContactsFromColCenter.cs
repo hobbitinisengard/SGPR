@@ -14,14 +14,11 @@ public class AllContactsFromColCenter : MonoBehaviour
 
 	private void ModificationEvent(PhysicsScene scene, NativeArray<ModifiableContactPair> pairs)
 	{
-		// For each contact pair, ignore the contact points that are close to origin
-		//foreach (ModifiableContactPair pair in pairs)
-		//{
-		//	for (int i = 0; i < pair.contactCount; ++i)
-		//		pair.
-		//		if (Vector3.Distance(pair.GetPoint(i), Vector3.zero) < IgnoredRadius)
-		//			pair.IgnoreContact(i);
-		//}
+		foreach (ModifiableContactPair pair in pairs)
+		{
+			
+
+		}
 	}
 	private void OnDestroy()
 	{

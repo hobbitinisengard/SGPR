@@ -51,7 +51,6 @@ namespace RVP
 		[System.NonSerialized]
 		public Transform norm; // Normal orientation object
 
-		[System.NonSerialized]
 		public float accelInput;
 		[System.NonSerialized]
 		public bool honkInput;
@@ -213,10 +212,7 @@ namespace RVP
 		public FollowAI followAI { get; private set; }
 		public RaceBox raceBox { get; private set; }
 
-		public float carLen { get; private set; }
 		float catchupGripMult = 1.1f;
-		
-
 		public CatchupStatus catchupStatus { get; private set; }
 
 		public void SetBattery(float capacity, float chargingSpeed, float lowBatPercent, float evoBountyPercent)
@@ -330,7 +326,7 @@ namespace RVP
 			// Create normal orientation object
 			GameObject normTemp = new GameObject(tr.name + "'s Normal Orientation");
 			norm = normTemp.transform;
-			carLen = tr.GetChild(0).GetComponent<MeshFilter>().mesh.bounds.extents.z * 2;
+
 			SetCenterOfMass();
 
 			// Instantiate tow vehicle
@@ -667,8 +663,6 @@ namespace RVP
 				}
 			}
 			rb.centerOfMass = centerOfMassObj.localPosition + new Vector3(0, susAverage, 0);
-			//Debug.Log(transform.name + rb.centerOfMass);
-			rb.inertiaTensor = rb.inertiaTensor; // This is required due to decoupling of inertia tensor from center of mass in Unity 5.3
 		}
 
 		// Get the number of grounded wheels and the normals and velocities of surfaces they're sitting on
@@ -750,7 +744,8 @@ namespace RVP
 
 						//if (reallyGroundedWheels >= 2)
 						{
-							scrapeSnd.Play();
+							if(!scrapeSnd.isPlaying)
+								scrapeSnd.Play();
 							// play sparks
 							sparks.transform.position = curCol.point;
 							sparks.transform.rotation = Quaternion.LookRotation(col.relativeVelocity.normalized, curCol.normal);
@@ -813,7 +808,8 @@ namespace RVP
 				countdownTimer -= Time.deltaTime;
 				yield return null;
 			}
-			GetComponent<SGP_Bouncer>().enabled = true;
+			//GetComponent<SGP_Bouncer>().enabled = true;
+			//var basicInput = GetComponent<BasicInput>();
 			SetEbrake(0);
 		}
 

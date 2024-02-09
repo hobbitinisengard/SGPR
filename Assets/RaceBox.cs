@@ -498,6 +498,7 @@ public class RaceBox : MonoBehaviour
 				{
 					stunt.positiveProgress = 0;
 					stunt.negativeProgress = 0;
+					stunt.isReverse = false;
 					stunt.w = w;
 				}
 			}
@@ -557,6 +558,7 @@ public class RaceBox : MonoBehaviour
 						//Debug.Log(lA.x);
 						stunt.AddProgress(lA.x * Time.fixedDeltaTime, vp);
 						foundMoves.x = 1;
+
 						//stunt.PrintProgress();
 					}
 					if (foundMoves.y == 0 && stunt.rotationAxis.y != 0 && lA.y != 0)
@@ -578,10 +580,9 @@ public class RaceBox : MonoBehaviour
 						stunt.ResetProgress();
 						stunt.updateOverlay = true;
 
-						bool reverse = stunt.IsReverse(vp) && stunt.canBeReverse;
-						stunt.WriteHalfOverlayName(reverse);
+						stunt.WriteHalfOverlayName();
 						stuntPai.level++;
-						stuntPai.score += (int)((starLevel + 1) * 1.5f * stunt.score * (reverse ? 2 : 1) * (!evoModule.IsStunting() ? 2 : 1));
+						stuntPai.score += (int)((starLevel + 1) * 1.5f * stunt.score * (stunt.isReverse ? 2 : 1) * (!evoModule.IsStunting() ? 2 : 1));
 					}
 					else if ((stunt.positiveProgress * Mathf.Rad2Deg >= stunt.angleThreshold
 						|| stunt.negativeProgress * Mathf.Rad2Deg >= stunt.angleThreshold)
@@ -590,11 +591,10 @@ public class RaceBox : MonoBehaviour
 						stuntsData.availableForFrontend = true;
 						stunt.doneTimes++;
 						stunt.updateOverlay = true;
-						bool reverse = stunt.IsReverse(vp) && stunt.canBeReverse;
-						stunt.WriteOverlayName(reverse, !evoModule.IsStunting());
+						stunt.WriteOverlayName(!evoModule.IsStunting());
 						stunt.ResetProgress();
 						stuntPai.level++;
-						stuntPai.score += (int)((starLevel + 1) * stunt.score * (reverse ? 2 : 1) * (!evoModule.IsStunting() ? 2 : 1));
+						stuntPai.score += (int)((starLevel + 1) * stunt.score * (stunt.isReverse ? 2 : 1) * (!evoModule.IsStunting() ? 2 : 1));
 					}
 				}
 			}

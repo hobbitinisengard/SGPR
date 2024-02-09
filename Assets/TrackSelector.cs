@@ -48,9 +48,12 @@ public class TrackSelector : Sfxable
 	}
 	public void SwitchRaceType(bool init = false)
 	{
-		var next = init ? (int)Info.s_raceType : (int)Info.s_raceType + 1;
-		next %= Info.RaceTypes;
-		Info.s_raceType = (Info.RaceType)next;
+		int dir = 0;
+		if (!init)
+			dir = Input.GetKey(KeyCode.LeftShift) ? -1 : 1;
+
+		Info.s_raceType = (Info.RaceType)Wraparound((int)Info.s_raceType+dir,0,Info.RaceTypes-1);
+
 		if (Info.s_raceType == Info.RaceType.Knockout)
 		{
 			lapsButtonText.transform.parent.GetComponent<Button>().interactable = false;
@@ -78,7 +81,7 @@ public class TrackSelector : Sfxable
 					Info.s_laps += 3;
 			}
 		}
-		Info.s_laps = Mathf.Clamp(Info.s_laps, 1, 30);
+		Info.s_laps = Wraparound(Info.s_laps, 1, 99);
 		lapsButtonText.text = "Laps: " + Info.s_laps.ToString();
 	}
 	public void SwitchDayNight(bool init = false)
@@ -91,14 +94,9 @@ public class TrackSelector : Sfxable
 	{
 		int dir = 0;
 		if (!init)
-		{
-			if (Input.GetKey(KeyCode.LeftShift))
-				dir = -1;
-			else
-				dir = 1;
-		}
+			dir = Input.GetKey(KeyCode.LeftShift) ? -1 : 1;
 
-		Info.s_cpuLevel = (Info.CpuLevel)(Mathf.Clamp(((int)Info.s_cpuLevel+dir) % 4, 0, 4));
+		Info.s_cpuLevel = (Info.CpuLevel)Wraparound((int)Info.s_cpuLevel+dir, 0, 3);
 		string cpuLevelStr = Info.s_cpuLevel switch
 		{
 			Info.CpuLevel.Easy => "Easy",
@@ -114,21 +112,32 @@ public class TrackSelector : Sfxable
 		int dir = 0;
 		if (!init)
 			dir = Input.GetKey(KeyCode.LeftShift) ? -1 : 1;
-		Info.s_rivals = Mathf.Clamp((Info.s_rivals + dir) % 10, (Info.s_raceType == Info.RaceType.Knockout) ? 1 : 0, 9);
-		rivalsButtonText.text = "Opponents: " + Info.s_rivals.ToString();
+
+		Info.s_rivals = Wraparound(Info.s_rivals + dir, 0, 9);
+
 		if (Info.s_raceType == Info.RaceType.Knockout)
 		{
+			if (Info.s_rivals == 0)
+				Info.s_rivals = 1;
 			Info.s_laps = Info.s_rivals;
 			SwitchLaps(true);
 		}
+		rivalsButtonText.text = "Opponents: " + Info.s_rivals.ToString();
+	}
+	int Wraparound(int value, int min, int max)
+	{
+		if (value < min)
+			value = max;
+		else if (value > max)
+			value = min;
+		return value;
 	}
 	public void SwitchRoadType(bool init = false)
 	{
 		if (!init)
 		{
 			int dir = Input.GetKey(KeyCode.LeftShift) ? -1 : 1;
-			Info.s_roadType = (Info.PavementType)Mathf.Clamp(
-				(int)(Info.s_roadType + dir) % (Info.pavementTypes + 1), 0, Info.pavementTypes + 1);
+			Info.s_roadType = (Info.PavementType)Wraparound((int)(Info.s_roadType + dir), 0, Info.pavementTypes+1);
 		}
 		wayButtonText.text = "Tex: " + Enum.GetName(typeof(Info.PavementType), Info.s_roadType);
 	}
