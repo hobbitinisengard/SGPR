@@ -2,7 +2,7 @@ using System.IO;
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.UI;
-public class GreetingView : Sfxable
+public class GreetingView : MonoBehaviour
 {
 	public Text versionText;
 	public AudioMixer masterMixer;
@@ -42,12 +42,5 @@ public class GreetingView : Sfxable
 		Info.s_playerName = settingsData.lastPlayerName;
 		Info.SetMixerLevelLog("sfxVol", settingsData.sfxVol, masterMixer);
 		Info.SetMixerLevelLog("musicVol", settingsData.musicVol, masterMixer);
-	}
-	void Update()
-	{
-		if (Input.GetButtonDown("Submit"))
-		{
-			PlaySFX("fe-dialogconfirm");
-		}
 	}
 }

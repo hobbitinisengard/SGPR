@@ -130,7 +130,7 @@ namespace RVP
 			selfDriving = val;
 			if (isCPU)
 			{
-				GetComponent<BasicInput>().enabled = false;
+				vp.basicInput.enabled = false;
 				switch (cpuLevel)
 				{
 					case Info.CpuLevel.Easy:
@@ -161,7 +161,7 @@ namespace RVP
 			}
 			else
 			{
-				GetComponent<BasicInput>().enabled = true;
+				vp.basicInput.enabled = true;
 				for (int i = 0; i < 4; ++i)
 				{
 					vp.wheels[i].sidewaysFriction = vp.wheels[i].initSidewaysFriction;
@@ -239,7 +239,7 @@ namespace RVP
 				if (!isCPU)
 				{
 					selfDriving = false;
-					GetComponent<BasicInput>().enabled = true;
+					vp.basicInput.enabled = true;
 				}
 			}
 		}

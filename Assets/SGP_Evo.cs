@@ -221,7 +221,7 @@ public class SGP_Evo : MonoBehaviour
 		{
 			if (vp.SGPshiftbutton)
 			{
-				if (vp.accelInput > 0)
+				if (vp.accelInput > 0.5f)
 				{ // backflip
 					r[0].UpdateTarget(Direction.ANTICLOCK);
 					r[0].IncreaseEvoSpeed();
@@ -234,11 +234,11 @@ public class SGP_Evo : MonoBehaviour
 				}
 				if (vp.rollInput != 0)
 				{
-					if (vp.rollInput > 0)
+					if (vp.rollInput > 0.5f)
 					{ // right barrel roll
 						r[2].UpdateTarget(Direction.CLOCK);
 					}
-					else if (vp.rollInput < 0)
+					else if (vp.rollInput < -0.5f)
 					{ // left barrel roll
 						r[2].UpdateTarget(Direction.ANTICLOCK);
 					}
@@ -246,9 +246,9 @@ public class SGP_Evo : MonoBehaviour
 				}
 				if (vp.steerInput != 0)
 				{ // rotation left/right 
-					if (vp.steerInput > 0)
+					if (vp.steerInput > 0.5f)
 						r[1].UpdateTarget(Direction.CLOCK);
-					else
+					else if(vp.steerInput < -0.5f)
 						r[1].UpdateTarget(Direction.ANTICLOCK);
 					r[1].IncreaseEvoSpeed();
 

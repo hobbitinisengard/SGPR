@@ -224,8 +224,8 @@ namespace RVP
 				forward = (vp.reallyGroundedWheels > 0)
 				 ? vp.tr.forward : vp.rb.velocity.normalized;
 
-			xInput = Input.GetKey(KeyCode.A) ? -1 : Input.GetKey(KeyCode.D) ? 1 : 0;
-			yInput = Input.GetKey(KeyCode.S) ? -1 : 0;
+			xInput = vp.basicInput.lookAxisInput.action.ReadValue<float>();
+			yInput = -vp.basicInput.lookBackInput.action.ReadValue<float>();
 
 			smoothYRot = Mathf.Lerp(smoothYRot, smoothRotCoeff * vp.rb.angularVelocity.y, Time.fixedDeltaTime);
 			forward = Quaternion.AngleAxis(xInput * 90 + yInput * 180, vp.tr.up) * forward;

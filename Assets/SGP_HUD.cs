@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 public enum BottomInfoType { NEW_LEADER, NO_BATT, PIT_OUT, PIT_IN, STUNT, CAR_WINS, ELIMINATED };
@@ -24,7 +25,6 @@ public class Message
 }
 public class SGP_HUD : MonoBehaviour
 {
-
 	public GameObject AEROText;
 	public GameObject DRIFTText;
 	public GameObject AERODisplay;
@@ -33,6 +33,7 @@ public class SGP_HUD : MonoBehaviour
 	public GameObject TIMEDisplay;
 	public GameObject RECDisplay;
 	public GameObject LAPDisplay;
+	public InputActionReference cancelInput;
 	public VehicleParent vp { get; private set; }
 	GearboxTransmission trans;
 	//StuntDetect stunter;
@@ -311,7 +312,7 @@ public class SGP_HUD : MonoBehaviour
 		{
 			componentPanel.gameObject.SetActive(!componentPanel.gameObject.activeSelf);
 		}
-		if (Input.GetButtonDown("Cancel") && (DateTime.Now - Info.raceStartDate).TotalSeconds > 5
+		if (cancelInput.action.ReadValue<float>()==1 && (DateTime.Now - Info.raceStartDate).TotalSeconds > 5
 			&& !componentPanel.gameObject.activeSelf && !raceManager.resultsSeq.gameObject.activeSelf)
 		{
 			pauseMenu.gameObject.SetActive(true);
@@ -605,6 +606,8 @@ public class SGP_HUD : MonoBehaviour
 	}
 	int[] starTargets;
 	bool[] starCoroutines;
+	
+
 	IEnumerator SetStarVisible(int starNumber)
 	{
 		if (starCoroutines[starNumber])

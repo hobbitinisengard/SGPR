@@ -4,8 +4,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Linq;
 using TMPro;
+using UnityEngine.InputSystem;
 
-public class EnvirSelector : Sfxable
+public class EnvirSelector : Selector
 {
 	private enum SortingCond { Difficulty, Name };
 	public TextMeshProUGUI envirDescText;
@@ -17,8 +18,14 @@ public class EnvirSelector : Sfxable
 	Transform selectedEnvir;
 	int persistentSelectedEnvir = 0;
 	Coroutine containerCo;
+
+	private void OnDisable()
+	{
+		move2Ref.action.started -= CalculateTargetToSelect;
+	}
 	private void OnEnable()
 	{
+		move2Ref.action.started += CalculateTargetToSelect;
 		startButton.Select();
 		selectedEnvir = envirContent.GetChild(0).GetChild(persistentSelectedEnvir);
 		Info.s_trackName = selectedEnvir.name;
@@ -33,13 +40,12 @@ public class EnvirSelector : Sfxable
 	{
 		tile.sprite = Info.icons.First(i => i.name == selectedEnvir.name);
 	}
-
-	void Update()
+	void CalculateTargetToSelect(InputAction.CallbackContext ctx)
 	{
 		if (!selectedEnvir)
 			return;
-		float horizontal = Input.GetAxis("Horizontal");
-		int x = horizontal > 0.1f ? 1 : horizontal < 0.1f ? -1 : 0;
+		Vector2 move2 = move2Ref.action.ReadValue<Vector2>();
+		int x = Mathf.RoundToInt(move2.x);
 		if (x != 0)
 		{
 			int posx = x + selectedEnvir.GetSiblingIndex();

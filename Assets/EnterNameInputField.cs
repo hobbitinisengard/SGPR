@@ -1,9 +1,16 @@
+using System;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class EnterNameInputField : Sfxable
 {
-	KeyCode[] allowedKeys = { KeyCode.Space, KeyCode.A, KeyCode.B, KeyCode.C, KeyCode.D, KeyCode.E, KeyCode.F, KeyCode.G, KeyCode.H, KeyCode.I, KeyCode.J, KeyCode.K, KeyCode.L, KeyCode.P, KeyCode.O, KeyCode.N, KeyCode.M, KeyCode.Q, KeyCode.R, KeyCode.S, KeyCode.T, KeyCode.U, KeyCode.V, KeyCode.W, KeyCode.X, KeyCode.Y, KeyCode.Z, KeyCode.Equals, KeyCode.Colon, KeyCode.LeftBracket, KeyCode.RightBracket };
+	KeyCode[] allowedKeys = { 
+		KeyCode.Space, KeyCode.A, KeyCode.B, KeyCode.C, KeyCode.D, KeyCode.E, KeyCode.F, KeyCode.G, KeyCode.H, 
+		KeyCode.I, KeyCode.J, KeyCode.K, KeyCode.L, KeyCode.P, KeyCode.O, KeyCode.N, KeyCode.M, KeyCode.Q, KeyCode.R, 
+		KeyCode.S, KeyCode.T, KeyCode.U, KeyCode.V, KeyCode.W, KeyCode.X, KeyCode.Y, KeyCode.Z, 
+		KeyCode.Equals, KeyCode.Colon, KeyCode.LeftBracket, KeyCode.RightBracket 
+	};
 	public Sprite[] allowedKeysSprites;
 	public GameObject letterTemplate;
 	public Transform selector;
@@ -15,6 +22,19 @@ public class EnterNameInputField : Sfxable
 	private void Start()
 	{
 		glg = GetComponent<GridLayoutGroup>();
+
+		// write Info.s_playerName for the first time
+		foreach(char c in Info.s_playerName)
+		{
+			for(int i = 0; i<allowedKeys.Length; i++)
+			{
+				if ((char)allowedKeys[i] == char.ToLowerInvariant(c))
+				{
+					PlaceLetter(i);
+					break;
+				}
+			}
+		}
 	}
 	public string GetInputField()
 	{
@@ -48,21 +68,24 @@ public class EnterNameInputField : Sfxable
 				if (Input.GetKeyDown(allowedKeys[i]))
 				{
 					PlaySFX("fe-keypressed");
-
-					var newletter = Instantiate(letterTemplate, transform);
-					newletter.GetComponent<Image>().sprite = allowedKeysSprites[i];
-					newletter.SetActive(true);
-					newletter.name = allowedKeys[i].ToString();
-					selector.SetAsLastSibling();
-					len++;
-					selector.GetComponent<Image>().sprite = (len >= 3) ? endSprite : allowedKeysSprites[0];
-					if (len == 3)
-					{
-						OKButton.transform.gameObject.SetActive(true);
-						OKButton.transform.GetComponent<Button>().Select();
-					}
+					PlaceLetter(i);
 				}
 			}
+		}
+	}
+	void PlaceLetter(int i)
+	{
+		var newletter = Instantiate(letterTemplate, transform);
+		newletter.GetComponent<Image>().sprite = allowedKeysSprites[i];
+		newletter.SetActive(true);
+		newletter.name = allowedKeys[i].ToString();
+		selector.SetAsLastSibling();
+		len++;
+		selector.GetComponent<Image>().sprite = (len >= 3) ? endSprite : allowedKeysSprites[0];
+		if (len == 3)
+		{
+			OKButton.transform.gameObject.SetActive(true);
+			OKButton.transform.GetComponent<Button>().Select();
 		}
 	}
 	//private void OnEnable()

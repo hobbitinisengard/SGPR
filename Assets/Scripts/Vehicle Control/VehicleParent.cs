@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System;
-using JetBrains.Annotations;
 
 namespace RVP
 {
@@ -15,6 +14,8 @@ namespace RVP
 	public class VehicleParent : MonoBehaviour
 	{
 		public AudioSource honkerAudio;
+		[NonSerialized]
+		public BasicInput basicInput;
 		CarConfig carCfg;
 		public CarConfig carConfig
 		{

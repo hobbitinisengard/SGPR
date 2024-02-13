@@ -4,7 +4,6 @@ public class SGP_Bouncer : MonoBehaviour
 {
 	Rigidbody rb;
 	VehicleParent vp;
-	float carCarUpCoeff = .5f;
 	public float lastBounceTime;
 	public float lastCarCarBounceTime;
 	public float lastSideBounceTime;

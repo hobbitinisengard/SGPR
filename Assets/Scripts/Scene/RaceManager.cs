@@ -4,6 +4,7 @@ using PathCreation;
 using System.Collections;
 using Newtonsoft.Json;
 using System.IO;
+using UnityEngine.InputSystem;
 
 namespace RVP
 {
@@ -18,6 +19,8 @@ namespace RVP
 		public GameObject Sun;
 		public ViewSwitcher viewSwitcher;
 		public PathCreator[] racingPaths;
+		public InputActionReference submitInput;
+		public InputActionReference cancelInput;
 		//public GameObject Sun;
 		[Tooltip("Reload the scene with the 'Restart' button in the input manager")]
 		public bool quickRestart = true;
@@ -407,7 +410,8 @@ namespace RVP
 			{
 				if (Info.s_spectator)
 				{
-					if ((DateTime.Now - Info.raceStartDate).TotalSeconds > 60 || Input.GetButtonDown("Submit") || Input.GetButtonDown("Cancel"))
+					if ((DateTime.Now - Info.raceStartDate).TotalSeconds > 60 
+						|| (submitInput.action.ReadValue<float>()==1) || (cancelInput.action.ReadValue<float>()== 1))
 					{
 						BackToMenu();
 						yield break;

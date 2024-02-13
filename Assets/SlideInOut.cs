@@ -34,6 +34,8 @@ public class SlideInOut : MonoBehaviour
 	}
 	void SetPos(float value)
 	{
+		if (inSlideDirection == Vector2.zero)
+			return;
 		if (inSlideDirection.x != 0)
 			rt.anchoredPosition = new Vector2(value, rt.anchoredPosition.y);
 		else

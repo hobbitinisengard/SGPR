@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using RVP;
 using System;
 using TMPro;
+using UnityEngine.InputSystem;
 
 public class MainMenuView : Sfxable
 {
@@ -14,7 +15,7 @@ public class MainMenuView : Sfxable
 	public Sprite bgTile;
 	public AudioClip music;
 	ViewSwitcher dimmer;
-
+	public InputActionReference cancelInput;
 	private void Start()
 	{
 		if (!Info.loaded)
@@ -23,22 +24,28 @@ public class MainMenuView : Sfxable
 			PlaySFX("fe-cardssuccess");
 		}
 	}
-	private void OnEnable()
+
+	private void CancelPressed(InputAction.CallbackContext obj)
 	{
-		if(firstButtonToBeSelected)
-			firstButtonToBeSelected.Select();
-		dimmer = transform.FindParentComponent<ViewSwitcher>();
-		dimmer.SwitchBackgroundTo(bgTile);
-	}
-	void Update()
-	{
-		Debug.Log(Input.GetAxis("Vertical"));
-		if (prevView && Input.GetButtonDown("Cancel"))
+		if (gameObject.activeSelf && prevView)
 		{
 			GoToView(prevView);
 			PlaySFX("fe-dialogcancel");
 		}
 	}
+	private void OnDisable()
+	{
+		cancelInput.action.started -= CancelPressed;
+	}
+	private void OnEnable()
+	{
+		cancelInput.action.started += CancelPressed;
+		if (firstButtonToBeSelected)
+			firstButtonToBeSelected.Select();
+		dimmer = transform.FindParentComponent<ViewSwitcher>();
+		dimmer.SwitchBackgroundTo(bgTile);
+	}
+	
 	public void GoToView(GameObject view)
 	{
 		for(int i=0; i< transform.childCount; ++i)

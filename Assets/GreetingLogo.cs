@@ -3,8 +3,9 @@ using UnityEngine;
 using System.Collections;
 using RVP;
 using TMPro;
+using UnityEngine.InputSystem;
 
-public class GreetingLogo : MonoBehaviour
+public class GreetingLogo : Sfxable
 {
 	public Color reddish;
 	public AnimationCurve jumpingCurve;
@@ -16,6 +17,7 @@ public class GreetingLogo : MonoBehaviour
 	public Button startButton;
 	public RectTransform blitz;
 	public GameObject nextMenu;
+	public InputActionReference submitRef;
 	private bool goingUpSeq;
 
 	Vector2 outMoveInitPos;
@@ -33,8 +35,22 @@ public class GreetingLogo : MonoBehaviour
 		view = transform.parent.GetComponent<MainMenuView>();
 		Cursor.visible = false;
 	}
+
+	private void SubmitPressed(InputAction.CallbackContext obj)
+	{
+		PlaySFX("fe-dialogconfirm");
+		goingUpSeq = true;
+		toDemo = false;
+		outMoveInitPos = rt.localPosition;
+		timer = 0;
+	}
+	private void OnDisable()
+	{
+		submitRef.action.performed -= SubmitPressed;
+	}
 	private void OnEnable()
 	{
+		submitRef.action.performed += SubmitPressed;
 		timer = 0;
 		timer2 = 0;
 		timer3 = 0;
@@ -43,6 +59,7 @@ public class GreetingLogo : MonoBehaviour
 		goingUpSeq = false;
 		startButton.Select();
 	}
+
 	void Update()
 	{
 		if (goingUpSeq)
@@ -95,15 +112,6 @@ public class GreetingLogo : MonoBehaviour
 		}
 		else
 		{
-			if (Input.GetButtonDown("Submit"))
-			{
-				goingUpSeq = true;
-				toDemo = false;
-				outMoveInitPos = rt.localPosition;
-				timer = 0;
-				return;
-			}
-
 			Vector2 pos = rt.localPosition;
 			if (timer < 1)
 			{ // down move

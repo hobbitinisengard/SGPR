@@ -1,10 +1,11 @@
 using RVP;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using UnityEngine.UIElements.Experimental;
 
-public class CarSelector : Sfxable
+public class CarSelector : Selector
 {
 	public RectTransform[] bars;
 	public Text carDescText;
@@ -21,8 +22,6 @@ public class CarSelector : Sfxable
 	Coroutine containerCo;
 	bool loadCo;
 	public bool d_co;
-	float horizontal;
-	float vertical;
 
 	void Awake()
 	{
@@ -30,12 +29,14 @@ public class CarSelector : Sfxable
 	}
 	private void OnDisable()
 	{ // in unity, 
+		move2Ref.action.performed -= CalculateTargetToSelect;
 		persistentSelectedCar = selectedCar.name;
 		Info.s_playerCarName = selectedCar.name;
-		Debug.Log("Disable "+persistentSelectedCar);
+		Debug.Log("Disable " + persistentSelectedCar);
 	}
 	private void OnEnable()
 	{
+		move2Ref.action.performed += CalculateTargetToSelect;
 		if (loadCo)
 		{
 			StopCoroutine(Load());
@@ -55,13 +56,13 @@ public class CarSelector : Sfxable
 				Destroy(carClass.GetChild(j).gameObject);
 			}
 		}
-		for(int i=0; i<Info.cars.Length; ++i)
+		for (int i = 0; i < Info.cars.Length; ++i)
 		{ // populate car grid
 			var car = Info.cars[i];
 			if (car.unlocked)
 			{
 				var newcar = Instantiate(carImageTemplate, carContent.GetChild((int)car.category));
-				newcar.name = "car"+(i+1).ToString("D2");
+				newcar.name = "car" + (i + 1).ToString("D2");
 				newcar.GetComponent<Image>().sprite = Resources.Load<Sprite>(Info.carImagesPath + newcar.name);
 				newcar.SetActive(true);
 				menuButtons[(int)car.category] = true;
@@ -102,62 +103,57 @@ public class CarSelector : Sfxable
 		Debug.Log(selectedCar);
 		loadCo = false;
 	}
-	void Update()
+
+	void CalculateTargetToSelect(InputAction.CallbackContext ctx)
 	{
 		if (!selectedCar || loadCo)
 			return;
 		d_co = containerCo == null;
 
-		if (Mathf.Abs(horizontal) < 0.1f && Mathf.Abs(vertical) < 0.1f)
+		Vector2 move2 = move2Ref.action.ReadValue<Vector2>();
+		int x = Mathf.RoundToInt(move2.x);
+		int y = Mathf.RoundToInt(-move2.y);
+
+		if (x != 0 || y != 0)
 		{
-			horizontal = Input.GetAxis("Horizontal");
-			vertical = Input.GetAxis("Vertical");
-			int x = horizontal > 0.1f ? 1 : horizontal < 0.1f ? -1 : 0;
-			int y = vertical > 0.1f ? -1 : horizontal < 0.1f ? 1 : 0;
-
-			if (x != 0 || y != 0)
+			int posx = x + selectedCar.GetSiblingIndex();
+			int posy = y + selectedCar.parent.GetSiblingIndex();
+			if (posy >= 0 && posy <= 3 && posx >= 0)
 			{
-				int posx = x + selectedCar.GetSiblingIndex();
-				int posy = y + selectedCar.parent.GetSiblingIndex();
-				if (posy >= 0 && posy <= 3 && posx >= 0)
+				Transform tempSelectedCar = null;
+				for (int i = posy; i < carContent.childCount && i >= 0;)
 				{
-					Transform tempSelectedCar = null;
-					for (int i = posy; i < carContent.childCount && i >= 0;)
-					{
-						Transform selectedClass = carContent.GetChild(i);
+					Transform selectedClass = carContent.GetChild(i);
 
-						if (selectedClass.childCount > 0)
-						{
-							if (posx >= selectedClass.childCount)
-								posx = selectedClass.childCount - 1;
-							tempSelectedCar = selectedClass.GetChild(posx);
-							Debug.Log(tempSelectedCar);
-							break;
-						}
-						i = (y > 0) ? (i + 1) : (i - 1);
-					}
-					if (tempSelectedCar != null && tempSelectedCar != selectedCar)
+					if (selectedClass.childCount > 0)
 					{
-						selectedCar = tempSelectedCar;
-						PlaySFX("fe-bitmapscroll");
+						if (posx >= selectedClass.childCount)
+							posx = selectedClass.childCount - 1;
+						tempSelectedCar = selectedClass.GetChild(posx);
+						Debug.Log(tempSelectedCar);
+						break;
 					}
-					// new car has been selected
-					// set description
-					carDescText.text = Info.Car(selectedCar.name).desc;
-					// set bars
-					if (barsAndRadialCo != null)
-						StopCoroutine(barsAndRadialCo);
-					barsAndRadialCo = StartCoroutine(SetPerformanceBarsAndRadial());
-					// focus on car
-					if (containerCo != null)
-						StopCoroutine(containerCo);
-					containerCo = StartCoroutine(MoveToCar());
+					i = (y > 0) ? (i + 1) : (i - 1);
 				}
+				if (tempSelectedCar != null && tempSelectedCar != selectedCar)
+				{
+					selectedCar = tempSelectedCar;
+					PlaySFX("fe-bitmapscroll");
+				}
+				// new car has been selected
+				// set description
+				carDescText.text = Info.Car(selectedCar.name).desc;
+				// set bars
+				if (barsAndRadialCo != null)
+					StopCoroutine(barsAndRadialCo);
+				barsAndRadialCo = StartCoroutine(SetPerformanceBarsAndRadial());
+				// focus on car
+				if (containerCo != null)
+					StopCoroutine(containerCo);
+				containerCo = StartCoroutine(MoveToCar());
 			}
 		}
 
-		horizontal = Input.GetAxis("Horizontal");
-		vertical = Input.GetAxis("Vertical");
 	}
 
 	IEnumerator MoveToCar()
@@ -189,10 +185,10 @@ public class CarSelector : Sfxable
 			yield return null;
 		}
 	}
-	
+
 	IEnumerator SetPerformanceBarsAndRadial()
 	{
-		if(selectedCar)
+		if (selectedCar)
 			radial.SetAnimTo(selectedCar.parent.GetSiblingIndex());
 		float[] targetSgpBars = selectedCar ? Info.Car(selectedCar.name).config.SGP : new float[] { .03f, .03f, .03f };
 		float[] initSgpBars = new float[3];
@@ -215,5 +211,5 @@ public class CarSelector : Sfxable
 			yield return null;
 		}
 	}
-	
+
 }
