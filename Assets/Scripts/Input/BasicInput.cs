@@ -26,7 +26,7 @@ namespace RVP
 		public InputActionReference lookBackInput;
 		public InputActionReference lookAxisInput;
 
-		void Start()
+		private void Awake()
 		{
 			vp = transform.parent.GetComponent<VehicleParent>();
 			vp.basicInput = this;

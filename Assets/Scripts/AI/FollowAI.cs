@@ -627,7 +627,7 @@ namespace RVP
 			inPitsTime = Time.time;
 			this.pitsPathCreator = pitsPathCreator;
 			selfDriving = true;
-			GetComponent<BasicInput>().enabled = false;
+			vp.basicInput.enabled = false;
 		}
 	}
 

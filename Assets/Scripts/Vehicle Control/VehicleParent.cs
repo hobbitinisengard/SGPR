@@ -809,8 +809,6 @@ namespace RVP
 				countdownTimer -= Time.deltaTime;
 				yield return null;
 			}
-			//GetComponent<SGP_Bouncer>().enabled = true;
-			//var basicInput = GetComponent<BasicInput>();
 			SetEbrake(0);
 		}
 

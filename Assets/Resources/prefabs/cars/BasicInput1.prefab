@@ -58,3 +58,7 @@ MonoBehaviour:
   downshiftButton: Downshift
   lightsButton: Lights
   resetOnTrackButton: ResetOnTrack
+  lookBackInput: {fileID: -3554925197166459368, guid: 72cc30aa17c8b9249b1e17052dd5f7ae,
+    type: 3}
+  lookAxisInput: {fileID: 3012004772305384755, guid: 72cc30aa17c8b9249b1e17052dd5f7ae,
+    type: 3}

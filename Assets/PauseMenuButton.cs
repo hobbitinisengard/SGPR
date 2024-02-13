@@ -14,23 +14,48 @@ public class PauseMenuButton : MonoBehaviour, ISelectHandler, IDeselectHandler
 	AudioSource clickSoundEffect;
 	public AudioMixer audioMixer;
 	public string exposedParameter;
-	public float soundLevel = 0.5f;
+	public float indicatorLevel = 0.5f;
 	private void Start()
 	{
+		GetComponent<Button>().onClick.AddListener(OnClickDo);
 		clickSoundEffect = GetComponent<AudioSource>();
 		clickSoundEffect.ignoreListenerPause = true;
 		text = transform.GetChild(0).GetComponent<Text>();
-		if (audioMixer)
+		if (transform.childCount > 1)
 		{
-			// add battery sliders
 			batteryMask = transform.GetChild(1).GetChild(0);
-			soundLevel = Info.ReadMixerLevelLog(exposedParameter, audioMixer);
-			SetBatteryGUI(soundLevel);
+			if (audioMixer)
+				indicatorLevel = Info.ReadMixerLevelLog(exposedParameter, audioMixer);
+			else
+				indicatorLevel = Mathf.InverseLerp(0,10,Info.steerGamma);
+			SetBatteryGUI(indicatorLevel);
+		}
+	}
+	void OnClickDo()
+	{
+		if (batteryMask)
+		{
+			indicatorLevel += 0.1f;
+			if (indicatorLevel > 1.05f)
+				indicatorLevel = 0;
+			clickSoundEffect.Play();
+			SetBatteryGUI(indicatorLevel);
+
+			if(audioMixer)
+				Info.SetMixerLevelLog(exposedParameter, indicatorLevel, audioMixer);
+			else
+			{
+				Info.steerGamma = Mathf.Clamp(10*indicatorLevel, 1, 10);
+			}
 		}
 	}
 	private void OnEnable()
 	{
 		selected = gameObject == EventSystem.current.currentSelectedGameObject;
+	}
+	private void OnDisable()
+	{
+		text.color = new Color32(255, 255, 255, 255);
 	}
 	private void Update()
 	{
@@ -41,20 +66,6 @@ public class PauseMenuButton : MonoBehaviour, ISelectHandler, IDeselectHandler
 				timeStart = Time.unscaledTime;
 			}
 			text.color = Color32.Lerp(blackColor, redColor, 0.5f + Mathf.Sin((Time.unscaledTime - timeStart) * 2 * Mathf.PI) / 2f);
-
-			if (batteryMask && audioMixer)
-			{
-				if (Input.GetButtonDown("Submit"))
-				{
-					//soundLevel = (soundLevel + 0.1f) % 1.1f;
-					soundLevel += 0.1f;
-					if (soundLevel > 1.05f)
-						soundLevel = 0;
-					Info.SetMixerLevelLog(exposedParameter, soundLevel, audioMixer);
-					clickSoundEffect.Play();
-					SetBatteryGUI(soundLevel);
-				}
-			}
 		}
 	}
 	void SetBatteryGUI(float val01)
@@ -71,6 +82,6 @@ public class PauseMenuButton : MonoBehaviour, ISelectHandler, IDeselectHandler
 	{
 		clickSoundEffect.Play();
 		selected = false;
-		text.color = new Color32(255, 255, 255, 255);
+		OnDisable();
 	}
 }

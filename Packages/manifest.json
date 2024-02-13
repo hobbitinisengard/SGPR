@@ -14,7 +14,7 @@
     "com.unity.ai.navigation": "1.1.5",
     "com.unity.ide.visualstudio": "2.0.22",
     "com.unity.inputsystem": "1.7.0",
-    "com.unity.textmeshpro": "3.0.8",
+    "com.unity.textmeshpro": "https://github.com/needle-mirror/com.unity.textmeshpro.git#3.0.6",
     "com.unity.ugui": "1.0.0",
     "jillejr.newtonsoft.json-for-unity": "13.0.102",
     "jillejr.newtonsoft.json-for-unity.converters": "1.5.1",

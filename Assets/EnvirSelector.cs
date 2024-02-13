@@ -21,11 +21,11 @@ public class EnvirSelector : Selector
 
 	private void OnDisable()
 	{
-		move2Ref.action.started -= CalculateTargetToSelect;
+		move2Ref.action.performed -= CalculateTargetToSelect;
 	}
 	private void OnEnable()
 	{
-		move2Ref.action.started += CalculateTargetToSelect;
+		move2Ref.action.performed += CalculateTargetToSelect;
 		startButton.Select();
 		selectedEnvir = envirContent.GetChild(0).GetChild(persistentSelectedEnvir);
 		Info.s_trackName = selectedEnvir.name;

@@ -38,7 +38,8 @@ public static class Info
 		{
 			lastPlayerName = s_playerName,
 			musicVol = ReadMixerLevelLog("musicVol", mainMixer),
-			sfxVol = ReadMixerLevelLog("sfxVol", mainMixer)
+			sfxVol = ReadMixerLevelLog("sfxVol", mainMixer),
+			steerGamma = steerGamma
 		};
 
 		string jsonText = JsonConvert.SerializeObject(settingsData);
@@ -152,6 +153,8 @@ public static class Info
 	};
 	public static Sprite[] icons;
 	public static bool gamePaused;
+	internal static float steerGamma;
+	internal static bool controllerInUse;
 	public static readonly string version = "0.2b";
 
 	public static bool InRace 

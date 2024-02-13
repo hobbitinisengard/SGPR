@@ -59,13 +59,13 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.textmeshpro": {
-      "version": "3.0.8",
+      "version": "https://github.com/needle-mirror/com.unity.textmeshpro.git#3.0.6",
       "depth": 0,
-      "source": "registry",
+      "source": "git",
       "dependencies": {
         "com.unity.ugui": "1.0.0"
       },
-      "url": "https://packages.unity.com"
+      "hash": "5671be34032f3ead7e4f94de2bfa6f7a24513cdb"
     },
     "com.unity.ugui": {
       "version": "1.0.0",

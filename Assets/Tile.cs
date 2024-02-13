@@ -1,5 +1,6 @@
 using RVP;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -8,6 +9,9 @@ public class Tile : MonoBehaviour
 {
 	[NonSerialized]
 	public EditorPanel panel;
+	/// <summary>
+	/// Only one tile at a time may be not 'placed': the one that the player is currently selecting in track editor
+	/// </summary>
 	public bool placed { get; private set; }
 	public bool mirrored { get; private set; }
 
@@ -16,6 +20,8 @@ public class Tile : MonoBehaviour
 	MeshCollider mc;
 
 	GameObject lightObj;
+
+	public MeshCollider[] Endings { get; private set; }
 
 	public void UpdateLights()
 	{
@@ -30,10 +36,10 @@ public class Tile : MonoBehaviour
 	private void Awake()
 	{
 		// add mesh collider to 'main' mesh 
-		if (transform.childCount == 0)
+		if (transform.childCount == 0) // tile isn't a road
 			mc = gameObject.AddComponent<MeshCollider>();
 		else
-		{
+		{ // tile is a road
 			var childObj = transform.GetChild(0);
 			if (childObj.name == "lights")
 			{
@@ -43,7 +49,25 @@ public class Tile : MonoBehaviour
 				UpdateLights();
 			}
 			else
-				mc = transform.GetChild(0).gameObject.AddComponent<MeshCollider>();
+			{
+				mc = childObj.gameObject.AddComponent<MeshCollider>();
+
+				if(childObj.childCount > 0)
+				{
+					List<MeshCollider> endings = new();
+					for (int i = 0; i < childObj.childCount; ++i)
+					{ // each ending requires mesh collider
+						GameObject mainMeshChild = childObj.GetChild(i).gameObject;
+						if (mainMeshChild.name[..3] == "end")
+						{
+							var ending = mainMeshChild.AddComponent<MeshCollider>();
+							endings.Add(ending);
+						}
+					}
+					if(endings.Count > 0)
+						Endings = endings.ToArray();
+				}
+			}
 		}
 		mc.enabled = true;
 
@@ -117,10 +141,21 @@ public class Tile : MonoBehaviour
 	public bool MirrorTile()
 	{
 		mirrored = !mirrored;
+		
 		var mf = mc.transform.GetComponent<MeshFilter>();
 		mf.mesh = MirrorMesh(mf.mesh);
 		if (mc)
 			mc.sharedMesh = mf.mesh;
+
+		if(Endings != null)
+		{
+			foreach (MeshCollider end in Endings)
+			{ // mirror endings
+				mf = end.GetComponent<MeshFilter>();
+				mf.mesh = MirrorMesh(mf.mesh);
+				end.sharedMesh = mf.mesh;
+			}
+		}
 
 		if(transform.childCount>0)
 		{
@@ -201,7 +236,7 @@ public class Tile : MonoBehaviour
 
 		float scale = distance / mf.mesh.bounds.size.y;
 		transform.localScale = new Vector3(1, 1, scale);
-
+		Debug.Log(name);
 		{ // adjust UVs
 			Vector2[] uvs = mf.mesh.uv;
 			int submeshes = mf.mesh.subMeshCount;
@@ -225,7 +260,6 @@ public class Tile : MonoBehaviour
 			}
 			mf.mesh.uv = uvs;
 		}
-
 		// make connectors round again
 		for (int i = 1; i < transform.childCount; ++i)
 		{

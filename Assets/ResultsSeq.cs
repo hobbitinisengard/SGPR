@@ -26,6 +26,7 @@ public class ResultsSeq : MonoBehaviour
 	public float d_invLerp;
 	public float d_minMax;
 	float cosArg;
+	private bool submitFlag;
 
 	private void Awake()
 	{
@@ -34,9 +35,12 @@ public class ResultsSeq : MonoBehaviour
 	private void OnDisable()
 	{
 		RowsBlinkColor(Color.yellow);
+		playerHUD.raceManager.submitInput.action.performed -= OnEnterClicked;
 	}
 	private void OnEnable()
 	{
+		playerHUD.raceManager.submitInput.action.performed += OnEnterClicked;
+
 		rightBoxLabelInt = 0;
 		foreach (var b in boxes)
 		{
@@ -72,6 +76,11 @@ public class ResultsSeq : MonoBehaviour
 		audioSource.loop = false;
 		audioSource.Play();
 	}
+
+	private void OnEnterClicked(UnityEngine.InputSystem.InputAction.CallbackContext obj)
+	{
+		submitFlag = true;
+	}
 	void ImgResultSetAlpha(in Color c)
 	{
 		imgResult.color = c;
@@ -93,11 +102,13 @@ public class ResultsSeq : MonoBehaviour
 				audioSource.loop = true;
 				audioSource.Play();
 			}
-			
 			if (timer >= 3.5f)
 				ImgResultSetAlpha(new Color(1, 1, 1, 1 - Mathf.InverseLerp(3.5f, 4, timer)));
-			else if (Input.GetButtonDown("Submit"))
+			else if ( submitFlag)
+			{
 				timer = 3.5f;
+				submitFlag = false;
+			}
 
 			cosArg += 2 * Mathf.PI * Time.deltaTime;
 			var p = imgResult.transform.localPosition;
@@ -114,8 +125,9 @@ public class ResultsSeq : MonoBehaviour
 		while (true)
 		{
 			timer += Time.deltaTime;
-			if (timer < 8 && Input.GetButtonDown("Submit"))
+			if (timer < 8 && submitFlag)
 			{
+				submitFlag = false;
 				timer = 8;
 				if (audioSource != null)
 					audioSource.Stop();
@@ -125,10 +137,12 @@ public class ResultsSeq : MonoBehaviour
 
 			if (timer > 8 && timer < 12)
 			{
-				if (Input.GetButtonDown("Submit"))
+				if (submitFlag)
+				{
+					submitFlag = false;
 					timer = 11.5f;
-				if(showResultCo == null)
-					showResultCo = StartCoroutine(ShowResult());
+				}
+				showResultCo ??= StartCoroutine(ShowResult());
 			}
 
 			if (timer > 12 && timer <= 13)
@@ -168,8 +182,9 @@ public class ResultsSeq : MonoBehaviour
 
 		while(true)
 		{
-			if (Input.GetButtonDown("Submit") && dimCo == null) // closing seq
+			if (submitFlag && dimCo == null) // closing seq
 			{
+				submitFlag = false;
 				for (int i = 0; i < Info.s_cars.Count; ++i)
 				{ 
 					leftRow.GetChild(i).gameObject.GetComponent<SlideInOut>().PlaySlideOut(true);

@@ -170,7 +170,7 @@ namespace RVP
 			eliminatedCar.raceBox.enabled = false;
 			eliminatedCar.followAI.SetCPU(false);
 			eliminatedCar.followAI.selfDriving = false;
-			eliminatedCar.followAI.GetComponent<BasicInput>().enabled = false;
+			eliminatedCar.basicInput.enabled = false;
 			eliminatedCar.SetAccel(0);
 			eliminatedCar.SetBrake(0);
 			eliminatedCar.raceBox.SetRacetime();

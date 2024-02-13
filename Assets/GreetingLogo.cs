@@ -29,9 +29,8 @@ public class GreetingLogo : Sfxable
 	void Start()
 	{
 		rt = GetComponent<RectTransform>();
-		float screenWidth = Screen.width;//transform.parent.GetComponent<RectTransform>().rect.width;
 		transform.GetChild(0).GetComponent<RectTransform>().localPosition = 
-			new Vector2(screenWidth, 0);
+			new Vector2(Screen.width, 0);
 		view = transform.parent.GetComponent<MainMenuView>();
 		Cursor.visible = false;
 	}

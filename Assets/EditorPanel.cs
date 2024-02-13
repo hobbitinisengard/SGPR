@@ -209,7 +209,7 @@ public class EditorPanel : Sfxable
 		}
 		initialized = true;
 	}
-	public void SetPlacedConnector(Vector3? position)
+	public void SetPlacedAnchor(Vector3? position)
 	{
 		placedConnector = position;
 	}
@@ -448,7 +448,7 @@ public class EditorPanel : Sfxable
 							{
 								// PLACE TILE
 								SetPathClosed(false);
-								currentTile.GetComponent<Tile>().SetPlaced();
+								currentTile.SetPlaced();
 								InstantiateNewTile(currentTileButton.name);
 								StartCoroutine(ResetAnchors());
 								
@@ -1680,6 +1680,7 @@ public class EditorPanel : Sfxable
 				InstantiateNewTile(TRACK.tileNames[tile.name_id], tile.length, tile.rotation, tile.position, tile.mirrored, tile.url);
 				currentTile.SetPlaced();
 			}
+
 			for (int i = 0; i < TRACK.tiles.Count; ++i)
 			{ // set up connectors properly
 				Transform tile = placedTilesContainer.transform.GetChild(i);

@@ -5,8 +5,10 @@ using UnityEngine.UI;
 
 public class PauseMenu : Sfxable
 {
+	public SGP_HUD hud;
 	public Button firstButton;
 	public GameObject restartButton;
+	public GameObject steerGamma;
 	public Image veil;
 	public AudioMixer mainMixer;
 	public AudioMixerSnapshot paused;
@@ -16,6 +18,8 @@ public class PauseMenu : Sfxable
 	public Color blackColor;
 	public float duration = 3;
 	float timeElapsed = 0;
+	[NonSerialized]
+	public bool controllerInUse = false;
 	private void Awake()
 	{
 		clickSoundEffect = GetComponent<AudioSource>();
@@ -32,6 +36,7 @@ public class PauseMenu : Sfxable
 	}
 	private void OnEnable()
 	{
+		steerGamma.SetActive(Info.controllerInUse);
 		Time.timeScale = 0;
 		Info.gamePaused = true;
 		paused.TransitionTo(0);

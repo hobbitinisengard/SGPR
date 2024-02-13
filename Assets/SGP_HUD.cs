@@ -33,7 +33,6 @@ public class SGP_HUD : MonoBehaviour
 	public GameObject TIMEDisplay;
 	public GameObject RECDisplay;
 	public GameObject LAPDisplay;
-	public InputActionReference cancelInput;
 	public VehicleParent vp { get; private set; }
 	GearboxTransmission trans;
 	//StuntDetect stunter;
@@ -99,8 +98,8 @@ public class SGP_HUD : MonoBehaviour
 	// 0 = hidden text, 1 = visible text, x - time of animation
 	public AnimationCurve bottomTextAnim;
 	RectTransform infoText_rt;
-	Color32 bottomTextColor1 = new Color32(255, 223, 0, 255);
-	Color32 bottomTextColor2 = new Color32(255, 64, 64, 255);
+	Color32 bottomTextColor1 = new (255, 223, 0, 255);
+	Color32 bottomTextColor2 = new (255, 64, 64, 255);
 	Queue<Message> liveMessages = new Queue<Message>();
 	Message curMsgInQueue;
 	public float msgArriveTime = 0;
@@ -120,8 +119,6 @@ public class SGP_HUD : MonoBehaviour
 	/// Seconds required to dim stuntTableTimer
 	/// </summary>
 	const float dimmingStuntTableTime = 1;
-
-
 	public void SetBottomTextPos(float posy)
 	{
 		Vector2 position = infoText_rt.anchoredPosition;
@@ -312,7 +309,7 @@ public class SGP_HUD : MonoBehaviour
 		{
 			componentPanel.gameObject.SetActive(!componentPanel.gameObject.activeSelf);
 		}
-		if (cancelInput.action.ReadValue<float>()==1 && (DateTime.Now - Info.raceStartDate).TotalSeconds > 5
+		if (raceManager.cancelInput.action.ReadValue<float>()==1 && (DateTime.Now - Info.raceStartDate).TotalSeconds > 5
 			&& !componentPanel.gameObject.activeSelf && !raceManager.resultsSeq.gameObject.activeSelf)
 		{
 			pauseMenu.gameObject.SetActive(true);

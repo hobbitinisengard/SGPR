@@ -40,6 +40,8 @@ public class GreetingView : MonoBehaviour
 	{
 		PlayerSettingsData settingsData = Info.ReadSettingsDataFromJson();
 		Info.s_playerName = settingsData.lastPlayerName;
+		Info.steerGamma = settingsData.steerGamma;
+		Debug.Log("Gamma: " + Info.steerGamma.ToString());
 		Info.SetMixerLevelLog("sfxVol", settingsData.sfxVol, masterMixer);
 		Info.SetMixerLevelLog("musicVol", settingsData.musicVol, masterMixer);
 	}
