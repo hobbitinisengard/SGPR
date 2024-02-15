@@ -1482,7 +1482,7 @@ public class EditorPanel : Sfxable
 		TrackHeader header = new()
 		{
 			unlocked = true,
-			preferredCarClass = (Info.CarGroup)carGroupDropdown.value,
+			preferredCarClass = (CarGroup)carGroupDropdown.value,
 			difficulty = trackDifficultyDropdown.value,
 			envir = Info.tracks[Info.s_trackName].envir,
 			author = trackAuthorInputField.text,

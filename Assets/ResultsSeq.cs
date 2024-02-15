@@ -240,7 +240,7 @@ public class ResultsSeq : MonoBehaviour
 						.GetComponent<TextMeshProUGUI>().text = Info.s_cars[i].transform.name;
 			rightBoxLabel.text = rightBoxLabels[rightBoxLabelInt];
 			rightRow.GetChild(i).GetChild(0).GetChild(0)
-						.GetComponent<TextMeshProUGUI>().text = Info.s_cars[i].raceBox.Result((Info.RecordType)rightBoxLabelInt);
+						.GetComponent<TextMeshProUGUI>().text = Info.s_cars[i].raceBox.Result((RecordType)rightBoxLabelInt);
 		}
 	}
 }

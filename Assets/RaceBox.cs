@@ -182,25 +182,25 @@ public class RaceBox : MonoBehaviour
 		starLevel = 0;
 		stuntPai = new PtsAnimInfo(0, PtsAnimType.Evo, -1);
 	}
-	public string Result(Info.RecordType recordType)
+	public string Result(RecordType recordType)
 	{
 		switch (recordType)
 		{
-			case Info.RecordType.BestLap:
+			case RecordType.BestLap:
 				if (bestLapTime == TimeSpan.MaxValue)
 					return "-";
 				if (bestLapTime.Hours > 0)
 					return bestLapTime.ToString(@"hh\:mm\:ss\.ff");
 				return bestLapTime.ToString(@"mm\:ss\.ff");
-			case Info.RecordType.RaceTime:
+			case RecordType.RaceTime:
 				if (raceTime == TimeSpan.MinValue)
 					return "-";
 				if (raceTime.Hours > 0)
 					return raceTime.ToString(@"hh\:mm\:ss\.ff");
 				return raceTime.ToString(@"mm\:ss\.ff");
-			case Info.RecordType.StuntScore:
+			case RecordType.StuntScore:
 				return ((int)(aero * 10)).ToString();
-			case Info.RecordType.DriftScore:
+			case RecordType.DriftScore:
 				return drift.ToString("F0");
 			default:
 				return "-";

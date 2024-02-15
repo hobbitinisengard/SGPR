@@ -7,8 +7,64 @@ using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Audio;
-using static Info;
 
+public enum Envir { GER, JAP, SPN, FRA, ENG, USA, ITA, MEX };
+public enum CarGroup { Wild, Aero, Speed, Team };
+public enum Livery { Special = 1, TGR, Rline, Itex, Caltex, Titan, Mysuko }
+public enum RecordType { BestLap, RaceTime, StuntScore, DriftScore, TimeTrial }
+public enum ScoringType { Championship, Points, Victory }
+public enum PavementType { Highway, RedSand, Asphalt, Electric, TimeTrial, Japanese, GreenSand, Random }
+public enum ServerSide { Host, Client };
+public class OnlinePlayer
+{
+	public int Id;
+	public string name;
+	public Livery sponsor;
+	public string carName;
+	public int score;
+	public int won;
+	public bool ready;
+	public bool host;
+	public Color nickColor
+	{
+		get
+		{
+			if(Info.scoringType == ScoringType.Championship)
+			{
+				switch (sponsor)
+				{
+					case Livery.Special:
+						return Color.yellow;
+					case Livery.TGR:
+						return new Color(255, 165, 0); // orange
+					case Livery.Rline:
+						return new Color(165, 90, 189); // purple
+					case Livery.Itex:
+						return Color.red;
+					case Livery.Caltex:
+						return Color.green;
+					case Livery.Titan:
+						return Color.blue;
+					case Livery.Mysuko:
+						return Color.gray;
+					default:
+						break;
+				}
+			}
+			return Color.yellow;
+		}
+	}
+}
+[Serializable]
+public class PlayerSettingsData
+{
+	public float musicVol = 1;
+	public float sfxVol = 1;
+	public string playerName;
+	public float steerGamma;
+	public int portNumber;
+	public string ipAddress;
+}
 public static class Info
 {
 	public readonly static string documentsSGPRpath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Stunt GP Reloaded\\";
@@ -16,33 +72,26 @@ public static class Info
 	public readonly static string tracksPath = documentsSGPRpath + "tracks\\";
 	public readonly static string userdataPath = documentsSGPRpath + "userdata.json";
 	public readonly static string lastPath = documentsSGPRpath + "path.txt";
-	public static PlayerSettingsData ReadSettingsDataFromJson()
+	public static PlayerSettingsData playerData;
+	public static void ReadSettingsDataFromJson()
 	{
-		PlayerSettingsData settingsData;
 		if (!File.Exists(userdataPath))
 		{
-			settingsData = new PlayerSettingsData();
-			string serializedSettings = JsonConvert.SerializeObject(settingsData);
+			playerData = new PlayerSettingsData();
+			string serializedSettings = JsonConvert.SerializeObject(playerData);
 			File.WriteAllText(userdataPath, serializedSettings);
 		}
 		else
 		{
 			string playerSettings = File.ReadAllText(userdataPath);
-			settingsData = JsonConvert.DeserializeObject<PlayerSettingsData>(playerSettings);
+			playerData = JsonConvert.DeserializeObject<PlayerSettingsData>(playerSettings);
 		}
-		return settingsData;
 	}
 	public static void SaveSettingsDataToJson(in AudioMixer mainMixer)
 	{
-		var settingsData = new PlayerSettingsData()
-		{
-			lastPlayerName = s_playerName,
-			musicVol = ReadMixerLevelLog("musicVol", mainMixer),
-			sfxVol = ReadMixerLevelLog("sfxVol", mainMixer),
-			steerGamma = steerGamma
-		};
-
-		string jsonText = JsonConvert.SerializeObject(settingsData);
+		playerData.musicVol = ReadMixerLevelLog("musicVol", mainMixer);
+		playerData.sfxVol = ReadMixerLevelLog("sfxVol", mainMixer);
+		string jsonText = JsonConvert.SerializeObject(playerData);
 		File.WriteAllText(userdataPath, jsonText);
 	}
 	public static PartInfo[] partInfos = new PartInfo[]
@@ -61,10 +110,8 @@ public static class Info
 	};
 	//public static string[] extensionsSuffixes = new string[] { "suscfg", "bmscfg", "batcfg",
 	//		"engcfg", "chacfg", "grscfg", "jetcfg", "tyrcfg", "drvcfg", "carcfg" };
-	public enum Livery { Special = 1, TGR, Rline, Itex, Caltex, Titan, Mysuko }
-	public const int Liveries = 7;
-	public enum RecordType { BestLap, RaceTime, StuntScore, DriftScore }
-	public enum PavementType { Highway, RedSand, Asphalt, Electric, TimeTrial, Japanese, GreenSand, Random }
+
+	
 	/// <summary>
 	/// Number of track textures. Set pavementTypes+1 for random texture.
 	/// </summary>
@@ -72,7 +119,7 @@ public static class Info
 
 	public enum RaceType { Race, Knockout, Stunt, Drift }
 	public const int RaceTypes = 4;
-	public enum Envir { GER, JAP, SPN, FRA, ENG, USA, ITA, MEX };
+	
 	public readonly static Vector3[] invisibleLevelDimensions = new Vector3[]{
 		new (564, 1231,1), //ger
 		new (800, 800,1), //jap
@@ -86,6 +133,8 @@ public static class Info
 	public static readonly int[] skys = new int[] { 8, 2, 5, 1, 4, 3, 7, 9 };
 
 	public const int Environments = 8;
+	public const int Liveries = 7;
+
 	public static readonly string[] EnvirDescs =
 	{
 		"GERMANY\n\nLoud crowd cheering and powerful spotlights..This german arena is really a place to show off.",
@@ -97,14 +146,16 @@ public static class Info
 		"ITALY\n\nFeeling mediterranean? This italian coast is very scenic, especially at night. There are two dangers here to look out however: staircase descent and water!",
 		"MEXICO\n\nOnly some people are in the possession of info that there's this ancient place located in the middle of an unknown mexican forest, where aztecs used to race RC-cars. However no-one really knows how to get there."
 	};
-	public enum CarGroup { Wild, Aero, Speed, Team };
-	public enum TrackOrigin { Original, Custom };
+	
 	public static readonly string carPrefabsPath = "carModels/";
 	public static readonly string carImagesPath = "carImages/";
 	public static readonly string trackImagesPath = "trackImages/";
 	public static readonly string editorTilesPath = "tiles/objects/";
 	public static Vector3[] carSGPstats;
 	public static Car[] cars;
+	public static List<OnlinePlayer> onlinePlayers;
+	public static ScoringType scoringType;
+	public static ServerSide serverSide;
 	public static Dictionary<string, PartSavable> carParts;
 	public static SortedDictionary<string, TrackHeader> tracks;
 	public static Dictionary<string, AudioClip> audioClips;
@@ -135,7 +186,6 @@ public static class Info
 	public static List<VehicleParent> s_cars = new List<VehicleParent>();
 	public static string s_trackName = "USA";
 	public static string s_playerCarName = "car01";
-	public static string s_playerName = "P1";
 	public static RaceType s_raceType = RaceType.Race;
 	public static int s_laps = 3;
 	public static bool s_inEditor = true;
@@ -146,6 +196,7 @@ public static class Info
 	public static PavementType s_roadType = PavementType.Random;
 	public static bool s_catchup = true;
 	public static int s_resultPos = 3;
+	public static int ServerIdGenerator = 0;
 
 	public static readonly string[] IconNames =
 	{
@@ -153,9 +204,12 @@ public static class Info
 	};
 	public static Sprite[] icons;
 	public static bool gamePaused;
-	internal static float steerGamma;
 	internal static bool controllerInUse;
-	public static readonly string version = "0.2b";
+	internal static int myId;
+	internal static bool randomCars;
+	internal static bool randomTrack;
+	internal static int hostId;
+	public static readonly string version = "0.3b";
 
 	public static bool InRace 
 	{ 

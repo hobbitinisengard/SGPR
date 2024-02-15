@@ -102,7 +102,7 @@ public class TrackSelector : TrackSelectorTemplate
 		}
 		rivalsButtonText.text = "Opponents: " + Info.s_rivals.ToString();
 	}
-	int Wraparound(int value, int min, int max)
+	protected int Wraparound(int value, int min, int max)
 	{
 		if (value < min)
 			value = max;
@@ -115,9 +115,9 @@ public class TrackSelector : TrackSelectorTemplate
 		if (!init)
 		{
 			int dir = Input.GetKey(KeyCode.LeftShift) ? -1 : 1;
-			Info.s_roadType = (Info.PavementType)Wraparound((int)(Info.s_roadType + dir), 0, Info.pavementTypes+1);
+			Info.s_roadType = (PavementType)Wraparound((int)(Info.s_roadType + dir), 0, Info.pavementTypes+1);
 		}
-		wayButtonText.text = "Tex: " + Enum.GetName(typeof(Info.PavementType), Info.s_roadType);
+		wayButtonText.text = "Tex: " + Enum.GetName(typeof(PavementType), Info.s_roadType);
 	}
 	public void SwitchCatchup(bool init = false)
 	{

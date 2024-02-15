@@ -71,7 +71,7 @@ public class Tile : MonoBehaviour
 		}
 		mc.enabled = true;
 
-		if(Info.s_roadType != Info.PavementType.Highway)
+		if(Info.s_roadType != PavementType.Highway)
 		{
 			var mr = mc.transform.GetComponent<MeshRenderer>();
 			string replacementStr = "0" + ((int)Info.s_roadType).ToString();

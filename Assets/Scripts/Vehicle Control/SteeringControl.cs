@@ -50,9 +50,9 @@ namespace RVP
 		public float gamma = 2;
 		void GenerateGammaCurve()
 		{
-			if(analogInputCurve == null || gamma != Info.steerGamma)
+			if(analogInputCurve == null || gamma != Info.playerData.steerGamma)
 			{
-				gamma = Info.steerGamma;
+				gamma = Info.playerData.steerGamma;
 				Keyframe[] keys2 = new Keyframe[64];
 				for (int i = 0; i < keys2.Length; i++)
 				{
@@ -90,7 +90,7 @@ namespace RVP
 		{
 			if (!vp.followAI.selfDriving)
 			{
-				if(Info.steerGamma != gamma)
+				if(Info.playerData.steerGamma != gamma)
 				{
 					GenerateGammaCurve();
 				}

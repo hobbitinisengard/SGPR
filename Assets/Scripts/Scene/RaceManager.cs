@@ -371,7 +371,7 @@ namespace RVP
 					else
 					{
 						playerCar = newCar;
-						newCar.name = Info.s_playerName;
+						newCar.name = Info.playerData.playerName;
 						cam.Connect(newCar);
 						hud.Connect(newCar);
 						DemoSGPLogo.SetActive(false);
@@ -440,25 +440,25 @@ namespace RVP
 					//lap
 					if ((float)playerCar.raceBox.bestLapTime.TotalSeconds < editorPanel.records[0].secondsOrPts)
 					{
-						Info.tracks[Info.s_trackName].records[0].playerName = Info.s_playerName;
+						Info.tracks[Info.s_trackName].records[0].playerName = Info.playerData.playerName;
 						Info.tracks[Info.s_trackName].records[0].requiredSecondsOrPts = (float)playerCar.raceBox.bestLapTime.TotalSeconds;
 					}
 					//race
 					if ((float)playerCar.raceBox.raceTime.TotalSeconds > editorPanel.records[1].secondsOrPts)
 					{
-						Info.tracks[Info.s_trackName].records[1].playerName = Info.s_playerName;
+						Info.tracks[Info.s_trackName].records[1].playerName = Info.playerData.playerName;
 						Info.tracks[Info.s_trackName].records[1].requiredSecondsOrPts = (float)playerCar.raceBox.raceTime.TotalSeconds;
 					}
 					//stunt
 					if (playerCar.raceBox.Aero > editorPanel.records[2].secondsOrPts)
 					{
-						Info.tracks[Info.s_trackName].records[2].playerName = Info.s_playerName;
+						Info.tracks[Info.s_trackName].records[2].playerName = Info.playerData.playerName;
 						Info.tracks[Info.s_trackName].records[2].requiredSecondsOrPts = playerCar.raceBox.Aero;
 					}
 					//drift
 					if (playerCar.raceBox.drift > editorPanel.records[3].secondsOrPts)
 					{
-						Info.tracks[Info.s_trackName].records[3].playerName = Info.s_playerName;
+						Info.tracks[Info.s_trackName].records[3].playerName = Info.playerData.playerName;
 						Info.tracks[Info.s_trackName].records[3].requiredSecondsOrPts = playerCar.raceBox.drift;
 					}
 				}
@@ -467,25 +467,25 @@ namespace RVP
 					//lap
 					if ((float)playerCar.raceBox.bestLapTime.TotalSeconds < Info.tracks[Info.s_trackName].records[0].secondsOrPts)
 					{
-						Info.tracks[Info.s_trackName].records[0].playerName = Info.s_playerName;
+						Info.tracks[Info.s_trackName].records[0].playerName = Info.playerData.playerName;
 						Info.tracks[Info.s_trackName].records[0].secondsOrPts = (float)playerCar.raceBox.bestLapTime.TotalSeconds;
 					}
 					//race
 					if ((float)playerCar.raceBox.raceTime.TotalSeconds > Info.tracks[Info.s_trackName].records[1].secondsOrPts)
 					{
-						Info.tracks[Info.s_trackName].records[1].playerName = Info.s_playerName;
+						Info.tracks[Info.s_trackName].records[1].playerName = Info.playerData.playerName;
 						Info.tracks[Info.s_trackName].records[1].secondsOrPts = (float)playerCar.raceBox.raceTime.TotalSeconds;
 					}
 					//stunt
 					if (playerCar.raceBox.Aero > Info.tracks[Info.s_trackName].records[2].secondsOrPts)
 					{
 						Info.tracks[Info.s_trackName].records[2].secondsOrPts = playerCar.raceBox.Aero;
-						Info.tracks[Info.s_trackName].records[2].playerName = Info.s_playerName;
+						Info.tracks[Info.s_trackName].records[2].playerName = Info.playerData.playerName;
 					}
 					//drift
 					if (playerCar.raceBox.drift > Info.tracks[Info.s_trackName].records[3].secondsOrPts)
 					{
-						Info.tracks[Info.s_trackName].records[3].playerName = Info.s_playerName;
+						Info.tracks[Info.s_trackName].records[3].playerName = Info.playerData.playerName;
 						Info.tracks[Info.s_trackName].records[3].secondsOrPts = playerCar.raceBox.drift;
 					}
 					// immediately set track header

@@ -365,7 +365,7 @@ Transform:
   m_GameObject: {fileID: 289683228}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.202, z: 0.037}
+  m_LocalPosition: {x: 0, y: 0.202, z: 0.17}
   m_LocalScale: {x: 1, y: 1, z: 0.91}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -390,7 +390,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.0231228, y: 0.06239319, z: 2.854942}
+  m_Size: {x: 2.0231228, y: 0.06239319, z: 2.52}
   m_Center: {x: 0.038392812, y: -0.032238, z: -0.23224804}
 --- !u!1 &423706905
 GameObject:
@@ -101164,32 +101164,8 @@ MonoBehaviour:
   holdDuration: 0
   steerLimit: 0
   maxDegreesRotation: 0
-  keyboardInputCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 136
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
   holdComebackSpeed: 0
-  holdKeyboardCurveSteer: 0
+  holdCurveValue: 0
   steerAdd: 0.25
   steerLimitCurve:
     serializedVersion: 2
@@ -101239,6 +101215,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  gamma: 2
 --- !u!1 &6779875396000727283
 GameObject:
   m_ObjectHideFlags: 0

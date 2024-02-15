@@ -243,8 +243,8 @@ public class TrackSelectorTemplate : Selector
 
 		if (selectedTrack)
 		{
-			AddTile(Enum.GetName(typeof(Info.CarGroup), Info.tracks[selectedTrack.name].preferredCarClass));
-			AddTile(Enum.GetName(typeof(Info.Envir), Info.tracks[selectedTrack.name].envir));
+			AddTile(Enum.GetName(typeof(CarGroup), Info.tracks[selectedTrack.name].preferredCarClass));
+			AddTile(Enum.GetName(typeof(Envir), Info.tracks[selectedTrack.name].envir));
 			AddTile((Info.tracks[selectedTrack.name].difficulty + 4).ToString());
 			foreach (var flag in Info.tracks[selectedTrack.name].icons)
 				AddTile(Info.IconNames[flag]);
