@@ -1,4 +1,6 @@
-﻿using TMPro;
+﻿using JetBrains.Annotations;
+using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,6 +9,47 @@ public class LeaderBoardTable : MonoBehaviour
 	public GameObject LeaderboardRowPrefab;
 	public Sprite knob;
 	public Sprite crown;
+	float timer = 2;
+	class SponsorScore
+	{
+		public Livery sponsor;
+		public int score;
+	}
+	public void OnEnable()
+	{
+		SortPlayersByScore();
+		Refresh();
+	}
+	public void SortPlayersByScore()
+	{
+		if (Info.scoringType == ScoringType.Championship) // Team scoring
+		{
+			List<SponsorScore> scores = new();
+			foreach (var player in Info.onlinePlayers)
+			{
+				var standing = scores.Find(s => s.sponsor == player.sponsor);
+				if (standing == null)
+				{
+					scores.Add(new SponsorScore { sponsor = player.sponsor, score = player.score });
+				}
+				else
+				{
+					standing.score += player.score;
+				}
+			}
+			scores.Sort((y, x) => x.score.CompareTo(y.score));
+			Info.onlinePlayers.Sort((b, a) =>
+			{
+				var teamScoreA = scores.Find(s => s.sponsor == a.sponsor).score;
+				var teamScoreB = scores.Find(s => s.sponsor == b.sponsor).score;
+				return teamScoreA.CompareTo(teamScoreB);
+			});
+		}
+		else
+		{ // Individual scoring
+			Info.onlinePlayers.Sort((b, a) => b.score.CompareTo(a.score));
+		}
+	}
 	public void Refresh()
 	{
 		// TITLE + PLAYERS
@@ -18,6 +61,15 @@ public class LeaderBoardTable : MonoBehaviour
 		{
 			Add(player);
 		}
+	}
+	public void Update()
+	{
+		if(timer == 0)
+		{
+			Refresh();
+			timer = 2;
+		}
+		timer -= Time.deltaTime;
 	}
 	void Add(OnlinePlayer player)
 	{

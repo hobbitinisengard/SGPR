@@ -15,6 +15,7 @@ public enum RecordType { BestLap, RaceTime, StuntScore, DriftScore, TimeTrial }
 public enum ScoringType { Championship, Points, Victory }
 public enum PavementType { Highway, RedSand, Asphalt, Electric, TimeTrial, Japanese, GreenSand, Random }
 public enum ServerSide { Host, Client };
+public enum GameMode { Exhibition, Multiplayer};
 public class OnlinePlayer
 {
 	public int Id;
@@ -156,6 +157,7 @@ public static class Info
 	public static List<OnlinePlayer> onlinePlayers;
 	public static ScoringType scoringType;
 	public static ServerSide serverSide;
+	public static GameMode gameMode = GameMode.Exhibition;
 	public static Dictionary<string, PartSavable> carParts;
 	public static SortedDictionary<string, TrackHeader> tracks;
 	public static Dictionary<string, AudioClip> audioClips;

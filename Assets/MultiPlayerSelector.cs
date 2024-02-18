@@ -1,17 +1,29 @@
-using System.Collections.Generic;
+using System;
 using System.Linq;
+using System.Threading.Tasks;
 using TMPro;
+using Unity.Services.Authentication;
+using Unity.Services.Core;
+using Unity.Services.Lobbies;
+using Unity.Services.Lobbies.Models;
+using Unity.Services.Relay;
+using Unity.Services.Relay.Models;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class MultiPlayerSelector : TrackSelector
 {
+	
 	public Chat chat;
 	public LeaderBoardTable leaderboard;
 	public TextMeshProUGUI ipText;
 	public TextMeshProUGUI sponsorbText;
 	public TextMeshProUGUI randomCarsText;
+	public TextMeshProUGUI randomTracksText;
 	public TextMeshProUGUI readyText;
 	public TextMeshProUGUI scoringText;
+
+	
 
 	private void OnEnable()
 	{
@@ -19,6 +31,21 @@ public class MultiPlayerSelector : TrackSelector
 		if (Info.onlinePlayers == null)
 			Info.onlinePlayers = new();
 
+		sortButton.gameObject.SetActive(Info.serverSide == ServerSide.Host);
+		SwitchReady(true);
+		bool isHost = Info.serverSide == ServerSide.Host;
+		scoringText.transform.parent.GetComponent<Button>().interactable = isHost;
+		sponsorbText.transform.parent.gameObject.SetActive(Info.scoringType == ScoringType.Championship);
+		randomCarsText.transform.parent.GetComponent<Button>().interactable = isHost;
+		randomTracksText.transform.parent.GetComponent<Button>().interactable = isHost;
+		raceTypeButtonText.transform.parent.GetComponent<Button>().interactable = isHost;
+		lapsButtonText.transform.parent.GetComponent<Button>().interactable = isHost;
+		nightButtonText.transform.parent.GetComponent<Button>().interactable = isHost;
+		CPULevelButtonText.transform.parent.GetComponent<Button>().interactable = isHost;
+		rivalsButtonText.transform.parent.GetComponent<Button>().interactable = isHost;
+		wayButtonText.transform.parent.GetComponent<Button>().interactable = isHost;
+		catchupButtonText.transform.parent.GetComponent<Button>().interactable = isHost;
+		SwitchScoring(true);
 	}
 	void Awake()
 	{
@@ -41,7 +68,7 @@ public class MultiPlayerSelector : TrackSelector
 	public void SwitchRandomTrack()
 	{
 		Info.randomTrack = !Info.randomTrack;
-		randomCarsText.text = "Track:" + (Info.randomTrack ? "Random" : "Select");
+		randomTracksText.text = "Track:" + (Info.randomTrack ? "Random" : "Select");
 	}
 	public void SwitchReady(bool init)
 	{
