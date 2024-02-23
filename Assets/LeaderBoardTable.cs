@@ -1,15 +1,16 @@
-﻿using JetBrains.Annotations;
+﻿using System;
 using System.Collections.Generic;
 using TMPro;
+using Unity.Services.Lobbies.Models;
 using UnityEngine;
 using UnityEngine.UI;
-
 public class LeaderBoardTable : MonoBehaviour
 {
+	public ServerConnection server;
 	public GameObject LeaderboardRowPrefab;
 	public Sprite knob;
 	public Sprite crown;
-	float timer = 2;
+	Player[] playerOrder;
 	class SponsorScore
 	{
 		public Livery sponsor;
@@ -25,63 +26,72 @@ public class LeaderBoardTable : MonoBehaviour
 		if (Info.scoringType == ScoringType.Championship) // Team scoring
 		{
 			List<SponsorScore> scores = new();
-			foreach (var player in Info.onlinePlayers)
+			playerOrder = new Player[server.lobby.Players.Count];
+
+			for(int i=0; i< server.lobby.Players.Count; ++i)
 			{
-				var standing = scores.Find(s => s.sponsor == player.sponsor);
-				if (standing == null)
+				playerOrder[i] = server.lobby.Players[i];
+
+				var playerSponsor = playerOrder[i].SponsorGet();
+				var playerScore = playerOrder[i].ScoreGet();
+
+				var teamScores = scores.Find(s => s.sponsor == playerSponsor);
+
+				if (teamScores == null)
 				{
-					scores.Add(new SponsorScore { sponsor = player.sponsor, score = player.score });
+					scores.Add(new SponsorScore { sponsor = playerSponsor, score = playerScore });
 				}
 				else
 				{
-					standing.score += player.score;
+					teamScores.score += playerScore;
 				}
 			}
 			scores.Sort((y, x) => x.score.CompareTo(y.score));
-			Info.onlinePlayers.Sort((b, a) =>
+			
+			Array.Sort(playerOrder, (Player p2, Player p1) =>
 			{
-				var teamScoreA = scores.Find(s => s.sponsor == a.sponsor).score;
-				var teamScoreB = scores.Find(s => s.sponsor == b.sponsor).score;
+				Livery p1Sponsor = p1.SponsorGet();
+				Livery p2Sponsor = p2.SponsorGet();
+				var teamScoreA = scores.Find(s => s.sponsor == p1Sponsor).score;
+				var teamScoreB = scores.Find(s => s.sponsor == p2Sponsor).score;
 				return teamScoreA.CompareTo(teamScoreB);
 			});
 		}
 		else
 		{ // Individual scoring
-			Info.onlinePlayers.Sort((b, a) => b.score.CompareTo(a.score));
+			for (int i = 0; i < server.lobby.Players.Count; ++i)
+			{
+				playerOrder[i] = server.lobby.Players[i];
+			}
+			Array.Sort(playerOrder, (Player p2, Player p1) => p2.ScoreGet().CompareTo(p1.ScoreGet()));
 		}
 	}
+	
 	public void Refresh()
 	{
+		if (playerOrder.Length != server.lobby.Players.Count)
+			SortPlayersByScore();
 		// TITLE + PLAYERS
 		for(int i=1; i<transform.childCount; ++i)
 		{
 			Destroy(transform.GetChild(i).gameObject);
 		}
-		foreach (var player in Info.onlinePlayers)
+		foreach (var player in playerOrder)
 		{
 			Add(player);
 		}
 	}
-	public void Update()
-	{
-		if(timer == 0)
-		{
-			Refresh();
-			timer = 2;
-		}
-		timer -= Time.deltaTime;
-	}
-	void Add(OnlinePlayer player)
+	void Add(Player player)
 	{
 		var newRow = Instantiate(LeaderboardRowPrefab, transform).transform;
-		newRow.name = player.name;
-		newRow.GetChild(0).GetChild(0).GetComponent<Image>().color = player.ready ? Color.green : Color.red;
-		newRow.GetChild(0).GetChild(0).GetComponent<Image>().sprite = (player.Id == Info.hostId) ? crown : knob;
-		newRow.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>().text = player.name;
-		newRow.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>().color = player.nickColor;
-		newRow.GetChild(1).GetComponent<TextMeshProUGUI>().text = player.carName;
-		newRow.GetChild(2).GetComponent<TextMeshProUGUI>().text = player.score.ToString();
-		newRow.GetChild(3).GetComponent<TextMeshProUGUI>().text = player.won.ToString();
+		newRow.name = player.NameGet();
+		newRow.GetChild(0).GetChild(0).GetComponent<Image>().color = player.ReadyGet() ? Color.green : Color.yellow;
+		newRow.GetChild(0).GetChild(0).GetComponent<Image>().sprite = (player.Id == server.lobby.HostId) ? crown : knob;
+		newRow.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>().text = player.NameGet();
+		newRow.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>().color = player.ReadColor();
+		newRow.GetChild(1).GetComponent<TextMeshProUGUI>().text = player.carNameGet();
+		newRow.GetChild(2).GetComponent<TextMeshProUGUI>().text = player.ScoreGet().ToString();
+		//newRow.GetChild(3).GetComponent<TextMeshProUGUI>().text = player.won.ToString();
 	}
 }
 

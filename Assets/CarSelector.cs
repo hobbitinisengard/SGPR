@@ -1,4 +1,3 @@
-using RVP;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -93,7 +92,7 @@ public class CarSelector : Selector
 		else
 		{
 			buttonsContainer.GetChild(selectedCar.parent.GetSiblingIndex()).GetComponent<MainMenuButton>().Select();
-			carDescText.text = Info.Car(selectedCar.name).desc;
+			carDescText.text = Info.Car(selectedCar.name).name + "\n\n" + Info.Car(selectedCar.name).desc;
 		}
 		radial.gameObject.SetActive(selectedCar);
 

@@ -15,10 +15,10 @@ public class OKButtonGoTo : MonoBehaviour
 	{
 		switch (Info.gameMode)
 		{
-			case GameMode.Exhibition:
+			case MultiMode.Singleplayer:
 				menuView.GoToView(onExhibitionGoToThis);
 				break;
-			case GameMode.Multiplayer:
+			case MultiMode.Multiplayer:
 				menuView.GoToView(onMultiplayerGoToThis);
 				break;
 			default:

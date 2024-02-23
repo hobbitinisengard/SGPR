@@ -193,7 +193,7 @@ public class SGP_HUD : MonoBehaviour
 			}
 			stunt.updateOverlay = false;
 		}
-		if (StuntInfo.transform.childCount > ((Info.s_raceType == Info.RaceType.Drift) ? 1 : 2))
+		if (StuntInfo.transform.childCount > ((Info.s_raceType == RaceType.Drift) ? 1 : 2))
 			StuntInfo.SetActive(true);
 	}
 	public void AddStunt(in Stunt stunt)
@@ -236,8 +236,8 @@ public class SGP_HUD : MonoBehaviour
 	}
 	private void OnEnable()
 	{
-		AEROText.SetActive(Info.s_raceType != Info.RaceType.Drift);
-		DRIFTText.SetActive(Info.s_raceType == Info.RaceType.Drift);
+		AEROText.SetActive(Info.s_raceType != RaceType.Drift);
+		DRIFTText.SetActive(Info.s_raceType == RaceType.Drift);
 
 		starTargets = new int[10];
 		starCoroutines = new bool[10];
@@ -294,7 +294,7 @@ public class SGP_HUD : MonoBehaviour
 		}
 		carProgressIcons[vp].SetSiblingIndex(9);
 		carProgressIcons[vp].localScale = Vector3.one;
-		bool inRace = Info.InRace;
+		bool inRace = !Info.InEditor;
 
 		AERODisplay.SetActive(inRace);
 		progressDisplay.SetActive(inRace);
@@ -342,7 +342,7 @@ public class SGP_HUD : MonoBehaviour
 		//{
 		//    EndStuntSeq(false);
 		//}
-		if (!racebox.enabled && Info.InRace)
+		if (!racebox.enabled && !Info.InEditor)
 		{
 			Debug.Log("finished");
 			raceManager.PlayFinishSeq();
@@ -372,7 +372,7 @@ public class SGP_HUD : MonoBehaviour
 			}
 			else if (stuntPai != null)
 			{ // show animation and stunt info
-				if (Info.s_raceType != Info.RaceType.Drift && StuntInfo.transform.childCount < 3)
+				if (Info.s_raceType != RaceType.Drift && StuntInfo.transform.childCount < 3)
 				{
 					AddMessage(new Message(StuntInfo.transform.GetChild(1).GetComponent<StuntInfoOverlay>().ToString(), BottomInfoType.STUNT));
 				}
@@ -536,7 +536,7 @@ public class SGP_HUD : MonoBehaviour
 			carStarLevel = racebox.starLevel;
 
 			// Original AERO movement
-			float score = (Info.s_raceType == Info.RaceType.Drift) ? racebox.drift : racebox.Aero;
+			float score = (Info.s_raceType == RaceType.Drift) ? racebox.drift : racebox.Aero;
 			for (int i = 6; i >= 0; --i)
 			{
 				mainRollers[i].SetFrac(score % 10f / 10f);

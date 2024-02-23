@@ -1745,7 +1745,7 @@ public class EditorPanel : Sfxable
 		SwitchTo(Mode.None);
 		Info.s_laps = 3;
 		Info.s_rivals = 3;
-		Info.s_raceType = Info.RaceType.Race;
+		Info.s_raceType = RaceType.Race;
 		if (trackName.text.Length == 3)
 		{
 			DisplayMessageFor("Save track!", 2);

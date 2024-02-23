@@ -16,6 +16,10 @@ public class TrackSelector : TrackSelectorTemplate
 	void OnEnable()
 	{
 		base.OnEnable();
+		ResetButtons();
+	}
+	public void ResetButtons()
+	{
 		SwitchCatchup(true);
 		SwitchCPULevel(true);
 		SwitchDayNight(true);
@@ -28,11 +32,11 @@ public class TrackSelector : TrackSelectorTemplate
 	{
 		int dir = 0;
 		if (!init)
-			dir = Input.GetKey(KeyCode.LeftShift) ? -1 : 1;
+			dir = shiftInputRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
 
-		Info.s_raceType = (Info.RaceType)Wraparound((int)Info.s_raceType+dir,0,Info.RaceTypes-1);
+		Info.s_raceType = (RaceType)Wraparound((int)Info.s_raceType+dir,0,Info.RaceTypes-1);
 
-		if (Info.s_raceType == Info.RaceType.Knockout)
+		if (Info.s_raceType == RaceType.Knockout)
 		{
 			lapsButtonText.transform.parent.GetComponent<Button>().interactable = false;
 			SwitchRivals(true);
@@ -41,19 +45,19 @@ public class TrackSelector : TrackSelectorTemplate
 		{
 			lapsButtonText.transform.parent.GetComponent<Button>().interactable = true;
 		}
-		raceTypeButtonText.text = Enum.GetName(typeof(Info.RaceType), Info.s_raceType);
+		raceTypeButtonText.text = Enum.GetName(typeof(RaceType), Info.s_raceType);
 	}
 	public void SwitchLaps(bool init = false)
 	{
 		if (!init)
 		{
-			if (Input.GetKey(KeyCode.LeftShift))
+			if (shiftInputRef.action.ReadValue<float>() > 0.5f)
 				Info.s_laps -= 3;
 			else
 			{
-				if (Input.GetKey(KeyCode.LeftControl))
+				if (ctrlInputRef.action.ReadValue<float>() > 0.5f)
 					Info.s_laps -= 1;
-				else if (Input.GetKey(KeyCode.LeftAlt))
+				else if (altInputRef.action.ReadValue<float>() > 0.5f)
 					Info.s_laps += 1;
 				else
 					Info.s_laps += 3;
@@ -72,15 +76,15 @@ public class TrackSelector : TrackSelectorTemplate
 	{
 		int dir = 0;
 		if (!init)
-			dir = Input.GetKey(KeyCode.LeftShift) ? -1 : 1;
+			dir = shiftInputRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
 
-		Info.s_cpuLevel = (Info.CpuLevel)Wraparound((int)Info.s_cpuLevel+dir, 0, 3);
+		Info.s_cpuLevel = (CpuLevel)Wraparound((int)Info.s_cpuLevel+dir, 0, 3);
 		string cpuLevelStr = Info.s_cpuLevel switch
 		{
-			Info.CpuLevel.Easy => "Easy",
-			Info.CpuLevel.Medium => "Medium",
-			Info.CpuLevel.Hard => "Hard",
-			Info.CpuLevel.Elite => "Elite",
+			CpuLevel.Easy => "Easy",
+			CpuLevel.Medium => "Medium",
+			CpuLevel.Hard => "Hard",
+			CpuLevel.Elite => "Elite",
 			_ => "Elite",
 		};
 		CPULevelButtonText.text = "CPU: " + cpuLevelStr;
@@ -89,11 +93,11 @@ public class TrackSelector : TrackSelectorTemplate
 	{
 		int dir = 0;
 		if (!init)
-			dir = Input.GetKey(KeyCode.LeftShift) ? -1 : 1;
+			dir = shiftInputRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
 
 		Info.s_rivals = Wraparound(Info.s_rivals + dir, 0, 9);
 
-		if (Info.s_raceType == Info.RaceType.Knockout)
+		if (Info.s_raceType == RaceType.Knockout)
 		{
 			if (Info.s_rivals == 0)
 				Info.s_rivals = 1;
@@ -114,7 +118,7 @@ public class TrackSelector : TrackSelectorTemplate
 	{
 		if (!init)
 		{
-			int dir = Input.GetKey(KeyCode.LeftShift) ? -1 : 1;
+			int dir = shiftInputRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
 			Info.s_roadType = (PavementType)Wraparound((int)(Info.s_roadType + dir), 0, Info.pavementTypes+1);
 		}
 		wayButtonText.text = "Tex: " + Enum.GetName(typeof(PavementType), Info.s_roadType);

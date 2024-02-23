@@ -126,9 +126,10 @@ public class ComponentPanel : MonoBehaviour
 		string[] extensions = Info.partInfos.Select(i => i.fileExtension).ToArray();
 		var extensionFilter = new[] {
 			 new ExtensionFilter("SGPR car parts configuration files", extensions)};
-		string filepath = StandaloneFileBrowser.OpenFilePanel("Select configuration file..",
-				Info.partsPath, extensionFilter, false)[0];
+		string[] filepaths = StandaloneFileBrowser.OpenFilePanel("Select configuration file..",
+				Info.partsPath, extensionFilter, false);
 
+		string filepath = filepaths[0];
 		if (filepath.Length > 0)
 		{
 			if (filepath.EndsWith("carcfg"))
@@ -404,7 +405,7 @@ public class CarConfig
 			var chassis = (ChassisSavable)Part(PartType.Chassis);
 			var tyre = (TyreSavable)Part(PartType.Tyre);
 			var engine = (EngineSavable)Part(PartType.Engine);
-			var jet = (BoostSavable)Part(PartType.Boost);
+			//var jet = (BoostSavable)Part(PartType.Boost);
 			float minVal = .15f;
 			float S = Mathf.Clamp(Mathf.InverseLerp(400, 1800, chassis.staticEvoMaxSpeed), minVal, 1);
 			float G = Mathf.Clamp(Mathf.InverseLerp(-0.2f, 0, chassis.longtitunalCOM), minVal, 1) 
@@ -436,7 +437,7 @@ public class CarConfig
 		this.vp = vp;
 		CarConfig original = vp.carConfig;
 		name = "car"+vp.carNumber.ToString();
-		externalParts = new string[original.externalParts.Length];
+		externalParts = new string[10];
 		for(int i=0; i< original.externalParts.Length; i++)
 		{
 			externalParts[i] = original.externalParts[i];
@@ -687,7 +688,7 @@ public class TyreSavable : PartSavable
 				w.SetInitFrictions(frontFriction, frontFriction);
 			else
 			{
-				if(Info.s_raceType == Info.RaceType.Drift)
+				if(Info.s_raceType == RaceType.Drift)
 				{
 					float value = Mathf.Min(rearFriction, frontFriction - 2);
 					w.SetInitFrictions(value, value);
@@ -902,7 +903,7 @@ public class ChassisSavable : PartSavable
 		vp.originalDrag = drag;
 		vp.rb.drag = drag;
 
-		if(Info.s_raceType == Info.RaceType.Drift)
+		if(Info.s_raceType == RaceType.Drift)
 			vp.centerOfMassObj.localPosition = new Vector3(0, verticalCOM, -0.1f);
 		else
 			vp.centerOfMassObj.localPosition = new Vector3(0, verticalCOM, longtitunalCOM);
@@ -964,7 +965,7 @@ public class EngineSavable : PartSavable
 		vp.engine.maxPitch = audioMaxPitch;
 		vp.engine.minPitch = audioMinPitch;
 		vp.engine.inertia = inertia;
-		vp.engine.maxTorque = (Info.s_raceType == Info.RaceType.Drift) ? Mathf.Max(torque, .4f) : torque;
+		vp.engine.maxTorque = (Info.s_raceType == RaceType.Drift) ? Mathf.Max(torque, .4f) : torque;
 		vp.engine.limitkRPM = redlineKRPM;
 		vp.engine.limit2kRPM = cutoffKRPM;
 		vp.engine.torqueCurve = vp.engine.GenerateTorqueCurve((int)torqueCurveType);
@@ -1066,7 +1067,7 @@ public class BmsSavable : PartSavable
 		bms.driftSpinExponent = driftSpinExponent;
 		bms.maxDriftAngle = maxDriftAngle;
 		bms.autoSteerDrift = autoSteerDrift == 1;
-		bms.driftPush = (Info.s_raceType == Info.RaceType.Drift) ? Mathf.Max(driftPush, 1) : driftPush;
+		bms.driftPush = (Info.s_raceType == RaceType.Drift) ? Mathf.Max(driftPush, 1) : driftPush;
 		bms.downforce = downforce;
 		vp.wheels[0].suspensionParent.brakeForce = frontBrakeForce;
 		vp.wheels[1].suspensionParent.brakeForce = frontBrakeForce;

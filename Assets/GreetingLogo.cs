@@ -1,7 +1,6 @@
 using UnityEngine.UI;
 using UnityEngine;
 using System.Collections;
-using RVP;
 using TMPro;
 using UnityEngine.InputSystem;
 
@@ -79,7 +78,7 @@ public class GreetingLogo : Sfxable
 								Info.s_spectator = true;
 								Info.s_rivals = 5;
 								Info.s_inEditor = false;
-								Info.s_cpuLevel = Info.CpuLevel.Elite;
+								Info.s_cpuLevel = CpuLevel.Elite;
 								Info.s_trackName = track.Key;
 								Info.s_isNight = UnityEngine.Random.value > 0.5f;
 								Info.s_laps = 9;

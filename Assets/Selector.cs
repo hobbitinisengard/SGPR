@@ -1,5 +1,4 @@
-﻿using RVP;
-using System;
+﻿using System;
 using System.Collections;
 using System.IO;
 using System.Linq;
@@ -89,7 +88,7 @@ public class TrackSelectorTemplate : Selector
 		}
 		return existingTrackClasses;
 	}
-	protected IEnumerator Load()
+	protected IEnumerator Load(string specificTrackName = null)
 	{
 		loadCo = true;
 		bool[] existingTrackClasses = PopulateContent();
@@ -111,7 +110,7 @@ public class TrackSelectorTemplate : Selector
 		}
 		SetTiles();
 		SetRecords();
-		radial.gameObject.SetActive(selectedTrack);
+		//radial.gameObject.SetActive(selectedTrack);
 		startButton.Select();
 
 		if (selectedTrack == null)
@@ -286,4 +285,5 @@ public class Selector : Sfxable
 	public InputActionReference move2Ref;
 	public InputActionReference shiftInputRef;
 	public InputActionReference ctrlInputRef;
+	public InputActionReference altInputRef;
 }

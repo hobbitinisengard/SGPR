@@ -23,7 +23,7 @@ namespace RVP
 		// Update is called once per frame
 		void FixedUpdate()
 		{
-			pos += speed * Time.fixedDeltaTime * 100;
+			pos += speed * Time.fixedDeltaTime * 50;
 			pos = degs(pos);
 			switch (rotateAlong)
 			{

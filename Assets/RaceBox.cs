@@ -209,7 +209,7 @@ public class RaceBox : MonoBehaviour
 
 	private void OnDisable()
 	{
-		if(Info.s_raceType == Info.RaceType.Drift)
+		if(Info.s_raceType == RaceType.Drift)
 		{
 			var drift = stuntsData.driftData;
 			if (drift.doneTimes > 0)
@@ -232,7 +232,7 @@ public class RaceBox : MonoBehaviour
 		StuntDetector();
 		DriftDetector();
 
-		if (Info.s_raceType != Info.RaceType.Drift)
+		if (Info.s_raceType != RaceType.Drift)
 			FlipDetector();
 	}
 	public bool GetStuntSeq(ref StuntsData outStuntsData)
@@ -340,7 +340,7 @@ public class RaceBox : MonoBehaviour
 		smoothedDriftAngle = Mathf.Lerp(smoothedDriftAngle, d_effectiveTurnAngle, 10 * Time.fixedDeltaTime);
 
 
-		if (Info.s_raceType == Info.RaceType.Drift)
+		if (Info.s_raceType == RaceType.Drift)
 		{
 			if (vp.crashing)
 			{
@@ -655,7 +655,7 @@ public class RaceBox : MonoBehaviour
 		if (stuntPai.score > 0)
 		{
 			vp.ChargeBatteryByStunt();
-			if (Info.s_raceType == Info.RaceType.Drift)
+			if (Info.s_raceType == RaceType.Drift)
 				drift += stuntPai.score;
 			else
 			{
@@ -681,7 +681,7 @@ public class RaceBox : MonoBehaviour
 		starLevel = 0;
 		stableLandingTimer = -1;
 		jumpTimer = 0;
-		if (Info.s_raceType == Info.RaceType.Drift)
+		if (Info.s_raceType == RaceType.Drift)
 			ResetDrift();
 	}
 	public StuntSeqStatus StuntSeqEnded(out PtsAnimInfo pai)
@@ -689,7 +689,7 @@ public class RaceBox : MonoBehaviour
 		pai = prevStuntPai;
 		prevStuntPai = null;
 
-		if(Info.s_raceType == Info.RaceType.Drift)
+		if(Info.s_raceType == RaceType.Drift)
 		{
 			if (pai == null)
 			{
@@ -807,7 +807,7 @@ public class RaceBox : MonoBehaviour
 			}
 			if (curLap <= Info.s_laps)
 				curLap++;
-			if (Info.s_raceType == Info.RaceType.Knockout && curLap > 1 && raceManager.Position(vp) + 1 == raceManager.ActiveCarsInKnockout)
+			if (Info.s_raceType == RaceType.Knockout && curLap > 1 && raceManager.Position(vp) + 1 == raceManager.ActiveCarsInKnockout)
 			{ // last car is knocked-out
 				raceManager.KnockOutLastCar();
 			}

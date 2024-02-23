@@ -132,8 +132,8 @@ namespace RVP
 		{
 			return Info.s_raceType switch
 			{
-				Info.RaceType.Stunt => vp.raceBox.Aero,
-				Info.RaceType.Drift => vp.raceBox.drift,
+				RaceType.Stunt => vp.raceBox.Aero,
+				RaceType.Drift => vp.raceBox.drift,
 				_ => vp.raceBox.curLap + vp.followAI.ProgressPercent,
 			};
 		}
@@ -243,7 +243,7 @@ namespace RVP
 		{
 			position.y += 1;
 			editorPanel.gameObject.SetActive(false);
-			Info.s_raceType = Info.RaceType.Race;
+			Info.s_raceType = RaceType.Race;
 			var carModel = Resources.Load<GameObject>(Info.carPrefabsPath + Info.s_playerCarName);
 			var newCar = Instantiate(carModel, position, rotation).GetComponent<VehicleParent>();
 			Info.s_cars.Add(newCar);

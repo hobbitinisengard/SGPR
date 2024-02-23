@@ -1,7 +1,5 @@
 ﻿using UnityEngine;
 using System;
-using System.CodeDom.Compiler;
-using System.Windows.Forms;
 
 namespace RVP
 {
@@ -98,10 +96,12 @@ namespace RVP
 				{
 					steerLimit = steerLimitCurve.Evaluate(vp.localVelocity.z);
 					servoAudio.volume = 0;
-					if (holdDuration > 0)
+					if (holdDuration > 0.0001)
 					{
-						holdDuration *= holdComebackSpeed * 100 * Time.fixedDeltaTime;
+						holdDuration *= holdComebackSpeed * 50 * Time.fixedDeltaTime;
 					}
+					else
+						holdDuration = 0;
 				}
 				else
 				{

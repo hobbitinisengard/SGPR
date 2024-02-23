@@ -1,20 +1,25 @@
-﻿using System.Linq;
-using TMPro;
+﻿using TMPro;
+using Unity.Services.Lobbies.Models;
 using UnityEngine;
 
 public class Chat : MonoBehaviour
 {
 	public GameObject chatRowPrefab;
-	int rows = 10;
+	public ServerConnection server;
+	public Transform content;
+	int rows = 30;
+	
 	public void WriteMessageOnChat(string text)
 	{
-		var player = Info.onlinePlayers.First(p => p.Id == 0);
-		AddChatRow(player.name, text, player.nickColor, Color.white);
+		var player = server.PlayerMe();
+		var name = player.NameGet();
+		var color = player.ReadColor();
+		AddChatRow(name, text, color, Color.white);
 	}
 
-	public void AddChatRow(string strA, string strB)
+	public void AddChatRow(Player p, string msg)
 	{
-		AddChatRow(strA, strB, Color.yellow, Color.white);
+		AddChatRow(p.NameGet(), msg, p.ReadColor(), Color.white);
 	}
 	public void AddChatRow(string strA, string strB, Color colorA, Color colorB)
 	{
@@ -22,7 +27,7 @@ public class Chat : MonoBehaviour
 		{
 			Destroy(transform.GetChild(0).gameObject);
 		}
-		var newRow = Instantiate(chatRowPrefab, transform);
+		var newRow = Instantiate(chatRowPrefab, content);
 		var textA = newRow.transform.GetChild(0).GetComponent<TextMeshProUGUI>();
 		textA.text = strA;
 		textA.color = colorA;

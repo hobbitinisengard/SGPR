@@ -74,7 +74,7 @@ namespace RVP
 		// CPU settings
 		float tyreMult = 1;
 		float lowSpeed = 30;
-		public Info.CpuLevel cpuLevel;
+		public CpuLevel cpuLevel;
 		public bool SGPshifting;
 		[Tooltip("Time limit in seconds which the vehicle is stuck before attempting to reverse")]
 		public float stopTimeReverse = 5;
@@ -133,19 +133,19 @@ namespace RVP
 				vp.basicInput.enabled = false;
 				switch (cpuLevel)
 				{
-					case Info.CpuLevel.Easy:
+					case CpuLevel.Easy:
 						lowSpeed = UnityEngine.Random.value * 2 + 28; // 30-32
 						tyreMult = .9f;
 						break;
-					case Info.CpuLevel.Medium:
+					case CpuLevel.Medium:
 						lowSpeed = UnityEngine.Random.value * 2 + 30; // 30-32
 						tyreMult = 1.2f;
 						break;
-					case Info.CpuLevel.Hard:
+					case CpuLevel.Hard:
 						lowSpeed = UnityEngine.Random.value * 2 + 36; // 36-38
 						tyreMult = 1.2f;
 						break;
-					case Info.CpuLevel.Elite:
+					case CpuLevel.Elite:
 						lowSpeed = UnityEngine.Random.value * 2 + 38; // 38-40
 						tyreMult = 1.2f;
 						break;
@@ -613,13 +613,13 @@ namespace RVP
 			if (ghostCo != null)
 				StopCoroutine(ghostCo);
 			ghostCo = StartCoroutine(GetComponent<Ghost>().ResetSeq());
-			rb.isKinematic = true;
+			//rb.isKinematic = true;
 			tr.position = resetPos + Vector3.up;
 			yield return new WaitForFixedUpdate();
 			tr.rotation = Quaternion.LookRotation(trackPathCreator.path.GetDirectionAtDistance(progress));
 			rb.angularVelocity = Vector3.zero;
 			rb.velocity = Vector3.zero;
-			rb.isKinematic = false;
+			//rb.isKinematic = false;
 		}
 
 		public void DriveThruPits(in PathCreator pitsPathCreator)

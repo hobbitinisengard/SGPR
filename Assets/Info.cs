@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Unity.Services.Lobbies.Models;
 using UnityEngine;
 using UnityEngine.Audio;
 
@@ -13,49 +14,12 @@ public enum CarGroup { Wild, Aero, Speed, Team };
 public enum Livery { Special = 1, TGR, Rline, Itex, Caltex, Titan, Mysuko }
 public enum RecordType { BestLap, RaceTime, StuntScore, DriftScore, TimeTrial }
 public enum ScoringType { Championship, Points, Victory }
+public enum ActionHappening { InLobby, InWorld }
 public enum PavementType { Highway, RedSand, Asphalt, Electric, TimeTrial, Japanese, GreenSand, Random }
-public enum ServerSide { Host, Client };
-public enum GameMode { Exhibition, Multiplayer};
-public class OnlinePlayer
-{
-	public int Id;
-	public string name;
-	public Livery sponsor;
-	public string carName;
-	public int score;
-	public int won;
-	public bool ready;
-	public bool host;
-	public Color nickColor
-	{
-		get
-		{
-			if(Info.scoringType == ScoringType.Championship)
-			{
-				switch (sponsor)
-				{
-					case Livery.Special:
-						return Color.yellow;
-					case Livery.TGR:
-						return new Color(255, 165, 0); // orange
-					case Livery.Rline:
-						return new Color(165, 90, 189); // purple
-					case Livery.Itex:
-						return Color.red;
-					case Livery.Caltex:
-						return Color.green;
-					case Livery.Titan:
-						return Color.blue;
-					case Livery.Mysuko:
-						return Color.gray;
-					default:
-						break;
-				}
-			}
-			return Color.yellow;
-		}
-	}
-}
+public enum MultiMode { Singleplayer, Multiplayer };
+public enum RaceType { Race, Knockout, Stunt, Drift }
+public enum CpuLevel { Easy, Medium, Hard, Elite };
+
 [Serializable]
 public class PlayerSettingsData
 {
@@ -63,17 +27,108 @@ public class PlayerSettingsData
 	public float sfxVol = 1;
 	public string playerName;
 	public float steerGamma;
-	public int portNumber;
-	public string ipAddress;
 }
 public static class Info
 {
 	public readonly static string documentsSGPRpath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Stunt GP Reloaded\\";
 	public readonly static string partsPath = documentsSGPRpath + "parts\\";
 	public readonly static string tracksPath = documentsSGPRpath + "tracks\\";
+	public readonly static string downloadPath = documentsSGPRpath + "temp\\";
 	public readonly static string userdataPath = documentsSGPRpath + "userdata.json";
 	public readonly static string lastPath = documentsSGPRpath + "path.txt";
+
+	public const string k_Ready = "r";
+	public const string k_Sponsor = "s";
+	public const string k_Name = "n";
+	public const string k_carName = "c";
+	public const string k_score = "sc";
+	public const string k_message = "m";
+
+	public const string k_raceConfig = "e";
+	public const string k_zippedTrack = "t";
+	public const string k_duringRace = "d";
+	public const string k_IPv4 = "a";
+	public const string k_trackSHA = "ts";
+	public const string k_trackName = "tn";
+	public const string k_trackRequest = "tr";
+	public const string k_actionHappening = "ah";
+
 	public static PlayerSettingsData playerData;
+	public static Livery SponsorGet(this Player player)
+	{
+		return (Livery)Enum.Parse(typeof(Livery), player.Data[k_Sponsor].Value);
+	}
+	public static void SponsorSet(this Player player, Livery livery)
+	{
+		player.Data[k_Sponsor].Value = livery.ToString();
+	}
+	public static int ScoreGet(this Player player)
+	{
+		return int.Parse(player.Data[k_score].Value);
+	}
+	public static void ScoreSet(this Player player, int newScore)
+	{
+		player.Data[k_score].Value = newScore.ToString();
+	}
+	public static bool ReadyGet(this Player player)
+	{
+		return bool.Parse(player.Data[k_Ready].Value);
+	}
+	public static void ReadySet(this Player player, bool ready)
+	{
+		player.Data[k_Ready].Value = ready.ToString();
+	}
+	public static string NameGet(this Player player)
+	{
+		return player.Data[k_Name].Value;
+	}
+	public static void NameSet(this Player player, string name)
+	{
+		player.Data[k_Name].Value = name;
+	}
+	public static string carNameGet(this Player player)
+	{
+		return player.Data[k_carName].Value;
+	}
+	public static void carNameSet(this Player player, string carName)
+	{
+		player.Data[k_carName].Value = carName;
+	}
+	public static string IPv4Get(this Player player)
+	{
+		return player.Data[k_IPv4].Value;
+	}
+	public static void IPv4Set(this Player player, string ipv4)
+	{
+		player.Data[k_IPv4].Value = ipv4;
+	}
+	public static Color ReadColor(this Player player)
+	{
+		if (Info.scoringType == ScoringType.Championship)
+		{
+			switch (player.SponsorGet())
+			{
+				case Livery.Special:
+					return Color.yellow;
+				case Livery.TGR:
+					return new Color(255, 165, 0); // orange
+				case Livery.Rline:
+					return new Color(165, 90, 189); // purple
+				case Livery.Itex:
+					return Color.red;
+				case Livery.Caltex:
+					return Color.green;
+				case Livery.Titan:
+					return Color.blue;
+				case Livery.Mysuko:
+					return Color.gray;
+				default:
+					break;
+			}
+		}
+		return Color.yellow;
+	}
+
 	public static void ReadSettingsDataFromJson()
 	{
 		if (!File.Exists(userdataPath))
@@ -95,6 +150,7 @@ public static class Info
 		string jsonText = JsonConvert.SerializeObject(playerData);
 		File.WriteAllText(userdataPath, jsonText);
 	}
+
 	public static PartInfo[] partInfos = new PartInfo[]
 	{
 		new PartInfo("Itex", "suscfg"),
@@ -112,15 +168,15 @@ public static class Info
 	//public static string[] extensionsSuffixes = new string[] { "suscfg", "bmscfg", "batcfg",
 	//		"engcfg", "chacfg", "grscfg", "jetcfg", "tyrcfg", "drvcfg", "carcfg" };
 
-	
+
 	/// <summary>
 	/// Number of track textures. Set pavementTypes+1 for random texture.
 	/// </summary>
 	public const int pavementTypes = 6;
 
-	public enum RaceType { Race, Knockout, Stunt, Drift }
-	public const int RaceTypes = 4;
 	
+	public const int RaceTypes = 4;
+
 	public readonly static Vector3[] invisibleLevelDimensions = new Vector3[]{
 		new (564, 1231,1), //ger
 		new (800, 800,1), //jap
@@ -147,17 +203,16 @@ public static class Info
 		"ITALY\n\nFeeling mediterranean? This italian coast is very scenic, especially at night. There are two dangers here to look out however: staircase descent and water!",
 		"MEXICO\n\nOnly some people are in the possession of info that there's this ancient place located in the middle of an unknown mexican forest, where aztecs used to race RC-cars. However no-one really knows how to get there."
 	};
-	
+
 	public static readonly string carPrefabsPath = "carModels/";
 	public static readonly string carImagesPath = "carImages/";
 	public static readonly string trackImagesPath = "trackImages/";
 	public static readonly string editorTilesPath = "tiles/objects/";
 	public static Vector3[] carSGPstats;
 	public static Car[] cars;
-	public static List<OnlinePlayer> onlinePlayers;
 	public static ScoringType scoringType;
-	public static ServerSide serverSide;
-	public static GameMode gameMode = GameMode.Exhibition;
+	public static MultiMode gameMode = MultiMode.Singleplayer;
+	public static ActionHappening actionHappening = ActionHappening.InLobby;
 	public static Dictionary<string, PartSavable> carParts;
 	public static SortedDictionary<string, TrackHeader> tracks;
 	public static Dictionary<string, AudioClip> audioClips;
@@ -171,7 +226,7 @@ public static class Info
 	public const int terrainLayer = 13;
 	public const int cameraLayer = 14;
 	public const int flagLayer = 15;
-	public static readonly int[] racingLineLayers = new int[] {16,25,27};
+	public static readonly int[] racingLineLayers = new int[] { 16, 25, 27 };
 	public const int pitsLineLayer = 17;
 	public const int pitsZoneLayer = 18;
 	public const int aeroTunnel = 19;
@@ -185,14 +240,13 @@ public static class Info
 
 	// curr/next session data
 	public static bool s_spectator;
-	public static List<VehicleParent> s_cars = new List<VehicleParent>();
+	public static List<VehicleParent> s_cars = new();
 	public static string s_trackName = "USA";
 	public static string s_playerCarName = "car01";
 	public static RaceType s_raceType = RaceType.Race;
 	public static int s_laps = 3;
 	public static bool s_inEditor = true;
 	public static bool s_isNight = false;
-	public enum CpuLevel { Easy, Medium, Hard, Elite};
 	public static CpuLevel s_cpuLevel = CpuLevel.Elite;
 	public static int s_rivals = 0; // 0-9
 	public static PavementType s_roadType = PavementType.Random;
@@ -207,17 +261,18 @@ public static class Info
 	public static Sprite[] icons;
 	public static bool gamePaused;
 	internal static bool controllerInUse;
-	internal static int myId;
 	internal static bool randomCars;
 	internal static bool randomTrack;
 	internal static int hostId;
 	public static readonly string version = "0.3b";
-
-	public static bool InRace 
-	{ 
+	/// <summary>
+	/// if in track editor or testDriving
+	/// </summary>
+	public static bool InEditor
+	{
 		get
 		{
-			return !s_inEditor || s_cars.Count > 1;
+			return s_inEditor && s_cars.Count < 2;
 		}
 	}
 
@@ -247,26 +302,26 @@ public static class Info
 		{
 			cars = new Car[]
 			{
-			new Car(1,CarGroup.Speed, "MEAN STREAK\n\nFast, light and agile, this racer offers much for those who wish to modify their vehicle."),
-			new Car(1,CarGroup.Wild, "THE HUSTLER\n\nSturdy 4x4 pick-up truck with an eye for the outrageous!"),
-			new Car(1,CarGroup.Aero, "TWIN EAGLE\n\nTake flight with this light and speedy stuntcar."),
-			new Car(1,CarGroup.Aero, "SKY HAWK\n\nGet airborne with this very versatile stunt car."),
-			new Car(1,CarGroup.Speed, "THE PHANTOM\n\nFast, sleek and tough to handle."),
-			new Car(1,CarGroup.Wild, "ROAD HOG\n\nRock and Roll with the rough ridin' road hog."),
-			new Car(1,CarGroup.Wild, "DUNE RAT\n\nDefy the laws of physics in this buggy."),
-			new Car(1,CarGroup.Speed, "NITRO LIGHTNIN''\n\nSupercharged super speed. Easy does it!"),
-			new Car(1,CarGroup.Speed, "ALLEY KAT\n\nSleek and powerful, this cat is ready to roar."),
-			new Car(1,CarGroup.Wild, "SAND SHARK\n\nThis beachcomber is at home on any stunt circuit."),
-			//new Car(0,CarGroup.Wild, "THE BRUTE\n\nUnleash the Brute for no-nonsense on the road!"),
-			//new Car(0,CarGroup.Aero, "WILD DART\n\nFly fast and true with this stuntcar."),
-			//new Car(0,CarGroup.Wild, "RAGING BULL\n\nPowerful and fast, this streetwise 4x4 is incredible."),
-			//new Car(0,CarGroup.Aero, "FLYING MANTIS\n\nSuper light and very fast."),
-			//new Car(0,CarGroup.Aero, "STUNT MONKEY\n\nMonkey see, monkey do! Go bananas with this wild ride!"),
-			//new Car(0,CarGroup.Speed, "INFERNO\n\nThis speed demon is on fire!"),
-			//new Car(0,CarGroup.Team, "THE FORKSTER\n\nDespite its looks, it moves like fork lightning!"),
-			//new Car(0,CarGroup.Team, "WORMS MOBILE\n\nSuper Speedy Buggy!"),
-			//new Car(0,CarGroup.Team, "FORMULA 17\n\nIncredibly fast racing car."),
-			//new Car(0,CarGroup.Team, "TEAM MACHINE\n\nThe ultimate, hugely versatile stock car.")
+			new (1,CarGroup.Speed, "MEAN STREAK","Fast, light and agile, this racer offers much for those who wish to modify their vehicle."),
+			new (1,CarGroup.Wild, "THE HUSTLER","Sturdy 4x4 pick-up truck with an eye for the outrageous!"),
+			new (1,CarGroup.Aero, "TWIN EAGLE","Take flight with this light and speedy stuntcar."),
+			new (1,CarGroup.Aero, "SKY HAWK","Get airborne with this very versatile stunt car."),
+			new (1,CarGroup.Speed, "THE PHANTOM","Fast, sleek and tough to handle."),
+			new (1,CarGroup.Wild, "ROAD HOG","Rock and Roll with the rough ridin' road hog."),
+			new (1,CarGroup.Wild, "DUNE RAT","Defy the laws of physics in this buggy."),
+			new (1,CarGroup.Speed, "LIGHTNIN'","Supercharged super speed. Easy does it!"),
+			new (1,CarGroup.Speed, "ALLEY KAT","Sleek and powerful, this cat is ready to roar."),
+			new (1,CarGroup.Wild, "SAND SHARK","This beachcomber is at home on any stunt circuit."),
+			//new Car(0,CarGroup.Wild, "THE BRUTE","Unleash the Brute for no-nonsense on the road!"),
+			//new Car(0,CarGroup.Aero, "WILD DART","Fly fast and true with this stuntcar."),
+			//new Car(0,CarGroup.Wild, "RAGING BULL","Powerful and fast, this streetwise 4x4 is incredible."),
+			//new Car(0,CarGroup.Aero, "FLYING MANTIS","Super light and very fast."),
+			//new Car(0,CarGroup.Aero, "STUNT MONKEY","Monkey see, monkey do! Go bananas with this wild ride!"),
+			//new Car(0,CarGroup.Speed, "INFERNO","This speed demon is on fire!"),
+			//new Car(0,CarGroup.Team, "THE FORKSTER","Despite its looks, it moves like fork lightning!"),
+			//new Car(0,CarGroup.Team, "WORMS MOBILE","Super Speedy Buggy!"),
+			//new Car(0,CarGroup.Team, "FORMULA 17","Incredibly fast racing car."),
+			//new Car(0,CarGroup.Team, "TEAM MACHINE","The ultimate, hugely versatile stock car.")
 			};
 		}
 		ReloadCarConfigs();
@@ -280,12 +335,12 @@ public static class Info
 
 		for (int i = 0; i < cars.Length; ++i)
 		{
-			await Task.Run(() => 
+			await Task.Run(() =>
 			{
 				string filepath = Info.partsPath + "car" + (i + 1).ToString() + "." + partInfos[^1].fileExtension;
 				string jsonText = File.ReadAllText(filepath);
 				cars[i].config = new CarConfig(null, null, jsonText);
-			}); 
+			});
 		}
 	}
 	public static void AddCar()
@@ -447,6 +502,12 @@ public class TrackHeader
 			this.secondsOrPts = 0;
 			this.requiredSecondsOrPts = 0;
 		}
+		public Record(Record r)
+		{
+			this.playerName = r.playerName;
+			this.secondsOrPts = r.secondsOrPts;
+			this.requiredSecondsOrPts = r.requiredSecondsOrPts;
+		}
 		public static Record[] RecordTemplate()
 		{
 			return new Record[]
@@ -500,6 +561,19 @@ public class TrackHeader
 		this.icons = icons;
 
 	}
+
+	public TrackHeader(TrackHeader h)
+	{
+		this.unlocked = h.unlocked;
+		this.preferredCarClass = h.preferredCarClass;
+		this.difficulty = h.difficulty;
+		this.envir = h.envir;
+		this.author = h.author;
+		this.desc = h.desc;
+		this.valid = h.valid;
+		this.icons = h.icons;
+	}
+
 	public int TrackOrigin()
 	{
 		return (author != "Team17") ? 1 : 0;
@@ -509,20 +583,15 @@ public class TrackHeader
 public class Car
 {
 	public string desc;
+	public string name;
 	public CarGroup category;
 	public CarConfig config;
 	public bool unlocked;
-	public Car(int unlocked, CarGroup carClass, string desc)
+	public Car(int unlocked, CarGroup carClass, string name, string desc)
 	{
 		this.desc = desc;
 		this.category = carClass;
-		//if (sgpBars == null)
-		//{
-		//	sgpBars = new float[3];
-		//	for (int i = 0; i < 3; ++i)
-		//		sgpBars[i] = UnityEngine.Random.value;
-		//}
-		//this.sgpBars = sgpBars;
+		this.name = name;
 		this.unlocked = unlocked > 0;
 	}
 }

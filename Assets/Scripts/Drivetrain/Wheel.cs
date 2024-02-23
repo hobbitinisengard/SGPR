@@ -221,7 +221,7 @@ namespace RVP
 		public PhysicMaterial detachedTireMaterial;
 		public PhysicMaterial detachedRimMaterial;
 		public ParticleSystem airGreenParticleSystem;
-		
+
 
 
 		//AnimationCurve GenerateFrictionCurve(bool moreGrip = false)
@@ -241,7 +241,7 @@ namespace RVP
 		public void SetColliderLayer(int layer)
 		{
 			gameObject.layer = layer;
-			if(sphereColTr)
+			if (sphereColTr)
 				sphereColTr.gameObject.layer = layer;
 		}
 		void Start()
@@ -253,7 +253,7 @@ namespace RVP
 			travelDist = suspensionParent.targetCompression;
 			canDetach = detachForce < Mathf.Infinity && Application.isPlaying;
 			initialTirePressure = tirePressure;
-			
+
 			if (tr.childCount > 0)
 			{
 				// Get rim
@@ -332,7 +332,7 @@ namespace RVP
 			targetDrive = GetComponent<DriveForce>();
 			currentRPM = 0;
 
-			if (Info.s_raceType == Info.RaceType.Drift)
+			if (Info.s_raceType == RaceType.Drift)
 				slipDependence = SlipDependenceMode.independent;
 		}
 
@@ -612,7 +612,7 @@ namespace RVP
 				//	contactPoint.surfaceType = GroundSurfaceMaster.AirSteeringSurfaceType;
 				//}
 				//else
-				{ 
+				{
 					grounded = false;
 					groundedReally = false;
 					contactPoint.distance = suspensionParent.suspensionDistance;
@@ -727,13 +727,13 @@ namespace RVP
 			// Set final RPM
 			if (!suspensionParent.jammed && connected)
 			{
-				bool validTorque = (!(Mathf.Approximately(actualTorque, 0) && Mathf.Abs(actualTargetRPM) < 0.01f) 
+				bool validTorque = (!(Mathf.Approximately(actualTorque, 0) && Mathf.Abs(actualTargetRPM) < 0.01f)
 					&& !Mathf.Approximately(actualTargetRPM, 0)) || brakeForce + actualEbrake * vp.ebrakeInput > 0;
 
 				currentRPM = Mathf.Lerp(rawRPM,
 						Mathf.Lerp(Mathf.Lerp(rawRPM, actualTargetRPM, validTorque ? EvaluateTorque(actualTorque) : actualTorque),
 					 0, Mathf.Max(brakeForce, actualEbrake * vp.ebrakeInput)),
-				validTorque ? EvaluateTorque(actualTorque + brakeForce + actualEbrake * vp.ebrakeInput) 
+				validTorque ? EvaluateTorque(actualTorque + brakeForce + actualEbrake * vp.ebrakeInput)
 					: actualTorque + brakeForce + actualEbrake * vp.ebrakeInput);
 
 				targetDrive.feedbackRPM = Mathf.Lerp(currentRPM, rawRPM, feedbackRpmBias);
@@ -775,10 +775,19 @@ namespace RVP
 			if (tr && suspensionParent)
 			{
 				float ackermannVal = Mathf.Sign(suspensionParent.steerAngle) == suspensionParent.flippedSideFactor ? 1 + suspensionParent.ackermannFactor : 1 - suspensionParent.ackermannFactor;
-				tr.localEulerAngles = new Vector3(
-					 suspensionParent.camberAngle + suspensionParent.casterAngle * suspensionParent.steerAngle * suspensionParent.flippedSideFactor,
-					 -suspensionParent.toeAngle * suspensionParent.flippedSideFactor + suspensionParent.steerDegrees * ackermannVal,
-					 0);
+				
+				if(suspensionParent.steerAngle != float.NaN)
+				{
+					tr.localEulerAngles = new Vector3(
+				 suspensionParent.camberAngle + suspensionParent.casterAngle * suspensionParent.steerAngle * suspensionParent.flippedSideFactor,
+				 -suspensionParent.toeAngle * suspensionParent.flippedSideFactor + suspensionParent.steerDegrees * ackermannVal,
+				 0);
+				}
+				else
+				{
+
+				}
+
 			}
 
 			if (Application.isPlaying)
