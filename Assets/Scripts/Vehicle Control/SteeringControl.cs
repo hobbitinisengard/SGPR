@@ -119,8 +119,9 @@ namespace RVP
 				else
 					holdCurveValue = keyboardInputCurve.Evaluate(holdDuration);
 			}
-			if(steeringWheel != null)
-				steeringWheel.localRotation = Quaternion.Euler(0,1.5f*targetSteer , 0);
+			float sign = Sign(vp.steerInput);
+			if (steeringWheel != null)
+				steeringWheel.localRotation = Quaternion.Euler(0,0, holdCurveValue * 120 * sign);
 			// Set steer angles in wheels
 			foreach (Suspension curSus in steeredWheels)
 			{
@@ -137,7 +138,7 @@ namespace RVP
 				else
 				{
 					//float sign = Sign((vp.steerInput == 0) ? curSus.steerAngle : vp.steerInput);
-					float sign = Sign(vp.steerInput);
+					
 					targetSteer = holdCurveValue * (vp.SGPshiftbutton ? 1 : steerLimit);
 					curSus.steerAngle = Mathf.Lerp(curSus.steerAngle, 
 						sign * targetSteer,

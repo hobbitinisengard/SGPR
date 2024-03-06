@@ -7,6 +7,11 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: cars_car20_b20grid1
+    second: {fileID: 2100000, guid: 567fb7431628d8944ba027cfd2399a71, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: cars_car20_b20grid2
     second: {fileID: 2100000, guid: 567fb7431628d8944ba027cfd2399a71, type: 2}
   - first:
@@ -36,8 +41,6 @@ ModelImporter:
     optimizeGameObjects: 0
     removeConstantScaleCurves: 1
     motionNodeName: 
-    rigImportErrors: 
-    rigImportWarnings: 
     animationImportErrors: 
     animationImportWarnings: 
     animationRetargetingWarnings: 
