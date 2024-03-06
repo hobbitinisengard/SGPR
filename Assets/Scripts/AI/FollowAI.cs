@@ -90,9 +90,9 @@ namespace RVP
 		public float rollResetTime = 3;
 		public float rolledOverTime;
 		private bool dumbBool;
-		public AnimationCurve lookAheadMultCurve = new AnimationCurve();
-		public AnimationCurve lookAheadSteerCurve = new AnimationCurve();
-		public AnimationCurve tSpeedExpCurve = new AnimationCurve();
+		public AnimationCurve lookAheadMultCurve = new ();
+		public AnimationCurve lookAheadSteerCurve = new();
+		public AnimationCurve tSpeedExpCurve = new ();
 		public bool searchForPits;
 		float inPitsTime;
 		public float outOfTrackTime;
@@ -103,7 +103,7 @@ namespace RVP
 		public int curStuntpointIdx;
 		public int curReplayPointIdx;
 		public bool aiStuntingProc;
-		public float cpuSmoothCoeff = 10;
+		public float cpuSmoothCoeff = 5;
 		public float cpuFastCoeff = 50;
 		private bool revvingCo;
 
@@ -128,46 +128,47 @@ namespace RVP
 				return;
 			isCPU = val;
 			selfDriving = val;
-			if (isCPU)
-			{
-				vp.basicInput.enabled = false;
-				switch (cpuLevel)
-				{
-					case CpuLevel.Easy:
-						lowSpeed = UnityEngine.Random.value * 2 + 28; // 30-32
-						tyreMult = .9f;
-						break;
-					case CpuLevel.Medium:
-						lowSpeed = UnityEngine.Random.value * 2 + 30; // 30-32
-						tyreMult = 1.2f;
-						break;
-					case CpuLevel.Hard:
-						lowSpeed = UnityEngine.Random.value * 2 + 36; // 36-38
-						tyreMult = 1.2f;
-						break;
-					case CpuLevel.Elite:
-						lowSpeed = UnityEngine.Random.value * 2 + 38; // 38-40
-						tyreMult = 1.2f;
-						break;
-				}
-				for (int i = 0; i < 4; ++i)
-				{
-					vp.wheels[i].sidewaysFriction = tyreMult * vp.wheels[i].initSidewaysFriction;
-					vp.wheels[i].forwardFriction = tyreMult * vp.wheels[i].initForwardFriction;
-				}
-				var keys = tSpeedExpCurve.keys;
-				keys[keys.Count() - 1].value = lowSpeed;
-				tSpeedExpCurve.keys = keys;
-			}
-			else
-			{
-				vp.basicInput.enabled = true;
-				for (int i = 0; i < 4; ++i)
-				{
-					vp.wheels[i].sidewaysFriction = vp.wheels[i].initSidewaysFriction;
-					vp.wheels[i].forwardFriction = vp.wheels[i].initForwardFriction;
-				}
-			}
+			vp.basicInput.enabled = !isCPU;
+			//if (isCPU)
+			//{
+			//	vp.basicInput.enabled = false;
+			//	switch (cpuLevel)
+			//	{
+			//		case CpuLevel.Easy:
+			//			lowSpeed = UnityEngine.Random.value * 2 + 28; // 30-32
+			//			tyreMult = .9f;
+			//			break;
+			//		case CpuLevel.Medium:
+			//			lowSpeed = UnityEngine.Random.value * 2 + 30; // 30-32
+			//			tyreMult = 1.2f;
+			//			break;
+			//		case CpuLevel.Hard:
+			//			lowSpeed = UnityEngine.Random.value * 2 + 36; // 36-38
+			//			tyreMult = 1.2f;
+			//			break;
+			//		case CpuLevel.Elite:
+			//			lowSpeed = UnityEngine.Random.value * 2 + 38; // 38-40
+			//			tyreMult = 1.2f;
+			//			break;
+			//	}
+			//	for (int i = 0; i < 4; ++i)
+			//	{
+			//		vp.wheels[i].sidewaysFriction = tyreMult * vp.wheels[i].initSidewaysFriction;
+			//		vp.wheels[i].forwardFriction = tyreMult * vp.wheels[i].initForwardFriction;
+			//	}
+			//	var keys = tSpeedExpCurve.keys;
+			//	keys[keys.Count() - 1].value = lowSpeed;
+			//	tSpeedExpCurve.keys = keys;
+			//}
+			//else
+			//{
+			//	vp.basicInput.enabled = true;
+			//	for (int i = 0; i < 4; ++i)
+			//	{
+			//		vp.wheels[i].sidewaysFriction = vp.wheels[i].initSidewaysFriction;
+			//		vp.wheels[i].forwardFriction = vp.wheels[i].initForwardFriction;
+			//	}
+			//}
 		}
 		public void AssignPath(in PathCreator racingLinePath, in PathCreator universalPath,
 			ref List<int> stuntpointsContainer, ref List<ReplayCamStruct> replayCams, int racingLineLayerNumber)
@@ -250,6 +251,7 @@ namespace RVP
 			bool revHigher = true;
 			while (vp.countdownTimer > 0)
 			{
+				
 				if (vp.countdownTimer < 0.5f)
 					vp.SetAccel(1);
 				else
@@ -293,8 +295,7 @@ namespace RVP
 			}
 			else
 				outOfTrackTime += Time.fixedDeltaTime;
-
-
+			
 			// wrong way driving
 			if(trackPathCreator)
 			{
@@ -333,7 +334,7 @@ namespace RVP
 			{
 				if (searchForPits)
 				{
-					pitsPathHits = Physics.OverlapSphere(transform.position, radius, 1 << racingLineLayerNumber);
+					pitsPathHits = Physics.OverlapSphere(transform.position, radius, 1 << Info.pitsLineLayer);
 
 					if (pitsPathHits.Length > 0)
 					{
@@ -526,15 +527,17 @@ namespace RVP
 					}
 					else
 						targetDir = F.Vec3Flat((Vector3)tPos - transform.position).normalized;
-					//Vector3 targetDir = F.FlatDistance(tPos0, vp.tr.position) < 2 ? curTrackpathDir : toTPosDir;
-					//Vector3 targetDir = Vector3.Lerp(curTrackpathDir,toTPosDir, F.FlatDistance(tPos0, vp.tr.position)/);
-					//Debug.DrawRay(transform.position + Vector3.up * 2, targetDir);
-					steerAngle = Vector3.SignedAngle(F.Vec3Flat(tr.forward).normalized, targetDir, Vector3.up);
+					
+					// degrees between car and target
+					float targetSteer = Vector3.SignedAngle(F.Vec3Flat(tr.forward).normalized, targetDir, Vector3.up);
 
-					if (!aiStuntingProc)
-						vp.SetSGPShift(steerAngle > 30);
+					//Debug.DrawRay(vp.transform.position + 3*Vector3.up, 3*targetDir, Color.red);
+					//if (!aiStuntingProc)
+					//	vp.SetSGPShift(targetSteer > 30);
 
-					float targetSteer = Mathf.Sign(steerAngle) * Mathf.InverseLerp(0, maxPhysicalSteerAngle, Mathf.Abs(steerAngle));
+					targetSteer = Mathf.Sign(targetSteer) * Mathf.InverseLerp(0, maxPhysicalSteerAngle, Mathf.Abs(targetSteer));
+
+					targetSteer = Mathf.Lerp(vp.steerInput, targetSteer, cpuSmoothCoeff * Time.fixedDeltaTime);
 					vp.SetSteer(((reverseTime == 0) ? 1 : -1) * targetSteer);
 					vp.SetBoost(steerAngle < 2 && vp.BatteryPercent > 0.5f);
 				}
@@ -603,8 +606,10 @@ namespace RVP
 				yield break;
 			float resetDist = progress;
 			Vector3 resetPos = trackPathCreator.path.GetPointAtDistance(resetDist);
-			while (!Physics.Raycast(resetPos + 5*Vector3.up, Vector3.down, out var h, Mathf.Infinity, 1 << Info.roadLayer)
-				|| Vector3.Dot(h.normal, Vector3.up) < -0.5f) // while not hit road or hit culled face (backface raycasts are on)
+			RaycastHit h;
+			while (!Physics.Raycast(resetPos + 5*Vector3.up, Vector3.down, out h, Mathf.Infinity, 1 << Info.roadLayer)
+				|| Vector3.Dot(h.normal, Vector3.up) < -0.5f // while not hit road or hit culled face (backface raycasts are on)
+				|| Mathf.Abs(Vector3.Dot(h.normal, Vector3.up)) < .64f) // slope too big
 			{
 				resetDist += 30;
 				resetPos = trackPathCreator.path.GetPointAtDistance(resetDist);
@@ -614,7 +619,7 @@ namespace RVP
 				StopCoroutine(ghostCo);
 			ghostCo = StartCoroutine(GetComponent<Ghost>().ResetSeq());
 			//rb.isKinematic = true;
-			tr.position = resetPos + Vector3.up;
+			tr.position = h.point + Vector3.up;
 			yield return new WaitForFixedUpdate();
 			tr.rotation = Quaternion.LookRotation(trackPathCreator.path.GetDirectionAtDistance(progress));
 			rb.angularVelocity = Vector3.zero;

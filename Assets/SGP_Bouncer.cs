@@ -1,4 +1,5 @@
 using RVP;
+using System.Collections;
 using UnityEngine;
 public class SGP_Bouncer : MonoBehaviour
 {
@@ -84,18 +85,22 @@ public class SGP_Bouncer : MonoBehaviour
 				return;
 			if (Time.time - lastBounceTime < debounceTime)
 				return;
-			addForce = Vector3.Project(collision.relativeVelocity, -norm);
-			Vector3 rightV = Vector3.Cross(-vp.rb.velocity.normalized,norm).normalized;
-			direction = Vector3.Cross(rightV, norm).normalized;//(vp.rb.velocity - addForce).normalized;
-			//Debug.DrawRay(vp.centerOfMassObj.position, direction, Color.magenta, 4);
-			//Debug.DrawRay(vp.centerOfMassObj.position, -norm, Color.white, 4);
-			//Debug.Log(addForce.magnitude);
 			lastBounceTime = Time.time;
-			rb.AddForceAtPosition(direction * addForce.magnitude,
-			vp.centerOfMassObj.position,//collision.GetContact(0).point,
-			ForceMode.VelocityChange);
+			//addForce = Vector3.Project(collision.relativeVelocity, -norm);
+			//Vector3 rightV = Vector3.Cross(-vp.rb.velocity.normalized,norm).normalized;
+
+			//direction = Vector3.Cross(rightV, norm).normalized;//(vp.rb.velocity - addForce).normalized;
+			////Debug.DrawRay(vp.centerOfMassObj.position, direction, Color.magenta, 4);
+			////Debug.DrawRay(vp.centerOfMassObj.position, -norm, Color.white, 4);
+			////Debug.Log(addForce.magnitude);
+			
+			////StartCoroutine(AddForceGradually(direction * addForce.magnitude));
+			//rb.AddForceAtPosition(direction * addForce.magnitude,
+			//vp.centerOfMassObj.position + direction, // contact.point
+			//ForceMode.VelocityChange);
 		}
 	}
+
 	private void OnCollisionExit(Collision collision)
 	{
 		vp.colliding = false;

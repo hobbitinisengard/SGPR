@@ -299,8 +299,17 @@ namespace RVP
 				yield break;
 			}
 			editorPanel.gameObject.SetActive(false);
-			musicPlayer.clip = Resources.Load<AudioClip>("music/" + Info.tracks[Info.s_trackName].envir.ToString());
-			musicPlayer.PlayDelayed(5);
+
+			if (Info.tracks[Info.s_trackName].envir == Envir.SPN && Info.s_isNight)
+			{
+				musicPlayer.clip = Resources.Load<AudioClip>("music/SPN2");
+				musicPlayer.Play();
+			}
+			else
+			{
+				musicPlayer.PlayDelayed(5);
+				musicPlayer.clip = Resources.Load<AudioClip>("music/" + Info.tracks[Info.s_trackName].envir.ToString());
+			}
 			Info.raceStartDate = DateTime.Now;
 			Info.raceStartDate.AddSeconds(5);
 			float countDownSeconds = 5;
@@ -436,64 +445,68 @@ namespace RVP
 				if (Info.s_inEditor)
 				{ // lap, race, stunt, drift
 					if (editorPanel.records == null)
-						editorPanel.records = TrackHeader.Record.RecordTemplate();
+						editorPanel.records = new();
 					//lap
-					if ((float)playerCar.raceBox.bestLapTime.TotalSeconds < editorPanel.records[0].secondsOrPts)
+					if ((float)playerCar.raceBox.bestLapTime.TotalSeconds < editorPanel.records.lap.secondsOrPts)
 					{
-						Info.tracks[Info.s_trackName].records[0].playerName = Info.playerData.playerName;
-						Info.tracks[Info.s_trackName].records[0].requiredSecondsOrPts = (float)playerCar.raceBox.bestLapTime.TotalSeconds;
+						Info.tracks[Info.s_trackName].records.lap.playerName = Info.playerData.playerName;
+						Info.tracks[Info.s_trackName].records.lap.requiredSecondsOrPts = (float)playerCar.raceBox.bestLapTime.TotalSeconds;
 					}
 					//race
-					if ((float)playerCar.raceBox.raceTime.TotalSeconds > editorPanel.records[1].secondsOrPts)
+					if ((float)playerCar.raceBox.raceTime.TotalSeconds > editorPanel.records.race.secondsOrPts)
 					{
-						Info.tracks[Info.s_trackName].records[1].playerName = Info.playerData.playerName;
-						Info.tracks[Info.s_trackName].records[1].requiredSecondsOrPts = (float)playerCar.raceBox.raceTime.TotalSeconds;
+						Info.tracks[Info.s_trackName].records.race.playerName = Info.playerData.playerName;
+						Info.tracks[Info.s_trackName].records.race.requiredSecondsOrPts = (float)playerCar.raceBox.raceTime.TotalSeconds;
 					}
 					//stunt
-					if (playerCar.raceBox.Aero > editorPanel.records[2].secondsOrPts)
+					if (playerCar.raceBox.Aero > editorPanel.records.stunt.secondsOrPts)
 					{
-						Info.tracks[Info.s_trackName].records[2].playerName = Info.playerData.playerName;
-						Info.tracks[Info.s_trackName].records[2].requiredSecondsOrPts = playerCar.raceBox.Aero;
+						Info.tracks[Info.s_trackName].records.stunt.playerName = Info.playerData.playerName;
+						Info.tracks[Info.s_trackName].records.stunt.requiredSecondsOrPts = playerCar.raceBox.Aero;
 					}
 					//drift
-					if (playerCar.raceBox.drift > editorPanel.records[3].secondsOrPts)
+					if (playerCar.raceBox.drift > editorPanel.records.drift.secondsOrPts)
 					{
-						Info.tracks[Info.s_trackName].records[3].playerName = Info.playerData.playerName;
-						Info.tracks[Info.s_trackName].records[3].requiredSecondsOrPts = playerCar.raceBox.drift;
+						Info.tracks[Info.s_trackName].records.drift.playerName = Info.playerData.playerName;
+						Info.tracks[Info.s_trackName].records.drift.requiredSecondsOrPts = playerCar.raceBox.drift;
 					}
 				}
 				else
 				{
 					//lap
-					if ((float)playerCar.raceBox.bestLapTime.TotalSeconds < Info.tracks[Info.s_trackName].records[0].secondsOrPts)
+					if ((float)playerCar.raceBox.bestLapTime.TotalSeconds < Info.tracks[Info.s_trackName].records.lap.secondsOrPts)
 					{
-						Info.tracks[Info.s_trackName].records[0].playerName = Info.playerData.playerName;
-						Info.tracks[Info.s_trackName].records[0].secondsOrPts = (float)playerCar.raceBox.bestLapTime.TotalSeconds;
+						Info.tracks[Info.s_trackName].records.lap.playerName = Info.playerData.playerName;
+						Info.tracks[Info.s_trackName].records.lap.secondsOrPts = (float)playerCar.raceBox.bestLapTime.TotalSeconds;
 					}
 					//race
-					if ((float)playerCar.raceBox.raceTime.TotalSeconds > Info.tracks[Info.s_trackName].records[1].secondsOrPts)
+					if ((float)playerCar.raceBox.raceTime.TotalSeconds > Info.tracks[Info.s_trackName].records.race.secondsOrPts)
 					{
-						Info.tracks[Info.s_trackName].records[1].playerName = Info.playerData.playerName;
-						Info.tracks[Info.s_trackName].records[1].secondsOrPts = (float)playerCar.raceBox.raceTime.TotalSeconds;
+						Info.tracks[Info.s_trackName].records.race.playerName = Info.playerData.playerName;
+						Info.tracks[Info.s_trackName].records.race.secondsOrPts = (float)playerCar.raceBox.raceTime.TotalSeconds;
 					}
 					//stunt
-					if (playerCar.raceBox.Aero > Info.tracks[Info.s_trackName].records[2].secondsOrPts)
+					if (playerCar.raceBox.Aero > Info.tracks[Info.s_trackName].records.stunt.secondsOrPts)
 					{
-						Info.tracks[Info.s_trackName].records[2].secondsOrPts = playerCar.raceBox.Aero;
-						Info.tracks[Info.s_trackName].records[2].playerName = Info.playerData.playerName;
+						Info.tracks[Info.s_trackName].records.stunt.secondsOrPts = playerCar.raceBox.Aero;
+						Info.tracks[Info.s_trackName].records.stunt.playerName = Info.playerData.playerName;
 					}
 					//drift
-					if (playerCar.raceBox.drift > Info.tracks[Info.s_trackName].records[3].secondsOrPts)
+					if (playerCar.raceBox.drift > Info.tracks[Info.s_trackName].records.drift.secondsOrPts)
 					{
-						Info.tracks[Info.s_trackName].records[3].playerName = Info.playerData.playerName;
-						Info.tracks[Info.s_trackName].records[3].secondsOrPts = playerCar.raceBox.drift;
+						Info.tracks[Info.s_trackName].records.drift.playerName = Info.playerData.playerName;
+						Info.tracks[Info.s_trackName].records.drift.secondsOrPts = playerCar.raceBox.drift;
 					}
 					// immediately set track header
 					if (Info.tracks.ContainsKey(Info.s_trackName))
 					{
-						var trackJson = JsonConvert.SerializeObject(Info.tracks[Info.s_trackName]);
+						var json = JsonConvert.SerializeObject(Info.tracks[Info.s_trackName]);
 						var path = Path.Combine(Info.tracksPath, Info.s_trackName + ".track");
-						File.WriteAllText(path, trackJson);
+						File.WriteAllTextAsync(path, json);
+
+						json = JsonConvert.SerializeObject(Info.tracks[Info.s_trackName].records);
+						path = Path.Combine(Info.tracksPath, Info.s_trackName + ".rec");
+						File.WriteAllTextAsync(path, json);
 					}
 				}
 			}

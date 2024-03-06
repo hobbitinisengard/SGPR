@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using Newtonsoft.Json;
 using RVP;
 using System;
@@ -54,6 +55,10 @@ public static class Info
 	public const string k_actionHappening = "ah";
 
 	public static PlayerSettingsData playerData;
+	public static void MessageSet(this Player player, string msg)
+	{
+		player.Data[k_message].Value = msg;
+	}
 	public static Livery SponsorGet(this Player player)
 	{
 		return (Livery)Enum.Parse(typeof(Livery), player.Data[k_Sponsor].Value);
@@ -111,9 +116,9 @@ public static class Info
 				case Livery.Special:
 					return Color.yellow;
 				case Livery.TGR:
-					return new Color(255, 165, 0); // orange
+					return new Color(1, 165/255f, 0); // orange
 				case Livery.Rline:
-					return new Color(165, 90, 189); // purple
+					return new Color(165/255f, 90/255f, 189/255f); // purple
 				case Livery.Itex:
 					return Color.red;
 				case Livery.Caltex:
@@ -153,17 +158,17 @@ public static class Info
 
 	public static PartInfo[] partInfos = new PartInfo[]
 	{
-		new PartInfo("Itex", "suscfg"),
-		new PartInfo("Mysuko", "bmscfg"),
-		new PartInfo("Titan", "batcfg"),
-		new PartInfo("Caltex", "engcfg"),
-		new PartInfo("TGR", "chacfg"),
-		new PartInfo("Itex", "grscfg"),
-		new PartInfo("Mysuko", "jetcfg"),
-		new PartInfo("Rline", "tyrcfg"),
-		new PartInfo("TGR", "drvcfg"),
-		new PartInfo("Titan", "hnkcfg"),
-		new PartInfo("", "carcfg"),
+		new ("Itex", ".suscfg"),
+		new ("Mysuko", ".bmscfg"),
+		new ("Titan", ".batcfg"),
+		new ("Caltex", ".engcfg"),
+		new ("TGR", ".chacfg"),
+		new ("Itex", ".grscfg"),
+		new ("Mysuko", ".jetcfg"),
+		new ("Rline", ".tyrcfg"),
+		new ("TGR", ".drvcfg"),
+		new ("Titan", ".hnkcfg"),
+		new ("", ".carcfg"),
 	};
 	//public static string[] extensionsSuffixes = new string[] { "suscfg", "bmscfg", "batcfg",
 	//		"engcfg", "chacfg", "grscfg", "jetcfg", "tyrcfg", "drvcfg", "carcfg" };
@@ -262,8 +267,9 @@ public static class Info
 	public static bool gamePaused;
 	internal static bool controllerInUse;
 	internal static bool randomCars;
-	internal static bool randomTrack;
+	internal static bool randomTracks;
 	internal static int hostId;
+	internal static int  racingPathResolution = 10;
 	public static readonly string version = "0.3b";
 	/// <summary>
 	/// if in track editor or testDriving
@@ -312,16 +318,16 @@ public static class Info
 			new (1,CarGroup.Speed, "LIGHTNIN'","Supercharged super speed. Easy does it!"),
 			new (1,CarGroup.Speed, "ALLEY KAT","Sleek and powerful, this cat is ready to roar."),
 			new (1,CarGroup.Wild, "SAND SHARK","This beachcomber is at home on any stunt circuit."),
-			//new Car(0,CarGroup.Wild, "THE BRUTE","Unleash the Brute for no-nonsense on the road!"),
-			//new Car(0,CarGroup.Aero, "WILD DART","Fly fast and true with this stuntcar."),
-			//new Car(0,CarGroup.Wild, "RAGING BULL","Powerful and fast, this streetwise 4x4 is incredible."),
-			//new Car(0,CarGroup.Aero, "FLYING MANTIS","Super light and very fast."),
-			//new Car(0,CarGroup.Aero, "STUNT MONKEY","Monkey see, monkey do! Go bananas with this wild ride!"),
-			//new Car(0,CarGroup.Speed, "INFERNO","This speed demon is on fire!"),
-			//new Car(0,CarGroup.Team, "THE FORKSTER","Despite its looks, it moves like fork lightning!"),
-			//new Car(0,CarGroup.Team, "WORMS MOBILE","Super Speedy Buggy!"),
-			//new Car(0,CarGroup.Team, "FORMULA 17","Incredibly fast racing car."),
-			//new Car(0,CarGroup.Team, "TEAM MACHINE","The ultimate, hugely versatile stock car.")
+			new (1,CarGroup.Wild, "THE BRUTE","Unleash the Brute for no-nonsense on the road!"),
+			new (1,CarGroup.Aero, "WILD DART","Fly fast and true with this stuntcar."),
+			new (1,CarGroup.Wild, "RAGING BULL","Powerful and fast, this streetwise 4x4 is incredible."),
+			new (1,CarGroup.Aero, "FLYING MANTIS","Super light and very fast."),
+			new (1,CarGroup.Aero, "STUNT MONKEY","Monkey see, monkey do! Go bananas with this wild ride!"),
+			new (1,CarGroup.Speed, "INFERNO","This speed demon is on fire!"),
+			new (1,CarGroup.Team, "THE FORKSTER","Despite its looks, it moves like fork lightning!"),
+			new (1,CarGroup.Team, "WORM MOBILE","Super Speedy Buggy!"),
+			new (1,CarGroup.Team, "FORMULA 17","Incredibly fast racing car."),
+			new (1,CarGroup.Team, "TEAM MACHINE","The ultimate, hugely versatile stock car.")
 			};
 		}
 		ReloadCarConfigs();
@@ -337,7 +343,7 @@ public static class Info
 		{
 			await Task.Run(() =>
 			{
-				string filepath = Info.partsPath + "car" + (i + 1).ToString() + "." + partInfos[^1].fileExtension;
+				string filepath = Info.partsPath + "car" + (i + 1).ToString() + partInfos[^1].fileExtension;
 				string jsonText = File.ReadAllText(filepath);
 				cars[i].config = new CarConfig(null, null, jsonText);
 			});
@@ -405,8 +411,23 @@ public static class Info
 		{
 			string trackJson = File.ReadAllText(path);
 			string name = Path.GetFileNameWithoutExtension(path);
+			string recordsPath = tracksPath + name + ".rec";
 			TrackHeader header = JsonConvert.DeserializeObject<TrackHeader>(trackJson);
 			tracks.Add(name, header);
+			
+			
+			if (File.Exists(recordsPath))
+			{
+				string recordsJson = File.ReadAllText(recordsPath);
+				TrackRecords records = JsonConvert.DeserializeObject<TrackRecords>(recordsJson);
+				tracks[name].records = records;
+			}
+			else
+			{
+				tracks[name].records = new();
+				string json = JsonConvert.SerializeObject(tracks[name].records);
+				File.WriteAllText(Info.tracksPath + name + ".rec", json);
+			}
 		}
 	}
 	public static float ReadMixerLevelLog(string exposedParameter, AudioMixer mixer)
@@ -482,44 +503,89 @@ public static class Info
 	}
 }
 [Serializable]
-public class TrackHeader
+public class Record
 {
-	[Serializable]
-	public class Record
+	public string playerName;
+	public float secondsOrPts;
+	public float requiredSecondsOrPts;
+	public Record(string playerName, float secondsOrPts, float requiredSecondsOrPts = 0)
 	{
-		public string playerName;
-		public float secondsOrPts;
-		public float requiredSecondsOrPts;
-		public Record(string playerName, float secondsOrPts, float requiredSecondsOrPts = 0)
+		this.playerName = playerName;
+		this.secondsOrPts = secondsOrPts;
+		this.requiredSecondsOrPts = requiredSecondsOrPts;
+	}
+	private Record()
+	{
+		this.playerName = null;
+		this.secondsOrPts = 0;
+		this.requiredSecondsOrPts = 0;
+	}
+	public Record(Record r)
+	{
+		this.playerName = r.playerName;
+		this.secondsOrPts = r.secondsOrPts;
+		this.requiredSecondsOrPts = r.requiredSecondsOrPts;
+	}
+}
+[Serializable]
+public class TrackRecords
+{
+	public Record lap;
+	public Record race;
+	public Record stunt;
+	public Record drift;
+	public TrackRecords()
+	{
+		lap = new(null, 35999, 35999);
+		race = new(null, 0);
+		stunt = new(null, 0);
+		drift = new(null, 0);
+	}
+	public TrackRecords(TrackRecords records)
+	{
+		lap = records.lap;
+		race = records.race;
+		stunt = records.stunt;
+		drift = records.drift;
+	}
+	public Record this[int key]
+	{
+		get
 		{
-			this.playerName = playerName;
-			this.secondsOrPts = secondsOrPts;
-			this.requiredSecondsOrPts = requiredSecondsOrPts;
-		}
-		private Record()
-		{
-			this.playerName = null;
-			this.secondsOrPts = 0;
-			this.requiredSecondsOrPts = 0;
-		}
-		public Record(Record r)
-		{
-			this.playerName = r.playerName;
-			this.secondsOrPts = r.secondsOrPts;
-			this.requiredSecondsOrPts = r.requiredSecondsOrPts;
-		}
-		public static Record[] RecordTemplate()
-		{
-			return new Record[]
+			return key switch
 			{
-				new Record(null, 35999,35999),
-				new Record(null, 0),
-				new Record(null, 0),
-				new Record(null, 0),
+				0 => lap,
+				1 => race,
+				2 => stunt,
+				3 => drift,
+				_ => lap,
 			};
+		}
+		set
+		{
+			switch(key)
+			{
+				case 0:
+					lap = value;
+					break;
+				case 1:
+					race = value;
+					break;
+				case 2:
+					stunt = value;
+					break;
+				case 3:
+					drift = value;
+					break;
+			}
 		}
 	}
 
+}
+
+[Serializable]
+public class TrackHeader
+{
 	public string author;
 	public string desc;
 	public bool valid;
@@ -534,18 +600,12 @@ public class TrackHeader
 	/// <summary>
 	/// lap, race, stunt, drift 
 	/// </summary>
-	public Record[] records;
+	[NonSerialized]
+	public TrackRecords records;
 
 	public TrackHeader()
 	{
-		// lap race stunt drift
-		records = new Record[]
-		{
-			new Record(null, 3599),
-			new Record(null, 0),
-			new Record(null, 0),
-			new Record(null, 0)
-		};
+		records = new();
 	}
 	public TrackHeader(int unlocked, CarGroup prefCarClass, int trackDifficulty,
 		Envir envir, string author, int[] icons, string desc, bool valid = true)
@@ -559,7 +619,6 @@ public class TrackHeader
 		this.desc = desc;
 		this.valid = valid;
 		this.icons = icons;
-
 	}
 
 	public TrackHeader(TrackHeader h)

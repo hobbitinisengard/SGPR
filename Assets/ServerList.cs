@@ -1,13 +1,10 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using TMPro;
 using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
 using UnityEngine;
 using UnityEngine.UI;
-using System.Security.Cryptography;
-using System.IO;
+
 public class ServerList : MonoBehaviour
 {
 	public Transform content;
@@ -70,23 +67,5 @@ public class ServerList : MonoBehaviour
 			thisView.GoToView(lobbyView.gameObject);
 		}
 	}
-	public async void CreateLobby()
-	{
-		string trackName = Info.tracks.Keys.First();
-		string sha = SHA(Info.tracksPath + trackName + ".data");
-		if (await server.CreateLobby(trackName, sha))
-		{
-			thisView.GoToView(lobbyView.gameObject);
-		}
-	}
-	string SHA(string filePath)
-	{
-		string hash;
-		using (var cryptoProvider = new SHA1CryptoServiceProvider())
-		{
-			byte[] buffer = File.ReadAllBytes(filePath);
-			hash = BitConverter.ToString(cryptoProvider.ComputeHash(buffer));
-		}
-		return hash;
-	}
+	
 }

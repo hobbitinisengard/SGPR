@@ -25,7 +25,7 @@ public class GreetingLogo : Sfxable
 	private bool toDemo;
 	private int lastTryCo;
 	MainMenuView view;
-	void Start()
+	void Awake()
 	{
 		rt = GetComponent<RectTransform>();
 		transform.GetChild(0).GetComponent<RectTransform>().localPosition = 
@@ -49,6 +49,9 @@ public class GreetingLogo : Sfxable
 	private void OnEnable()
 	{
 		submitRef.action.performed += SubmitPressed;
+		var pos = blitz.anchoredPosition;
+		pos.y = rt.rect.height / 1.8f;
+		blitz.anchoredPosition = pos;
 		timer = 0;
 		timer2 = 0;
 		timer3 = 0;

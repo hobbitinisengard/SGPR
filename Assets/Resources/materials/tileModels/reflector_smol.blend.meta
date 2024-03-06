@@ -8,7 +8,7 @@ ModelImporter:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: level8_spotlights128
-    second: {fileID: 2100000, guid: 62144222ce7bd9042b84b4cb4d31914e, type: 2}
+    second: {fileID: 2100000, guid: ac59db90d8e55ed4da3d51b8b157123b, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -21,8 +21,6 @@ ModelImporter:
     optimizeGameObjects: 0
     removeConstantScaleCurves: 1
     motionNodeName: 
-    rigImportErrors: 
-    rigImportWarnings: 
     animationImportErrors: 
     animationImportWarnings: 
     animationRetargetingWarnings: 

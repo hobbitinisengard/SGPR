@@ -236,7 +236,6 @@ public class Tile : MonoBehaviour
 
 		float scale = distance / mf.mesh.bounds.size.y;
 		transform.localScale = new Vector3(1, 1, scale);
-		Debug.Log(name);
 		{ // adjust UVs
 			Vector2[] uvs = mf.mesh.uv;
 			int submeshes = mf.mesh.subMeshCount;

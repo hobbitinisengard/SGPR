@@ -1,6 +1,5 @@
 using Newtonsoft.Json;
 using RVP;
-using SFB;
 using System;
 using System.IO;
 using System.Linq;
@@ -9,12 +8,14 @@ using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Audio;
+using SimpleFileBrowser;
+using System.Collections;
 public enum PartType
 {
 	Suspension,
 	Bms,
 	Battery,
-	Gears, 
+	Gears,
 	Chassis,
 	Engine,
 	Boost,
@@ -121,14 +122,34 @@ public class ComponentPanel : MonoBehaviour
 		PopulatePropertyTable();
 	}
 
+	IEnumerator ShowLoadDialogCoroutine()
+	{
+		// Show a load file dialog and wait for a response from user
+		// Load file/folder: file, Allow multiple selection: true
+		// Initial path: default (Documents), Initial filename: empty
+		// Title: "Load File", Submit button text: "Load"
+		yield return FileBrowser.WaitForLoadDialog(FileBrowser.PickMode.Files, false, Info.partsPath, null, "Select configuration file..", "Load");
+
+		// Dialog is closed
+		Debug.Log(FileBrowser.Success); // (FileBrowser.Success) - whether the user has selected some files or cancelled the operation 
+
+		if (FileBrowser.Success)
+			LoadFromFile(FileBrowser.Result);
+	}
+
 	public void LoadFromFile()
 	{
-		string[] extensions = Info.partInfos.Select(i => i.fileExtension).ToArray();
-		var extensionFilter = new[] {
-			 new ExtensionFilter("SGPR car parts configuration files", extensions)};
-		string[] filepaths = StandaloneFileBrowser.OpenFilePanel("Select configuration file..",
-				Info.partsPath, extensionFilter, false);
-
+		if (!FileBrowser.IsOpen)
+		{
+			string[] extensions = Info.partInfos.Select(i => i.fileExtension).ToArray();
+			var extensionFilter = new[] {
+			 new FileBrowser.Filter("SGPR car parts configuration files", extensions)};
+			FileBrowser.SetFilters(true, extensionFilter);
+			StartCoroutine(ShowLoadDialogCoroutine());
+		}
+	}
+	public void LoadFromFile(string[] filepaths)
+	{
 		string filepath = filepaths[0];
 		if (filepath.Length > 0)
 		{
@@ -222,45 +243,60 @@ public class ComponentPanel : MonoBehaviour
 		for (int i = 0; i < settersPanel.transform.childCount; ++i)
 			Destroy(settersPanel.transform.GetChild(i).gameObject);
 	}
-	public async void SaveConfig()
+	public void SaveConfig()
 	{
-		if (mainMenu.activeSelf)
-		{ // saving car configuration
-			string filepath = StandaloneFileBrowser.SaveFilePanel("Save car config file..",
-				Info.partsPath, carConfig.name, CarConfig.extension);
-			if (filepath != null && filepath.Length > 3)
-			{
-				await Task.Run(() => 
+		StartCoroutine(SaveConfigCo());
+	}
+	IEnumerator SaveConfigCo()
+	{
+		if (!FileBrowser.IsOpen)
+		{
+			if (mainMenu.activeSelf)
+			{ // saving car configuration
+				var extensionFilter = new[] { new FileBrowser.Filter("SGPR car config file", CarConfig.extension) };
+				FileBrowser.SetFilters(false, extensionFilter);
+
+				yield return FileBrowser.WaitForSaveDialog(FileBrowser.PickMode.Files, false, Info.partsPath, carConfig.name, "Save car config file..", "Save");
+
+				if (FileBrowser.Success)
 				{
-					carConfig.PrepareForSave();
-					string serializedJson = JsonConvert.SerializeObject(carConfig, Formatting.Indented);
-					File.WriteAllText(filepath, serializedJson);
-				});
-				bottomNameText.text = Path.GetFileNameWithoutExtension(filepath);
-				carConfig.name = bottomNameText.text;
-				if (bottomNameText.text.Contains("car"))
-					Info.ReloadCarConfigs();
+					string filepath = FileBrowser.Result[0];
+					if (filepath.Length > 3)
+					{
+						carConfig.PrepareForSave();
+						string serializedJson = JsonConvert.SerializeObject(carConfig, Formatting.Indented);
+						File.WriteAllText(filepath, serializedJson);
+
+						bottomNameText.text = Path.GetFileNameWithoutExtension(filepath);
+						carConfig.name = bottomNameText.text;
+						if (bottomNameText.text.Contains("car"))
+							Info.ReloadCarConfigs();
+					}
+				}
+			}
+			else
+			{ // saving part
+				var extensionFilter = new[] { new FileBrowser.Filter("SGPR Car part", Info.partInfos[(int)selectedPart].fileExtension) };
+				FileBrowser.SetFilters(false, extensionFilter);
+
+				yield return FileBrowser.WaitForSaveDialog(FileBrowser.PickMode.Files, false, Info.partsPath, carConfig.GetPartName(selectedPart), "Save part file..", "Save");
+				if (FileBrowser.Success)
+				{
+					string filepath = FileBrowser.Result[0];
+					if (filepath.Length > 3)
+					{
+						var curPart = carConfig.GetPart(selectedPart);
+						string serializedJson = JsonConvert.SerializeObject(curPart, Formatting.Indented);
+						File.WriteAllText(filepath, serializedJson);
+						if (!File.Exists(filepath))
+							Info.carParts.Add(bottomNameText.text, curPart);
+
+						bottomNameText.text = Path.GetFileNameWithoutExtension(filepath);
+						carConfig.SetPartTo(selectedPart, bottomNameText.text);
+					}
+				}
 			}
 		}
-		else
-		{ // saving part
-			string filepath = StandaloneFileBrowser.SaveFilePanel("Save part file..",
-				Info.partsPath, carConfig.GetPartName(selectedPart), Info.partInfos[(int)selectedPart].fileExtension);
-			if (filepath != null && filepath.Length > 3)
-			{
-				await Task.Run(() =>
-				{
-					var curPart = carConfig.GetPart(selectedPart);
-					string serializedJson = JsonConvert.SerializeObject(curPart, Formatting.Indented);
-					File.WriteAllText(filepath, serializedJson);
-					if (!File.Exists(filepath))
-						Info.carParts.Add(bottomNameText.text, curPart);
-				});
-				bottomNameText.text = Path.GetFileNameWithoutExtension(filepath);
-				carConfig.SetPartTo(selectedPart, bottomNameText.text);
-			}
-		}
-		
 	}
 	void EditCarConfigCallback(PartType newPartType, string partName)
 	{
@@ -408,9 +444,9 @@ public class CarConfig
 			//var jet = (BoostSavable)Part(PartType.Boost);
 			float minVal = .15f;
 			float S = Mathf.Clamp(Mathf.InverseLerp(400, 1800, chassis.staticEvoMaxSpeed), minVal, 1);
-			float G = Mathf.Clamp(Mathf.InverseLerp(-0.2f, 0, chassis.longtitunalCOM), minVal, 1) 
-				* Mathf.Clamp(Mathf.InverseLerp(8, 20, tyre.frontFriction), minVal, 1) 
-				* Mathf.Clamp(1-Mathf.InverseLerp(0, 4, tyre.frontFriction - tyre.rearFriction), minVal, 1);
+			float G = Mathf.Clamp(Mathf.InverseLerp(-0.2f, 0, chassis.longtitunalCOM), minVal, 1)
+				* Mathf.Clamp(Mathf.InverseLerp(8, 20, tyre.forwardFriction), minVal, 1)
+				* Mathf.Clamp(1 - Mathf.InverseLerp(0, 4, tyre.forwardFriction - tyre.sideFriction), minVal, 1);
 			float P = Mathf.Clamp(Mathf.InverseLerp(0, 0.5f, engine.torque / chassis.mass), minVal, 1); // 0.2 / 1.5 = 0.1333     0.5 / 1 = 0.5
 			return new float[] { S, G, P };
 		}
@@ -436,9 +472,9 @@ public class CarConfig
 	{
 		this.vp = vp;
 		CarConfig original = vp.carConfig;
-		name = "car"+vp.carNumber.ToString();
+		name = "car" + vp.carNumber.ToString();
 		externalParts = new string[10];
-		for(int i=0; i< original.externalParts.Length; i++)
+		for (int i = 0; i < original.externalParts.Length; i++)
 		{
 			externalParts[i] = original.externalParts[i];
 		}
@@ -635,10 +671,11 @@ public class DriveSavable : PartSavable
 [Serializable]
 public class TyreSavable : PartSavable
 {
-	public float frontFriction;
-	public float rearFriction;
+	public float forwardFriction;
+	public float sideFriction;
 	public float frontFrictionStretch;
 	public float rearFrictionStretch;
+	public float shiftRearFrictionStretch;
 	public float squeakSlipThreshold;
 	public float slipDependence;
 	public float axleFriction; // for simulating offroad tyres
@@ -651,10 +688,11 @@ public class TyreSavable : PartSavable
 	}
 	public TyreSavable(TyreSavable original)
 	{
-		frontFriction = original.frontFriction;
-		rearFriction = original.rearFriction;
+		forwardFriction = original.forwardFriction;
+		sideFriction = original.sideFriction;
 		frontFrictionStretch = original.frontFrictionStretch;
 		rearFrictionStretch = original.rearFrictionStretch;
+		shiftRearFrictionStretch = original.shiftRearFrictionStretch;
 		squeakSlipThreshold = original.squeakSlipThreshold;
 		slipDependence = original.slipDependence;
 		axleFriction = original.axleFriction;
@@ -668,10 +706,11 @@ public class TyreSavable : PartSavable
 		// get data from RL tyre
 		var rear = vp.wheels[2];
 		var front = vp.wheels[0];
-		frontFriction = front.sidewaysFriction;
-		rearFriction = rear.sidewaysFriction;
+		forwardFriction = front.sidewaysFriction;
+		sideFriction = rear.sidewaysFriction;
 		frontFrictionStretch = front.sidewaysCurveStretch;
 		rearFrictionStretch = rear.sidewaysCurveStretch;
+		shiftRearFrictionStretch = vp.steeringControl.shiftRearFrictionStretch;
 		squeakSlipThreshold = rear.slipThreshold;
 		slipDependence = 2;
 		axleFriction = rear.axleFriction;
@@ -679,25 +718,20 @@ public class TyreSavable : PartSavable
 
 	public override void Apply(VehicleParent vp)
 	{
-		vp.steeringControl.frontSidewaysCoeff = frontFriction;
+		vp.steeringControl.shiftRearFrictionStretch = shiftRearFrictionStretch;
 		for (int i = 0; i < 4; ++i)
 		{
 			var w = vp.wheels[i];
 
-			if(i< 2)
-				w.SetInitFrictions(frontFriction, frontFriction);
+			if (i < 2)
+				w.SetInitFrictions(forwardFriction, sideFriction, frontFrictionStretch);
 			else
 			{
-				if(Info.s_raceType == RaceType.Drift)
-				{
-					float value = Mathf.Min(rearFriction, frontFriction - 2);
-					w.SetInitFrictions(value, value);
-				}
+				if (Info.s_raceType == RaceType.Drift)
+					w.SetInitFrictions(forwardFriction, sideFriction, rearFrictionStretch-2);
 				else
-					w.SetInitFrictions(rearFriction, rearFriction);
+					w.SetInitFrictions(forwardFriction, sideFriction, rearFrictionStretch-2);
 			}
-			w.forwardCurveStretch = (i < 2) ? frontFrictionStretch : rearFrictionStretch;
-			w.sidewaysCurveStretch = (i < 2) ? frontFrictionStretch : rearFrictionStretch;
 			w.slipThreshold = squeakSlipThreshold;
 			w.slipDependence = Wheel.SlipDependenceMode.independent;
 			w.axleFriction = axleFriction;
@@ -903,7 +937,7 @@ public class ChassisSavable : PartSavable
 		vp.originalDrag = drag;
 		vp.rb.drag = drag;
 
-		if(Info.s_raceType == RaceType.Drift)
+		if (Info.s_raceType == RaceType.Drift)
 			vp.centerOfMassObj.localPosition = new Vector3(0, verticalCOM, -0.1f);
 		else
 			vp.centerOfMassObj.localPosition = new Vector3(0, verticalCOM, longtitunalCOM);

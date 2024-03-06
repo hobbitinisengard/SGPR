@@ -10,6 +10,17 @@ public class DescrRecordsSwitcher : MonoBehaviour
    public int dimmerTime;
 	float timer;
 	bool visibleA = true;
+	AnimationCurve anim;
+	private void Awake()
+	{
+		anim = new AnimationCurve(new Keyframe[]
+		{
+			new (0,0),
+			new (dimmerTime,1),
+			new (visibleTime-dimmerTime,1),
+			new (visibleTime,0)
+		});
+	}
 	private void OnEnable()
 	{
 		timer = 0;
@@ -18,13 +29,7 @@ public class DescrRecordsSwitcher : MonoBehaviour
 	}
 	private void Update()
 	{
-		float input = 1;
-		if (timer < dimmerTime)
-			input = timer / dimmerTime;
-		else if (timer > dimmerTime)
-			input = (visibleTime - timer) / dimmerTime;
-
-		SetVisibility(Mathf.Clamp01(input), visibleA ? graphicsA: graphicsB);
+		SetVisibility(anim.Evaluate(timer), visibleA ? graphicsA: graphicsB);
 
 		timer += Time.deltaTime;
 		if(timer > visibleTime)

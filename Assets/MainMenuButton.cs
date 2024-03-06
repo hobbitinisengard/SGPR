@@ -21,6 +21,10 @@ public class MainMenuButton : Sfxable, ISelectHandler, IDeselectHandler, ISubmit
 		buttonComponent = GetComponent<Button>();
 		mainMenuView = transform.FindParentComponent<MainMenuView>();
 	}
+	private void OnDisable()
+	{
+		text.color = deselectedColor;
+	}
 	public void OnSubmit(BaseEventData eventData)
 	{
 		PlaySFX("fe-dialogconfirm");

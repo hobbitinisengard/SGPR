@@ -30,13 +30,14 @@ public class TrackSelectorTemplate : Selector
 	protected Coroutine containerCo;
 	protected string persistentSelectedTrack;
 
-	protected void OnDisable()
+	protected virtual void OnDisable()
 	{
 		move2Ref.action.performed -= CalculateTargetToSelect;
 		persistentSelectedTrack = selectedTrack.name;
 	}
-	protected void OnEnable()
+	protected virtual void OnEnable()
 	{
+		Info.s_spectator = false;
 		move2Ref.action.performed += CalculateTargetToSelect;
 		if (loadCo)
 			StopCoroutine(Load());
@@ -82,7 +83,6 @@ public class TrackSelectorTemplate : Selector
 				if (persistentSelectedTrack != null && persistentSelectedTrack == trackName)
 				{
 					selectedTrack = newtrack.transform;
-					Info.s_trackName = selectedTrack.name;
 				}
 			}
 		}
@@ -102,7 +102,8 @@ public class TrackSelectorTemplate : Selector
 				if (trackContent.GetChild(i).childCount > 0)
 				{
 					selectedTrack = trackContent.GetChild(i).GetChild(0);
-					Info.s_trackName = selectedTrack.name;
+					if(!Info.randomTracks)
+						Info.s_trackName = selectedTrack.name;
 				}
 			}
 			// disable track classes without children (required for sliders to work)
@@ -118,7 +119,8 @@ public class TrackSelectorTemplate : Selector
 		else
 		{
 			trackDescText.text = selectedTrack.name + "\n\n" + Info.tracks[selectedTrack.name].desc;
-			radial.SetAnimTo(selectedTrack.parent.GetSiblingIndex());
+			if(radial.gameObject.activeSelf)
+				radial.SetAnimTo(selectedTrack.parent.GetSiblingIndex());
 		}
 
 		containerCo = StartCoroutine(MoveToTrack());
@@ -128,12 +130,12 @@ public class TrackSelectorTemplate : Selector
 		loadCo = false;
 	}
 
-	void CalculateTargetToSelect(InputAction.CallbackContext ctx)
+	protected void CalculateTargetToSelect(InputAction.CallbackContext ctx)
 	{
 		if (!selectedTrack || loadCo)
 			return;
 		Vector2 move2 = move2Ref.action.ReadValue<Vector2>();
-		int mult = (shiftInputRef.action.ReadValue<int>() > 0) ? 5 : 1;
+		int mult = (shiftInputRef.action.ReadValue<float>() > 0) ? 5 : 1;
 		int x = Mathf.RoundToInt(move2.x) * mult;
 		int y = Mathf.RoundToInt(-move2.y) * mult;
 		bool gotoHome = Input.GetKeyDown(KeyCode.Home);
@@ -170,7 +172,10 @@ public class TrackSelectorTemplate : Selector
 				// new track has been selected
 				// set description
 				trackDescText.text = selectedTrack.name + "\n\n" + Info.tracks[selectedTrack.name].desc;
-				radial.SetAnimTo(selectedTrack.parent.GetSiblingIndex());
+
+				if(radial.gameObject.activeSelf)
+					radial.SetAnimTo(selectedTrack.parent.GetSiblingIndex());
+
 				SetTiles();
 				SetRecords();
 				// focus on track
@@ -200,7 +205,9 @@ public class TrackSelectorTemplate : Selector
 
 			Record recordData = selectedTrack ? Info.tracks[selectedTrack.name].records[i] : new Record(null, 0, 0);
 
-			string valueStr = (recordData == null || recordData.playerName == null) ? "" : recordData.playerName;
+			string valueStr = (recordData == null || recordData.playerName == null || recordData.secondsOrPts == 0 
+				|| recordData.secondsOrPts > 35000) ? "" : recordData.playerName;
+
 			record.GetChild(1).GetComponent<Text>().text = valueStr;
 			if (recordData == null || recordData.secondsOrPts == 0 || recordData.secondsOrPts == 35999)
 				valueStr = "";

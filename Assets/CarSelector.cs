@@ -96,8 +96,11 @@ public class CarSelector : Selector
 		}
 		radial.gameObject.SetActive(selectedCar);
 
+
 		containerCo = StartCoroutine(MoveToCar());
 		radial.SetChildrenActive(menuButtons);
+		if (barsAndRadialCo != null)
+			StopCoroutine(barsAndRadialCo);
 		barsAndRadialCo = StartCoroutine(SetPerformanceBarsAndRadial());
 		Debug.Log(selectedCar);
 		loadCo = false;
@@ -141,7 +144,8 @@ public class CarSelector : Selector
 				}
 				// new car has been selected
 				// set description
-				carDescText.text = Info.Car(selectedCar.name).desc;
+				var car = Info.Car(selectedCar.name);
+				carDescText.text = car.name + "\n\n" + car.desc;
 				// set bars
 				if (barsAndRadialCo != null)
 					StopCoroutine(barsAndRadialCo);
@@ -152,7 +156,6 @@ public class CarSelector : Selector
 				containerCo = StartCoroutine(MoveToCar());
 			}
 		}
-
 	}
 
 	IEnumerator MoveToCar()

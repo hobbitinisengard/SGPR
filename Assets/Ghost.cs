@@ -46,6 +46,7 @@ public class Ghost : MonoBehaviour
 		material.SetFloat("_Glossiness", 1);
 		material.SetFloat("_SpecularIntensity", .1f);
 		material.SetFloat("_Parallax", 0);
+		material.SetFloat("_Brightness", 1);
 		//material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
 		//material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.Zero);
 		//material.SetInt("_ZWrite", 1);
@@ -66,6 +67,7 @@ public class Ghost : MonoBehaviour
 		material.SetFloat("_Glossiness", 1);
 		material.SetFloat("_SpecularIntensity", .1f);
 		material.SetFloat("_Parallax", 0);
+		material.SetFloat("_Brightness", 4);
 		//var c = material.color;
 		//c.a = 0.5f;
 		//material.color = c;
@@ -78,7 +80,7 @@ public class Ghost : MonoBehaviour
 		//material.EnableKeyword("_ALPHABLEND_ON");
 		//material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
 		//material.renderQueue = 3500;
-
+		
 		return material;
 	}
 	public IEnumerator ResetSeq()

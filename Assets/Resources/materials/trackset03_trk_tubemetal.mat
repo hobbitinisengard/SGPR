@@ -9,6 +9,8 @@ Material:
   m_PrefabAsset: {fileID: 0}
   m_Name: trackset03_trk_tubemetal
   m_Shader: {fileID: 4800000, guid: ed04895971c00fc498c346df2ac0e9b4, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
   - _SOURCE_SPECULARALPHA
   m_InvalidKeywords:
@@ -19,6 +21,7 @@ Material:
   m_CustomRenderQueue: -1
   stringTagMap: {}
   disabledShaderPasses: []
+  m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
@@ -84,7 +87,7 @@ Material:
     - _Contrast: 1
     - _ContrastDetailMap: 0
     - _ContributeNormal: 0.05
-    - _Cull: 2
+    - _Cull: 0
     - _Cutoff: 0.5
     - _DetailBrightness: 1
     - _DetailNormalMapScale: 1
@@ -102,7 +105,7 @@ Material:
     - _Mode: 0
     - _OcclusionStrength: 1
     - _Parallax: 0
-    - _Saturation: 1
+    - _Saturation: 0
     - _Scale: 0.1
     - _SmoothnessTextureChannel: 0
     - _Source: 0
@@ -123,3 +126,4 @@ Material:
     - _GlobalXYTilingXYZWOffsetXY: {r: 1, g: 1, b: 0, a: 0}
     - _SpecularColor: {r: 1, g: 1, b: 1, a: 0}
   m_BuildTextureStacks: []
+  m_AllowLocking: 1

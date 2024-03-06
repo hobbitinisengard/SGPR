@@ -1,5 +1,4 @@
 using System;
-using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
@@ -12,8 +11,8 @@ public class TrackSelector : TrackSelectorTemplate
 	public TextMeshProUGUI rivalsButtonText;
 	public TextMeshProUGUI wayButtonText;
 	public TextMeshProUGUI catchupButtonText;
-
-	void OnEnable()
+	protected int maxRivals = 9;
+	protected override void OnEnable()
 	{
 		base.OnEnable();
 		ResetButtons();
@@ -95,7 +94,7 @@ public class TrackSelector : TrackSelectorTemplate
 		if (!init)
 			dir = shiftInputRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
 
-		Info.s_rivals = Wraparound(Info.s_rivals + dir, 0, 9);
+		Info.s_rivals = Wraparound(Info.s_rivals + dir, 0, maxRivals);
 
 		if (Info.s_raceType == RaceType.Knockout)
 		{

@@ -85,13 +85,12 @@ public class LeaderBoardTable : MonoBehaviour
 	{
 		var newRow = Instantiate(LeaderboardRowPrefab, transform).transform;
 		newRow.name = player.NameGet();
-		newRow.GetChild(0).GetChild(0).GetComponent<Image>().color = player.ReadyGet() ? Color.green : Color.yellow;
 		newRow.GetChild(0).GetChild(0).GetComponent<Image>().sprite = (player.Id == server.lobby.HostId) ? crown : knob;
+		newRow.GetChild(0).GetChild(0).GetComponent<Image>().color = player.ReadyGet() ? Color.green : Color.yellow;
 		newRow.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>().text = player.NameGet();
 		newRow.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>().color = player.ReadColor();
-		newRow.GetChild(1).GetComponent<TextMeshProUGUI>().text = player.carNameGet();
+		newRow.GetChild(1).GetComponent<TextMeshProUGUI>().text = Info.randomCars ? "*random*" : player.carNameGet();
 		newRow.GetChild(2).GetComponent<TextMeshProUGUI>().text = player.ScoreGet().ToString();
-		//newRow.GetChild(3).GetComponent<TextMeshProUGUI>().text = player.won.ToString();
 	}
 }
 

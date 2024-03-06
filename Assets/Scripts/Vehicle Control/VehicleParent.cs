@@ -496,12 +496,12 @@ namespace RVP
 		{
 			if (!raceBox.enabled)
 				energyRemaining = batteryCapacity;
-			else if (BatteryPercent < lowBatteryLevel && Time.time - lastNoBatteryMessage > 60)
+			else if (BatteryPercent == 0 && Time.time - lastNoBatteryMessage > 60)
 			{
 				raceBox.raceManager.hud.AddMessage(new Message(name + " IS OUT OF BATTERY!", BottomInfoType.NO_BATT));
 				lastNoBatteryMessage = Time.time;
 			}
-			f = Mathf.Clamp(f, -1, (BatteryPercent < lowBatteryLevel) ? 0.75f : 1);
+			f = Mathf.Clamp(f, -1, (BatteryPercent == 0) ? 0.75f : 1);
 			accelInput = f;
 			if (energyRemaining > 0)
 				energyRemaining -= accelInput * engine.fuelConsumption * Time.deltaTime;
@@ -536,7 +536,6 @@ namespace RVP
 				}
 			}
 		}
-		// Set steer input
 		public void SetSteer(float f)
 		{
 			steerInput = Mathf.Clamp(f, -1, 1);

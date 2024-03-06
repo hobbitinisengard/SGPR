@@ -1,7 +1,6 @@
 using Newtonsoft.Json;
 using PathCreation;
 using RVP;
-using SFB;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -12,6 +11,7 @@ using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using SimpleFileBrowser;
 
 public struct ReplayCamStruct
 {
@@ -168,7 +168,7 @@ public class EditorPanel : Sfxable
 	private Vector3 intersectionSnapLocation = -Vector3.one;
 	private bool isPathClosed;
 	[NonSerialized]
-	public TrackHeader.Record[] records = TrackHeader.Record.RecordTemplate();
+	public TrackRecords records = new();
 
 	public bool loadingTrack { get; private set; }
 
@@ -812,13 +812,6 @@ public class EditorPanel : Sfxable
 			selectedFlag.FindParentComponent<Tile>().url = texturePath;
 		}
 	}
-	public async void SetFillLocally()
-	{
-		string texturePath = StandaloneFileBrowser.OpenFilePanel("Load image (square shaped)",
-			Info.documentsSGPRpath, "jpg", false)[0];
-
-		await SetFlagsTexture(texturePath);
-	}
 	public async void SetFillFromURL(string path)
 	{
 		await SetFlagsTexture(path);
@@ -1002,7 +995,7 @@ public class EditorPanel : Sfxable
 					col.isTrigger = true;
 					castable.layer = Info.racingLineLayers[i];
 					castable.name = progress.ToString(CultureInfo.InvariantCulture);
-					progress += 10;
+					progress += Info.racingPathResolution;
 				}
 
 				// generate stuntpoints for cars
@@ -1012,7 +1005,7 @@ public class EditorPanel : Sfxable
 				{
 					if (c.isStuntZone || c.trackCamera != null)
 					{
-						var hits = Physics.OverlapSphere(c.transform.position + Vector3.up, 30, 1 << Info.racingLineLayers[i]);
+						Collider[] hits = Physics.OverlapSphere(c.transform.position + Vector3.up, 30, 1 << Info.racingLineLayers[i]);
 						float min = 999;
 						int closestIdx = 0;
 						for (int j = 0; j < hits.Length; ++j)
@@ -1474,9 +1467,9 @@ public class EditorPanel : Sfxable
 		File.WriteAllBytes(path, textureData);
 
 		// save track editor data
-		string trackJson = JsonConvert.SerializeObject(TRACK);
+		string JsonContent = JsonConvert.SerializeObject(TRACK);
 		path = Path.Combine(Info.tracksPath, trackName.text + ".data");
-		File.WriteAllText(path, trackJson);
+		File.WriteAllText(path, JsonContent);
 
 		// save track header
 		TrackHeader header = new()
@@ -1488,16 +1481,22 @@ public class EditorPanel : Sfxable
 			author = trackAuthorInputField.text,
 			icons = icons.ToArray(),
 			desc = trackDescInputField.text,
-			records = this.records,
+			records = new (this.records),
 		};
 		header.valid = racingLine != null && racingLine.Length > 8 && header.records != null;
 		if (!header.valid)
 		{
 			DisplayMessageFor("Drive at least once to validate track", 3);
 		}
-		trackJson = JsonConvert.SerializeObject(header, Formatting.Indented);
+		JsonContent = JsonConvert.SerializeObject(header, Formatting.Indented);
 		path = Path.Combine(Info.tracksPath, trackName.text + ".track");
-		File.WriteAllText(path, trackJson);
+		File.WriteAllText(path, JsonContent);
+
+		//serialize records aside from .track file
+		JsonContent = JsonConvert.SerializeObject(header.records, Formatting.Indented);
+		path = Path.Combine(Info.tracksPath, trackName.text + ".rec");
+		File.WriteAllText(path, JsonContent);
+
 		if (!Info.tracks.ContainsKey(trackName.text))
 			Info.tracks.Add(trackName.text, header);
 		else
@@ -1601,7 +1600,7 @@ public class EditorPanel : Sfxable
 			Initialize();
 		gameObject.SetActive(true);
 		loadingTrack = true;
-		records = TrackHeader.Record.RecordTemplate();
+		records = new();
 		
 		int skyboxNumber = Info.skys[(int)Info.tracks[Info.s_trackName].envir];
 		string envirName = Info.tracks[Info.s_trackName].envir.ToString();
@@ -1721,18 +1720,27 @@ public class EditorPanel : Sfxable
 	}
 	public void OpenLoadTrackFileBrowser()
 	{
+		StartCoroutine(OpenLoadTrackFileBrowserCo());
+	}
+	IEnumerator OpenLoadTrackFileBrowserCo()
+	{
 		if (savePanel.activeSelf || toolsPanel.activeSelf)
-			return;
+			yield break;
 
-		string filepath = StandaloneFileBrowser.OpenFilePanel("Select track",
-			Info.tracksPath, "track", false)[0];
-		if (filepath.Length > 0)
+		FileBrowser.SetFilters(false, new FileBrowser.Filter("track", ".track"));
+		yield return FileBrowser.WaitForLoadDialog(FileBrowser.PickMode.Files, false, Info.tracksPath, null, "Select track..", "Load");
+
+		if(FileBrowser.Success)
 		{
-			string newTrackName = Path.GetFileNameWithoutExtension(filepath);
-			if (Info.tracks.ContainsKey(newTrackName))
+			string filepath = FileBrowser.Result[0];
+			if (filepath.Length > 0)
 			{
-				Info.s_trackName = newTrackName;
-				StartCoroutine(LoadTrack());
+				string newTrackName = Path.GetFileNameWithoutExtension(filepath);
+				if (Info.tracks.ContainsKey(newTrackName))
+				{
+					Info.s_trackName = newTrackName;
+					StartCoroutine(LoadTrack());
+				}
 			}
 		}
 	}

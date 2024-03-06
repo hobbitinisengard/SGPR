@@ -10,10 +10,8 @@ namespace RVP
 	public class SteeringControl : MonoBehaviour
 	{
 		Transform tr;
+		Transform steeringWheel;
 		VehicleParent vp;
-
-		[NonSerialized]
-		public float frontSidewaysCoeff;
 
 		public AudioSource servoAudio;
 		[Tooltip("First wheel should be FL")]
@@ -46,6 +44,8 @@ namespace RVP
 		private float targetSteer;
 		[Range(1,10)]
 		public float gamma = 2;
+		public float shiftRearFrictionStretch;
+
 		void GenerateGammaCurve()
 		{
 			if(analogInputCurve == null || gamma != Info.playerData.steerGamma)
@@ -82,7 +82,8 @@ namespace RVP
 			GenerateGammaCurve();
 			tr = transform;
 			vp = tr.GetTopmostParentComponent<VehicleParent>();
-			frontSidewaysCoeff = vp.wheels[0].sidewaysFriction;
+			if (tr.childCount > 0)
+				steeringWheel = tr.GetChild(0);
 		}
 		void FixedUpdate()
 		{
@@ -98,7 +99,7 @@ namespace RVP
 					servoAudio.volume = 0;
 					if (holdDuration > 0.0001)
 					{
-						holdDuration *= holdComebackSpeed * 50 * Time.fixedDeltaTime;
+						holdDuration *= Mathf.Clamp01(holdComebackSpeed * 50 * Time.fixedDeltaTime);
 					}
 					else
 						holdDuration = 0;
@@ -110,7 +111,7 @@ namespace RVP
 						steerLimit = newSteerLimit;
 					servoAudio.volume = 1f;
 					servoAudio.pitch = (Mathf.Abs(targetSteer) > Mathf.Abs(vp.steerInput)) ? 1.5f : 1;
-					holdDuration = Mathf.Clamp01(holdDuration + (vp.SGPshiftbutton ? 2 : 1) * Mathf.Abs(vp.steerInput) * steerAdd * Time.fixedDeltaTime);
+					holdDuration = Mathf.Clamp01(holdDuration + Mathf.Abs(vp.steerInput) * steerAdd * Time.fixedDeltaTime);
 				}
 				Info.controllerInUse = (vp.basicInput.playerInput.currentControlScheme != "Keyboard");
 				if (Info.controllerInUse)
@@ -118,9 +119,17 @@ namespace RVP
 				else
 					holdCurveValue = keyboardInputCurve.Evaluate(holdDuration);
 			}
+			if(steeringWheel != null)
+				steeringWheel.localRotation = Quaternion.Euler(0,1.5f*targetSteer , 0);
 			// Set steer angles in wheels
 			foreach (Suspension curSus in steeredWheels)
 			{
+				float stretch = Mathf.Lerp(vp.wheels[3].initFrictionStretch, shiftRearFrictionStretch, holdDuration);
+				vp.wheels[2].forwardCurveStretch = stretch;
+				vp.wheels[2].sidewaysCurveStretch = stretch;
+				vp.wheels[3].forwardCurveStretch = stretch;
+				vp.wheels[3].sidewaysCurveStretch = stretch;
+
 				if (vp.followAI.selfDriving)
 				{
 					curSus.steerAngle = vp.steerInput;
@@ -136,7 +145,7 @@ namespace RVP
 				}
 			}
 		}
-		float Sign(float input)
+		static float Sign(float input)
 		{
 			if (input >= 0)
 				if (input == 0)

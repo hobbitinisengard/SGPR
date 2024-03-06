@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.UI;
-using RVP;
 using System;
 using TMPro;
 using UnityEngine.InputSystem;
@@ -14,8 +13,9 @@ public class MainMenuView : Sfxable
 	public TextMeshProUGUI bottomText;
 	public Sprite bgTile;
 	public AudioClip music;
-	ViewSwitcher dimmer;
+	static ViewSwitcher dimmer;
 	public InputActionReference cancelInput;
+	public YouSureDialog youSureDialog;
 	private void Start()
 	{
 		if (!Info.loaded)
@@ -25,24 +25,32 @@ public class MainMenuView : Sfxable
 		}
 	}
 
-	private void CancelPressed(InputAction.CallbackContext obj)
+	void CancelPressed(InputAction.CallbackContext obj)
 	{
-		if (gameObject.activeSelf && prevView)
+		if(youSureDialog == null)
 		{
-			GoToView(prevView);
-			PlaySFX("fe-dialogcancel");
+			if (gameObject.activeSelf && prevView)
+			{
+				GoToView(prevView);
+				PlaySFX("fe-dialogcancel");
+			}
+		}
+		else
+		{
+			youSureDialog.gameObject.SetActive(true);
 		}
 	}
-	private void OnDisable()
+	protected void OnDisable()
 	{
 		cancelInput.action.started -= CancelPressed;
 	}
-	private void OnEnable()
+	protected void OnEnable()
 	{
 		cancelInput.action.started += CancelPressed;
 		if (firstButtonToBeSelected)
 			firstButtonToBeSelected.Select();
-		dimmer = transform.FindParentComponent<ViewSwitcher>();
+		if(dimmer == null)
+			dimmer = transform.FindParentComponent<ViewSwitcher>();
 		dimmer.SwitchBackgroundTo(bgTile);
 	}
 	

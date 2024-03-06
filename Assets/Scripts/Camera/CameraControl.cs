@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UIElements;
+﻿using UnityEngine;
 
 namespace RVP
 {
@@ -13,7 +10,7 @@ namespace RVP
 	// Class for controlling the camera
 	public class CameraControl : MonoBehaviour
 	{
-		Vector2[] camerasLH = new Vector2[] { new(8.5f, 3.5f), new(4.5f, 2), new(11, 4) };
+		readonly Vector2[] camerasLH = new Vector2[] { new(8.5f, 3.5f), new(4.5f, 2), new(11, 4) };
 		int curCameraLH = 0;
 		public enum Mode { Follow, Replay };
 		Mode _mode;
@@ -287,17 +284,18 @@ namespace RVP
 				newTrPos = Vector3.SmoothDamp(tr.position, lookObj.position, ref velocity,
 							smoothTime, catchUpCamSpeed, xyInputCamSpeedCoeff * Time.fixedDeltaTime * smoothDampRspnvns);
 
-			//bool badpos = Physics.Linecast(vp.tr.position + cHeight * Vector3.up, newTrPos, out hit, castMask);
-			//if (badpos)
-			//{ //Check if there is an object between the camera and target vehicle and move the camera in front of it
-			//	newTrPos = hit.point + (vp.tr.position + cHeight * Vector3.up - newTrPos).normalized * (cam.nearClipPlane + 0.1f);
-			//}
+			
 			smoothTime = Mathf.Lerp(smoothTime, slowCamera ? camStoppedSmoothTime : camFollowSmoothTime
 				, (slowCamera ? 1 : 2) * Time.fixedDeltaTime * smoothTimeSpeed);
 
 			Quaternion rotation;
 			if (!vp.customCam)
 			{
+				bool badpos = Physics.Linecast(vp.tr.position + cHeight * Vector3.up, newTrPos, out hit, castMask);
+				if (badpos)
+				{ //Check if there is an object between the camera and target vehicle and move the camera in front of it
+					newTrPos = hit.point + (vp.tr.position + cHeight * Vector3.up - newTrPos).normalized * (cam.nearClipPlane + 0.1f);
+				}
 				//float camCarDistance = Vector3.Distance(tr.position, vp.tr.position);
 				if (slowCamera)
 				{ // cam lets car go ahead
@@ -326,8 +324,6 @@ namespace RVP
 		// function for setting the rotation input of the camera
 		public void SetInput(float x, float y)
 		{
-			if (x == 0)
-				Debug.Log("0");
 			xInput = x;
 			yInput = y;
 		}

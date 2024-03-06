@@ -220,6 +220,13 @@
         "com.unity.modules.imgui": "1.0.0"
       }
     },
+    "com.yasirkula.simplefilebrowser": {
+      "version": "https://github.com/yasirkula/UnitySimpleFileBrowser.git",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "544dd06856a1a7359ed9aff332f950d8a9849219"
+    },
     "jillejr.newtonsoft.json-for-unity.converters": {
       "version": "1.6.2",
       "depth": 0,

@@ -244,8 +244,8 @@ public class SGP_HUD : MonoBehaviour
 		for (int i = 0; i < 10; i++)
 			StartCoroutine(SetStarVisible(i));
 
-		if (Info.tracks[Info.s_trackName].records[0].secondsOrPts > 0)
-			bestLapTime = new TimeSpan(0, 0, 0, (int)Info.tracks[Info.s_trackName].records[0].secondsOrPts, (int)(100 * (Info.tracks[Info.s_trackName].records[0].secondsOrPts % 1f)));
+		if (Info.tracks[Info.s_trackName].records.lap.secondsOrPts > 0)
+			bestLapTime = new TimeSpan(0, 0, 0, (int)Info.tracks[Info.s_trackName].records.lap.secondsOrPts, (int)(100 * (Info.tracks[Info.s_trackName].records.lap.secondsOrPts % 1f)));
 	}
 	private void Awake()
 	{

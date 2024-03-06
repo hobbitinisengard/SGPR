@@ -74,7 +74,8 @@ public class RadialOneVisible : MonoBehaviour
 
 		if (radialCo != null)
 			StopCoroutine(radialCo);
-		radialCo = StartCoroutine(Set());
+		if(rad.gameObject.activeSelf)
+			radialCo = StartCoroutine(Set());
 	}
 	IEnumerator Set()
 	{
