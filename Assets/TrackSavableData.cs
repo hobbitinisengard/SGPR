@@ -13,6 +13,7 @@ internal class TrackSavableData
 	public List<TileSavable> tiles;
 	public Vector3[] replayCams;
 	public float[,] heights;
+	public int initialRotation;
 }
 
 [Serializable]

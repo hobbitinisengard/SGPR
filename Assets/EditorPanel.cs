@@ -126,6 +126,7 @@ public class EditorPanel : Sfxable
 	public Slider WindExtZ;
 	public Slider WindRanX;
 	public Slider WindRanZ;
+	public Slider initialRotationSlider;
 	public Button terrainBtn;
 	public RacingPathParams[] racingPathParams;//20,0,0,50
 	Vector3? lastEditorCameraPosition;
@@ -134,7 +135,7 @@ public class EditorPanel : Sfxable
 	GameObject currentTileButton;
 	Transform currentTilesPanel;
 	UITest uiTest;
-	AnimationCurve buttonAnimationCurve = new AnimationCurve();
+	AnimationCurve buttonAnimationCurve = new ();
 	Tile currentTile;
 	Vector3? anchor;
 	int yRot = 0;
@@ -245,6 +246,10 @@ public class EditorPanel : Sfxable
 	{
 		windRandom.z = maxWind * sliderVal;
 		ApplyWindToCloths();
+	}
+	public void SetInitialRotation()
+	{
+		placedTilesContainer.transform.rotation = Quaternion.Euler(0, initialRotationSlider.value, 0);
 	}
 	void ApplyWindToCloths()
 	{
@@ -410,7 +415,7 @@ public class EditorPanel : Sfxable
 									selector.Distance = pickedTile.Length();
 									DisplayMessageFor(selector.Distance.ToString(), 3);
 								}
-								SetCurrentTileTo(GetButtonForTile(pickedTile.transform.name), pickedTile.Length(), pickedTile.transform.rotation);
+								SetCurrentTileTo(GetButtonForTile(pickedTile.transform.name), pickedTile.Length(), pickedTile.transform.localRotation);
 								invisibleLevel.position = new Vector3(0, pickedTile.transform.position.y, 0);
 							}
 						}
@@ -491,7 +496,7 @@ public class EditorPanel : Sfxable
 										xRot = 0;
 										var euler = currentTile.transform.eulerAngles;
 										euler.x = ((currentTile.transform.GetComponent<MeshFilter>() == null) ? 0 : -90) + xRot;
-										currentTile.transform.rotation = Quaternion.Euler(euler);
+										currentTile.transform.localRotation = Quaternion.Euler(euler);
 									}
 									else
 									{
@@ -507,7 +512,7 @@ public class EditorPanel : Sfxable
 										zRot = 0;
 										var euler = currentTile.transform.eulerAngles;
 										euler.z = zRot;
-										currentTile.transform.rotation = Quaternion.Euler(euler);
+										currentTile.transform.localRotation = Quaternion.Euler(euler);
 									}
 									else
 									{
@@ -880,6 +885,7 @@ public class EditorPanel : Sfxable
 							cur.Colorize(Connector.red);
 							connectors.Add(cur);
 						}
+						//Debug.DrawRay(cur.transform.position, Vector3.up * 100, Color.red);
 						selectingOtherConnector = true;
 						yield return null;
 					}
@@ -1087,7 +1093,7 @@ public class EditorPanel : Sfxable
 	{
 		SetCurrentTileTo(button, null, null);
 	}
-	public void SetCurrentTileTo(GameObject button, float? Length = null, Quaternion? rotation = null)
+	public void SetCurrentTileTo(GameObject button, float? Length = null, Quaternion? localRotation = null)
 	{
 		// play GUI animation
 		DeselectIconAndRemoveCurrentTile();
@@ -1099,9 +1105,9 @@ public class EditorPanel : Sfxable
 		StartCoroutine(AnimateButton(button.transform.GetChild(0)));
 
 		//PlaySFX("click");
-		InstantiateNewTile(button.name, Length, rotation);
+		InstantiateNewTile(button.name, Length, localRotation);
 	}
-	void InstantiateNewTile(string name, float? distance = null, Quaternion? rotation = null, Vector3? position = null,
+	void InstantiateNewTile(string name, float? distance = null, Quaternion? localRotation = null, Vector3? position = null,
 		bool? mirror = null, string url = null)
 	{
 		GameObject original;
@@ -1120,10 +1126,10 @@ public class EditorPanel : Sfxable
 
 		currentTile.transform.position = position == null ? curPosition : position.Value;
 
-		rotation ??= Quaternion.Euler(new Vector3(
+		localRotation ??= Quaternion.Euler(new Vector3(
 			((currentTile.transform.GetComponent<MeshFilter>() != null) ? -90 : 0) + xRot, yRot, zRot));
 
-		currentTile.transform.rotation = rotation.Value;
+		currentTile.transform.localRotation = localRotation.Value;
 		currentTile.GetComponent<Tile>().panel = this;
 
 		mirror ??= curMirror;
@@ -1353,7 +1359,7 @@ public class EditorPanel : Sfxable
 		TrackSavableData TRACK = new TrackSavableData();
 		TRACK.windExternal = windExternal;
 		TRACK.windRandom = windRandom;
-
+		TRACK.initialRotation = (int)initialRotationSlider.value;
 		int stuntyCount = 0, loopCount = 0, jumpCount = 0, jumpyCount = 0, windyCount = 0,
 			crossCount = 0, pitsCount = 0, icyCount = 0, sandyCount = 0, grassyCount = 0;
 		string prevTileName = "";
@@ -1403,7 +1409,7 @@ public class EditorPanel : Sfxable
 				TileSavable tSavable = new TileSavable();
 				tSavable.name_id = id;
 				tSavable.position = tile.transform.position;
-				tSavable.rotation = tile.transform.rotation;
+				tSavable.rotation = tile.transform.localRotation;
 				tSavable.length = tile.Length();
 				tSavable.url = tile.url;
 				tSavable.mirrored = tile.mirrored;
@@ -1662,7 +1668,8 @@ public class EditorPanel : Sfxable
 
 		windExternal = TRACK.windExternal;
 		windRandom = TRACK.windRandom;
-
+		initialRotationSlider.value = TRACK.initialRotation;
+		SetInitialRotation();
 
 		if (TRACK.replayCams != null)
 		{
@@ -1716,7 +1723,6 @@ public class EditorPanel : Sfxable
 		ApplyWindToCloths();
 		SetHeightsmap(TRACK.heights);
 		SwitchToConnect();
-		
 	}
 	public void OpenLoadTrackFileBrowser()
 	{

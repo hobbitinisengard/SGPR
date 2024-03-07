@@ -604,15 +604,14 @@ namespace RVP
 			stoppedTime = 0;
 			if (progress == 0 || !trackPathCreator)
 				yield break;
-			float resetDist = progress;
-			Vector3 resetPos = trackPathCreator.path.GetPointAtDistance(resetDist);
+			Vector3 resetPos = trackPathCreator.path.GetPointAtDistance(progress);
 			RaycastHit h;
 			while (!Physics.Raycast(resetPos + 5*Vector3.up, Vector3.down, out h, Mathf.Infinity, 1 << Info.roadLayer)
 				|| Vector3.Dot(h.normal, Vector3.up) < -0.5f // while not hit road or hit culled face (backface raycasts are on)
 				|| Mathf.Abs(Vector3.Dot(h.normal, Vector3.up)) < .64f) // slope too big
 			{
-				resetDist += 30;
-				resetPos = trackPathCreator.path.GetPointAtDistance(resetDist);
+				progress += 30;
+				resetPos = trackPathCreator.path.GetPointAtDistance(progress);
 			}
 			// resetting sequence. Has to be done this way to prevent the car from occasional rolling
 			if (ghostCo != null)
