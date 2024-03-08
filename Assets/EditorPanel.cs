@@ -312,7 +312,7 @@ public class EditorPanel : Sfxable
 	}
 	void RotateCurrentTileAround(in Vector3 axis, float angle)
 	{
-		currentTile.transform.RotateAround(currentTile.transform.position, axis, angle);
+		currentTile.transform.RotateAround(currentTile.transform.localPosition, axis, angle);
 	}
 
 	void Update()
