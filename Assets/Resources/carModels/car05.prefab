@@ -84152,7 +84152,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
 --- !u!114 &5969412531493064938
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -84322,6 +84322,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   evoBloorp: {fileID: 515682680}
   stunting: 0
+  flippedWhenInitiated: 0
   rX_delta: 0
   euler: {x: 0, y: 0, z: 0}
   posy: 0
@@ -84537,7 +84538,6 @@ MonoBehaviour:
   - {fileID: 6250492473087983474}
   - {fileID: 7939150304631603867}
   - {fileID: 2743996718150263175}
-  - {fileID: 0}
   - {fileID: 5823232406785712099}
   - {fileID: 5715247988994545434}
   - {fileID: 8908699561723997585}

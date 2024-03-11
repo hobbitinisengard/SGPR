@@ -6,7 +6,6 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
-using static TrackHeader;
 public class TrackSelectorTemplate : Selector
 {
 	public GameObject trackImageTemplate;
@@ -91,40 +90,54 @@ public class TrackSelectorTemplate : Selector
 	protected IEnumerator Load(string specificTrackName = null)
 	{
 		loadCo = true;
-		bool[] existingTrackClasses = PopulateContent();
-		//Debug.Log(menuButtons[0] + " " + menuButtons[1] + " " + menuButtons[2] + " " + menuButtons[3]);
-
-		yield return null; // wait for one frame for active objects to refresh
-		for (int i = 0; i < existingTrackClasses.Length; ++i)
+		int visibleTracks = trackContent.GetChild(0).childCount + (trackContent.GetChild(1) != null ? trackContent.GetChild(1).childCount : 0);
+		int validTracks = Info.tracks.Count(t => ValidCheck(t.Value.valid));
+		if (visibleTracks != validTracks)
 		{
-			if (selectedTrack == null && existingTrackClasses[i])
+			bool[] existingTrackClasses = PopulateContent();
+
+			yield return null; // wait for one frame for active objects to refresh
+
+			for (int i = 0; i < existingTrackClasses.Length; ++i)
 			{
-				if (trackContent.GetChild(i).childCount > 0)
+				if (selectedTrack == null && existingTrackClasses[i])
 				{
-					selectedTrack = trackContent.GetChild(i).GetChild(0);
-					if(!Info.randomTracks)
-						Info.s_trackName = selectedTrack.name;
+					if (trackContent.GetChild(i).childCount > 0)
+					{
+						if (specificTrackName != null)
+						{ 
+							if(selectedTrack.name != specificTrackName)
+								selectedTrack = trackContent.GetChild(i).GetChild(0);
+						}
+						else
+							selectedTrack = trackContent.GetChild(i).GetChild(0);
+							
+						if (!Info.randomTracks)
+							Info.s_trackName = selectedTrack.name;
+					}
 				}
+				// disable track classes without children (required for sliders to work)
+				trackContent.GetChild(i).gameObject.SetActive(existingTrackClasses[i]);
 			}
-			// disable track classes without children (required for sliders to work)
-			trackContent.GetChild(i).gameObject.SetActive(existingTrackClasses[i]);
+			
 		}
+
 		SetTiles();
 		SetRecords();
-		//radial.gameObject.SetActive(selectedTrack);
-		startButton.Select();
+		radial.gameObject.SetActive(selectedTrack);
+
 
 		if (selectedTrack == null)
 			trackDescText.text = "No tracks available";
 		else
 		{
 			trackDescText.text = selectedTrack.name + "\n\n" + Info.tracks[selectedTrack.name].desc;
-			if(radial.gameObject.activeSelf)
+			if (radial.gameObject.activeSelf)
 				radial.SetAnimTo(selectedTrack.parent.GetSiblingIndex());
 		}
-
+		startButton.Select();
 		containerCo = StartCoroutine(MoveToTrack());
-		radial.SetChildrenActive(existingTrackClasses);
+		radial.SetChildrenActive(trackContent);
 
 		Debug.Log(selectedTrack);
 		loadCo = false;

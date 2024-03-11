@@ -153,6 +153,7 @@ public class SGP_Evo : MonoBehaviour
 	float shiftPressTime;
 	bool prevSGPShiftButton = false;
 	public bool stunting = false;
+	public bool flippedWhenInitiated = false;
 	float maxTimeToInit = 1f;
 	RotationDampStruct[] r;
 	public float rX_delta;
@@ -193,22 +194,30 @@ public class SGP_Evo : MonoBehaviour
 
 	void FixedUpdate()
 	{
-		if (stunting && ((vp.reallyGroundedWheels > 0) || vp.crashing))
-		{
-			stunting = false;
-			//Debug.LogWarning("OFF");
-		}
-
 		if (vp.SGPshiftbutton)
 		{
-			if (vp.reallyGroundedWheels != 0 && !stunting && prevSGPShiftButton == false)
+			if (!stunting && prevSGPShiftButton == false)
 			{ // shift press before jump
-				shiftPressTime = Time.time;
-				//Debug.Log("INIT");
+				if(vp.reallyGroundedWheels > 0 && !vp.crashing)
+				{
+					shiftPressTime = Time.time;
+					flippedWhenInitiated = false;
+					Debug.Log("shift press. Flipped:" + flippedWhenInitiated);
+				}
+				else if(vp.reallyGroundedWheels == 0 && vp.crashing)
+				{
+					shiftPressTime = Time.time;
+					flippedWhenInitiated = true;
+					Debug.Log("shift press. Flipped: " + flippedWhenInitiated);
+				}
 			}
 		}
-		if (!stunting && !vp.colliding && vp.reallyGroundedWheels == 0 && Time.time - shiftPressTime < maxTimeToInit)
+
+		if (!stunting && Time.time - shiftPressTime < maxTimeToInit && 
+			((!flippedWhenInitiated && !vp.colliding && vp.reallyGroundedWheels == 0)
+				|| (flippedWhenInitiated && !vp.colliding &&!vp.crashing)))
 		{
+			Debug.Log("Bloorp. Flipped: " + flippedWhenInitiated);
 			evoBloorp.Play();
 			stunting = true;
 			euler = vp.tr.rotation.eulerAngles;
@@ -219,6 +228,11 @@ public class SGP_Evo : MonoBehaviour
 
 		if (stunting)
 		{
+			if (vp.crashing || vp.colliding || vp.reallyGroundedWheels > 0)
+			{
+				stunting = false;
+			}
+
 			if (vp.SGPshiftbutton)
 			{
 				if (vp.accelInput > 0.5f)

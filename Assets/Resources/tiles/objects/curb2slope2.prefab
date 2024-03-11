@@ -63,6 +63,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: curb2slope2
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 3a79752a3634d9146b2945e7d2ed7df0,
+        type: 3}
+      propertyPath: m_TagString
+      value: VisibleInPictureMode
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

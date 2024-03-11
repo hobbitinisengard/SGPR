@@ -249,6 +249,7 @@ namespace RVP
 			revvingCo = true;
 			float targetRev = 0;
 			bool revHigher = true;
+			
 			while (vp.countdownTimer > 0)
 			{
 				
@@ -265,12 +266,14 @@ namespace RVP
 				}
 				yield return null;
 			}
+			vp.SetEbrake(0);
 			revvingCo = false;
 		}
 		void FixedUpdate()
 		{ 	
 			if (vp.countdownTimer > 0)
 			{
+				vp.ebrakeInput = 1;
 				if (isCPU)
 				{
 					if (!revvingCo)
@@ -279,7 +282,7 @@ namespace RVP
 				return;
 			}
 			
-			rolledOverTime = Mathf.Clamp((vp.reallyGroundedWheels < 3 && vp.crashing) ? rolledOverTime + Time.fixedDeltaTime
+			rolledOverTime = Mathf.Clamp((vp.reallyGroundedWheels < 4 && vp.crashing) ? rolledOverTime + Time.fixedDeltaTime
 				: rolledOverTime - 2*Time.fixedDeltaTime, 0, rollResetTime);
 
 			// Reset if stuck rolled over
@@ -288,13 +291,14 @@ namespace RVP
 				StartCoroutine(ResetOnTrack());
 			}
 			bool onRoad = Physics.Raycast(tr.position + Vector3.up, Vector3.down, out var _, Mathf.Infinity, 1 << Info.roadLayer);
-			if (onRoad)
+			//outOfTrackTime = !onRoad && vp.reallyGroundedWheels > 0 ? outOfTrackTime + Time.fixedDeltaTime : 
+			if(vp.reallyGroundedWheels > 0)
 			{
-				if (vp.reallyGroundedWheels == 0)
+				if (onRoad)
 					outOfTrackTime = 0;
+				else
+					outOfTrackTime += Time.fixedDeltaTime;
 			}
-			else
-				outOfTrackTime += Time.fixedDeltaTime;
 			
 			// wrong way driving
 			if(trackPathCreator)

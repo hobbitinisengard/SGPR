@@ -44,46 +44,54 @@ public class CarSelector : Selector
 	}
 	IEnumerator Load()
 	{
-		loadCo = true;
-		bool[] menuButtons = new bool[4];
+		int carsVisible = 0;
 		for (int i = 0; i < carContent.childCount; ++i)
-		{ // remove cars from previous entry
-			Transform carClass = carContent.GetChild(i);
-			for (int j = 0; j < carClass.childCount; ++j)
-			{
-				//Debug.Log(carClass.GetChild(j).name);
-				Destroy(carClass.GetChild(j).gameObject);
-			}
-		}
-		for (int i = 0; i < Info.cars.Length; ++i)
-		{ // populate car grid
-			var car = Info.cars[i];
-			if (car.unlocked)
-			{
-				var newcar = Instantiate(carImageTemplate, carContent.GetChild((int)car.category));
-				newcar.name = "car" + (i + 1).ToString("D2");
-				newcar.GetComponent<Image>().sprite = Resources.Load<Sprite>(Info.carImagesPath + newcar.name);
-				newcar.SetActive(true);
-				menuButtons[(int)car.category] = true;
-				if (persistentSelectedCar != null && persistentSelectedCar == newcar.name)
-					selectedCar = newcar.transform;
-			}
-		}
-		Debug.Log(menuButtons[0] + " " + menuButtons[1] + " " + menuButtons[2] + " " + menuButtons[3]);
+			carsVisible += carContent.GetChild(i).childCount;
 
-		yield return null; // wait for one frame for active objects to refresh
-
-		// set buttons
-		for (int i = 0; i < buttonsContainer.childCount; ++i)
+		loadCo = true;
+		if (carsVisible != Info.cars.Length)
 		{
-			if (selectedCar == null && menuButtons[i])
-			{
-				selectedCar = carContent.GetChild(i).GetChild(0);
+			bool[] menuButtons = new bool[4];
+			for (int i = 0; i < carContent.childCount; ++i)
+			{ // remove cars from previous entry
+				Transform carClass = carContent.GetChild(i);
+				for (int j = 0; j < carClass.childCount; ++j)
+				{
+					//Debug.Log(carClass.GetChild(j).name);
+					Destroy(carClass.GetChild(j).gameObject);
+				}
 			}
-			// show only carclass buttons when carclass exists
-			buttonsContainer.GetChild(i).gameObject.SetActive(menuButtons[i]);
-			// disable car classes without children (required for sliders to work)
-			carContent.GetChild(i).gameObject.SetActive(menuButtons[i]);
+			for (int i = 0; i < Info.cars.Length; ++i)
+			{ // populate car grid
+				var car = Info.cars[i];
+				if (car.unlocked)
+				{
+					var newcar = Instantiate(carImageTemplate, carContent.GetChild((int)car.category));
+					newcar.name = "car" + (i + 1).ToString("D2");
+					newcar.GetComponent<Image>().sprite = Resources.Load<Sprite>(Info.carImagesPath + newcar.name);
+					newcar.SetActive(true);
+					menuButtons[(int)car.category] = true;
+					if (persistentSelectedCar != null && persistentSelectedCar == newcar.name)
+						selectedCar = newcar.transform;
+				}
+			}
+			Debug.Log(menuButtons[0] + " " + menuButtons[1] + " " + menuButtons[2] + " " + menuButtons[3]);
+
+			yield return null; // wait for one frame for active objects to refresh
+
+			// set buttons
+			for (int i = 0; i < buttonsContainer.childCount; ++i)
+			{
+				if (selectedCar == null && menuButtons[i])
+				{
+					selectedCar = carContent.GetChild(i).GetChild(0);
+				}
+				// show only carclass buttons when carclass exists
+				buttonsContainer.GetChild(i).gameObject.SetActive(menuButtons[i]);
+				// disable car classes without children (required for sliders to work)
+				carContent.GetChild(i).gameObject.SetActive(menuButtons[i]);
+			}
+			
 		}
 		if (selectedCar == null)
 		{
@@ -95,10 +103,9 @@ public class CarSelector : Selector
 			carDescText.text = Info.Car(selectedCar.name).name + "\n\n" + Info.Car(selectedCar.name).desc;
 		}
 		radial.gameObject.SetActive(selectedCar);
-
-
 		containerCo = StartCoroutine(MoveToCar());
-		radial.SetChildrenActive(menuButtons);
+		radial.SetChildrenActive(carContent);
+		
 		if (barsAndRadialCo != null)
 			StopCoroutine(barsAndRadialCo);
 		barsAndRadialCo = StartCoroutine(SetPerformanceBarsAndRadial());

@@ -127,6 +127,8 @@ public class EditorPanel : Sfxable
 	public Slider WindRanX;
 	public Slider WindRanZ;
 	public Slider initialRotationSlider;
+	public Toggle ShowXAxisToggle;
+	LineRenderer ShowXAxisLineRenderer;
 	public Button terrainBtn;
 	public RacingPathParams[] racingPathParams;//20,0,0,50
 	Vector3? lastEditorCameraPosition;
@@ -172,7 +174,11 @@ public class EditorPanel : Sfxable
 	public TrackRecords records = new();
 
 	public bool loadingTrack { get; private set; }
-
+	private void Awake()
+	{
+		ShowXAxisLineRenderer = GetComponent<LineRenderer>();
+		ShowXAxisToggle.onValueChanged.AddListener(SwitchXAxisRenderer);
+	}
 	private void OnDisable()
 	{
 		tileGroups.SetActive(false);
@@ -209,6 +215,10 @@ public class EditorPanel : Sfxable
 			racingLineContainers[i] = new GameObject("racingLine"+i.ToString());
 		}
 		initialized = true;
+	}
+	public void SwitchXAxisRenderer(bool newState)
+	{
+		ShowXAxisLineRenderer.enabled = newState;
 	}
 	public void SetPlacedAnchor(Vector3? position)
 	{
@@ -284,20 +294,6 @@ public class EditorPanel : Sfxable
 			flyCamera.transform.SetPositionAndRotation(lastEditorCameraPosition.Value, lastEditorCameraRotation);
 		}
 	}
-	float SetInvisibleLevelByScroll()
-	{
-		float scroll = Input.mouseScrollDelta.y;
-		if (scroll != 0)
-		{
-			var p = invisibleLevel.position;
-			if (scroll > 0)
-				p.y += Input.GetKey(KeyCode.LeftShift) ? 5 : 1;
-			else
-				p.y -= Input.GetKey(KeyCode.LeftShift) ? 5 : 1;
-			invisibleLevel.position = p;
-		}
-		return scroll;
-	}
 	public void DisplayMessageFor(string str, float timer)
 	{
 		if (DisplayCo != null)
@@ -367,24 +363,15 @@ public class EditorPanel : Sfxable
 				break;
 			case Mode.Build:
 				{
+					
 					if (Input.GetKeyDown(KeyCode.Alpha1))
 					{
 						ResetScale();
 					}
-					float scroll = SetInvisibleLevelByScroll();
+					float scroll = Input.mouseScrollDelta.y;
+					
 
-					if (scroll != 0 && Input.GetKey(KeyCode.Tab))
-					{
-						int dir = scroll > 0 ? -1 : 1;
-						selector.Distance = Mathf.Clamp(selector.Distance + dir * 2.5f, 10, 200);
-						if (currentTile)
-						{
-
-							Destroy(currentTile.gameObject);
-							InstantiateNewTile(currentTileButton.name);
-						}
-						DisplayMessageFor(selector.Distance.ToString("F1"), 1);
-					}
+					
 
 					if (uiTest.PointerOverUI())
 					{
@@ -399,6 +386,7 @@ public class EditorPanel : Sfxable
 					}
 					else
 					{ // MOUSE OVER THE EDITOR
+						
 						if (Input.GetKeyDown(KeyCode.LeftAlt))
 						{ // pick tile
 							HideCurrentTile();
@@ -439,10 +427,19 @@ public class EditorPanel : Sfxable
 						}
 						else if (currentTile)
 						{// PLACING 
-							if (!currentTile.gameObject.activeSelf)
+
+							if (Input.GetKey(KeyCode.Space))
+							{
+								HideCurrentTile();
+							}
+							else
 							{
 								currentTile.gameObject.SetActive(true);
-								return;
+							}
+							if (ShowXAxisToggle.isOn)
+							{
+								ShowXAxisLineRenderer.SetPositions(
+									new Vector3[] { currentTile.transform.position, currentTile.transform.position + 50 * currentTile.transform.right });
 							}
 							if (Input.GetKeyDown(KeyCode.Q))
 							{
@@ -485,13 +482,24 @@ public class EditorPanel : Sfxable
 									yRot = (yRot + dir * 45) % 360;
 								}
 							}
-							if (scroll != 0 && (Input.GetKey(KeyCode.Z) || Input.GetKey(KeyCode.C)))
+							if (scroll != 0)
 							{ // YAW, ROLL ROTATIONS
-								int dir = 1 * (scroll > 0 ? -1 : 1);
-								if (Input.GetKey(KeyCode.Z))
+								int dir = (scroll > 0 ? -1 : 1);
+								if (Input.GetKey(KeyCode.Tab))
+								{
+									selector.Distance = Mathf.Clamp(selector.Distance + dir * 2.5f, 10, 200);
+									if (currentTile)
+									{
+
+										Destroy(currentTile.gameObject);
+										InstantiateNewTile(currentTileButton.name);
+									}
+									DisplayMessageFor(selector.Distance.ToString("F1"), 1);
+								}
+								else if (Input.GetKey(KeyCode.Z))
 								{
 									xRot = (xRot + dir) % 360;
-									if (xRot % 90 == 0)
+									if (xRot % 90 == 0 && xRot != 0)
 									{
 										xRot = 0;
 										var euler = currentTile.transform.eulerAngles;
@@ -507,7 +515,7 @@ public class EditorPanel : Sfxable
 								else if (Input.GetKey(KeyCode.C))
 								{
 									zRot = (zRot + dir) % 360;
-									if (zRot % 90 == 0)
+									if (zRot % 90 == 0 && zRot != 0)
 									{
 										zRot = 0;
 										var euler = currentTile.transform.eulerAngles;
@@ -520,7 +528,17 @@ public class EditorPanel : Sfxable
 									}
 									DisplayMessageFor(zRot.ToString(), 1);
 								}
+								else
+								{
+									var p = invisibleLevel.position;
+									if (scroll > 0)
+										p.y += Input.GetKey(KeyCode.LeftShift) ? 5 : 1;
+									else
+										p.y -= Input.GetKey(KeyCode.LeftShift) ? 5 : 1;
+									invisibleLevel.position = p;
+								}
 							}
+							Debug.DrawRay(currentTile.transform.position, 100 * currentTile.transform.right, Color.red);
 							Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
 							if (Input.GetKey(KeyCode.LeftControl))
@@ -945,7 +963,7 @@ public class EditorPanel : Sfxable
 		}
 		if (trackPathDuplicates)
 		{
-			Debug.LogError("Rpath duplicate found");
+			DisplayMessageFor("Rpath duplicate found", 2);
 			loadingTrack = false;
 			yield break;
 		}
@@ -1512,9 +1530,9 @@ public class EditorPanel : Sfxable
 	{
 		for (int i = 0; i < placedTilesContainer.transform.childCount; ++i)
 		{
-			var tile = placedTilesContainer.transform.GetChild(i).gameObject;
-			if (tile.name.Contains("pylon") || tile.name == "reflector")
-				tile.SetActive(isVisible);
+			var tile = placedTilesContainer.transform.GetChild(i);
+			if (!tile.CompareTag(Info.visibleInPictureModeTag))
+				tile.gameObject.SetActive(isVisible);
 		}
 	}
 	//HeightsSavableWrapper ConvertHeights(float[,] heights)

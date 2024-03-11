@@ -121,7 +121,8 @@ namespace RVP
 			}
 			float sign = Sign(vp.steerInput);
 			if (steeringWheel != null)
-				steeringWheel.localRotation = Quaternion.Euler(0,0, holdCurveValue * 120 * sign);
+				steeringWheel.localRotation = Quaternion.Lerp(steeringWheel.localRotation, 
+					Quaternion.Euler(0,0, -holdCurveValue * 120 * vp.steerInput), 5*Time.fixedDeltaTime);
 			// Set steer angles in wheels
 			foreach (Suspension curSus in steeredWheels)
 			{

@@ -1,60 +1,48 @@
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.UIElements.Experimental;
 
 // Worm models need to have their armature to be Z up.
-// The model needs to be a fbx with armature export settings: Primary Bone +Z, Secondary Bone -X
+// The fbx model needs armature export settings: Primary Bone +Z, Secondary Bone -X
 public class WormAntenna : MonoBehaviour
 {
-	Transform goal;
+	public Transform goal;
+	public Transform root;
+	private Vector3 goal_pos;
 	Vector3 goal_vel = Vector3.zero;
+	private Vector3 goal_prevPos;
 	Transform follower;
 	Vector3 follower_vel = Vector3.zero;
 
 	public float halflife = 1; //drag
 	public float frequency = 2; //Spring
-	Vector3 goal_pos = Vector3.zero;
-	Vector3 goal_prevPos = Vector3.zero;
-	static Vector3[] nodes_init_lookUps;
-	static Vector3[] nodes_init_lookForward;
-	static float[] nodes_init_dists;
+	static Vector3[] initLookNext;
+	static Vector3[] initUps;
+	static float[] initDists;
 	const int nodes_number = 3;
-	private void OnDestroy()
-	{
-		Destroy(follower.gameObject);
-	}
 
 	void Start()
 	{
-		if(nodes_init_lookUps == null)
+		if(initLookNext == null)
 		{
-			nodes_init_lookUps = new Vector3[nodes_number];
-			nodes_init_dists = new float[nodes_number - 1];
-			nodes_init_lookForward = new Vector3[nodes_number - 1];
+			initLookNext = new Vector3[nodes_number];
+			initDists = new float[nodes_number - 1];
+			initUps = new Vector3[nodes_number - 1];
 
-			Transform node = transform;
+			Transform node = root;
 			for (int i = 0; i < nodes_number; ++i)
 			{
-				nodes_init_lookUps[i] = node.GetChild(0).transform.position - node.transform.position;
+				initLookNext[i] = node.GetChild(0).transform.position - node.transform.position;
 				if(i < nodes_number - 1)
 				{
-					nodes_init_dists[i] = Vector3.Distance(node.GetChild(0).transform.position, node.transform.position);
-					nodes_init_lookForward[i] = node.transform.up;
+					initDists[i] = Vector3.Distance(node.GetChild(0).transform.position, node.transform.position);
+					initUps[i] = node.up;
 				}
 				node = node.GetChild(0);
 			}
 		}
-		
-		goal = new GameObject("Goal").transform;
-		goal.parent = transform;
-
 		Transform lastNode = transform;
 		for (int i = 0; i <= nodes_number; ++i)
 			lastNode = lastNode.GetChild(0);
-
-		goal_pos = lastNode.transform.position;
-		goal_prevPos = goal_pos;
-		goal.position = goal_pos;
 
 		follower = new GameObject("Follower").transform;
 		follower.gameObject.layer = 2;
@@ -64,18 +52,18 @@ public class WormAntenna : MonoBehaviour
 	{
 		if (halflife == 0 || frequency == 0) return;
 		Update_Follower();
-		Transform node = transform;
+		Transform node = root;
+		Vector3 localUp = transform.up;
 		for (int i = 0; i < nodes_number-1; ++i)
 		{
-			Vector3 straight2spring_vec = (follower.position - node.position).normalized * nodes_init_dists[i];
+			Vector3 straight2spring_vec = (follower.position - node.position).normalized * initDists[i];
 			Vector3 nextPos =
-				 node.position + Vector3.Slerp(nodes_init_lookUps[i], straight2spring_vec, Easing.OutCubic((float)i / (nodes_number + 1)));
-
-			node.LookAt(nextPos, transform.TransformPoint(nodes_init_lookForward[i]));
+				 node.position + Vector3.Slerp(initLookNext[i], straight2spring_vec, Easing.OutCubic((float)(i+1) / (nodes_number+1)));
+			node.LookAt(nextPos, localUp);
 			
 			node = node.GetChild(0);
 		}
-		node.LookAt(follower.position, nodes_init_lookForward[^1]);
+		node.LookAt(follower.position, localUp);
 	}
 	private void Update_Follower()
 	{
@@ -86,6 +74,7 @@ public class WormAntenna : MonoBehaviour
 
 		// update follower_pos & follower_vel
 		Vector3 follower_pos = follower.position;
+
 		damper_spring(ref follower_pos.x, ref follower_vel.x, goal_pos.x, goal_vel.x);
 		damper_spring(ref follower_pos.y, ref follower_vel.y, goal_pos.y, goal_vel.y);
 		damper_spring(ref follower_pos.z, ref follower_vel.z, goal_pos.z, goal_vel.z);

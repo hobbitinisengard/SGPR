@@ -788,14 +788,7 @@ namespace RVP
 
 		internal void ResetOnTrack()
 		{
-			GetComponent<RaceBox>().ResetOnTrack();
-			var rot = tr.rotation.eulerAngles;
-			if (Mathf.Abs(rot.x) > 100)
-				rot.x = 0;
-			else if (Mathf.Abs(rot.z) > 100)
-				rot.z = 0;
-			tr.rotation = Quaternion.Euler(rot);
-			ResetOnTrackBatteryPenalty();
+			StartCoroutine(followAI.ResetOnTrack());
 		}
 
 		public IEnumerator CountdownTimer(float v)

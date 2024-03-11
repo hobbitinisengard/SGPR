@@ -224,6 +224,7 @@ public static class Info
 	public static DateTime raceStartDate = DateTime.MinValue;
 	public static bool loaded = false;
 	public const int roadLayer = 6;
+	public const string visibleInPictureModeTag = "VisibleInPictureMode";
 	public const int ignoreWheelCastLayer = 8;
 	public const int vehicleLayer = 9;
 	public const int connectorLayer = 11;
@@ -588,6 +589,9 @@ public class TrackHeader
 {
 	public string author;
 	public string desc;
+	/// <summary>
+	/// whether the track can be raced on (has its path closed)
+	/// </summary>
 	public bool valid;
 	public Envir envir;
 	public CarGroup preferredCarClass;

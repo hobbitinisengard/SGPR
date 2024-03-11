@@ -7,18 +7,13 @@ public class Ghost : MonoBehaviour
 	public bool hittable { get; private set; }
 	public bool justResetted { get; private set; }
 	public Collider[] colliders;
-	public MeshRenderer[] ghostableParts;
+	public Renderer[] ghostableParts;
 	VehicleParent vp;
 	public Shader transpShader;
 	private void Awake()
 	{
 		vp = GetComponent<VehicleParent>();
 	}
-	// debug ghost
-	//private void Start()
-	//{
-	//	SetHittable(false);
-	//}
 	public void SetHittable(bool isHittable, bool updateColliders = true)
 	{
 		if (updateColliders)
@@ -47,6 +42,7 @@ public class Ghost : MonoBehaviour
 		material.SetFloat("_SpecularIntensity", .1f);
 		material.SetFloat("_Parallax", 0);
 		material.SetFloat("_Brightness", 1);
+		
 		//material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
 		//material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.Zero);
 		//material.SetInt("_ZWrite", 1);
@@ -54,7 +50,6 @@ public class Ghost : MonoBehaviour
 		//material.DisableKeyword("_ALPHABLEND_ON");
 		//material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
 		//material.renderQueue = -1; // Set it back to the default opaque render queue
-
 		return material;
 	}
 

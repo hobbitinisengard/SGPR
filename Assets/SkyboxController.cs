@@ -5,6 +5,7 @@ public class SkyboxController : MonoBehaviour
 {
 	GameObject nightTimeLights;
 	public GameObject nightSkybox;
+	public GameObject extraToTurnOffInNight;
 	private void Awake()
 	{
 		if (transform.childCount > 0)
@@ -17,7 +18,11 @@ public class SkyboxController : MonoBehaviour
 	public void SetNightTimeLights()
 	{
 		nightSkybox.SetActive(Info.s_isNight);
+
 		if (nightTimeLights)
 			nightTimeLights.SetActive(Info.s_isNight);
+
+		if (extraToTurnOffInNight)
+			extraToTurnOffInNight.SetActive(!Info.s_isNight);
 	}
 }
