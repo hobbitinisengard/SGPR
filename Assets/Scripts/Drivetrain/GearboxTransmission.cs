@@ -64,10 +64,6 @@ namespace RVP
 				}
 			}
 		}
-
-		//public Drive Drive
-		//[Tooltip("Multiplier for comparisons in automatic shifting calculations, should be 2 in most cases")]
-		//float shiftThreshold = 2;
 		public int selectedGear { get; private set; }
 		public bool IsShifting()
 		{
@@ -79,13 +75,13 @@ namespace RVP
 			shiftDelay = shiftDelaySeconds;
 			gears = new Gear[]
 			{
-				new Gear(-3.21f),
-				new Gear(0),
-				new Gear(3.21f),
-				new Gear(2.52f),
-				new Gear(2.0f),
-				new Gear(1.5f),
-				new Gear(1.2f)
+				new (-3.21f),
+				new (0),
+				new (3.21f),
+				new (2.52f),
+				new (2.0f),
+				new (1.5f),
+				new (1.2f)
 			};
 			currentGear = Mathf.Clamp(startGear, 0, gears.Length - 1);
 			selectedGear = currentGear;

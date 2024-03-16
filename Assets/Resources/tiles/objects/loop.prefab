@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 6465141939611265722}
   - component: {fileID: 989499493831932697}
   - component: {fileID: 4777826923259501358}
-  m_Layer: 21
+  m_Layer: 22
   m_Name: LoopBountyZone
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -117,7 +117,7 @@ GameObject:
   - component: {fileID: 1372588899434434148}
   - component: {fileID: 8609342579257266011}
   - component: {fileID: 1614069324693962731}
-  m_Layer: 21
+  m_Layer: 22
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -220,7 +220,7 @@ GameObject:
   - component: {fileID: 7918545953277786994}
   - component: {fileID: 7488249636708949369}
   - component: {fileID: 1066110847180725674}
-  m_Layer: 21
+  m_Layer: 22
   m_Name: LoopBountyZone (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -320,7 +320,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 9154609812506838496}
-  m_Layer: 21
+  m_Layer: 22
   m_Name: CameraPos
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -351,7 +351,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 680436919352844748}
-  m_Layer: 21
+  m_Layer: 22
   m_Name: CameraPos
   m_TagString: Untagged
   m_Icon: {fileID: 0}

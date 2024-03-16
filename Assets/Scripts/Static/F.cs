@@ -1,4 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
 // Static class with extra functions
@@ -24,7 +27,10 @@ public static class F
 		RenderTexture.active = old_rt;
 		return tex;
 	}
-
+	public static T GetRandom<T>(this IList<T> collection)
+	{
+		return collection[Random.Range(0, collection.Count)];
+	}
 	//static public void drawString(string text, Vector3 worldPos, Color? colour = null)
 	//{
 	//	UnityEditor.Handles.BeginGUI();
@@ -213,9 +219,19 @@ public static class F
 			}
 		}
 	}
-	public static Vector3 Vec3Flat(in Vector3 v)
+	public static Vector2 Flat(this Vector3 v)
 	{
-		return new Vector3(v.x, 0, v.z).normalized;
+		return new Vector2(v.x, v.z).normalized;
+	}
+	public static float Sign(float input)
+	{
+		if (input >= 0)
+			if (input == 0)
+				return 0;
+			else
+				return 1;
+		else
+			return -1;
 	}
 
 #if UNITY_EDITOR

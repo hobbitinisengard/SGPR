@@ -214,6 +214,13 @@ namespace RVP
 		public RaceBox raceBox { get; private set; }
 
 		float catchupGripMult = 1.1f;
+		/// <summary>
+		/// used for roadNoise
+		/// </summary>
+		int roadSurfaceType;
+		[NonSerialized]
+		public float tyresOffroad;
+
 		public CatchupStatus catchupStatus { get; private set; }
 
 		public void SetBattery(float capacity, float chargingSpeed, float lowBatPercent, float evoBountyPercent)
@@ -387,10 +394,16 @@ namespace RVP
 			{
 				InheritInputOneShot();
 			}
+			
+			if (wheels[2].curSurfaceType != roadSurfaceType)
+			{
+				roadSurfaceType = wheels[2].curSurfaceType;
+				roadNoiseSnd.clip = GroundSurfaceMaster.surfaceTypesStatic[roadSurfaceType].roadNoise;
+			}
+			float volume = Mathf.InverseLerp(0, 80, velMag);
 
-			if (reallyGroundedWheels == 0)
-				roadNoiseSnd.volume = reallyGroundedWheels == 0 ? 0 : Mathf.Lerp(0, 80, velMag);
-
+			roadNoiseSnd.volume = (Info.gamePaused || reallyGroundedWheels == 0) ? 0 : volume;// (1 + 80 * 2 / 3f * Mathf.Log10(volume)); 
+			
 			if (brakeInput > 0 && !reversing)
 			{
 				// brake lights

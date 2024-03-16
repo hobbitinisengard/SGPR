@@ -74,7 +74,7 @@ namespace RVP
 		{
 			base.FixedUpdate();
 			// Calculate proper input
-			actualAccel = vp.brakeIsReverse && vp.reversing && vp.accelInput <= 0 ? vp.brakeInput : vp.accelInput;
+			actualAccel = vp.brakeIsReverse && vp.reversing ? vp.brakeInput : vp.accelInput;
 			float accelGet = canReverse ? actualAccel : Mathf.Clamp01(actualAccel);
 			actualInput = inputCurve.Evaluate(Mathf.Abs(accelGet)) * Mathf.Sign(accelGet);
 
@@ -87,16 +87,12 @@ namespace RVP
 				else
 					boostEval = 0;
 
-
-				//vp.rb.mass = vp.originalMass * (1 - boostEval);
-
 				float targetRPM;
 				if (rpmTooHigh || actualInput == 0 || (transmission.IsShifting() && transmission.selectedGear > 2))
 					targetRPM = Mathf.Max(minkRPM * 1000, targetDrive.feedbackRPM - 2000);
 				else
 					targetRPM = actualInput * limit2kRPM * 1000;
 
-				//if (!transmission.IsShifting() || transmission.currentGear == 1)
 				targetDrive.rpm = Mathf.Lerp(targetDrive.rpm, targetRPM, inertia * 20 * Time.fixedDeltaTime);
 
 				curr_engine_krpm = targetDrive.feedbackRPM / 1000f;

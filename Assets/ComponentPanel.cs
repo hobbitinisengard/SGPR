@@ -675,10 +675,12 @@ public class TyreSavable : PartSavable
 	public float sideFriction;
 	public float frontFrictionStretch;
 	public float rearFrictionStretch;
-	public float shiftRearFrictionStretch;
+	public float shiftRearFriction;
 	public float squeakSlipThreshold;
 	public float slipDependence;
-	public float axleFriction; // for simulating offroad tyres
+	public float axleFriction;
+	public float offroadTread;
+
 	public TyreSavable()
 	{
 	}
@@ -692,10 +694,11 @@ public class TyreSavable : PartSavable
 		sideFriction = original.sideFriction;
 		frontFrictionStretch = original.frontFrictionStretch;
 		rearFrictionStretch = original.rearFrictionStretch;
-		shiftRearFrictionStretch = original.shiftRearFrictionStretch;
+		shiftRearFriction = original.shiftRearFriction;
 		squeakSlipThreshold = original.squeakSlipThreshold;
 		slipDependence = original.slipDependence;
 		axleFriction = original.axleFriction;
+		offroadTread = original.offroadTread;
 	}
 	public override PartSavable Clone()
 	{
@@ -706,11 +709,12 @@ public class TyreSavable : PartSavable
 		// get data from RL tyre
 		var rear = vp.wheels[2];
 		var front = vp.wheels[0];
+		offroadTread = vp.tyresOffroad;
 		forwardFriction = front.sidewaysFriction;
 		sideFriction = rear.sidewaysFriction;
 		frontFrictionStretch = front.sidewaysCurveStretch;
 		rearFrictionStretch = rear.sidewaysCurveStretch;
-		shiftRearFrictionStretch = vp.steeringControl.shiftRearFrictionStretch;
+		shiftRearFriction = vp.steeringControl.shiftRearFriction;
 		squeakSlipThreshold = rear.slipThreshold;
 		slipDependence = 2;
 		axleFriction = rear.axleFriction;
@@ -718,7 +722,8 @@ public class TyreSavable : PartSavable
 
 	public override void Apply(VehicleParent vp)
 	{
-		vp.steeringControl.shiftRearFrictionStretch = shiftRearFrictionStretch;
+		vp.tyresOffroad = offroadTread;
+		vp.steeringControl.shiftRearFriction = shiftRearFriction;
 		for (int i = 0; i < 4; ++i)
 		{
 			var w = vp.wheels[i];
@@ -728,9 +733,9 @@ public class TyreSavable : PartSavable
 			else
 			{
 				if (Info.s_raceType == RaceType.Drift)
-					w.SetInitFrictions(forwardFriction, sideFriction, rearFrictionStretch-2);
+					w.SetInitFrictions(forwardFriction, sideFriction-2, rearFrictionStretch);
 				else
-					w.SetInitFrictions(forwardFriction, sideFriction, rearFrictionStretch-2);
+					w.SetInitFrictions(forwardFriction, sideFriction, rearFrictionStretch);
 			}
 			w.slipThreshold = squeakSlipThreshold;
 			w.slipDependence = Wheel.SlipDependenceMode.independent;
@@ -945,7 +950,7 @@ public class ChassisSavable : PartSavable
 		vp.SetCenterOfMass();
 		vp.rb.angularDrag = angularDrag;
 		vp.raceBox.evoModule.SetStuntCoeffs(evoSmoothTime, staticEvoMaxSpeed, evoAcceleration);
-		vp.GetComponent<SGP_DragsterEffect>().COM_Movement = -dragsterEffect;
+		vp.GetComponent<SGP_DragsterEffect>().COM_Movement = vp.followAI.isCPU ? 0 : -dragsterEffect;
 	}
 	public override void InitializeFromCar(VehicleParent vp)
 	{

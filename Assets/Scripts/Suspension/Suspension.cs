@@ -328,12 +328,6 @@ namespace RVP
 				}
 			}
 		}
-		public static Vector3 ProjectOnVector(Vector3 force, Vector3 direction)
-		{
-			float dot = Vector3.Dot(force.normalized, direction.normalized);
-			Debug.Log(dot);
-			return dot * force;
-		}
 		// Calculate the direction of the spring
 		void GetSpringVectors()
 		{

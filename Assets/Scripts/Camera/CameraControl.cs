@@ -59,8 +59,7 @@ namespace RVP
 		[Tooltip("Mask for which objects will be checked in between the camera and target vehicle")]
 		public LayerMask castMask;
 
-		[Header("Experimental")]
-		public float maxEffectiveRollTurnAngle = 5;
+		float maxEffectiveRollTurnAngle = 30;
 		float rollCoeff = 8f;
 		float catchUpCamSpeed = 10f;
 
@@ -171,11 +170,13 @@ namespace RVP
 		void FollowCam()
 		{
 			pitchAngle = WrapAround180Degs(vp.tr.localEulerAngles.x);
-			bool pitchLocked = pitchAngle < -maxPitch;
+			
+			bool pitchLocked = false;
 			if (vp.reallyGroundedWheels == 4)
 			{
-				if (pitchLocked)
+				if (pitchAngle < -maxPitch)
 				{
+					pitchLocked = true;
 					Quaternion qRotation = Quaternion.AngleAxis(-pitchAngle - maxPitch, vp.tr.right);
 					targetForward = qRotation * vp.tr.forward;
 					targetUp = qRotation * vp.tr.up;
@@ -195,9 +196,10 @@ namespace RVP
 			// ROLL: camera rolls proportional to car's effective angle and speed
 			if (vp.localVelocity.z > 5f)
 			{
-				Vector3 locVel = vp.localVelocity;
-				locVel.y = 0;
-				effectiveTurnAngle = Vector3.SignedAngle(Vector3.forward, locVel, Vector3.up);
+				Vector2 forward = Vector2.up;
+				Vector2 vel = vp.localVelocity.Flat();
+				effectiveTurnAngle = Vector2.SignedAngle(forward, vel);
+
 				effectiveTurnAngle = Mathf.Clamp(effectiveTurnAngle, -maxEffectiveRollTurnAngle, maxEffectiveRollTurnAngle);
 				scaledTurnAngle = effectiveTurnAngle / maxEffectiveRollTurnAngle;
 			}
@@ -207,7 +209,7 @@ namespace RVP
 				scaledTurnAngle = 0;
 			}
 			smoothedRollAngle = Mathf.Lerp(smoothedRollAngle, scaledTurnAngle, rollCoeff * Time.fixedDeltaTime);
-			rollAngleDeg = smoothedRollAngle * Mathf.Lerp(0, 15, targetBody.velocity.magnitude);
+			rollAngleDeg = smoothedRollAngle * Mathf.Lerp(0, 30, vp.velMag);
 			Vector3 rollUp = Quaternion.AngleAxis(-rollAngleDeg, vp.tr.forward) * Vector3.up;
 			//-----------
 			//camera look-position
@@ -238,7 +240,7 @@ namespace RVP
 				float dot = Vector3.Dot(targetUp, hit.normal);
 				// 0.9848 = cos(15d)
 				upLook = Vector3.Lerp(
-					 upLook, dot < 0.9848077 && pitchLocked ? targetUp : hit.normal, upLookCoeff * Time.fixedDeltaTime);
+					 upLook, (dot < 0.9848077 && pitchLocked) ? targetUp : hit.normal, upLookCoeff * Time.fixedDeltaTime);
 			}
 			lookObj.rotation = Quaternion.LookRotation(forwardLook, upLook + rollUp);
 			//-------------

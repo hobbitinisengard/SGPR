@@ -51,7 +51,7 @@ namespace RVP
 		public ParticleSystem[] debrisParticles;
 		public ParticleSystem sparks;
 		float[] initialEmissionRates;
-		ParticleSystem.MinMaxCurve zeroEmission = new ParticleSystem.MinMaxCurve(0);
+		ParticleSystem.MinMaxCurve zeroEmission = new(0);
 		private void Awake()
 		{
 			debrisParticles = new ParticleSystem[]

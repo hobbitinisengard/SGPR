@@ -5,6 +5,9 @@ using System.Collections;
 using Newtonsoft.Json;
 using System.IO;
 using UnityEngine.InputSystem;
+using System.Linq;
+using NUnit.Framework;
+using System.Collections.Generic;
 
 namespace RVP
 {
@@ -307,8 +310,8 @@ namespace RVP
 			}
 			else
 			{
-				musicPlayer.PlayDelayed(5);
 				musicPlayer.clip = Resources.Load<AudioClip>("music/" + Info.tracks[Info.s_trackName].envir.ToString());
+				musicPlayer.PlayDelayed(5);
 			}
 			Info.raceStartDate = DateTime.Now;
 			Info.raceStartDate.AddSeconds(5);
@@ -317,6 +320,23 @@ namespace RVP
 			int initialRandomLivery = UnityEngine.Random.Range(0, Info.Liveries);
 
 			SetPitsLayer(0);
+
+			List<int> preferredCars = new();
+			for(int i=0; i< Info.cars.Length; ++i)
+			{
+				if(Info.tracks[Info.s_trackName].preferredCarClass == CarGroup.Wild 
+					|| Info.tracks[Info.s_trackName].preferredCarClass == CarGroup.Team)
+				{
+					if (Info.cars[i].category == CarGroup.Wild || Info.cars[i].category == CarGroup.Team)
+						preferredCars.Add(i + 1);
+				}
+				else
+				{
+					if (Info.cars[i].category == CarGroup.Aero || Info.cars[i].category == CarGroup.Speed)
+						preferredCars.Add(i + 1);
+				}
+			}
+
 			for (int i = 0; i < Info.s_rivals + 1; ++i)
 			{
 				Vector3 startPos = racingPaths[0].path.GetPointAtDistance(dist);
@@ -348,7 +368,7 @@ namespace RVP
 
 				startPos = Vector3.Lerp(leftSide, rightSide, (i % 2 == 0) ? .286f : .714f);
 				//Debug.DrawRay(startPos, Vector3.up);
-				string carName = (i == Info.s_rivals) ? Info.s_playerCarName : "car" + UnityEngine.Random.Range(1, Info.cars.Length + 1).ToString("D2");
+				string carName = (i == Info.s_rivals) ? Info.s_playerCarName : "car" + preferredCars.GetRandom().ToString("D2");
 				//string carName = "car06";
 				var carModel = Resources.Load<GameObject>(Info.carPrefabsPath + carName);
 				var position = new Vector3(startPos.x, startPos.y + 3, startPos.z);

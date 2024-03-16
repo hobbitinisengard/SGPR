@@ -35,7 +35,6 @@ namespace RVP
 		[Tooltip("Rims leave sparks on this surface")]
 		public bool leaveSparks;
 		public AudioClip tireSnd;
-		public AudioClip rimSnd;
-		public AudioClip tireRimSnd;
+		public AudioClip roadNoise;
 	}
 }

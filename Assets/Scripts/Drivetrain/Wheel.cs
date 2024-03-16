@@ -319,14 +319,16 @@ namespace RVP
 					// Generate hard collider
 					if (generateHardCollider)
 					{
-						GameObject sphereColNew = new GameObject("Rim Collider");
-						sphereColNew.layer = RaceManager.ignoreWheelCastLayer;
+						GameObject sphereColNew = new ("Rim Collider")
+						{
+							layer = RaceManager.ignoreWheelCastLayer
+						};
 						sphereColTr = sphereColNew.transform;
 						sphereCol = sphereColNew.AddComponent<SphereCollider>();
 						sphereColTr.parent = tr;
 						sphereColTr.localPosition = Vector3.zero;
 						sphereColTr.localRotation = Quaternion.identity;
-						sphereCol.radius = Mathf.Min(rimWidth * 0.5f, rimRadius * 0.5f);
+						sphereCol.radius = rimRadius;//Mathf.Min(rimWidth * 0.5f, rimRadius * 0.5f);
 						sphereCol.sharedMaterial = RaceManager.frictionlessMatStatic;
 					}
 
@@ -583,7 +585,7 @@ namespace RVP
 
 				if (curSurface)
 				{
-					contactPoint.surfaceFriction = curSurface.friction;
+					contactPoint.surfaceFriction = Mathf.Lerp(curSurface.friction, Mathf.Max(.9f, curSurface.friction), vp.tyresOffroad);
 					contactPoint.surfaceType = curSurface.surfaceType;
 				}
 				else if (curTerrain)
@@ -726,7 +728,6 @@ namespace RVP
 			}
 
 			brakeForce += axleFriction * 0.1f * (Mathf.Approximately(actualTorque, 0) ? 1 : 0);
-
 			if (targetDrive.rpm != 0)
 			{
 				brakeForce *= (1 - vp.burnout);

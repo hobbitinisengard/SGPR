@@ -270,7 +270,7 @@ public static class Info
 	internal static bool randomCars;
 	internal static bool randomTracks;
 	internal static int hostId;
-	internal static int  racingPathResolution = 10;
+	internal static int racingPathResolution = 10;
 	public static readonly string version = "0.3b";
 	/// <summary>
 	/// if in track editor or testDriving

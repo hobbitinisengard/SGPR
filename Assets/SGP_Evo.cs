@@ -202,13 +202,11 @@ public class SGP_Evo : MonoBehaviour
 				{
 					shiftPressTime = Time.time;
 					flippedWhenInitiated = false;
-					Debug.Log("shift press. Flipped:" + flippedWhenInitiated);
 				}
 				else if(vp.reallyGroundedWheels == 0 && vp.crashing)
 				{
 					shiftPressTime = Time.time;
 					flippedWhenInitiated = true;
-					Debug.Log("shift press. Flipped: " + flippedWhenInitiated);
 				}
 			}
 		}
@@ -217,7 +215,6 @@ public class SGP_Evo : MonoBehaviour
 			((!flippedWhenInitiated && !vp.colliding && vp.reallyGroundedWheels == 0)
 				|| (flippedWhenInitiated && !vp.colliding &&!vp.crashing)))
 		{
-			Debug.Log("Bloorp. Flipped: " + flippedWhenInitiated);
 			evoBloorp.Play();
 			stunting = true;
 			euler = vp.tr.rotation.eulerAngles;

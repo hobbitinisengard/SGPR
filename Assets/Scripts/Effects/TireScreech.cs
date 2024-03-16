@@ -36,25 +36,23 @@ namespace RVP
 		void Update()
 		{
 			float screechAmount = 0;
-			bool allPopped = true;
-			bool nonePopped = true;
 			float alwaysScrape = 0;
 
 			for (int i = 0; i < vp.wheels.Length; i++)
 			{
 				if (wheels[i].connected)
 				{
-					if (Mathf.Abs(F.MaxAbs(wheels[i].sidewaysSlip, wheels[i].forwardSlip, alwaysScrape)) - wheels[i].slipThreshold > 0)
-					{
-						if (wheels[i].popped)
-						{
-							nonePopped = false;
-						}
-						else
-						{
-							allPopped = false;
-						}
-					}
+					//if (Mathf.Abs(F.MaxAbs(wheels[i].sidewaysSlip, wheels[i].forwardSlip, alwaysScrape)) - wheels[i].slipThreshold > 0)
+					//{
+					//	if (wheels[i].popped)
+					//	{
+					//		nonePopped = false;
+					//	}
+					//	else
+					//	{
+					//		allPopped = false;
+					//	}
+					//}
 
 					if (wheels[i].grounded)
 					{
@@ -74,7 +72,7 @@ namespace RVP
 			// Set audio clip based on number of wheels popped
 			if (surfaceType != null)
 			{
-				snd.clip = allPopped ? surfaceType.rimSnd : (nonePopped ? surfaceType.tireSnd : surfaceType.tireRimSnd);
+				snd.clip = surfaceType.tireSnd;
 			}
 
 			// Set sound volume and pitch

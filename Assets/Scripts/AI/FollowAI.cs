@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
 using PathCreation;
-using System.Linq;
 using System.Collections.Generic;
 using System;
 
@@ -96,7 +95,7 @@ namespace RVP
 		public bool searchForPits;
 		float inPitsTime;
 		public float outOfTrackTime;
-		public float outOfTrackRequiredTime = 2;
+		public float outOfTrackRequiredTime = 1;
 		private Coroutine ghostCo;
 
 		private float steerAngle;
@@ -106,6 +105,7 @@ namespace RVP
 		public float cpuSmoothCoeff = 5;
 		public float cpuFastCoeff = 50;
 		private bool revvingCo;
+		public float targetSteer;
 
 		public float ProgressPercent
 		{
@@ -224,6 +224,13 @@ namespace RVP
 					}
 				}
 			}
+			else
+			{
+				if(Physics.SphereCast(transform.position + Vector3.up, radius, Vector3.down, out h, Mathf.Infinity, layer))
+				{
+					dist = int.Parse(h.transform.name);
+				}
+			}
 			return (int)dist;
 		}
 		void OutOfPits()
@@ -233,6 +240,7 @@ namespace RVP
 				vp.raceBox.raceManager.hud.AddMessage(new Message(vp.name + " RETURNS ON TRACK!", BottomInfoType.PIT_OUT));
 				speedLimit = 1024;
 				speedLimitDist = -1;
+				progress = dist;
 				if (pitsPathCreator)
 					pitsProgress = pitsPathCreator.path.length;
 				pitsPathCreator = null;
@@ -282,34 +290,29 @@ namespace RVP
 				return;
 			}
 			
-			rolledOverTime = Mathf.Clamp((vp.reallyGroundedWheels < 4 && vp.crashing) ? rolledOverTime + Time.fixedDeltaTime
-				: rolledOverTime - 2*Time.fixedDeltaTime, 0, rollResetTime);
+			rolledOverTime = Mathf.Clamp((vp.reallyGroundedWheels < 3 && vp.crashing) ? rolledOverTime + Time.fixedDeltaTime
+				: rolledOverTime - Time.fixedDeltaTime, 0, rollResetTime);
 
-			// Reset if stuck rolled over
 			if (rolledOverTime >= rollResetTime)
 			{
 				StartCoroutine(ResetOnTrack());
 			}
-			bool onRoad = Physics.Raycast(tr.position + Vector3.up, Vector3.down, out var _, Mathf.Infinity, 1 << Info.roadLayer);
-			//outOfTrackTime = !onRoad && vp.reallyGroundedWheels > 0 ? outOfTrackTime + Time.fixedDeltaTime : 
-			if(vp.reallyGroundedWheels > 0)
-			{
-				if (onRoad)
-					outOfTrackTime = 0;
-				else
-					outOfTrackTime += Time.fixedDeltaTime;
-			}
+			bool overRoad = Physics.Raycast(tr.position + Vector3.up, Vector3.down, out var _, Mathf.Infinity, 1 << Info.roadLayer);
 			
-			// wrong way driving
 			if(trackPathCreator)
 			{
-				if (vp.reallyGroundedWheels == 4 && vp.velMag > 10 && Vector3.Dot(vp.forwardDir, trackPathCreator.path.GetDirectionAtDistance(dist)) < -0.5f)
+				if(vp.reallyGroundedWheels > 2 || rolledOverTime > 0)
 				{
-					outOfTrackTime += Time.fixedDeltaTime;
-				}
-				if (outOfTrackTime > outOfTrackRequiredTime)
-				{
-					StartCoroutine(ResetOnTrack());
+					if (!overRoad ||
+					(vp.velMag > 10 && Vector3.Dot(vp.forwardDir, trackPathCreator.path.GetDirectionAtDistance(dist)) < -0.5f))
+						outOfTrackTime += Time.fixedDeltaTime;
+					else if (vp.reallyGroundedWheels == 4 && overRoad && dist > (progress - 2 * radius) && dist < (progress + 2 * radius))
+						outOfTrackTime = 0;
+
+					if (outOfTrackTime > outOfTrackRequiredTime)
+					{
+						StartCoroutine(ResetOnTrack());
+					}
 				}
 			}
 			
@@ -527,20 +530,18 @@ namespace RVP
 					Vector3 targetDir;
 					if(aiStuntingProc)
 					{
-						targetDir = F.Vec3Flat((Vector3)tPos2 - transform.position).normalized;
+						targetDir = F.Flat((Vector3)tPos2 - transform.position);
 					}
 					else
-						targetDir = F.Vec3Flat((Vector3)tPos - transform.position).normalized;
+						targetDir = F.Flat((Vector3)tPos - transform.position);
 					
 					// degrees between car and target
-					float targetSteer = Vector3.SignedAngle(F.Vec3Flat(tr.forward).normalized, targetDir, Vector3.up);
+					targetSteer = Vector2.SignedAngle(targetDir, F.Flat(tr.forward));
 
-					//Debug.DrawRay(vp.transform.position + 3*Vector3.up, 3*targetDir, Color.red);
-					//if (!aiStuntingProc)
-					//	vp.SetSGPShift(targetSteer > 30);
+					if (!aiStuntingProc)
+						vp.SetSGPShift(targetSteer > 30);
 
-					targetSteer = Mathf.Sign(targetSteer) * Mathf.InverseLerp(0, maxPhysicalSteerAngle, Mathf.Abs(targetSteer));
-
+					targetSteer = F.Sign(targetSteer) * Mathf.InverseLerp(0, maxPhysicalSteerAngle, Mathf.Abs(targetSteer));
 					targetSteer = Mathf.Lerp(vp.steerInput, targetSteer, cpuSmoothCoeff * Time.fixedDeltaTime);
 					vp.SetSteer(((reverseTime == 0) ? 1 : -1) * targetSteer);
 					vp.SetBoost(steerAngle < 2 && vp.BatteryPercent > 0.5f);
@@ -624,9 +625,10 @@ namespace RVP
 			//rb.isKinematic = true;
 			tr.position = h.point + Vector3.up;
 			yield return new WaitForFixedUpdate();
-			tr.rotation = Quaternion.LookRotation(trackPathCreator.path.GetDirectionAtDistance(progress));
 			rb.angularVelocity = Vector3.zero;
 			rb.velocity = Vector3.zero;
+			tr.rotation = Quaternion.LookRotation(trackPathCreator.path.GetDirectionAtDistance(progress));
+			
 			//rb.isKinematic = false;
 		}
 
