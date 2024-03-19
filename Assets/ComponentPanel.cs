@@ -437,17 +437,15 @@ public class CarConfig
 					return customParts[type];
 			}
 
-
 			var chassis = (ChassisSavable)Part(PartType.Chassis);
 			var tyre = (TyreSavable)Part(PartType.Tyre);
 			var engine = (EngineSavable)Part(PartType.Engine);
-			//var jet = (BoostSavable)Part(PartType.Boost);
 			float minVal = .15f;
-			float S = Mathf.Clamp(Mathf.InverseLerp(400, 1800, chassis.staticEvoMaxSpeed), minVal, 1);
+			float S = Mathf.Clamp(Mathf.InverseLerp(400, 1200, chassis.staticEvoMaxSpeed), minVal, 1);
 			float G = Mathf.Clamp(Mathf.InverseLerp(-0.2f, 0, chassis.longtitunalCOM), minVal, 1)
-				* Mathf.Clamp(Mathf.InverseLerp(8, 20, tyre.forwardFriction), minVal, 1)
-				* Mathf.Clamp(1 - Mathf.InverseLerp(0, 4, tyre.forwardFriction - tyre.sideFriction), minVal, 1);
-			float P = Mathf.Clamp(Mathf.InverseLerp(0, 0.5f, engine.torque / chassis.mass), minVal, 1); // 0.2 / 1.5 = 0.1333     0.5 / 1 = 0.5
+				* Mathf.Clamp(1 - Mathf.InverseLerp(0, 4, tyre.forwardFriction - tyre.sideFriction), minVal, 1)
+				* Mathf.Clamp(tyre.offroadTread, minVal, 1);
+			float P = Mathf.Clamp(Mathf.InverseLerp(0.5f, 1.1f, engine.torque / chassis.mass), minVal, 1);
 			return new float[] { S, G, P };
 		}
 	}
@@ -680,6 +678,8 @@ public class TyreSavable : PartSavable
 	public float slipDependence;
 	public float axleFriction;
 	public float offroadTread;
+	public float driftRearFriction;
+	public float driftRearFrictionInit;
 
 	public TyreSavable()
 	{
@@ -699,6 +699,8 @@ public class TyreSavable : PartSavable
 		slipDependence = original.slipDependence;
 		axleFriction = original.axleFriction;
 		offroadTread = original.offroadTread;
+		driftRearFriction = original.driftRearFriction;
+		driftRearFrictionInit = original.driftRearFrictionInit;
 	}
 	public override PartSavable Clone()
 	{
@@ -715,6 +717,8 @@ public class TyreSavable : PartSavable
 		frontFrictionStretch = front.sidewaysCurveStretch;
 		rearFrictionStretch = rear.sidewaysCurveStretch;
 		shiftRearFriction = vp.steeringControl.shiftRearFriction;
+		driftRearFriction = vp.steeringControl.driftRearFriction;
+		driftRearFrictionInit = vp.steeringControl.driftRearFrictionInit;
 		squeakSlipThreshold = rear.slipThreshold;
 		slipDependence = 2;
 		axleFriction = rear.axleFriction;
@@ -724,19 +728,14 @@ public class TyreSavable : PartSavable
 	{
 		vp.tyresOffroad = offroadTread;
 		vp.steeringControl.shiftRearFriction = shiftRearFriction;
+		vp.steeringControl.driftRearFriction = driftRearFriction;
+		vp.steeringControl.driftRearFrictionInit = driftRearFrictionInit;
 		for (int i = 0; i < 4; ++i)
 		{
 			var w = vp.wheels[i];
 
-			if (i < 2)
-				w.SetInitFrictions(forwardFriction, sideFriction, frontFrictionStretch);
-			else
-			{
-				if (Info.s_raceType == RaceType.Drift)
-					w.SetInitFrictions(forwardFriction, sideFriction-2, rearFrictionStretch);
-				else
-					w.SetInitFrictions(forwardFriction, sideFriction, rearFrictionStretch);
-			}
+			w.SetInitFrictions(forwardFriction, (Info.s_raceType == RaceType.Drift) ? driftRearFrictionInit : sideFriction, (i < 2) ? frontFrictionStretch : rearFrictionStretch);
+
 			w.slipThreshold = squeakSlipThreshold;
 			w.slipDependence = Wheel.SlipDependenceMode.independent;
 			w.axleFriction = axleFriction;
@@ -1004,7 +1003,7 @@ public class EngineSavable : PartSavable
 		vp.engine.maxPitch = audioMaxPitch;
 		vp.engine.minPitch = audioMinPitch;
 		vp.engine.inertia = inertia;
-		vp.engine.maxTorque = (Info.s_raceType == RaceType.Drift) ? Mathf.Max(torque, .4f) : torque;
+		vp.engine.maxTorque = (Info.s_raceType == RaceType.Drift) ? Mathf.Max(torque, vp.originalMass+0.1f) : torque;
 		vp.engine.limitkRPM = redlineKRPM;
 		vp.engine.limit2kRPM = cutoffKRPM;
 		vp.engine.torqueCurve = vp.engine.GenerateTorqueCurve((int)torqueCurveType);
@@ -1107,7 +1106,7 @@ public class BmsSavable : PartSavable
 		bms.maxDriftAngle = maxDriftAngle;
 		bms.autoSteerDrift = autoSteerDrift == 1;
 		bms.driftPush = (Info.s_raceType == RaceType.Drift) ? Mathf.Max(driftPush, 1) : driftPush;
-		bms.downforce = downforce;
+		bms.downforce = (Info.s_raceType == RaceType.Drift) ? 0 : downforce;
 		vp.wheels[0].suspensionParent.brakeForce = frontBrakeForce;
 		vp.wheels[1].suspensionParent.brakeForce = frontBrakeForce;
 		vp.wheels[2].suspensionParent.brakeForce = rearBrakeForce;

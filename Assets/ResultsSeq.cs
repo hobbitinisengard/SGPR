@@ -220,6 +220,22 @@ public class ResultsSeq : MonoBehaviour
 			yield return null;
 		}
 		audioSource.Stop();
+
+		if(Info.gameMode == MultiMode.Multiplayer && Info.scoringType == ScoringType.Championship)
+		{
+			ResultsView.PersistentResult[] resultData = new ResultsView.PersistentResult[Info.s_cars.Count];
+			for(int i=0; i<Info.s_cars.Count; ++i)
+			{
+				resultData[i] = new ResultsView.PersistentResult()
+				{
+					name = Info.s_cars[i].name,
+					lap = Info.s_cars[i].raceBox.bestLapTime,
+					stunt = Info.s_cars[i].raceBox.Aero,
+					drift = Info.s_cars[i].raceBox.drift,
+				};
+			}
+			ResultsView.resultData = resultData;
+		}
 		gameObject.SetActive(false);
 	}
 	void RowsBlinkColor(Color color)

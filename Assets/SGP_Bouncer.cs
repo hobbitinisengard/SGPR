@@ -49,12 +49,16 @@ public class SGP_Bouncer : MonoBehaviour
 	}
 	private void OnCollisionEnter(Collision collision)
 	{
-		if(collision.GetContact(0).otherCollider.gameObject.layer == Info.carCarCollisionLayer)
+		ContactPoint contact = collision.GetContact(0);
+		if (contact.otherCollider.gameObject.layer == Info.carCarCollisionLayer)
 		{
 			BounceCars(collision);
 			return;
 		}
-		ContactPoint contact = collision.GetContact(0);
+		if (contact.otherCollider.gameObject.layer == Info.ignoreWheelCastLayer)
+		{
+			return;
+		}
 		if (vp.countdownTimer > 0)
 			return;
 		if (contact.otherCollider.gameObject.layer != Info.roadLayer)

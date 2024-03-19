@@ -858,7 +858,6 @@ public class EditorPanel : Sfxable
 
 	IEnumerator ClosingPath()
 	{
-		Debug.Log("begin closing path");
 		connectors.Clear();
 		
 		List<Vector3> Lpath = new List<Vector3>(100);
@@ -1067,7 +1066,6 @@ public class EditorPanel : Sfxable
 				//}
 			}
 		}
-		Debug.Log("end closing path");
 		loadingTrack = false;
 	}
 	void SetPathClosed(bool val)

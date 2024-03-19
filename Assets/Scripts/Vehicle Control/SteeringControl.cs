@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System;
+using static UnityEngine.GraphicsBuffer;
 
 namespace RVP
 {
@@ -45,6 +46,9 @@ namespace RVP
 		[Range(1,10)]
 		public float gamma = 2;
 		public float shiftRearFriction;
+		internal float driftRearFriction;
+		internal float driftRearFrictionInit;
+		private float prevSteerInput;
 
 		void GenerateGammaCurve()
 		{
@@ -89,6 +93,7 @@ namespace RVP
 		{
 			if (!vp.followAI.selfDriving)
 			{
+				
 				if(Info.playerData.steerGamma != gamma)
 				{
 					GenerateGammaCurve();
@@ -111,28 +116,41 @@ namespace RVP
 						steerLimit = newSteerLimit;
 					servoAudio.volume = 1f;
 					servoAudio.pitch = (Mathf.Abs(targetSteer) > Mathf.Abs(vp.steerInput)) ? 1.5f : 1;
+
 					holdDuration = Mathf.Clamp01(holdDuration + Mathf.Abs(vp.steerInput) * steerAdd * Time.fixedDeltaTime);
 				}
+
 				Info.controllerInUse = (vp.basicInput.playerInput.currentControlScheme != "Keyboard");
 				if (Info.controllerInUse)
 					holdCurveValue = analogInputCurve.Evaluate(Mathf.Abs(vp.steerInput));
 				else
 					holdCurveValue = keyboardInputCurve.Evaluate(holdDuration);
+
+				prevSteerInput = vp.steerInput;
 			}
 			float sign = F.Sign(vp.steerInput);
 			if (steeringWheel != null)
 				steeringWheel.localRotation = Quaternion.Lerp(steeringWheel.localRotation, 
 					Quaternion.Euler(0,0, -holdCurveValue * 120 * vp.steerInput), 5*Time.fixedDeltaTime);
 
-			float shiftFric = Mathf.Lerp(vp.wheels[2].initSidewaysFriction, shiftRearFriction, holdDuration);
-			vp.wheels[2].sidewaysFriction = shiftFric;
-			vp.wheels[3].sidewaysFriction = shiftFric;
+			if(Info.s_raceType == RaceType.Drift)
+			{
+				float target = Mathf.Lerp(vp.wheels[2].initSidewaysFriction, driftRearFriction, vp.accelInput);
+				vp.wheels[0].sidewaysFriction = target;
+				vp.wheels[1].sidewaysFriction = target;
+				vp.wheels[2].sidewaysFriction = target;
+				vp.wheels[3].sidewaysFriction = target;// vp.wheels[2].sidewaysFriction;
+			}
+			else
+			{
+				vp.wheels[2].sidewaysFriction = Mathf.Lerp(vp.wheels[2].initSidewaysFriction, shiftRearFriction, holdCurveValue);
+				vp.wheels[3].sidewaysFriction = vp.wheels[2].sidewaysFriction;
+			}
+			
 			
 			// Set steer angles in wheels
 			foreach (Suspension curSus in steeredWheels)
 			{
-
-
 				if (vp.followAI.selfDriving)
 				{
 					curSus.steerAngle = vp.steerInput;

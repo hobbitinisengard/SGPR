@@ -139,7 +139,6 @@ public class TrackSelectorTemplate : Selector
 		containerCo = StartCoroutine(MoveToTrack());
 		radial.SetChildrenActive(trackContent);
 
-		Debug.Log(selectedTrack);
 		loadCo = false;
 	}
 

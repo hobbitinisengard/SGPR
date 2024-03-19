@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Unity.Services.Lobbies.Models;
 using UnityEngine;
@@ -31,13 +32,30 @@ public class PlayerSettingsData
 }
 public static class Info
 {
-	public readonly static string documentsSGPRpath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Stunt GP Reloaded\\";
-	public readonly static string partsPath = documentsSGPRpath + "parts\\";
-	public readonly static string tracksPath = documentsSGPRpath + "tracks\\";
-	public readonly static string downloadPath = documentsSGPRpath + "temp\\";
-	public readonly static string userdataPath = documentsSGPRpath + "userdata.json";
-	public readonly static string lastPath = documentsSGPRpath + "path.txt";
+	public static void Initialize(bool P2)
+	{
+		Info.P2 = P2;
+		if(P2)
+		{
+			_documentsSGPRpath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Stunt GPR 2\\";
+			Debug.LogWarning("Player 2 Started");
+		}
+		else
+			_documentsSGPRpath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Stunt GP Reloaded\\";
+	}
+	static string _documentsSGPRpath;
+	public static string documentsSGPRpath
+	{
+		get { return _documentsSGPRpath; }
+		private set { _documentsSGPRpath = value; }
+	}
+	public static string partsPath { get { return documentsSGPRpath + "parts\\"; } }
+	public static string tracksPath { get { return documentsSGPRpath + "tracks\\"; } }
+	public static string downloadPath { get { return documentsSGPRpath + "temp\\"; } }
+	public static string userdataPath { get { return documentsSGPRpath + "userdata.json"; } }
+	public static string lastPath { get { return documentsSGPRpath + "path.txt"; } }
 
+	public static bool P2;
 	public const string k_Ready = "r";
 	public const string k_Sponsor = "s";
 	public const string k_Name = "n";
@@ -309,26 +327,26 @@ public static class Info
 		{
 			cars = new Car[]
 			{
-			new (1,CarGroup.Speed, "MEAN STREAK","Fast, light and agile, this racer offers much for those who wish to modify their vehicle."),
-			new (1,CarGroup.Wild, "THE HUSTLER","Sturdy 4x4 pick-up truck with an eye for the outrageous!"),
-			new (1,CarGroup.Aero, "TWIN EAGLE","Take flight with this light and speedy stuntcar."),
-			new (1,CarGroup.Aero, "SKY HAWK","Get airborne with this very versatile stunt car."),
-			new (1,CarGroup.Speed, "THE PHANTOM","Fast, sleek and tough to handle."),
-			new (1,CarGroup.Wild, "ROAD HOG","Rock and Roll with the rough ridin' road hog."),
-			new (1,CarGroup.Wild, "DUNE RAT","Defy the laws of physics in this buggy."),
-			new (1,CarGroup.Speed, "LIGHTNIN'","Supercharged super speed. Easy does it!"),
-			new (1,CarGroup.Speed, "ALLEY KAT","Sleek and powerful, this cat is ready to roar."),
-			new (1,CarGroup.Wild, "SAND SHARK","This beachcomber is at home on any stunt circuit."),
-			new (1,CarGroup.Wild, "THE BRUTE","Unleash the Brute for no-nonsense on the road!"),
-			new (1,CarGroup.Aero, "WILD DART","Fly fast and true with this stuntcar."),
-			new (1,CarGroup.Wild, "RAGING BULL","Powerful and fast, this streetwise 4x4 is incredible."),
-			new (1,CarGroup.Aero, "FLYING MANTIS","Super light and very fast."),
-			new (1,CarGroup.Aero, "STUNT MONKEY","Monkey see, monkey do! Go bananas with this wild ride!"),
-			new (1,CarGroup.Speed, "INFERNO","This speed demon is on fire!"),
-			new (1,CarGroup.Team, "THE FORKSTER","Despite its looks, it moves like fork lightning!"),
-			new (1,CarGroup.Team, "WORM MOBILE","Super Speedy Buggy!"),
-			new (1,CarGroup.Team, "FORMULA 17","Incredibly fast racing car."),
-			new (1,CarGroup.Team, "TEAM MACHINE","The ultimate, hugely versatile stock car.")
+			new (45000,CarGroup.Speed, "MEAN STREAK","Fast, light and agile, this racer offers much for those who wish to modify their vehicle."),
+			new (15000,CarGroup.Wild, "THE HUSTLER","Sturdy 4x4 pick-up truck with an eye for the outrageous!"),
+			new (30000,CarGroup.Aero, "TWIN EAGLE","Take flight with this light and speedy stuntcar."),
+			new (35000,CarGroup.Aero, "SKY HAWK","Get airborne with this very versatile stunt car."),
+			new (30000,CarGroup.Speed, "THE PHANTOM","Fast, sleek and tough to handle."),
+			new (30000,CarGroup.Wild, "ROAD HOG","Rock and Roll with the rough ridin' road hog."),
+			new (15000,CarGroup.Wild, "DUNE RAT","Defy the laws of physics in this buggy."),
+			new (50000,CarGroup.Speed, "LIGHTNIN'","Supercharged super speed. Easy does it!"),
+			new (30000,CarGroup.Speed, "ALLEY KAT","Sleek and powerful, this cat is ready to roar."),
+			new (30000,CarGroup.Wild, "SAND SHARK","This beachcomber is at home on any stunt circuit."),
+			new (45000,CarGroup.Wild, "THE BRUTE","Unleash the Brute for no-nonsense on the road!"),
+			new (70000,CarGroup.Aero, "WILD DART","Fly fast and true with this stuntcar."),
+			new (65000,CarGroup.Wild, "RAGING BULL","Powerful and fast, this streetwise 4x4 is incredible."),
+			new (15000,CarGroup.Aero, "FLYING MANTIS","Super light and very fast."),
+			new (35000,CarGroup.Aero, "STUNT MONKEY","Monkey see, monkey do! Go bananas with this wild ride!"),
+			new (50000,CarGroup.Speed, "INFERNO","This speed demon is on fire!"),
+			new (35000,CarGroup.Team, "THE FORKSTER","Despite its looks, it moves like fork lightning!"),
+			new (55000,CarGroup.Team, "WORM MOBILE","Super Speedy Buggy!"),
+			new (100000,CarGroup.Team, "FORMULA 17","Incredibly fast racing car."),
+			new (90000,CarGroup.Team, "TEAM MACHINE","The ultimate, hugely versatile stock car.")
 			};
 		}
 		ReloadCarConfigs();
@@ -649,13 +667,13 @@ public class Car
 	public string name;
 	public CarGroup category;
 	public CarConfig config;
-	public bool unlocked;
-	public Car(int unlocked, CarGroup carClass, string name, string desc)
+	public int price;
+	public Car(int price, CarGroup carClass, string name, string desc)
 	{
 		this.desc = desc;
 		this.category = carClass;
 		this.name = name;
-		this.unlocked = unlocked > 0;
+		this.price = price;
 	}
 }
 public struct PartInfo

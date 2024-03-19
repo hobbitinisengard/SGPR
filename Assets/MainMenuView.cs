@@ -89,8 +89,12 @@ public class MainMenuView : Sfxable
 			PlaySFX("fe-cardserror");
 		else
 		{
-			PavementType[] allowedTilesets = new [] { PavementType.Highway, PavementType.Asphalt, PavementType.Japanese, PavementType.GreenSand };
-			Info.s_roadType = allowedTilesets.GetRandom();
+			
+			if(Info.s_roadType == PavementType.Random)
+			{
+				PavementType[] allowedTilesets = new[] { PavementType.Highway, PavementType.Asphalt, PavementType.Japanese, PavementType.GreenSand };
+				Info.s_roadType = allowedTilesets.GetRandom();
+			}
 			Info.s_inEditor = true;
 			Info.s_spectator = false;
 			dimmer.PlayDimmerToWorld();

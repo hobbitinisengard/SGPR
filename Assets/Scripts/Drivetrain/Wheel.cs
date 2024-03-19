@@ -585,7 +585,11 @@ namespace RVP
 
 				if (curSurface)
 				{
-					contactPoint.surfaceFriction = Mathf.Lerp(curSurface.friction, Mathf.Max(.9f, curSurface.friction), vp.tyresOffroad);
+					if (curSurface.friction == 1)
+						contactPoint.surfaceFriction = curSurface.friction;
+					else
+						contactPoint.surfaceFriction = Mathf.Lerp(curSurface.friction, Mathf.Max(.9f, curSurface.friction), vp.tyresOffroad);
+
 					contactPoint.surfaceType = curSurface.surfaceType;
 				}
 				else if (curTerrain)

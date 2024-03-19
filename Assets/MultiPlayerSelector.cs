@@ -74,7 +74,6 @@ public class MultiPlayerSelector : TrackSelector
 		SwitchScoring(true);
 
 		server.PlayerMe.carNameSet(Info.Car(Info.s_playerCarName).name);
-		await server.UpdatePlayerData();
 
 		if (server.callbacks == null)
 		{
@@ -127,9 +126,24 @@ public class MultiPlayerSelector : TrackSelector
 	}
 	public void DecodeConfig(string data)
 	{
-		Info.scoringType = (ScoringType)data[0];
+		if(Info.scoringType != (ScoringType)data[0])
+		{
+			Info.scoringType = (ScoringType)data[0];
+			server.PlayerMe.ScoreSet(0);
+		}
+		
 		var newRandomCars = data[1] == '1';
+		if (Info.randomCars != newRandomCars)
+		{
+			Info.randomCars = newRandomCars;
+			SwitchRandomCar(true);
+		}
 		var newRandomTracks = data[2] == '1';
+		if (Info.randomTracks != newRandomTracks)
+		{
+			Info.randomTracks = newRandomTracks;
+			SwitchRandomTrack(true);
+		}
 		Info.s_raceType = (RaceType)data[3];
 		Info.s_laps = int.Parse(data[4..6]);
 		Info.s_isNight = data[6] == '1';
@@ -137,17 +151,6 @@ public class MultiPlayerSelector : TrackSelector
 		Info.s_rivals = data[8] - '0';
 		Info.s_roadType = (PavementType)data[9];
 		Info.s_catchup = data[10] == '1';
-
-		if (Info.randomCars != newRandomCars)
-		{
-			Info.randomCars = newRandomCars;
-			SwitchRandomCar(true);
-		}
-		if (Info.randomTracks != newRandomTracks)
-		{
-			Info.randomTracks = newRandomTracks;
-			SwitchRandomTrack(true);
-		}
 		StartCoroutine(ResetButtons());
 	}
 	private void Callbacks_PlayerLeft(List<int> players)
@@ -383,19 +386,26 @@ public class MultiPlayerSelector : TrackSelector
 		SwitchRandomCar(true);
 		SwitchRandomTrack(true);
 		SwitchRandomTrack(true);
+		
+		
+		UpdateInteractableButtons();
+	}
+	void UpdateInteractableButtons()
+	{
 		bool isHost = server.AmHost;
+		bool notRdy = !server.PlayerMe.ReadyGet();
 		sortButton.gameObject.SetActive(isHost);
-		scoringText.transform.parent.GetComponent<Button>().interactable = isHost;
 		sponsorbText.transform.parent.gameObject.SetActive(Info.scoringType == ScoringType.Championship);
-		randomCarsText.transform.parent.GetComponent<Button>().interactable = isHost;
-		randomTracksText.transform.parent.GetComponent<Button>().interactable = isHost;
-		raceTypeButtonText.transform.parent.GetComponent<Button>().interactable = isHost;
-		lapsButtonText.transform.parent.GetComponent<Button>().interactable = isHost;
-		nightButtonText.transform.parent.GetComponent<Button>().interactable = isHost;
-		CPULevelButtonText.transform.parent.GetComponent<Button>().interactable = isHost;
-		rivalsButtonText.transform.parent.GetComponent<Button>().interactable = isHost;
-		wayButtonText.transform.parent.GetComponent<Button>().interactable = isHost;
-		catchupButtonText.transform.parent.GetComponent<Button>().interactable = isHost;
+		scoringText.transform.parent.GetComponent<Button>().interactable = isHost && notRdy;
+		randomCarsText.transform.parent.GetComponent<Button>().interactable = isHost && notRdy;
+		randomTracksText.transform.parent.GetComponent<Button>().interactable = isHost && notRdy;
+		raceTypeButtonText.transform.parent.GetComponent<Button>().interactable = isHost && notRdy;
+		lapsButtonText.transform.parent.GetComponent<Button>().interactable = isHost && notRdy;
+		nightButtonText.transform.parent.GetComponent<Button>().interactable = isHost && notRdy;
+		CPULevelButtonText.transform.parent.GetComponent<Button>().interactable = isHost && notRdy;
+		rivalsButtonText.transform.parent.GetComponent<Button>().interactable = isHost && notRdy;
+		wayButtonText.transform.parent.GetComponent<Button>().interactable = isHost && notRdy;
+		catchupButtonText.transform.parent.GetComponent<Button>().interactable = isHost && notRdy;
 	}
 	public void SwitchSponsor(bool init)
 	{
@@ -411,13 +421,16 @@ public class MultiPlayerSelector : TrackSelector
 	public void SwitchRandomCar(bool init = false)
 	{
 		if (!init)
+		{
 			Info.randomCars = !Info.randomCars;
-
-		int randomNr = UnityEngine.Random.Range(0, Info.cars.Length);
-		Car randomCar = Info.cars[randomNr];
-		Info.s_playerCarName = "car" + (randomNr + 1).ToString("D2");
-		server.PlayerMe.carNameSet(randomCar.name);
-
+		}
+		if(Info.randomCars)
+		{ 
+			int randomNr = UnityEngine.Random.Range(0, Info.cars.Length);
+			var carName = Info.cars[randomNr].name;
+			Info.s_playerCarName = "car" + (randomNr + 1).ToString("D2");
+			server.PlayerMe.carNameSet(carName);
+		}
 		randomCarsText.text = "Cars:" + (Info.randomCars ? "Random" : "Select");
 		garageBtn.interactable = !Info.randomCars;
 	}
@@ -458,7 +471,7 @@ public class MultiPlayerSelector : TrackSelector
 				move2Ref.action.performed += CalculateTargetToSelect;
 				originalTrackSprite = null;
 			}
-			trackDescText.text = persistentSelectedTrack + "\n\n" + Info.tracks[persistentSelectedTrack].desc;
+			trackDescText.text = selectedTrack.name + "\n\n" + Info.tracks[selectedTrack.name].desc;
 		}
 		tilesContainer.gameObject.SetActive(!Info.randomTracks);
 
@@ -506,6 +519,12 @@ public class MultiPlayerSelector : TrackSelector
 		readyTimeoutTime = Time.time;
 		try
 		{
+			// selecting track possible only if we're hosting and not ready 
+			// remove it first to make sure we don't subscribe to event more than once
+			// -= is not throwing
+			move2Ref.action.performed -= CalculateTargetToSelect;
+			if (!amReady && server.AmHost)
+				move2Ref.action.performed += CalculateTargetToSelect;
 			// UPDATE PLAYER
 			playerMe.ReadySet(amReady);
 

@@ -1,4 +1,5 @@
 using System.IO;
+using Unity.Multiplayer.Playmode;
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.UI;
@@ -23,7 +24,7 @@ public class GreetingView : MonoBehaviour
 	private void Awake()
 	{
 		versionText.text = Info.version;
-
+		Info.Initialize(CurrentPlayer.ReadOnlyTags().Count > 0);
 		if (!Directory.Exists(Info.documentsSGPRpath))
 		{
 			Directory.CreateDirectory(Info.documentsSGPRpath);

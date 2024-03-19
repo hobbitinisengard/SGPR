@@ -634,7 +634,7 @@ public class RaceBox : MonoBehaviour
 	}
 	void DeclineStunt()
 	{
-		//Debug.Log(vp.tr.name + " Decline");
+		Debug.Log(vp.tr.name + " Decline");
 		stableLandingTimer = -1;
 		prevStuntPai = null;
 		StuntPaiReset();

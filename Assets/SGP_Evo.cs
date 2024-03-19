@@ -228,6 +228,7 @@ public class SGP_Evo : MonoBehaviour
 			if (vp.crashing || vp.colliding || vp.reallyGroundedWheels > 0)
 			{
 				stunting = false;
+				return;
 			}
 
 			if (vp.SGPshiftbutton)

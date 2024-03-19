@@ -211,12 +211,8 @@ namespace RVP
 			smoothedRollAngle = Mathf.Lerp(smoothedRollAngle, scaledTurnAngle, rollCoeff * Time.fixedDeltaTime);
 			rollAngleDeg = smoothedRollAngle * Mathf.Lerp(0, 30, vp.velMag);
 			Vector3 rollUp = Quaternion.AngleAxis(-rollAngleDeg, vp.tr.forward) * Vector3.up;
-			//-----------
 			//camera look-position
 			// cos(45d) = 0.7f cos(0d) = 1 cos(90deg) = 0
-			//d_vel_norm = vp.rb.velocity.normalized;
-			//d_dot = Vector3.Dot(vp.tr.forward, vp.rb.velocity.normalized);
-			//Vector3 forward;
 			if (vp.rb.velocity.magnitude < 1)
 				forward = vp.tr.forward;
 			else
@@ -228,12 +224,11 @@ namespace RVP
 
 			smoothYRot = Mathf.Lerp(smoothYRot, smoothRotCoeff * vp.rb.angularVelocity.y, Time.fixedDeltaTime);
 			forward = Quaternion.AngleAxis(xInput * 90 + yInput * 180, vp.tr.up) * forward;
-			forward = Quaternion.AngleAxis(Time.fixedDeltaTime * smoothYRot * Mathf.Rad2Deg, vp.tr.up) * forward;//Mathf.Abs(smoothYRot) * new Vector3(Mathf.Sin(smoothYRot), 0, Mathf.Cos(smoothYRot)).normalized;
+			forward = Quaternion.AngleAxis(Time.fixedDeltaTime * smoothYRot * Mathf.Rad2Deg, vp.tr.up) * forward;
 			lookObj.position = vp.tr.position - forward * targetCamCarDistance + Vector3.up * height;
 			//--------------
 
-			targetForward = vp.tr.position + cHeight * Vector3.up - lookObj.position; //Quaternion.AngleAxis(9, vp.tr.right) * forward; // targetForward
-																											  //camera look-rotation
+			targetForward = vp.tr.position + cHeight * Vector3.up - lookObj.position;
 			forwardLook = Vector3.Lerp(forwardLook, targetForward, forwardLookCoeff * Time.fixedDeltaTime);
 			if (Physics.Raycast(vp.tr.position, -targetUp, out RaycastHit hit, 1, castMask))
 			{
@@ -278,14 +273,18 @@ namespace RVP
 			if(vp.customCam)
 				lookObj.position = vp.customCam.transform.position;
 
-			if (yInput == 0 && xInput == 0)
-				newTrPos =
-							Vector3.SmoothDamp(tr.position, lookObj.position, ref velocity,
-							smoothTime, catchUpCamSpeed, Time.fixedDeltaTime * smoothDampRspnvns);
+			bool badpos = Physics.Linecast(vp.tr.position + cHeight * Vector3.up, lookObj.position, out hit, castMask);
+			Vector3 target;
+			if (badpos)
+			{ //Check if there is an object between the camera and target vehicle and move the camera in front of it
+				target = hit.point + (vp.tr.position + cHeight * Vector3.up - newTrPos).normalized * (cam.nearClipPlane + 1);
+			}
 			else
-				newTrPos = Vector3.SmoothDamp(tr.position, lookObj.position, ref velocity,
-							smoothTime, catchUpCamSpeed, xyInputCamSpeedCoeff * Time.fixedDeltaTime * smoothDampRspnvns);
+				target = lookObj.position;
 
+			newTrPos = Vector3.SmoothDamp(tr.position, target, ref velocity, smoothTime, catchUpCamSpeed, 
+				(yInput == 0 && xInput == 0) ? (Time.fixedDeltaTime * smoothDampRspnvns) 
+					: (xyInputCamSpeedCoeff * Time.fixedDeltaTime * smoothDampRspnvns));
 			
 			smoothTime = Mathf.Lerp(smoothTime, slowCamera ? camStoppedSmoothTime : camFollowSmoothTime
 				, (slowCamera ? 1 : 2) * Time.fixedDeltaTime * smoothTimeSpeed);
@@ -293,12 +292,6 @@ namespace RVP
 			Quaternion rotation;
 			if (!vp.customCam)
 			{
-				bool badpos = Physics.Linecast(vp.tr.position + cHeight * Vector3.up, newTrPos, out hit, castMask);
-				if (badpos)
-				{ //Check if there is an object between the camera and target vehicle and move the camera in front of it
-					newTrPos = hit.point + (vp.tr.position + cHeight * Vector3.up - newTrPos).normalized * (cam.nearClipPlane + 0.1f);
-				}
-				//float camCarDistance = Vector3.Distance(tr.position, vp.tr.position);
 				if (slowCamera)
 				{ // cam lets car go ahead
 					Quaternion cameraStoppedRotation = Quaternion.LookRotation(vp.tr.position - tr.position, rollUp);

@@ -31,7 +31,6 @@ public class CarSelector : Selector
 		move2Ref.action.performed -= CalculateTargetToSelect;
 		persistentSelectedCar = selectedCar.name;
 		Info.s_playerCarName = selectedCar.name;
-		Debug.Log("Disable " + persistentSelectedCar);
 	}
 	private void OnEnable()
 	{
@@ -64,7 +63,7 @@ public class CarSelector : Selector
 			for (int i = 0; i < Info.cars.Length; ++i)
 			{ // populate car grid
 				var car = Info.cars[i];
-				if (car.unlocked)
+				if (car.price>0)
 				{
 					var newcar = Instantiate(carImageTemplate, carContent.GetChild((int)car.category));
 					newcar.name = "car" + (i + 1).ToString("D2");

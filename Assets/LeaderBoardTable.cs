@@ -90,7 +90,7 @@ public class LeaderBoardTable : MonoBehaviour
 		newRow.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>().text = player.NameGet();
 		newRow.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>().color = player.ReadColor();
 		newRow.GetChild(1).GetComponent<TextMeshProUGUI>().text = Info.randomCars ? "*random*" : player.carNameGet();
-		newRow.GetChild(2).GetComponent<TextMeshProUGUI>().text = player.ScoreGet().ToString();
+		newRow.GetChild(2).GetComponent<TextMeshProUGUI>().text = ((Info.scoringType == ScoringType.Championship) ? "$ " : "") + player.ScoreGet().ToString();
 	}
 }
 
