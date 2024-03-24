@@ -1774,7 +1774,7 @@ public class EditorPanel : Sfxable
 	{
 		SwitchTo(Mode.None);
 		Info.s_laps = 3;
-		Info.s_rivals = 3;
+		Info.s_cpuRivals = 3;
 		Info.s_raceType = RaceType.Race;
 		if (trackName.text.Length == 3)
 		{

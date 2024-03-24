@@ -79,7 +79,7 @@ public class GreetingLogo : Sfxable
 							if (track.Key.Length > 3 && track.Value.valid && track.Value.unlocked)
 							{
 								Info.s_spectator = true;
-								Info.s_rivals = 5;
+								Info.s_cpuRivals = 5;
 								Info.s_inEditor = false;
 								Info.s_cpuLevel = CpuLevel.Elite;
 								Info.s_trackName = track.Key;

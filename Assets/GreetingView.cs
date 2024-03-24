@@ -27,6 +27,7 @@ public class GreetingView : MonoBehaviour
 		Info.Initialize(CurrentPlayer.ReadOnlyTags().Count > 0);
 		if (!Directory.Exists(Info.documentsSGPRpath))
 		{
+			Debug.LogWarning(Info.documentsSGPRpath + " doesnt exist");
 			Directory.CreateDirectory(Info.documentsSGPRpath);
 			CopyFilesRecursively(Application.streamingAssetsPath, Info.documentsSGPRpath);
 		}

@@ -42,7 +42,7 @@ public class Chat : MonoBehaviour
 	{
 		if (content.childCount == rows)
 		{
-			Destroy(transform.GetChild(0).gameObject);
+			Destroy(content.GetChild(0).gameObject);
 		}
 		var newRow = Instantiate(chatRowPrefab, content);
 		var textA = newRow.transform.GetChild(0).GetComponent<TextMeshProUGUI>();

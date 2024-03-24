@@ -10,7 +10,6 @@ public class LeaderBoardTable : MonoBehaviour
 	public GameObject LeaderboardRowPrefab;
 	public Sprite knob;
 	public Sprite crown;
-	Player[] playerOrder;
 	class SponsorScore
 	{
 		public Livery sponsor;
@@ -18,22 +17,25 @@ public class LeaderBoardTable : MonoBehaviour
 	}
 	public void OnEnable()
 	{
-		SortPlayersByScore();
 		Refresh();
 	}
-	public void SortPlayersByScore()
+	
+	public void Refresh()
 	{
-		if (Info.scoringType == ScoringType.Championship) // Team scoring
+		Player[] players = new Player[server.lobby.Players.Count];
+		for (int i = 0; i < server.lobby.Players.Count; ++i)
+			players[i] = server.lobby.Players[i];
+
+		// Team scoring
+		if (Info.scoringType == ScoringType.Championship)
 		{
 			List<SponsorScore> scores = new();
-			playerOrder = new Player[server.lobby.Players.Count];
 
-			for(int i=0; i< server.lobby.Players.Count; ++i)
+			foreach (var p in server.lobby.Players)
 			{
-				playerOrder[i] = server.lobby.Players[i];
 
-				var playerSponsor = playerOrder[i].SponsorGet();
-				var playerScore = playerOrder[i].ScoreGet();
+				var playerSponsor = p.SponsorGet();
+				var playerScore = p.ScoreGet();
 
 				var teamScores = scores.Find(s => s.sponsor == playerSponsor);
 
@@ -47,8 +49,8 @@ public class LeaderBoardTable : MonoBehaviour
 				}
 			}
 			scores.Sort((y, x) => x.score.CompareTo(y.score));
-			
-			Array.Sort(playerOrder, (Player p2, Player p1) =>
+
+			Array.Sort(players, (Player p2, Player p1) =>
 			{
 				Livery p1Sponsor = p1.SponsorGet();
 				Livery p2Sponsor = p2.SponsorGet();
@@ -59,26 +61,17 @@ public class LeaderBoardTable : MonoBehaviour
 		}
 		else
 		{ // Individual scoring
-			for (int i = 0; i < server.lobby.Players.Count; ++i)
-			{
-				playerOrder[i] = server.lobby.Players[i];
-			}
-			Array.Sort(playerOrder, (Player p2, Player p1) => p2.ScoreGet().CompareTo(p1.ScoreGet()));
+			Array.Sort(players, (Player p2, Player p1) => p2.ScoreGet().CompareTo(p1.ScoreGet()));
 		}
-	}
-	
-	public void Refresh()
-	{
-		if (playerOrder.Length != server.lobby.Players.Count)
-			SortPlayersByScore();
+
 		// TITLE + PLAYERS
-		for(int i=1; i<transform.childCount; ++i)
+		for (int i=1; i<transform.childCount; ++i)
 		{
 			Destroy(transform.GetChild(i).gameObject);
 		}
-		foreach (var player in playerOrder)
+		foreach (var p in players)
 		{
-			Add(player);
+			Add(p);
 		}
 	}
 	void Add(Player player)

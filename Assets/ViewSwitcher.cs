@@ -13,9 +13,13 @@ public class ViewSwitcher : MonoBehaviour
 	public AudioMixerGroup audioSFX;
 	public GameObject world;
 	public GameObject menu;
+
+	public GameObject lobbyView;
+	public GameObject resultsView;
+
 	AudioSource menuMusic;
 
-	public float timer = 0;
+	float timer = 0;
 	float duration;
 	GameObject viewA;
 	GameObject viewB;
@@ -28,8 +32,8 @@ public class ViewSwitcher : MonoBehaviour
 	IEnumerator Play(Action method = null)
 	{
 		timer = 0;
-		// Action method can take place over multiple frames which disrupts the transition. That's why we don't use deltaTime;
-		float delta = 0.01f;
+		// Action method can take place over multiple frames which disrupts the transition
+		float delta = Time.deltaTime;
 		while (timer < duration)
 		{
 			if (timer >= 0.5f * duration && viewA.activeSelf)
@@ -94,8 +98,13 @@ public class ViewSwitcher : MonoBehaviour
 		menuMusic.Stop();
 		this.viewA = world;
 		this.viewB = menu;
-			
-		StartCoroutine(Play(() => { 
+		
+		StartCoroutine(Play(() => {
+			if (Info.scoringType == ScoringType.Championship && Info.gameMode == MultiMode.Multiplayer)
+			{
+				lobbyView.SetActive(false);
+				resultsView.SetActive(true);
+			}
 			world.GetComponent<RaceManager>().BackToEditor();
 			world.GetComponent<RaceManager>().editorPanel.RemoveTrackLeftovers();
 		}));

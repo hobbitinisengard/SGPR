@@ -15,6 +15,7 @@ using System.Net.Sockets;
 using System.Net;
 using System;
 using Random = UnityEngine.Random;
+using System.Collections.Concurrent;
 public class ServerConnection : MonoBehaviour
 {
 	//public Dictionary<string, PlayerDataObject> playerMeData;
@@ -30,21 +31,28 @@ public class ServerConnection : MonoBehaviour
 	public const int basePort = 7770;
 	string connectionType => (encryption == EncryptionType.DTLS) ? k_dtlsEncryption : k_udpEncryption;
 
-	const int lobbyHeartbeatInterval = 20;
+	const int lobbyHeartbeatInterval = 15;
 	const int lobbyPollInterval = 60;
 	public static readonly string k_keyJoinCode = "RelayJoinCode";
-	public static readonly string k_description = "Description";
+	public const string k_actionHappening = "ah";
+	public const string k_lobbyCode = "lc";
 	public NetworkManager networkManager;
 
 	string k_dtlsEncryption = "dtls";
 	string k_udpEncryption = "udp";
-	public LobbyEventCallbacks callbacks { get; private set; }
-	
+	public LobbyEventCallbacks callbacks;
+	ConcurrentQueue<string> createdLobbyIds = new ();
 	public Lobby lobby { get; private set; }
 	CountdownTimer heartbeatTimer = new(lobbyHeartbeatInterval);
 	CountdownTimer pollForUpdatesTimer = new(lobbyPollInterval);
-	Dictionary<string, PlayerDataObject> InitializePlayerData()
+	private void Update()
 	{
+		heartbeatTimer.Tick(Time.deltaTime);
+		pollForUpdatesTimer.Tick(Time.deltaTime);
+	}
+	async Task<Dictionary<string, PlayerDataObject>>  InitializePlayerData()
+	{
+		string myIpv4 = await Info.MyIPv4();
 		Dictionary<string, PlayerDataObject> playerMeData = new()
 		{
 			{
@@ -80,58 +88,30 @@ public class ServerConnection : MonoBehaviour
 			{
 				Info.k_IPv4, new PlayerDataObject(
 					visibility: PlayerDataObject.VisibilityOptions.Member,
-					value: "")
+					value: myIpv4)
 			},
 		};
 		return playerMeData;
 	}
-
-	public async void SetCallbacks(LobbyEventCallbacks callbacks)
+	void OnApplicationQuit()
 	{
-		if(callbacks == null)
+		DeleteLobby();
+	}
+	void DeleteLobby()
+	{
+		while (createdLobbyIds.TryDequeue(out var lobbyId))
 		{
-			this.callbacks = callbacks;
-			await Lobbies.Instance.SubscribeToLobbyEventsAsync(lobby.Id, this.callbacks);
+			LobbyService.Instance.DeleteLobbyAsync(lobbyId);
 		}
 	}
-	public string GetIPv4()
-	{
-		try
-		{
-			string hostName = Dns.GetHostName();
-			IPAddress[] addresses = Dns.GetHostAddresses(hostName);
-
-			// Filter out IPv6 addresses, and use the first IPv4 address
-			foreach (IPAddress address in addresses)
-			{
-				if (address.AddressFamily == AddressFamily.InterNetwork)
-				{
-					return address.ToString();
-				}
-			}
-		}
-		catch (Exception ex)
-		{
-			// Handle exceptions, e.g., if DNS resolution fails
-			Debug.LogError("Error getting local IP address: " + ex.Message);
-		}
-		Debug.LogError("IP address is null");
-		return null;
-	}
+	
 	string EncodeConfig()
 	{
-		return ((int)Info.scoringType).ToString() + (Info.randomCars ? "1" : "0") + (Info.randomTracks ? "1" : "0")
+		
+		string encodeConfig =  ((int)Info.scoringType).ToString() + (Info.randomCars ? "1" : "0") + (Info.randomTracks ? "1" : "0")
 			+ ((int)Info.s_raceType).ToString() + (Info.s_laps).ToString("D2") + (Info.s_isNight ? "1" : "0") + ((int)Info.s_cpuLevel).ToString()
-			+ (Info.s_rivals).ToString() + ((int)Info.s_roadType).ToString() + (Info.s_catchup ? "1" : "0");
-	}
-	/// <summary>
-	/// Sends track signature to server
-	/// </summary>
-	public async Task UpdateTrack(string trackName, string SHA)
-	{
-		lobby.Data[Info.k_trackSHA] = new DataObject(DataObject.VisibilityOptions.Member, SHA);
-		lobby.Data[Info.k_trackName] = new DataObject(DataObject.VisibilityOptions.Member, trackName);
-		await UpdateServerData();
+			+ (Info.s_cpuRivals).ToString() + ((int)Info.s_roadType).ToString() + (Info.s_catchup ? "1" : "0");
+		return encodeConfig;
 	}
 	public Player Host
 	{
@@ -152,24 +132,8 @@ public class ServerConnection : MonoBehaviour
 			return cfg[11] == '1';
 		}
 	}
-
-	private async void Start()
-	{
-		await Authenticate();
-		heartbeatTimer.OnTimerStop += async () =>
-		{
-			await HandleHeartbeatAsync();
-			heartbeatTimer.Start();
-		};
-		pollForUpdatesTimer.OnTimerStop += async () =>
-		{
-			await HandlePollForUpdateAsync();
-			pollForUpdatesTimer.Start();
-		};
-	}
 	public async Task UpdateServerData()
 	{
-		EncodeConfig();
 		try
 		{
 			lobby.Data[Info.k_raceConfig] = new DataObject(DataObject.VisibilityOptions.Member, EncodeConfig());
@@ -240,8 +204,19 @@ public class ServerConnection : MonoBehaviour
 	{
 		networkManager.Shutdown();
 		callbacks = null;
+		DeleteLobby();
+		heartbeatTimer.Reset();
 	}
+	async void Start()
+	{
+		await Authenticate();
+		pollForUpdatesTimer.OnTimerStop += async () =>
+		{
+			await HandlePollForUpdateAsync();
+			pollForUpdatesTimer.Start();
+		};
 
+	}
 	/// <summary>
 	/// Returns true if lobby creation succeeded
 	/// </summary>
@@ -249,22 +224,30 @@ public class ServerConnection : MonoBehaviour
 	{
 		try
 		{
+			heartbeatTimer.OnTimerStop += async () =>
+			{
+				await HandleHeartbeatAsync();
+				heartbeatTimer.Start();
+			};
+			
+
 			var alloc = await HostAllocateRelay();
 			string relayJoinCode = await HostGetRelayJoinCode(alloc);
 
-			CreateLobbyOptions options = new()
+			CreateLobbyOptions options = new CreateLobbyOptions()
 			{
 				IsPrivate = false,
-
-				Player = new Player
-				{
-					Data = InitializePlayerData()
-				},
+				Player = new Player(id: AuthenticationService.Instance.PlayerId, data: await InitializePlayerData()),
 				Data = new()
 				{
-					{ k_keyJoinCode, new DataObject(
-						visibility:DataObject.VisibilityOptions.Member,
+					{	k_keyJoinCode, new DataObject(
+						visibility:DataObject.VisibilityOptions.Public,
 						value:relayJoinCode)
+					},
+					{
+						k_actionHappening, new DataObject(
+							visibility: DataObject.VisibilityOptions.Public,
+							value: ActionHappening.InLobby.ToString())
 					},
 					{
 						Info.k_raceConfig, new DataObject(
@@ -281,17 +264,12 @@ public class ServerConnection : MonoBehaviour
 							visibility: DataObject.VisibilityOptions.Member,
 							value: trackName)
 					},
-					{
-						Info.k_actionHappening, new DataObject(
-							visibility: DataObject.VisibilityOptions.Public,
-							value: ActionHappening.InLobby.ToString())
-					}
-				}
+				},
 			};
 
 			lobby = await LobbyService.Instance.CreateLobbyAsync(lobbyName, maxPlayers, options);
 
-			Debug.Log("created lobby " + lobby.Name + " with code" + lobby.LobbyCode);
+			Debug.Log("created lobby " + lobby.Name + " with code " + lobby.LobbyCode + ", id " + lobby.Id);
 
 			heartbeatTimer.Start();
 			pollForUpdatesTimer.Start();
@@ -314,25 +292,20 @@ public class ServerConnection : MonoBehaviour
 	/// <summary>
 	/// Connect to lobby Id or Quick Join
 	/// </summary>
-	public async Task<bool> JoinLobby(string lobbyJoinCode = null)
+	public async Task<bool> JoinLobby(string lobbyId)
 	{
 		try
 		{
-			if (lobbyJoinCode == null)
-				lobby = await LobbyService.Instance.QuickJoinLobbyAsync();
-			else
-				lobby = await LobbyService.Instance.JoinLobbyByCodeAsync(lobbyJoinCode);
-
+			JoinLobbyByIdOptions o = new() { Player = new Player(id: AuthenticationService.Instance.PlayerId, data: await InitializePlayerData()) };
+			lobby = await LobbyService.Instance.JoinLobbyByIdAsync(lobbyId, o);
 
 			pollForUpdatesTimer.Start();
 			string relayJoinCode = lobby.Data[k_keyJoinCode].Value;
 			var joinAlloc = await JoinRelay(relayJoinCode);
 			networkManager.GetComponent<UnityTransport>().SetRelayServerData(new RelayServerData(joinAlloc, connectionType));
 			networkManager.StartClient();
-			InitializePlayerData();
-
 		}
-		catch (LobbyServiceException e)
+		catch (Exception e)
 		{
 			Debug.LogError("Failed to join lobby" + e.Message);
 			return false;

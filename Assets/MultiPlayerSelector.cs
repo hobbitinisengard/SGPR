@@ -9,6 +9,7 @@ using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using TMPro;
+using Unity.Services.Authentication;
 using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
 using UnityEngine;
@@ -42,12 +43,17 @@ public class MultiPlayerSelector : TrackSelector
 	public GameObject dataTransferWnd;
 	public TextMeshProUGUI dataTransferText;
 	public Sprite randomTrackSprite;
+	public CarSelector carSelector;
+	public ZippedTrackDataObject zippedTrackDataObject;
 	Sprite originalTrackSprite;
-	readonly List<IpTime> ipTimes = new();
+	//readonly List<IpTime> ipTimes = new();
 
 	bool canStartRace = false;
 	byte[] _currentTrackZipCached;
+	string _currentTrackZipCachedSHA;
 	float readyTimeoutTime;
+	bool readyClicked = false;
+	private bool updatingCachedTrack;
 
 	byte[] CurrentTrackZipCached
 	{
@@ -63,6 +69,7 @@ public class MultiPlayerSelector : TrackSelector
 					zip.CreateEntryFromFile(Info.tracksPath + persistentSelectedTrack + ".data", persistentSelectedTrack + ".data");
 				}
 				_currentTrackZipCached = File.ReadAllBytes(zipPath);
+				_currentTrackZipCachedSHA = Info.SHA(_currentTrackZipCached);
 			}
 			return _currentTrackZipCached;
 		}
@@ -77,12 +84,12 @@ public class MultiPlayerSelector : TrackSelector
 
 		if (server.callbacks == null)
 		{
-			LobbyEventCallbacks callbacks = new();
-			callbacks.PlayerDataChanged += Callbacks_PlayerDataChanged;
-			callbacks.PlayerJoined += Callbacks_PlayerJoined;
-			callbacks.PlayerLeft += Callbacks_PlayerLeft;
-			callbacks.LobbyChanged += Callbacks_LobbyChanged;
-			server.SetCallbacks(callbacks);
+			server.callbacks = new();
+			server.callbacks.PlayerDataChanged += Callbacks_PlayerDataChanged;
+			server.callbacks.PlayerJoined += Callbacks_PlayerJoined;
+			server.callbacks.PlayerLeft += Callbacks_PlayerLeft;
+			server.callbacks.LobbyChanged += Callbacks_LobbyChanged;
+			await Lobbies.Instance.SubscribeToLobbyEventsAsync(server.lobby.Id, server.callbacks);
 		}
 
 		_currentTrackZipCached = null;
@@ -93,42 +100,67 @@ public class MultiPlayerSelector : TrackSelector
 	}
 	void Start()
 	{
-		chat.inputField.onSelect.AddListener(s => { move2Ref.action.performed -= CalculateTargetToSelect; });
-		chat.inputField.onDeselect.AddListener(s => { move2Ref.action.performed += CalculateTargetToSelect; });
+		garageBtn.onClick.AddListener(() =>
+		{
+			if (Info.scoringType == ScoringType.Championship)
+			{
+				carSelector.SetType(GarageType.Earned, server.PlayerMe.ScoreGet());
+			}
+			else
+			{
+				carSelector.SetType(GarageType.Unlocked);
+			}
+		});
+		chat.inputField.onSelect.AddListener(s => { EnableSelectionOfTracks(false); });
+		chat.inputField.onDeselect.AddListener(s => 
+		{ 
+			EnableSelectionOfTracks(server.AmHost && !server.PlayerMe.ReadyGet()); 
+		});
 	}
 	private async void Callbacks_LobbyChanged(ILobbyChanges changes)
 	{
 		if (changes.Data.Changed && !server.AmHost)
 		{
-			if (changes.Data.Value[Info.k_raceConfig].Changed)
+			if (changes.Data.Value.ContainsKey(Info.k_raceConfig))
 			{
 				DecodeConfig(changes.Data.Value[Info.k_raceConfig].Value.Value);
 			}
-			if (changes.Data.Value[Info.k_trackName].Changed)
+			if (changes.Data.Value.ContainsKey(Info.k_trackName))
 			{
+				Info.s_trackName = changes.Data.Value[Info.k_trackName].Value.Value;
+				Debug.Log(Info.s_trackName);
 				if (!await IsCurrentTrackSyncedWithServerTrack())
 				{
 					await RequestTrackSequence();
+					
 				}
+				StartCoroutine(Load(Info.s_trackName));
 			}
-			if (changes.Data.Value[Info.k_actionHappening].Changed)
+			if (changes.Data.Value.ContainsKey(ServerConnection.k_actionHappening))
 			{
-				var ah = (ActionHappening)Enum.Parse(typeof(ActionHappening), changes.Data.Value[Info.k_actionHappening].Value.Value);
+				var ah = (ActionHappening)Enum.Parse(typeof(ActionHappening), changes.Data.Value[ServerConnection.k_actionHappening].Value.Value);
 				if (ah != Info.actionHappening)
 				{
-					if (ah == ActionHappening.InWorld)
+					if (ah == ActionHappening.InRace)
 						thisView.ToRaceScene();
 				}
 			}
+			if (server.PlayerMe.ReadyGet())
+			{
+				server.PlayerMe.ReadySet(false);
+				SwitchReady(true);
+				await server.UpdatePlayerData();
+			}
 		}
+
 		changes.ApplyToLobby(server.lobby);
-		maxRivals = 9 - server.lobby.Players.Count;
+		maxCPURivals = Info.maxCarsInRace - server.lobby.Players.Count;
 	}
 	public void DecodeConfig(string data)
 	{
 		if(Info.scoringType != (ScoringType)data[0])
 		{
-			Info.scoringType = (ScoringType)data[0];
+			Info.scoringType = (ScoringType)(data[0] - '0'); // char to int
 			server.PlayerMe.ScoreSet(0);
 		}
 		
@@ -148,8 +180,8 @@ public class MultiPlayerSelector : TrackSelector
 		Info.s_laps = int.Parse(data[4..6]);
 		Info.s_isNight = data[6] == '1';
 		Info.s_cpuLevel = (CpuLevel)data[7];
-		Info.s_rivals = data[8] - '0';
-		Info.s_roadType = (PavementType)data[9];
+		Info.s_cpuRivals = data[8] - '0';
+		Info.s_roadType = (PavementType)(data[9]-'0');
 		Info.s_catchup = data[10] == '1';
 		StartCoroutine(ResetButtons());
 	}
@@ -159,6 +191,7 @@ public class MultiPlayerSelector : TrackSelector
 		{
 			chat.AddChatRow(server.lobby.Players[p].NameGet(), "has left the server", Color.white, Color.gray);
 		}
+		UpdateInteractableButtons();
 	}
 
 	private void Callbacks_PlayerJoined(List<LobbyPlayerJoined> newPlayers)
@@ -172,26 +205,31 @@ public class MultiPlayerSelector : TrackSelector
 	{
 		int readyPlayers = 0;
 		bool anyChanged = false;
-		for (int i = 0; i < playerDatas.Count; ++i)
+		foreach (var pData in playerDatas)
 		{
-			foreach (var kv in playerDatas[i])
+			string playerId = server.lobby.Players[pData.Key].Id;
+			if (playerId == AuthenticationService.Instance.PlayerId)
+				continue;
+			var dataChanged = pData.Value;
+			foreach (var kv in dataChanged)
 			{
 				if (kv.Value.Changed)
 				{
 					switch (kv.Key)
 					{
 						case Info.k_message:
-							chat.AddChatRow(server.lobby.Players[i], kv.Value.Value.Value);
+							chat.AddChatRow(server.lobby.Players[pData.Key], kv.Value.Value.Value);
 							break;
 						case Info.k_IPv4:
-							if (Info.k_IPv4.Length > 1)
+							if (Info.k_IPv4.Length > 1 && server.lobby.HostId != playerId)
 							{
 								await SendTrackToPlayer(kv.Value.Value.Value);
 							}
 							break;
 						case Info.k_Ready:
 							anyChanged = true;
-							if (kv.Value.Value.Value == "true" && playerDatas[i][Info.k_IPv4].Value.Value == "")
+							// This condition is never true for host
+							if (kv.Value.Value.Value == "true" && playerDatas[pData.Key][Info.k_IPv4].Value.Value == "")
 								readyPlayers++;
 							break;
 						default:
@@ -204,10 +242,11 @@ public class MultiPlayerSelector : TrackSelector
 		if (anyChanged)
 			leaderboard.Refresh();
 
-		if (server.lobby.Players.Count >= 2 && readyPlayers == server.lobby.Players.Count && server.AmHost)
+		if (server.lobby.Players.Count >= 2 && readyPlayers == server.lobby.Players.Count-1 
+			&& server.AmHost && server.PlayerMe.ReadyGet())
 		{
 			canStartRace = true;
-			readyText.text = "START";
+			readyText.text = "START RACE";
 		}
 		else
 		{
@@ -215,41 +254,67 @@ public class MultiPlayerSelector : TrackSelector
 			readyText.text = server.AmHost ? "HOST READY" : "READY";
 		}
 	}
-	async Task SendTrackToPlayer(string ipv4)
+	public void UpdateCachedTrack()
 	{
-		var iptime = ipTimes.Find(it => it.Ip == ipv4);
-		if (iptime == null || Time.time - iptime.time > sendTrackRetryTimeSeconds)
+		if(!updatingCachedTrack)
 		{
-			ipTimes.Add(new IpTime(ipv4, Time.time));
-			IPEndPoint ipendPoint = new(IPAddress.Parse(ipv4), ServerConnection.basePort);
-			Debug.Log("send track data to player " + ipendPoint.Address.ToString() + ":" + ipendPoint.Port.ToString());
-			await SendData(ipendPoint, CurrentTrackZipCached);
+			updatingCachedTrack = true;
+			zippedTrackDataObject.zippedTrack.Value = CurrentTrackZipCached;
+			zippedTrackDataObject.zippedTrackSHA.Value = _currentTrackZipCachedSHA;
 		}
 	}
+	//async Task SendTrackToPlayer(string ipv4)
+	//{
+		
+
+		//var iptime = ipTimes.Find(it => it.Ip == ipv4);
+		//if (iptime == null || Time.time - iptime.time > sendTrackRetryTimeSeconds)
+		//{
+		//ipTimes.Add(new IpTime(ipv4, Time.time));
+		// over TCP
+		//IPEndPoint ipendPoint = new(IPAddress.Parse(ipv4), ServerConnection.basePort);
+		//Debug.Log("send track data to player " + ipendPoint.Address.ToString() + ":" + ipendPoint.Port.ToString());
+		//await SendData(ipendPoint, CurrentTrackZipCached);
+		//}
+
+	//}
+	
 	async Task RequestTrackSequence()
 	{
 		Debug.Log("RequestTrackSequence");
 		var playerMe = server.PlayerMe;
 		try
 		{
-			// Setting IP tells the host to send us the track
-			playerMe.IPv4Set(server.GetIPv4());
-			await server.UpdatePlayerData();
+			//Player host = server.Host;
+			//string hostIP = host.IPv4Get();
+			//// Setting IP tells the host to send us the track
+			//string myIP = await Info.MyIPv4();
+			//if(hostIP == myIP)
+			//{
+				
 
-			// Show UI
-			string trackName = server.lobby.Data[Info.k_trackName].Value;
-			dataTransferText.text = "Downloading track " + trackName + " from host..";
-			dataTransferWnd.SetActive(true);
+			//}
+			//playerMe.IPv4Set(myIP);
+			//await server.UpdatePlayerData();
 
-			// Download data from host
-			Player host = server.Host;
-			IPEndPoint ipendPoint = new(IPAddress.Parse(host.IPv4Get()), ServerConnection.basePort);
-			Debug.Log("ReadData try" + ipendPoint.Address.ToString() + ":" + ServerConnection.basePort.ToString());
-			byte[] data = await GetData(ipendPoint);
+			//// Show UI
+			//string trackName = server.lobby.Data[Info.k_trackName].Value;
+			//dataTransferText.text = "Downloading track " + trackName + " from host..";
+			//dataTransferWnd.SetActive(true);
 
-			// Setting IP to empty, tells the host that we have track
-			playerMe.IPv4Set("");
-			await server.UpdatePlayerData();
+			//// Download data from host
+			//IPEndPoint ipendPoint = new(IPAddress.Parse(hostIP), ServerConnection.basePort);
+			//Debug.Log("ReadData try" + ipendPoint.Address.ToString() + ":" + ServerConnection.basePort.ToString());
+			//byte[] data = await GetData(ipendPoint);
+
+			//// Setting IP to empty, tells the host that we have track
+			//playerMe.IPv4Set("");
+			//await server.UpdatePlayerData();
+
+			while(zippedTrackDataObject.zippedTrack != null)
+			{
+
+			}
 
 			dataTransferText.text = "Unpacking track..";
 			string zipPath = Info.downloadPath + trackName + ".zip";
@@ -258,7 +323,8 @@ public class MultiPlayerSelector : TrackSelector
 			bool localTrackExists = File.Exists(Info.tracksPath + trackName + ".data");
 			if (localTrackExists)
 			{
-				if (!await MatchingSHA(Info.downloadPath + trackName + ".data", server.lobby.Data[Info.k_trackSHA].Value))
+				string downloadedSHA = Info.SHA(Info.downloadPath + trackName + ".data");
+				if (downloadedSHA != server.lobby.Data[Info.k_trackSHA].Value)
 				{
 					// rename local track to trackName+number
 					string newName = trackName + "0";
@@ -290,9 +356,12 @@ public class MultiPlayerSelector : TrackSelector
 				File.Move(Info.downloadPath + trackName + ".png", Info.tracksPath + trackName + ".png");
 				File.Move(Info.downloadPath + trackName + ".data", Info.tracksPath + trackName + ".data");
 				File.Move(Info.downloadPath + trackName + ".track", Info.tracksPath + trackName + ".track");
-			}
-			//File.Delete(zipPath);
 
+				string trackJson = File.ReadAllText(Info.tracksPath + trackName + ".track");
+				var header = JsonConvert.DeserializeObject<TrackHeader>(trackJson);
+				Info.tracks.Add(trackName, header);
+			}
+			File.Delete(zipPath);
 
 			// refresh tracks menu
 			loadCo = true;
@@ -305,7 +374,6 @@ public class MultiPlayerSelector : TrackSelector
 		}
 		catch (Exception e)
 		{
-			dataTransferWnd.SetActive(false);
 			Debug.LogError("RequestTrack error:" + e.Message);
 
 			if (playerMe.IPv4Get() != "")
@@ -386,16 +454,16 @@ public class MultiPlayerSelector : TrackSelector
 		SwitchRandomCar(true);
 		SwitchRandomTrack(true);
 		SwitchRandomTrack(true);
-		
-		
 		UpdateInteractableButtons();
 	}
 	void UpdateInteractableButtons()
 	{
 		bool isHost = server.AmHost;
 		bool notRdy = !server.PlayerMe.ReadyGet();
-		sortButton.gameObject.SetActive(isHost);
-		sponsorbText.transform.parent.gameObject.SetActive(Info.scoringType == ScoringType.Championship);
+		sponsorbText.transform.parent.gameObject.SetActive(Info.scoringType == ScoringType.Championship && notRdy);
+		sortButton.gameObject.SetActive(isHost && notRdy);
+		garageBtn.gameObject.SetActive(notRdy);
+		scoringText.text = Info.scoringType.ToString();
 		scoringText.transform.parent.GetComponent<Button>().interactable = isHost && notRdy;
 		randomCarsText.transform.parent.GetComponent<Button>().interactable = isHost && notRdy;
 		randomTracksText.transform.parent.GetComponent<Button>().interactable = isHost && notRdy;
@@ -442,12 +510,12 @@ public class MultiPlayerSelector : TrackSelector
 		}
 
 		var img = selectedTrack.GetComponent<Image>();
-		if (Info.randomTracks)
+		if (Info.randomTracks == true)
 		{
 			originalTrackSprite = img.sprite;
 			img.sprite = randomTrackSprite;
-			move2Ref.action.performed -= CalculateTargetToSelect;
 
+			EnableSelectionOfTracks(false);
 			
 			// select random track
 			int random = UnityEngine.Random.Range(0, Info.tracks.Count);
@@ -468,7 +536,7 @@ public class MultiPlayerSelector : TrackSelector
 			if (originalTrackSprite != null)
 			{
 				img.sprite = originalTrackSprite;
-				move2Ref.action.performed += CalculateTargetToSelect;
+				EnableSelectionOfTracks(true);
 				originalTrackSprite = null;
 			}
 			trackDescText.text = selectedTrack.name + "\n\n" + Info.tracks[selectedTrack.name].desc;
@@ -481,8 +549,9 @@ public class MultiPlayerSelector : TrackSelector
 	{
 		if (canStartRace && server.AmHost)
 		{
-			Info.actionHappening = ActionHappening.InWorld;
+			Info.actionHappening = ActionHappening.InRace;
 			await server.UpdateServerData();
+			
 			thisView.ToRaceScene();
 		}
 		else
@@ -510,28 +579,41 @@ public class MultiPlayerSelector : TrackSelector
 		}
 		return hash == matchSHA;
 	}
+	void EnableSelectionOfTracks(bool enabled)
+	{
+		// selecting track possible only if we're hosting and not ready 
+		// remove it first to make sure we don't subscribe to event more than once
+		// -= is not throwing
+		move2Ref.action.performed -= CalculateTargetToSelect;
+		if (enabled)
+			move2Ref.action.performed += CalculateTargetToSelect;
+	}
 	public async void ReadyButton(bool init = false)
 	{
-		var playerMe = server.PlayerMe;
-		bool amReady = !init && !playerMe.ReadyGet();
-		if (!init && Time.time - readyTimeoutTime < 1)
+		if (readyClicked)
 			return;
+
+		readyClicked = true;
+
+		var playerMe = server.PlayerMe;
+
+		bool amReady = !init && !playerMe.ReadyGet();
+		
+		if (Time.time - readyTimeoutTime < 1)
+			await Task.Delay(Mathf.RoundToInt((1 - (Time.time - readyTimeoutTime))*1000));
+
 		readyTimeoutTime = Time.time;
 		try
 		{
-			// selecting track possible only if we're hosting and not ready 
-			// remove it first to make sure we don't subscribe to event more than once
-			// -= is not throwing
-			move2Ref.action.performed -= CalculateTargetToSelect;
-			if (!amReady && server.AmHost)
-				move2Ref.action.performed += CalculateTargetToSelect;
+			EnableSelectionOfTracks(!amReady && server.AmHost);
 			// UPDATE PLAYER
 			playerMe.ReadySet(amReady);
-
 			await server.UpdatePlayerData();
 
-			if (playerMe.Id == server.lobby.HostId && amReady)
+			if (server.AmHost && amReady)
 			{// UPDATE HOST INFO
+				server.lobby.Data[Info.k_trackSHA] = new DataObject(DataObject.VisibilityOptions.Member, Info.SHA(Info.tracksPath + Info.s_trackName + ".data"));
+				server.lobby.Data[Info.k_trackName] = new DataObject(DataObject.VisibilityOptions.Member, Info.s_trackName);
 				await server.UpdateServerData();
 			}
 		}
@@ -539,8 +621,10 @@ public class MultiPlayerSelector : TrackSelector
 		{
 			Debug.Log("Ready switch failed: " + e.Message);
 		}
+		UpdateInteractableButtons();
 		readyText.text = server.AmHost ? "HOST READY" : "READY";
 		leaderboard.Refresh();
+		readyClicked = false;
 	}
 	public void SwitchScoring(bool init)
 	{
@@ -550,6 +634,8 @@ public class MultiPlayerSelector : TrackSelector
 
 		Info.scoringType = (ScoringType)Wraparound((int)Info.scoringType + dir, 0, Enum.GetNames(typeof(ScoringType)).Length - 1);
 		scoringText.text = Info.scoringType.ToString();
+
+		sponsorbText.transform.parent.gameObject.SetActive(Info.scoringType == ScoringType.Championship);
 	}
 }
 

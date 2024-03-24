@@ -62,7 +62,7 @@ public class ResultsView : MonoBehaviour
 	private void OnEnable()
 	{
 		// for testing 
-		ResultRandomizer();
+		//ResultRandomizer();
 
 		grandScoreFinal = 0;
 		grandScoreMoving = 0;

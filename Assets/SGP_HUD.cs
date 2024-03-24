@@ -305,7 +305,7 @@ public class SGP_HUD : MonoBehaviour
 	}
 	private void Update()
 	{
-		if (Input.GetKeyDown(KeyCode.F3) && Info.s_rivals == 0 && !pauseMenu.gameObject.activeSelf)
+		if (Input.GetKeyDown(KeyCode.F3) && Info.s_cpuRivals == 0 && !pauseMenu.gameObject.activeSelf)
 		{
 			componentPanel.gameObject.SetActive(!componentPanel.gameObject.activeSelf);
 		}

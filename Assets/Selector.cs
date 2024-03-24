@@ -51,6 +51,7 @@ public class TrackSelectorTemplate : Selector
 	}
 	bool[] PopulateContent()
 	{
+		
 		bool[] existingTrackClasses = new bool[2];
 
 		for (int i = 0; i < trackContent.childCount; ++i)
@@ -62,12 +63,14 @@ public class TrackSelectorTemplate : Selector
 				Destroy(trackClass.GetChild(j).gameObject);
 			}
 		}
+		
 		string[] sortedTracks;
 		// populate track grid	
 		if (curSortingCondition == SortingCond.Name)
 			sortedTracks = Info.tracks.OrderBy(t => t.Key).Select(kv => kv.Key).ToArray();
 		else //if(curSortingCondition == SortingCond.Difficulty)
 			sortedTracks = Info.tracks.OrderBy(t => t.Value.difficulty).Select(kv => kv.Key).ToArray();
+
 		foreach (var trackName in sortedTracks)
 		{
 			TrackHeader track = Info.tracks[trackName];
@@ -87,41 +90,49 @@ public class TrackSelectorTemplate : Selector
 		}
 		return existingTrackClasses;
 	}
-	protected IEnumerator Load(string specificTrackName = null)
+	protected IEnumerator Load(string specificTrackName = null, bool forceReload = false)
 	{
 		loadCo = true;
+
 		int visibleTracks = trackContent.GetChild(0).childCount + (trackContent.GetChild(1) != null ? trackContent.GetChild(1).childCount : 0);
 		int validTracks = Info.tracks.Count(t => ValidCheck(t.Value.valid));
-		if (visibleTracks != validTracks)
+
+		bool reloadContent = (visibleTracks != validTracks) || forceReload;
+
+		bool[] existingTrackClasses = reloadContent ? PopulateContent() 
+			: new bool[] { trackContent.GetChild(0).gameObject.activeSelf, trackContent.GetChild(1).gameObject.activeSelf };
+
+		yield return null; // wait for one frame for active objects to refresh
+
+		selectedTrack = null;
+
+		for (int i = 0; i < existingTrackClasses.Length; ++i)
 		{
-			bool[] existingTrackClasses = PopulateContent();
-
-			yield return null; // wait for one frame for active objects to refresh
-
-			for (int i = 0; i < existingTrackClasses.Length; ++i)
+			if (selectedTrack == null && existingTrackClasses[i])
 			{
-				if (selectedTrack == null && existingTrackClasses[i])
+				if (trackContent.GetChild(i).childCount > 0)
 				{
-					if (trackContent.GetChild(i).childCount > 0)
+					if (specificTrackName != null)
 					{
-						if (specificTrackName != null)
-						{ 
-							if(selectedTrack.name != specificTrackName)
-								selectedTrack = trackContent.GetChild(i).GetChild(0);
+						Transform Trackclass = trackContent.GetChild(i);
+						for(int j=0; j<Trackclass.childCount; ++j)
+						{
+							if (Trackclass.GetChild(j).name == specificTrackName)
+								selectedTrack = Trackclass.GetChild(j);
 						}
-						else
-							selectedTrack = trackContent.GetChild(i).GetChild(0);
-							
-						if (!Info.randomTracks)
-							Info.s_trackName = selectedTrack.name;
 					}
+					else
+						selectedTrack = trackContent.GetChild(i).GetChild(0);
 				}
-				// disable track classes without children (required for sliders to work)
-				trackContent.GetChild(i).gameObject.SetActive(existingTrackClasses[i]);
 			}
-			
+			// disable track classes without children (required for sliders to work)
+			trackContent.GetChild(i).gameObject.SetActive(existingTrackClasses[i]);
 		}
-
+		if (Info.randomTracks)
+		{
+			var randomClass =  trackContent.GetChild(UnityEngine.Random.Range(0, 2));
+			Info.s_trackName = randomClass.GetChild(UnityEngine.Random.Range(0, randomClass.childCount)).name;
+		}
 		SetTiles();
 		SetRecords();
 		radial.gameObject.SetActive(selectedTrack);
@@ -207,7 +218,7 @@ public class TrackSelectorTemplate : Selector
 		// reload 
 		if (loadCo)
 			StopCoroutine(Load());
-		StartCoroutine(Load());
+		StartCoroutine(Load(Info.s_trackName));
 	}
 	protected void SetRecords()
 	{

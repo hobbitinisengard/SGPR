@@ -13,9 +13,17 @@ public class MainMenuView : Sfxable
 	public TextMeshProUGUI bottomText;
 	public Sprite bgTile;
 	public AudioClip music;
-	static ViewSwitcher dimmer;
 	public InputActionReference cancelInput;
 	public YouSureDialog youSureDialog;
+	public bool prevViewForbidden;
+	static ViewSwitcher dimmer;
+	protected override void Awake()
+	{
+		base.Awake();
+
+		if (dimmer == null)
+			dimmer = transform.FindParentComponent<ViewSwitcher>();
+	}
 	private void Start()
 	{
 		if (!Info.loaded)
@@ -29,7 +37,7 @@ public class MainMenuView : Sfxable
 	{
 		if(youSureDialog == null)
 		{
-			if (gameObject.activeSelf && prevView)
+			if (gameObject.activeSelf && prevView && !prevViewForbidden)
 			{
 				GoToView(prevView);
 				PlaySFX("fe-dialogcancel");
@@ -49,11 +57,9 @@ public class MainMenuView : Sfxable
 		cancelInput.action.started += CancelPressed;
 		if (firstButtonToBeSelected)
 			firstButtonToBeSelected.Select();
-		if(dimmer == null)
-			dimmer = transform.FindParentComponent<ViewSwitcher>();
+		
 		dimmer.SwitchBackgroundTo(bgTile);
 	}
-	
 	public void GoToView(GameObject view)
 	{
 		for(int i=0; i< transform.childCount; ++i)

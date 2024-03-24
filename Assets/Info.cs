@@ -1,22 +1,20 @@
-using JetBrains.Annotations;
 using Newtonsoft.Json;
 using RVP;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Unity.Services.Lobbies.Models;
 using UnityEngine;
 using UnityEngine.Audio;
-
+using System.Security.Cryptography;
 public enum Envir { GER, JAP, SPN, FRA, ENG, USA, ITA, MEX };
 public enum CarGroup { Wild, Aero, Speed, Team };
 public enum Livery { Special = 1, TGR, Rline, Itex, Caltex, Titan, Mysuko }
 public enum RecordType { BestLap, RaceTime, StuntScore, DriftScore, TimeTrial }
 public enum ScoringType { Championship, Points, Victory }
-public enum ActionHappening { InLobby, InWorld }
+public enum ActionHappening { InLobby, InRace }
 public enum PavementType { Highway, RedSand, Asphalt, Electric, TimeTrial, Japanese, GreenSand, Random }
 public enum MultiMode { Singleplayer, Multiplayer };
 public enum RaceType { Race, Knockout, Stunt, Drift }
@@ -27,8 +25,8 @@ public class PlayerSettingsData
 {
 	public float musicVol = 1;
 	public float sfxVol = 1;
-	public string playerName;
-	public float steerGamma;
+	public string playerName = "";
+	public float steerGamma = 0;
 }
 public static class Info
 {
@@ -70,9 +68,49 @@ public static class Info
 	public const string k_trackSHA = "ts";
 	public const string k_trackName = "tn";
 	public const string k_trackRequest = "tr";
-	public const string k_actionHappening = "ah";
+
+	public const int maxCarsInRace = 10;
 
 	public static PlayerSettingsData playerData;
+
+	//public static async Task<string> MyIPv4()
+	//{
+	//	try
+	//	{
+	//		string url = "http://checkip.dyndns.org";
+	//		System.Net.WebRequest req = System.Net.WebRequest.Create(url);
+	//		System.Net.WebResponse resp = await req.GetResponseAsync();
+	//		StreamReader sr = new StreamReader(resp.GetResponseStream());
+	//		string response = sr.ReadToEnd().Trim();
+	//		string[] a = response.Split(':');
+	//		string a2 = a[1].Substring(1);
+	//		string[] a3 = a2.Split('<');
+	//		string a4 = a3[0];
+	//		Debug.Log("My IP is " + a4);
+	//		return a4;
+	//	}
+	//	catch (Exception ex)
+	//	{
+	//		// Handle exceptions, e.g., if DNS resolution fails
+	//		Debug.LogError("Error getting local IP address: " + ex.Message);
+	//	}
+	//	return null;
+	//}
+	public static string SHA(string filePath)
+	{
+		string hash;
+		using (var cryptoProvider = new SHA1CryptoServiceProvider())
+		{
+			byte[] buffer = File.ReadAllBytes(filePath);
+			hash = BitConverter.ToString(cryptoProvider.ComputeHash(buffer));
+		}
+		return hash;
+	}
+	public static string SHA(in byte[] buffer)
+	{
+		using var cryptoProvider = new SHA1CryptoServiceProvider();
+		return BitConverter.ToString(cryptoProvider.ComputeHash(buffer));
+	}
 	public static void MessageSet(this Player player, string msg)
 	{
 		player.Data[k_message].Value = msg;
@@ -156,14 +194,17 @@ public static class Info
 	{
 		if (!File.Exists(userdataPath))
 		{
+			Debug.Log("No " + userdataPath);
 			playerData = new PlayerSettingsData();
 			string serializedSettings = JsonConvert.SerializeObject(playerData);
 			File.WriteAllText(userdataPath, serializedSettings);
 		}
 		else
 		{
+			Debug.Log(userdataPath);
 			string playerSettings = File.ReadAllText(userdataPath);
 			playerData = JsonConvert.DeserializeObject<PlayerSettingsData>(playerSettings);
+			Debug.Log(playerData == null);
 		}
 	}
 	public static void SaveSettingsDataToJson(in AudioMixer mainMixer)
@@ -272,7 +313,7 @@ public static class Info
 	public static bool s_inEditor = true;
 	public static bool s_isNight = false;
 	public static CpuLevel s_cpuLevel = CpuLevel.Elite;
-	public static int s_rivals = 0; // 0-9
+	public static int s_cpuRivals = 0; // 0-9
 	public static PavementType s_roadType = PavementType.Random;
 	public static bool s_catchup = true;
 	public static int s_resultPos = 3;
@@ -327,16 +368,16 @@ public static class Info
 		{
 			cars = new Car[]
 			{
-			new (45000,CarGroup.Speed, "MEAN STREAK","Fast, light and agile, this racer offers much for those who wish to modify their vehicle."),
-			new (15000,CarGroup.Wild, "THE HUSTLER","Sturdy 4x4 pick-up truck with an eye for the outrageous!"),
-			new (30000,CarGroup.Aero, "TWIN EAGLE","Take flight with this light and speedy stuntcar."),
-			new (35000,CarGroup.Aero, "SKY HAWK","Get airborne with this very versatile stunt car."),
+			new (0,CarGroup.Speed, "MEAN STREAK","Fast, light and agile, this racer offers much for those who wish to modify their vehicle."),
+			new (45000,CarGroup.Wild, "THE HUSTLER","Sturdy 4x4 pick-up truck with an eye for the outrageous!"),
+			new (50000,CarGroup.Aero, "TWIN EAGLE","Take flight with this light and speedy stuntcar."),
+			new (0,CarGroup.Aero, "SKY HAWK","Get airborne with this very versatile stunt car."),
 			new (30000,CarGroup.Speed, "THE PHANTOM","Fast, sleek and tough to handle."),
 			new (30000,CarGroup.Wild, "ROAD HOG","Rock and Roll with the rough ridin' road hog."),
-			new (15000,CarGroup.Wild, "DUNE RAT","Defy the laws of physics in this buggy."),
+			new (0,CarGroup.Wild, "DUNE RAT","Defy the laws of physics in this buggy."),
 			new (50000,CarGroup.Speed, "LIGHTNIN'","Supercharged super speed. Easy does it!"),
 			new (30000,CarGroup.Speed, "ALLEY KAT","Sleek and powerful, this cat is ready to roar."),
-			new (30000,CarGroup.Wild, "SAND SHARK","This beachcomber is at home on any stunt circuit."),
+			new (40000,CarGroup.Wild, "SAND SHARK","This beachcomber is at home on any stunt circuit."),
 			new (45000,CarGroup.Wild, "THE BRUTE","Unleash the Brute for no-nonsense on the road!"),
 			new (70000,CarGroup.Aero, "WILD DART","Fly fast and true with this stuntcar."),
 			new (65000,CarGroup.Wild, "RAGING BULL","Powerful and fast, this streetwise 4x4 is incredible."),
@@ -347,6 +388,7 @@ public static class Info
 			new (55000,CarGroup.Team, "WORM MOBILE","Super Speedy Buggy!"),
 			new (100000,CarGroup.Team, "FORMULA 17","Incredibly fast racing car."),
 			new (90000,CarGroup.Team, "TEAM MACHINE","The ultimate, hugely versatile stock car.")
+
 			};
 		}
 		ReloadCarConfigs();

@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using System.Collections.Generic;
 using TMPro;
 using Unity.Services.Lobbies;
@@ -12,6 +13,7 @@ public class ServerList : MonoBehaviour
 	public MainMenuView lobbyView;
 	public MainMenuView thisView;
 	public ServerConnection server;
+	float lastRefreshTime = 0;
 	private void OnEnable()
 	{
 		server.DisconnectFromLobby();
@@ -19,26 +21,32 @@ public class ServerList : MonoBehaviour
 	}
 	public async void Refresh()
 	{
+		if (Time.time - lastRefreshTime < 3)
+			return;
+
+		lastRefreshTime = Time.time;
+
+		int playersOnlineRN = 0;
 		try
 		{
-			QueryLobbiesOptions options = new QueryLobbiesOptions();
-			options.Count = 25;
-
-			// Filter for open lobbies only
-			options.Filters = new List<QueryFilter>()
+			QueryLobbiesOptions options = new()
 			{
-				new QueryFilter(
-					field: QueryFilter.FieldOptions.AvailableSlots,
-					op: QueryFilter.OpOptions.GT,
-					value: "0")
-			};
+				Count = 25,
 
-			// Order by newest lobbies first
-			options.Order = new List<QueryOrder>()
-			{
-				new QueryOrder(
-					asc: false,
-					field: QueryOrder.FieldOptions.Created)
+				// Filter for open lobbies only
+				//options.Filters = new List<QueryFilter>()
+				//{
+				//	new QueryFilter(
+				//		field: QueryFilter.FieldOptions.AvailableSlots,
+				//		op: QueryFilter.OpOptions.GT,
+				//		value: "0")
+				//};
+
+				// Order by newest lobbies first
+				Order = new List<QueryOrder>()
+				{
+					new (asc: true, field: QueryOrder.FieldOptions.AvailableSlots)
+				}
 			};
 
 			QueryResponse lobbies = await Lobbies.Instance.QueryLobbiesAsync(options);
@@ -47,22 +55,28 @@ public class ServerList : MonoBehaviour
 			foreach(var lobby in lobbies.Results)
 			{
 				var newRow = Instantiate(rowPrefab, content).transform;
-				newRow.name = lobby.Data[ServerConnection.k_keyJoinCode].Value;
-				newRow.GetComponent<Button>().onClick.AddListener(()=>JoinLobby(newRow.name));
+				newRow.name = lobby.Id;
+				newRow.GetComponent<ServerListRowLobbyJoiner>().Set(this, lobby.Id);
 				newRow.GetChild(0).GetChild(0).GetComponent<Image>().color = (lobby.AvailableSlots == 0) ? Color.red : Color.green;
 				newRow.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>().text = lobby.Name;
-				newRow.GetChild(1).GetComponent<TextMeshProUGUI>().text = lobby.Data[ServerConnection.k_description].Value;
-				newRow.GetChild(2).GetComponent<TextMeshProUGUI>().text = lobby.AvailableSlots.ToString() + "/" + lobby.MaxPlayers.ToString();
+				newRow.GetChild(1).GetComponent<TextMeshProUGUI>().text = lobby.Data[ServerConnection.k_actionHappening].Value;
+				newRow.GetChild(2).GetComponent<TextMeshProUGUI>().text = (lobby.MaxPlayers - lobby.AvailableSlots).ToString() + "/" + lobby.MaxPlayers.ToString();
+				playersOnlineRN += lobby.MaxPlayers - lobby.AvailableSlots;
 			}
 		}
 		catch (LobbyServiceException e)
 		{
 			Debug.Log(e);
 		}
+
+		if(playersOnlineRN > 45)
+		{
+			thisView.GoToView(thisView.prevView);
+		}
 	}
-	async void JoinLobby(string joinCode)
+	public async void JoinLobby(string joinId)
 	{
-		if(await server.JoinLobby(joinCode))
+		if(await server.JoinLobby(joinId))
 		{
 			thisView.GoToView(lobbyView.gameObject);
 		}

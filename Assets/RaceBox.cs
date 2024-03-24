@@ -833,7 +833,7 @@ public class RaceBox : MonoBehaviour
 			raceManager.hud.AddMessage(new(vp.tr.name + " WINS THE RACE!", BottomInfoType.CAR_WINS));
 		}
 		// in racemode after the end of a race, cars still run around the track, ghosts overtake each other. Don't let it change results
-		curLap += 100 * (Info.s_rivals + 1 - curPos);
+		curLap += 100 * (Info.s_cpuRivals + 1 - curPos);
 		vp.ghostComponent.SetHittable(false);
 		SetRacetime();
 		vp.followAI.SetCPU(true);

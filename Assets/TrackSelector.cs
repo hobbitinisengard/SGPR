@@ -11,7 +11,7 @@ public class TrackSelector : TrackSelectorTemplate
 	public TextMeshProUGUI rivalsButtonText;
 	public TextMeshProUGUI wayButtonText;
 	public TextMeshProUGUI catchupButtonText;
-	protected int maxRivals = 9;
+	protected int maxCPURivals = 9;
 	protected override void OnEnable()
 	{
 		base.OnEnable();
@@ -94,16 +94,17 @@ public class TrackSelector : TrackSelectorTemplate
 		if (!init)
 			dir = shiftInputRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
 
-		Info.s_rivals = Wraparound(Info.s_rivals + dir, 0, maxRivals);
+		Info.s_cpuRivals = Wraparound(Info.s_cpuRivals + dir, 0, maxCPURivals);
 
 		if (Info.s_raceType == RaceType.Knockout)
 		{
-			if (Info.s_rivals == 0)
-				Info.s_rivals = 1;
-			Info.s_laps = Info.s_rivals;
+			if (Info.s_cpuRivals == 0 && Info.maxCarsInRace - 1 == maxCPURivals)
+				Info.s_cpuRivals = 1;
+
+			Info.s_laps = Info.maxCarsInRace - 1 - maxCPURivals + Info.s_cpuRivals;
 			SwitchLaps(true);
 		}
-		rivalsButtonText.text = "Opponents: " + Info.s_rivals.ToString();
+		rivalsButtonText.text = "Opponents: " + Info.s_cpuRivals.ToString();
 	}
 	protected int Wraparound(int value, int min, int max)
 	{

@@ -2,8 +2,7 @@ using System.Linq;
 using System;
 using TMPro;
 using UnityEngine;
-using System.Security.Cryptography;
-using System.IO;
+
 public class NewServerDetailsView : MainMenuView
 {
    public GameObject Okbutton;
@@ -51,21 +50,15 @@ public class NewServerDetailsView : MainMenuView
 	{
 		OkbuttonText.text = "WAIT";
 		string trackName = Info.tracks.Keys.First();
-		string sha = SHA(Info.tracksPath + trackName + ".data");
+		string sha = Info.SHA(Info.tracksPath + trackName + ".data");
 		Debug.Log("CreateLobby start" + trackName + " " + sha);
 		if (await server.CreateLobby(trackName, sha))
 		{
 			GoToView(lobbyView.gameObject);
 		}
 	}
-	string SHA(string filePath)
-	{
-		string hash;
-		using (var cryptoProvider = new SHA1CryptoServiceProvider())
-		{
-			byte[] buffer = File.ReadAllBytes(filePath);
-			hash = BitConverter.ToString(cryptoProvider.ComputeHash(buffer));
-		}
-		return hash;
-	}
+	/// <summary>
+	/// SHA is performed on .data track file
+	/// </summary>
+	
 }

@@ -3,7 +3,7 @@
 public class Sfxable : MonoBehaviour
 {
 	static GameObject mainCameraObj;
-	private void Awake()
+	protected virtual void Awake()
 	{
 		if(!mainCameraObj)
 			mainCameraObj = GameObject.Find("MainCamera");

@@ -1,9 +1,11 @@
 using System.Collections;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using UnityEngine.UIElements.Experimental;
 
+public enum GarageType { Unlocked, Earned, Wild, Aero, Speed, Specials }
 public class CarSelector : Selector
 {
 	public RectTransform[] bars;
@@ -21,7 +23,18 @@ public class CarSelector : Selector
 	Coroutine containerCo;
 	bool loadCo;
 	public bool d_co;
+	public GarageType type = GarageType.Unlocked;
+	float playerMoney = 0;
+	public void SetType(GarageType type, float money = 1e6f)
+	{
+		playerMoney = money;
 
+		if (this.type == type)
+			return;
+
+		ClearAllCars();
+		this.type = type;
+	}
 	void Awake()
 	{
 		initBarSizeDelta = bars[0].sizeDelta.x;
@@ -41,29 +54,49 @@ public class CarSelector : Selector
 		}
 		StartCoroutine(Load());
 	}
+	bool ShowCar(Car c)
+	{
+		switch (type)
+		{
+			case GarageType.Unlocked:
+				return c.price != -1;
+			case GarageType.Earned:
+				return c.price != -1 && c.price <= playerMoney;
+			case GarageType.Aero:
+				return c.price != -1 && c.category == CarGroup.Aero;
+			case GarageType.Wild:
+				return c.price != -1 && c.category == CarGroup.Wild;
+			case GarageType.Speed:
+				return c.price != -1 && c.category == CarGroup.Speed;
+			case GarageType.Specials:
+				return c.price != -1 && c.category == CarGroup.Team;
+			default:
+				return false;
+		}
+	}
+	void ClearAllCars()
+	{
+		for (int i = 0; i < carContent.childCount; ++i)
+		{ // remove cars from previous entry
+			carContent.GetChild(i).DestroyAllChildren();
+		}
+	}
 	IEnumerator Load()
 	{
-		int carsVisible = 0;
+		int carsCurrentlyVisible = 0;
 		for (int i = 0; i < carContent.childCount; ++i)
-			carsVisible += carContent.GetChild(i).childCount;
+			carsCurrentlyVisible += carContent.GetChild(i).childCount;
 
+		int numberOfCarsThatShouldBeVisible = Info.cars.Count(c => ShowCar(c));
 		loadCo = true;
-		if (carsVisible != Info.cars.Length)
+		if (carsCurrentlyVisible != numberOfCarsThatShouldBeVisible)
 		{
 			bool[] menuButtons = new bool[4];
-			for (int i = 0; i < carContent.childCount; ++i)
-			{ // remove cars from previous entry
-				Transform carClass = carContent.GetChild(i);
-				for (int j = 0; j < carClass.childCount; ++j)
-				{
-					//Debug.Log(carClass.GetChild(j).name);
-					Destroy(carClass.GetChild(j).gameObject);
-				}
-			}
+			ClearAllCars();
 			for (int i = 0; i < Info.cars.Length; ++i)
 			{ // populate car grid
 				var car = Info.cars[i];
-				if (car.price>0)
+				if (ShowCar(car))
 				{
 					var newcar = Instantiate(carImageTemplate, carContent.GetChild((int)car.category));
 					newcar.name = "car" + (i + 1).ToString("D2");
@@ -94,7 +127,7 @@ public class CarSelector : Selector
 		}
 		if (selectedCar == null)
 		{
-			carDescText.text = "No cars available lol";
+			carDescText.text = "No cars available lulz";
 		}
 		else
 		{
@@ -146,6 +179,7 @@ public class CarSelector : Selector
 				if (tempSelectedCar != null && tempSelectedCar != selectedCar)
 				{
 					selectedCar = tempSelectedCar;
+					buttonsContainer.GetChild(selectedCar.parent.GetSiblingIndex()).GetComponent<MainMenuButton>().Select();
 					PlaySFX("fe-bitmapscroll");
 				}
 				// new car has been selected

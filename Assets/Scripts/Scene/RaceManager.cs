@@ -337,7 +337,7 @@ namespace RVP
 				}
 			}
 
-			for (int i = 0; i < Info.s_rivals + 1; ++i)
+			for (int i = 0; i < Info.s_cpuRivals + 1; ++i)
 			{
 				Vector3 startPos = racingPaths[0].path.GetPointAtDistance(dist);
 				Vector3 dirVec = racingPaths[0].path.GetDirectionAtDistance(dist);
@@ -368,7 +368,7 @@ namespace RVP
 
 				startPos = Vector3.Lerp(leftSide, rightSide, (i % 2 == 0) ? .286f : .714f);
 				//Debug.DrawRay(startPos, Vector3.up);
-				string carName = (i == Info.s_rivals) ? Info.s_playerCarName : "car" + preferredCars.GetRandom().ToString("D2");
+				string carName = (i == Info.s_cpuRivals) ? Info.s_playerCarName : "car" + preferredCars.GetRandom().ToString("D2");
 				//string carName = "car06";
 				var carModel = Resources.Load<GameObject>(Info.carPrefabsPath + carName);
 				var position = new Vector3(startPos.x, startPos.y + 3, startPos.z);
@@ -386,7 +386,7 @@ namespace RVP
 				newCar.followAI.AssignPath(racingPaths[racingLineNumber], racingPaths[0], ref editorPanel.stuntpointsContainer,
 					ref editorPanel.replayCamsContainer, Info.racingLineLayers[racingLineNumber]);
 
-				if (i == Info.s_rivals)
+				if (i == Info.s_cpuRivals)
 				{ // last car is the player
 					cam.enabled = true;
 
