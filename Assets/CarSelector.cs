@@ -35,8 +35,9 @@ public class CarSelector : Selector
 		ClearAllCars();
 		this.type = type;
 	}
-	void Awake()
+	new void Awake()
 	{
+		base.Awake();
 		initBarSizeDelta = bars[0].sizeDelta.x;
 	}
 	private void OnDisable()

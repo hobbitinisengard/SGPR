@@ -5,8 +5,9 @@ public class Dyndak : Sfxable
 	float posy;
 	RectTransform rt;
 	float begintime = 0;
-	void Awake()
+	new void Awake()
 	{
+		base.Awake();
 		rt = GetComponent<RectTransform>();
 		posy = rt.anchoredPosition.y;
 		begintime = Time.time;

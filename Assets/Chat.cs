@@ -1,44 +1,48 @@
-﻿using TMPro;
+﻿using System;
+using TMPro;
+using Unity.Netcode;
 using Unity.Services.Lobbies.Models;
 using UnityEngine;
-
-public class Chat : MonoBehaviour
+public class Chat : NetworkBehaviour
 {
-	public GameObject chatRowPrefab;
 	public ServerConnection server;
+	public GameObject chatRowPrefab;
+	[NonSerialized]
+	public PlayerPrefab playerPrefab;
 	public Transform content;
 	public TMP_InputField inputField;
+	public GameObject chatRowDataPrefab;
+	public GameObject newMessagesContainerPrefab;
 	int rows = 7;
 
 	private void Awake()
 	{
-		inputField.onSubmit.AddListener(async s =>
+		inputField.onSubmit.AddListener(s =>
 		{
 			if(s.Length > 0)
 			{
-				var p = server.PlayerMe;
-				p.MessageSet(s);
-				AddChatRow(p, s);
-				await server.UpdatePlayerData();
+				AddChatRow(server.PlayerMe, s);
+				//playerPrefab.message.Value = s;
 				Debug.Log("sent");
 				inputField.text = "";
 				inputField.Select();
 			}
 		});
 	}
-	public void WriteMessageOnChat(string text)
-	{
-		var player = server.PlayerMe;
-		var name = player.NameGet();
-		var color = player.ReadColor();
-		AddChatRow(name, text, color, Color.white);
-	}
+	
 
+	//public void AddChatRow(
+	//{
+	//	var rowInstance = Instantiate(chatRowDataPrefab, transform);
+	//	rowInstance.GetComponent<ChatRowData>().Set(name, message, colorA, colorB);
+	//	rowInstance.GetComponent<NetworkObject>().Spawn(true);
+	//}
 	public void AddChatRow(Player p, string msg)
 	{
-		AddChatRow(p.NameGet(),msg, p.ReadColor(), Color.white);
+		AddChatRowRpc(p.NameGet(), msg, p.ReadColor(), Color.white);
 	}
-	public void AddChatRow(string subject, string strB, Color colorA, Color colorB)
+	[Rpc(SendTo.ClientsAndHost)]
+	public void AddChatRowRpc(string name, string message, in Color colorA, in Color colorB)
 	{
 		if (content.childCount == rows)
 		{
@@ -46,10 +50,10 @@ public class Chat : MonoBehaviour
 		}
 		var newRow = Instantiate(chatRowPrefab, content);
 		var textA = newRow.transform.GetChild(0).GetComponent<TextMeshProUGUI>();
-		textA.text = subject + ":";
+		textA.text = name + ":";
 		textA.color = colorA;
 		var textB = newRow.transform.GetChild(1).GetComponent<TextMeshProUGUI>();
-		textB.text = "  " + strB;
+		textB.text = "  " + message;
 		textB.color = colorB;
 	}
 }

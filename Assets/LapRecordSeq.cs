@@ -10,8 +10,9 @@ public class LapRecordSeq : Sfxable
 	float initPosRec;
 	public AnimationCurve transpCurve;
 	Coroutine animCo;
-	void Awake()
+	new void Awake()
 	{
+		base.Awake();
 		lapImg = transform.GetChild(0).GetComponent<Image>();
 		recImg = transform.GetChild(1).GetComponent<Image>();
 		initPosLap = transform.GetChild(0).GetComponent<RectTransform>().anchoredPosition.x;

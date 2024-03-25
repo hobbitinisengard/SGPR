@@ -27,7 +27,7 @@ public class RacingPathParams
 	public int Iterations;
 }
 
-public class EditorPanel : Sfxable
+public class EditorPanel : MonoBehaviour
 {
 	const int connectorRadius = 5;
 	/// <summary>

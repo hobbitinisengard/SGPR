@@ -2,19 +2,14 @@ using Unity.Netcode;
 
 public class ZippedTrackDataObject : NetworkBehaviour
 {
-	public MultiPlayerSelector mpSelector;
-	public NetworkVariable<byte[]> zippedTrack;
+	public NetworkVariable<byte[]> zippedTrack = new(new byte[0]);
 	/// <summary>
 	/// SHA of the currently stored track. If null, no track is stored
 	/// </summary>
-	public NetworkVariable<string> zippedTrackSHA;
-	public NetworkVariable<int> reading;
+	public NetworkVariable<string> zippedTrackSHA = new("");
 
-	[Rpc(SendTo.Server)]
-	public void UpdateCachedTrack()
+	public void Spawn()
 	{
-		reading.Value++;
-
-		mpSelector.UpdateCachedTrack();
+		GetComponent<NetworkObject>().Spawn();
 	}
 }

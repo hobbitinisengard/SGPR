@@ -14,7 +14,7 @@ namespace RVP
         string[] surfaceNames;
 
         public override void OnInspectorGUI() {
-            GroundSurfaceMaster surfaceMaster = FindObjectOfType<GroundSurfaceMaster>();
+            GroundSurfaceMaster surfaceMaster = FindFirstObjectByType<GroundSurfaceMaster>();
             targetScript = (TerrainSurface)target;
             Undo.RecordObject(targetScript, "Terrain Surface Change");
 

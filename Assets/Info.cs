@@ -64,10 +64,8 @@ public static class Info
 	public const string k_raceConfig = "e";
 	public const string k_zippedTrack = "t";
 	public const string k_duringRace = "d";
-	public const string k_IPv4 = "a";
 	public const string k_trackSHA = "ts";
 	public const string k_trackName = "tn";
-	public const string k_trackRequest = "tr";
 
 	public const int maxCarsInRace = 10;
 
@@ -96,12 +94,12 @@ public static class Info
 	//	}
 	//	return null;
 	//}
-	public static string SHA(string filePath)
+	public static async Task<string> SHA(string filePath)
 	{
 		string hash;
 		using (var cryptoProvider = new SHA1CryptoServiceProvider())
 		{
-			byte[] buffer = File.ReadAllBytes(filePath);
+			byte[] buffer = await File.ReadAllBytesAsync(filePath);
 			hash = BitConverter.ToString(cryptoProvider.ComputeHash(buffer));
 		}
 		return hash;
@@ -111,10 +109,10 @@ public static class Info
 		using var cryptoProvider = new SHA1CryptoServiceProvider();
 		return BitConverter.ToString(cryptoProvider.ComputeHash(buffer));
 	}
-	public static void MessageSet(this Player player, string msg)
-	{
-		player.Data[k_message].Value = msg;
-	}
+	//public static void MessageSet(this Player player, string msg)
+	//{
+	//	player.Data[k_message].Value = msg;
+	//}
 	public static Livery SponsorGet(this Player player)
 	{
 		return (Livery)Enum.Parse(typeof(Livery), player.Data[k_Sponsor].Value);
@@ -155,14 +153,14 @@ public static class Info
 	{
 		player.Data[k_carName].Value = carName;
 	}
-	public static string IPv4Get(this Player player)
-	{
-		return player.Data[k_IPv4].Value;
-	}
-	public static void IPv4Set(this Player player, string ipv4)
-	{
-		player.Data[k_IPv4].Value = ipv4;
-	}
+	//public static string IPv4Get(this Player player)
+	//{
+	//	return player.Data[k_requireTrack].Value;
+	//}
+	//public static void IPv4Set(this Player player, string ipv4)
+	//{
+	//	player.Data[k_requireTrack].Value = ipv4;
+	//}
 	public static Color ReadColor(this Player player)
 	{
 		if (Info.scoringType == ScoringType.Championship)

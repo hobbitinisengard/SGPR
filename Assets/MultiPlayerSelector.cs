@@ -4,11 +4,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Net;
-using System.Net.Sockets;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
 using TMPro;
+using Unity.Netcode;
 using Unity.Services.Authentication;
 using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
@@ -28,8 +26,8 @@ public class MultiPlayerSelector : TrackSelector
 			this.time = time;
 		}
 	}
-	const float sendTrackRetryTimeSeconds = 10;
 	public ServerConnection server;
+	public NetworkManager networkManager;
 	public MainMenuView thisView;
 	public Chat chat;
 	public LeaderBoardTable leaderboard;
@@ -44,42 +42,26 @@ public class MultiPlayerSelector : TrackSelector
 	public TextMeshProUGUI dataTransferText;
 	public Sprite randomTrackSprite;
 	public CarSelector carSelector;
+	/// <summary>
+	/// prefab of playerPrefab - unique network object with all information regarding the player
+	/// </summary>
+	public GameObject playerPrefabPrefab;
 	public ZippedTrackDataObject zippedTrackDataObject;
+
 	Sprite originalTrackSprite;
-	//readonly List<IpTime> ipTimes = new();
 
 	bool canStartRace = false;
-	byte[] _currentTrackZipCached;
-	string _currentTrackZipCachedSHA;
 	float readyTimeoutTime;
 	bool readyClicked = false;
-	private bool updatingCachedTrack;
+	bool updatingCachedTrack;
 
-	byte[] CurrentTrackZipCached
-	{
-		get
-		{
-			if (_currentTrackZipCached == null)
-			{
-				string zipPath = Info.documentsSGPRpath + persistentSelectedTrack + ".zip";
-				using (ZipArchive zip = ZipFile.Open(zipPath, ZipArchiveMode.Create))
-				{
-					zip.CreateEntryFromFile(Info.tracksPath + persistentSelectedTrack + ".track", persistentSelectedTrack + ".track");
-					zip.CreateEntryFromFile(Info.tracksPath + persistentSelectedTrack + ".png", persistentSelectedTrack + ".png");
-					zip.CreateEntryFromFile(Info.tracksPath + persistentSelectedTrack + ".data", persistentSelectedTrack + ".data");
-				}
-				_currentTrackZipCached = File.ReadAllBytes(zipPath);
-				_currentTrackZipCachedSHA = Info.SHA(_currentTrackZipCached);
-			}
-			return _currentTrackZipCached;
-		}
-	}
 	protected override async void OnEnable()
 	{
 		base.OnEnable();
 		StartCoroutine(ResetButtons());
 		SwitchScoring(true);
 
+		
 		server.PlayerMe.carNameSet(Info.Car(Info.s_playerCarName).name);
 
 		if (server.callbacks == null)
@@ -92,14 +74,17 @@ public class MultiPlayerSelector : TrackSelector
 			await Lobbies.Instance.SubscribeToLobbyEventsAsync(server.lobby.Id, server.callbacks);
 		}
 
-		_currentTrackZipCached = null;
 		if (!server.AmHost && !await IsCurrentTrackSyncedWithServerTrack())
 		{
 			await RequestTrackSequence();
 		}
+
 	}
+
+
 	void Start()
 	{
+		
 		garageBtn.onClick.AddListener(() =>
 		{
 			if (Info.scoringType == ScoringType.Championship)
@@ -116,11 +101,27 @@ public class MultiPlayerSelector : TrackSelector
 		{ 
 			EnableSelectionOfTracks(server.AmHost && !server.PlayerMe.ReadyGet()); 
 		});
+		// instantiate my prefab
+		SpawnPlayerPrefab(server.PlayerMe);
+
+		zippedTrackDataObject.Spawn();
+	}
+	void SpawnPlayerPrefab(Player p)
+	{
+		var playerPrefab = Instantiate(playerPrefabPrefab);
+		playerPrefab.GetComponent<PlayerPrefab>().Initialize(chat, p.ReadColor(), p.NameGet());
+		playerPrefab.GetComponent<NetworkObject>().Spawn(false);
 	}
 	private async void Callbacks_LobbyChanged(ILobbyChanges changes)
 	{
 		if (changes.Data.Changed && !server.AmHost)
 		{
+			if (server.PlayerMe.ReadyGet())
+			{
+				server.PlayerMe.ReadySet(false);
+				SwitchReady(true);
+				await server.UpdatePlayerData();
+			}
 			if (changes.Data.Value.ContainsKey(Info.k_raceConfig))
 			{
 				DecodeConfig(changes.Data.Value[Info.k_raceConfig].Value.Value);
@@ -132,7 +133,6 @@ public class MultiPlayerSelector : TrackSelector
 				if (!await IsCurrentTrackSyncedWithServerTrack())
 				{
 					await RequestTrackSequence();
-					
 				}
 				StartCoroutine(Load(Info.s_trackName));
 			}
@@ -145,14 +145,7 @@ public class MultiPlayerSelector : TrackSelector
 						thisView.ToRaceScene();
 				}
 			}
-			if (server.PlayerMe.ReadyGet())
-			{
-				server.PlayerMe.ReadySet(false);
-				SwitchReady(true);
-				await server.UpdatePlayerData();
-			}
 		}
-
 		changes.ApplyToLobby(server.lobby);
 		maxCPURivals = Info.maxCarsInRace - server.lobby.Players.Count;
 	}
@@ -189,7 +182,7 @@ public class MultiPlayerSelector : TrackSelector
 	{
 		foreach (var p in players)
 		{
-			chat.AddChatRow(server.lobby.Players[p].NameGet(), "has left the server", Color.white, Color.gray);
+			chat.AddChatRowRpc(server.lobby.Players[p].NameGet(), "has left the server", Color.white, Color.gray);
 		}
 		UpdateInteractableButtons();
 	}
@@ -198,10 +191,10 @@ public class MultiPlayerSelector : TrackSelector
 	{
 		foreach (var p in newPlayers)
 		{
-			chat.AddChatRow(p.Player.NameGet(), "has joined the server", Color.white, Color.gray);
+			chat.AddChatRowRpc(p.Player.NameGet(), "has joined the server", Color.white, Color.gray);
 		}
 	}
-	private async void Callbacks_PlayerDataChanged(Dictionary<int, Dictionary<string, ChangedOrRemovedLobbyValue<PlayerDataObject>>> playerDatas)
+	private void Callbacks_PlayerDataChanged(Dictionary<int, Dictionary<string, ChangedOrRemovedLobbyValue<PlayerDataObject>>> playerDatas)
 	{
 		int readyPlayers = 0;
 		bool anyChanged = false;
@@ -220,16 +213,9 @@ public class MultiPlayerSelector : TrackSelector
 						case Info.k_message:
 							chat.AddChatRow(server.lobby.Players[pData.Key], kv.Value.Value.Value);
 							break;
-						case Info.k_IPv4:
-							if (Info.k_IPv4.Length > 1 && server.lobby.HostId != playerId)
-							{
-								await SendTrackToPlayer(kv.Value.Value.Value);
-							}
-							break;
 						case Info.k_Ready:
 							anyChanged = true;
-							// This condition is never true for host
-							if (kv.Value.Value.Value == "true" && playerDatas[pData.Key][Info.k_IPv4].Value.Value == "")
+							if (kv.Value.Value.Value == "true")
 								readyPlayers++;
 							break;
 						default:
@@ -242,7 +228,7 @@ public class MultiPlayerSelector : TrackSelector
 		if (anyChanged)
 			leaderboard.Refresh();
 
-		if (server.lobby.Players.Count >= 2 && readyPlayers == server.lobby.Players.Count-1 
+		if (server.lobby.Players.Count >= 2 && readyPlayers == server.lobby.Players.Count 
 			&& server.AmHost && server.PlayerMe.ReadyGet())
 		{
 			canStartRace = true;
@@ -254,14 +240,26 @@ public class MultiPlayerSelector : TrackSelector
 			readyText.text = server.AmHost ? "HOST READY" : "READY";
 		}
 	}
-	public void UpdateCachedTrack()
+	[Rpc(SendTo.Server)]
+	public void UpdateCachedTrackRpc()
 	{
-		if(!updatingCachedTrack)
+		if(!updatingCachedTrack && (zippedTrackDataObject.zippedTrackSHA.Value != server.lobby.Data[Info.k_trackSHA].Value))
 		{
 			updatingCachedTrack = true;
-			zippedTrackDataObject.zippedTrack.Value = CurrentTrackZipCached;
-			zippedTrackDataObject.zippedTrackSHA.Value = _currentTrackZipCachedSHA;
+
+			string zipPath = Info.documentsSGPRpath + persistentSelectedTrack + ".zip";
+			using (ZipArchive zip = ZipFile.Open(zipPath, ZipArchiveMode.Create))
+			{
+				zip.CreateEntryFromFile(Info.tracksPath + persistentSelectedTrack + ".track", persistentSelectedTrack + ".track");
+				zip.CreateEntryFromFile(Info.tracksPath + persistentSelectedTrack + ".png", persistentSelectedTrack + ".png");
+				zip.CreateEntryFromFile(Info.tracksPath + persistentSelectedTrack + ".data", persistentSelectedTrack + ".data");
+			}
+
+			zippedTrackDataObject.zippedTrack.Value = File.ReadAllBytes(zipPath);
+			zippedTrackDataObject.zippedTrackSHA.Value = Info.SHA(zippedTrackDataObject.zippedTrack.Value);
+			zippedTrackDataObject.transform.GetComponent<NetworkObject>().Spawn();
 		}
+		updatingCachedTrack = false;
 	}
 	//async Task SendTrackToPlayer(string ipv4)
 	//{
@@ -282,25 +280,19 @@ public class MultiPlayerSelector : TrackSelector
 	async Task RequestTrackSequence()
 	{
 		Debug.Log("RequestTrackSequence");
-		var playerMe = server.PlayerMe;
 		try
 		{
 			//Player host = server.Host;
 			//string hostIP = host.IPv4Get();
 			//// Setting IP tells the host to send us the track
 			//string myIP = await Info.MyIPv4();
-			//if(hostIP == myIP)
-			//{
-				
-
-			//}
 			//playerMe.IPv4Set(myIP);
 			//await server.UpdatePlayerData();
 
 			//// Show UI
-			//string trackName = server.lobby.Data[Info.k_trackName].Value;
-			//dataTransferText.text = "Downloading track " + trackName + " from host..";
-			//dataTransferWnd.SetActive(true);
+			string trackName = server.lobby.Data[Info.k_trackName].Value;
+			dataTransferText.text = "Downloading track " + trackName + " from host..";
+			dataTransferWnd.SetActive(true);
 
 			//// Download data from host
 			//IPEndPoint ipendPoint = new(IPAddress.Parse(hostIP), ServerConnection.basePort);
@@ -311,19 +303,29 @@ public class MultiPlayerSelector : TrackSelector
 			//playerMe.IPv4Set("");
 			//await server.UpdatePlayerData();
 
-			while(zippedTrackDataObject.zippedTrack != null)
+			if (zippedTrackDataObject.zippedTrackSHA.Value != server.lobby.Data[Info.k_trackSHA].Value)
 			{
+				Debug.Log("Request to update cached track");
+				UpdateCachedTrackRpc();
 
+				while(zippedTrackDataObject.zippedTrackSHA.Value != server.lobby.Data[Info.k_trackSHA].Value)
+				{
+					await Task.Delay(500); // wait for the host to update zippedObject
+				}
 			}
-
+			
 			dataTransferText.text = "Unpacking track..";
+
 			string zipPath = Info.downloadPath + trackName + ".zip";
-			File.WriteAllBytes(zipPath, data);
+			
+			File.WriteAllBytes(zipPath, zippedTrackDataObject.zippedTrack.Value);
 			ZipFile.ExtractToDirectory(zipPath, Info.downloadPath);
+
+
 			bool localTrackExists = File.Exists(Info.tracksPath + trackName + ".data");
 			if (localTrackExists)
 			{
-				string downloadedSHA = Info.SHA(Info.downloadPath + trackName + ".data");
+				string downloadedSHA = await Info.SHA(Info.downloadPath + trackName + ".data");
 				if (downloadedSHA != server.lobby.Data[Info.k_trackSHA].Value)
 				{
 					// rename local track to trackName+number
@@ -375,73 +377,67 @@ public class MultiPlayerSelector : TrackSelector
 		catch (Exception e)
 		{
 			Debug.LogError("RequestTrack error:" + e.Message);
-
-			if (playerMe.IPv4Get() != "")
-			{
-				playerMe.IPv4Set("");
-				await server.UpdatePlayerData();
-			}
 		}
 		dataTransferWnd.SetActive(false);
 	}
-	public async Task SendData(IPEndPoint ipEndPoint, byte[] data)
-	{
-		await Task.Run(() =>
-		{
-			Socket client = new(ipEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-			NetworkStream stream = new(client);
-			int bufferSize = 1024;
+	//public async Task SendData(IPEndPoint ipEndPoint, byte[] data)
+	//{
+	//	await Task.Run(() =>
+	//	{
+	//		Socket client = new(ipEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+	//		NetworkStream stream = new(client);
+	//		int bufferSize = 1024;
 
-			byte[] dataLength = BitConverter.GetBytes(data.Length);
+	//		byte[] dataLength = BitConverter.GetBytes(data.Length);
 
-			stream.Write(dataLength, 0, 4);
+	//		stream.Write(dataLength, 0, 4);
 
-			int bytesSent = 0;
-			int bytesLeft = data.Length;
+	//		int bytesSent = 0;
+	//		int bytesLeft = data.Length;
 
-			while (bytesLeft > 0)
-			{
-				int curDataSize = Math.Min(bufferSize, bytesLeft);
+	//		while (bytesLeft > 0)
+	//		{
+	//			int curDataSize = Math.Min(bufferSize, bytesLeft);
 
-				stream.Write(data, bytesSent, curDataSize);
+	//			stream.Write(data, bytesSent, curDataSize);
 
-				bytesSent += curDataSize;
-				bytesLeft -= curDataSize;
-			}
-			Debug.Log("data sent");
-		});
-	}
-	public async Task<byte[]> GetData(IPEndPoint ipEndPoint)
-	{
-		byte[] data = null;
-		int bytesRead = 0;
-		await Task.Run(() =>
-		{
-			TcpClient client = new(ipEndPoint);
-			NetworkStream stream = client.GetStream();
-			byte[] fileSizeBytes = new byte[4];
-			int dataLength = BitConverter.ToInt32(fileSizeBytes, 0);
-			int bytesLeft = dataLength;
-			data = new byte[dataLength];
+	//			bytesSent += curDataSize;
+	//			bytesLeft -= curDataSize;
+	//		}
+	//		Debug.Log("data sent");
+	//	});
+	//}
+	//public async Task<byte[]> GetData(IPEndPoint ipEndPoint)
+	//{
+	//	byte[] data = null;
+	//	int bytesRead = 0;
+	//	await Task.Run(() =>
+	//	{
+	//		TcpClient client = new(ipEndPoint);
+	//		NetworkStream stream = client.GetStream();
+	//		byte[] fileSizeBytes = new byte[4];
+	//		int dataLength = BitConverter.ToInt32(fileSizeBytes, 0);
+	//		int bytesLeft = dataLength;
+	//		data = new byte[dataLength];
 
-			int bufferSize = 1024;
-			bytesRead = 0;
+	//		int bufferSize = 1024;
+	//		bytesRead = 0;
 
-			while (bytesLeft > 0)
-			{
-				int curDataSize = Math.Min(bufferSize, bytesLeft);
-				if (client.Available < curDataSize)
-					curDataSize = client.Available;
+	//		while (bytesLeft > 0)
+	//		{
+	//			int curDataSize = Math.Min(bufferSize, bytesLeft);
+	//			if (client.Available < curDataSize)
+	//				curDataSize = client.Available;
 
-				stream.Read(data, bytesRead, curDataSize);
+	//			stream.Read(data, bytesRead, curDataSize);
 
-				bytesRead += curDataSize;
-				bytesLeft -= curDataSize;
-			}
-			Debug.Log("data received");
-		});
-		return data;
-	}
+	//			bytesRead += curDataSize;
+	//			bytesLeft -= curDataSize;
+	//		}
+	//		Debug.Log("data received");
+	//	});
+	//	return data;
+	//}
 	new IEnumerator ResetButtons()
 	{
 		while(loadCo)
@@ -561,23 +557,13 @@ public class MultiPlayerSelector : TrackSelector
 	}
 	async Task<bool> IsCurrentTrackSyncedWithServerTrack()
 	{
-		string ServerSideTrackSHAHash = server.lobby.Data[Info.k_trackSHA].Value;
+		string ServerSideTrackSHA = server.lobby.Data[Info.k_trackSHA].Value;
 		string trackName = server.lobby.Data[Info.k_trackName].Value;
 		string trackPath = Info.tracksPath + trackName + ".data";
 		if (!File.Exists(trackPath))
 			return false;
 
-		return await MatchingSHA(Info.tracksPath + trackName + ".data", ServerSideTrackSHAHash);
-	}
-	async Task<bool> MatchingSHA(string filePath, string matchSHA)
-	{
-		string hash;
-		using (var cryptoProvider = new SHA1CryptoServiceProvider())
-		{
-			byte[] buffer = await File.ReadAllBytesAsync(filePath);
-			hash = BitConverter.ToString(cryptoProvider.ComputeHash(buffer));
-		}
-		return hash == matchSHA;
+		return await Info.SHA(Info.tracksPath + trackName + ".data") == ServerSideTrackSHA;
 	}
 	void EnableSelectionOfTracks(bool enabled)
 	{
@@ -612,7 +598,7 @@ public class MultiPlayerSelector : TrackSelector
 
 			if (server.AmHost && amReady)
 			{// UPDATE HOST INFO
-				server.lobby.Data[Info.k_trackSHA] = new DataObject(DataObject.VisibilityOptions.Member, Info.SHA(Info.tracksPath + Info.s_trackName + ".data"));
+				server.lobby.Data[Info.k_trackSHA] = new DataObject(DataObject.VisibilityOptions.Member, await Info.SHA(Info.tracksPath + Info.s_trackName + ".data"));
 				server.lobby.Data[Info.k_trackName] = new DataObject(DataObject.VisibilityOptions.Member, Info.s_trackName);
 				await server.UpdateServerData();
 			}

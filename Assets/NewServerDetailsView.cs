@@ -15,8 +15,9 @@ public class NewServerDetailsView : MainMenuView
    const string newServerNameReg = "newServerName";
    const string newServerPlayersReg = "newServerPlayers";
 
-	public void Awake()
+	public new void Awake()
 	{
+		base.Awake();
 		serverNameInputField.text = PlayerPrefs.GetString(newServerNameReg);
       maxPlayersInputField.text = PlayerPrefs.GetString(newServerPlayersReg);
 		serverNameInputField.onEndEdit.AddListener(SetServerName);
@@ -50,7 +51,7 @@ public class NewServerDetailsView : MainMenuView
 	{
 		OkbuttonText.text = "WAIT";
 		string trackName = Info.tracks.Keys.First();
-		string sha = Info.SHA(Info.tracksPath + trackName + ".data");
+		string sha = await Info.SHA(Info.tracksPath + trackName + ".data");
 		Debug.Log("CreateLobby start" + trackName + " " + sha);
 		if (await server.CreateLobby(trackName, sha))
 		{

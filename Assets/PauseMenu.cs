@@ -20,8 +20,9 @@ public class PauseMenu : Sfxable
 	float timeElapsed = 0;
 	[NonSerialized]
 	public bool controllerInUse = false;
-	private void Awake()
+	private new void Awake()
 	{
+		base.Awake();
 		clickSoundEffect = GetComponent<AudioSource>();
 		clickSoundEffect.ignoreListenerPause = true;
 	}

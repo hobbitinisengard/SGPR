@@ -11,7 +11,7 @@ namespace RVP
     public class GroundSurfaceInstanceEditor : Editor
     {
         public override void OnInspectorGUI() {
-            GroundSurfaceMaster surfaceMaster = FindObjectOfType<GroundSurfaceMaster>();
+            GroundSurfaceMaster surfaceMaster = FindFirstObjectByType<GroundSurfaceMaster>();
             GroundSurfaceInstance targetScript = (GroundSurfaceInstance)target;
             GroundSurfaceInstance[] allTargets = new GroundSurfaceInstance[targets.Length];
 

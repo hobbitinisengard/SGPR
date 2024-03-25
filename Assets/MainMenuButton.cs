@@ -14,8 +14,9 @@ public class MainMenuButton : Sfxable, ISelectHandler, IDeselectHandler, ISubmit
 	MainMenuView mainMenuView;
 	[System.NonSerialized]
 	public Button buttonComponent;
-	void Awake()
+	new void Awake()
 	{
+		base.Awake();
 		text = transform.GetChild(0).GetComponent<TextMeshProUGUI>();
 		text.color = deselectedColor;
 		buttonComponent = GetComponent<Button>();

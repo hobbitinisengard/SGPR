@@ -11,8 +11,6 @@ using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using Unity.Networking.Transport.Relay;
 using System.Linq;
-using System.Net.Sockets;
-using System.Net;
 using System;
 using Random = UnityEngine.Random;
 using System.Collections.Concurrent;
@@ -50,9 +48,8 @@ public class ServerConnection : MonoBehaviour
 		heartbeatTimer.Tick(Time.deltaTime);
 		pollForUpdatesTimer.Tick(Time.deltaTime);
 	}
-	async Task<Dictionary<string, PlayerDataObject>>  InitializePlayerData()
+	Dictionary<string, PlayerDataObject>  InitializePlayerData()
 	{
-		string myIpv4 = await Info.MyIPv4();
 		Dictionary<string, PlayerDataObject> playerMeData = new()
 		{
 			{
@@ -84,11 +81,6 @@ public class ServerConnection : MonoBehaviour
 				Info.k_message, new PlayerDataObject(
 					visibility: PlayerDataObject.VisibilityOptions.Member,
 					value: "")
-			},
-			{
-				Info.k_IPv4, new PlayerDataObject(
-					visibility: PlayerDataObject.VisibilityOptions.Member,
-					value: myIpv4)
 			},
 		};
 		return playerMeData;
@@ -237,7 +229,7 @@ public class ServerConnection : MonoBehaviour
 			CreateLobbyOptions options = new CreateLobbyOptions()
 			{
 				IsPrivate = false,
-				Player = new Player(id: AuthenticationService.Instance.PlayerId, data: await InitializePlayerData()),
+				Player = new Player(id: AuthenticationService.Instance.PlayerId, data: InitializePlayerData()),
 				Data = new()
 				{
 					{	k_keyJoinCode, new DataObject(
@@ -296,7 +288,7 @@ public class ServerConnection : MonoBehaviour
 	{
 		try
 		{
-			JoinLobbyByIdOptions o = new() { Player = new Player(id: AuthenticationService.Instance.PlayerId, data: await InitializePlayerData()) };
+			JoinLobbyByIdOptions o = new() { Player = new Player(id: AuthenticationService.Instance.PlayerId, data: InitializePlayerData()) };
 			lobby = await LobbyService.Instance.JoinLobbyByIdAsync(lobbyId, o);
 
 			pollForUpdatesTimer.Start();

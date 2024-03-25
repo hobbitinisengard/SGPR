@@ -23,7 +23,7 @@ namespace RVP
 
         void Start() {
             vp = GetComponent<VehicleParent>();
-            setter = FindObjectOfType<MobileInput>();
+            setter = FindFirstObjectByType<MobileInput>();
         }
 
         void FixedUpdate() {

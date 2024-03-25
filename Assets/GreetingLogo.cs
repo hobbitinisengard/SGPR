@@ -25,8 +25,9 @@ public class GreetingLogo : Sfxable
 	private bool toDemo;
 	private int lastTryCo;
 	MainMenuView view;
-	void Awake()
+	new void Awake()
 	{
+		base.Awake();
 		rt = GetComponent<RectTransform>();
 		transform.GetChild(0).GetComponent<RectTransform>().localPosition = 
 			new Vector2(Screen.width, 0);
