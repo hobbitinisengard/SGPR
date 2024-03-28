@@ -1,5 +1,4 @@
 using System.Linq;
-using System;
 using TMPro;
 using UnityEngine;
 
@@ -11,19 +10,24 @@ public class NewServerDetailsView : MainMenuView
 
    public TMP_InputField maxPlayersInputField;
    public TMP_InputField serverNameInputField;
+   public TMP_InputField passInputField;
    public ServerConnection server;
    const string newServerNameReg = "newServerName";
    const string newServerPlayersReg = "newServerPlayers";
+   const string passwordReg = "password";
 
 	public new void Awake()
 	{
 		base.Awake();
 		serverNameInputField.text = PlayerPrefs.GetString(newServerNameReg);
       maxPlayersInputField.text = PlayerPrefs.GetString(newServerPlayersReg);
+      passInputField.text = PlayerPrefs.GetString(passwordReg);
 		serverNameInputField.onEndEdit.AddListener(SetServerName);
 		maxPlayersInputField.onEndEdit.AddListener(SetMaxPlayers);
+		passInputField.onEndEdit.AddListener(SetPassword);
       SetServerName(serverNameInputField.text);
       SetMaxPlayers(maxPlayersInputField.text);
+      SetPassword(passInputField.text);
 	}
 	new private void OnEnable()
 	{
@@ -36,6 +40,7 @@ public class NewServerDetailsView : MainMenuView
       server.lobbyName = str;
       CheckOKButton();
    }
+
    public void SetMaxPlayers(string val)
    {
 		server.maxPlayers = Mathf.Clamp(int.Parse(val), 2, 10);
@@ -43,14 +48,20 @@ public class NewServerDetailsView : MainMenuView
 		PlayerPrefs.SetString(newServerPlayersReg, maxPlayersInputField.text);
 		CheckOKButton();
 	}
-   public void CheckOKButton()
+	public void SetPassword(string str)
+	{
+		PlayerPrefs.SetString(passwordReg, str);
+		server.password = str;
+		CheckOKButton();
+	}
+	public void CheckOKButton()
    {
       Okbutton.SetActive(maxPlayersInputField.text.Length > 0 && serverNameInputField.text.Length > 0);
 	}
 	public async void CreateLobby()
 	{
 		OkbuttonText.text = "WAIT";
-		string trackName = Info.tracks.Keys.First();
+		string trackName = Info.tracks.First(kv => kv.Value.valid).Key;
 		string sha = await Info.SHA(Info.tracksPath + trackName + ".data");
 		Debug.Log("CreateLobby start" + trackName + " " + sha);
 		if (await server.CreateLobby(trackName, sha))

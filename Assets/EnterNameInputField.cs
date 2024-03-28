@@ -55,7 +55,10 @@ public class EnterNameInputField : Sfxable
 		{
 			PlaySFX("fe-keydeleted");
 			if (len == 3)
+			{
+				OKButton.gameObject.SetActive(true);
 				OKButton.PlaySlideOut(true);
+			}
 			Destroy(transform.GetChild(transform.childCount - 2).gameObject);
 			selector.GetComponent<Image>().sprite = delSprite;
 			len--;

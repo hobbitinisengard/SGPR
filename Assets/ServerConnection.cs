@@ -25,6 +25,7 @@ public class ServerConnection : MonoBehaviour
 	}
 	public EncryptionType encryption = EncryptionType.DTLS;
 	public string lobbyName;
+	public string password;
 	public int maxPlayers;
 	public const int basePort = 7770;
 	string connectionType => (encryption == EncryptionType.DTLS) ? k_dtlsEncryption : k_udpEncryption;
@@ -39,14 +40,47 @@ public class ServerConnection : MonoBehaviour
 	string k_dtlsEncryption = "dtls";
 	string k_udpEncryption = "udp";
 	public LobbyEventCallbacks callbacks;
-	ConcurrentQueue<string> createdLobbyIds = new ();
+	public ConcurrentQueue<string> createdLobbyIds = new ();
 	public Lobby lobby { get; private set; }
-	CountdownTimer heartbeatTimer = new(lobbyHeartbeatInterval);
+	public CountdownTimer heartbeatTimer = new(lobbyHeartbeatInterval);
 	CountdownTimer pollForUpdatesTimer = new(lobbyPollInterval);
+	private void Awake()
+	{
+		heartbeatTimer.OnTimerStop += async () =>
+		{
+			await HandleHeartbeatAsync();
+			heartbeatTimer.Start();
+		};
+		pollForUpdatesTimer.OnTimerStop += async () =>
+		{
+			await HandlePollForUpdateAsync();
+			pollForUpdatesTimer.Start();
+		};
+	}
+	private async void Start()
+	{
+		await Authenticate();
+	}
 	private void Update()
 	{
 		heartbeatTimer.Tick(Time.deltaTime);
 		pollForUpdatesTimer.Tick(Time.deltaTime);
+	}
+	void OnApplicationQuit()
+	{
+		DeleteLobby();
+	}
+	public async void DisconnectFromLobby()
+	{
+		if (lobby == null)
+			return;
+		//networkManager.Shutdown();
+		callbacks = null;
+		Info.mpSelector = null;
+		DeleteLobby();
+		heartbeatTimer.Pause();
+		pollForUpdatesTimer.Pause();
+		await LobbyService.Instance.RemovePlayerAsync(lobby.Id, AuthenticationService.Instance.PlayerId);
 	}
 	Dictionary<string, PlayerDataObject>  InitializePlayerData()
 	{
@@ -77,23 +111,25 @@ public class ServerConnection : MonoBehaviour
 					visibility: PlayerDataObject.VisibilityOptions.Member,
 					value: ((Livery)Random.Range(1,Info.Liveries+1)).ToString())
 			},
-			{
-				Info.k_message, new PlayerDataObject(
-					visibility: PlayerDataObject.VisibilityOptions.Member,
-					value: "")
-			},
+			//{
+			//	Info.k_message, new PlayerDataObject(
+			//		visibility: PlayerDataObject.VisibilityOptions.Member,
+			//		value: "")
+			//},
 		};
 		return playerMeData;
 	}
-	void OnApplicationQuit()
-	{
-		DeleteLobby();
-	}
+	
 	void DeleteLobby()
 	{
+		Debug.Log("try deleting lobbies..");
 		while (createdLobbyIds.TryDequeue(out var lobbyId))
 		{
-			LobbyService.Instance.DeleteLobbyAsync(lobbyId);
+			if(lobby.Players.Count == 1)
+			{
+				Debug.Log("Deleting lobby" + lobbyId);
+				LobbyService.Instance.DeleteLobbyAsync(lobbyId);
+			}
 		}
 	}
 	
@@ -192,23 +228,8 @@ public class ServerConnection : MonoBehaviour
 			await AuthenticationService.Instance.SignInAnonymouslyAsync();
 		}
 	}
-	public void DisconnectFromLobby()
-	{
-		networkManager.Shutdown();
-		callbacks = null;
-		DeleteLobby();
-		heartbeatTimer.Reset();
-	}
-	async void Start()
-	{
-		await Authenticate();
-		pollForUpdatesTimer.OnTimerStop += async () =>
-		{
-			await HandlePollForUpdateAsync();
-			pollForUpdatesTimer.Start();
-		};
 
-	}
+	
 	/// <summary>
 	/// Returns true if lobby creation succeeded
 	/// </summary>
@@ -216,13 +237,6 @@ public class ServerConnection : MonoBehaviour
 	{
 		try
 		{
-			heartbeatTimer.OnTimerStop += async () =>
-			{
-				await HandleHeartbeatAsync();
-				heartbeatTimer.Start();
-			};
-			
-
 			var alloc = await HostAllocateRelay();
 			string relayJoinCode = await HostGetRelayJoinCode(alloc);
 
@@ -258,8 +272,12 @@ public class ServerConnection : MonoBehaviour
 					},
 				},
 			};
+			if (password.Length > 7)
+				options.Password = password;
 
 			lobby = await LobbyService.Instance.CreateLobbyAsync(lobbyName, maxPlayers, options);
+
+			createdLobbyIds.Enqueue(lobby.Id);
 
 			Debug.Log("created lobby " + lobby.Name + " with code " + lobby.LobbyCode + ", id " + lobby.Id);
 
@@ -272,6 +290,7 @@ public class ServerConnection : MonoBehaviour
 			//});
 			networkManager.GetComponent<UnityTransport>().SetRelayServerData(new RelayServerData(alloc, connectionType));
 			networkManager.StartHost();
+			//networkManager.StartServer();
 		}
 		catch (LobbyServiceException e)
 		{
@@ -288,10 +307,16 @@ public class ServerConnection : MonoBehaviour
 	{
 		try
 		{
-			JoinLobbyByIdOptions o = new() { Player = new Player(id: AuthenticationService.Instance.PlayerId, data: InitializePlayerData()) };
+			JoinLobbyByIdOptions o = new() 
+			{ 
+				Password = password, 
+				Player = new Player(id: AuthenticationService.Instance.PlayerId, data: InitializePlayerData()) 
+			};
+
 			lobby = await LobbyService.Instance.JoinLobbyByIdAsync(lobbyId, o);
 
 			pollForUpdatesTimer.Start();
+
 			string relayJoinCode = lobby.Data[k_keyJoinCode].Value;
 			var joinAlloc = await JoinRelay(relayJoinCode);
 			networkManager.GetComponent<UnityTransport>().SetRelayServerData(new RelayServerData(joinAlloc, connectionType));

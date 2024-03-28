@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using System.Collections.Generic;
 using TMPro;
 using Unity.Services.Lobbies;
@@ -10,10 +9,19 @@ public class ServerList : MonoBehaviour
 {
 	public Transform content;
 	public GameObject rowPrefab;
+	public EnterPasswordWnd enterPassWnd;
 	public MainMenuView lobbyView;
 	public MainMenuView thisView;
 	public ServerConnection server;
+	public Sprite padlock;
+	public Sprite knob;
 	float lastRefreshTime = 0;
+	public void OnPasswordEntered(string code, string pass)
+	{
+		server.password = pass;
+		JoinLobby(code);
+	}
+
 	private void OnEnable()
 	{
 		server.DisconnectFromLobby();
@@ -56,7 +64,8 @@ public class ServerList : MonoBehaviour
 			{
 				var newRow = Instantiate(rowPrefab, content).transform;
 				newRow.name = lobby.Id;
-				newRow.GetComponent<ServerListRowLobbyJoiner>().Set(this, lobby.Id);
+				newRow.GetComponent<ServerListRowLobbyJoiner>().Set(this, lobby.Id, lobby.HasPassword);
+				newRow.GetChild(0).GetChild(0).GetComponent<Image>().sprite = lobby.HasPassword ? padlock : knob;
 				newRow.GetChild(0).GetChild(0).GetComponent<Image>().color = (lobby.AvailableSlots == 0) ? Color.red : Color.green;
 				newRow.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>().text = lobby.Name;
 				newRow.GetChild(1).GetComponent<TextMeshProUGUI>().text = lobby.Data[ServerConnection.k_actionHappening].Value;
@@ -81,5 +90,4 @@ public class ServerList : MonoBehaviour
 			thisView.GoToView(lobbyView.gameObject);
 		}
 	}
-	
 }

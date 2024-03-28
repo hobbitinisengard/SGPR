@@ -49,9 +49,10 @@ public static class Info
 	}
 	public static string partsPath { get { return documentsSGPRpath + "parts\\"; } }
 	public static string tracksPath { get { return documentsSGPRpath + "tracks\\"; } }
-	public static string downloadPath { get { return documentsSGPRpath + "temp\\"; } }
 	public static string userdataPath { get { return documentsSGPRpath + "userdata.json"; } }
 	public static string lastPath { get { return documentsSGPRpath + "path.txt"; } }
+
+	public static MultiPlayerSelector mpSelector;
 
 	public static bool P2;
 	public const string k_Ready = "r";
@@ -59,7 +60,7 @@ public static class Info
 	public const string k_Name = "n";
 	public const string k_carName = "c";
 	public const string k_score = "sc";
-	public const string k_message = "m";
+	//public const string k_message = "m";
 
 	public const string k_raceConfig = "e";
 	public const string k_zippedTrack = "t";

@@ -1,9 +1,7 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
 using System.Threading.Tasks;
 using TMPro;
 using Unity.Netcode;
@@ -29,7 +27,7 @@ public class MultiPlayerSelector : TrackSelector
 	public ServerConnection server;
 	public NetworkManager networkManager;
 	public MainMenuView thisView;
-	public Chat chat;
+	
 	public LeaderBoardTable leaderboard;
 	public TextMeshProUGUI ipText;
 	public TextMeshProUGUI sponsorbText;
@@ -42,18 +40,39 @@ public class MultiPlayerSelector : TrackSelector
 	public TextMeshProUGUI dataTransferText;
 	public Sprite randomTrackSprite;
 	public CarSelector carSelector;
-	/// <summary>
-	/// prefab of playerPrefab - unique network object with all information regarding the player
-	/// </summary>
-	public GameObject playerPrefabPrefab;
-	public ZippedTrackDataObject zippedTrackDataObject;
+	
+	public GameObject zippedTrackDataObjectPrefab;
+	
+	[Header("Chat initialization references")]
+	public GameObject chatLogicPrefab;
+	public Transform chatContent;
+	public TMP_InputField chatInputField;
 
 	Sprite originalTrackSprite;
 
 	bool canStartRace = false;
 	float readyTimeoutTime;
 	bool readyClicked = false;
-	bool updatingCachedTrack;
+
+	[NonSerialized]
+	public ZippedTrackDataObject zippedTrackDataObject;
+
+	public event Action OnHostChanged;
+
+	protected override void Awake()
+	{
+		garageBtn.onClick.AddListener(() =>
+		{
+			if (Info.scoringType == ScoringType.Championship)
+			{
+				carSelector.SetType(GarageType.Earned, server.PlayerMe.ScoreGet());
+			}
+			else
+			{
+				carSelector.SetType(GarageType.Unlocked);
+			}
+		});
+	}
 
 	protected override async void OnEnable()
 	{
@@ -67,60 +86,43 @@ public class MultiPlayerSelector : TrackSelector
 		if (server.callbacks == null)
 		{
 			server.callbacks = new();
-			server.callbacks.PlayerDataChanged += Callbacks_PlayerDataChanged;
+			server.callbacks.LobbyChanged += Callbacks_LobbyChanged;
 			server.callbacks.PlayerJoined += Callbacks_PlayerJoined;
 			server.callbacks.PlayerLeft += Callbacks_PlayerLeft;
-			server.callbacks.LobbyChanged += Callbacks_LobbyChanged;
+			server.callbacks.PlayerDataChanged += Callbacks_PlayerDataChanged;
 			await Lobbies.Instance.SubscribeToLobbyEventsAsync(server.lobby.Id, server.callbacks);
 		}
 
+		Info.mpSelector = this;
+
 		if (!server.AmHost && !await IsCurrentTrackSyncedWithServerTrack())
 		{
-			await RequestTrackSequence();
+			RequestTrackSequence();
 		}
-
 	}
 
-
-	void Start()
+	public async void ZippedTrackDataObject_OnNewTrackArrived()
 	{
-		
-		garageBtn.onClick.AddListener(() =>
+		Debug.Log("ZippedTrackDataObject_OnNewTrackArrived()");
+		// refresh tracks menu
+		string trackName = server.lobby.Data[Info.k_trackName].Value;
+		loadCo = true;
+		StartCoroutine(Load(trackName));
+		while (loadCo)
 		{
-			if (Info.scoringType == ScoringType.Championship)
-			{
-				carSelector.SetType(GarageType.Earned, server.PlayerMe.ScoreGet());
-			}
-			else
-			{
-				carSelector.SetType(GarageType.Unlocked);
-			}
-		});
-		chat.inputField.onSelect.AddListener(s => { EnableSelectionOfTracks(false); });
-		chat.inputField.onDeselect.AddListener(s => 
-		{ 
-			EnableSelectionOfTracks(server.AmHost && !server.PlayerMe.ReadyGet()); 
-		});
-		// instantiate my prefab
-		SpawnPlayerPrefab(server.PlayerMe);
-
-		zippedTrackDataObject.Spawn();
-	}
-	void SpawnPlayerPrefab(Player p)
-	{
-		var playerPrefab = Instantiate(playerPrefabPrefab);
-		playerPrefab.GetComponent<PlayerPrefab>().Initialize(chat, p.ReadColor(), p.NameGet());
-		playerPrefab.GetComponent<NetworkObject>().Spawn(false);
+			await Task.Delay(300);
+			Debug.Log("reloading tracks");
+		}
+		dataTransferWnd.SetActive(false);
 	}
 	private async void Callbacks_LobbyChanged(ILobbyChanges changes)
 	{
+		bool hostChanged = false;
 		if (changes.Data.Changed && !server.AmHost)
 		{
-			if (server.PlayerMe.ReadyGet())
+			if(changes.HostId.Value != server.lobby.HostId)
 			{
-				server.PlayerMe.ReadySet(false);
-				SwitchReady(true);
-				await server.UpdatePlayerData();
+				hostChanged = true;
 			}
 			if (changes.Data.Value.ContainsKey(Info.k_raceConfig))
 			{
@@ -132,9 +134,15 @@ public class MultiPlayerSelector : TrackSelector
 				Debug.Log(Info.s_trackName);
 				if (!await IsCurrentTrackSyncedWithServerTrack())
 				{
-					await RequestTrackSequence();
+					RequestTrackSequence();
 				}
 				StartCoroutine(Load(Info.s_trackName));
+			}
+			if (server.PlayerMe.ReadyGet())
+			{
+				server.PlayerMe.ReadySet(false);
+				SwitchReady(true);
+				await server.UpdatePlayerData();
 			}
 			if (changes.Data.Value.ContainsKey(ServerConnection.k_actionHappening))
 			{
@@ -147,7 +155,20 @@ public class MultiPlayerSelector : TrackSelector
 			}
 		}
 		changes.ApplyToLobby(server.lobby);
+
+		// after updating lobby variable -------------
+
 		maxCPURivals = Info.maxCarsInRace - server.lobby.Players.Count;
+
+		if(hostChanged)
+		{
+			if (changes.HostId.Value == AuthenticationService.Instance.PlayerId)
+			{ // we are now host
+				server.createdLobbyIds.Enqueue(server.lobby.Id);
+				server.heartbeatTimer.Start();
+			}
+			OnHostChanged.Invoke();
+		}
 	}
 	public void DecodeConfig(string data)
 	{
@@ -180,19 +201,13 @@ public class MultiPlayerSelector : TrackSelector
 	}
 	private void Callbacks_PlayerLeft(List<int> players)
 	{
-		foreach (var p in players)
-		{
-			chat.AddChatRowRpc(server.lobby.Players[p].NameGet(), "has left the server", Color.white, Color.gray);
-		}
 		UpdateInteractableButtons();
+		leaderboard.Refresh();
 	}
 
 	private void Callbacks_PlayerJoined(List<LobbyPlayerJoined> newPlayers)
 	{
-		foreach (var p in newPlayers)
-		{
-			chat.AddChatRowRpc(p.Player.NameGet(), "has joined the server", Color.white, Color.gray);
-		}
+		leaderboard.Refresh();
 	}
 	private void Callbacks_PlayerDataChanged(Dictionary<int, Dictionary<string, ChangedOrRemovedLobbyValue<PlayerDataObject>>> playerDatas)
 	{
@@ -200,9 +215,6 @@ public class MultiPlayerSelector : TrackSelector
 		bool anyChanged = false;
 		foreach (var pData in playerDatas)
 		{
-			string playerId = server.lobby.Players[pData.Key].Id;
-			if (playerId == AuthenticationService.Instance.PlayerId)
-				continue;
 			var dataChanged = pData.Value;
 			foreach (var kv in dataChanged)
 			{
@@ -210,9 +222,6 @@ public class MultiPlayerSelector : TrackSelector
 				{
 					switch (kv.Key)
 					{
-						case Info.k_message:
-							chat.AddChatRow(server.lobby.Players[pData.Key], kv.Value.Value.Value);
-							break;
 						case Info.k_Ready:
 							anyChanged = true;
 							if (kv.Value.Value.Value == "true")
@@ -240,46 +249,31 @@ public class MultiPlayerSelector : TrackSelector
 			readyText.text = server.AmHost ? "HOST READY" : "READY";
 		}
 	}
-	[Rpc(SendTo.Server)]
-	public void UpdateCachedTrackRpc()
-	{
-		if(!updatingCachedTrack && (zippedTrackDataObject.zippedTrackSHA.Value != server.lobby.Data[Info.k_trackSHA].Value))
-		{
-			updatingCachedTrack = true;
-
-			string zipPath = Info.documentsSGPRpath + persistentSelectedTrack + ".zip";
-			using (ZipArchive zip = ZipFile.Open(zipPath, ZipArchiveMode.Create))
-			{
-				zip.CreateEntryFromFile(Info.tracksPath + persistentSelectedTrack + ".track", persistentSelectedTrack + ".track");
-				zip.CreateEntryFromFile(Info.tracksPath + persistentSelectedTrack + ".png", persistentSelectedTrack + ".png");
-				zip.CreateEntryFromFile(Info.tracksPath + persistentSelectedTrack + ".data", persistentSelectedTrack + ".data");
-			}
-
-			zippedTrackDataObject.zippedTrack.Value = File.ReadAllBytes(zipPath);
-			zippedTrackDataObject.zippedTrackSHA.Value = Info.SHA(zippedTrackDataObject.zippedTrack.Value);
-			zippedTrackDataObject.transform.GetComponent<NetworkObject>().Spawn();
-		}
-		updatingCachedTrack = false;
-	}
 	//async Task SendTrackToPlayer(string ipv4)
 	//{
-		
 
-		//var iptime = ipTimes.Find(it => it.Ip == ipv4);
-		//if (iptime == null || Time.time - iptime.time > sendTrackRetryTimeSeconds)
-		//{
-		//ipTimes.Add(new IpTime(ipv4, Time.time));
-		// over TCP
-		//IPEndPoint ipendPoint = new(IPAddress.Parse(ipv4), ServerConnection.basePort);
-		//Debug.Log("send track data to player " + ipendPoint.Address.ToString() + ":" + ipendPoint.Port.ToString());
-		//await SendData(ipendPoint, CurrentTrackZipCached);
-		//}
+
+	//var iptime = ipTimes.Find(it => it.Ip == ipv4);
+	//if (iptime == null || Time.time - iptime.time > sendTrackRetryTimeSeconds)
+	//{
+	//ipTimes.Add(new IpTime(ipv4, Time.time));
+	// over TCP
+	//IPEndPoint ipendPoint = new(IPAddress.Parse(ipv4), ServerConnection.basePort);
+	//Debug.Log("send track data to player " + ipendPoint.Address.ToString() + ":" + ipendPoint.Port.ToString());
+	//await SendData(ipendPoint, CurrentTrackZipCached);
+	//}
 
 	//}
-	
-	async Task RequestTrackSequence()
+
+	async void RequestTrackSequence()
 	{
-		Debug.Log("RequestTrackSequence");
+		string trackName = server.lobby.Data[Info.k_trackName].Value;
+
+		dataTransferText.text = "Downloading track " + trackName + " from host..";
+		dataTransferWnd.SetActive(true);
+		while (zippedTrackDataObject == null)
+			await Task.Delay(100);
+		zippedTrackDataObject.RequestTrackUpdate(trackName);
 		try
 		{
 			//Player host = server.Host;
@@ -290,9 +284,7 @@ public class MultiPlayerSelector : TrackSelector
 			//await server.UpdatePlayerData();
 
 			//// Show UI
-			string trackName = server.lobby.Data[Info.k_trackName].Value;
-			dataTransferText.text = "Downloading track " + trackName + " from host..";
-			dataTransferWnd.SetActive(true);
+			
 
 			//// Download data from host
 			//IPEndPoint ipendPoint = new(IPAddress.Parse(hostIP), ServerConnection.basePort);
@@ -302,83 +294,12 @@ public class MultiPlayerSelector : TrackSelector
 			//// Setting IP to empty, tells the host that we have track
 			//playerMe.IPv4Set("");
 			//await server.UpdatePlayerData();
-
-			if (zippedTrackDataObject.zippedTrackSHA.Value != server.lobby.Data[Info.k_trackSHA].Value)
-			{
-				Debug.Log("Request to update cached track");
-				UpdateCachedTrackRpc();
-
-				while(zippedTrackDataObject.zippedTrackSHA.Value != server.lobby.Data[Info.k_trackSHA].Value)
-				{
-					await Task.Delay(500); // wait for the host to update zippedObject
-				}
-			}
 			
-			dataTransferText.text = "Unpacking track..";
-
-			string zipPath = Info.downloadPath + trackName + ".zip";
-			
-			File.WriteAllBytes(zipPath, zippedTrackDataObject.zippedTrack.Value);
-			ZipFile.ExtractToDirectory(zipPath, Info.downloadPath);
-
-
-			bool localTrackExists = File.Exists(Info.tracksPath + trackName + ".data");
-			if (localTrackExists)
-			{
-				string downloadedSHA = await Info.SHA(Info.downloadPath + trackName + ".data");
-				if (downloadedSHA != server.lobby.Data[Info.k_trackSHA].Value)
-				{
-					// rename local track to trackName+number
-					string newName = trackName + "0";
-					for (int i = 1; i < 1000; ++i)
-					{
-						newName = trackName + i.ToString();
-						if (!File.Exists(Info.tracksPath + newName + ".png"))
-						{
-							break;
-						}
-					}
-					File.Move(Info.tracksPath + trackName + ".png", Info.tracksPath + newName + ".png");
-					File.Move(Info.tracksPath + trackName + ".data", Info.tracksPath + newName + ".data");
-					File.Move(Info.tracksPath + trackName + ".track", Info.tracksPath + newName + ".track");
-					var header = new TrackHeader(Info.tracks[trackName]);
-					Info.tracks.Add(newName, header);
-
-					File.Move(Info.downloadPath + trackName + ".png", Info.tracksPath + trackName + ".png");
-					File.Move(Info.downloadPath + trackName + ".data", Info.tracksPath + trackName + ".data");
-					File.Move(Info.downloadPath + trackName + ".track", Info.tracksPath + trackName + ".track");
-
-					string trackJson = File.ReadAllText(Info.tracksPath + trackName + ".track");
-					header = JsonConvert.DeserializeObject<TrackHeader>(trackJson);
-					Info.tracks[trackName] = header;
-				}
-			}
-			else
-			{
-				File.Move(Info.downloadPath + trackName + ".png", Info.tracksPath + trackName + ".png");
-				File.Move(Info.downloadPath + trackName + ".data", Info.tracksPath + trackName + ".data");
-				File.Move(Info.downloadPath + trackName + ".track", Info.tracksPath + trackName + ".track");
-
-				string trackJson = File.ReadAllText(Info.tracksPath + trackName + ".track");
-				var header = JsonConvert.DeserializeObject<TrackHeader>(trackJson);
-				Info.tracks.Add(trackName, header);
-			}
-			File.Delete(zipPath);
-
-			// refresh tracks menu
-			loadCo = true;
-			StartCoroutine(Load(trackName));
-			while (loadCo)
-			{
-				await Task.Delay(300);
-				Debug.Log("reloading tracks");
-			}
 		}
 		catch (Exception e)
 		{
 			Debug.LogError("RequestTrack error:" + e.Message);
 		}
-		dataTransferWnd.SetActive(false);
 	}
 	//public async Task SendData(IPEndPoint ipEndPoint, byte[] data)
 	//{
@@ -521,6 +442,7 @@ public class MultiPlayerSelector : TrackSelector
 				if (i == random)
 				{
 					Info.s_trackName = t.Key;
+					Debug.Log(Info.s_trackName);
 					break;
 				}
 				i++;
@@ -565,7 +487,7 @@ public class MultiPlayerSelector : TrackSelector
 
 		return await Info.SHA(Info.tracksPath + trackName + ".data") == ServerSideTrackSHA;
 	}
-	void EnableSelectionOfTracks(bool enabled)
+	public void EnableSelectionOfTracks(bool enabled)
 	{
 		// selecting track possible only if we're hosting and not ready 
 		// remove it first to make sure we don't subscribe to event more than once

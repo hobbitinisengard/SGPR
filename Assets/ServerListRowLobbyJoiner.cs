@@ -4,12 +4,17 @@ using UnityEngine.UI;
 internal class ServerListRowLobbyJoiner : MonoBehaviour
 {
 	ServerList serverlist;
-	string code;
 
-	public void Set(ServerList list, string joinCode)
+	public void Set(ServerList list, string joinCode, bool hasPassword)
 	{
 		serverlist = list;
-		code = joinCode;
-		GetComponent<Button>().onClick.AddListener(()=>serverlist.JoinLobby(code));
+		name = joinCode;
+		if(hasPassword)
+		{
+			GetComponent<Button>().onClick.AddListener(() => serverlist.enterPassWnd.GetComponent<EnterPasswordWnd>().OpenWindow(joinCode));
+		}
+		else
+			GetComponent<Button>().onClick.AddListener(() => serverlist.JoinLobby(name));
 	}
+
 }

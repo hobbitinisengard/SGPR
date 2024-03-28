@@ -118,7 +118,9 @@ public class TrackSelectorTemplate : Selector
 						for(int j=0; j<Trackclass.childCount; ++j)
 						{
 							if (Trackclass.GetChild(j).name == specificTrackName)
+							{
 								selectedTrack = Trackclass.GetChild(j);
+							}
 						}
 					}
 					else
@@ -133,6 +135,11 @@ public class TrackSelectorTemplate : Selector
 			var randomClass =  trackContent.GetChild(UnityEngine.Random.Range(0, 2));
 			Info.s_trackName = randomClass.GetChild(UnityEngine.Random.Range(0, randomClass.childCount)).name;
 		}
+		else
+		{
+			Info.s_trackName = selectedTrack.name;
+		}
+		Debug.Log(Info.s_trackName);
 		SetTiles();
 		SetRecords();
 		radial.gameObject.SetActive(selectedTrack);
