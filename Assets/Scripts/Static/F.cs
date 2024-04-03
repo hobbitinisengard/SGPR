@@ -15,6 +15,14 @@ public static class F
 	{
 		return 1 - Mathf.Pow(1 - x, 5);
 	}
+	public static int Wraparound(int value, int min, int max)
+	{
+		if (value < min)
+			value = max;
+		else if (value > max)
+			value = min;
+		return value;
+	}
 	public static Texture2D toTexture2D(this RenderTexture rTex)
 	{
 		Texture2D tex = new Texture2D(rTex.width, rTex.height, TextureFormat.RGB24, false);

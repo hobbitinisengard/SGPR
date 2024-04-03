@@ -4,64 +4,106 @@ using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using Unity.Netcode;
+using Unity.Services.Authentication;
 using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
 using UnityEngine;
+using UnityEngine.InputSystem;
+public class LobbyRelayId
+{
+	public ulong playerRelayId;
+	public string playerLobbyId;
+}
 public class Chat : NetworkBehaviour
 {
 	public GameObject chatRowPrefab;
 
 	ServerConnection server;
-	Transform content;
 	[NonSerialized]
-	public TMP_InputField inputField;
+	public Transform[] contents;
+	[NonSerialized]
+	public TMP_InputField[] inputFields;
+
+	public InputActionReference chatButtonInput;
 	int rows = 7;
+	Coroutine showChatCo;
 	// Chat is in-scene placed
 	public override void OnNetworkSpawn()
 	{
 		base.OnNetworkSpawn();
 		StartCoroutine(Initialize());
+
+		Info.ActivePlayers.Add(new LobbyRelayId { 
+			playerLobbyId = AuthenticationService.Instance.PlayerId, 
+			playerRelayId =  NetworkManager.LocalClientId
+		});
 	}
 	public override void OnNetworkDespawn()
 	{
+		Info.ActivePlayers.Remove(Info.ActivePlayers.First(ap => ap.playerLobbyId == AuthenticationService.Instance.PlayerId));
+
 		base.OnNetworkDespawn();
-		inputField.onSelect.RemoveAllListeners();
-		inputField.onDeselect.RemoveAllListeners();
-		inputField.onSubmit.RemoveAllListeners();
+		foreach(var i in inputFields)
+		{
+			i.onSelect.RemoveAllListeners();
+			i.onDeselect.RemoveAllListeners();
+			i.onSubmit.RemoveAllListeners();
+		}
 	}
 	IEnumerator Initialize()
 	{
 		while (Info.mpSelector == null)
 			yield return null;
 
+		chatButtonInput.action.performed += buttonPressed;
 		server = Info.mpSelector.server;
-		content = Info.mpSelector.chatContent;
-		inputField = Info.mpSelector.chatInputField;
+		inputFields[0] = Info.mpSelector.chatInitializer.lobbyChatInputField;
+		inputFields[1] = Info.mpSelector.chatInitializer.raceChatInputField;
+
+		contents[0] = Info.mpSelector.chatInitializer.lobbyChatContent;
+		contents[1] = Info.mpSelector.chatInitializer.raceChatContent;
 
 		Info.mpSelector.server.callbacks.PlayerLeft += Callbacks_PlayerLeft;
 		Info.mpSelector.server.callbacks.PlayerJoined += Callbacks_PlayerJoined;
-		Info.mpSelector.OnHostChanged += MpSelector_OnHostChanged;
+		Info.chat = this;
 
-		inputField.onSelect.AddListener(s => { Info.mpSelector.EnableSelectionOfTracks(false); });
-		inputField.onDeselect.AddListener(s => { Info.mpSelector.EnableSelectionOfTracks(server.AmHost && !server.PlayerMe.ReadyGet()); });
-		inputField.onSubmit.AddListener(s =>
+		foreach (var i in inputFields)
 		{
-			if (s.Length > 0)
+			i.onSelect.AddListener(s => { Info.mpSelector.EnableSelectionOfTracks(false); });
+			i.onDeselect.AddListener(s => { Info.mpSelector.EnableSelectionOfTracks(server.AmHost && !server.PlayerMe.ReadyGet()); });
+			i.onSubmit.AddListener(s =>
 			{
-				AddChatRow(server.PlayerMe, s);
-				Debug.Log("sent");
-				inputField.text = "";
-				inputField.Select();
-			}
-		});
-	}
-
-	private void MpSelector_OnHostChanged()
-	{
+				if (s.Length > 0)
+				{
+					AddChatRow(server.PlayerMe, s);
+					
+					i.text = "";
+					i.Select();
+				}
+			});
+		}
 		Player p = server.lobby.Players.First(p => p.Id == server.lobby.HostId);
-		AddChatRowRpc(p.NameGet(), "is hosting now", p.ReadColor(), Color.gray, RpcTarget.Everyone);
+		AddChatRowRpc(p.NameGet(), "is hosting now", p.ReadColor(), Color.gray, RpcTarget.Me);
 	}
 
+	private void buttonPressed(InputAction.CallbackContext obj)
+	{
+		StopCoroutine(showChatCo);
+		contents[1].gameObject.SetActive(contents[1].gameObject.activeSelf);
+	}
+
+	IEnumerator HideRaceChatAfter5Seconds()
+	{
+		float timer = 5;
+		contents[1].gameObject.SetActive(true);
+
+		while(timer > 0)
+		{
+			timer -= Time.fixedDeltaTime;
+			yield return null;
+		}
+		contents[1].gameObject.SetActive(false);
+	}
 	public void Callbacks_PlayerJoined(List<LobbyPlayerJoined> newPlayers)
 	{
 		foreach (var p in newPlayers)
@@ -83,16 +125,24 @@ public class Chat : NetworkBehaviour
 	[Rpc(SendTo.Everyone, AllowTargetOverride = true)]
 	public void AddChatRowRpc(string name, string message, Color colorA, Color colorB, RpcParams rpcParams)
 	{
-		if (content.childCount == rows)
+		if (showChatCo != null)
+			StopCoroutine(showChatCo);
+		showChatCo = StartCoroutine(HideRaceChatAfter5Seconds());
+
+		if (contents[0].childCount == rows)
 		{
-			Destroy(content.GetChild(0).gameObject);
+			Destroy(contents[0].GetChild(0).gameObject);
+			Destroy(contents[1].GetChild(0).gameObject);
 		}
-		var newRow = Instantiate(chatRowPrefab, content);
-		var textA = newRow.transform.GetChild(0).GetComponent<TextMeshProUGUI>();
-		textA.text = name + ":";
-		textA.color = colorA;
-		var textB = newRow.transform.GetChild(1).GetComponent<TextMeshProUGUI>();
-		textB.text = "  " + message;
-		textB.color = colorB;
+		foreach(var c in contents)
+		{
+			var newRow = Instantiate(chatRowPrefab, c);
+			var textA = newRow.transform.GetChild(0).GetComponent<TextMeshProUGUI>();
+			textA.text = name + ":";
+			textA.color = colorA;
+			var textB = newRow.transform.GetChild(1).GetComponent<TextMeshProUGUI>();
+			textB.text = "  " + message;
+			textB.color = colorB;
+		}
 	}
 }

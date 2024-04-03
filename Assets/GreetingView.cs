@@ -1,3 +1,4 @@
+using RVP;
 using System.IO;
 using Unity.Multiplayer.Playmode;
 using UnityEngine;
@@ -6,6 +7,8 @@ using UnityEngine.UI;
 public class GreetingView : MonoBehaviour
 {
 	public Text versionText;
+	public RaceManager raceManager;
+	public MultiPlayerSelector mpSelector;
 	public AudioMixer masterMixer;
 	private static void CopyFilesRecursively(string sourcePath, string targetPath)
 	{
@@ -23,6 +26,9 @@ public class GreetingView : MonoBehaviour
 	}
 	private void Awake()
 	{
+		// initialize static variables
+		Info.raceManager = raceManager;
+		Info.mpSelector = mpSelector;
 		versionText.text = Info.version;
 		Info.Initialize(CurrentPlayer.ReadOnlyTags().Count > 0);
 		if (!Directory.Exists(Info.documentsSGPRpath))

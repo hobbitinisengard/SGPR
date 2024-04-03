@@ -49,7 +49,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 164029439
+  GlobalObjectIdHash: 2533691265
   InScenePlacedSourceGlobalObjectIdHash: 2678071696
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 0
@@ -70,8 +70,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e578235a1ef6a084ca08bbf83b6d667d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  server: {fileID: 0}
   chatRowPrefab: {fileID: 6819056972471739823, guid: 909618722cc2f4a44b8694c2888b72a8,
     type: 3}
-  content: {fileID: 0}
-  inputField: {fileID: 0}
+  chatButtonInput: {fileID: -980489343879862613, guid: 72cc30aa17c8b9249b1e17052dd5f7ae,
+    type: 3}

@@ -71,7 +71,7 @@ public class MainMenuView : Sfxable
 	}
 	public void ToRaceScene()
 	{
-		if (Info.s_trackName == null)
+		if (Info.s_trackName == null || Info.s_trackName.Length < 4)
 			PlaySFX("fe-cardserror");
 		else
 		{

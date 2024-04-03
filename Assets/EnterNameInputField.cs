@@ -85,7 +85,7 @@ public class EnterNameInputField : Sfxable
 		selector.SetAsLastSibling();
 		len++;
 		selector.GetComponent<Image>().sprite = (len >= 3) ? endSprite : allowedKeysSprites[0];
-		if (len == 3)
+		if (len >= 3)
 		{
 			OKButton.transform.gameObject.SetActive(true);
 			OKButton.transform.GetComponent<Button>().Select();

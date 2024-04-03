@@ -5,8 +5,8 @@ using UnityEngine.Audio;
 
 public class PauseMenuButton : MonoBehaviour, ISelectHandler, IDeselectHandler
 {
-	static Color32 redColor = new Color32(255, 0, 0, 255);
-	static Color32 blackColor = new Color32(0, 0, 0, 255);
+	static Color32 redColor = new (255, 0, 0, 255);
+	static Color32 blackColor = new (0, 0, 0, 255);
 	bool selected = false;
 	Text text;
 	float timeStart = 0;

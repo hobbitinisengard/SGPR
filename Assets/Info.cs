@@ -9,6 +9,7 @@ using Unity.Services.Lobbies.Models;
 using UnityEngine;
 using UnityEngine.Audio;
 using System.Security.Cryptography;
+using PathCreation;
 public enum Envir { GER, JAP, SPN, FRA, ENG, USA, ITA, MEX };
 public enum CarGroup { Wild, Aero, Speed, Team };
 public enum Livery { Special = 1, TGR, Rline, Itex, Caltex, Titan, Mysuko }
@@ -154,26 +155,22 @@ public static class Info
 	{
 		player.Data[k_carName].Value = carName;
 	}
-	//public static string IPv4Get(this Player player)
-	//{
-	//	return player.Data[k_requireTrack].Value;
-	//}
-	//public static void IPv4Set(this Player player, string ipv4)
-	//{
-	//	player.Data[k_requireTrack].Value = ipv4;
-	//}
 	public static Color ReadColor(this Player player)
+	{
+		return ReadColor(player.SponsorGet());
+	}
+	public static Color ReadColor(Livery livery)
 	{
 		if (Info.scoringType == ScoringType.Championship)
 		{
-			switch (player.SponsorGet())
+			switch (livery)
 			{
 				case Livery.Special:
 					return Color.yellow;
 				case Livery.TGR:
-					return new Color(1, 165/255f, 0); // orange
+					return new Color(1, 165 / 255f, 0); // orange
 				case Livery.Rline:
-					return new Color(165/255f, 90/255f, 189/255f); // purple
+					return new Color(165 / 255f, 90 / 255f, 189 / 255f); // purple
 				case Livery.Itex:
 					return Color.red;
 				case Livery.Caltex:
@@ -271,6 +268,11 @@ public static class Info
 	public static readonly string carImagesPath = "carImages/";
 	public static readonly string trackImagesPath = "trackImages/";
 	public static readonly string editorTilesPath = "tiles/objects/";
+	public static Chat chat;
+	public static PathCreator universalPath;
+	public static RaceManager raceManager;
+	public static List<int> stuntpointsContainer = new();
+	public static List<ReplayCamStruct> replayCams = new();
 	public static Vector3[] carSGPstats;
 	public static Car[] cars;
 	public static ScoringType scoringType;
@@ -282,6 +284,7 @@ public static class Info
 	public static DateTime raceStartDate = DateTime.MinValue;
 	public static bool loaded = false;
 	public const int roadLayer = 6;
+	public const int countdownSeconds = 5;
 	public const string visibleInPictureModeTag = "VisibleInPictureMode";
 	public const int ignoreWheelCastLayer = 8;
 	public const int vehicleLayer = 9;
@@ -290,7 +293,7 @@ public static class Info
 	public const int terrainLayer = 13;
 	public const int cameraLayer = 14;
 	public const int flagLayer = 15;
-	public static readonly int[] racingLineLayers = new int[] { 16, 25, 27 };
+	public const int racingLineLayer = 16;
 	public const int pitsLineLayer = 17;
 	public const int pitsZoneLayer = 18;
 	public const int aeroTunnel = 19;
@@ -306,6 +309,9 @@ public static class Info
 	public static bool s_spectator;
 	public static List<VehicleParent> s_cars = new();
 	public static string s_trackName = "USA";
+	/// <summary>
+	/// e.g car01
+	/// </summary>
 	public static string s_playerCarName = "car01";
 	public static RaceType s_raceType = RaceType.Race;
 	public static int s_laps = 3;
@@ -328,8 +334,8 @@ public static class Info
 	internal static bool randomCars;
 	internal static bool randomTracks;
 	internal static int hostId;
-	internal static int racingPathResolution = 10;
-	public static readonly string version = "0.3b";
+	public const int racingPathResolution = 10;
+	public static readonly string version = "0.3";
 	/// <summary>
 	/// if in track editor or testDriving
 	/// </summary>
@@ -340,6 +346,9 @@ public static class Info
 			return s_inEditor && s_cars.Count < 2;
 		}
 	}
+
+	public static List<LobbyRelayId> ActivePlayers = new();
+	
 
 	public static Car Car(string name)
 	{ // i.e. car05

@@ -93,6 +93,8 @@ public class TrackSelectorTemplate : Selector
 	protected IEnumerator Load(string specificTrackName = null, bool forceReload = false)
 	{
 		loadCo = true;
+		if (specificTrackName!= null)
+			Info.s_trackName = specificTrackName;
 
 		int visibleTracks = trackContent.GetChild(0).childCount + (trackContent.GetChild(1) != null ? trackContent.GetChild(1).childCount : 0);
 		int validTracks = Info.tracks.Count(t => ValidCheck(t.Value.valid));
@@ -112,19 +114,14 @@ public class TrackSelectorTemplate : Selector
 			{
 				if (trackContent.GetChild(i).childCount > 0)
 				{
-					if (specificTrackName != null)
+					Transform Trackclass = trackContent.GetChild(i);
+					for(int j=0; j<Trackclass.childCount; ++j)
 					{
-						Transform Trackclass = trackContent.GetChild(i);
-						for(int j=0; j<Trackclass.childCount; ++j)
+						if (Trackclass.GetChild(j).name == Info.s_trackName)
 						{
-							if (Trackclass.GetChild(j).name == specificTrackName)
-							{
-								selectedTrack = Trackclass.GetChild(j);
-							}
+							selectedTrack = Trackclass.GetChild(j);
 						}
 					}
-					else
-						selectedTrack = trackContent.GetChild(i).GetChild(0);
 				}
 			}
 			// disable track classes without children (required for sliders to work)
@@ -137,13 +134,14 @@ public class TrackSelectorTemplate : Selector
 		}
 		else
 		{
+			if (selectedTrack == null)
+				selectedTrack = trackContent.GetChild(0).GetChild(0);
 			Info.s_trackName = selectedTrack.name;
 		}
 		Debug.Log(Info.s_trackName);
 		SetTiles();
 		SetRecords();
 		radial.gameObject.SetActive(selectedTrack);
-
 
 		if (selectedTrack == null)
 			trackDescText.text = "No tracks available";
@@ -225,7 +223,7 @@ public class TrackSelectorTemplate : Selector
 		// reload 
 		if (loadCo)
 			StopCoroutine(Load());
-		StartCoroutine(Load(Info.s_trackName));
+		StartCoroutine(Load(Info.s_trackName, forceReload: true));
 	}
 	protected void SetRecords()
 	{

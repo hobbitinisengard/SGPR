@@ -154,7 +154,7 @@ public class ZippedTrackDataObject : NetworkBehaviour
 			var header = JsonConvert.DeserializeObject<TrackHeader>(trackJson);
 			Info.tracks.Add(trackName, header);
 		}
-		//File.Delete(zipPath);
+		File.Delete(zipPath);
 
 		Info.mpSelector.ZippedTrackDataObject_OnNewTrackArrived();
 	}

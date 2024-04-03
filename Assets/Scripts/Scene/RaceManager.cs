@@ -5,13 +5,14 @@ using System.Collections;
 using Newtonsoft.Json;
 using System.IO;
 using UnityEngine.InputSystem;
-using System.Linq;
-using NUnit.Framework;
 using System.Collections.Generic;
+using Unity.Services.Lobbies.Models;
+using Unity.Netcode;
+using Kart;
+using Unity.Netcode.Components;
 
 namespace RVP
 {
-	public delegate void Notify();
 	public enum PartOfDay { Day, Night };
 	[DisallowMultipleComponent]
 
@@ -65,6 +66,7 @@ namespace RVP
 		public static float tireFadeTimeStatic;
 
 		public PartOfDay pod = PartOfDay.Day;
+		public NetworkManager networkManager;
 		public SGP_HUD hud;
 		public EditorPanel editorPanel;
 		public CameraControl cam;
@@ -73,9 +75,15 @@ namespace RVP
 		public PauseMenuButton sfxButton;
 		public PauseMenuButton musicButton;
 		public GameObject DemoSGPLogo;
+
 		VehicleParent leader;
-		VehicleParent playerCar;
-		public event Notify ClosingRace;
+		[NonSerialized]
+		public VehicleParent playerCar;
+		[NonSerialized]
+		public Voting voting;
+		public event Action ClosingRace;
+
+		bool firstDriverFinished = false;
 		public enum InfoMessage
 		{
 			TAKES_THE_LEAD, NO_ENERGY, SPLIT_TIME,
@@ -101,34 +109,74 @@ namespace RVP
 			hud.gameObject.SetActive(false);
 			cam.Disconnect();
 			cam.enabled = false;
-			foreach (var c in Info.s_cars)
-				Destroy(c.gameObject);
+			if (Info.gameMode == MultiMode.Singleplayer || (Info.mpSelector && Info.mpSelector.server.AmHost))
+				for (int i = 0; i < Info.s_cars.Count; ++i)
+					Destroy(Info.s_cars[i].gameObject);
+
 			Info.s_cars.Clear();
+
 			editorPanel.gameObject.SetActive(true);
 			Info.raceStartDate = DateTime.MinValue;
 		}
-		public void BackToMenu()
+		public void BackToMenu(bool applyScoring)
 		{
 			//foreach (var c in Info.s_cars)
 			//	Destroy(c.gameObject);
 			//Info.s_cars.Clear();
-			viewSwitcher.PlayDimmerToMenu();
+
+			if(applyScoring && Info.gameMode == MultiMode.Multiplayer)
+			{
+				var rd = new ResultsView.PersistentResult[Info.s_cars.Count];
+				for(int i=0; i<Info.s_cars.Count; ++i)
+				{
+					rd[i] = new ResultsView.PersistentResult()
+					{
+						drift = Info.s_cars[i].raceBox.drift,
+						lap = Info.s_cars[i].raceBox.bestLapTime,
+						stunt = Info.s_cars[i].raceBox.Aero,
+						name = Info.s_cars[i].transform.name,
+					};
+				}
+				ResultsView.resultData = rd;
+			}
+			viewSwitcher.PlayDimmerToMenu(applyScoring);
 		}
 		public void RestartButton()
 		{
-			StartRace();
+			switch (Info.gameMode)
+			{
+				case MultiMode.Singleplayer:
+					StartRace();
+					break;
+				case MultiMode.Multiplayer:
+					if(voting != null)
+						voting.VoteForRestart();					
+					break;
+				default:
+					break;
+			}
 		}
+		public void VoteForEndButton()
+		{ // vote for end button is only visible in multiplayer game
+			if(voting != null)
+				voting.VoteForEnd();
+		}
+
 		public void ExitButton()
 		{
 			if (resultsSeq.gameObject.activeSelf)
 				return;
+
+			if (Info.gameMode == MultiMode.Multiplayer && Info.mpSelector.server.AmHost)
+				voting.VoteForEnd(); // send signal to everyone that race ended
+
 			musicPlayer.Stop();
 			countDownSeq.gameObject.SetActive(false);
 
 			if (Info.s_inEditor)
 				BackToEditor();
 			else
-				BackToMenu();
+				BackToMenu(applyScoring:false);
 		}
 
 		public float RaceProgress(VehicleParent vp)
@@ -142,16 +190,21 @@ namespace RVP
 		}
 		public int Position(VehicleParent vp)
 		{
-			Info.s_cars.Sort((carA, carB) => RaceProgress(carB).CompareTo(RaceProgress(carA)));
-			if (leader != Info.s_cars[0])
+			if(Info.s_cars.Count > 0)
 			{
-				leader = Info.s_cars[0];
-				hud.AddMessage(new(leader.name + " TAKES THE LEAD!", BottomInfoType.NEW_LEADER));
-			}
-			for (int i = 0; i < Info.s_cars.Count; ++i)
-			{
-				if (Info.s_cars[i] == vp)
-					return i + 1;
+				Info.s_cars.Sort((carA, carB) => RaceProgress(carB).CompareTo(RaceProgress(carA)));
+				if (leader != Info.s_cars[0])
+				{
+					if(leader != null)
+						hud.infoText.AddMessage(new(Info.s_cars[0].name + " TAKES THE LEAD!", BottomInfoType.NEW_LEADER));
+
+					leader = Info.s_cars[0];
+				}
+				for (int i = 0; i < Info.s_cars.Count; ++i)
+				{
+					if (Info.s_cars[i] == vp)
+						return i + 1;
+				}
 			}
 			return 1;
 		}
@@ -170,15 +223,9 @@ namespace RVP
 			}
 			Debug.Assert(eliminatedCar != null);
 
-			eliminatedCar.raceBox.enabled = false;
-			eliminatedCar.followAI.SetCPU(false);
-			eliminatedCar.followAI.selfDriving = false;
-			eliminatedCar.basicInput.enabled = false;
-			eliminatedCar.SetAccel(0);
-			eliminatedCar.SetBrake(0);
-			eliminatedCar.raceBox.SetRacetime();
+			eliminatedCar.KnockoutMeRpc();
 
-			hud.AddMessage(new(eliminatedCar.transform.name + " IS ELIMINATED!", BottomInfoType.ELIMINATED));
+			hud.infoText.AddMessage(new(eliminatedCar.transform.name + " IS ELIMINATED!", BottomInfoType.ELIMINATED));
 		}
 		//Color HDRColor(float r, float g, float b, int intensity = 0)
 		//{
@@ -253,7 +300,6 @@ namespace RVP
 			cam.Connect(newCar);
 			hud.Connect(newCar);
 			newCar.followAI.enabled = true;
-			newCar.raceBox.raceManager = this;
 			newCar.raceBox.enabled = false;
 			yield return null;
 			Info.cars[newCar.carNumber - 1].config.Apply(newCar);
@@ -278,8 +324,10 @@ namespace RVP
 		}
 		IEnumerator StartRaceCoroutine()
 		{
-			foreach (var c in Info.s_cars)
-				Destroy(c.gameObject);
+			for(int i=0; i<Info.s_cars.Count; ++i)
+				if (Info.s_cars[i] != null)
+					Destroy(Info.s_cars[i].gameObject);
+
 			Info.s_cars.Clear();
 
 			musicPlayer.Stop();
@@ -315,8 +363,7 @@ namespace RVP
 			}
 			Info.raceStartDate = DateTime.Now;
 			Info.raceStartDate.AddSeconds(5);
-			float countDownSeconds = 5;
-			int dist = -20;
+			
 			int initialRandomLivery = UnityEngine.Random.Range(0, Info.Liveries);
 
 			SetPitsLayer(0);
@@ -336,9 +383,41 @@ namespace RVP
 						preferredCars.Add(i + 1);
 				}
 			}
-
-			for (int i = 0; i < Info.s_cpuRivals + 1; ++i)
+			
+			CarPlacement[] carPlacements = null;
+			switch (Info.gameMode)
 			{
+				case MultiMode.Singleplayer:
+					carPlacements = new CarPlacement[Info.s_cpuRivals + 1];
+					for (int i = 0; i < Info.s_cpuRivals; ++i)
+						carPlacements[i] = CarPlacement.CPU(i, preferredCars);
+					carPlacements[^1] = Info.s_spectator ? CarPlacement.CPU(Info.s_cpuRivals, preferredCars) : CarPlacement.LocalPlayer();
+					break;
+				case MultiMode.Multiplayer: // only server has the authority 
+					var server = Info.mpSelector.server;
+					if (server.AmHost)
+					{
+						Player[] sortedPlayers = new Player[server.lobby.Players.Count];
+						for (int i = 0; i < sortedPlayers.Length; ++i)
+							sortedPlayers[i] = server.lobby.Players[i];
+
+						Array.Sort(sortedPlayers, (Player a, Player b) => { return a.ScoreGet().CompareTo(b.ScoreGet()); });
+
+						carPlacements = new CarPlacement[Info.s_cpuRivals + Info.ActivePlayers.Count];
+						for (int i = 0; i < carPlacements.Length; ++i)
+						{
+							int pIndex = i - Info.s_cpuRivals; // CPU cars are always starting first, then online players
+							carPlacements[i] = pIndex < 0 ? CarPlacement.CPU(i, preferredCars) : CarPlacement.OnlinePlayer(i, sortedPlayers[pIndex]);
+						}
+					}
+					break;
+				default:
+					break;
+			}
+			
+			foreach (var cp in carPlacements)
+			{
+				int dist = -20 - 10 * cp.position;
 				Vector3 startPos = racingPaths[0].path.GetPointAtDistance(dist);
 				Vector3 dirVec = racingPaths[0].path.GetDirectionAtDistance(dist);
 				Vector3 rotDirVec = Quaternion.AngleAxis(90, Vector3.up) * dirVec;
@@ -347,8 +426,7 @@ namespace RVP
 
 				for (int j = 0; j < 28; j += 2)//track width is around 30
 				{
-					if (Physics.Raycast(startPos + 5 * Vector3.up + rotDirVec * j, Vector3.down, out var hit,
-						10, 1 << Info.roadLayer))
+					if (Physics.Raycast(startPos + 5 * Vector3.up + rotDirVec * j, Vector3.down, out var hit, 10, 1 << Info.roadLayer))
 					{
 						rightSide = hit.point;
 					}
@@ -357,8 +435,7 @@ namespace RVP
 				}
 				for (int j = 2; j < 28; j += 2)
 				{
-					if (Physics.Raycast(startPos + 5 * Vector3.up - rotDirVec * j, Vector3.down, out var hit,
-						10, 1 << Info.roadLayer))
+					if (Physics.Raycast(startPos + 5 * Vector3.up - rotDirVec * j, Vector3.down, out var hit, 10, 1 << Info.roadLayer))
 					{
 						leftSide = hit.point;
 					}
@@ -366,71 +443,29 @@ namespace RVP
 						break;
 				}
 
-				startPos = Vector3.Lerp(leftSide, rightSide, (i % 2 == 0) ? .286f : .714f);
+				startPos = Vector3.Lerp(leftSide, rightSide, (cp.position % 2 == 0) ? .286f : .714f);
 				//Debug.DrawRay(startPos, Vector3.up);
-				string carName = (i == Info.s_cpuRivals) ? Info.s_playerCarName : "car" + preferredCars.GetRandom().ToString("D2");
 				//string carName = "car06";
-				var carModel = Resources.Load<GameObject>(Info.carPrefabsPath + carName);
+				var carModel = Resources.Load<GameObject>(Info.carPrefabsPath + cp.carName);
 				var position = new Vector3(startPos.x, startPos.y + 3, startPos.z);
 				var rotation = Quaternion.LookRotation(dirVec);
-				var newCar = Instantiate(carModel, position, rotation).GetComponent<VehicleParent>();
-				newCar.SetSponsor((initialRandomLivery + i) % Info.Liveries);
-				Info.s_cars.Add(newCar);
-				if (Info.s_isNight)
-					newCar.SetLights();
-
-				StartCoroutine(newCar.CountdownTimer(countDownSeconds));
-
-				
-				int racingLineNumber = 0;// i % racingPaths.Length;
-				newCar.followAI.AssignPath(racingPaths[racingLineNumber], racingPaths[0], ref editorPanel.stuntpointsContainer,
-					ref editorPanel.replayCamsContainer, Info.racingLineLayers[racingLineNumber]);
-
-				if (i == Info.s_cpuRivals)
-				{ // last car is the player
-					cam.enabled = true;
-
-					if (Info.s_spectator)
-					{
-						newCar.name = "CP" + (i + 1).ToString();
-
-						cam.Connect(newCar, CameraControl.Mode.Replay);
-						DemoSGPLogo.SetActive(true);
-					}
-					else
-					{
-						playerCar = newCar;
-						newCar.name = Info.playerData.playerName;
-						cam.Connect(newCar);
-						hud.Connect(newCar);
-						DemoSGPLogo.SetActive(false);
-						//newCar.followAI.SetCPU(true); // CPU drives player's car
-					}
-				}
+				VehicleParent newCar;
+				if (Info.gameMode == MultiMode.Multiplayer)
+					newCar = NetworkObject.InstantiateAndSpawn(carModel, networkManager, cp.PlayerId, position: position, rotation: rotation).GetComponent<VehicleParent>();
 				else
-				{
-					newCar.name = "CP" + (i + 1).ToString();
-					newCar.followAI.SetCPU(true);
-				}
-				newCar.raceBox.raceManager = this;
-				dist -= 10;
-			}
+					newCar = Instantiate(carModel, position, rotation).GetComponent<VehicleParent>();
+
+				newCar.sponsor = cp.sponsor;
+				newCar.name = cp.name;
+			} // ---carPlacements
+
 			SetPitsLayer(Info.roadLayer);
-			leader = Info.s_cars[0];
-			countDownSeq.CountdownSeconds = countDownSeconds;
+
+			countDownSeq.CountdownSeconds = Info.countdownSeconds;
 			countDownSeq.gameObject.SetActive(!Info.s_spectator);
-			hud.gameObject.SetActive(!Info.s_spectator);
+			
 			if (Info.s_spectator)
 				StartCoroutine(SpectatorLoop());
-
-			yield return null;
-
-			foreach (var car in Info.s_cars)
-			{
-				Info.cars[car.carNumber - 1].config.Apply(car);
-				if (car.name.Contains("CP"))
-					car.followAI.SetCPU(true);
-			}
 		}
 		
 		IEnumerator SpectatorLoop()
@@ -442,7 +477,7 @@ namespace RVP
 					if ((DateTime.Now - Info.raceStartDate).TotalSeconds > 60 
 						|| (submitInput.action.ReadValue<float>()==1) || (cancelInput.action.ReadValue<float>()== 1))
 					{
-						BackToMenu();
+						BackToMenu(applyScoring: false);
 						yield break;
 					}
 				}
@@ -456,6 +491,11 @@ namespace RVP
 		}
 		IEnumerator FinishSeq()
 		{
+			if (!firstDriverFinished && voting != null)
+				voting.CountdownTillForceEveryoneToResults();
+
+			firstDriverFinished = true;
+
 			musicPlayer.Stop();
 			resultsSeq.gameObject.SetActive(true);
 			cam.mode = CameraControl.Mode.Replay;
@@ -535,6 +575,7 @@ namespace RVP
 			{
 				yield return null;
 			}
+
 			countDownSeq.gameObject.SetActive(false);
 			if (Info.s_inEditor)
 			{
@@ -544,10 +585,13 @@ namespace RVP
 			else
 			{
 				Debug.Log("back to menu");
-				BackToMenu();
+				BackToMenu(applyScoring: true);
 			}
 		}
-
-		
+		public void TimeForRaceEnded()
+		{
+			if(playerCar != null)
+				playerCar.raceBox.enabled = false;
+		}
 	}
 }

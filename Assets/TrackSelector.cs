@@ -33,7 +33,7 @@ public class TrackSelector : TrackSelectorTemplate
 		if (!init)
 			dir = shiftInputRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
 
-		Info.s_raceType = (RaceType)Wraparound((int)Info.s_raceType+dir,0,Info.RaceTypes-1);
+		Info.s_raceType = (RaceType)F.Wraparound((int)Info.s_raceType+dir,0,Info.RaceTypes-1);
 
 		if (Info.s_raceType == RaceType.Knockout)
 		{
@@ -62,7 +62,7 @@ public class TrackSelector : TrackSelectorTemplate
 					Info.s_laps += 3;
 			}
 		}
-		Info.s_laps = Wraparound(Info.s_laps, 1, 99);
+		Info.s_laps = F.Wraparound(Info.s_laps, 1, 99);
 		lapsButtonText.text = "Laps: " + Info.s_laps.ToString();
 	}
 	public void SwitchDayNight(bool init = false)
@@ -77,7 +77,7 @@ public class TrackSelector : TrackSelectorTemplate
 		if (!init)
 			dir = shiftInputRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
 
-		Info.s_cpuLevel = (CpuLevel)Wraparound((int)Info.s_cpuLevel+dir, 0, 3);
+		Info.s_cpuLevel = (CpuLevel)F.Wraparound((int)Info.s_cpuLevel+dir, 0, 3);
 		string cpuLevelStr = Info.s_cpuLevel switch
 		{
 			CpuLevel.Easy => "Easy",
@@ -94,7 +94,7 @@ public class TrackSelector : TrackSelectorTemplate
 		if (!init)
 			dir = shiftInputRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
 
-		Info.s_cpuRivals = Wraparound(Info.s_cpuRivals + dir, 0, maxCPURivals);
+		Info.s_cpuRivals = F.Wraparound(Info.s_cpuRivals + dir, 0, maxCPURivals);
 
 		if (Info.s_raceType == RaceType.Knockout)
 		{
@@ -106,20 +106,13 @@ public class TrackSelector : TrackSelectorTemplate
 		}
 		rivalsButtonText.text = "Opponents: " + Info.s_cpuRivals.ToString();
 	}
-	protected int Wraparound(int value, int min, int max)
-	{
-		if (value < min)
-			value = max;
-		else if (value > max)
-			value = min;
-		return value;
-	}
+	
 	public void SwitchRoadType(bool init = false)
 	{
 		if (!init)
 		{
 			int dir = shiftInputRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
-			Info.s_roadType = (PavementType)Wraparound((int)(Info.s_roadType + dir), 0, Info.pavementTypes+1);
+			Info.s_roadType = (PavementType)F.Wraparound((int)(Info.s_roadType + dir), 0, Info.pavementTypes+1);
 		}
 		wayButtonText.text = "Tex: " + Enum.GetName(typeof(PavementType), Info.s_roadType);
 	}

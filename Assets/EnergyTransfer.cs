@@ -14,7 +14,7 @@ public class EnergyTransfer : MonoBehaviour
 		//Debug.Log("enter");
 		
 		var vp = other.attachedRigidbody.transform.GetComponent<VehicleParent>();
-		vp.raceBox.raceManager.hud.AddMessage(new Message(vp.name + " IS RECHARGING!", BottomInfoType.PIT_IN));
+		Info.raceManager.hud.infoText.AddMessage(new Message(vp.name + " IS RECHARGING!", BottomInfoType.PIT_IN));
 		vp.SetBatteryLoading(true);
 		var pitsPathCreator = transform.parent.parent.GetComponent<EnergyTunnelPath>().pitsPathCreator;
 		vp.transform.GetComponent<FollowAI>().DriveThruPits(pitsPathCreator);

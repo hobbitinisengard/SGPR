@@ -2,27 +2,12 @@ using RVP;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
-public enum BottomInfoType { NEW_LEADER, NO_BATT, PIT_OUT, PIT_IN, STUNT, CAR_WINS, ELIMINATED };
+public enum BottomInfoType { NEW_LEADER, NO_BATT, PIT_OUT, PIT_IN, STUNT, CAR_WINS, ELIMINATED, NEW_CAMERA_TARGET };
 
-public class Message
-{
-	public string text = "";
-	public BottomInfoType type;
-	public Message(string content, BottomInfoType type)
-	{
-		text = content;
-		this.type = type;
-	}
-	public Message()
-	{
-	}
-}
+
 public class SGP_HUD : MonoBehaviour
 {
 	public GameObject AEROText;
@@ -33,11 +18,12 @@ public class SGP_HUD : MonoBehaviour
 	public GameObject TIMEDisplay;
 	public GameObject RECDisplay;
 	public GameObject LAPDisplay;
+	public ResultsView resultsMenuView;
+	public InfoText infoText;
 	public VehicleParent vp { get; private set; }
 	GearboxTransmission trans;
 	//StuntDetect stunter;
 	GasMotor engine;
-	RaceBox racebox;
 	readonly int minRpmRotation = 122;
 	readonly int maxRpmRotation = -63;
 	public ComponentPanel componentPanel;
@@ -94,18 +80,6 @@ public class SGP_HUD : MonoBehaviour
 	// Progress bar
 	public Sprite[] SponserSprites; // set collection as in Info.Livery
 											  // Bottom info text
-	public Text infoText;
-	// 0 = hidden text, 1 = visible text, x - time of animation
-	public AnimationCurve bottomTextAnim;
-	RectTransform infoText_rt;
-	Color32 bottomTextColor1 = new (255, 223, 0, 255);
-	Color32 bottomTextColor2 = new (255, 64, 64, 255);
-	Queue<Message> liveMessages = new Queue<Message>();
-	Message curMsgInQueue;
-	public float msgArriveTime = 0;
-	float msgHiddenPos = 80;
-	float msgVisiblePos = 0;
-	public float newPosY = 0;
 	public PauseMenu pauseMenu;
 	public GameObject StuntInfo;
 	GameObject stuntTemplate;
@@ -119,41 +93,7 @@ public class SGP_HUD : MonoBehaviour
 	/// Seconds required to dim stuntTableTimer
 	/// </summary>
 	const float dimmingStuntTableTime = 1;
-	public void SetBottomTextPos(float posy)
-	{
-		Vector2 position = infoText_rt.anchoredPosition;
-		//Vector2 size = infoText_rt.sizeDelta;
-
-		// Set the top distance
-		position.y = -posy; // Invert the value because Unity's RectTransform uses negative y-axis for top
-
-		// Apply the new position
-		infoText_rt.anchoredPosition = position;
-	}
-	public void AddMessage(Message message)
-	{
-		if (curMsgInQueue != null && message.type == curMsgInQueue.type)
-		{ // if already displaying message of the same type -> immediately switch to this message
-			curMsgInQueue = message;
-			infoText.text = curMsgInQueue.text;
-			msgArriveTime = Time.time;
-		}
-		else
-		{
-			bool found = false;
-			foreach (var livemsg in liveMessages)
-			{
-				if (message.type == livemsg.type)
-				{ // found message of the same type in queue -> just update text
-					livemsg.text = message.text;
-					found = true;
-					break;
-				}
-			}
-			if (!found) // new message -> add it to queue
-				liveMessages.Enqueue(message);
-		}
-	}
+	
 	public void UpdateStuntSeqTable(in StuntsData sData)
 	{
 		if (sData == null)
@@ -216,7 +156,6 @@ public class SGP_HUD : MonoBehaviour
 		vp = null;
 		trans = null;
 		engine = null;
-		racebox = null;
 	}
 	public void Reset()
 	{
@@ -225,10 +164,9 @@ public class SGP_HUD : MonoBehaviour
 			progressBar.GetChild(i).gameObject.SetActive(false);
 		}
 		ClearStuntInfo();
-		liveMessages.Clear();
-		curMsgInQueue = null;
+		
 		carProgressIcons.Clear();
-		infoText.gameObject.SetActive(false);
+		infoText.Reset();
 	}
 	public void OnDisable()
 	{
@@ -256,13 +194,9 @@ public class SGP_HUD : MonoBehaviour
 		rt = GetComponent<RectTransform>();
 		hudPos0 = rt.anchoredPosition.y;
 		hudHeight = -55;//-transform.parent.GetComponent<RectTransform>().sizeDelta.y / 4f;
-		infoText_rt = infoText.transform.GetComponent<RectTransform>();
-		curMsgInQueue = new Message();
-		SetBottomTextPos(msgHiddenPos);
 	}
 	public void Connect(VehicleParent newVehicle)
 	{
-		
 		if (!newVehicle)
 		{
 			Debug.LogError("newVehicle is null");
@@ -270,15 +204,11 @@ public class SGP_HUD : MonoBehaviour
 		}
 		Reset();
 
-		infoText.gameObject.SetActive(true);
-
 		vp = newVehicle;
 
 		trans = newVehicle.GetComponentInChildren<Transmission>() as GearboxTransmission;
 
 		engine = newVehicle.GetComponentInChildren<GasMotor>();
-
-		racebox = newVehicle.GetComponent<RaceBox>();
 
 		transform.gameObject.SetActive(true);
 
@@ -290,7 +220,7 @@ public class SGP_HUD : MonoBehaviour
 			progressBar.GetChild(i).localScale = 0.75f * Vector3.one;
 			carProgressIcons.Add(Info.s_cars[i], progressBar.GetChild(i));
 			progressBar.GetChild(i).name = Info.s_cars[i].tr.name;
-			progressBar.GetChild(i).GetComponent<Image>().sprite = SponserSprites[Info.s_cars[i].sponsor];
+			progressBar.GetChild(i).GetComponent<Image>().sprite = SponserSprites[(int)Info.s_cars[i].sponsor-1];
 		}
 		carProgressIcons[vp].SetSiblingIndex(9);
 		carProgressIcons[vp].localScale = Vector3.one;
@@ -323,7 +253,7 @@ public class SGP_HUD : MonoBehaviour
 		// debug stunt UI
 		//if (Input.GetKeyDown(KeyCode.T)) // update overlay
 		//{
-		//    racebox.stunts[d_select].updateOverlay = true;
+		//    vp.raceBox.stunts[d_select].updateOverlay = true;
 		//    UpdateStuntSequenceTable();
 		//}
 		//else if (Input.GetKeyDown(KeyCode.Y)) // select next
@@ -342,7 +272,7 @@ public class SGP_HUD : MonoBehaviour
 		//{
 		//    EndStuntSeq(false);
 		//}
-		if (!racebox.enabled && !Info.InEditor)
+		if (!vp.raceBox.enabled && !Info.InEditor)
 		{
 			Debug.Log("finished");
 			raceManager.PlayFinishSeq();
@@ -350,7 +280,7 @@ public class SGP_HUD : MonoBehaviour
 			return;
 		}
 
-		ptsAnim.Play(racebox.JumpPai);
+		ptsAnim.Play(vp.raceBox.JumpPai);
 
 		// dim stunt table after end of evos
 		if (dimStuntTableTimer > 0)
@@ -364,7 +294,7 @@ public class SGP_HUD : MonoBehaviour
 		}
 		if (StuntInfo.transform.childCount > 1)
 		{
-			var result = racebox.StuntSeqEnded(out var stuntPai);
+			var result = vp.raceBox.StuntSeqEnded(out var stuntPai);
 			if (result == StuntSeqStatus.None && dimStuntTableTimer <= 0)
 			{ // hide stunt panel abruptly if car suddenly isn't stunting (e.g. when resetting on track)
 				ClearStuntInfo();
@@ -374,7 +304,7 @@ public class SGP_HUD : MonoBehaviour
 			{ // show animation and stunt info
 				if (Info.s_raceType != RaceType.Drift && StuntInfo.transform.childCount < 3)
 				{
-					AddMessage(new Message(StuntInfo.transform.GetChild(1).GetComponent<StuntInfoOverlay>().ToString(), BottomInfoType.STUNT));
+					infoText.AddMessage(new Message(StuntInfo.transform.GetChild(1).GetComponent<StuntInfoOverlay>().ToString(), BottomInfoType.STUNT));
 				}
 				else
 				{
@@ -383,28 +313,10 @@ public class SGP_HUD : MonoBehaviour
 				ptsAnim.Play(stuntPai);
 			}
 		}
-		if (racebox.GetStuntSeq(ref stuntData))
+		if (vp.raceBox.GetStuntSeq(ref stuntData))
 			UpdateStuntSeqTable(stuntData);
 
-		// Bottom Info
-		bool msgAwaits = liveMessages.TryPeek(out curMsgInQueue);
-		if (msgArriveTime > 0 || msgAwaits)
-		{
-			if (msgArriveTime == 0) // nothing currently displayed 
-			{// .. so dequeue container and set result to be displayed
-				infoText.text = curMsgInQueue.text;
-				msgArriveTime = Time.time;
-			}
-			float msgSecsOnScreen = Time.time - msgArriveTime;
-			if (msgSecsOnScreen > bottomTextAnim.Duration())
-			{
-				msgArriveTime = 0;
-				liveMessages.TryDequeue(out _);
-			}
-			newPosY = Mathf.Lerp(msgHiddenPos, msgVisiblePos, bottomTextAnim.Evaluate(msgSecsOnScreen));
-			SetBottomTextPos(newPosY);
-			infoText.color = msgSecsOnScreen % 1f > 0.5f ? bottomTextColor1 : bottomTextColor2;
-		}
+		
 
 		// HUD vibrates along with dampers
 		Vector3 hudPos = rt.anchoredPosition;
@@ -467,20 +379,20 @@ public class SGP_HUD : MonoBehaviour
 		}
 		// debug LAP rollers
 		//if (Input.GetKeyDown(KeyCode.Alpha0))
-		//    racebox.lapStartTime = DateTime.Now.AddSeconds(-55);
+		//    vp.raceBox.lapStartTime = DateTime.Now.AddSeconds(-55);
 		//if (Input.GetKeyDown(KeyCode.Alpha1))
-		//    racebox.lapStartTime = DateTime.Now.AddSeconds(-595); // < 10 minutes
+		//    vp.raceBox.lapStartTime = DateTime.Now.AddSeconds(-595); // < 10 minutes
 		//if (Input.GetKeyDown(KeyCode.Alpha2))
-		//    racebox.lapStartTime = DateTime.Now.AddSeconds(-3595); // < 60 minutes
+		//    vp.raceBox.lapStartTime = DateTime.Now.AddSeconds(-3595); // < 60 minutes
 		//if (Input.GetKeyDown(KeyCode.Alpha3))
-		//    racebox.lapStartTime = DateTime.Now.AddSeconds(-7195); // < 2 hours
+		//    vp.raceBox.lapStartTime = DateTime.Now.AddSeconds(-7195); // < 2 hours
 		//if (Input.GetKeyDown(KeyCode.Alpha4))
 		//{
-		//    racebox.NextLap();
+		//    vp.raceBox.NextLap();
 		//}
 		if (LAPDisplay.activeSelf)
 		{
-			TimeSpan? curLapTime = racebox.CurLaptime;
+			TimeSpan? curLapTime = vp.raceBox.CurLaptime;
 			if (curLapTime.HasValue)
 			{
 				SetRollers(curLapTime.Value, ref lapRollers, true);
@@ -507,10 +419,10 @@ public class SGP_HUD : MonoBehaviour
 
 		if (LAPDisplay.activeSelf)
 		{
-			if (racebox.curLap > 0)
+			if (vp.raceBox.curLap > 0)
 			{
-				lapNoRollers[1].SetValue(racebox.curLap % 10); // ones
-				lapNoRollers[0].SetValue(racebox.curLap / 10); // tens
+				lapNoRollers[1].SetValue(vp.raceBox.curLap % 10); // ones
+				lapNoRollers[0].SetValue(vp.raceBox.curLap / 10); // tens
 
 				lapNoRollers[3].SetValue(Info.s_laps % 10); // ones
 				lapNoRollers[2].SetValue(Info.s_laps / 10); // tens
@@ -525,25 +437,25 @@ public class SGP_HUD : MonoBehaviour
 		if (AERODisplay.activeSelf)
 		{
 			// UPPER PANEL
-			if (racebox.starLevel != carStarLevel)
+			if (vp.raceBox.starLevel != carStarLevel)
 			{
 				for (int i = 0; i < 10; ++i)
 				{
-					starTargets[i] = (i < racebox.starLevel) ? 1 : 0;
+					starTargets[i] = (i < vp.raceBox.starLevel) ? 1 : 0;
 					StartCoroutine(SetStarVisible(i));
 				}
 			}
-			carStarLevel = racebox.starLevel;
+			carStarLevel = vp.raceBox.starLevel;
 
 			// Original AERO movement
-			float score = (Info.s_raceType == RaceType.Drift) ? racebox.drift : racebox.Aero;
+			float score = (Info.s_raceType == RaceType.Drift) ? vp.raceBox.drift : vp.raceBox.Aero;
 			for (int i = 6; i >= 0; --i)
 			{
 				mainRollers[i].SetFrac(score % 10f / 10f);
 				score /= 10;
 			}
 			// Alternative AERO movement
-			//int score = (int)racebox.aero;
+			//int score = (int)vp.raceBox.aero;
 			//mainRollers[6].SetFrac(score % 10f/10f);
 			//for (int i = 5; i >= 0; --i)
 			//{
@@ -552,12 +464,12 @@ public class SGP_HUD : MonoBehaviour
 			//}
 
 			// Combo Blinker
-			if (racebox.grantedComboTime > 0)
+			if (vp.raceBox.grantedComboTime > 0)
 			{
 				if (blinkerStart == 0 || Time.time - blinkerStart >= 1)
 					blinkerStart = Time.time;
 
-				Color clr = Color.Lerp(Color.red, Color.green, racebox.grantedComboTime / 3f);
+				Color clr = Color.Lerp(Color.red, Color.green, vp.raceBox.grantedComboTime / 3f);
 				clr.a = Mathf.Lerp(.5f, 1, Mathf.Abs(Mathf.Sin(2 * Mathf.PI * (Time.time - blinkerStart))));
 				blinker.color = clr;
 			}

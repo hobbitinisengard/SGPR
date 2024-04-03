@@ -178,6 +178,9 @@ public class EditorPanel : MonoBehaviour
 	{
 		ShowXAxisLineRenderer = GetComponent<LineRenderer>();
 		ShowXAxisToggle.onValueChanged.AddListener(SwitchXAxisRenderer);
+		Info.universalPath = pathCreators[0];
+		Info.stuntpointsContainer = stuntpointsContainer;
+		Info.replayCams = replayCamsContainer;
 	}
 	private void OnDisable()
 	{
@@ -1016,7 +1019,7 @@ public class EditorPanel : MonoBehaviour
 					var col = castable.GetComponent<SphereCollider>();
 					col.radius = 1;
 					col.isTrigger = true;
-					castable.layer = Info.racingLineLayers[i];
+					castable.layer = Info.racingLineLayer;
 					castable.name = progress.ToString(CultureInfo.InvariantCulture);
 					progress += Info.racingPathResolution;
 				}
@@ -1028,7 +1031,7 @@ public class EditorPanel : MonoBehaviour
 				{
 					if (c.isStuntZone || c.trackCamera != null)
 					{
-						Collider[] hits = Physics.OverlapSphere(c.transform.position + Vector3.up, 30, 1 << Info.racingLineLayers[i]);
+						Collider[] hits = Physics.OverlapSphere(c.transform.position + Vector3.up, 30, 1 << Info.racingLineLayer);
 						float min = 999;
 						int closestIdx = 0;
 						for (int j = 0; j < hits.Length; ++j)
@@ -1356,9 +1359,8 @@ public class EditorPanel : MonoBehaviour
 	}
 	public void CloseEditor()
 	{
-		YouSurePanel.
-		HidePanel();
-		raceManager.BackToMenu();
+		YouSurePanel.HidePanel();
+		raceManager.BackToMenu(applyScoring:false);
 	}
 	public void QuickSave()
 	{

@@ -1,6 +1,10 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System;
+using Unity.Netcode;
+using UnityEngine.InputSystem.HID;
+using System.Linq;
+using Unity.Netcode.Components;
 
 namespace RVP
 {
@@ -11,9 +15,10 @@ namespace RVP
 	[AddComponentMenu("RVP/Vehicle Controllers/Vehicle Parent", 0)]
 
 	// Vehicle root class
-	public class VehicleParent : MonoBehaviour
+	public class VehicleParent : NetworkBehaviour
 	{
 		public AudioSource honkerAudio;
+		public SampleText sampleText;
 		[NonSerialized]
 		public BasicInput basicInput;
 		CarConfig carCfg;
@@ -203,10 +208,32 @@ namespace RVP
 		public GameObject customCam;
 		private float lastNoBatteryMessage;
 
+		private NetworkVariable<Livery> _sponsor = new();
 		/// <summary>
 		/// allowed values: 0-6
 		/// </summary>
-		public int sponsor { get; private set; }
+		public Livery sponsor
+		{
+			get { return _sponsor.Value; }
+			set
+			{
+				string matName = null;
+				try 
+				{
+					_sponsor.Value = value;
+					var mr = bodyObj.GetComponent<MeshRenderer>();
+					matName = mr.sharedMaterial.name;
+					matName = matName[..^1] + ((int)value).ToString();
+					Material newMat = Resources.Load<Material>("materials/" + matName);
+					newMat.name = matName;
+					mr.material = newMat;
+				}
+				catch
+				{
+					Debug.LogError(matName);
+				}
+			}
+		}
 
 		public float countdownTimer;
 
@@ -222,6 +249,10 @@ namespace RVP
 		public float tyresOffroad;
 
 		public CatchupStatus catchupStatus { get; private set; }
+		private void SponsorValueChanged(Livery previousValue, Livery newValue)
+		{
+			sponsor = newValue;
+		}
 
 		public void SetBattery(float capacity, float chargingSpeed, float lowBatPercent, float evoBountyPercent)
 		{
@@ -324,13 +355,16 @@ namespace RVP
 			rb = GetComponent<Rigidbody>();
 			originalDrag = rb.drag;
 			originalMass = rb.mass;
+			Info.s_cars.Add(this);
 		}
 		void Start()
 		{
-			if (brakeCurve == null)
+			if(Info.gameMode == MultiMode.Multiplayer)
 			{
-				brakeCurve = GenerateBrakeCurve();
+				gameObject.AddComponent<NetworkRigidbody>();
 			}
+			brakeCurve ??= GenerateBrakeCurve();
+
 			// Create normal orientation object
 			GameObject normTemp = new GameObject(tr.name + "'s Normal Orientation");
 			norm = normTemp.transform;
@@ -340,7 +374,7 @@ namespace RVP
 			// Instantiate tow vehicle
 			if (towVehicle)
 			{
-				newTow = Instantiate(towVehicle, Vector3.zero, tr.rotation) as GameObject;
+				newTow = Instantiate(towVehicle, Vector3.zero, tr.rotation);
 				newTow.SetActive(false);
 				newTow.transform.position = tr.TransformPoint(newTow.GetComponent<Joint>().connectedAnchor - newTow.GetComponent<Joint>().anchor);
 				newTow.GetComponent<Joint>().connectedBody = rb;
@@ -348,15 +382,42 @@ namespace RVP
 				newTow.GetComponent<VehicleParent>().inputInherit = this;
 			}
 
-			//if (sparks)
-			//{
-			//	sparks.transform.parent = null;
-			//}
+			followAI.SetCPU(transform.name.Contains("CP"));
+			sampleText.gameObject.SetActive(followAI.isCPU || transform.name != Info.playerData.playerName);
+			if (Info.s_spectator)
+			{
+				if (UnityEngine.Random.value > 0.5f)
+					Info.raceManager.cam.Connect(this, CameraControl.Mode.Replay);
+			}
+			else
+			{
+				if(transform.name == Info.playerData.playerName)
+				{
+					Info.raceManager.playerCar = this;
+					Info.raceManager.cam.Connect(this);
+					Info.raceManager.hud.Connect(this);
+					//newCar.followAI.SetCPU(true); // CPU drives player's car
+				}
+			}
+			Info.raceManager.cam.enabled = true;
 
-			//if (wheelGroups.Length > 0)
-			//{
-			//	StartCoroutine(WheelCheckLoop());
-			//}
+			sampleText.gameObject.SetActive(Info.s_spectator);
+			Info.raceManager.DemoSGPLogo.SetActive(Info.s_spectator);
+			Info.raceManager.hud.gameObject.SetActive(!Info.s_spectator);
+
+			StartCoroutine(ApplySetup());
+			
+			_sponsor.OnValueChanged += SponsorValueChanged;
+
+			if (Info.s_isNight)
+				SetLights();
+
+			StartCoroutine(CountdownTimer(Info.countdownSeconds));
+		}
+		IEnumerator ApplySetup()
+		{
+			yield return null;
+			Info.cars[carNumber - 1].config.Apply(this);
 		}
 
 		void Update()
@@ -394,7 +455,7 @@ namespace RVP
 			{
 				InheritInputOneShot();
 			}
-			
+
 			if (wheels[2].curSurfaceType != roadSurfaceType)
 			{
 				roadSurfaceType = wheels[2].curSurfaceType;
@@ -403,7 +464,7 @@ namespace RVP
 			float volume = Mathf.InverseLerp(0, 80, velMag);
 
 			roadNoiseSnd.volume = (Info.gamePaused || reallyGroundedWheels == 0) ? 0 : volume;// (1 + 80 * 2 / 3f * Mathf.Log10(volume)); 
-			
+
 			if (brakeInput > 0 && !reversing)
 			{
 				// brake lights
@@ -511,7 +572,7 @@ namespace RVP
 				energyRemaining = batteryCapacity;
 			else if (BatteryPercent == 0 && Time.time - lastNoBatteryMessage > 60)
 			{
-				raceBox.raceManager.hud.AddMessage(new Message(name + " IS OUT OF BATTERY!", BottomInfoType.NO_BATT));
+				Info.raceManager.hud.infoText.AddMessage(new Message(name + " IS OUT OF BATTERY!", BottomInfoType.NO_BATT));
 				lastNoBatteryMessage = Time.time;
 			}
 			f = Mathf.Clamp(f, -1, (BatteryPercent == 0) ? 0.75f : 1);
@@ -726,7 +787,7 @@ namespace RVP
 					{
 						if (Mathf.Abs(Vector3.Dot(curCol.normal, col.relativeVelocity.normalized)) > 0.1f && col.relativeVelocity.magnitude > 10)
 						{
-							crashSnd.PlayOneShot(crashClips[UnityEngine.Random.Range(0, crashClips.Length)], 
+							crashSnd.PlayOneShot(crashClips[UnityEngine.Random.Range(0, crashClips.Length)],
 								Mathf.Clamp01(col.relativeVelocity.magnitude * 0.1f));
 							crashing = canCrash;
 						}
@@ -750,19 +811,19 @@ namespace RVP
 			{
 				foreach (ContactPoint curCol in col.contacts)
 				{
-					if (!curCol.thisCollider.CompareTag("Underside") 
+					if (!curCol.thisCollider.CompareTag("Underside")
 						&& curCol.thisCollider.gameObject.layer != RaceManager.ignoreWheelCastLayer)
 					{
 						nowCrashing = canCrash;
 
 						//if (reallyGroundedWheels >= 2)
 						{
-							if(!scrapeSnd.isPlaying)
+							if (!scrapeSnd.isPlaying)
 								scrapeSnd.Play();
 							// play sparks
 							sparks.transform.position = curCol.point;
 							sparks.transform.rotation = Quaternion.LookRotation(col.relativeVelocity.normalized, curCol.normal);
-							if(!sparks.isPlaying)
+							if (!sparks.isPlaying)
 								sparks.Play();
 						}
 					}
@@ -773,8 +834,11 @@ namespace RVP
 				scrapeSnd.Stop();
 		}
 
-		void OnDestroy()
+		public override void OnDestroy()
 		{
+			//if(Info.gameMode == MultiMode.Multiplayer) // when player suddenly disconnects
+			//	Info.s_cars.Remove(Info.s_cars.First(c => c.transform.name == transform.name));
+
 			if (norm)
 			{
 				Destroy(norm.gameObject);
@@ -784,6 +848,7 @@ namespace RVP
 			{
 				Destroy(sparks.gameObject);
 			}
+			base.OnDestroy();
 		}
 
 		// Loop through all wheel groups to check for wheel contacts
@@ -795,7 +860,6 @@ namespace RVP
 				wheelGroups[i == 0 ? wheelGroups.Length - 1 : i - 1].Deactivate();
 				yield return new WaitForFixedUpdate();
 			}
-
 			wheelLoopDone = true;
 		}
 
@@ -817,17 +881,7 @@ namespace RVP
 			SetEbrake(0);
 		}
 
-		public void SetSponsor(int v)
-		{
-			v = Mathf.Clamp(v, 0, Info.Liveries - 1);
-			sponsor = v;
-			var mr = bodyObj.GetComponent<MeshRenderer>();
-			string matName = mr.sharedMaterial.name;
-			matName = matName.Substring(0, matName.Length - 1) + (v + 1).ToString();
-			Material newMat = Resources.Load<Material>("materials/" + matName);
-			newMat.name = matName;
-			mr.material = newMat;
-		}
+
 
 		public void AddWheelGroup()
 		{
@@ -855,6 +909,18 @@ namespace RVP
 		public void ResetOnTrackBatteryPenalty()
 		{
 			energyRemaining = Mathf.Clamp(energyRemaining - batteryCapacity * 0.5f * batteryStuntIncreasePercent, 0, batteryCapacity);
+		}
+		[Rpc(SendTo.Everyone)]
+		public void KnockoutMeRpc()
+		{
+			raceBox.enabled = false;
+			followAI.SetCPU(false);
+			followAI.selfDriving = false;
+			basicInput.enabled = false;
+			SetAccel(0);
+			SetBrake(0);
+			SetSteer(0);
+			raceBox.SetRacetime();
 		}
 	}
 

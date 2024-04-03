@@ -1,4 +1,8 @@
-﻿using UnityEngine;
+﻿using System;
+using System.Collections;
+using System.Linq;
+using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace RVP
 {
@@ -10,6 +14,8 @@ namespace RVP
 	// Class for controlling the camera
 	public class CameraControl : MonoBehaviour
 	{
+		public InputActionReference moveRef;
+
 		readonly Vector2[] camerasLH = new Vector2[] { new(8.5f, 3.5f), new(4.5f, 2), new(11, 4) };
 		int curCameraLH = 0;
 		public enum Mode { Follow, Replay };
@@ -96,13 +102,26 @@ namespace RVP
 		float upLookCoeff = 1f;
 		Vector3 forward;
 		public float xyInputCamSpeedCoeff = 5;
-
 		void Awake()
 		{
 			tr = transform;
 			cam = GetComponent<Camera>();
 			cam.depthTextureMode |= DepthTextureMode.Depth;
 		}
+		private void OnEnable()
+		{
+			StartCoroutine(AllowChangingTarget());
+		}
+		IEnumerator AllowChangingTarget()
+		{
+			yield return new WaitForSeconds(1);
+			moveRef.action.performed += SwitchTarget;
+		}
+		private void OnDisable()
+		{
+			moveRef.action.performed -= SwitchTarget;
+		}
+
 		public void Disconnect()
 		{
 			if (lookObj)
@@ -161,6 +180,22 @@ namespace RVP
 				}
 			}
 		}
+		private void SwitchTarget(InputAction.CallbackContext context)
+		{
+			if (vp && Info.raceManager.playerCar?.raceBox.enabled == false)
+			{
+				Vector2 move = moveRef.action.ReadValue<Vector2>();
+				if(Mathf.Abs(move.x) > 0.5f)
+				{
+					int index = Info.s_cars.FindIndex(c => c.transform.name == vp.name);
+
+					Connect(Info.s_cars[F.Wraparound(index + (move.x > 0 ? 1 : -1),0,Info.s_cars.Count-1) % Info.s_cars.Count], Mode.Replay);
+
+					Info.raceManager.hud.infoText.AddMessage(new Message(vp.transform.name, BottomInfoType.NEW_CAMERA_TARGET));
+				}
+			}
+		}
+	
 		void ReplayCam()
 		{
 			tr.position = vp.followAI.replayCams[vp.followAI.curReplayPointIdx].cam.transform.position;
@@ -271,11 +306,13 @@ namespace RVP
 				slowCamera = false;
 			}
 			if(vp.customCam)
+			{
 				lookObj.position = vp.customCam.transform.position;
+			}
 
 			bool badpos = Physics.Linecast(vp.tr.position + cHeight * Vector3.up, lookObj.position, out hit, castMask);
 			Vector3 target;
-			if (badpos)
+			if (badpos && !vp.customCam)
 			{ //Check if there is an object between the camera and target vehicle and move the camera in front of it
 				target = hit.point + (vp.tr.position + cHeight * Vector3.up - newTrPos).normalized * (cam.nearClipPlane + 1);
 			}

@@ -32,7 +32,7 @@ public class ServerConnection : MonoBehaviour
 
 	const int lobbyHeartbeatInterval = 15;
 	const int lobbyPollInterval = 60;
-	public static readonly string k_keyJoinCode = "RelayJoinCode";
+	public static readonly string k_relayCode = "RelayJoinCode";
 	public const string k_actionHappening = "ah";
 	public const string k_lobbyCode = "lc";
 	public NetworkManager networkManager;
@@ -74,13 +74,14 @@ public class ServerConnection : MonoBehaviour
 	{
 		if (lobby == null)
 			return;
-		//networkManager.Shutdown();
+
 		callbacks = null;
 		Info.mpSelector = null;
 		DeleteLobby();
 		heartbeatTimer.Pause();
 		pollForUpdatesTimer.Pause();
 		await LobbyService.Instance.RemovePlayerAsync(lobby.Id, AuthenticationService.Instance.PlayerId);
+		networkManager.Shutdown();
 	}
 	Dictionary<string, PlayerDataObject>  InitializePlayerData()
 	{
@@ -229,7 +230,7 @@ public class ServerConnection : MonoBehaviour
 		}
 	}
 
-	
+
 	/// <summary>
 	/// Returns true if lobby creation succeeded
 	/// </summary>
@@ -237,16 +238,15 @@ public class ServerConnection : MonoBehaviour
 	{
 		try
 		{
-			var alloc = await HostAllocateRelay();
-			string relayJoinCode = await HostGetRelayJoinCode(alloc);
+			string relayJoinCode = await StartRelay();
 
-			CreateLobbyOptions options = new CreateLobbyOptions()
+			CreateLobbyOptions options = new()
 			{
 				IsPrivate = false,
 				Player = new Player(id: AuthenticationService.Instance.PlayerId, data: InitializePlayerData()),
 				Data = new()
 				{
-					{	k_keyJoinCode, new DataObject(
+					{	k_relayCode, new DataObject(
 						visibility:DataObject.VisibilityOptions.Public,
 						value:relayJoinCode)
 					},
@@ -278,19 +278,9 @@ public class ServerConnection : MonoBehaviour
 			lobby = await LobbyService.Instance.CreateLobbyAsync(lobbyName, maxPlayers, options);
 
 			createdLobbyIds.Enqueue(lobby.Id);
-
 			Debug.Log("created lobby " + lobby.Name + " with code " + lobby.LobbyCode + ", id " + lobby.Id);
-
 			heartbeatTimer.Start();
 			pollForUpdatesTimer.Start();
-
-			//await LobbyService.Instance.UpdateLobbyAsync(lobby.Id, new UpdateLobbyOptions
-			//{
-			//	Data = lobbyData
-			//});
-			networkManager.GetComponent<UnityTransport>().SetRelayServerData(new RelayServerData(alloc, connectionType));
-			networkManager.StartHost();
-			//networkManager.StartServer();
 		}
 		catch (LobbyServiceException e)
 		{
@@ -309,18 +299,16 @@ public class ServerConnection : MonoBehaviour
 		{
 			JoinLobbyByIdOptions o = new() 
 			{ 
-				Password = password, 
 				Player = new Player(id: AuthenticationService.Instance.PlayerId, data: InitializePlayerData()) 
 			};
-
+			if(password != null && password.Length > 7)
+				o.Password = password;
 			lobby = await LobbyService.Instance.JoinLobbyByIdAsync(lobbyId, o);
 
 			pollForUpdatesTimer.Start();
 
-			string relayJoinCode = lobby.Data[k_keyJoinCode].Value;
-			var joinAlloc = await JoinRelay(relayJoinCode);
-			networkManager.GetComponent<UnityTransport>().SetRelayServerData(new RelayServerData(joinAlloc, connectionType));
-			networkManager.StartClient();
+			string relayJoinCode = lobby.Data[k_relayCode].Value;
+			await JoinRelayByCode(relayJoinCode);
 		}
 		catch (Exception e)
 		{
@@ -328,6 +316,30 @@ public class ServerConnection : MonoBehaviour
 			return false;
 		}
 		return true;
+	}
+	public async Task<string> StartRelay()
+	{
+		string relayJoinCode = null;
+		try
+		{
+			networkManager.Shutdown();
+			var alloc = await HostAllocateRelay();
+			relayJoinCode = await HostGetRelayJoinCode(alloc);
+			networkManager.GetComponent<UnityTransport>().SetRelayServerData(new RelayServerData(alloc, connectionType));
+			networkManager.StartHost();
+		}
+		catch (Exception e)
+		{
+			Debug.Log(e.Message);
+		}
+		return relayJoinCode;
+	}
+	public async Task JoinRelayByCode(string relayJoinCode)
+	{
+		networkManager.Shutdown();
+		var joinAlloc = await JoinRelay(relayJoinCode);
+		networkManager.GetComponent<UnityTransport>().SetRelayServerData(new RelayServerData(joinAlloc, connectionType));
+		networkManager.StartClient();
 	}
 	async Task<Allocation> HostAllocateRelay()
 	{

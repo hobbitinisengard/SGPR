@@ -10,7 +10,16 @@ using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
 using UnityEngine;
 using UnityEngine.UI;
+[Serializable]
+public class ChatInitializer
+{
+	[Header("Chat initialization references")]
+	public Transform lobbyChatContent;
+	public Transform raceChatContent;
 
+	public TMP_InputField lobbyChatInputField;
+	public TMP_InputField raceChatInputField;
+}
 public class MultiPlayerSelector : TrackSelector
 {
 	public class IpTime
@@ -42,11 +51,8 @@ public class MultiPlayerSelector : TrackSelector
 	public CarSelector carSelector;
 	
 	public GameObject zippedTrackDataObjectPrefab;
-	
-	[Header("Chat initialization references")]
-	public GameObject chatLogicPrefab;
-	public Transform chatContent;
-	public TMP_InputField chatInputField;
+
+	public ChatInitializer chatInitializer;
 
 	Sprite originalTrackSprite;
 
@@ -56,8 +62,6 @@ public class MultiPlayerSelector : TrackSelector
 
 	[NonSerialized]
 	public ZippedTrackDataObject zippedTrackDataObject;
-
-	public event Action OnHostChanged;
 
 	protected override void Awake()
 	{
@@ -80,8 +84,9 @@ public class MultiPlayerSelector : TrackSelector
 		StartCoroutine(ResetButtons());
 		SwitchScoring(true);
 
+		dataTransferWnd.SetActive(false);
 		
-		server.PlayerMe.carNameSet(Info.Car(Info.s_playerCarName).name);
+		server.PlayerMe.carNameSet(Info.s_playerCarName);
 
 		if (server.callbacks == null)
 		{
@@ -98,6 +103,12 @@ public class MultiPlayerSelector : TrackSelector
 		if (!server.AmHost && !await IsCurrentTrackSyncedWithServerTrack())
 		{
 			RequestTrackSequence();
+		}
+
+		var ah = (ActionHappening)Enum.Parse(typeof(ActionHappening), server.lobby.Data[ServerConnection.k_actionHappening].Value);
+		if(ah == ActionHappening.InRace)
+		{
+			thisView.ToRaceScene();
 		}
 	}
 
@@ -118,11 +129,27 @@ public class MultiPlayerSelector : TrackSelector
 	private async void Callbacks_LobbyChanged(ILobbyChanges changes)
 	{
 		bool hostChanged = false;
+
+		if (changes.HostId.Changed)
+		{
+			Debug.Log(changes.HostId.Value);
+			hostChanged = true;
+		}
+
 		if (changes.Data.Changed && !server.AmHost)
 		{
-			if(changes.HostId.Value != server.lobby.HostId)
+			if(changes.Data.Value.ContainsKey(ServerConnection.k_relayCode))
 			{
-				hostChanged = true;
+				Debug.Log("reconnect to new host");
+				string newRelayJoinCode = server.lobby.Data[ServerConnection.k_relayCode].Value;
+				try
+				{
+					await server.JoinRelayByCode(newRelayJoinCode);
+				}
+				catch(Exception e)
+				{
+					Debug.Log(e.Message);
+				}
 			}
 			if (changes.Data.Value.ContainsKey(Info.k_raceConfig))
 			{
@@ -154,20 +181,22 @@ public class MultiPlayerSelector : TrackSelector
 				}
 			}
 		}
-		changes.ApplyToLobby(server.lobby);
-
-		// after updating lobby variable -------------
+		changes.ApplyToLobby(server.lobby); // from now on lobby updated 
 
 		maxCPURivals = Info.maxCarsInRace - server.lobby.Players.Count;
-
-		if(hostChanged)
+		
+		if (hostChanged)
 		{
 			if (changes.HostId.Value == AuthenticationService.Instance.PlayerId)
-			{ // we are now host
+			{ 
+				Debug.Log("We are new host");
+				server.maxPlayers = server.lobby.MaxPlayers;
+				string newRelayJoinCode = await server.StartRelay();
+				server.lobby.Data[ServerConnection.k_relayCode] = new DataObject(DataObject.VisibilityOptions.Public, newRelayJoinCode);
 				server.createdLobbyIds.Enqueue(server.lobby.Id);
 				server.heartbeatTimer.Start();
+				await server.UpdateServerData();
 			}
-			OnHostChanged.Invoke();
 		}
 	}
 	public void DecodeConfig(string data)
@@ -269,96 +298,14 @@ public class MultiPlayerSelector : TrackSelector
 	{
 		string trackName = server.lobby.Data[Info.k_trackName].Value;
 
+		UpdateInteractableButtons();
 		dataTransferText.text = "Downloading track " + trackName + " from host..";
 		dataTransferWnd.SetActive(true);
 		while (zippedTrackDataObject == null)
 			await Task.Delay(100);
 		zippedTrackDataObject.RequestTrackUpdate(trackName);
-		try
-		{
-			//Player host = server.Host;
-			//string hostIP = host.IPv4Get();
-			//// Setting IP tells the host to send us the track
-			//string myIP = await Info.MyIPv4();
-			//playerMe.IPv4Set(myIP);
-			//await server.UpdatePlayerData();
-
-			//// Show UI
-			
-
-			//// Download data from host
-			//IPEndPoint ipendPoint = new(IPAddress.Parse(hostIP), ServerConnection.basePort);
-			//Debug.Log("ReadData try" + ipendPoint.Address.ToString() + ":" + ServerConnection.basePort.ToString());
-			//byte[] data = await GetData(ipendPoint);
-
-			//// Setting IP to empty, tells the host that we have track
-			//playerMe.IPv4Set("");
-			//await server.UpdatePlayerData();
-			
-		}
-		catch (Exception e)
-		{
-			Debug.LogError("RequestTrack error:" + e.Message);
-		}
 	}
-	//public async Task SendData(IPEndPoint ipEndPoint, byte[] data)
-	//{
-	//	await Task.Run(() =>
-	//	{
-	//		Socket client = new(ipEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-	//		NetworkStream stream = new(client);
-	//		int bufferSize = 1024;
-
-	//		byte[] dataLength = BitConverter.GetBytes(data.Length);
-
-	//		stream.Write(dataLength, 0, 4);
-
-	//		int bytesSent = 0;
-	//		int bytesLeft = data.Length;
-
-	//		while (bytesLeft > 0)
-	//		{
-	//			int curDataSize = Math.Min(bufferSize, bytesLeft);
-
-	//			stream.Write(data, bytesSent, curDataSize);
-
-	//			bytesSent += curDataSize;
-	//			bytesLeft -= curDataSize;
-	//		}
-	//		Debug.Log("data sent");
-	//	});
-	//}
-	//public async Task<byte[]> GetData(IPEndPoint ipEndPoint)
-	//{
-	//	byte[] data = null;
-	//	int bytesRead = 0;
-	//	await Task.Run(() =>
-	//	{
-	//		TcpClient client = new(ipEndPoint);
-	//		NetworkStream stream = client.GetStream();
-	//		byte[] fileSizeBytes = new byte[4];
-	//		int dataLength = BitConverter.ToInt32(fileSizeBytes, 0);
-	//		int bytesLeft = dataLength;
-	//		data = new byte[dataLength];
-
-	//		int bufferSize = 1024;
-	//		bytesRead = 0;
-
-	//		while (bytesLeft > 0)
-	//		{
-	//			int curDataSize = Math.Min(bufferSize, bytesLeft);
-	//			if (client.Available < curDataSize)
-	//				curDataSize = client.Available;
-
-	//			stream.Read(data, bytesRead, curDataSize);
-
-	//			bytesRead += curDataSize;
-	//			bytesLeft -= curDataSize;
-	//		}
-	//		Debug.Log("data received");
-	//	});
-	//	return data;
-	//}
+	
 	new IEnumerator ResetButtons()
 	{
 		while(loadCo)
@@ -400,7 +347,7 @@ public class MultiPlayerSelector : TrackSelector
 			dir = shiftInputRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
 		}
 		var playerMe = server.PlayerMe;
-		playerMe.Data[Info.k_Sponsor].Value = ((Livery)Wraparound((int)playerMe.SponsorGet() + dir, 2, 7)).ToString();
+		playerMe.Data[Info.k_Sponsor].Value = ((Livery)F.Wraparound((int)playerMe.SponsorGet() + dir, 2, 7)).ToString();
 		sponsorbText.text = "Sponsor:" + playerMe.Data[Info.k_Sponsor].Value;
 	}
 	public void SwitchRandomCar(bool init = false)
@@ -540,7 +487,7 @@ public class MultiPlayerSelector : TrackSelector
 		if (!init)
 			dir = shiftInputRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
 
-		Info.scoringType = (ScoringType)Wraparound((int)Info.scoringType + dir, 0, Enum.GetNames(typeof(ScoringType)).Length - 1);
+		Info.scoringType = (ScoringType)F.Wraparound((int)Info.scoringType + dir, 0, Enum.GetNames(typeof(ScoringType)).Length - 1);
 		scoringText.text = Info.scoringType.ToString();
 
 		sponsorbText.transform.parent.gameObject.SetActive(Info.scoringType == ScoringType.Championship);

@@ -38,7 +38,7 @@ public class ResultsView : MonoBehaviour
 	Coroutine addingMedalCo;
 	bool isAddingScore;
 	float grandScoreMoving = 0;
-	public static int grandScoreFinal = 0;
+	public int grandScoreFinal = 0;
 	private void Awake()
 	{
 		gridTableTr = gridTable.GetComponent<RectTransform>();
@@ -127,17 +127,38 @@ public class ResultsView : MonoBehaviour
 	}
 	IEnumerator PayoutSeq()
 	{
-		int lapPos = GetResultPos((PersistentResult y, PersistentResult x) => { return y.lap.TotalMilliseconds.CompareTo(x.lap.TotalMilliseconds); });
+		int lapPos = GetResultPos((PersistentResult x, PersistentResult y) => { return x.lap.TotalMilliseconds.CompareTo(y.lap.TotalMilliseconds); });
 		int stuntPos = GetResultPos((PersistentResult x, PersistentResult y) => { return y.stunt.CompareTo(x.stunt); });
 		int driftPos = GetResultPos((PersistentResult x, PersistentResult y) => { return y.drift.CompareTo(x.drift); });
 		Debug.Log(string.Format("lap,stunt,drift = {0}, {1}, {2}", lapPos, stuntPos, driftPos));
-		int positionBonus = 10000 * (resultData.Length - finalPosition) / resultData.Length;
+		float positionPerc = (resultData.Length - finalPosition) / resultData.Length;
+		int positionBonus = 0;
 		int lapBonus = (lapPos <= 2) ? 5000 / lapPos : 0;
 		int stuntBonus = (int)((stuntPos <= 2) ? 5000f / stuntPos : 0);
 		int driftBonus = (int)((driftPos <= 2) ? 2500f / stuntPos : 0);
 		int aeroMeter = (int)resultData.First(r => r.name == Info.playerData.playerName).stunt;
-		grandScoreFinal = positionBonus + lapBonus + stuntBonus + driftBonus + aeroMeter;
-		
+
+		var p = Info.mpSelector.server.PlayerMe;
+		switch (Info.scoringType)
+		{
+			case ScoringType.Championship:
+				positionBonus = (int)(10000 * positionPerc);
+				grandScoreFinal = positionBonus + lapBonus + stuntBonus + driftBonus + aeroMeter;
+				break;
+			case ScoringType.Points:
+				positionBonus = (int)(10 * positionPerc);
+				grandScoreFinal = positionBonus;
+				break;
+			case ScoringType.Victory:
+				positionBonus = (int)positionPerc;
+				grandScoreFinal = (int)positionPerc;
+				break;
+			default:
+				break;
+		}
+
+		p.ScoreSet(p.ScoreGet() + grandScoreFinal);
+
 		grandScore0.SetActive(true);
 
 		medalsTable.DestroyAllChildren();
@@ -150,7 +171,7 @@ public class ResultsView : MonoBehaviour
 		medal = finalPosition switch
 		{
 			0 => goldMedals[0],
-			1 => silverMedals[0],
+			1 => (Info.scoringType == ScoringType.Victory) ? null : silverMedals[0],
 			_ => null,
 		};
 
@@ -159,58 +180,61 @@ public class ResultsView : MonoBehaviour
 
 		while (isAddingScore)
 			yield return null;
-		
-		if(lapBonus > 0)
+
+		if (Info.scoringType == ScoringType.Championship)
 		{
-			medal = lapPos switch
+			if (lapBonus > 0)
 			{
-				1 => goldMedals[1],
-				2 => silverMedals[1],
-				_ => null,
-			};
+				medal = lapPos switch
+				{
+					1 => goldMedals[1],
+					2 => silverMedals[1],
+					_ => null,
+				};
+
+				isAddingScore = true;
+				addingScoreCo = StartCoroutine(AddingScoreSeq("LAP-TIME:", lapBonus, medal));
+
+				while (isAddingScore)
+					yield return null;
+			}
+
+			if (stuntBonus > 0)
+			{
+				medal = stuntPos switch
+				{
+					1 => goldMedals[2],
+					2 => silverMedals[2],
+					_ => null,
+				};
+				isAddingScore = true;
+				addingScoreCo = StartCoroutine(AddingScoreSeq("STUNTS:", stuntBonus, medal));
+
+				while (isAddingScore)
+					yield return null;
+			}
+
+			if (driftBonus > 0)
+			{
+				medal = stuntPos switch
+				{
+					1 => goldMedals[3],
+					2 => silverMedals[3],
+					_ => null,
+				};
+				isAddingScore = true;
+				addingScoreCo = StartCoroutine(AddingScoreSeq("DRIFT:", driftBonus, medal));
+
+				while (isAddingScore)
+					yield return null;
+			}
 
 			isAddingScore = true;
-			addingScoreCo = StartCoroutine(AddingScoreSeq("LAP-TIME:", lapBonus, medal));
+			addingScoreCo = StartCoroutine(AddingScoreSeq("AEROMETER:", aeroMeter, null));
 
 			while (isAddingScore)
 				yield return null;
 		}
-
-		if (stuntBonus > 0)
-		{
-			medal = stuntPos switch
-			{
-				1 => goldMedals[2],
-				2 => silverMedals[2],
-				_ => null,
-			};
-			isAddingScore = true;
-			addingScoreCo = StartCoroutine(AddingScoreSeq("STUNTS:", stuntBonus, medal));
-
-			while (isAddingScore)
-				yield return null;
-		}
-
-		if (driftBonus > 0)
-		{
-			medal = stuntPos switch
-			{
-				1 => goldMedals[3],
-				2 => silverMedals[3],
-				_ => null,
-			};
-			isAddingScore = true;
-			addingScoreCo = StartCoroutine(AddingScoreSeq("DRIFT:", driftBonus, medal));
-
-			while (isAddingScore)
-				yield return null;
-		}
-
-		isAddingScore = true;
-		addingScoreCo = StartCoroutine(AddingScoreSeq("AEROMETER:", aeroMeter, null));
-
-		while (isAddingScore)
-			yield return null;
 
 		addingScore.SetActive(false);
 		grandScore0.SetActive(false);

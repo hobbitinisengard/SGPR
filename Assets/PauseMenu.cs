@@ -8,6 +8,7 @@ public class PauseMenu : Sfxable
 	public SGP_HUD hud;
 	public Button firstButton;
 	public GameObject restartButton;
+	public GameObject endButton;
 	public GameObject steerGamma;
 	public Image veil;
 	public AudioMixer mainMixer;
@@ -43,6 +44,7 @@ public class PauseMenu : Sfxable
 		paused.TransitionTo(0);
 		timeElapsed = 0;
 		restartButton.SetActive(Info.raceStartDate != DateTime.MinValue);
+		endButton.SetActive(Info.gameMode == MultiMode.Multiplayer && !Info.mpSelector.server.AmHost);
 		startColor = veil.color;
 		firstButton.Select();
 		PlaySFX("menublip2", true);

@@ -128,7 +128,7 @@ namespace RVP
 				return;
 			isCPU = val;
 			selfDriving = val;
-			vp.basicInput.enabled = !isCPU;
+			vp.basicInput.enabled = Info.raceManager.playerCar == vp;
 			//if (isCPU)
 			//{
 			//	vp.basicInput.enabled = false;
@@ -170,26 +170,22 @@ namespace RVP
 			//	}
 			//}
 		}
-		public void AssignPath(in PathCreator racingLinePath, in PathCreator universalPath,
-			ref List<int> stuntpointsContainer, ref List<ReplayCamStruct> replayCams, int racingLineLayerNumber)
-		{
-			this.universalPath = universalPath;
-			this.racingLineLayerNumber = racingLineLayerNumber;
-			this.stuntPoints = stuntpointsContainer;
-			this.replayCams = replayCams;
-			trackPathCreator = racingLinePath;
-			this.enabled = true;
-		}
 		private void Awake()
 		{
 			tr = transform;
 			rb = GetComponent<Rigidbody>();
 			vp = GetComponent<VehicleParent>();
+			this.universalPath = Info.universalPath;
+			this.racingLineLayerNumber = Info.racingLineLayer;
+			this.stuntPoints = Info.stuntpointsContainer;
+			this.replayCams = Info.replayCams;
+			trackPathCreator = Info.universalPath;
+			this.enabled = true;
 		}
 		private void OnEnable()
 		{
 			maxPhysicalSteerAngle = vp.steeringControl.steeredWheels[0].steerRangeMax;
-			universalPathLayer = Info.racingLineLayers[0];
+			universalPathLayer = Info.racingLineLayer;
 			
 			dist = GetDist(1 << racingLineLayerNumber);
 			progress = dist;
@@ -237,19 +233,16 @@ namespace RVP
 		{
 			if (pitsProgress > 0)
 			{
-				vp.raceBox.raceManager.hud.AddMessage(new Message(vp.name + " RETURNS ON TRACK!", BottomInfoType.PIT_OUT));
+				Info.raceManager.hud.infoText.AddMessage(new Message(vp.name + " RETURNS ON TRACK!", BottomInfoType.PIT_OUT));
 				speedLimit = 1024;
 				speedLimitDist = -1;
-				progress = dist;
+				progress = GetDist(1 << racingLineLayerNumber);
 				if (pitsPathCreator)
 					pitsProgress = pitsPathCreator.path.length;
 				pitsPathCreator = null;
 				searchForPits = false;
-				if (!isCPU)
-				{
-					selfDriving = false;
-					vp.basicInput.enabled = true;
-				}
+				selfDriving = isCPU;
+				vp.basicInput.enabled = Info.raceManager.playerCar == vp;
 			}
 		}
 		IEnumerator RevvingCoroutine()
@@ -260,7 +253,6 @@ namespace RVP
 			
 			while (vp.countdownTimer > 0)
 			{
-				
 				if (vp.countdownTimer < 0.5f)
 					vp.SetAccel(1);
 				else
@@ -531,15 +523,20 @@ namespace RVP
 					if(aiStuntingProc)
 					{
 						targetDir = F.Flat((Vector3)tPos2 - transform.position);
+						targetSteer = Vector2.SignedAngle(targetDir, F.Flat(tr.forward));
 					}
 					else
+					{
 						targetDir = F.Flat((Vector3)tPos - transform.position);
-					
-					// degrees between car and target
-					targetSteer = Vector2.SignedAngle(targetDir, F.Flat(tr.forward));
+						var targetDir2 = F.Flat((Vector3)tPos2 - transform.position);
+						targetDir = Vector3.Lerp(targetDir2, targetDir, Vector3.Distance(vp.tr.position, (Vector3)tPos) / Info.racingPathResolution);
+						targetSteer = Vector2.SignedAngle(targetDir, F.Flat(tr.forward));
+					}
 
 					if (!aiStuntingProc)
-						vp.SetSGPShift(targetSteer > 30);
+						vp.SetSGPShift(targetSteer > 45);
+
+					//Debug.DrawRay(vp.tr.position + 3*Vector3.up, targetDir, Color.red);
 
 					targetSteer = F.Sign(targetSteer) * Mathf.InverseLerp(0, maxPhysicalSteerAngle, Mathf.Abs(targetSteer));
 					targetSteer = Mathf.Lerp(vp.steerInput, targetSteer, cpuSmoothCoeff * Time.fixedDeltaTime);
@@ -609,6 +606,8 @@ namespace RVP
 			stoppedTime = 0;
 			if (progress == 0 || !trackPathCreator)
 				yield break;
+
+			progress += 15;
 			Vector3 resetPos = trackPathCreator.path.GetPointAtDistance(progress);
 			RaycastHit h;
 			while (!Physics.Raycast(resetPos + 5*Vector3.up, Vector3.down, out h, Mathf.Infinity, 1 << Info.roadLayer)

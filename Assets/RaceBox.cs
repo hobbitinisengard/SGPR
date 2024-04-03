@@ -73,8 +73,6 @@ public enum StuntSeqStatus { None, Ongoing, Ended };
 
 public class RaceBox : MonoBehaviour
 {
-	[NonSerialized]
-	public RaceManager raceManager;
 	public VehicleParent vp { get; private set; }
 	public SGP_Evo evoModule { get; private set; }
 	public float distance { get; private set; }
@@ -206,9 +204,13 @@ public class RaceBox : MonoBehaviour
 				return "-";
 		}
 	}
-
+	/// <summary>
+	/// disabling raceBox means the race has ended for this car
+	/// </summary>
 	private void OnDisable()
 	{
+		GoToGhostDrive();
+
 		if(Info.s_raceType == RaceType.Drift)
 		{
 			var drift = stuntsData.driftData;
@@ -634,7 +636,7 @@ public class RaceBox : MonoBehaviour
 	}
 	void DeclineStunt()
 	{
-		Debug.Log(vp.tr.name + " Decline");
+		//Debug.Log(vp.tr.name + " Decline");
 		stableLandingTimer = -1;
 		prevStuntPai = null;
 		StuntPaiReset();
@@ -799,21 +801,20 @@ public class RaceBox : MonoBehaviour
 				if (bestLapTime > curlaptime)
 					bestLapTime = curlaptime.Value;
 
-				if (!vp.followAI.isCPU && bestLapTime < vp.raceBox.raceManager.hud.bestLapTime)
+				if (!vp.followAI.isCPU && bestLapTime < Info.raceManager.hud.bestLapTime)
 				{
-					vp.raceBox.raceManager.hud.bestLapTime = bestLapTime;
-					raceManager.hud.lapRecordSeq.gameObject.SetActive(true);
+					Info.raceManager.hud.bestLapTime = bestLapTime;
+					Info.raceManager.hud.lapRecordSeq.gameObject.SetActive(true);
 				}
 			}
 			if (curLap <= Info.s_laps)
 				curLap++;
-			if (Info.s_raceType == RaceType.Knockout && curLap > 1 && raceManager.Position(vp) + 1 == raceManager.ActiveCarsInKnockout)
+			if (Info.s_raceType == RaceType.Knockout && curLap > 1 && Info.raceManager.Position(vp) + 1 == Info.raceManager.ActiveCarsInKnockout)
 			{ // last car is knocked-out
-				raceManager.KnockOutLastCar();
+				Info.raceManager.KnockOutLastCar();
 			}
 			if (curLap == Info.s_laps + 1) // race finished
 			{
-				GoToGhostDrive();
 				enabled = false;
 			}
 		}
@@ -827,10 +828,10 @@ public class RaceBox : MonoBehaviour
 	/// </summary>
 	public void GoToGhostDrive()
 	{
-		int curPos = raceManager.Position(vp);
+		int curPos = Info.raceManager.Position(vp);
 		if (curPos == 1)
 		{
-			raceManager.hud.AddMessage(new(vp.tr.name + " WINS THE RACE!", BottomInfoType.CAR_WINS));
+			Info.raceManager.hud.infoText.AddMessage(new(vp.tr.name + " WINS THE RACE!", BottomInfoType.CAR_WINS));
 		}
 		// in racemode after the end of a race, cars still run around the track, ghosts overtake each other. Don't let it change results
 		curLap += 100 * (Info.s_cpuRivals + 1 - curPos);

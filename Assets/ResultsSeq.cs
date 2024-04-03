@@ -17,7 +17,7 @@ public class ResultsSeq : MonoBehaviour
 	public TextMeshProUGUI bottomBoxLabel;
 	public Image dimmer;
 	//AnimationCurve pulseCurve;
-	Color yellowDark = new Color(0.3607f, 0.3607f, 0);
+	Color yellowDark = new (0.3607f, 0.3607f, 0);
 	string[] rightBoxLabels = new string[] { "BEST LAP", "RACE TIME", "AEROMILES", "DRIFT POINTS"};
 	int rightBoxLabelInt = 0;
 	Coroutine seq, dimCo,showResultCo, showTableCo;
@@ -131,8 +131,6 @@ public class ResultsSeq : MonoBehaviour
 				timer = 8;
 				if (audioSource != null)
 					audioSource.Stop();
-
-				yield return null;
 			}
 
 			if (timer > 8 && timer < 12)
@@ -140,7 +138,7 @@ public class ResultsSeq : MonoBehaviour
 				if (submitFlag)
 				{
 					submitFlag = false;
-					timer = 11.5f;
+					timer = 12;
 				}
 				showResultCo ??= StartCoroutine(ShowResult());
 			}
