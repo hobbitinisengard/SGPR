@@ -359,10 +359,12 @@ namespace RVP
 		}
 		void Start()
 		{
-			if(Info.gameMode == MultiMode.Multiplayer)
+			if (Info.gameMode == MultiMode.Multiplayer)
 			{
 				gameObject.AddComponent<NetworkRigidbody>();
 			}
+			rb.isKinematic = false;
+
 			brakeCurve ??= GenerateBrakeCurve();
 
 			// Create normal orientation object

@@ -54,6 +54,8 @@ MonoBehaviour:
     type: 3}
   rollInput: {fileID: 829368960328131969, guid: 72cc30aa17c8b9249b1e17052dd5f7ae,
     type: 3}
+  resetOnTrackInput: {fileID: 3450155607286397023, guid: 72cc30aa17c8b9249b1e17052dd5f7ae,
+    type: 3}
   upshiftButton: Upshift
   downshiftButton: Downshift
   lightsButton: Lights

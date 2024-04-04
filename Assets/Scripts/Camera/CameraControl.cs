@@ -182,7 +182,7 @@ namespace RVP
 		}
 		private void SwitchTarget(InputAction.CallbackContext context)
 		{
-			if (vp && Info.raceManager.playerCar?.raceBox.enabled == false)
+			if (vp && Info.raceManager.playerCar?.raceBox.enabled == false && !Info.chat.texting)
 			{
 				Vector2 move = moveRef.action.ReadValue<Vector2>();
 				if(Mathf.Abs(move.x) > 0.5f)
@@ -254,8 +254,11 @@ namespace RVP
 				forward = (vp.reallyGroundedWheels > 0)
 				 ? vp.tr.forward : vp.rb.velocity.normalized;
 
-			xInput = vp.basicInput.lookAxisInput.action.ReadValue<float>();
-			yInput = -vp.basicInput.lookBackInput.action.ReadValue<float>();
+			if(!Info.chat.texting)
+			{
+				xInput = vp.basicInput.lookAxisInput.action.ReadValue<float>();
+				yInput = -vp.basicInput.lookBackInput.action.ReadValue<float>();
+			}
 
 			smoothYRot = Mathf.Lerp(smoothYRot, smoothRotCoeff * vp.rb.angularVelocity.y, Time.fixedDeltaTime);
 			forward = Quaternion.AngleAxis(xInput * 90 + yInput * 180, vp.tr.up) * forward;

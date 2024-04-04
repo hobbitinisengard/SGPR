@@ -39,7 +39,8 @@ public class PauseMenu : Sfxable
 	private void OnEnable()
 	{
 		steerGamma.SetActive(Info.controllerInUse);
-		Time.timeScale = 0;
+		if(Info.gameMode == MultiMode.Singleplayer)
+			Time.timeScale = 0;
 		Info.gamePaused = true;
 		paused.TransitionTo(0);
 		timeElapsed = 0;

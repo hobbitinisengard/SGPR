@@ -120,24 +120,34 @@ namespace RVP
 		}
 		public void BackToMenu(bool applyScoring)
 		{
+			//if (Info.s_cars.Count < 2)
+			//	applyScoring = false;
+
 			//foreach (var c in Info.s_cars)
 			//	Destroy(c.gameObject);
 			//Info.s_cars.Clear();
 
-			if(applyScoring && Info.gameMode == MultiMode.Multiplayer)
+			if(Info.gameMode == MultiMode.Multiplayer)
 			{
-				var rd = new ResultsView.PersistentResult[Info.s_cars.Count];
-				for(int i=0; i<Info.s_cars.Count; ++i)
+				Info.actionHappening = ActionHappening.InLobby;
+				Info.mpSelector.server.lobby.Data[ServerConnection.k_actionHappening] = new DataObject(DataObject.VisibilityOptions.Public, Info.actionHappening.ToString());
+				if(applyScoring)
 				{
-					rd[i] = new ResultsView.PersistentResult()
+					Debug.Assert(Info.s_cars.Count > 0);
+					var rd = new ResultsView.PersistentResult[Info.s_cars.Count];
+					for (int i = 0; i < Info.s_cars.Count; ++i)
 					{
-						drift = Info.s_cars[i].raceBox.drift,
-						lap = Info.s_cars[i].raceBox.bestLapTime,
-						stunt = Info.s_cars[i].raceBox.Aero,
-						name = Info.s_cars[i].transform.name,
-					};
+						rd[i] = new ResultsView.PersistentResult()
+						{
+							drift = Info.s_cars[i].raceBox.drift,
+							lap = Info.s_cars[i].raceBox.bestLapTime,
+							stunt = Info.s_cars[i].raceBox.Aero,
+							name = Info.s_cars[i].transform.name,
+						};
+					}
+					ResultsView.resultData = rd;
 				}
-				ResultsView.resultData = rd;
+				
 			}
 			viewSwitcher.PlayDimmerToMenu(applyScoring);
 		}
@@ -157,7 +167,7 @@ namespace RVP
 			}
 		}
 		public void VoteForEndButton()
-		{ // vote for end button is only visible in multiplayer game
+		{
 			if(voting != null)
 				voting.VoteForEnd();
 		}
@@ -168,7 +178,7 @@ namespace RVP
 				return;
 
 			if (Info.gameMode == MultiMode.Multiplayer && Info.mpSelector.server.AmHost)
-				voting.VoteForEnd(); // send signal to everyone that race ended
+				voting.VoteForEnd(); // host's decision is immediate
 
 			musicPlayer.Stop();
 			countDownSeq.gameObject.SetActive(false);

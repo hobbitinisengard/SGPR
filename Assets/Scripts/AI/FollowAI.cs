@@ -54,14 +54,14 @@ namespace RVP
 		public float forwardTargetDot;
 		public float tSpeed;
 		public float lookAheadBase = 15;
-		public float radius = 30;
+		float radius = 30;
 		private Vector4 tPos0;
 		public int curWaypointIdx;
 		public float stoppedTime;
 		public float reverseTime;
 		public float brakeTime;
-		public int progress;
-		public float pitsProgress;
+		public int progress = 0;
+		public float pitsProgress = 0;
 		public int dist = 0;
 		public float speedLimit = 999;
 		public float speedLimitDist = 0;
@@ -307,7 +307,6 @@ namespace RVP
 					}
 				}
 			}
-			
 
 			Collider[] pitsPathHits;
 			float pitsDist = 0;
@@ -345,7 +344,6 @@ namespace RVP
 					}
 				}
 				dist = GetDist(1 << racingLineLayerNumber);
-
 
 				if (dist < progress)
 					dist = progress;

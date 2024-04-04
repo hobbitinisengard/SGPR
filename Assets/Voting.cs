@@ -114,7 +114,7 @@ public class Voting : NetworkBehaviour
 		Info.raceManager.StartRace();
 	}
 
-	[Rpc(SendTo.Everyone)]
+	[Rpc(SendTo.NotMe)]
 	void VoteForEndPassedRpc()
 	{
 		Info.raceManager.BackToMenu(applyScoring:false);

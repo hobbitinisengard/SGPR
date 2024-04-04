@@ -10,6 +10,7 @@ using UnityEngine;
 using UnityEngine.Audio;
 using System.Security.Cryptography;
 using PathCreation;
+using UnityEngine.EventSystems;
 public enum Envir { GER, JAP, SPN, FRA, ENG, USA, ITA, MEX };
 public enum CarGroup { Wild, Aero, Speed, Team };
 public enum Livery { Special = 1, TGR, Rline, Itex, Caltex, Titan, Mysuko }
@@ -348,12 +349,20 @@ public static class Info
 	}
 
 	public static List<LobbyRelayId> ActivePlayers = new();
-	
+	public static EventSystem eventSystem;
 
 	public static Car Car(string name)
 	{ // i.e. car05
-		int i = int.Parse(name[3..]);
-		return cars[i - 1];
+		try
+		{
+			int i = int.Parse(name[3..]);
+			return cars[i - 1];
+		}
+		catch
+		{
+			Debug.Log(name);
+			return cars[0];
+		}
 	}
 	public static void ReloadCarPartsData()
 	{

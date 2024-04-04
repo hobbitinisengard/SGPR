@@ -39,9 +39,10 @@ public class ServerConnection : MonoBehaviour
 
 	string k_dtlsEncryption = "dtls";
 	string k_udpEncryption = "udp";
-	public LobbyEventCallbacks callbacks;
+	public LobbyEventCallbacks callbacks = new();
+	string callbacksLobbyId = "";
 	public ConcurrentQueue<string> createdLobbyIds = new ();
-	public Lobby lobby { get; private set; }
+	public Lobby lobby;
 	public CountdownTimer heartbeatTimer = new(lobbyHeartbeatInterval);
 	CountdownTimer pollForUpdatesTimer = new(lobbyPollInterval);
 	private void Awake()
@@ -57,6 +58,13 @@ public class ServerConnection : MonoBehaviour
 			pollForUpdatesTimer.Start();
 		};
 	}
+	public int readyPlayers
+	{
+		get 
+		{
+			return lobby.Players.Count(p => p.ReadyGet() == true); 
+		}
+	}
 	private async void Start()
 	{
 		await Authenticate();
@@ -70,13 +78,19 @@ public class ServerConnection : MonoBehaviour
 	{
 		DeleteLobby();
 	}
+	public async void AddCallbacksToLobby()
+	{
+		if(callbacksLobbyId != lobby.Id)
+		{
+			callbacksLobbyId = lobby.Id;
+			await Lobbies.Instance.SubscribeToLobbyEventsAsync(lobby.Id, callbacks);
+		}
+	}
 	public async void DisconnectFromLobby()
 	{
 		if (lobby == null)
 			return;
-
-		callbacks = null;
-		Info.mpSelector = null;
+		
 		DeleteLobby();
 		heartbeatTimer.Pause();
 		pollForUpdatesTimer.Pause();
@@ -90,7 +104,7 @@ public class ServerConnection : MonoBehaviour
 			{
 				Info.k_carName, new PlayerDataObject(
 					visibility: PlayerDataObject.VisibilityOptions.Member,
-					value: Info.cars[Random.Range(0,Info.cars.Length)].name)
+					value: "car01")
 			},
 			{
 				Info.k_Name, new PlayerDataObject(
@@ -123,7 +137,6 @@ public class ServerConnection : MonoBehaviour
 	
 	void DeleteLobby()
 	{
-		Debug.Log("try deleting lobbies..");
 		while (createdLobbyIds.TryDequeue(out var lobbyId))
 		{
 			if(lobby.Players.Count == 1)

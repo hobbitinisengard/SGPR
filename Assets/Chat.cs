@@ -20,26 +20,30 @@ public class Chat : NetworkBehaviour
 
 	ServerConnection server;
 	[NonSerialized]
-	public Transform[] contents;
+	public Transform[] contents = new Transform[2];
 	[NonSerialized]
-	public TMP_InputField[] inputFields;
+	public TMP_InputField[] inputFields = new TMP_InputField[2];
 
 	public InputActionReference chatButtonInput;
-	int rows = 7;
+
+	public bool texting { get; private set; }
+	const int rows = 7;
 	Coroutine showChatCo;
 	// Chat is in-scene placed
 	public override void OnNetworkSpawn()
 	{
-		base.OnNetworkSpawn();
+		
 		StartCoroutine(Initialize());
 
 		Info.ActivePlayers.Add(new LobbyRelayId { 
 			playerLobbyId = AuthenticationService.Instance.PlayerId, 
 			playerRelayId =  NetworkManager.LocalClientId
 		});
+		base.OnNetworkSpawn();
 	}
 	public override void OnNetworkDespawn()
 	{
+		SetVisibility(false);
 		Info.ActivePlayers.Remove(Info.ActivePlayers.First(ap => ap.playerLobbyId == AuthenticationService.Instance.PlayerId));
 
 		base.OnNetworkDespawn();
@@ -55,6 +59,7 @@ public class Chat : NetworkBehaviour
 		while (Info.mpSelector == null)
 			yield return null;
 
+		
 		chatButtonInput.action.performed += buttonPressed;
 		server = Info.mpSelector.server;
 		inputFields[0] = Info.mpSelector.chatInitializer.lobbyChatInputField;
@@ -63,47 +68,71 @@ public class Chat : NetworkBehaviour
 		contents[0] = Info.mpSelector.chatInitializer.lobbyChatContent;
 		contents[1] = Info.mpSelector.chatInitializer.raceChatContent;
 
+		SetVisibility(false);
+
 		Info.mpSelector.server.callbacks.PlayerLeft += Callbacks_PlayerLeft;
 		Info.mpSelector.server.callbacks.PlayerJoined += Callbacks_PlayerJoined;
 		Info.chat = this;
 
 		foreach (var i in inputFields)
 		{
-			i.onSelect.AddListener(s => { Info.mpSelector.EnableSelectionOfTracks(false); });
-			i.onDeselect.AddListener(s => { Info.mpSelector.EnableSelectionOfTracks(server.AmHost && !server.PlayerMe.ReadyGet()); });
+			i.onSelect.AddListener(s => { texting = true;  Info.mpSelector.EnableSelectionOfTracks(false); });
+			i.onDeselect.AddListener(s => { texting = false; Info.mpSelector.EnableSelectionOfTracks(server.AmHost && !server.PlayerMe.ReadyGet()); });
 			i.onSubmit.AddListener(s =>
 			{
+				if (showChatCo != null)
+					StopCoroutine(showChatCo);
+				showChatCo = StartCoroutine(HideRaceChatAfterSeconds(10));
+
 				if (s.Length > 0)
 				{
 					AddChatRow(server.PlayerMe, s);
 					
 					i.text = "";
-					i.Select();
+					if(Info.actionHappening == ActionHappening.InRace)
+					{
+						F.Deselect();
+						inputFields[1].gameObject.SetActive(false);
+					}
 				}
 			});
 		}
-		Player p = server.lobby.Players.First(p => p.Id == server.lobby.HostId);
-		AddChatRowRpc(p.NameGet(), "is hosting now", p.ReadColor(), Color.gray, RpcTarget.Me);
 	}
-
+	void SetVisibility(bool enabled)
+	{
+		inputFields[1].gameObject.SetActive(enabled);
+		contents[1].gameObject.SetActive(enabled);
+	}
 	private void buttonPressed(InputAction.CallbackContext obj)
 	{
-		StopCoroutine(showChatCo);
-		contents[1].gameObject.SetActive(contents[1].gameObject.activeSelf);
+		StartCoroutine(ButtonPressedSeq());
+	}
+	IEnumerator ButtonPressedSeq()
+	{
+		if (showChatCo != null)
+			StopCoroutine(showChatCo);
+
+		SetVisibility(true);
+
+		yield return null;
+
+		if (Info.actionHappening == ActionHappening.InRace)
+			inputFields[1].Select();
 	}
 
-	IEnumerator HideRaceChatAfter5Seconds()
+	IEnumerator HideRaceChatAfterSeconds(float timer)
 	{
-		float timer = 5;
-		contents[1].gameObject.SetActive(true);
+		SetVisibility(true);
 
-		while(timer > 0)
+		while (timer > 0)
 		{
-			timer -= Time.fixedDeltaTime;
+			Debug.Log(timer);
+			timer -= Time.deltaTime;
 			yield return null;
 		}
-		contents[1].gameObject.SetActive(false);
+		SetVisibility(false);
 	}
+		
 	public void Callbacks_PlayerJoined(List<LobbyPlayerJoined> newPlayers)
 	{
 		foreach (var p in newPlayers)
@@ -125,9 +154,7 @@ public class Chat : NetworkBehaviour
 	[Rpc(SendTo.Everyone, AllowTargetOverride = true)]
 	public void AddChatRowRpc(string name, string message, Color colorA, Color colorB, RpcParams rpcParams)
 	{
-		if (showChatCo != null)
-			StopCoroutine(showChatCo);
-		showChatCo = StartCoroutine(HideRaceChatAfter5Seconds());
+		
 
 		if (contents[0].childCount == rows)
 		{

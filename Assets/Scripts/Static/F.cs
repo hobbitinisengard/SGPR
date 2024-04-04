@@ -256,6 +256,9 @@ public static class F
 		return Mathf.Sqrt(Mathf.Pow(a.x - b.x, 2) + Mathf.Pow(a.z - b.z, 2));
 	}
 
-
+	internal static void Deselect()
+	{
+		Info.eventSystem.SetSelectedGameObject(null);
+	}
 #endif
 }

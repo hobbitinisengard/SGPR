@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using TMPro;
 using Unity.Netcode;
@@ -56,7 +57,6 @@ public class MultiPlayerSelector : TrackSelector
 
 	Sprite originalTrackSprite;
 
-	bool canStartRace = false;
 	float readyTimeoutTime;
 	bool readyClicked = false;
 
@@ -76,11 +76,15 @@ public class MultiPlayerSelector : TrackSelector
 				carSelector.SetType(GarageType.Unlocked);
 			}
 		});
+
+		server.callbacks.LobbyChanged += Callbacks_LobbyChanged;
+		server.callbacks.PlayerJoined += Callbacks_PlayerJoined;
+		server.callbacks.PlayerLeft += Callbacks_PlayerLeft;
+		server.callbacks.PlayerDataChanged += Callbacks_PlayerDataChanged;
 	}
 
 	protected override async void OnEnable()
 	{
-		base.OnEnable();
 		StartCoroutine(ResetButtons());
 		SwitchScoring(true);
 
@@ -88,17 +92,7 @@ public class MultiPlayerSelector : TrackSelector
 		
 		server.PlayerMe.carNameSet(Info.s_playerCarName);
 
-		if (server.callbacks == null)
-		{
-			server.callbacks = new();
-			server.callbacks.LobbyChanged += Callbacks_LobbyChanged;
-			server.callbacks.PlayerJoined += Callbacks_PlayerJoined;
-			server.callbacks.PlayerLeft += Callbacks_PlayerLeft;
-			server.callbacks.PlayerDataChanged += Callbacks_PlayerDataChanged;
-			await Lobbies.Instance.SubscribeToLobbyEventsAsync(server.lobby.Id, server.callbacks);
-		}
-
-		Info.mpSelector = this;
+		server.AddCallbacksToLobby();
 
 		if (!server.AmHost && !await IsCurrentTrackSyncedWithServerTrack())
 		{
@@ -110,8 +104,8 @@ public class MultiPlayerSelector : TrackSelector
 		{
 			thisView.ToRaceScene();
 		}
+		base.OnEnable();
 	}
-
 	public async void ZippedTrackDataObject_OnNewTrackArrived()
 	{
 		Debug.Log("ZippedTrackDataObject_OnNewTrackArrived()");
@@ -177,14 +171,29 @@ public class MultiPlayerSelector : TrackSelector
 				if (ah != Info.actionHappening)
 				{
 					if (ah == ActionHappening.InRace)
+					{
 						thisView.ToRaceScene();
+						server.PlayerMe.ReadySet(false);
+						await server.UpdatePlayerData();
+					}
 				}
 			}
 		}
 		changes.ApplyToLobby(server.lobby); // from now on lobby updated 
 
 		maxCPURivals = Info.maxCarsInRace - server.lobby.Players.Count;
-		
+
+		UpdateInteractableButtons();
+
+		if (server.AmHost && server.readyPlayers == server.lobby.Players.Count)
+		{
+			readyText.text = "START RACE";
+		}
+		else
+		{
+			readyText.text = server.PlayerMe.ReadyGet() ? "NOT READY" : "READY";
+		}
+
 		if (hostChanged)
 		{
 			if (changes.HostId.Value == AuthenticationService.Instance.PlayerId)
@@ -240,43 +249,8 @@ public class MultiPlayerSelector : TrackSelector
 	}
 	private void Callbacks_PlayerDataChanged(Dictionary<int, Dictionary<string, ChangedOrRemovedLobbyValue<PlayerDataObject>>> playerDatas)
 	{
-		int readyPlayers = 0;
-		bool anyChanged = false;
-		foreach (var pData in playerDatas)
-		{
-			var dataChanged = pData.Value;
-			foreach (var kv in dataChanged)
-			{
-				if (kv.Value.Changed)
-				{
-					switch (kv.Key)
-					{
-						case Info.k_Ready:
-							anyChanged = true;
-							if (kv.Value.Value.Value == "true")
-								readyPlayers++;
-							break;
-						default:
-							anyChanged = true;
-							break;
-					}
-				}
-			}
-		}
-		if (anyChanged)
-			leaderboard.Refresh();
-
-		if (server.lobby.Players.Count >= 2 && readyPlayers == server.lobby.Players.Count 
-			&& server.AmHost && server.PlayerMe.ReadyGet())
-		{
-			canStartRace = true;
-			readyText.text = "START RACE";
-		}
-		else
-		{
-			canStartRace = false;
-			readyText.text = server.AmHost ? "HOST READY" : "READY";
-		}
+		leaderboard.Refresh();
+		
 	}
 	//async Task SendTrackToPlayer(string ipv4)
 	//{
@@ -316,7 +290,6 @@ public class MultiPlayerSelector : TrackSelector
 		SwitchReady(true);
 		SwitchScoring(true);
 		SwitchRandomCar(true);
-		SwitchRandomTrack(true);
 		SwitchRandomTrack(true);
 		UpdateInteractableButtons();
 	}
@@ -359,9 +332,8 @@ public class MultiPlayerSelector : TrackSelector
 		if(Info.randomCars)
 		{ 
 			int randomNr = UnityEngine.Random.Range(0, Info.cars.Length);
-			var carName = Info.cars[randomNr].name;
 			Info.s_playerCarName = "car" + (randomNr + 1).ToString("D2");
-			server.PlayerMe.carNameSet(carName);
+			server.PlayerMe.carNameSet(Info.s_playerCarName);
 		}
 		randomCarsText.text = "Cars:" + (Info.randomCars ? "Random" : "Select");
 		garageBtn.interactable = !Info.randomCars;
@@ -372,7 +344,8 @@ public class MultiPlayerSelector : TrackSelector
 		{
 			Info.randomTracks = !Info.randomTracks;
 		}
-
+		if (selectedTrack == null)
+			return;
 		var img = selectedTrack.GetComponent<Image>();
 		if (Info.randomTracks == true)
 		{
@@ -412,11 +385,11 @@ public class MultiPlayerSelector : TrackSelector
 	}
 	public async void SwitchReady(bool init = false)
 	{
-		if (canStartRace && server.AmHost)
+		if (!init && server.readyPlayers == server.lobby.Players.Count && server.AmHost)
 		{
 			Info.actionHappening = ActionHappening.InRace;
+			server.lobby.Data[ServerConnection.k_actionHappening] = new DataObject(DataObject.VisibilityOptions.Public, Info.actionHappening.ToString());
 			await server.UpdateServerData();
-			
 			thisView.ToRaceScene();
 		}
 		else
@@ -477,7 +450,8 @@ public class MultiPlayerSelector : TrackSelector
 			Debug.Log("Ready switch failed: " + e.Message);
 		}
 		UpdateInteractableButtons();
-		readyText.text = server.AmHost ? "HOST READY" : "READY";
+		readyText.text = (server.AmHost && server.readyPlayers == server.lobby.Players.Count) ? "START RACE" : 
+			((server.AmHost ? "HOST" : "") + (amReady ? " NOT READY" : "READY"));
 		leaderboard.Refresh();
 		readyClicked = false;
 	}
