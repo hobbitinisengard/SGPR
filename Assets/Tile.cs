@@ -29,7 +29,7 @@ public class Tile : MonoBehaviour
 		{
 			for (int i = 0; i < lightObj.transform.childCount; ++i)
 			{
-				lightObj.transform.GetChild(i).gameObject.SetActive(Info.s_isNight);
+				lightObj.transform.GetChild(i).gameObject.SetActive(F.I.s_isNight);
 			}
 		}
 	}
@@ -71,10 +71,10 @@ public class Tile : MonoBehaviour
 		}
 		mc.enabled = true;
 
-		if(Info.s_roadType != PavementType.Highway)
+		if(F.I.s_roadType != PavementType.Highway)
 		{
 			var mr = mc.transform.GetComponent<MeshRenderer>();
-			string replacementStr = "0" + ((int)Info.s_roadType).ToString();
+			string replacementStr = "0" + ((int)F.I.s_roadType).ToString();
 			var materials = mr.materials;
 			for (int i = 0; i < materials.Length; ++i)
 			{
@@ -96,7 +96,7 @@ public class Tile : MonoBehaviour
 			rb.useGravity = false;
 			rb.isKinematic = true;
 			connector.AddComponent<Connector>();
-			connector.layer = Info.connectorLayer;
+			connector.layer = F.I.connectorLayer;
 			var mf = connector.AddComponent<MeshFilter>();
 			var mr = connector.AddComponent<MeshRenderer>();
 			mf.mesh = Resources.Load<Mesh>("sphere");
@@ -108,7 +108,7 @@ public class Tile : MonoBehaviour
 	internal void SetPlaced()
 	{
 		placed = true;
-		mc.gameObject.layer = Info.roadLayer;
+		mc.gameObject.layer = F.I.roadLayer;
 		if (name.Contains("dirt")) //= mud
 			mc.gameObject.AddComponent<GroundSurfaceInstance>().surfaceType = 1;
 		else if (name.Contains("sand")) // =dust

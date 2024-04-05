@@ -27,7 +27,7 @@ public class LeaderBoardTable : MonoBehaviour
 			players[i] = server.lobby.Players[i];
 
 		// Team scoring
-		if (Info.scoringType == ScoringType.Championship)
+		if (F.I.scoringType == ScoringType.Championship)
 		{
 			List<SponsorScore> scores = new();
 
@@ -82,8 +82,8 @@ public class LeaderBoardTable : MonoBehaviour
 		newRow.GetChild(0).GetChild(0).GetComponent<Image>().color = player.ReadyGet() ? Color.green : Color.yellow;
 		newRow.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>().text = player.NameGet();
 		newRow.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>().color = player.ReadColor();
-		newRow.GetChild(1).GetComponent<TextMeshProUGUI>().text = Info.randomCars ? "*random*" : Info.Car(player.carNameGet()).name;
-		newRow.GetChild(2).GetComponent<TextMeshProUGUI>().text = ((Info.scoringType == ScoringType.Championship) ? "$ " : "") + player.ScoreGet().ToString();
+		newRow.GetChild(1).GetComponent<TextMeshProUGUI>().text = F.I.randomCars ? "*random*" : F.I.Car(player.carNameGet()).name;
+		newRow.GetChild(2).GetComponent<TextMeshProUGUI>().text = ((F.I.scoringType == ScoringType.Championship) ? "$ " : "") + player.ScoreGet().ToString();
 	}
 }
 

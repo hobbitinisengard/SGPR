@@ -13,7 +13,7 @@ public class Sfxable : MonoBehaviour
 		var snd = Resources.Load<GameObject>("sfx/SoundInstance");
 		var go = Instantiate(snd, mainCameraObj.transform);
 		var audioSource = go.GetComponent<AudioSource>();
-		audioSource.clip = Info.audioClips[name];
+		audioSource.clip = F.I.audioClips[name];
 		if (ignorePause)
 		{
 			audioSource.ignoreListenerPause = true;

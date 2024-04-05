@@ -78,7 +78,7 @@ public class SGP_HUD : MonoBehaviour
 	public float spring_maxV = 4;
 
 	// Progress bar
-	public Sprite[] SponserSprites; // set collection as in Info.Livery
+	public Sprite[] SponserSprites; // set collection as in F.I.Livery
 											  // Bottom info text
 	public PauseMenu pauseMenu;
 	public GameObject StuntInfo;
@@ -133,7 +133,7 @@ public class SGP_HUD : MonoBehaviour
 			}
 			stunt.updateOverlay = false;
 		}
-		if (StuntInfo.transform.childCount > ((Info.s_raceType == RaceType.Drift) ? 1 : 2))
+		if (StuntInfo.transform.childCount > ((F.I.s_raceType == RaceType.Drift) ? 1 : 2))
 			StuntInfo.SetActive(true);
 	}
 	public void AddStunt(in Stunt stunt)
@@ -174,16 +174,16 @@ public class SGP_HUD : MonoBehaviour
 	}
 	private void OnEnable()
 	{
-		AEROText.SetActive(Info.s_raceType != RaceType.Drift);
-		DRIFTText.SetActive(Info.s_raceType == RaceType.Drift);
+		AEROText.SetActive(F.I.s_raceType != RaceType.Drift);
+		DRIFTText.SetActive(F.I.s_raceType == RaceType.Drift);
 
 		starTargets = new int[10];
 		starCoroutines = new bool[10];
 		for (int i = 0; i < 10; i++)
 			StartCoroutine(SetStarVisible(i));
 
-		if (Info.tracks[Info.s_trackName].records.lap.secondsOrPts > 0)
-			bestLapTime = new TimeSpan(0, 0, 0, (int)Info.tracks[Info.s_trackName].records.lap.secondsOrPts, (int)(100 * (Info.tracks[Info.s_trackName].records.lap.secondsOrPts % 1f)));
+		if (F.I.tracks[F.I.s_trackName].records.lap.secondsOrPts > 0)
+			bestLapTime = new TimeSpan(0, 0, 0, (int)F.I.tracks[F.I.s_trackName].records.lap.secondsOrPts, (int)(100 * (F.I.tracks[F.I.s_trackName].records.lap.secondsOrPts % 1f)));
 	}
 	private void Awake()
 	{
@@ -214,17 +214,17 @@ public class SGP_HUD : MonoBehaviour
 
 		gameObject.SetActive(true);
 
-		for (int i = 0; i < Info.s_cars.Count; ++i)
+		for (int i = 0; i < F.I.s_cars.Count; ++i)
 		{
 			progressBar.GetChild(i).gameObject.SetActive(true);
 			progressBar.GetChild(i).localScale = 0.75f * Vector3.one;
-			carProgressIcons.Add(Info.s_cars[i], progressBar.GetChild(i));
-			progressBar.GetChild(i).name = Info.s_cars[i].tr.name;
-			progressBar.GetChild(i).GetComponent<Image>().sprite = SponserSprites[(int)Info.s_cars[i].sponsor-1];
+			carProgressIcons.Add(F.I.s_cars[i], progressBar.GetChild(i));
+			progressBar.GetChild(i).name = F.I.s_cars[i].tr.name;
+			progressBar.GetChild(i).GetComponent<Image>().sprite = SponserSprites[(int)F.I.s_cars[i].sponsor-1];
 		}
 		carProgressIcons[vp].SetSiblingIndex(9);
 		carProgressIcons[vp].localScale = Vector3.one;
-		bool inRace = !Info.InEditor;
+		bool inRace = !F.I.InEditor;
 
 		AERODisplay.SetActive(inRace);
 		progressDisplay.SetActive(inRace);
@@ -235,11 +235,11 @@ public class SGP_HUD : MonoBehaviour
 	}
 	private void Update()
 	{
-		if (Input.GetKeyDown(KeyCode.F3) && Info.s_cpuRivals == 0 && !pauseMenu.gameObject.activeSelf)
+		if (Input.GetKeyDown(KeyCode.F3) && F.I.s_cpuRivals == 0 && !pauseMenu.gameObject.activeSelf)
 		{
 			componentPanel.gameObject.SetActive(!componentPanel.gameObject.activeSelf);
 		}
-		if (raceManager.cancelInput.action.ReadValue<float>()==1 && (DateTime.Now - Info.raceStartDate).TotalSeconds > 5
+		if (raceManager.cancelInput.action.ReadValue<float>()==1 && (DateTime.Now - F.I.raceStartDate).TotalSeconds > 5
 			&& !componentPanel.gameObject.activeSelf && !raceManager.resultsSeq.gameObject.activeSelf)
 		{
 			pauseMenu.gameObject.SetActive(true);
@@ -272,7 +272,7 @@ public class SGP_HUD : MonoBehaviour
 		//{
 		//    EndStuntSeq(false);
 		//}
-		if (!vp.raceBox.enabled && !Info.InEditor)
+		if (!vp.raceBox.enabled && !F.I.InEditor)
 		{
 			Debug.Log("finished");
 			raceManager.PlayFinishSeq();
@@ -302,7 +302,7 @@ public class SGP_HUD : MonoBehaviour
 			}
 			else if (stuntPai != null)
 			{ // show animation and stunt info
-				if (Info.s_raceType != RaceType.Drift && StuntInfo.transform.childCount < 3)
+				if (F.I.s_raceType != RaceType.Drift && StuntInfo.transform.childCount < 3)
 				{
 					infoText.AddMessage(new Message(StuntInfo.transform.GetChild(1).GetComponent<StuntInfoOverlay>().ToString(), BottomInfoType.STUNT));
 				}
@@ -424,8 +424,8 @@ public class SGP_HUD : MonoBehaviour
 				lapNoRollers[1].SetValue(vp.raceBox.curLap % 10); // ones
 				lapNoRollers[0].SetValue(vp.raceBox.curLap / 10); // tens
 
-				lapNoRollers[3].SetValue(Info.s_laps % 10); // ones
-				lapNoRollers[2].SetValue(Info.s_laps / 10); // tens
+				lapNoRollers[3].SetValue(F.I.s_laps % 10); // ones
+				lapNoRollers[2].SetValue(F.I.s_laps / 10); // tens
 			}
 			else
 			{
@@ -448,7 +448,7 @@ public class SGP_HUD : MonoBehaviour
 			carStarLevel = vp.raceBox.starLevel;
 
 			// Original AERO movement
-			float score = (Info.s_raceType == RaceType.Drift) ? vp.raceBox.drift : vp.raceBox.Aero;
+			float score = (F.I.s_raceType == RaceType.Drift) ? vp.raceBox.drift : vp.raceBox.Aero;
 			for (int i = 6; i >= 0; --i)
 			{
 				mainRollers[i].SetFrac(score % 10f / 10f);
@@ -483,15 +483,15 @@ public class SGP_HUD : MonoBehaviour
 		if (progressDisplay.activeSelf)
 		{
 			// Progress bar
-			if (Info.s_cars.Count > 1 && Time.time - progressBarUpdateTime > .5f)
+			if (F.I.s_cars.Count > 1 && Time.time - progressBarUpdateTime > .5f)
 			{
 				progressBarUpdateTime = Time.time;
 				float playerDistance = vp.raceBox.curLap + vp.followAI.ProgressPercent;
-				foreach (var car in Info.s_cars)
+				foreach (var car in F.I.s_cars)
 				{
 					float distance = car.raceBox.curLap + car.followAI.ProgressPercent;
 					float diff = Mathf.Clamp(distance - playerDistance, -1, 1);
-					if (Info.s_catchup)
+					if (F.I.s_catchup)
 					{
 						if (vp.catchupStatus != CatchupStatus.NoCatchup && distance - playerDistance < 50)
 						{ // normal cpus when speeding to player

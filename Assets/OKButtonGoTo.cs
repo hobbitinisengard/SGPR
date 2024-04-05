@@ -13,7 +13,7 @@ public class OKButtonGoTo : MonoBehaviour
 
 	void GoToView()
 	{
-		switch (Info.gameMode)
+		switch (F.I.gameMode)
 		{
 			case MultiMode.Singleplayer:
 				menuView.GoToView(onExhibitionGoToThis);

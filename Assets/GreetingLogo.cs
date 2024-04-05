@@ -70,22 +70,22 @@ public class GreetingLogo : Sfxable
 			{
 				if (toDemo)
 				{
-					int randomIdx = Mathf.RoundToInt((Info.tracks.Count - 1) * UnityEngine.Random.value);
+					int randomIdx = Mathf.RoundToInt((F.I.tracks.Count - 1) * UnityEngine.Random.value);
 					int i = 0;
 					bool cantFind = false;
-					foreach (var track in Info.tracks)
+					foreach (var track in F.I.tracks)
 					{
 						if ((cantFind && track.Key.Length > 3) || randomIdx == i)
 						{
 							if (track.Key.Length > 3 && track.Value.valid && track.Value.unlocked)
 							{
-								Info.s_spectator = true;
-								Info.s_cpuRivals = 5;
-								Info.s_inEditor = false;
-								Info.s_cpuLevel = CpuLevel.Elite;
-								Info.s_trackName = track.Key;
-								Info.s_isNight = UnityEngine.Random.value > 0.5f;
-								Info.s_laps = 9;
+								F.I.s_spectator = true;
+								F.I.s_cpuRivals = 5;
+								F.I.s_inEditor = false;
+								F.I.s_cpuLevel = CpuLevel.Elite;
+								F.I.s_trackName = track.Key;
+								F.I.s_isNight = UnityEngine.Random.value > 0.5f;
+								F.I.s_laps = 9;
 								break;
 							}
 							else

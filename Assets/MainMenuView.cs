@@ -26,16 +26,20 @@ public class MainMenuView : Sfxable
 	}
 	private void Start()
 	{
-		if (!Info.loaded)
+		if (!F.I.loaded)
 		{
-			Info.loaded = true;
+			F.I.loaded = true;
 			PlaySFX("fe-cardssuccess");
 		}
 	}
 
 	void CancelPressed(InputAction.CallbackContext obj)
 	{
-		if(youSureDialog == null)
+		GoBack();
+	}
+	public void GoBack(bool ignoreYouSure = false)
+	{
+		if (ignoreYouSure || youSureDialog == null)
 		{
 			if (gameObject.activeSelf && prevView && !prevViewForbidden)
 			{
@@ -71,38 +75,37 @@ public class MainMenuView : Sfxable
 	}
 	public void ToRaceScene()
 	{
-		if (Info.s_trackName == null || Info.s_trackName.Length < 4)
+		if (F.I.s_trackName == null || F.I.s_trackName.Length < 4)
 			PlaySFX("fe-cardserror");
 		else
 		{
 			PlaySFX("fe-gameload");
-			if (Info.s_roadType == PavementType.Random)
-				Info.s_roadType = (PavementType)Mathf.RoundToInt(Info.pavementTypes * UnityEngine.Random.value);
+			if (F.I.s_roadType == PavementType.Random)
+				F.I.s_roadType = (PavementType)Mathf.RoundToInt(F.I.pavementTypes * UnityEngine.Random.value);
 
 			for (int i = 0; i < transform.childCount; ++i)
 			{
 				if (transform.GetChild(i).gameObject.activeSelf)
 					F.PlaySlideOutOnChildren(transform.GetChild(i));
 			}
-			Info.s_inEditor = false;
+			F.I.s_inEditor = false;
 			dimmer.PlayDimmerToWorld();
 		}
-		
 	}
 	public void ToEditorScene()
 	{
-		if (Info.s_trackName == "MEX")
+		if (F.I.s_trackName == "MEX")
 			PlaySFX("fe-cardserror");
 		else
 		{
 			
-			if(Info.s_roadType == PavementType.Random)
+			if(F.I.s_roadType == PavementType.Random)
 			{
 				PavementType[] allowedTilesets = new[] { PavementType.Highway, PavementType.Asphalt, PavementType.Japanese, PavementType.GreenSand };
-				Info.s_roadType = allowedTilesets.GetRandom();
+				F.I.s_roadType = allowedTilesets.GetRandom();
 			}
-			Info.s_inEditor = true;
-			Info.s_spectator = false;
+			F.I.s_inEditor = true;
+			F.I.s_spectator = false;
 			dimmer.PlayDimmerToWorld();
 		}
 	}

@@ -23,8 +23,8 @@ public class EnterNameInputField : Sfxable
 	{
 		glg = GetComponent<GridLayoutGroup>();
 
-		// write Info.s_playerName for the first time
-		foreach(char c in Info.playerData.playerName)
+		// write F.I.s_playerName for the first time
+		foreach(char c in F.I.playerData.playerName)
 		{
 			for(int i = 0; i<allowedKeys.Length; i++)
 			{
@@ -47,7 +47,7 @@ public class EnterNameInputField : Sfxable
 	}
 	public void SetName()
 	{
-		Info.playerData.playerName = GetInputField();
+		F.I.playerData.playerName = GetInputField();
 	}
 	void Update()
 	{

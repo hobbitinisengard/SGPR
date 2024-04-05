@@ -17,12 +17,12 @@ public class SkyboxController : MonoBehaviour
 	}
 	public void SetNightTimeLights()
 	{
-		nightSkybox.SetActive(Info.s_isNight);
+		nightSkybox.SetActive(F.I.s_isNight);
 
 		if (nightTimeLights)
-			nightTimeLights.SetActive(Info.s_isNight);
+			nightTimeLights.SetActive(F.I.s_isNight);
 
 		if (extraToTurnOffInNight)
-			extraToTurnOffInNight.SetActive(!Info.s_isNight);
+			extraToTurnOffInNight.SetActive(!F.I.s_isNight);
 	}
 }

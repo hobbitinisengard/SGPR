@@ -1,0 +1,123 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &4219036020407626656
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8238635370562135872}
+  - component: {fileID: 8807878567278808680}
+  - component: {fileID: 6195827730200941734}
+  m_Layer: 0
+  m_Name: Info
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8238635370562135872
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4219036020407626656}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 59.672256, y: 1.5972581, z: 327.7028}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8807878567278808680
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4219036020407626656}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 2511831177
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 0
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 0
+--- !u!114 &6195827730200941734
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4219036020407626656}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d156e28181abfe648b0527379a66e021, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  P2: 0
+  maxCarsInRace: 10
+  playerData:
+    musicVol: 1
+    sfxVol: 1
+    playerName: 
+    steerGamma: 0
+  pavementTypes: 6
+  RaceTypes: 4
+  Environments: 8
+  Liveries: 7
+  chat: {fileID: 0}
+  universalPath: {fileID: 0}
+  stuntpointsContainer: 
+  carSGPstats: []
+  scoringType: 0
+  gameMode: 0
+  actionHappening: 0
+  loaded: 0
+  roadLayer: 6
+  countdownSeconds: 5
+  visibleInPictureModeTag: VisibleInPictureMode
+  ignoreWheelCastLayer: 8
+  vehicleLayer: 9
+  connectorLayer: 11
+  invisibleLevelLayer: 12
+  terrainLayer: 13
+  cameraLayer: 14
+  flagLayer: 15
+  racingLineLayer: 16
+  pitsLineLayer: 17
+  pitsZoneLayer: 18
+  aeroTunnel: 19
+  ghostLayer: 24
+  carCarCollisionLayer: 26
+  selectionLayer: 20
+  s_spectator: 0
+  s_cars: []
+  s_trackName: USA
+  s_playerCarName: car01
+  s_raceType: 0
+  s_laps: 3
+  s_inEditor: 1
+  s_isNight: 0
+  s_cpuLevel: 3
+  s_cpuRivals: 0
+  s_roadType: 7
+  s_catchup: 1
+  s_resultPos: 3
+  ServerIdGenerator: 0
+  icons: []
+  gamePaused: 0
+  racingPathResolution: 10
+  eventSystem: {fileID: 0}
+  onlineRaceManager: {fileID: 0}

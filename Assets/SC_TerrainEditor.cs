@@ -103,7 +103,7 @@ public class SC_TerrainEditor : MonoBehaviour
 			}
 		}
 
-		terrain.gameObject.layer = Info.terrainLayer;
+		terrain.gameObject.layer = F.I.terrainLayer;
 		strengthSliderVal.slider.value = 13;
 		areaSliderVal.slider.value = 13;
 		brushScaling();
@@ -144,7 +144,7 @@ public class SC_TerrainEditor : MonoBehaviour
 		Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 		hit = new RaycastHit();
 		//Do Raycast hit only against terrain layer
-		if (Physics.Raycast(ray, out hit, Mathf.Infinity, 1 << Info.terrainLayer))
+		if (Physics.Raycast(ray, out hit, Mathf.Infinity, 1 << F.I.terrainLayer))
 		{
 			onTerrain = true;
 			if (buildTarget)

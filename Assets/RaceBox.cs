@@ -4,6 +4,7 @@ using UnityEngine;
 using static PtsAnim;
 using System.Collections.Generic;
 using System.Collections;
+using Unity.Netcode;
 
 public class StuntRotInfo
 {
@@ -71,7 +72,7 @@ public class StuntsData : IEnumerable<Stunt>
 
 public enum StuntSeqStatus { None, Ongoing, Ended };
 
-public class RaceBox : MonoBehaviour
+public class RaceBox : NetworkBehaviour
 {
 	public VehicleParent vp { get; private set; }
 	public SGP_Evo evoModule { get; private set; }
@@ -101,7 +102,7 @@ public class RaceBox : MonoBehaviour
 	//{
 	//	get
 	//	{
-	//		return curLap > Info.s_laps || (!Info.s_inEditor && !enabled);
+	//		return curLap > F.I.s_laps || (!F.I.s_inEditor && !enabled);
 	//	}
 	//}
 	public int curLap { get; private set; }
@@ -173,10 +174,10 @@ public class RaceBox : MonoBehaviour
 	}
 	private void OnEnable()
 	{
-		lapTimer = 0;
-		bestLapTime = TimeSpan.MaxValue;//TimeSpan.FromSeconds(Info.tracks[Info.s_trackName].records[0].secondsOrPts);
+		lapTimer = 3600 * 24; // 24 hours
+		bestLapTime = TimeSpan.MaxValue;//TimeSpan.FromSeconds(F.I.tracks[F.I.s_trackName].records[0].secondsOrPts);
 		raceTime = TimeSpan.MinValue;
-		curLap = 0;
+		//curLap = 0;
 		starLevel = 0;
 		stuntPai = new PtsAnimInfo(0, PtsAnimType.Evo, -1);
 	}
@@ -211,7 +212,7 @@ public class RaceBox : MonoBehaviour
 	{
 		GoToGhostDrive();
 
-		if(Info.s_raceType == RaceType.Drift)
+		if(F.I.s_raceType == RaceType.Drift)
 		{
 			var drift = stuntsData.driftData;
 			if (drift.doneTimes > 0)
@@ -225,7 +226,7 @@ public class RaceBox : MonoBehaviour
 	}
 	private void FixedUpdate()
 	{
-		if (!Info.gamePaused && curLap > 0)
+		if (!F.I.gamePaused && curLap > 0)
 			lapTimer += Time.fixedDeltaTime;
 		if (vp.reallyGroundedWheels == 0)
 			lastTimeInAir = Time.time;
@@ -234,7 +235,7 @@ public class RaceBox : MonoBehaviour
 		StuntDetector();
 		DriftDetector();
 
-		if (Info.s_raceType != RaceType.Drift)
+		if (F.I.s_raceType != RaceType.Drift)
 			FlipDetector();
 	}
 	public bool GetStuntSeq(ref StuntsData outStuntsData)
@@ -342,7 +343,7 @@ public class RaceBox : MonoBehaviour
 		smoothedDriftAngle = Mathf.Lerp(smoothedDriftAngle, d_effectiveTurnAngle, 10 * Time.fixedDeltaTime);
 
 
-		if (Info.s_raceType == RaceType.Drift)
+		if (F.I.s_raceType == RaceType.Drift)
 		{
 			if (vp.crashing)
 			{
@@ -657,7 +658,7 @@ public class RaceBox : MonoBehaviour
 		if (stuntPai.score > 0)
 		{
 			vp.ChargeBatteryByStunt();
-			if (Info.s_raceType == RaceType.Drift)
+			if (F.I.s_raceType == RaceType.Drift)
 				drift += stuntPai.score;
 			else
 			{
@@ -683,7 +684,7 @@ public class RaceBox : MonoBehaviour
 		starLevel = 0;
 		stableLandingTimer = -1;
 		jumpTimer = 0;
-		if (Info.s_raceType == RaceType.Drift)
+		if (F.I.s_raceType == RaceType.Drift)
 			ResetDrift();
 	}
 	public StuntSeqStatus StuntSeqEnded(out PtsAnimInfo pai)
@@ -691,7 +692,7 @@ public class RaceBox : MonoBehaviour
 		pai = prevStuntPai;
 		prevStuntPai = null;
 
-		if(Info.s_raceType == RaceType.Drift)
+		if(F.I.s_raceType == RaceType.Drift)
 		{
 			if (pai == null)
 			{
@@ -731,7 +732,7 @@ public class RaceBox : MonoBehaviour
 			{
 				if (!vp.crashing)
 				{
-					bool traf = Physics.Raycast(vp.tr.position, Vector3.down, out var hit, float.MaxValue, 1 << Info.roadLayer);
+					bool traf = Physics.Raycast(vp.tr.position, Vector3.down, out var hit, float.MaxValue, 1 << F.I.roadLayer);
 					if (!traf || Vector3.Distance(vp.tr.position, hit.point) < 4)
 						return;
 					if (vp.rb.velocity.y > 0 && vp.velMag > 13)
@@ -801,19 +802,19 @@ public class RaceBox : MonoBehaviour
 				if (bestLapTime > curlaptime)
 					bestLapTime = curlaptime.Value;
 
-				if (!vp.followAI.isCPU && bestLapTime < Info.raceManager.hud.bestLapTime)
+				if (!vp.followAI.isCPU && bestLapTime < RaceManager.I.hud.bestLapTime)
 				{
-					Info.raceManager.hud.bestLapTime = bestLapTime;
-					Info.raceManager.hud.lapRecordSeq.gameObject.SetActive(true);
+					RaceManager.I.hud.bestLapTime = bestLapTime;
+					RaceManager.I.hud.lapRecordSeq.gameObject.SetActive(true);
 				}
 			}
-			if (curLap <= Info.s_laps)
+			if (curLap <= F.I.s_laps)
 				curLap++;
-			if (Info.s_raceType == RaceType.Knockout && curLap > 1 && Info.raceManager.Position(vp) + 1 == Info.raceManager.ActiveCarsInKnockout)
+			if (F.I.s_raceType == RaceType.Knockout && curLap > 1 && RaceManager.I.Position(vp) + 1 == RaceManager.I.ActiveCarsInKnockout)
 			{ // last car is knocked-out
-				Info.raceManager.KnockOutLastCar();
+				RaceManager.I.KnockOutLastCar();
 			}
-			if (curLap == Info.s_laps + 1) // race finished
+			if (curLap == F.I.s_laps + 1) // race finished
 			{
 				enabled = false;
 			}
@@ -821,22 +822,27 @@ public class RaceBox : MonoBehaviour
 	}
 	public void SetRacetime()
 	{
-		raceTime = DateTime.Now - Info.raceStartDate;
+		raceTime = DateTime.Now - F.I.raceStartDate;
 	}
 	/// <summary>
 	/// player has driven past finish or has been eliminated. Opponents become ghosts
 	/// </summary>
 	public void GoToGhostDrive()
 	{
-		int curPos = Info.raceManager.Position(vp);
+		int curPos = RaceManager.I.Position(vp);
 		if (curPos == 1)
 		{
-			Info.raceManager.hud.infoText.AddMessage(new(vp.tr.name + " WINS THE RACE!", BottomInfoType.CAR_WINS));
+			RaceManager.I.hud.infoText.AddMessage(new(vp.tr.name + " WINS THE RACE!", BottomInfoType.CAR_WINS));
 		}
 		// in racemode after the end of a race, cars still run around the track, ghosts overtake each other. Don't let it change results
-		curLap += 100 * (Info.s_cpuRivals + 1 - curPos);
+		curLap += 100 * (F.I.s_cpuRivals + 1 - curPos);
 		vp.ghostComponent.SetHittable(false);
 		SetRacetime();
 		vp.followAI.SetCPU(true);
+	}
+
+	public void SetCurLap(int curLap)
+	{
+		this.curLap = curLap;
 	}
 }

@@ -52,9 +52,9 @@ namespace RVP
 
 		void GenerateGammaCurve()
 		{
-			if(analogInputCurve == null || gamma != Info.playerData.steerGamma)
+			if(analogInputCurve == null || gamma != F.I.playerData.steerGamma)
 			{
-				gamma = Info.playerData.steerGamma;
+				gamma = F.I.playerData.steerGamma;
 				Keyframe[] keys2 = new Keyframe[64];
 				for (int i = 0; i < keys2.Length; i++)
 				{
@@ -94,7 +94,7 @@ namespace RVP
 			if (!vp.followAI.selfDriving)
 			{
 				
-				if(Info.playerData.steerGamma != gamma)
+				if(F.I.playerData.steerGamma != gamma)
 				{
 					GenerateGammaCurve();
 				}
@@ -120,8 +120,8 @@ namespace RVP
 					holdDuration = Mathf.Clamp01(holdDuration + Mathf.Abs(vp.steerInput) * steerAdd * Time.fixedDeltaTime);
 				}
 
-				Info.controllerInUse = (vp.basicInput.playerInput.currentControlScheme != "Keyboard");
-				if (Info.controllerInUse)
+				F.I.controllerInUse = (vp.basicInput.playerInput.currentControlScheme != "Keyboard");
+				if (F.I.controllerInUse)
 					holdCurveValue = analogInputCurve.Evaluate(Mathf.Abs(vp.steerInput));
 				else
 					holdCurveValue = keyboardInputCurve.Evaluate(holdDuration);
@@ -133,7 +133,7 @@ namespace RVP
 				steeringWheel.localRotation = Quaternion.Lerp(steeringWheel.localRotation, 
 					Quaternion.Euler(0,0, -holdCurveValue * 120 * vp.steerInput), 5*Time.fixedDeltaTime);
 
-			if(Info.s_raceType == RaceType.Drift)
+			if(F.I.s_raceType == RaceType.Drift)
 			{
 				float target = Mathf.Lerp(vp.wheels[2].initSidewaysFriction, driftRearFriction, vp.accelInput);
 				vp.wheels[0].sidewaysFriction = target;

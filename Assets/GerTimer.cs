@@ -9,9 +9,9 @@ public class GerTimer : MonoBehaviour
 	public SpriteRenderer digitColon;
 	void Update()
 	{
-		if(!Info.gamePaused)
+		if(!F.I.gamePaused)
 		{
-			if (Info.raceStartDate == DateTime.MinValue)
+			if (F.I.raceStartDate == DateTime.MinValue)
 			{
 				var timeNow = DateTime.Now;
 				int val = timeNow.Hour;
@@ -27,7 +27,7 @@ public class GerTimer : MonoBehaviour
 			}
 			else
 			{
-				TimeSpan timediff = DateTime.Now - Info.raceStartDate;
+				TimeSpan timediff = DateTime.Now - F.I.raceStartDate;
 				// minutes : seconds : ff
 				int val = timediff.Minutes;
 				digits[0].sprite = sprites[val / 10];

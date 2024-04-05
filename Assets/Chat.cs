@@ -30,21 +30,19 @@ public class Chat : NetworkBehaviour
 	const int rows = 7;
 	Coroutine showChatCo;
 	// Chat is in-scene placed
+	private void Awake()
+	{
+		F.I.chat = this;
+	}
 	public override void OnNetworkSpawn()
 	{
-		
 		StartCoroutine(Initialize());
-
-		Info.ActivePlayers.Add(new LobbyRelayId { 
-			playerLobbyId = AuthenticationService.Instance.PlayerId, 
-			playerRelayId =  NetworkManager.LocalClientId
-		});
 		base.OnNetworkSpawn();
 	}
 	public override void OnNetworkDespawn()
 	{
 		SetVisibility(false);
-		Info.ActivePlayers.Remove(Info.ActivePlayers.First(ap => ap.playerLobbyId == AuthenticationService.Instance.PlayerId));
+		F.I.ActivePlayers.Remove(F.I.ActivePlayers.First(ap => ap.playerLobbyId == AuthenticationService.Instance.PlayerId));
 
 		base.OnNetworkDespawn();
 		foreach(var i in inputFields)
@@ -56,28 +54,28 @@ public class Chat : NetworkBehaviour
 	}
 	IEnumerator Initialize()
 	{
-		while (Info.mpSelector == null)
+		while (MultiPlayerSelector.I == null)
 			yield return null;
 
 		
 		chatButtonInput.action.performed += buttonPressed;
-		server = Info.mpSelector.server;
-		inputFields[0] = Info.mpSelector.chatInitializer.lobbyChatInputField;
-		inputFields[1] = Info.mpSelector.chatInitializer.raceChatInputField;
+		server = MultiPlayerSelector.I.server;
+		inputFields[0] = MultiPlayerSelector.I.chatInitializer.lobbyChatInputField;
+		inputFields[1] = MultiPlayerSelector.I.chatInitializer.raceChatInputField;
 
-		contents[0] = Info.mpSelector.chatInitializer.lobbyChatContent;
-		contents[1] = Info.mpSelector.chatInitializer.raceChatContent;
+		contents[0] = MultiPlayerSelector.I.chatInitializer.lobbyChatContent;
+		contents[1] = MultiPlayerSelector.I.chatInitializer.raceChatContent;
 
 		SetVisibility(false);
 
-		Info.mpSelector.server.callbacks.PlayerLeft += Callbacks_PlayerLeft;
-		Info.mpSelector.server.callbacks.PlayerJoined += Callbacks_PlayerJoined;
-		Info.chat = this;
+		MultiPlayerSelector.I.server.callbacks.PlayerLeft += Callbacks_PlayerLeft;
+		MultiPlayerSelector.I.server.callbacks.PlayerJoined += Callbacks_PlayerJoined;
+		F.I.chat = this;
 
 		foreach (var i in inputFields)
 		{
-			i.onSelect.AddListener(s => { texting = true;  Info.mpSelector.EnableSelectionOfTracks(false); });
-			i.onDeselect.AddListener(s => { texting = false; Info.mpSelector.EnableSelectionOfTracks(server.AmHost && !server.PlayerMe.ReadyGet()); });
+			i.onSelect.AddListener(s => { texting = true;  MultiPlayerSelector.I.EnableSelectionOfTracks(false); });
+			i.onDeselect.AddListener(s => { texting = false; MultiPlayerSelector.I.EnableSelectionOfTracks(server.AmHost && !server.PlayerMe.ReadyGet()); });
 			i.onSubmit.AddListener(s =>
 			{
 				if (showChatCo != null)
@@ -89,7 +87,7 @@ public class Chat : NetworkBehaviour
 					AddChatRow(server.PlayerMe, s);
 					
 					i.text = "";
-					if(Info.actionHappening == ActionHappening.InRace)
+					if(F.I.actionHappening == ActionHappening.InRace)
 					{
 						F.Deselect();
 						inputFields[1].gameObject.SetActive(false);
@@ -116,7 +114,7 @@ public class Chat : NetworkBehaviour
 
 		yield return null;
 
-		if (Info.actionHappening == ActionHappening.InRace)
+		if (F.I.actionHappening == ActionHappening.InRace)
 			inputFields[1].Select();
 	}
 
@@ -126,7 +124,6 @@ public class Chat : NetworkBehaviour
 
 		while (timer > 0)
 		{
-			Debug.Log(timer);
 			timer -= Time.deltaTime;
 			yield return null;
 		}
@@ -154,7 +151,9 @@ public class Chat : NetworkBehaviour
 	[Rpc(SendTo.Everyone, AllowTargetOverride = true)]
 	public void AddChatRowRpc(string name, string message, Color colorA, Color colorB, RpcParams rpcParams)
 	{
-		
+		if (showChatCo != null)
+			StopCoroutine(showChatCo);
+		showChatCo = StartCoroutine(HideRaceChatAfterSeconds(10));
 
 		if (contents[0].childCount == rows)
 		{

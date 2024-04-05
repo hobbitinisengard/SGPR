@@ -1,3 +1,4 @@
+using RVP;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,36 +15,29 @@ public class Voting : NetworkBehaviour
 	const float votingThreshold = .6f;
 	Coroutine invalidatorCo;
 	List<string> playersThatVoted = new();
-	public override void OnNetworkSpawn()
+	public static Voting I;
+	private void Awake()
 	{
-		StartCoroutine(Initialize());
-		base.OnNetworkSpawn();
+		I = this;
 	}
 	public override void OnNetworkDespawn()
 	{
-		Info.raceManager.voting = null;
 		base.OnNetworkDespawn();
-	}
-	IEnumerator Initialize()
-	{
-		while (Info.raceManager == null)
-			yield return null;
-		Info.raceManager.voting = this;
 	}
 	public void VoteForEnd()
 	{
-		if(Info.mpSelector.server.AmHost)
+		if(MultiPlayerSelector.I.server.AmHost)
 			VoteForEndPassedRpc();
 		else
-			VoteForRpc(Info.mpSelector.server.PlayerMe.Id, VoteFor.END);
+			VoteForRpc(MultiPlayerSelector.I.server.PlayerMe.Id, VoteFor.END);
 	}
 
 	public void VoteForRestart()
 	{
-		if (Info.mpSelector.server.AmHost)
+		if (MultiPlayerSelector.I.server.AmHost)
 			VoteForRestartPassedRpc();
 		else
-			VoteForRpc(Info.mpSelector.server.PlayerMe.Id, VoteFor.RESTART);
+			VoteForRpc(MultiPlayerSelector.I.server.PlayerMe.Id, VoteFor.RESTART);
 	}
 
 	[Rpc(SendTo.Server)]
@@ -52,10 +46,10 @@ public class Voting : NetworkBehaviour
 		if (playersThatVoted.Contains(playerLobbyId))
 			return;
 
-		Player p = Info.mpSelector.server.lobby.Players.First(p => p.Id == playerLobbyId);
+		Player p = MultiPlayerSelector.I.server.lobby.Players.First(p => p.Id == playerLobbyId);
 		playersThatVoted.Add(playerLobbyId);
 		
-		int votesRequiredToPass = (int)Mathf.Ceil(votingThreshold * (Info.ActivePlayers.Count - 1));
+		int votesRequiredToPass = (int)Mathf.Ceil(votingThreshold * (F.I.ActivePlayers.Count - 1));
 		string msg = null;
 		Color color = Color.yellow;
 		bool passed = false;
@@ -72,7 +66,7 @@ public class Voting : NetworkBehaviour
 			color = Color.red;
 			passed = votesForEnd >= votesRequiredToPass;
 		}
-		Info.chat.AddChatRowRpc(p.NameGet(), msg, p.ReadColor(), color, Info.chat.RpcTarget.Everyone);
+		F.I.chat.AddChatRowRpc(p.NameGet(), msg, p.ReadColor(), color, F.I.chat.RpcTarget.Everyone);
 		if (invalidatorCo != null)
 			StopCoroutine(invalidatorCo);
 
@@ -103,7 +97,7 @@ public class Voting : NetworkBehaviour
 			yield return null;
 		}
 		if(votingTimer > -1)
-			Info.chat.AddChatRowRpc("*SERVER*", "all votes expired", Color.gray, Color.gray, Info.chat.RpcTarget.Everyone);
+			F.I.chat.AddChatRowRpc("*SERVER*", "all votes expired", Color.gray, Color.gray, F.I.chat.RpcTarget.Everyone);
 		votesForEnd = 0;
 		votesForRestart = 0;
 		playersThatVoted.Clear();
@@ -111,13 +105,13 @@ public class Voting : NetworkBehaviour
 	[Rpc(SendTo.Everyone)]
 	void VoteForRestartPassedRpc()
 	{
-		Info.raceManager.StartRace();
+		RaceManager.I.StartRace();
 	}
 
 	[Rpc(SendTo.NotMe)]
 	void VoteForEndPassedRpc()
 	{
-		Info.raceManager.BackToMenu(applyScoring:false);
+		RaceManager.I.BackToMenu(applyScoring:false);
 	}
 
 
@@ -144,6 +138,6 @@ public class Voting : NetworkBehaviour
 	[Rpc(SendTo.Everyone)]
 	void TimeForRaceEndedRpc()
 	{
-		Info.raceManager.TimeForRaceEnded();
+		RaceManager.I.TimeForRaceEnded();
 	}
 }

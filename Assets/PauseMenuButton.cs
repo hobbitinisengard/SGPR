@@ -25,9 +25,9 @@ public class PauseMenuButton : MonoBehaviour, ISelectHandler, IDeselectHandler
 		{
 			batteryMask = transform.GetChild(1).GetChild(0);
 			if (audioMixer)
-				indicatorLevel = Info.ReadMixerLevelLog(exposedParameter, audioMixer);
+				indicatorLevel = F.I.ReadMixerLevelLog(exposedParameter, audioMixer);
 			else
-				indicatorLevel = Mathf.InverseLerp(0,10,Info.playerData.steerGamma);
+				indicatorLevel = Mathf.InverseLerp(0,10,F.I.playerData.steerGamma);
 			SetBatteryGUI(indicatorLevel);
 		}
 	}
@@ -42,10 +42,10 @@ public class PauseMenuButton : MonoBehaviour, ISelectHandler, IDeselectHandler
 			SetBatteryGUI(indicatorLevel);
 
 			if(audioMixer)
-				Info.SetMixerLevelLog(exposedParameter, indicatorLevel, audioMixer);
+				F.I.SetMixerLevelLog(exposedParameter, indicatorLevel, audioMixer);
 			else
 			{
-				Info.playerData.steerGamma = Mathf.Clamp(10*indicatorLevel, 1, 10);
+				F.I.playerData.steerGamma = Mathf.Clamp(10*indicatorLevel, 1, 10);
 			}
 		}
 	}

@@ -33,9 +33,9 @@ public class TrackSelector : TrackSelectorTemplate
 		if (!init)
 			dir = shiftInputRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
 
-		Info.s_raceType = (RaceType)F.Wraparound((int)Info.s_raceType+dir,0,Info.RaceTypes-1);
+		F.I.s_raceType = (RaceType)F.Wraparound((int)F.I.s_raceType+dir,0,F.I.RaceTypes-1);
 
-		if (Info.s_raceType == RaceType.Knockout)
+		if (F.I.s_raceType == RaceType.Knockout)
 		{
 			lapsButtonText.transform.parent.GetComponent<Button>().interactable = false;
 			SwitchRivals(true);
@@ -44,32 +44,32 @@ public class TrackSelector : TrackSelectorTemplate
 		{
 			lapsButtonText.transform.parent.GetComponent<Button>().interactable = true;
 		}
-		raceTypeButtonText.text = Enum.GetName(typeof(RaceType), Info.s_raceType);
+		raceTypeButtonText.text = Enum.GetName(typeof(RaceType), F.I.s_raceType);
 	}
 	public void SwitchLaps(bool init = false)
 	{
 		if (!init)
 		{
 			if (shiftInputRef.action.ReadValue<float>() > 0.5f)
-				Info.s_laps -= 3;
+				F.I.s_laps -= 3;
 			else
 			{
 				if (ctrlInputRef.action.ReadValue<float>() > 0.5f)
-					Info.s_laps -= 1;
+					F.I.s_laps -= 1;
 				else if (altInputRef.action.ReadValue<float>() > 0.5f)
-					Info.s_laps += 1;
+					F.I.s_laps += 1;
 				else
-					Info.s_laps += 3;
+					F.I.s_laps += 3;
 			}
 		}
-		Info.s_laps = F.Wraparound(Info.s_laps, 1, 99);
-		lapsButtonText.text = "Laps: " + Info.s_laps.ToString();
+		F.I.s_laps = F.Wraparound(F.I.s_laps, 1, 99);
+		lapsButtonText.text = "Laps: " + F.I.s_laps.ToString();
 	}
 	public void SwitchDayNight(bool init = false)
 	{
 		if (!init)
-			Info.s_isNight = !Info.s_isNight;
-		nightButtonText.text = Info.s_isNight ? "Night" : "Daytime";
+			F.I.s_isNight = !F.I.s_isNight;
+		nightButtonText.text = F.I.s_isNight ? "Night" : "Daytime";
 	}
 	public void SwitchCPULevel(bool init = false)
 	{
@@ -77,8 +77,8 @@ public class TrackSelector : TrackSelectorTemplate
 		if (!init)
 			dir = shiftInputRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
 
-		Info.s_cpuLevel = (CpuLevel)F.Wraparound((int)Info.s_cpuLevel+dir, 0, 3);
-		string cpuLevelStr = Info.s_cpuLevel switch
+		F.I.s_cpuLevel = (CpuLevel)F.Wraparound((int)F.I.s_cpuLevel+dir, 0, 3);
+		string cpuLevelStr = F.I.s_cpuLevel switch
 		{
 			CpuLevel.Easy => "Easy",
 			CpuLevel.Medium => "Medium",
@@ -94,17 +94,17 @@ public class TrackSelector : TrackSelectorTemplate
 		if (!init)
 			dir = shiftInputRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
 
-		Info.s_cpuRivals = F.Wraparound(Info.s_cpuRivals + dir, 0, maxCPURivals);
+		F.I.s_cpuRivals = F.Wraparound(F.I.s_cpuRivals + dir, 0, maxCPURivals);
 
-		if (Info.s_raceType == RaceType.Knockout)
+		if (F.I.s_raceType == RaceType.Knockout)
 		{
-			if (Info.s_cpuRivals == 0 && Info.maxCarsInRace - 1 == maxCPURivals)
-				Info.s_cpuRivals = 1;
+			if (F.I.s_cpuRivals == 0 && F.I.maxCarsInRace - 1 == maxCPURivals)
+				F.I.s_cpuRivals = 1;
 
-			Info.s_laps = Info.maxCarsInRace - 1 - maxCPURivals + Info.s_cpuRivals;
+			F.I.s_laps = F.I.maxCarsInRace - 1 - maxCPURivals + F.I.s_cpuRivals;
 			SwitchLaps(true);
 		}
-		rivalsButtonText.text = "Opponents: " + Info.s_cpuRivals.ToString();
+		rivalsButtonText.text = "Opponents: " + F.I.s_cpuRivals.ToString();
 	}
 	
 	public void SwitchRoadType(bool init = false)
@@ -112,15 +112,15 @@ public class TrackSelector : TrackSelectorTemplate
 		if (!init)
 		{
 			int dir = shiftInputRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
-			Info.s_roadType = (PavementType)F.Wraparound((int)(Info.s_roadType + dir), 0, Info.pavementTypes+1);
+			F.I.s_roadType = (PavementType)F.Wraparound((int)(F.I.s_roadType + dir), 0, F.I.pavementTypes+1);
 		}
-		wayButtonText.text = "Tex: " + Enum.GetName(typeof(PavementType), Info.s_roadType);
+		wayButtonText.text = "Tex: " + Enum.GetName(typeof(PavementType), F.I.s_roadType);
 	}
 	public void SwitchCatchup(bool init = false)
 	{
 		if (!init)
-			Info.s_catchup = !Info.s_catchup;
-		catchupButtonText.text = "Catchup: " + (Info.s_catchup ? "Yes" : "No");
+			F.I.s_catchup = !F.I.s_catchup;
+		catchupButtonText.text = "Catchup: " + (F.I.s_catchup ? "Yes" : "No");
 	}
 	
 }

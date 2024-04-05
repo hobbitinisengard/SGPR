@@ -44,7 +44,7 @@ public class CarSelector : Selector
 	{ // in unity, 
 		move2Ref.action.performed -= CalculateTargetToSelect;
 		persistentSelectedCar = selectedCar.name;
-		Info.s_playerCarName = selectedCar.name;
+		F.I.s_playerCarName = selectedCar.name;
 	}
 	private void OnEnable()
 	{
@@ -88,20 +88,20 @@ public class CarSelector : Selector
 		for (int i = 0; i < carContent.childCount; ++i)
 			carsCurrentlyVisible += carContent.GetChild(i).childCount;
 
-		int numberOfCarsThatShouldBeVisible = Info.cars.Count(c => ShowCar(c));
+		int numberOfCarsThatShouldBeVisible = F.I.cars.Count(c => ShowCar(c));
 		loadCo = true;
 		if (carsCurrentlyVisible != numberOfCarsThatShouldBeVisible)
 		{
 			bool[] menuButtons = new bool[4];
 			ClearAllCars();
-			for (int i = 0; i < Info.cars.Length; ++i)
+			for (int i = 0; i < F.I.cars.Length; ++i)
 			{ // populate car grid
-				var car = Info.cars[i];
+				var car = F.I.cars[i];
 				if (ShowCar(car))
 				{
 					var newcar = Instantiate(carImageTemplate, carContent.GetChild((int)car.category));
 					newcar.name = "car" + (i + 1).ToString("D2");
-					newcar.GetComponent<Image>().sprite = Resources.Load<Sprite>(Info.carImagesPath + newcar.name);
+					newcar.GetComponent<Image>().sprite = Resources.Load<Sprite>(F.I.carImagesPath + newcar.name);
 					newcar.SetActive(true);
 					menuButtons[(int)car.category] = true;
 					if (persistentSelectedCar != null && persistentSelectedCar == newcar.name)
@@ -133,7 +133,7 @@ public class CarSelector : Selector
 		else
 		{
 			buttonsContainer.GetChild(selectedCar.parent.GetSiblingIndex()).GetComponent<MainMenuButton>().Select();
-			carDescText.text = Info.Car(selectedCar.name).name + "\n\n" + Info.Car(selectedCar.name).desc;
+			carDescText.text = F.I.Car(selectedCar.name).name + "\n\n" + F.I.Car(selectedCar.name).desc;
 		}
 		radial.gameObject.SetActive(selectedCar);
 		containerCo = StartCoroutine(MoveToCar());
@@ -185,7 +185,7 @@ public class CarSelector : Selector
 				}
 				// new car has been selected
 				// set description
-				var car = Info.Car(selectedCar.name);
+				var car = F.I.Car(selectedCar.name);
 				carDescText.text = car.name + "\n\n" + car.desc;
 				// set bars
 				if (barsAndRadialCo != null)
@@ -210,7 +210,7 @@ public class CarSelector : Selector
 			-selectedCar.parent.GetComponent<RectTransform>().anchoredPosition.y);
 		Vector2 scrollInitPos = new Vector2(scrollx.value, scrolly.value);
 		Vector2 scrollInitSize = new Vector2(scrollx.size, scrolly.size);
-		float carInGroupPos = Info.InGroupPos(selectedCar);//.parent.PosAmongstActive(selectedCar, false);
+		float carInGroupPos = F.I.InGroupPos(selectedCar);//.parent.PosAmongstActive(selectedCar, false);
 		float groupPos = carContent.PosAmongstActive(selectedCar.parent, false);
 		Vector2 scrollTargetPos = new Vector2(carInGroupPos, groupPos);
 		Vector2 scrollTargetSize = new Vector2(1f / selectedCar.parent.ActiveChildren(), 1f / carContent.ActiveChildren());
@@ -233,7 +233,7 @@ public class CarSelector : Selector
 	{
 		if (selectedCar)
 			radial.SetAnimTo(selectedCar.parent.GetSiblingIndex());
-		float[] targetSgpBars = selectedCar ? Info.Car(selectedCar.name).config.SGP : new float[] { .03f, .03f, .03f };
+		float[] targetSgpBars = selectedCar ? F.I.Car(selectedCar.name).config.SGP : new float[] { .03f, .03f, .03f };
 		float[] initSgpBars = new float[3];
 
 		for (int i = 0; i < 3; i++)

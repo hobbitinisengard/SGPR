@@ -47,9 +47,9 @@ public class ZippedTrackDataObject : NetworkBehaviour
 	}
 	IEnumerator Initialize()
 	{
-		while (Info.mpSelector == null)
+		while (MultiPlayerSelector.I == null)
 			yield return null;
-		Info.mpSelector.zippedTrackDataObject = this;
+		MultiPlayerSelector.I.zippedTrackDataObject = this;
 	}
 
 	public void RequestTrackUpdate(string newTrackName)
@@ -71,14 +71,14 @@ public class ZippedTrackDataObject : NetworkBehaviour
 			{
 				updatingCachedTrack = true;
 				Debug.Log("writing");
-				string zipPath = Info.documentsSGPRpath + newTrackName + ".zip";
+				string zipPath = F.I.documentsSGPRpath + newTrackName + ".zip";
 				if (File.Exists(zipPath))
 					File.Delete(zipPath);
 				using (ZipArchive zip = ZipFile.Open(zipPath, ZipArchiveMode.Create))
 				{
-					zip.CreateEntryFromFile(Info.tracksPath + newTrackName + ".track", newTrackName + ".track");
-					zip.CreateEntryFromFile(Info.tracksPath + newTrackName + ".png", newTrackName + ".png");
-					zip.CreateEntryFromFile(Info.tracksPath + newTrackName + ".data", newTrackName + ".data");
+					zip.CreateEntryFromFile(F.I.tracksPath + newTrackName + ".track", newTrackName + ".track");
+					zip.CreateEntryFromFile(F.I.tracksPath + newTrackName + ".png", newTrackName + ".png");
+					zip.CreateEntryFromFile(F.I.tracksPath + newTrackName + ".data", newTrackName + ".data");
 				}
 				zippedTrack = File.ReadAllBytes(zipPath);
 				trackName = newTrackName;
@@ -113,11 +113,11 @@ public class ZippedTrackDataObject : NetworkBehaviour
 	[Rpc(SendTo.SpecifiedInParams, Delivery = RpcDelivery.Reliable)]
 	void FullTrackSentToClientRpc(string trackName, RpcParams ps)
 	{
-		string zipPath = Info.documentsSGPRpath + trackName + ".zip";
+		string zipPath = F.I.documentsSGPRpath + trackName + ".zip";
 		File.WriteAllBytes(zipPath, receivedTrack.ToArray());
-		ZipFile.ExtractToDirectory(zipPath, Info.documentsSGPRpath);
+		ZipFile.ExtractToDirectory(zipPath, F.I.documentsSGPRpath);
 
-		bool localTrackExists = File.Exists(Info.tracksPath + trackName + ".data");
+		bool localTrackExists = File.Exists(F.I.tracksPath + trackName + ".data");
 		if (localTrackExists)
 		{
 			// rename local track to trackName+number
@@ -125,37 +125,37 @@ public class ZippedTrackDataObject : NetworkBehaviour
 			for (int i = 1; i < 1000; ++i)
 			{
 				newName = trackName + i.ToString();
-				if (!File.Exists(Info.tracksPath + newName + ".png"))
+				if (!File.Exists(F.I.tracksPath + newName + ".png"))
 				{
 					break;
 				}
 			}
-			File.Move(Info.tracksPath + trackName + ".png", Info.tracksPath + newName + ".png");
-			File.Move(Info.tracksPath + trackName + ".data", Info.tracksPath + newName + ".data");
-			File.Move(Info.tracksPath + trackName + ".track", Info.tracksPath + newName + ".track");
-			var header = new TrackHeader(Info.tracks[trackName]);
-			Info.tracks.Add(newName, header);
+			File.Move(F.I.tracksPath + trackName + ".png", F.I.tracksPath + newName + ".png");
+			File.Move(F.I.tracksPath + trackName + ".data", F.I.tracksPath + newName + ".data");
+			File.Move(F.I.tracksPath + trackName + ".track", F.I.tracksPath + newName + ".track");
+			var header = new TrackHeader(F.I.tracks[trackName]);
+			F.I.tracks.Add(newName, header);
 
-			File.Move(Info.documentsSGPRpath + trackName + ".png", Info.tracksPath + trackName + ".png");
-			File.Move(Info.documentsSGPRpath + trackName + ".data", Info.tracksPath + trackName + ".data");
-			File.Move(Info.documentsSGPRpath + trackName + ".track", Info.tracksPath + trackName + ".track");
+			File.Move(F.I.documentsSGPRpath + trackName + ".png", F.I.tracksPath + trackName + ".png");
+			File.Move(F.I.documentsSGPRpath + trackName + ".data", F.I.tracksPath + trackName + ".data");
+			File.Move(F.I.documentsSGPRpath + trackName + ".track", F.I.tracksPath + trackName + ".track");
 
-			string trackJson = File.ReadAllText(Info.tracksPath + trackName + ".track");
+			string trackJson = File.ReadAllText(F.I.tracksPath + trackName + ".track");
 			header = JsonConvert.DeserializeObject<TrackHeader>(trackJson);
-			Info.tracks[trackName] = header;
+			F.I.tracks[trackName] = header;
 		}
 		else
 		{
-			File.Move(Info.documentsSGPRpath + trackName + ".png", Info.tracksPath + trackName + ".png");
-			File.Move(Info.documentsSGPRpath + trackName + ".data", Info.tracksPath + trackName + ".data");
-			File.Move(Info.documentsSGPRpath + trackName + ".track", Info.tracksPath + trackName + ".track");
+			File.Move(F.I.documentsSGPRpath + trackName + ".png", F.I.tracksPath + trackName + ".png");
+			File.Move(F.I.documentsSGPRpath + trackName + ".data", F.I.tracksPath + trackName + ".data");
+			File.Move(F.I.documentsSGPRpath + trackName + ".track", F.I.tracksPath + trackName + ".track");
 
-			string trackJson = File.ReadAllText(Info.tracksPath + trackName + ".track");
+			string trackJson = File.ReadAllText(F.I.tracksPath + trackName + ".track");
 			var header = JsonConvert.DeserializeObject<TrackHeader>(trackJson);
-			Info.tracks.Add(trackName, header);
+			F.I.tracks.Add(trackName, header);
 		}
 		File.Delete(zipPath);
 
-		Info.mpSelector.ZippedTrackDataObject_OnNewTrackArrived();
+		MultiPlayerSelector.I.ZippedTrackDataObject_OnNewTrackArrived();
 	}
 }

@@ -23,28 +23,28 @@ public class CarPlacement
 			PlayerId = 0,
 			position = pos,
 			name = "CP" + (pos + 1).ToString(),
-			sponsor = (Livery)(UnityEngine.Random.Range(0, Info.Liveries) + 1),
+			sponsor = (Livery)(UnityEngine.Random.Range(0, F.I.Liveries) + 1),
 		};
 	}
 	public static CarPlacement LocalPlayer()
 	{
 		return new CarPlacement()
 		{
-			carName = Info.s_playerCarName,
+			carName = F.I.s_playerCarName,
 			PlayerId = 0,
-			position = Info.s_cpuRivals,
-			name = Info.playerData.playerName,
-			sponsor = (Livery)(UnityEngine.Random.Range(0, Info.Liveries) + 1),
+			position = F.I.s_cpuRivals,
+			name = F.I.playerData.playerName,
+			sponsor = (Livery)(UnityEngine.Random.Range(0, F.I.Liveries) + 1),
 		};
 	}
 	public static CarPlacement OnlinePlayer(int pos, Player p)
 	{
-		var pIndex = pos - Info.s_cpuRivals;
+		var pIndex = pos - F.I.s_cpuRivals;
 		return new CarPlacement()
 		{
 			carName = p.carNameGet(),
-			PlayerId = Info.ActivePlayers.Find(p => p.playerLobbyId == Info.mpSelector.server.lobby.Players[pIndex].Id).playerRelayId,
-			position = (Info.s_cpuRivals + pIndex),
+			PlayerId = F.I.ActivePlayers.Find(p => p.playerLobbyId == MultiPlayerSelector.I.server.lobby.Players[pIndex].Id).playerRelayId,
+			position = (F.I.s_cpuRivals + pIndex),
 			name = p.NameGet(),
 			sponsor = p.SponsorGet(),
 		};

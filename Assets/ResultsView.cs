@@ -81,7 +81,7 @@ public class ResultsView : MonoBehaviour
 		for(int i=0; i<10;i++)
 		{
 			bool visible = i < resultData.Length;
-			bool highlight = visible && Info.playerData.playerName == resultData[i].name;
+			bool highlight = visible && F.I.playerData.playerName == resultData[i].name;
 			if (highlight)
 				finalPosition = i;
 			SetText(gridTableTr.GetChild(cols + cols * i + 0), visible ? Pos(i) : null, highlight);
@@ -119,7 +119,7 @@ public class ResultsView : MonoBehaviour
 		Array.Sort(resultData, comp);
 		for (int i = 0; i < resultData.Length; ++i)
 		{
-			if (resultData[i].name == Info.playerData.playerName)
+			if (resultData[i].name == F.I.playerData.playerName)
 				return i+1;
 		}
 		Debug.LogError("PlayerName not found in resultData");
@@ -136,10 +136,10 @@ public class ResultsView : MonoBehaviour
 		int lapBonus = (lapPos <= 2) ? 5000 / lapPos : 0;
 		int stuntBonus = (int)((stuntPos <= 2) ? 5000f / stuntPos : 0);
 		int driftBonus = (int)((driftPos <= 2) ? 2500f / stuntPos : 0);
-		int aeroMeter = (int)resultData.First(r => r.name == Info.playerData.playerName).stunt;
+		int aeroMeter = (int)resultData.First(r => r.name == F.I.playerData.playerName).stunt;
 
-		var p = Info.mpSelector.server.PlayerMe;
-		switch (Info.scoringType)
+		var p = MultiPlayerSelector.I.server.PlayerMe;
+		switch (F.I.scoringType)
 		{
 			case ScoringType.Championship:
 				positionBonus = (int)(10000 * positionPerc);
@@ -171,7 +171,7 @@ public class ResultsView : MonoBehaviour
 		medal = finalPosition switch
 		{
 			0 => goldMedals[0],
-			1 => (Info.scoringType == ScoringType.Victory) ? null : silverMedals[0],
+			1 => (F.I.scoringType == ScoringType.Victory) ? null : silverMedals[0],
 			_ => null,
 		};
 
@@ -181,7 +181,7 @@ public class ResultsView : MonoBehaviour
 		while (isAddingScore)
 			yield return null;
 
-		if (Info.scoringType == ScoringType.Championship)
+		if (F.I.scoringType == ScoringType.Championship)
 		{
 			if (lapBonus > 0)
 			{
@@ -299,7 +299,7 @@ public class ResultsView : MonoBehaviour
 			};	
 		}
 		int x = R(0, resultData.Length);
-		resultData[x].name = Info.playerData.playerName;
+		resultData[x].name = F.I.playerData.playerName;
 	}
 	string RandomString(int length)
 	{

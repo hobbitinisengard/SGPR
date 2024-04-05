@@ -41,10 +41,21 @@ public class ServerConnection : MonoBehaviour
 	string k_udpEncryption = "udp";
 	public LobbyEventCallbacks callbacks = new();
 	string callbacksLobbyId = "";
-	public ConcurrentQueue<string> createdLobbyIds = new ();
+	public ConcurrentQueue<string> createdLobbyIds = new();
 	public Lobby lobby;
 	public CountdownTimer heartbeatTimer = new(lobbyHeartbeatInterval);
 	CountdownTimer pollForUpdatesTimer = new(lobbyPollInterval);
+	public const string k_Ready = "r";
+	public const string k_Sponsor = "s";
+	public const string k_Name = "n";
+	public const string k_carName = "c";
+	public const string k_score = "sc";
+
+	public const string k_raceConfig = "e";
+	public const string k_zippedTrack = "t";
+	public const string k_duringRace = "d";
+	public const string k_trackSHA = "ts";
+	public const string k_trackName = "tn";
 	private void Awake()
 	{
 		heartbeatTimer.OnTimerStop += async () =>
@@ -60,9 +71,9 @@ public class ServerConnection : MonoBehaviour
 	}
 	public int readyPlayers
 	{
-		get 
+		get
 		{
-			return lobby.Players.Count(p => p.ReadyGet() == true); 
+			return lobby.Players.Count(p => p.ReadyGet() == true);
 		}
 	}
 	private async void Start()
@@ -80,7 +91,7 @@ public class ServerConnection : MonoBehaviour
 	}
 	public async void AddCallbacksToLobby()
 	{
-		if(callbacksLobbyId != lobby.Id)
+		if (callbacksLobbyId != lobby.Id)
 		{
 			callbacksLobbyId = lobby.Id;
 			await Lobbies.Instance.SubscribeToLobbyEventsAsync(lobby.Id, callbacks);
@@ -90,69 +101,70 @@ public class ServerConnection : MonoBehaviour
 	{
 		if (lobby == null)
 			return;
-		
+
 		DeleteLobby();
+		F.I.ActivePlayers.Clear();
 		heartbeatTimer.Pause();
 		pollForUpdatesTimer.Pause();
 		await LobbyService.Instance.RemovePlayerAsync(lobby.Id, AuthenticationService.Instance.PlayerId);
 		networkManager.Shutdown();
 	}
-	Dictionary<string, PlayerDataObject>  InitializePlayerData()
+	Dictionary<string, PlayerDataObject> InitializePlayerData()
 	{
 		Dictionary<string, PlayerDataObject> playerMeData = new()
 		{
 			{
-				Info.k_carName, new PlayerDataObject(
+				k_carName, new PlayerDataObject(
 					visibility: PlayerDataObject.VisibilityOptions.Member,
 					value: "car01")
 			},
 			{
-				Info.k_Name, new PlayerDataObject(
+				k_Name, new PlayerDataObject(
 					visibility: PlayerDataObject.VisibilityOptions.Member,
-					value: Info.playerData.playerName)
+					value: F.I.playerData.playerName)
 			},
 			{
-				Info.k_Ready, new PlayerDataObject(
+				k_Ready, new PlayerDataObject(
 					visibility: PlayerDataObject.VisibilityOptions.Member,
 					value: "false")
 			},
 			{
-				Info.k_score, new PlayerDataObject(
+				k_score, new PlayerDataObject(
 					visibility: PlayerDataObject.VisibilityOptions.Member,
 					value: "0")
 			},
 			{
-				Info.k_Sponsor, new PlayerDataObject(
+				k_Sponsor, new PlayerDataObject(
 					visibility: PlayerDataObject.VisibilityOptions.Member,
-					value: ((Livery)Random.Range(1,Info.Liveries+1)).ToString())
+					value: ((Livery)Random.Range(1,F.I.Liveries+1)).ToString())
 			},
 			//{
-			//	Info.k_message, new PlayerDataObject(
+			//	F.I.k_message, new PlayerDataObject(
 			//		visibility: PlayerDataObject.VisibilityOptions.Member,
 			//		value: "")
 			//},
 		};
 		return playerMeData;
 	}
-	
+
 	void DeleteLobby()
 	{
 		while (createdLobbyIds.TryDequeue(out var lobbyId))
 		{
-			if(lobby.Players.Count == 1)
+			if (lobby.Players.Count == 1)
 			{
 				Debug.Log("Deleting lobby" + lobbyId);
 				LobbyService.Instance.DeleteLobbyAsync(lobbyId);
 			}
 		}
 	}
-	
+
 	string EncodeConfig()
 	{
-		
-		string encodeConfig =  ((int)Info.scoringType).ToString() + (Info.randomCars ? "1" : "0") + (Info.randomTracks ? "1" : "0")
-			+ ((int)Info.s_raceType).ToString() + (Info.s_laps).ToString("D2") + (Info.s_isNight ? "1" : "0") + ((int)Info.s_cpuLevel).ToString()
-			+ (Info.s_cpuRivals).ToString() + ((int)Info.s_roadType).ToString() + (Info.s_catchup ? "1" : "0");
+
+		string encodeConfig = ((int)F.I.scoringType).ToString() + (F.I.randomCars ? "1" : "0") + (F.I.randomTracks ? "1" : "0")
+			+ ((int)F.I.s_raceType).ToString() + (F.I.s_laps).ToString("D2") + (F.I.s_isNight ? "1" : "0") + ((int)F.I.s_cpuLevel).ToString()
+			+ (F.I.s_cpuRivals).ToString() + ((int)F.I.s_roadType).ToString() + (F.I.s_catchup ? "1" : "0");
 		return encodeConfig;
 	}
 	public Player Host
@@ -163,12 +175,12 @@ public class ServerConnection : MonoBehaviour
 		}
 	}
 
-	
+
 	public bool ServerInRace
 	{
 		get
 		{
-			string cfg = lobby.Data[Info.k_raceConfig].Value;
+			string cfg = lobby.Data[k_raceConfig].Value;
 			if (cfg.Length < 12)
 				return false;
 			return cfg[11] == '1';
@@ -178,7 +190,7 @@ public class ServerConnection : MonoBehaviour
 	{
 		try
 		{
-			lobby.Data[Info.k_raceConfig] = new DataObject(DataObject.VisibilityOptions.Member, EncodeConfig());
+			lobby.Data[k_raceConfig] = new DataObject(DataObject.VisibilityOptions.Member, EncodeConfig());
 
 			UpdateLobbyOptions options = new()
 			{
@@ -259,7 +271,7 @@ public class ServerConnection : MonoBehaviour
 				Player = new Player(id: AuthenticationService.Instance.PlayerId, data: InitializePlayerData()),
 				Data = new()
 				{
-					{	k_relayCode, new DataObject(
+					{  k_relayCode, new DataObject(
 						visibility:DataObject.VisibilityOptions.Public,
 						value:relayJoinCode)
 					},
@@ -269,17 +281,17 @@ public class ServerConnection : MonoBehaviour
 							value: ActionHappening.InLobby.ToString())
 					},
 					{
-						Info.k_raceConfig, new DataObject(
+						k_raceConfig, new DataObject(
 							visibility: DataObject.VisibilityOptions.Member,
 							value: EncodeConfig())
 					},
 					{
-						Info.k_trackSHA, new DataObject(
+						k_trackSHA, new DataObject(
 							visibility: DataObject.VisibilityOptions.Member,
 							value: trackSHA)
 					},
 					{
-						Info.k_trackName, new DataObject(
+						k_trackName, new DataObject(
 							visibility: DataObject.VisibilityOptions.Member,
 							value: trackName)
 					},
@@ -310,11 +322,11 @@ public class ServerConnection : MonoBehaviour
 	{
 		try
 		{
-			JoinLobbyByIdOptions o = new() 
-			{ 
-				Player = new Player(id: AuthenticationService.Instance.PlayerId, data: InitializePlayerData()) 
+			JoinLobbyByIdOptions o = new()
+			{
+				Player = new Player(id: AuthenticationService.Instance.PlayerId, data: InitializePlayerData())
 			};
-			if(password != null && password.Length > 7)
+			if (password != null && password.Length > 7)
 				o.Password = password;
 			lobby = await LobbyService.Instance.JoinLobbyByIdAsync(lobbyId, o);
 
@@ -416,5 +428,6 @@ public class ServerConnection : MonoBehaviour
 			Debug.Log("Failed to heartbeat lobby " + e.Message);
 		}
 	}
-
+	
+	
 }

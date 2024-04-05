@@ -38,14 +38,14 @@ public class PauseMenu : Sfxable
 	}
 	private void OnEnable()
 	{
-		steerGamma.SetActive(Info.controllerInUse);
-		if(Info.gameMode == MultiMode.Singleplayer)
+		steerGamma.SetActive(F.I.controllerInUse);
+		if(F.I.gameMode == MultiMode.Singleplayer)
 			Time.timeScale = 0;
-		Info.gamePaused = true;
+		F.I.gamePaused = true;
 		paused.TransitionTo(0);
 		timeElapsed = 0;
-		restartButton.SetActive(Info.raceStartDate != DateTime.MinValue);
-		endButton.SetActive(Info.gameMode == MultiMode.Multiplayer && !Info.mpSelector.server.AmHost);
+		restartButton.SetActive(F.I.raceStartDate != DateTime.MinValue);
+		endButton.SetActive(F.I.gameMode == MultiMode.Multiplayer && !MultiPlayerSelector.I.server.AmHost);
 		startColor = veil.color;
 		firstButton.Select();
 		PlaySFX("menublip2", true);
@@ -53,14 +53,14 @@ public class PauseMenu : Sfxable
 	private void OnDisable()
 	{
 		unPaused.TransitionTo(0);
-		Info.gamePaused = false;
+		F.I.gamePaused = false;
 		Time.timeScale = 1;
-		Info.SaveSettingsDataToJson(mainMixer);
+		F.I.SaveSettingsDataToJson(mainMixer);
 		PlaySFX("menublip2",true);
 		veil.color = startColor;
 
-		if(!Info.s_inEditor)
-			Info.raceStartDate = Info.raceStartDate.AddSeconds(timeElapsed);
+		if(!F.I.s_inEditor)
+			F.I.raceStartDate = F.I.raceStartDate.AddSeconds(timeElapsed);
 		
 		timeElapsed = 0;
 	}

@@ -27,7 +27,7 @@ namespace RVP
 			get
 			{
 				if (carCfg == null)
-					return Info.cars[carNumber - 1].config;
+					return F.I.cars[carNumber - 1].config;
 				else
 					return carCfg;
 			}
@@ -265,7 +265,7 @@ namespace RVP
 
 		public void SetCatchup(CatchupStatus newStatus)
 		{
-			if (Info.s_catchup)
+			if (F.I.s_catchup)
 			{
 				switch (newStatus)
 				{
@@ -355,11 +355,11 @@ namespace RVP
 			rb = GetComponent<Rigidbody>();
 			originalDrag = rb.drag;
 			originalMass = rb.mass;
-			Info.s_cars.Add(this);
+			F.I.s_cars.Add(this);
 		}
 		void Start()
 		{
-			if (Info.gameMode == MultiMode.Multiplayer)
+			if (F.I.gameMode == MultiMode.Multiplayer)
 			{
 				gameObject.AddComponent<NetworkRigidbody>();
 			}
@@ -385,46 +385,46 @@ namespace RVP
 			}
 
 			followAI.SetCPU(transform.name.Contains("CP"));
-			sampleText.gameObject.SetActive(followAI.isCPU || transform.name != Info.playerData.playerName);
-			if (Info.s_spectator)
+			sampleText.gameObject.SetActive(followAI.isCPU || transform.name != F.I.playerData.playerName);
+			if (F.I.s_spectator)
 			{
 				if (UnityEngine.Random.value > 0.5f)
-					Info.raceManager.cam.Connect(this, CameraControl.Mode.Replay);
+					RaceManager.I.cam.Connect(this, CameraControl.Mode.Replay);
 			}
 			else
 			{
-				if(transform.name == Info.playerData.playerName)
+				if(transform.name == F.I.playerData.playerName)
 				{
-					Info.raceManager.playerCar = this;
-					Info.raceManager.cam.Connect(this);
-					Info.raceManager.hud.Connect(this);
+					RaceManager.I.playerCar = this;
+					RaceManager.I.cam.Connect(this);
+					RaceManager.I.hud.Connect(this);
 					//newCar.followAI.SetCPU(true); // CPU drives player's car
 				}
 			}
-			Info.raceManager.cam.enabled = true;
+			RaceManager.I.cam.enabled = true;
 
-			sampleText.gameObject.SetActive(Info.s_spectator);
-			Info.raceManager.DemoSGPLogo.SetActive(Info.s_spectator);
-			Info.raceManager.hud.gameObject.SetActive(!Info.s_spectator);
+			sampleText.gameObject.SetActive(F.I.s_spectator);
+			RaceManager.I.DemoSGPLogo.SetActive(F.I.s_spectator);
+			RaceManager.I.hud.gameObject.SetActive(!F.I.s_spectator);
 
 			StartCoroutine(ApplySetup());
 			
 			_sponsor.OnValueChanged += SponsorValueChanged;
 
-			if (Info.s_isNight)
+			if (F.I.s_isNight)
 				SetLights();
 
-			StartCoroutine(CountdownTimer(Info.countdownSeconds));
+			StartCoroutine(CountdownTimer(F.I.countdownSeconds));
 		}
 		IEnumerator ApplySetup()
 		{
 			yield return null;
-			Info.cars[carNumber - 1].config.Apply(this);
+			F.I.cars[carNumber - 1].config.Apply(this);
 		}
 
 		void Update()
 		{
-			if (Physics.Raycast(tr.position, rb.velocity, 200, 1 << Info.aeroTunnel))
+			if (Physics.Raycast(tr.position, rb.velocity, 200, 1 << F.I.aeroTunnel))
 			{ // aerodynamic tunnel
 				rb.drag = 0;
 			}
@@ -465,7 +465,7 @@ namespace RVP
 			}
 			float volume = Mathf.InverseLerp(0, 80, velMag);
 
-			roadNoiseSnd.volume = (Info.gamePaused || reallyGroundedWheels == 0) ? 0 : volume;// (1 + 80 * 2 / 3f * Mathf.Log10(volume)); 
+			roadNoiseSnd.volume = (F.I.gamePaused || reallyGroundedWheels == 0) ? 0 : volume;// (1 + 80 * 2 / 3f * Mathf.Log10(volume)); 
 
 			if (brakeInput > 0 && !reversing)
 			{
@@ -565,7 +565,7 @@ namespace RVP
 		public void SetHonkerAudio(int type)
 		{
 			type = Mathf.Clamp(type, 1, 6);
-			honkerAudio.clip = Info.audioClips["hornloop0" + type.ToString()];
+			honkerAudio.clip = F.I.audioClips["hornloop0" + type.ToString()];
 		}
 		// Set accel input
 		public void SetAccel(float f)
@@ -574,7 +574,7 @@ namespace RVP
 				energyRemaining = batteryCapacity;
 			else if (BatteryPercent == 0 && Time.time - lastNoBatteryMessage > 60)
 			{
-				Info.raceManager.hud.infoText.AddMessage(new Message(name + " IS OUT OF BATTERY!", BottomInfoType.NO_BATT));
+				RaceManager.I.hud.infoText.AddMessage(new Message(name + " IS OUT OF BATTERY!", BottomInfoType.NO_BATT));
 				lastNoBatteryMessage = Time.time;
 			}
 			f = Mathf.Clamp(f, -1, (BatteryPercent == 0) ? 0.75f : 1);
@@ -838,8 +838,8 @@ namespace RVP
 
 		public override void OnDestroy()
 		{
-			//if(Info.gameMode == MultiMode.Multiplayer) // when player suddenly disconnects
-			//	Info.s_cars.Remove(Info.s_cars.First(c => c.transform.name == transform.name));
+			//if(F.I.gameMode == MultiMode.Multiplayer) // when player suddenly disconnects
+			//	F.I.s_cars.Remove(F.I.s_cars.First(c => c.transform.name == transform.name));
 
 			if (norm)
 			{
@@ -867,6 +867,8 @@ namespace RVP
 
 		internal void ResetOnTrack()
 		{
+			if (countdownTimer > 0)
+				return;
 			StartCoroutine(followAI.ResetOnTrack());
 		}
 
@@ -898,7 +900,7 @@ namespace RVP
 		{
 			if (!batteryLoadingSnd.isPlaying)
 			{
-				batteryLoadingSnd.clip = Info.audioClips["elec" + Mathf.RoundToInt(3 * UnityEngine.Random.value)];
+				batteryLoadingSnd.clip = F.I.audioClips["elec" + Mathf.RoundToInt(3 * UnityEngine.Random.value)];
 				batteryLoadingSnd.Play();
 			}
 			energyRemaining = Mathf.Clamp(energyRemaining + batteryChargingSpeed * Time.deltaTime, 0, batteryCapacity);

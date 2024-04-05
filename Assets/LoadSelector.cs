@@ -5,16 +5,16 @@ public class LoadSelector : TrackSelectorTemplate
 {
 	public void RemoveCurrentTrack()
 	{
-		if (selectedTrack.parent.GetSiblingIndex() == 0 || selectedTrack == null)
+		if (selectedTrack == null)
 		{
 			PlaySFX("fe-cardserror");
 			return;
 		}
 		
-		Info.tracks.Remove(selectedTrack.name);
-		File.Delete(Info.tracksPath + selectedTrack.name + ".track");
-		File.Delete(Info.tracksPath + selectedTrack.name + ".data");
-		File.Delete(Info.tracksPath + selectedTrack.name + ".png");
+		F.I.tracks.Remove(selectedTrack.name);
+		File.Delete(F.I.tracksPath + selectedTrack.name + ".track");
+		File.Delete(F.I.tracksPath + selectedTrack.name + ".data");
+		File.Delete(F.I.tracksPath + selectedTrack.name + ".png");
 
 		int children = selectedTrack.parent.childCount;
 		int index = Mathf.Clamp(selectedTrack.GetSiblingIndex(),0,children-2);
@@ -39,13 +39,13 @@ public class LoadSelector : TrackSelectorTemplate
 	//			int trackOrigin = value.TrackOrigin();
 	//			var newtrack = Instantiate(trackImageTemplate, trackContent.GetChild(trackOrigin));
 	//			newtrack.name = key;
-	//			newtrack.GetComponent<Image>().sprite = IMG2Sprite.LoadNewSprite(Path.Combine(Info.tracksPath, newtrack.name + ".png"));
+	//			newtrack.GetComponent<Image>().sprite = IMG2Sprite.LoadNewSprite(Path.Combine(F.I.tracksPath, newtrack.name + ".png"));
 	//			newtrack.SetActive(true);
 	//			existingTrackClasses[trackOrigin] = true;
 	//			if (persistentSelectedTrack != null && persistentSelectedTrack == key)
 	//			{
 	//				selectedTrack = newtrack.transform;
-	//				Info.s_trackName = selectedTrack.name;
+	//				F.I.s_trackName = selectedTrack.name;
 	//			}
 	//		}
 	//	}
@@ -63,11 +63,11 @@ public class LoadSelector : TrackSelectorTemplate
 	//	string[] sortedTracks;
 	//	// populate track grid	
 	//	if (curSortingCondition == SortingCond.Name)
-	//		sortedTracks = Info.tracks.OrderBy(t => t.Key).Select(kv => kv.Key).ToArray();
+	//		sortedTracks = F.I.tracks.OrderBy(t => t.Key).Select(kv => kv.Key).ToArray();
 	//	else //if(curSortingCondition == SortingCond.Difficulty)
-	//		sortedTracks = Info.tracks.OrderBy(t => t.Value.difficulty).Select(kv => kv.Key).ToArray();
+	//		sortedTracks = F.I.tracks.OrderBy(t => t.Value.difficulty).Select(kv => kv.Key).ToArray();
 	//	foreach (var tname in sortedTracks)
-	//		AddTrackImage(tname, Info.tracks[tname]);
+	//		AddTrackImage(tname, F.I.tracks[tname]);
 	//	return existingTrackClasses;
 	//}
 	

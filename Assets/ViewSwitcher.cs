@@ -100,13 +100,13 @@ public class ViewSwitcher : MonoBehaviour
 		this.viewB = menu;
 		
 		StartCoroutine(Play(() => {
-			if (applyScoring && Info.gameMode == MultiMode.Multiplayer)
+			if (applyScoring && F.I.gameMode == MultiMode.Multiplayer)
 			{
 				lobbyView.SetActive(false);
 				resultsView.SetActive(true);
 			}
-			Info.raceManager.BackToEditor();
-			Info.raceManager.editorPanel.RemoveTrackLeftovers();
+			RaceManager.I.BackToEditor();
+			RaceManager.I.editorPanel.RemoveTrackLeftovers();
 		}));
 	}
 }

@@ -36,7 +36,7 @@ public class TrackSelectorTemplate : Selector
 	}
 	protected virtual void OnEnable()
 	{
-		Info.s_spectator = false;
+		F.I.s_spectator = false;
 		move2Ref.action.performed += CalculateTargetToSelect;
 		if (loadCo)
 			StopCoroutine(Load());
@@ -67,19 +67,19 @@ public class TrackSelectorTemplate : Selector
 		string[] sortedTracks;
 		// populate track grid	
 		if (curSortingCondition == SortingCond.Name)
-			sortedTracks = Info.tracks.OrderBy(t => t.Key).Select(kv => kv.Key).ToArray();
+			sortedTracks = F.I.tracks.OrderBy(t => t.Key).Select(kv => kv.Key).ToArray();
 		else //if(curSortingCondition == SortingCond.Difficulty)
-			sortedTracks = Info.tracks.OrderBy(t => t.Value.difficulty).Select(kv => kv.Key).ToArray();
+			sortedTracks = F.I.tracks.OrderBy(t => t.Value.difficulty).Select(kv => kv.Key).ToArray();
 
 		foreach (var trackName in sortedTracks)
 		{
-			TrackHeader track = Info.tracks[trackName];
+			TrackHeader track = F.I.tracks[trackName];
 			if (track.unlocked && ValidCheck(track.valid))
 			{
 				int trackOrigin = track.TrackOrigin();
 				var newtrack = Instantiate(trackImageTemplate, trackContent.GetChild(trackOrigin));
 				newtrack.name = trackName;
-				newtrack.GetComponent<Image>().sprite = IMG2Sprite.LoadNewSprite(Path.Combine(Info.tracksPath, trackName + ".png"));
+				newtrack.GetComponent<Image>().sprite = IMG2Sprite.LoadNewSprite(Path.Combine(F.I.tracksPath, trackName + ".png"));
 				newtrack.SetActive(true);
 				existingTrackClasses[trackOrigin] = true;
 				if (persistentSelectedTrack != null && persistentSelectedTrack == trackName)
@@ -94,10 +94,10 @@ public class TrackSelectorTemplate : Selector
 	{
 		loadCo = true;
 		if (specificTrackName!= null)
-			Info.s_trackName = specificTrackName;
+			F.I.s_trackName = specificTrackName;
 
 		int visibleTracks = trackContent.GetChild(0).childCount + (trackContent.GetChild(1) != null ? trackContent.GetChild(1).childCount : 0);
-		int validTracks = Info.tracks.Count(t => ValidCheck(t.Value.valid));
+		int validTracks = F.I.tracks.Count(t => ValidCheck(t.Value.valid));
 
 		bool reloadContent = (visibleTracks != validTracks) || forceReload;
 
@@ -117,7 +117,7 @@ public class TrackSelectorTemplate : Selector
 					Transform Trackclass = trackContent.GetChild(i);
 					for(int j=0; j<Trackclass.childCount; ++j)
 					{
-						if (Trackclass.GetChild(j).name == Info.s_trackName)
+						if (Trackclass.GetChild(j).name == F.I.s_trackName)
 						{
 							selectedTrack = Trackclass.GetChild(j);
 						}
@@ -127,18 +127,18 @@ public class TrackSelectorTemplate : Selector
 			// disable track classes without children (required for sliders to work)
 			trackContent.GetChild(i).gameObject.SetActive(existingTrackClasses[i]);
 		}
-		if (Info.randomTracks)
+		if (F.I.randomTracks)
 		{
 			var randomClass =  trackContent.GetChild(UnityEngine.Random.Range(0, 2));
-			Info.s_trackName = randomClass.GetChild(UnityEngine.Random.Range(0, randomClass.childCount)).name;
+			F.I.s_trackName = randomClass.GetChild(UnityEngine.Random.Range(0, randomClass.childCount)).name;
 		}
 		else
 		{
 			if (selectedTrack == null)
 				selectedTrack = trackContent.GetChild(0).GetChild(0);
-			Info.s_trackName = selectedTrack.name;
+			F.I.s_trackName = selectedTrack.name;
 		}
-		Debug.Log(Info.s_trackName);
+		Debug.Log(F.I.s_trackName);
 		SetTiles();
 		SetRecords();
 		radial.gameObject.SetActive(selectedTrack);
@@ -147,7 +147,7 @@ public class TrackSelectorTemplate : Selector
 			trackDescText.text = "No tracks available";
 		else
 		{
-			trackDescText.text = selectedTrack.name + "\n\n" + Info.tracks[selectedTrack.name].desc;
+			trackDescText.text = selectedTrack.name + "\n\n" + F.I.tracks[selectedTrack.name].desc;
 			if (radial.gameObject.activeSelf)
 				radial.SetAnimTo(selectedTrack.parent.GetSiblingIndex());
 		}
@@ -194,12 +194,12 @@ public class TrackSelectorTemplate : Selector
 				if (tempSelectedTrack != null && tempSelectedTrack != selectedTrack)
 				{
 					selectedTrack = tempSelectedTrack;
-					Info.s_trackName = selectedTrack.name;
+					F.I.s_trackName = selectedTrack.name;
 					PlaySFX("fe-bitmapscroll");
 				}
 				// new track has been selected
 				// set description
-				trackDescText.text = selectedTrack.name + "\n\n" + Info.tracks[selectedTrack.name].desc;
+				trackDescText.text = selectedTrack.name + "\n\n" + F.I.tracks[selectedTrack.name].desc;
 
 				if(radial.gameObject.activeSelf)
 					radial.SetAnimTo(selectedTrack.parent.GetSiblingIndex());
@@ -223,7 +223,7 @@ public class TrackSelectorTemplate : Selector
 		// reload 
 		if (loadCo)
 			StopCoroutine(Load());
-		StartCoroutine(Load(Info.s_trackName, forceReload: true));
+		StartCoroutine(Load(F.I.s_trackName, forceReload: true));
 	}
 	protected void SetRecords()
 	{
@@ -231,7 +231,7 @@ public class TrackSelectorTemplate : Selector
 		{
 			Transform record = recordsContainer.GetChild(i);
 
-			Record recordData = selectedTrack ? Info.tracks[selectedTrack.name].records[i] : new Record(null, 0, 0);
+			Record recordData = selectedTrack ? F.I.tracks[selectedTrack.name].records[i] : new Record(null, 0, 0);
 
 			string valueStr = (recordData == null || recordData.playerName == null || recordData.secondsOrPts == 0 
 				|| recordData.secondsOrPts > 35000) ? "" : recordData.playerName;
@@ -242,7 +242,7 @@ public class TrackSelectorTemplate : Selector
 			else
 			{
 				if (i <= 1) // lap, race, stunt, grip
-					valueStr = Info.ToLaptimeStr(TimeSpan.FromSeconds(recordData.secondsOrPts));
+					valueStr = TimeSpan.FromSeconds(recordData.secondsOrPts).ToLaptimeStr();
 				else
 					valueStr = Mathf.RoundToInt(recordData.secondsOrPts).ToString();
 			}
@@ -264,7 +264,7 @@ public class TrackSelectorTemplate : Selector
 			tile.name = spriteName;
 			try
 			{
-				tile.GetComponent<Image>().sprite = Info.icons.First(i => i.name == spriteName);
+				tile.GetComponent<Image>().sprite = F.I.icons.First(i => i.name == spriteName);
 			}
 			catch
 			{
@@ -277,11 +277,11 @@ public class TrackSelectorTemplate : Selector
 
 		if (selectedTrack)
 		{
-			AddTile(Enum.GetName(typeof(CarGroup), Info.tracks[selectedTrack.name].preferredCarClass));
-			AddTile(Enum.GetName(typeof(Envir), Info.tracks[selectedTrack.name].envir));
-			AddTile((Info.tracks[selectedTrack.name].difficulty + 4).ToString());
-			foreach (var flag in Info.tracks[selectedTrack.name].icons)
-				AddTile(Info.IconNames[flag]);
+			AddTile(Enum.GetName(typeof(CarGroup), F.I.tracks[selectedTrack.name].preferredCarClass));
+			AddTile(Enum.GetName(typeof(Envir), F.I.tracks[selectedTrack.name].envir));
+			AddTile((F.I.tracks[selectedTrack.name].difficulty + 4).ToString());
+			foreach (var flag in F.I.tracks[selectedTrack.name].icons)
+				AddTile(F.I.IconNames[flag]);
 		}
 	}
 	protected IEnumerator MoveToTrack()
@@ -295,7 +295,7 @@ public class TrackSelectorTemplate : Selector
 			-selectedTrack.parent.GetComponent<RectTransform>().anchoredPosition.y);
 		Vector2 scrollInitPos = new Vector2(scrollx.value, scrolly.value);
 		Vector2 scrollInitSize = new Vector2(scrollx.size, scrolly.size);
-		float trackInGroupPos = Info.InGroupPos(selectedTrack);
+		float trackInGroupPos = F.I.InGroupPos(selectedTrack);
 		float groupPos = trackContent.PosAmongstActive(selectedTrack.parent, false);
 		Vector2 scrollTargetPos = new Vector2(trackInGroupPos, groupPos);
 		Vector2 scrollTargetSize = new Vector2(1f / selectedTrack.parent.ActiveChildren(), 1f / trackContent.ActiveChildren());

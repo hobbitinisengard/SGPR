@@ -123,12 +123,12 @@ namespace RVP
 		}
 		public void SetCPU(bool val)
 		{
-			cpuLevel = Info.s_cpuLevel;
+			cpuLevel = F.I.s_cpuLevel;
 			if (val == isCPU)
 				return;
 			isCPU = val;
 			selfDriving = val;
-			vp.basicInput.enabled = Info.raceManager.playerCar == vp;
+			vp.basicInput.enabled = RaceManager.I.playerCar == vp;
 			//if (isCPU)
 			//{
 			//	vp.basicInput.enabled = false;
@@ -175,18 +175,23 @@ namespace RVP
 			tr = transform;
 			rb = GetComponent<Rigidbody>();
 			vp = GetComponent<VehicleParent>();
-			this.universalPath = Info.universalPath;
-			this.racingLineLayerNumber = Info.racingLineLayer;
-			this.stuntPoints = Info.stuntpointsContainer;
-			this.replayCams = Info.replayCams;
-			trackPathCreator = Info.universalPath;
+			this.universalPath = F.I.universalPath;
+			this.racingLineLayerNumber = F.I.racingLineLayer;
+			this.stuntPoints = F.I.stuntpointsContainer;
+			this.replayCams = F.I.replayCams;
+			trackPathCreator = F.I.universalPath;
 			this.enabled = true;
 		}
 		private void OnEnable()
 		{
+			StartCoroutine(Initialize());
+		}
+		IEnumerator Initialize()
+		{
+			yield return null;
 			maxPhysicalSteerAngle = vp.steeringControl.steeredWheels[0].steerRangeMax;
-			universalPathLayer = Info.racingLineLayer;
-			
+			universalPathLayer = F.I.racingLineLayer;
+
 			dist = GetDist(1 << racingLineLayerNumber);
 			progress = dist;
 			SetCPU(isCPU);
@@ -197,7 +202,7 @@ namespace RVP
 			string closestLen = null;
 			float min = 3 * radius;
 			if (Physics.Raycast(transform.position + Vector3.up, Vector3.down, out RaycastHit h, Mathf.Infinity,
-				1 | 1 << Info.roadLayer | 1 << Info.terrainLayer))
+				1 | 1 << F.I.roadLayer | 1 << F.I.terrainLayer))
 			{
 				var racingPathHits = Physics.OverlapSphere(h.point, radius, layer);
 				foreach (var hit in racingPathHits)
@@ -233,7 +238,7 @@ namespace RVP
 		{
 			if (pitsProgress > 0)
 			{
-				Info.raceManager.hud.infoText.AddMessage(new Message(vp.name + " RETURNS ON TRACK!", BottomInfoType.PIT_OUT));
+				RaceManager.I.hud.infoText.AddMessage(new Message(vp.name + " RETURNS ON TRACK!", BottomInfoType.PIT_OUT));
 				speedLimit = 1024;
 				speedLimitDist = -1;
 				progress = GetDist(1 << racingLineLayerNumber);
@@ -242,7 +247,7 @@ namespace RVP
 				pitsPathCreator = null;
 				searchForPits = false;
 				selfDriving = isCPU;
-				vp.basicInput.enabled = Info.raceManager.playerCar == vp;
+				vp.basicInput.enabled = RaceManager.I.playerCar == vp;
 			}
 		}
 		IEnumerator RevvingCoroutine()
@@ -289,7 +294,7 @@ namespace RVP
 			{
 				StartCoroutine(ResetOnTrack());
 			}
-			bool overRoad = Physics.Raycast(tr.position + Vector3.up, Vector3.down, out var _, Mathf.Infinity, 1 << Info.roadLayer);
+			bool overRoad = Physics.Raycast(tr.position + Vector3.up, Vector3.down, out var _, Mathf.Infinity, 1 << F.I.roadLayer);
 			
 			if(trackPathCreator)
 			{
@@ -317,7 +322,7 @@ namespace RVP
 					OutOfPits();
 					StartCoroutine(ResetOnTrack());
 				}
-				pitsDist = GetDist(1 << Info.pitsLineLayer); // pitsDist
+				pitsDist = GetDist(1 << F.I.pitsLineLayer); // pitsDist
 
 				if (pitsDist < pitsProgress)
 					pitsDist = pitsProgress;
@@ -332,7 +337,7 @@ namespace RVP
 			{
 				if (searchForPits)
 				{
-					pitsPathHits = Physics.OverlapSphere(transform.position, radius, 1 << Info.pitsLineLayer);
+					pitsPathHits = Physics.OverlapSphere(transform.position, radius, 1 << F.I.pitsLineLayer);
 
 					if (pitsPathHits.Length > 0)
 					{
@@ -527,7 +532,7 @@ namespace RVP
 					{
 						targetDir = F.Flat((Vector3)tPos - transform.position);
 						var targetDir2 = F.Flat((Vector3)tPos2 - transform.position);
-						targetDir = Vector3.Lerp(targetDir2, targetDir, Vector3.Distance(vp.tr.position, (Vector3)tPos) / Info.racingPathResolution);
+						targetDir = Vector3.Lerp(targetDir2, targetDir, Vector3.Distance(vp.tr.position, (Vector3)tPos) / F.I.racingPathResolution);
 						targetSteer = Vector2.SignedAngle(targetDir, F.Flat(tr.forward));
 					}
 
@@ -605,14 +610,14 @@ namespace RVP
 			if (progress == 0 || !trackPathCreator)
 				yield break;
 
-			progress += 15;
+			progress += 10;
 			Vector3 resetPos = trackPathCreator.path.GetPointAtDistance(progress);
 			RaycastHit h;
-			while (!Physics.Raycast(resetPos + 5*Vector3.up, Vector3.down, out h, Mathf.Infinity, 1 << Info.roadLayer)
+			while (!Physics.Raycast(resetPos + 5*Vector3.up, Vector3.down, out h, Mathf.Infinity, 1 << F.I.roadLayer)
 				|| Vector3.Dot(h.normal, Vector3.up) < -0.5f // while not hit road or hit culled face (backface raycasts are on)
 				|| Mathf.Abs(Vector3.Dot(h.normal, Vector3.up)) < .64f) // slope too big
 			{
-				progress += 30;
+				progress += 10;
 				resetPos = trackPathCreator.path.GetPointAtDistance(progress);
 			}
 			// resetting sequence. Has to be done this way to prevent the car from occasional rolling

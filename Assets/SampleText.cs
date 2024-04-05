@@ -16,9 +16,9 @@ public class SampleText : MonoBehaviour
 			mainCamera = GameObject.Find("MainCamera").transform;
 		textMesh = GetComponent<TextMesh>();
 		textMesh.text = transform.parent.name;
-		textMesh.color = Info.ReadColor(transform.parent.GetComponent<VehicleParent>().sponsor);
+		textMesh.color = F.ReadColor(transform.parent.GetComponent<VehicleParent>().sponsor);
 
-		if (Info.gameMode == MultiMode.Singleplayer)
+		if (F.I.gameMode == MultiMode.Singleplayer)
 			gameObject.SetActive(false);
 	}
 

@@ -43,7 +43,7 @@ public class ComponentPanel : MonoBehaviour
 		Cursor.visible = true;
 		paused.TransitionTo(0);
 		Time.timeScale = 0;
-		Info.gamePaused = true;
+		F.I.gamePaused = true;
 		if (carConfig == null)
 			NewSetupButton();
 	}
@@ -52,7 +52,7 @@ public class ComponentPanel : MonoBehaviour
 		Cursor.visible = false;
 		unPaused.TransitionTo(0);
 		Time.timeScale = 1;
-		Info.gamePaused = false;
+		F.I.gamePaused = false;
 	}
 	private void Awake()
 	{
@@ -108,7 +108,7 @@ public class ComponentPanel : MonoBehaviour
 			part = JsonConvert.DeserializeObject<HonkSavable>(jsonText);
 		else
 			return;
-		Info.carParts.Add(partName, part);
+		F.I.carParts.Add(partName, part);
 	}
 	public void OpenComponentConfigMenu(ConfigEnumSelector type)
 	{
@@ -128,7 +128,7 @@ public class ComponentPanel : MonoBehaviour
 		// Load file/folder: file, Allow multiple selection: true
 		// Initial path: default (Documents), Initial filename: empty
 		// Title: "Load File", Submit button text: "Load"
-		yield return FileBrowser.WaitForLoadDialog(FileBrowser.PickMode.Files, false, Info.partsPath, null, "Select configuration file..", "Load");
+		yield return FileBrowser.WaitForLoadDialog(FileBrowser.PickMode.Files, false, F.I.partsPath, null, "Select configuration file..", "Load");
 
 		// Dialog is closed
 		Debug.Log(FileBrowser.Success); // (FileBrowser.Success) - whether the user has selected some files or cancelled the operation 
@@ -141,7 +141,7 @@ public class ComponentPanel : MonoBehaviour
 	{
 		if (!FileBrowser.IsOpen)
 		{
-			string[] extensions = Info.partInfos.Select(i => i.fileExtension).ToArray();
+			string[] extensions = F.I.partInfos.Select(i => i.fileExtension).ToArray();
 			var extensionFilter = new[] {
 			 new FileBrowser.Filter("SGPR car parts configuration files", extensions)};
 			FileBrowser.SetFilters(true, extensionFilter);
@@ -173,9 +173,9 @@ public class ComponentPanel : MonoBehaviour
 				if (filepath.Length > 0)
 				{
 					selectedPart = PartType.None;
-					for (int i = 0; i < Info.partInfos.Length - 1; ++i)
+					for (int i = 0; i < F.I.partInfos.Length - 1; ++i)
 					{
-						if (filepath.EndsWith(Info.partInfos[i].fileExtension))
+						if (filepath.EndsWith(F.I.partInfos[i].fileExtension))
 						{
 							selectedPart = (PartType)i;
 							break;
@@ -201,7 +201,7 @@ public class ComponentPanel : MonoBehaviour
 		for (int i = 0; i < mainMenu.transform.childCount; ++i)
 		{ // dropdown has only external parts.
 			string[] files = Directory.GetFiles(
-				Info.partsPath, "*." + Info.partInfos[i].fileExtension);
+				F.I.partsPath, "*." + F.I.partInfos[i].fileExtension);
 
 			int choiceIdx = -1;
 			string selectedPartName = carConfig.GetPartName((PartType)i);
@@ -234,7 +234,7 @@ public class ComponentPanel : MonoBehaviour
 	{
 		if (mainMenu.activeSelf)
 			return;
-		Info.ReloadCarPartsData();
+		F.I.ReloadCarPartsData();
 		PopulateCarConfigTable();
 		bottomNameText.text = (carConfig.Modified ? "*" : "") + carConfig.name;
 		settersPanel.SetActive(false);
@@ -256,7 +256,7 @@ public class ComponentPanel : MonoBehaviour
 				var extensionFilter = new[] { new FileBrowser.Filter("SGPR car config file", CarConfig.extension) };
 				FileBrowser.SetFilters(false, extensionFilter);
 
-				yield return FileBrowser.WaitForSaveDialog(FileBrowser.PickMode.Files, false, Info.partsPath, carConfig.name, "Save car config file..", "Save");
+				yield return FileBrowser.WaitForSaveDialog(FileBrowser.PickMode.Files, false, F.I.partsPath, carConfig.name, "Save car config file..", "Save");
 
 				if (FileBrowser.Success)
 				{
@@ -270,16 +270,16 @@ public class ComponentPanel : MonoBehaviour
 						bottomNameText.text = Path.GetFileNameWithoutExtension(filepath);
 						carConfig.name = bottomNameText.text;
 						if (bottomNameText.text.Contains("car"))
-							Info.ReloadCarConfigs();
+							F.I.ReloadCarConfigs();
 					}
 				}
 			}
 			else
 			{ // saving part
-				var extensionFilter = new[] { new FileBrowser.Filter("SGPR Car part", Info.partInfos[(int)selectedPart].fileExtension) };
+				var extensionFilter = new[] { new FileBrowser.Filter("SGPR Car part", F.I.partInfos[(int)selectedPart].fileExtension) };
 				FileBrowser.SetFilters(false, extensionFilter);
 
-				yield return FileBrowser.WaitForSaveDialog(FileBrowser.PickMode.Files, false, Info.partsPath, carConfig.GetPartName(selectedPart), "Save part file..", "Save");
+				yield return FileBrowser.WaitForSaveDialog(FileBrowser.PickMode.Files, false, F.I.partsPath, carConfig.GetPartName(selectedPart), "Save part file..", "Save");
 				if (FileBrowser.Success)
 				{
 					string filepath = FileBrowser.Result[0];
@@ -289,7 +289,7 @@ public class ComponentPanel : MonoBehaviour
 						string serializedJson = JsonConvert.SerializeObject(curPart, Formatting.Indented);
 						File.WriteAllText(filepath, serializedJson);
 						if (!File.Exists(filepath))
-							Info.carParts.Add(bottomNameText.text, curPart);
+							F.I.carParts.Add(bottomNameText.text, curPart);
 
 						bottomNameText.text = Path.GetFileNameWithoutExtension(filepath);
 						carConfig.SetPartTo(selectedPart, bottomNameText.text);
@@ -432,7 +432,7 @@ public class CarConfig
 			PartSavable Part(PartType type)
 			{
 				if (externalParts[(int)type] != null)
-					return Info.carParts[externalParts[(int)type]];
+					return F.I.carParts[externalParts[(int)type]];
 				else
 					return customParts[type];
 			}
@@ -515,7 +515,7 @@ public class CarConfig
 	{
 		if (customParts[type] == null)
 		{
-			customParts[type] = Info.carParts[externalParts[(int)type]].Clone();
+			customParts[type] = F.I.carParts[externalParts[(int)type]].Clone();
 		}
 		return customParts[type];
 	}
@@ -527,7 +527,7 @@ public class CarConfig
 			if (externalParts[(int)type] != null)
 			{// set part as custom
 				setAnyOtherCarPart = true;
-				customParts[type] = Info.carParts[externalParts[(int)type]].Clone();
+				customParts[type] = F.I.carParts[externalParts[(int)type]].Clone();
 				externalParts[(int)type] = null;
 				customParts[type].Apply(vp);
 			}
@@ -538,7 +538,7 @@ public class CarConfig
 			modifiedParts[(int)type] = false;
 			externalParts[(int)type] = partName;
 			customParts[type] = null;
-			Info.carParts[externalParts[(int)type]].Apply(vp);
+			F.I.carParts[externalParts[(int)type]].Apply(vp);
 		}
 	}
 	public string GetPartName(PartType type)
@@ -734,7 +734,7 @@ public class TyreSavable : PartSavable
 		{
 			var w = vp.wheels[i];
 
-			w.SetInitFrictions(forwardFriction, (Info.s_raceType == RaceType.Drift) ? driftRearFrictionInit : sideFriction, (i < 2) ? frontFrictionStretch : rearFrictionStretch);
+			w.SetInitFrictions(forwardFriction, (F.I.s_raceType == RaceType.Drift) ? driftRearFrictionInit : sideFriction, (i < 2) ? frontFrictionStretch : rearFrictionStretch);
 
 			w.slipThreshold = squeakSlipThreshold;
 			w.slipDependence = Wheel.SlipDependenceMode.independent;
@@ -941,7 +941,7 @@ public class ChassisSavable : PartSavable
 		vp.originalDrag = drag;
 		vp.rb.drag = drag;
 
-		if (Info.s_raceType == RaceType.Drift)
+		if (F.I.s_raceType == RaceType.Drift)
 			vp.centerOfMassObj.localPosition = new Vector3(0, verticalCOM, -0.1f);
 		else
 			vp.centerOfMassObj.localPosition = new Vector3(0, verticalCOM, longtitunalCOM);
@@ -1003,7 +1003,7 @@ public class EngineSavable : PartSavable
 		vp.engine.maxPitch = audioMaxPitch;
 		vp.engine.minPitch = audioMinPitch;
 		vp.engine.inertia = inertia;
-		vp.engine.maxTorque = (Info.s_raceType == RaceType.Drift) ? Mathf.Max(torque, vp.originalMass+0.1f) : torque;
+		vp.engine.maxTorque = (F.I.s_raceType == RaceType.Drift) ? Mathf.Max(torque, vp.originalMass+0.1f) : torque;
 		vp.engine.limitkRPM = redlineKRPM;
 		vp.engine.limit2kRPM = cutoffKRPM;
 		vp.engine.torqueCurve = vp.engine.GenerateTorqueCurve((int)torqueCurveType);
@@ -1105,8 +1105,8 @@ public class BmsSavable : PartSavable
 		bms.driftSpinExponent = driftSpinExponent;
 		bms.maxDriftAngle = maxDriftAngle;
 		bms.autoSteerDrift = autoSteerDrift == 1;
-		bms.driftPush = (Info.s_raceType == RaceType.Drift) ? Mathf.Max(driftPush, 1) : driftPush;
-		bms.downforce = (Info.s_raceType == RaceType.Drift) ? 0 : downforce;
+		bms.driftPush = (F.I.s_raceType == RaceType.Drift) ? Mathf.Max(driftPush, 1) : driftPush;
+		bms.downforce = (F.I.s_raceType == RaceType.Drift) ? 0 : downforce;
 		vp.wheels[0].suspensionParent.brakeForce = frontBrakeForce;
 		vp.wheels[1].suspensionParent.brakeForce = frontBrakeForce;
 		vp.wheels[2].suspensionParent.brakeForce = rearBrakeForce;

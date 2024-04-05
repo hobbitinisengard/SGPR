@@ -178,9 +178,9 @@ public class EditorPanel : MonoBehaviour
 	{
 		ShowXAxisLineRenderer = GetComponent<LineRenderer>();
 		ShowXAxisToggle.onValueChanged.AddListener(SwitchXAxisRenderer);
-		Info.universalPath = pathCreators[0];
-		Info.stuntpointsContainer = stuntpointsContainer;
-		Info.replayCams = replayCamsContainer;
+		F.I.universalPath = pathCreators[0];
+		F.I.stuntpointsContainer = stuntpointsContainer;
+		F.I.replayCams = replayCamsContainer;
 	}
 	private void OnDisable()
 	{
@@ -192,8 +192,8 @@ public class EditorPanel : MonoBehaviour
 	}
 	private void Initialize()
 	{
-		tileGroups.SetActive(Info.s_inEditor);
-		bottomMenu.SetActive(Info.s_inEditor);
+		tileGroups.SetActive(F.I.s_inEditor);
+		bottomMenu.SetActive(F.I.s_inEditor);
 
 		if (initialized)
 			return;
@@ -202,7 +202,7 @@ public class EditorPanel : MonoBehaviour
 		selector = new CSelector(scalatorButtonImage);
 		uiTest = GetComponent<UITest>();
 		currentTilesPanel = TilesMain.transform;
-		if (Info.s_inEditor)
+		if (F.I.s_inEditor)
 		{
 			flyCamera.enabled = true;
 		}
@@ -286,7 +286,7 @@ public class EditorPanel : MonoBehaviour
 	}
 	private void OnEnable()
 	{
-		if(Info.s_inEditor)
+		if(F.I.s_inEditor)
 			Initialize();
 		Cursor.visible = true;
 		ResetScale();
@@ -318,7 +318,7 @@ public class EditorPanel : MonoBehaviour
 	{
 		if (Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.N))
 		{
-			Info.s_isNight = !Info.s_isNight;
+			F.I.s_isNight = !F.I.s_isNight;
 			raceManager.SetPartOfDay();
 			skybox.GetComponent<SkyboxController>().SetNightTimeLights();
 			SetEnvirLights();
@@ -339,7 +339,7 @@ public class EditorPanel : MonoBehaviour
 				{
 					Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 					if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity,
-						1 << Info.roadLayer | 1 << Info.terrainLayer))
+						1 << F.I.roadLayer | 1 << F.I.terrainLayer))
 					{
 						arrow.transform.position = hit.point;
 						if (Input.GetMouseButtonDown(1))
@@ -395,7 +395,7 @@ public class EditorPanel : MonoBehaviour
 							HideCurrentTile();
 							Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 							if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity,
-								1 << Info.roadLayer))
+								1 << F.I.roadLayer))
 							{
 								var pickedTile = hit.transform.GetComponent<Tile>();
 								if (pickedTile == null)
@@ -415,7 +415,7 @@ public class EditorPanel : MonoBehaviour
 							HideCurrentTile();
 							Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 							if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity,
-								1 << Info.roadLayer))
+								1 << F.I.roadLayer))
 							{
 								HideCurrentTile();
 								if (Input.GetMouseButtonDown(0))
@@ -547,7 +547,7 @@ public class EditorPanel : MonoBehaviour
 							if (Input.GetKey(KeyCode.LeftControl))
 							{ // pick height
 								if (Physics.Raycast(ray, out hit, Mathf.Infinity,
-									1 << Info.roadLayer | 1 << Info.terrainLayer))
+									1 << F.I.roadLayer | 1 << F.I.terrainLayer))
 								{
 									var p = invisibleLevel.position;
 									p.y = hit.point.y;
@@ -561,7 +561,7 @@ public class EditorPanel : MonoBehaviour
 								currentTile.transform.position = curPosition;
 							}
 							else if (Physics.Raycast(ray, out hit, Mathf.Infinity,
-								1 << Info.invisibleLevelLayer | 1 << Info.roadLayer | 1 << Info.terrainLayer))
+								1 << F.I.invisibleLevelLayer | 1 << F.I.roadLayer | 1 << F.I.terrainLayer))
 							{ // tile preview location
 								curPosition = hit.point;
 								if (anchor == null && placedConnector != null && floatingConnector != null)
@@ -597,18 +597,18 @@ public class EditorPanel : MonoBehaviour
 				{
 					if (selectingOtherConnector)
 					{
-						flyCamera.transform.GetComponent<Camera>().cullingMask |= 1 << Info.connectorLayer;
+						flyCamera.transform.GetComponent<Camera>().cullingMask |= 1 << F.I.connectorLayer;
 
 						if (Input.GetMouseButtonDown(0))
 						{
 							Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-							if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, 1 << Info.connectorLayer))
+							if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, 1 << F.I.connectorLayer))
 							{
 								var c = hit.transform.GetComponent<Connector>();
 								if (!c.marked)
 								{
 									selectedConnector = c;
-									flyCamera.transform.GetComponent<Camera>().cullingMask &= ~(1 << Info.connectorLayer);
+									flyCamera.transform.GetComponent<Camera>().cullingMask &= ~(1 << F.I.connectorLayer);
 								}
 							}
 						}
@@ -623,7 +623,7 @@ public class EditorPanel : MonoBehaviour
 						{
 							Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
-							if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, 1 << Info.connectorLayer))
+							if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, 1 << F.I.connectorLayer))
 							{
 								var c = hit.transform.GetComponent<Connector>();
 								if (!c.marked)
@@ -660,16 +660,16 @@ public class EditorPanel : MonoBehaviour
 					if (Input.GetMouseButtonDown(0))
 					{
 						Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-						if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, 1 << Info.cameraLayer | 1 << Info.connectorLayer))
+						if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, 1 << F.I.cameraLayer | 1 << F.I.connectorLayer))
 						{
-							if (hit.transform.gameObject.layer == Info.cameraLayer)
+							if (hit.transform.gameObject.layer == F.I.cameraLayer)
 							{
 								if (Input.GetKey(KeyCode.X))
 									Destroy(hit.transform.gameObject);
 								else
 								{
 									selectedCamera = hit.transform.gameObject;
-									flyCamera.transform.GetComponent<Camera>().cullingMask |= 1 << Info.connectorLayer;
+									flyCamera.transform.GetComponent<Camera>().cullingMask |= 1 << F.I.connectorLayer;
 									DisplayMessageFor("Selected", 1);
 								}
 							}
@@ -677,7 +677,7 @@ public class EditorPanel : MonoBehaviour
 							{
 								hit.transform.gameObject.GetComponent<Connector>().SetCamera(
 									selectedCamera.GetComponent<TrackCamera>());
-								flyCamera.transform.GetComponent<Camera>().cullingMask &= ~(1 << Info.connectorLayer);
+								flyCamera.transform.GetComponent<Camera>().cullingMask &= ~(1 << F.I.connectorLayer);
 							}
 						}
 					}
@@ -688,12 +688,12 @@ public class EditorPanel : MonoBehaviour
 					if (selector.Distance == 0) // searching to add connectors
 					{
 						Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-						if (Physics.Raycast(ray, out _, Mathf.Infinity, 1 << Info.roadLayer | 1 << Info.connectorLayer))
+						if (Physics.Raycast(ray, out _, Mathf.Infinity, 1 << F.I.roadLayer | 1 << F.I.connectorLayer))
 						{
-							flyCamera.transform.GetComponent<Camera>().cullingMask |= 1 << Info.connectorLayer;
+							flyCamera.transform.GetComponent<Camera>().cullingMask |= 1 << F.I.connectorLayer;
 							if (Input.GetMouseButtonDown(0))
 							{
-								if (Physics.Raycast(ray, out RaycastHit hit2, Mathf.Infinity, 1 << Info.connectorLayer))
+								if (Physics.Raycast(ray, out RaycastHit hit2, Mathf.Infinity, 1 << F.I.connectorLayer))
 								{
 									var c = hit2.transform.GetComponent<Connector>();
 									if (!c.marked)
@@ -716,7 +716,7 @@ public class EditorPanel : MonoBehaviour
 						}
 						else
 						{
-							flyCamera.transform.GetComponent<Camera>().cullingMask &= ~(1 << Info.connectorLayer);
+							flyCamera.transform.GetComponent<Camera>().cullingMask &= ~(1 << F.I.connectorLayer);
 						}
 					}
 					else
@@ -729,7 +729,7 @@ public class EditorPanel : MonoBehaviour
 				if (Input.GetMouseButtonDown(0))
 				{
 					Ray r = Camera.main.ScreenPointToRay(Input.mousePosition);
-					if (Physics.Raycast(r, out RaycastHit hit, Mathf.Infinity, 1 << Info.flagLayer))
+					if (Physics.Raycast(r, out RaycastHit hit, Mathf.Infinity, 1 << F.I.flagLayer))
 					{
 						selectedFlag = hit.transform;
 						fillMenu.SetActive(true);
@@ -741,7 +741,7 @@ public class EditorPanel : MonoBehaviour
 					if (Input.GetMouseButtonDown(0))
 					{
 						Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-						var hits = Physics.RaycastAll(ray, Mathf.Infinity, 1 << Info.connectorLayer);
+						var hits = Physics.RaycastAll(ray, Mathf.Infinity, 1 << F.I.connectorLayer);
 						foreach (var h in hits)
 						{
 							var c = h.transform.GetComponent<Connector>();
@@ -783,10 +783,10 @@ public class EditorPanel : MonoBehaviour
 	//{
 	//	Vector3 center = Vector3.zero;
 	//	GameObject tileMain = c.transform.parent.GetChild(0).gameObject;
-	//	tileMain.layer = Info.selectionLayer;
+	//	tileMain.layer = F.I.selectionLayer;
 	//	Vector3 rayPoint = tileMain.transform.position;
 	//	rayPoint.y += 100;
-	//	if (Physics.Raycast(rayPoint, Vector3.down, out RaycastHit hit, Mathf.Infinity, 1 << Info.selectionLayer))
+	//	if (Physics.Raycast(rayPoint, Vector3.down, out RaycastHit hit, Mathf.Infinity, 1 << F.I.selectionLayer))
 	//	{
 	//		center = rayPoint;
 	//		center.y = hit.point.y;
@@ -795,7 +795,7 @@ public class EditorPanel : MonoBehaviour
 	//	{
 	//		Debug.LogError("GetCenter failed");
 	//	}
-	//	tileMain.layer = Info.roadLayer;
+	//	tileMain.layer = F.I.roadLayer;
 	//	return center;
 	//}
 	/// <param name="intersection">returned intersection</param>
@@ -1019,9 +1019,9 @@ public class EditorPanel : MonoBehaviour
 					var col = castable.GetComponent<SphereCollider>();
 					col.radius = 1;
 					col.isTrigger = true;
-					castable.layer = Info.racingLineLayer;
+					castable.layer = F.I.racingLineLayer;
 					castable.name = progress.ToString(CultureInfo.InvariantCulture);
-					progress += Info.racingPathResolution;
+					progress += F.I.racingPathResolution;
 				}
 
 				// generate stuntpoints for cars
@@ -1031,7 +1031,7 @@ public class EditorPanel : MonoBehaviour
 				{
 					if (c.isStuntZone || c.trackCamera != null)
 					{
-						Collider[] hits = Physics.OverlapSphere(c.transform.position + Vector3.up, 30, 1 << Info.racingLineLayer);
+						Collider[] hits = Physics.OverlapSphere(c.transform.position + Vector3.up, 30, 1 << F.I.racingLineLayer);
 						float min = 999;
 						int closestIdx = 0;
 						for (int j = 0; j < hits.Length; ++j)
@@ -1136,7 +1136,7 @@ public class EditorPanel : MonoBehaviour
 		}
 		else
 		{
-			original = Resources.Load<GameObject>(Info.editorTilesPath + name);
+			original = Resources.Load<GameObject>(F.I.editorTilesPath + name);
 			cachedTiles.Add(name, original);
 		}
 		currentTile = Instantiate(original, placedTilesContainer.transform)
@@ -1205,7 +1205,7 @@ public class EditorPanel : MonoBehaviour
 				case Mode.Connect:
 					pathFollower.SetActive(false);
 					ClearConnectors();
-					flyCamera.transform.GetComponent<Camera>().cullingMask &= ~(1 << Info.connectorLayer);
+					flyCamera.transform.GetComponent<Camera>().cullingMask &= ~(1 << F.I.connectorLayer);
 					break;
 				case Mode.Arrow:
 					if (arrow)
@@ -1217,10 +1217,10 @@ public class EditorPanel : MonoBehaviour
 						Destroy(newCamera.gameObject);
 					cameraMenu.gameObject.SetActive(false);
 					UnmarkAllAndDisableCollidersOfConnectedConnectors();
-					flyCamera.transform.GetComponent<Camera>().cullingMask &= ~(1 << Info.connectorLayer | 1 << Info.cameraLayer);
+					flyCamera.transform.GetComponent<Camera>().cullingMask &= ~(1 << F.I.connectorLayer | 1 << F.I.cameraLayer);
 					break;
 				case Mode.Scalator:
-					flyCamera.transform.GetComponent<Camera>().cullingMask &= ~(1 << Info.connectorLayer);
+					flyCamera.transform.GetComponent<Camera>().cullingMask &= ~(1 << F.I.connectorLayer);
 					selector.Reset();
 					break;
 				case Mode.FillTool:
@@ -1228,14 +1228,14 @@ public class EditorPanel : MonoBehaviour
 					break;
 				case Mode.StuntZonesTool:
 
-					flyCamera.transform.GetComponent<Camera>().cullingMask &= ~(1 << Info.connectorLayer);
+					flyCamera.transform.GetComponent<Camera>().cullingMask &= ~(1 << F.I.connectorLayer);
 
 					UnmarkAllAndDisableCollidersOfConnectedConnectors();
 
 					break;
 				case Mode.Cross:
 					selector.Reset();
-					flyCamera.transform.GetComponent<Camera>().cullingMask &= ~(1 << Info.connectorLayer);
+					flyCamera.transform.GetComponent<Camera>().cullingMask &= ~(1 << F.I.connectorLayer);
 					break;
 				default:
 					break;
@@ -1262,15 +1262,15 @@ public class EditorPanel : MonoBehaviour
 					break;
 				case Mode.SetCamera:
 					cameraMenu.gameObject.SetActive(true);
-					flyCamera.transform.GetComponent<Camera>().cullingMask |= 1 << Info.cameraLayer;
+					flyCamera.transform.GetComponent<Camera>().cullingMask |= 1 << F.I.cameraLayer;
 					EnableAllCollidersAndMark(neverMark);
 					break;
 				case Mode.StuntZonesTool:
-					flyCamera.transform.GetComponent<Camera>().cullingMask |= 1 << Info.connectorLayer;
+					flyCamera.transform.GetComponent<Camera>().cullingMask |= 1 << F.I.connectorLayer;
 					EnableAllCollidersAndMark(isStuntZonePred);
 					break;
 				case Mode.Cross:
-					flyCamera.transform.GetComponent<Camera>().cullingMask |= 1 << Info.connectorLayer;
+					flyCamera.transform.GetComponent<Camera>().cullingMask |= 1 << F.I.connectorLayer;
 					break;
 				default:
 					break;
@@ -1461,7 +1461,7 @@ public class EditorPanel : MonoBehaviour
 
 		List<int> icons = new List<int>();
 		if (stuntyCount >= 10)
-			icons.Add(0); // as in Info.IconNames
+			icons.Add(0); // as in F.I.IconNames
 		if (loopCount >= 1)
 			icons.Add(1);
 		if (jumpyCount >= 5)
@@ -1487,12 +1487,12 @@ public class EditorPanel : MonoBehaviour
 		// save image
 		Texture2D tex = F.toTexture2D(renderTexture);
 		byte[] textureData = tex.EncodeToPNG();
-		string path = Path.Combine(Info.tracksPath, trackName.text + ".png");
+		string path = Path.Combine(F.I.tracksPath, trackName.text + ".png");
 		File.WriteAllBytes(path, textureData);
 
 		// save track editor data
 		string JsonContent = JsonConvert.SerializeObject(TRACK);
-		path = Path.Combine(Info.tracksPath, trackName.text + ".data");
+		path = Path.Combine(F.I.tracksPath, trackName.text + ".data");
 		File.WriteAllText(path, JsonContent);
 
 		// save track header
@@ -1501,7 +1501,7 @@ public class EditorPanel : MonoBehaviour
 			unlocked = true,
 			preferredCarClass = (CarGroup)carGroupDropdown.value,
 			difficulty = trackDifficultyDropdown.value,
-			envir = Info.tracks[Info.s_trackName].envir,
+			envir = F.I.tracks[F.I.s_trackName].envir,
 			author = trackAuthorInputField.text,
 			icons = icons.ToArray(),
 			desc = trackDescInputField.text,
@@ -1513,25 +1513,25 @@ public class EditorPanel : MonoBehaviour
 			DisplayMessageFor("Drive at least once to validate track", 3);
 		}
 		JsonContent = JsonConvert.SerializeObject(header, Formatting.Indented);
-		path = Path.Combine(Info.tracksPath, trackName.text + ".track");
+		path = Path.Combine(F.I.tracksPath, trackName.text + ".track");
 		File.WriteAllText(path, JsonContent);
 
 		//serialize records aside from .track file
 		JsonContent = JsonConvert.SerializeObject(header.records, Formatting.Indented);
-		path = Path.Combine(Info.tracksPath, trackName.text + ".rec");
+		path = Path.Combine(F.I.tracksPath, trackName.text + ".rec");
 		File.WriteAllText(path, JsonContent);
 
-		if (!Info.tracks.ContainsKey(trackName.text))
-			Info.tracks.Add(trackName.text, header);
+		if (!F.I.tracks.ContainsKey(trackName.text))
+			F.I.tracks.Add(trackName.text, header);
 		else
-			Info.tracks[trackName.text] = header;
+			F.I.tracks[trackName.text] = header;
 	}
 	public void SetPylonVisibility(bool isVisible)
 	{
 		for (int i = 0; i < placedTilesContainer.transform.childCount; ++i)
 		{
 			var tile = placedTilesContainer.transform.GetChild(i);
-			if (!tile.CompareTag(Info.visibleInPictureModeTag))
+			if (!tile.CompareTag(F.I.visibleInPictureModeTag))
 				tile.gameObject.SetActive(isVisible);
 		}
 	}
@@ -1606,7 +1606,7 @@ public class EditorPanel : MonoBehaviour
 		{
 			var lights = envir.transform.Find("Lights");
 			if (lights != null)
-				lights.gameObject.SetActive(Info.s_isNight);
+				lights.gameObject.SetActive(F.I.s_isNight);
 		}
 	}
 	public void RemoveTrackLeftovers()
@@ -1626,8 +1626,8 @@ public class EditorPanel : MonoBehaviour
 		loadingTrack = true;
 		records = new();
 		
-		int skyboxNumber = Info.skys[(int)Info.tracks[Info.s_trackName].envir];
-		string envirName = Info.tracks[Info.s_trackName].envir.ToString();
+		int skyboxNumber = F.I.skys[(int)F.I.tracks[F.I.s_trackName].envir];
+		string envirName = F.I.tracks[F.I.s_trackName].envir.ToString();
 		RemoveTrackLeftovers();
 		skybox = Instantiate(Resources.Load<GameObject>("envirs/" + "sky" + skyboxNumber.ToString()));
 		envir = Instantiate(Resources.Load<GameObject>("envirs/" + envirName));
@@ -1640,12 +1640,12 @@ public class EditorPanel : MonoBehaviour
 		terrainBtn.gameObject.SetActive(terrain != null);
 
 		SetEnvirLights();
-		trackName.text = Info.s_trackName;
-		string path = Path.Combine(Info.tracksPath, Info.s_trackName + ".data");
+		trackName.text = F.I.s_trackName;
+		string path = Path.Combine(F.I.tracksPath, F.I.s_trackName + ".data");
 
 		terrainEditor.SetTerrain(terrain);
 
-		invisibleLevel.localScale = Info.invisibleLevelDimensions[(int)Info.tracks[Info.s_trackName].envir];
+		invisibleLevel.localScale = F.I.invisibleLevelDimensions[(int)F.I.tracks[F.I.s_trackName].envir];
 
 
 		for (int i = 0; i < placedTilesContainer.transform.childCount; ++i)
@@ -1674,15 +1674,15 @@ public class EditorPanel : MonoBehaviour
 		TrackSavableData TRACK = JsonConvert.DeserializeObject<TrackSavableData>(trackJson);
 
 
-		trackDescInputField.text = Info.tracks[Info.s_trackName].desc;
-		trackDescInputFieldPlaceholder.text = Info.tracks[Info.s_trackName].desc;
+		trackDescInputField.text = F.I.tracks[F.I.s_trackName].desc;
+		trackDescInputFieldPlaceholder.text = F.I.tracks[F.I.s_trackName].desc;
 
-		trackAuthorInputField.text = Info.tracks[Info.s_trackName].author;
-		trackAuthorInputFieldPlaceholder.text = Info.tracks[Info.s_trackName].author;
+		trackAuthorInputField.text = F.I.tracks[F.I.s_trackName].author;
+		trackAuthorInputFieldPlaceholder.text = F.I.tracks[F.I.s_trackName].author;
 
-		trackDifficultyDropdown.value = Info.tracks[Info.s_trackName].difficulty;
+		trackDifficultyDropdown.value = F.I.tracks[F.I.s_trackName].difficulty;
 
-		carGroupDropdown.value = (int)Info.tracks[Info.s_trackName].preferredCarClass;
+		carGroupDropdown.value = (int)F.I.tracks[F.I.s_trackName].preferredCarClass;
 
 		windExternal = TRACK.windExternal;
 		windRandom = TRACK.windRandom;
@@ -1752,7 +1752,7 @@ public class EditorPanel : MonoBehaviour
 			yield break;
 
 		FileBrowser.SetFilters(false, new FileBrowser.Filter("track", ".track"));
-		yield return FileBrowser.WaitForLoadDialog(FileBrowser.PickMode.Files, false, Info.tracksPath, null, "Select track..", "Load");
+		yield return FileBrowser.WaitForLoadDialog(FileBrowser.PickMode.Files, false, F.I.tracksPath, null, "Select track..", "Load");
 
 		if(FileBrowser.Success)
 		{
@@ -1760,9 +1760,9 @@ public class EditorPanel : MonoBehaviour
 			if (filepath.Length > 0)
 			{
 				string newTrackName = Path.GetFileNameWithoutExtension(filepath);
-				if (Info.tracks.ContainsKey(newTrackName))
+				if (F.I.tracks.ContainsKey(newTrackName))
 				{
-					Info.s_trackName = newTrackName;
+					F.I.s_trackName = newTrackName;
 					StartCoroutine(LoadTrack());
 				}
 			}
@@ -1775,9 +1775,9 @@ public class EditorPanel : MonoBehaviour
 	public void ToValidate()
 	{
 		SwitchTo(Mode.None);
-		Info.s_laps = 3;
-		Info.s_cpuRivals = 3;
-		Info.s_raceType = RaceType.Race;
+		F.I.s_laps = 3;
+		F.I.s_cpuRivals = 3;
+		F.I.s_raceType = RaceType.Race;
 		if (trackName.text.Length == 3)
 		{
 			DisplayMessageFor("Save track!", 2);

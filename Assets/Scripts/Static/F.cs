@@ -1,16 +1,101 @@
-﻿using System.Collections;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.IO;
 using System.Threading.Tasks;
+using Unity.Services.Lobbies.Models;
 using UnityEngine;
 using UnityEngine.Networking;
-// Static class with extra functions
 public static class F
 {
-
 	readonly public static int trackMask = 0;
 	public static AnimationCurve curve2 = AnimationCurve.EaseInOut(0, 1, 1, 0);
 	public static AnimationCurve curve = AnimationCurve.EaseInOut(0, 0, 1, 1);
+	public static Info I;
+	public static void CopyFilesRecursively(string sourcePath, string targetPath)
+	{
+		//Now Create all of the directories
+		foreach (string dirPath in Directory.GetDirectories(sourcePath, "*", SearchOption.AllDirectories))
+		{
+			Directory.CreateDirectory(dirPath.Replace(sourcePath, targetPath));
+		}
+
+		//Copy all the files & Replaces any files with the same name
+		foreach (string newPath in Directory.GetFiles(sourcePath, "*.*", SearchOption.AllDirectories))
+		{
+			File.Copy(newPath, newPath.Replace(sourcePath, targetPath), true);
+		}
+	}
+	public static Livery SponsorGet(this Player player)
+	{
+		return (Livery)Enum.Parse(typeof(Livery), player.Data[ServerConnection.k_Sponsor].Value);
+	}
+	public static void SponsorSet(this Player player, Livery livery)
+	{
+		player.Data[ServerConnection.k_Sponsor].Value = livery.ToString();
+	}
+	public static int ScoreGet(this Player player)
+	{
+		return int.Parse(player.Data[ServerConnection.k_score].Value);
+	}
+	public static void ScoreSet(this Player player, int newScore)
+	{
+		player.Data[ServerConnection.k_score].Value = newScore.ToString();
+	}
+	public static bool ReadyGet(this Player player)
+	{
+		return bool.Parse(player.Data[ServerConnection.k_Ready].Value);
+	}
+	public static void ReadySet(this Player player, bool ready)
+	{
+		player.Data[ServerConnection.k_Ready].Value = ready.ToString();
+	}
+	public static string NameGet(this Player player)
+	{
+		return player.Data[ServerConnection.k_Name].Value;
+	}
+	public static void NameSet(this Player player, string name)
+	{
+		player.Data[ServerConnection.k_Name].Value = name;
+	}
+	public static string carNameGet(this Player player)
+	{
+		return player.Data[ServerConnection.k_carName].Value;
+	}
+	public static void carNameSet(this Player player, string carName)
+	{
+		player.Data[ServerConnection.k_carName].Value = carName;
+	}
+	public static Color ReadColor(this Player player)
+	{
+		return ReadColor(player.SponsorGet());
+	}
+	public static Color ReadColor(Livery livery)
+	{
+		if (F.I.scoringType == ScoringType.Championship)
+		{
+			switch (livery)
+			{
+				case Livery.Special:
+					return Color.yellow;
+				case Livery.TGR:
+					return new Color(1, 165 / 255f, 0); // orange
+				case Livery.Rline:
+					return new Color(165 / 255f, 90 / 255f, 189 / 255f); // purple
+				case Livery.Itex:
+					return Color.red;
+				case Livery.Caltex:
+					return Color.green;
+				case Livery.Titan:
+					return Color.blue;
+				case Livery.Mysuko:
+					return Color.gray;
+				default:
+					break;
+			}
+		}
+		return Color.yellow;
+	}
+
 	public static float EasingOutQuint(float x)
 	{
 		return 1 - Mathf.Pow(1 - x, 5);
@@ -37,7 +122,15 @@ public static class F
 	}
 	public static T GetRandom<T>(this IList<T> collection)
 	{
-		return collection[Random.Range(0, collection.Count)];
+		return collection[UnityEngine.Random.Range(0, collection.Count)];
+	}
+	public static string ToLaptimeStr(this TimeSpan t)
+	{
+		string shortForm = "";
+		if (t.Hours > 0)
+			shortForm += string.Format("{0:D2}.", t.Hours);
+		shortForm += string.Format("{0:D2}:{1:D2}.{2:D2}", t.Minutes, t.Seconds, Mathf.RoundToInt(t.Milliseconds / 10f));
+		return shortForm;
 	}
 	//static public void drawString(string text, Vector3 worldPos, Color? colour = null)
 	//{
@@ -241,6 +334,7 @@ public static class F
 		else
 			return -1;
 	}
+	
 
 #if UNITY_EDITOR
 	// Returns whether the given object is part of a prefab (meant to be used with selected objects in the inspector)
@@ -258,7 +352,7 @@ public static class F
 
 	internal static void Deselect()
 	{
-		Info.eventSystem.SetSelectedGameObject(null);
+		F.I.eventSystem.SetSelectedGameObject(null);
 	}
 #endif
 }

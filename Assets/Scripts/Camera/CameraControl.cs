@@ -182,16 +182,16 @@ namespace RVP
 		}
 		private void SwitchTarget(InputAction.CallbackContext context)
 		{
-			if (vp && Info.raceManager.playerCar?.raceBox.enabled == false && !Info.chat.texting)
+			if (vp && RaceManager.I.playerCar?.raceBox.enabled == false && !F.I.chat.texting)
 			{
 				Vector2 move = moveRef.action.ReadValue<Vector2>();
 				if(Mathf.Abs(move.x) > 0.5f)
 				{
-					int index = Info.s_cars.FindIndex(c => c.transform.name == vp.name);
+					int index = F.I.s_cars.FindIndex(c => c.transform.name == vp.name);
 
-					Connect(Info.s_cars[F.Wraparound(index + (move.x > 0 ? 1 : -1),0,Info.s_cars.Count-1) % Info.s_cars.Count], Mode.Replay);
+					Connect(F.I.s_cars[F.Wraparound(index + (move.x > 0 ? 1 : -1),0,F.I.s_cars.Count-1) % F.I.s_cars.Count], Mode.Replay);
 
-					Info.raceManager.hud.infoText.AddMessage(new Message(vp.transform.name, BottomInfoType.NEW_CAMERA_TARGET));
+					RaceManager.I.hud.infoText.AddMessage(new Message(vp.transform.name, BottomInfoType.NEW_CAMERA_TARGET));
 				}
 			}
 		}
@@ -254,7 +254,7 @@ namespace RVP
 				forward = (vp.reallyGroundedWheels > 0)
 				 ? vp.tr.forward : vp.rb.velocity.normalized;
 
-			if(!Info.chat.texting)
+			if(!F.I.chat.texting)
 			{
 				xInput = vp.basicInput.lookAxisInput.action.ReadValue<float>();
 				yInput = -vp.basicInput.lookBackInput.action.ReadValue<float>();

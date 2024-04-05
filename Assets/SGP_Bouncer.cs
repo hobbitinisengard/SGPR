@@ -44,24 +44,24 @@ public class SGP_Bouncer : MonoBehaviour
 	}
 	private void OnCollisionStay(Collision collision)
 	{
-		if (collision.GetContact(0).otherCollider.gameObject.layer == Info.carCarCollisionLayer)
+		if (collision.GetContact(0).otherCollider.gameObject.layer == F.I.carCarCollisionLayer)
 			BounceCars(collision);
 	}
 	private void OnCollisionEnter(Collision collision)
 	{
 		ContactPoint contact = collision.GetContact(0);
-		if (contact.otherCollider.gameObject.layer == Info.carCarCollisionLayer)
+		if (contact.otherCollider.gameObject.layer == F.I.carCarCollisionLayer)
 		{
 			BounceCars(collision);
 			return;
 		}
-		if (contact.otherCollider.gameObject.layer == Info.ignoreWheelCastLayer)
+		if (contact.otherCollider.gameObject.layer == F.I.ignoreWheelCastLayer)
 		{
 			return;
 		}
 		if (vp.countdownTimer > 0)
 			return;
-		if (contact.otherCollider.gameObject.layer != Info.roadLayer)
+		if (contact.otherCollider.gameObject.layer != F.I.roadLayer)
 			return;
 		vp.colliding  = true;
 		Vector3 norm = contact.normal;

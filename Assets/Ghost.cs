@@ -21,7 +21,7 @@ public class Ghost : MonoBehaviour
 			hittable = isHittable;
 			foreach (var c in colliders)
 			{
-				c.gameObject.layer = isHittable ? Info.carCarCollisionLayer : Info.ghostLayer;
+				c.gameObject.layer = isHittable ? F.I.carCarCollisionLayer : F.I.ghostLayer;
 			}
 		}
 		foreach (var r in ghostableParts)
@@ -93,12 +93,12 @@ public class Ghost : MonoBehaviour
 					prev = (int)(timer * 10);
 					SetHittable(prev % 2 == 0, false);
 				}
-				if(!Info.gamePaused && !Physics.CheckSphere(transform.position, 1.5f, 1<<Info.carCarCollisionLayer))
+				if(!F.I.gamePaused && !Physics.CheckSphere(transform.position, 1.5f, 1<<F.I.carCarCollisionLayer))
 					timer -= Time.deltaTime;
 			}
 			else
 			{
-				if(!Info.gamePaused)
+				if(!F.I.gamePaused)
 					timer -= Time.deltaTime;
 			}
 			yield return null;

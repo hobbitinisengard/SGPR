@@ -72,7 +72,7 @@ public class ResultsSeq : MonoBehaviour
 		dimCo = showResultCo = showTableCo = null;
 		seq = StartCoroutine(Seq());
 		audioSource.volume = 1;
-		audioSource.clip = Info.audioClips[(playerResultPosition <= 3) ? "RacePodium" : "RaceNotPodium"];
+		audioSource.clip = F.I.audioClips[(playerResultPosition <= 3) ? "RacePodium" : "RaceNotPodium"];
 		audioSource.loop = false;
 		audioSource.Play();
 	}
@@ -98,7 +98,7 @@ public class ResultsSeq : MonoBehaviour
 			}
 			if (!audioSource.isPlaying)
 			{
-				audioSource.clip = Info.audioClips["RaceResults"];
+				audioSource.clip = F.I.audioClips["RaceResults"];
 				audioSource.loop = true;
 				audioSource.Play();
 			}
@@ -168,8 +168,8 @@ public class ResultsSeq : MonoBehaviour
 		float timer = TimeRequiredForUpdate+1;
 		for (int i = leftRow.childCount-1; i >=0 ; --i)
 		{
-			leftRow.GetChild(i).gameObject.SetActive(i + 1 <= Info.s_cars.Count);
-			rightRow.GetChild(i).gameObject.SetActive(i + 1 <= Info.s_cars.Count);
+			leftRow.GetChild(i).gameObject.SetActive(i + 1 <= F.I.s_cars.Count);
+			rightRow.GetChild(i).gameObject.SetActive(i + 1 <= F.I.s_cars.Count);
 		}
 		yield return null;
 
@@ -183,7 +183,7 @@ public class ResultsSeq : MonoBehaviour
 			if (submitFlag && dimCo == null) // closing seq
 			{
 				submitFlag = false;
-				for (int i = 0; i < Info.s_cars.Count; ++i)
+				for (int i = 0; i < F.I.s_cars.Count; ++i)
 				{ 
 					leftRow.GetChild(i).gameObject.GetComponent<SlideInOut>().PlaySlideOut(true);
 					rightRow.GetChild(i).gameObject.GetComponent<SlideInOut>().PlaySlideOut(true);
@@ -219,17 +219,17 @@ public class ResultsSeq : MonoBehaviour
 		}
 		audioSource.Stop();
 
-		if(Info.gameMode == MultiMode.Multiplayer && Info.scoringType == ScoringType.Championship)
+		if(F.I.gameMode == MultiMode.Multiplayer && F.I.scoringType == ScoringType.Championship)
 		{
-			ResultsView.PersistentResult[] resultData = new ResultsView.PersistentResult[Info.s_cars.Count];
-			for(int i=0; i<Info.s_cars.Count; ++i)
+			ResultsView.PersistentResult[] resultData = new ResultsView.PersistentResult[F.I.s_cars.Count];
+			for(int i=0; i<F.I.s_cars.Count; ++i)
 			{
 				resultData[i] = new ResultsView.PersistentResult()
 				{
-					name = Info.s_cars[i].name,
-					lap = Info.s_cars[i].raceBox.bestLapTime,
-					stunt = Info.s_cars[i].raceBox.Aero,
-					drift = Info.s_cars[i].raceBox.drift,
+					name = F.I.s_cars[i].name,
+					lap = F.I.s_cars[i].raceBox.bestLapTime,
+					stunt = F.I.s_cars[i].raceBox.Aero,
+					drift = F.I.s_cars[i].raceBox.drift,
 				};
 			}
 			ResultsView.resultData = resultData;
@@ -248,13 +248,13 @@ public class ResultsSeq : MonoBehaviour
 	}
 	void SetTableBoxesValues()
 	{
-		for(int i=0; i<Info.s_cars.Count; ++i)
+		for(int i=0; i<F.I.s_cars.Count; ++i)
 		{
 			leftRow.GetChild(i).GetChild(0).GetChild(0)
-						.GetComponent<TextMeshProUGUI>().text = Info.s_cars[i].transform.name;
+						.GetComponent<TextMeshProUGUI>().text = F.I.s_cars[i].transform.name;
 			rightBoxLabel.text = rightBoxLabels[rightBoxLabelInt];
 			rightRow.GetChild(i).GetChild(0).GetChild(0)
-						.GetComponent<TextMeshProUGUI>().text = Info.s_cars[i].raceBox.Result((RecordType)rightBoxLabelInt);
+						.GetComponent<TextMeshProUGUI>().text = F.I.s_cars[i].raceBox.Result((RecordType)rightBoxLabelInt);
 		}
 	}
 }

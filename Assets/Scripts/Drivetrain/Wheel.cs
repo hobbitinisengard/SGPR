@@ -342,7 +342,7 @@ namespace RVP
 			targetDrive = GetComponent<DriveForce>();
 			currentRPM = 0;
 
-			if (Info.s_raceType == RaceType.Drift)
+			if (F.I.s_raceType == RaceType.Drift)
 				slipDependence = SlipDependenceMode.independent;
 		}
 

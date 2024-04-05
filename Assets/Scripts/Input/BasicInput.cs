@@ -27,7 +27,7 @@ namespace RVP
 
 		public InputActionReference lookBackInput;
 		public InputActionReference lookAxisInput;
-
+		float resetOnTrackTime = 0;
 		private void Awake()
 		{
 			vp = transform.parent.GetComponent<VehicleParent>();
@@ -37,7 +37,7 @@ namespace RVP
 		void Update()
 		{
 
-			if (Info.chat.texting)
+			if (F.I.chat.texting)
 				return;
 
 			if (!string.IsNullOrEmpty(upshiftButton))
@@ -73,13 +73,15 @@ namespace RVP
 			vp.SetSteer(input2.x);
 			vp.SetBoost(boostInput.action.ReadValue<float>() == 1);
 
-			if (Info.chat.texting)
+			if (F.I.chat.texting)
 				return;
 
 			vp.SetHonkerInput(honkInput.action.ReadValue<float>()==1);
 			vp.SetSGPShift(evoInput.action.ReadValue<float>()==1);
-			if(resetOnTrackInput.action.ReadValue<float>()==1)
+			if(resetOnTrackInput.action.ReadValue<float>()==1 
+				&& Time.time - resetOnTrackTime > 5)
 			{
+				resetOnTrackTime = Time.time;
 				vp.ResetOnTrack();
 			}
 			vp.SetRoll(rollInput.action.ReadValue<float>());

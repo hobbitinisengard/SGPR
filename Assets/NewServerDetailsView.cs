@@ -61,8 +61,8 @@ public class NewServerDetailsView : MainMenuView
 	public async void CreateLobby()
 	{
 		OkbuttonText.text = "WAIT";
-		string trackName = Info.tracks.First(kv => kv.Value.valid).Key;
-		string sha = await Info.SHA(Info.tracksPath + trackName + ".data");
+		string trackName = F.I.tracks.First(kv => kv.Value.valid).Key;
+		string sha = await F.I.SHA(F.I.tracksPath + trackName + ".data");
 		Debug.Log("CreateLobby start" + trackName + " " + sha);
 		if (await server.CreateLobby(trackName, sha))
 		{
