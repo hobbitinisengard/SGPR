@@ -19,19 +19,6 @@ namespace RVP
 		public Suspension[] steeredWheels;
 		[Range(0, 1f)]
 		public float holdDuration = 0;
-		//[NonSerialized]
-		//float gamma = 1;
-		//public float Gamma
-		//{
-		//	get { return gamma; }
-		//	set
-		//	{
-		//		gamma = Mathf.Clamp(gamma, 0.1f, 10);
-		//		gamma = value;
-		//		Generate_digitalSteeringInputCurve();
-		//		//GenerateSteeringInputCurve();
-		//	}
-		//}
 		public float steerLimit;
 		public float maxDegreesRotation;
 		static AnimationCurve keyboardInputCurve;
@@ -48,7 +35,6 @@ namespace RVP
 		public float shiftRearFriction;
 		internal float driftRearFriction;
 		internal float driftRearFrictionInit;
-		private float prevSteerInput;
 
 		void GenerateGammaCurve()
 		{
@@ -126,7 +112,6 @@ namespace RVP
 				else
 					holdCurveValue = keyboardInputCurve.Evaluate(holdDuration);
 
-				prevSteerInput = vp.steerInput;
 			}
 			float sign = F.Sign(vp.steerInput);
 			if (steeringWheel != null)

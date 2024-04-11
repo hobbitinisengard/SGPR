@@ -37,16 +37,14 @@ public class InfoText : MonoBehaviour
 		infoText_rt = GetComponent<RectTransform>();
 		infoText = GetComponent<Text>();
 		SetBottomTextPos(msgHiddenPos);
-		gameObject.SetActive(true);
-	}
-	private void Start()
-	{
 		bottomTextAnim = new AnimationCurve(new Keyframe[] {
 			new (0,0),
 			new (.5f,1),
 			new (2.5f,1),
 			new (3,0),
 		});
+		gameObject.SetActive(true);
+		
 	}
 	private void OnEnable()
 	{

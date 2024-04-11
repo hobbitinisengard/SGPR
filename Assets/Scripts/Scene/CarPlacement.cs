@@ -23,7 +23,7 @@ public class CarPlacement
 			PlayerId = 0,
 			position = pos,
 			name = "CP" + (pos + 1).ToString(),
-			sponsor = (Livery)(UnityEngine.Random.Range(0, F.I.Liveries) + 1),
+			sponsor = F.RandomLivery(),
 		};
 	}
 	public static CarPlacement LocalPlayer()
@@ -34,7 +34,7 @@ public class CarPlacement
 			PlayerId = 0,
 			position = F.I.s_cpuRivals,
 			name = F.I.playerData.playerName,
-			sponsor = (Livery)(UnityEngine.Random.Range(0, F.I.Liveries) + 1),
+			sponsor = F.RandomLivery(),
 		};
 	}
 	public static CarPlacement OnlinePlayer(int pos, Player p)
@@ -43,7 +43,7 @@ public class CarPlacement
 		return new CarPlacement()
 		{
 			carName = p.carNameGet(),
-			PlayerId = F.I.ActivePlayers.Find(p => p.playerLobbyId == MultiPlayerSelector.I.server.lobby.Players[pIndex].Id).playerRelayId,
+			PlayerId = ServerC.I.activePlayers.Find(p => p.playerLobbyId == ServerC.I.lobby.Players[pIndex].Id).playerRelayId,
 			position = (F.I.s_cpuRivals + pIndex),
 			name = p.NameGet(),
 			sponsor = p.SponsorGet(),

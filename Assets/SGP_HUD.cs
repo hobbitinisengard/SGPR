@@ -10,6 +10,7 @@ public enum BottomInfoType { NEW_LEADER, NO_BATT, PIT_OUT, PIT_IN, STUNT, CAR_WI
 
 public class SGP_HUD : MonoBehaviour
 {
+	public EndraceCountdownTimer endraceTimer;
 	public GameObject AEROText;
 	public GameObject DRIFTText;
 	public GameObject AERODisplay;
@@ -224,7 +225,7 @@ public class SGP_HUD : MonoBehaviour
 		}
 		carProgressIcons[vp].SetSiblingIndex(9);
 		carProgressIcons[vp].localScale = Vector3.one;
-		bool inRace = !F.I.InEditor;
+		bool inRace = F.I.s_laps > 0;
 
 		AERODisplay.SetActive(inRace);
 		progressDisplay.SetActive(inRace);
@@ -239,7 +240,7 @@ public class SGP_HUD : MonoBehaviour
 		{
 			componentPanel.gameObject.SetActive(!componentPanel.gameObject.activeSelf);
 		}
-		if (raceManager.cancelInput.action.ReadValue<float>()==1 && (DateTime.Now - F.I.raceStartDate).TotalSeconds > 5
+		if (raceManager.cancelInput.action.ReadValue<float>()==1 && (DateTime.Now - OnlineCommunication.I.raceStartDate).TotalSeconds > 5
 			&& !componentPanel.gameObject.activeSelf && !raceManager.resultsSeq.gameObject.activeSelf)
 		{
 			pauseMenu.gameObject.SetActive(true);
@@ -272,7 +273,7 @@ public class SGP_HUD : MonoBehaviour
 		//{
 		//    EndStuntSeq(false);
 		//}
-		if (!vp.raceBox.enabled && !F.I.InEditor)
+		if (!vp.raceBox.enabled && F.I.s_laps > 0)
 		{
 			Debug.Log("finished");
 			raceManager.PlayFinishSeq();

@@ -27,43 +27,43 @@ public static class F
 	}
 	public static Livery SponsorGet(this Player player)
 	{
-		return (Livery)Enum.Parse(typeof(Livery), player.Data[ServerConnection.k_Sponsor].Value);
+		return (Livery)Enum.Parse(typeof(Livery), player.Data[ServerC.k_Sponsor].Value);
 	}
 	public static void SponsorSet(this Player player, Livery livery)
 	{
-		player.Data[ServerConnection.k_Sponsor].Value = livery.ToString();
+		player.Data[ServerC.k_Sponsor].Value = livery.ToString();
 	}
 	public static int ScoreGet(this Player player)
 	{
-		return int.Parse(player.Data[ServerConnection.k_score].Value);
+		return int.Parse(player.Data[ServerC.k_score].Value);
 	}
 	public static void ScoreSet(this Player player, int newScore)
 	{
-		player.Data[ServerConnection.k_score].Value = newScore.ToString();
+		player.Data[ServerC.k_score].Value = newScore.ToString();
 	}
 	public static bool ReadyGet(this Player player)
 	{
-		return bool.Parse(player.Data[ServerConnection.k_Ready].Value);
+		return bool.Parse(player.Data[ServerC.k_Ready].Value);
 	}
 	public static void ReadySet(this Player player, bool ready)
 	{
-		player.Data[ServerConnection.k_Ready].Value = ready.ToString();
+		player.Data[ServerC.k_Ready].Value = ready.ToString();
 	}
 	public static string NameGet(this Player player)
 	{
-		return player.Data[ServerConnection.k_Name].Value;
+		return player.Data[ServerC.k_Name].Value;
 	}
 	public static void NameSet(this Player player, string name)
 	{
-		player.Data[ServerConnection.k_Name].Value = name;
+		player.Data[ServerC.k_Name].Value = name;
 	}
 	public static string carNameGet(this Player player)
 	{
-		return player.Data[ServerConnection.k_carName].Value;
+		return player.Data[ServerC.k_carName].Value;
 	}
 	public static void carNameSet(this Player player, string carName)
 	{
-		player.Data[ServerConnection.k_carName].Value = carName;
+		player.Data[ServerC.k_carName].Value = carName;
 	}
 	public static Color ReadColor(this Player player)
 	{
@@ -132,28 +132,7 @@ public static class F
 		shortForm += string.Format("{0:D2}:{1:D2}.{2:D2}", t.Minutes, t.Seconds, Mathf.RoundToInt(t.Milliseconds / 10f));
 		return shortForm;
 	}
-	//static public void drawString(string text, Vector3 worldPos, Color? colour = null)
-	//{
-	//	UnityEditor.Handles.BeginGUI();
 
-	//	var restoreColor = GUI.color;
-
-	//	if (colour.HasValue) GUI.color = colour.Value;
-	//	var view = UnityEditor.SceneView.currentDrawingSceneView;
-	//	Vector3 screenPos = view.camera.WorldToScreenPoint(worldPos);
-
-	//	if (screenPos.y < 0 || screenPos.y > Screen.height || screenPos.x < 0 || screenPos.x > Screen.width || screenPos.z < 0)
-	//	{
-	//		GUI.color = restoreColor;
-	//		UnityEditor.Handles.EndGUI();
-	//		return;
-	//	}
-
-	//	Vector2 size = GUI.skin.label.CalcSize(new GUIContent(text));
-	//	GUI.Label(new Rect(screenPos.x - (size.x / 2), -screenPos.y + view.position.height + 4, size.x, size.y), text);
-	//	GUI.color = restoreColor;
-	//	UnityEditor.Handles.EndGUI();
-	//}
 	public static T[] InitializeArray<T>(int length) where T : new()
 	{
 		T[] array = new T[length];
@@ -295,30 +274,18 @@ public static class F
 
 	public static async Task<Texture2D> GetRemoteTexture(string url)
 	{
-		using (UnityWebRequest www = UnityWebRequestTexture.GetTexture(url))
+		using UnityWebRequest www = UnityWebRequestTexture.GetTexture(url);
+		var asyncOp = www.SendWebRequest();
+
+		while (asyncOp.isDone == false)
+			await Task.Delay(100);
+
+		if (www.result != UnityWebRequest.Result.Success)// for Unity >= 2020.1
 		{
-			// begin request:
-			var asyncOp = www.SendWebRequest();
-
-			// await until it's done: 
-			while (asyncOp.isDone == false)
-				await Task.Delay(1000 / 30);//30 hertz
-
-			// read results:
-			if (www.result != UnityWebRequest.Result.Success)// for Unity >= 2020.1
-			{
-				// log error:
-
-				Debug.Log($"{www.error}, URL:{www.url}");
-				// nothing to return on error:
-				return null;
-			}
-			else
-			{
-				// return valid results:
-				return DownloadHandlerTexture.GetContent(www);
-			}
+			Debug.Log($"{www.error}, URL:{www.url}");
+			return null;
 		}
+		return DownloadHandlerTexture.GetContent(www);
 	}
 	public static Vector2 Flat(this Vector3 v)
 	{
@@ -333,6 +300,10 @@ public static class F
 				return 1;
 		else
 			return -1;
+	}
+	public static Livery RandomLivery()
+	{
+		return (Livery)(UnityEngine.Random.Range(0, F.I.Liveries) + 1);
 	}
 	
 

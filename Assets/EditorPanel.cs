@@ -13,7 +13,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using SimpleFileBrowser;
 
-public struct ReplayCamStruct
+public class ReplayCam
 {
 	public int dist;
 	public TrackCamera cam;
@@ -65,7 +65,6 @@ public class EditorPanel : MonoBehaviour
 			this.infoImage = infoImage;
 		}
 	}
-
 	public enum Mode
 	{
 		None, Terrain, Build, Connect, Arrow,
@@ -81,7 +80,7 @@ public class EditorPanel : MonoBehaviour
 	public List<int> stuntpointsContainer = new List<int>();
 	[NonSerialized]
 	public List<int> waypointsContainer = new List<int>(32);
-	public List<ReplayCamStruct> replayCamsContainer = new List<ReplayCamStruct>(32);
+	public List<ReplayCam> replayCamsContainer = new List<ReplayCam>(32);
 	public GameObject waypointTriggerPrefab;
 	public GameObject pathFollower;
 	public RenderTexture renderTexture;
@@ -1047,7 +1046,7 @@ public class EditorPanel : MonoBehaviour
 							stuntpointsContainer.Add(int.Parse(hits[closestIdx].name));
 						if (c.trackCamera != null)
 						{
-							replayCamsContainer.Add(new ReplayCamStruct { cam = c.trackCamera, dist = int.Parse(hits[closestIdx].name) });
+							replayCamsContainer.Add(new ReplayCam { cam = c.trackCamera, dist = int.Parse(hits[closestIdx].name) });
 						}
 					}
 				}

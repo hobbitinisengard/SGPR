@@ -15,7 +15,7 @@ public class PauseMenuButton : MonoBehaviour, ISelectHandler, IDeselectHandler
 	public AudioMixer audioMixer;
 	public string exposedParameter;
 	public float indicatorLevel = 0.5f;
-	private void Start()
+	private void Awake()
 	{
 		GetComponent<Button>().onClick.AddListener(OnClickDo);
 		clickSoundEffect = GetComponent<AudioSource>();

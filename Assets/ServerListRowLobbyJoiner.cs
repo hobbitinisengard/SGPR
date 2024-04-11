@@ -14,7 +14,6 @@ internal class ServerListRowLobbyJoiner : MonoBehaviour
 			GetComponent<Button>().onClick.AddListener(() => serverlist.enterPassWnd.GetComponent<EnterPasswordWnd>().OpenWindow(joinCode));
 		}
 		else
-			GetComponent<Button>().onClick.AddListener(() => serverlist.JoinLobby(name));
+			GetComponent<Button>().onClick.AddListener(() => { serverlist.buttonFromWhichWeJoinServer = this.gameObject; serverlist.JoinLobby(name); });
 	}
-
 }

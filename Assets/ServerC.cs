@@ -14,7 +14,7 @@ using System.Linq;
 using System;
 using Random = UnityEngine.Random;
 using System.Collections.Concurrent;
-public class ServerConnection : MonoBehaviour
+public class ServerC : MonoBehaviour
 {
 	//public Dictionary<string, PlayerDataObject> playerMeData;
 	//public Dictionary<string, DataObject> lobbyData;
@@ -23,7 +23,13 @@ public class ServerConnection : MonoBehaviour
 		DTLS, // Datagram Transport Layer Security
 		UDP
 	}
+	public static ServerC I;
+	/// <summary>
+	/// active players are connected to relay & lobby
+	/// </summary>
+	public List<LobbyRelayId> activePlayers = new();
 	public EncryptionType encryption = EncryptionType.DTLS;
+	public bool isCreatingLobby { get; private set; }
 	public string lobbyName;
 	public string password;
 	public int maxPlayers;
@@ -35,7 +41,7 @@ public class ServerConnection : MonoBehaviour
 	public static readonly string k_relayCode = "RelayJoinCode";
 	public const string k_actionHappening = "ah";
 	public const string k_lobbyCode = "lc";
-	public NetworkManager networkManager;
+	NetworkManager networkManager;
 
 	string k_dtlsEncryption = "dtls";
 	string k_udpEncryption = "udp";
@@ -45,6 +51,7 @@ public class ServerConnection : MonoBehaviour
 	public Lobby lobby;
 	public CountdownTimer heartbeatTimer = new(lobbyHeartbeatInterval);
 	CountdownTimer pollForUpdatesTimer = new(lobbyPollInterval);
+	private bool updatingPlayer;
 	public const string k_Ready = "r";
 	public const string k_Sponsor = "s";
 	public const string k_Name = "n";
@@ -58,6 +65,9 @@ public class ServerConnection : MonoBehaviour
 	public const string k_trackName = "tn";
 	private void Awake()
 	{
+		networkManager = GetComponent<NetworkManager>();
+		I = this;
+
 		heartbeatTimer.OnTimerStop += async () =>
 		{
 			await HandleHeartbeatAsync();
@@ -94,6 +104,7 @@ public class ServerConnection : MonoBehaviour
 		if (callbacksLobbyId != lobby.Id)
 		{
 			callbacksLobbyId = lobby.Id;
+			Debug.Log("subscribe to lobby events");
 			await Lobbies.Instance.SubscribeToLobbyEventsAsync(lobby.Id, callbacks);
 		}
 	}
@@ -101,13 +112,17 @@ public class ServerConnection : MonoBehaviour
 	{
 		if (lobby == null)
 			return;
-
 		DeleteLobby();
-		F.I.ActivePlayers.Clear();
+		activePlayers.Clear();
 		heartbeatTimer.Pause();
 		pollForUpdatesTimer.Pause();
 		await LobbyService.Instance.RemovePlayerAsync(lobby.Id, AuthenticationService.Instance.PlayerId);
 		networkManager.Shutdown();
+		callbacksLobbyId = "";
+	}
+	public async Task GetLobbyManually()
+	{
+		lobby = await LobbyService.Instance.GetLobbyAsync(lobby.Id);
 	}
 	Dictionary<string, PlayerDataObject> InitializePlayerData()
 	{
@@ -161,7 +176,6 @@ public class ServerConnection : MonoBehaviour
 
 	string EncodeConfig()
 	{
-
 		string encodeConfig = ((int)F.I.scoringType).ToString() + (F.I.randomCars ? "1" : "0") + (F.I.randomTracks ? "1" : "0")
 			+ ((int)F.I.s_raceType).ToString() + (F.I.s_laps).ToString("D2") + (F.I.s_isNight ? "1" : "0") + ((int)F.I.s_cpuLevel).ToString()
 			+ (F.I.s_cpuRivals).ToString() + ((int)F.I.s_roadType).ToString() + (F.I.s_catchup ? "1" : "0");
@@ -186,7 +200,7 @@ public class ServerConnection : MonoBehaviour
 			return cfg[11] == '1';
 		}
 	}
-	public async Task UpdateServerData()
+	public async void UpdateServerData()
 	{
 		try
 		{
@@ -203,10 +217,15 @@ public class ServerConnection : MonoBehaviour
 			Debug.LogError("Failed to update server data: " + e.Message);
 		}
 	}
-	public async Task UpdatePlayerData()
+	public async void UpdatePlayerData()
 	{
+		if (updatingPlayer)
+			return;
+
+		updatingPlayer = true;
 		try
 		{
+			await Task.Delay(100);
 			UpdatePlayerOptions options = new()
 			{
 				Data = PlayerMe.Data
@@ -217,6 +236,7 @@ public class ServerConnection : MonoBehaviour
 		{
 			Debug.LogError("Failed to update player: " + e.Message);
 		}
+		updatingPlayer = false;
 	}
 
 	public Player PlayerMe
@@ -230,9 +250,12 @@ public class ServerConnection : MonoBehaviour
 	{
 		get
 		{
-			return AuthenticationService.Instance.PlayerId == lobby.HostId;
+			return !networkManager.didStart || networkManager.IsHost;
 		}
 	}
+
+
+
 	private async Task Authenticate()
 	{
 		await Authenticate("Player" + Random.Range(0, 1000));
@@ -261,6 +284,7 @@ public class ServerConnection : MonoBehaviour
 	/// </summary>
 	public async Task<bool> CreateLobby(string trackName, string trackSHA)
 	{
+		isCreatingLobby = true;
 		try
 		{
 			string relayJoinCode = await StartRelay();
@@ -301,7 +325,7 @@ public class ServerConnection : MonoBehaviour
 				options.Password = password;
 
 			lobby = await LobbyService.Instance.CreateLobbyAsync(lobbyName, maxPlayers, options);
-
+			AddCallbacksToLobby();
 			createdLobbyIds.Enqueue(lobby.Id);
 			Debug.Log("created lobby " + lobby.Name + " with code " + lobby.LobbyCode + ", id " + lobby.Id);
 			heartbeatTimer.Start();
@@ -309,12 +333,17 @@ public class ServerConnection : MonoBehaviour
 		}
 		catch (LobbyServiceException e)
 		{
+			isCreatingLobby = false;
 			Debug.LogError("Failed to create lobby: " + e.Message);
 			return false;
 		}
+		isCreatingLobby = false;
 		return true;
 	}
-
+	public ScoringType GetScoringType()
+	{
+		return (ScoringType)(lobby.Data[k_raceConfig].Value[0] - '0');
+	}
 	/// <summary>
 	/// Connect to lobby Id or Quick Join
 	/// </summary>
@@ -329,11 +358,13 @@ public class ServerConnection : MonoBehaviour
 			if (password != null && password.Length > 7)
 				o.Password = password;
 			lobby = await LobbyService.Instance.JoinLobbyByIdAsync(lobbyId, o);
-
+			AddCallbacksToLobby();
 			pollForUpdatesTimer.Start();
 
 			string relayJoinCode = lobby.Data[k_relayCode].Value;
 			await JoinRelayByCode(relayJoinCode);
+
+			
 		}
 		catch (Exception e)
 		{

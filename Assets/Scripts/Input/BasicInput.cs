@@ -36,7 +36,6 @@ namespace RVP
 		}
 		void Update()
 		{
-
 			if (F.I.chat.texting)
 				return;
 
@@ -65,8 +64,6 @@ namespace RVP
 
 		void FixedUpdate()
 		{
-			
-
 			Vector2 input2 = driveInput.action.ReadValue<Vector2>();
 			vp.SetAccel(Mathf.Clamp01(input2.y));
 			vp.SetBrake(Mathf.Abs(Mathf.Clamp(input2.y, -1, 0)));

@@ -81,7 +81,7 @@ public class RaceBox : NetworkBehaviour
 	public float Aero
 	{
 		get { return 10 * aero; }
-		private set { aero = value; }
+		set { aero = value; }
 	}
 	float lapTimer;
 	public TimeSpan? CurLaptime
@@ -98,14 +98,8 @@ public class RaceBox : NetworkBehaviour
 	/// set only after the race
 	/// </summary>
 	public TimeSpan raceTime { get; private set; }
-	//public bool Finished
-	//{
-	//	get
-	//	{
-	//		return curLap > F.I.s_laps || (!F.I.s_inEditor && !enabled);
-	//	}
-	//}
-	public int curLap { get; private set; }
+
+	public int curLap;
 
 	public float w_A_dot;
 
@@ -181,6 +175,7 @@ public class RaceBox : NetworkBehaviour
 		starLevel = 0;
 		stuntPai = new PtsAnimInfo(0, PtsAnimType.Evo, -1);
 	}
+	
 	public string Result(RecordType recordType)
 	{
 		switch (recordType)
@@ -207,12 +202,24 @@ public class RaceBox : NetworkBehaviour
 	}
 	/// <summary>
 	/// disabling raceBox means the race has ended for this car
+	/// Car has driven past finish or has been eliminated.
 	/// </summary>
 	private void OnDisable()
 	{
-		GoToGhostDrive();
+		vp.sampleText.gameObject.SetActive(false);
+		int curPos = RaceManager.I.Position(vp);
+		if (curPos == 1)
+		{
+			RaceManager.I.hud.infoText.AddMessage(new(vp.tr.name + " WINS THE RACE!", BottomInfoType.CAR_WINS));
+		}
+		// in racemode after the end of a race, cars still run around the track, ghosts overtake each other. Don't let it change results
+		curLap += 100 * (F.I.s_cpuRivals + 1 - curPos);
+		if (vp.Owner)
+			vp.ghostComponent.SetGhostAfterRace();
+		SetRacetime();
+		vp.followAI.SetCPU(true);
 
-		if(F.I.s_raceType == RaceType.Drift)
+		if (F.I.s_raceType == RaceType.Drift)
 		{
 			var drift = stuntsData.driftData;
 			if (drift.doneTimes > 0)
@@ -223,20 +230,35 @@ public class RaceBox : NetworkBehaviour
 				AcceptStunt();
 			}
 		}
+		if (F.I.gameMode == MultiMode.Multiplayer)
+			BroadcastRaceboxStatsRpc(aero, drift, raceTime.ToString(), lapTimer, curLap);
+	}
+	[Rpc(SendTo.Everyone)]
+	void BroadcastRaceboxStatsRpc(float aero, float drift, string raceTime, float lapTimer, int curLap)
+	{
+		this.aero = aero;
+		this.drift = drift;
+		this.raceTime = TimeSpan.Parse(raceTime);
+		this.lapTimer = lapTimer;
+		this.curLap = curLap;
+		ResultsView.resultData.Add(new ResultsView.PersistentResult(vp));
 	}
 	private void FixedUpdate()
 	{
-		if (!F.I.gamePaused && curLap > 0)
-			lapTimer += Time.fixedDeltaTime;
-		if (vp.reallyGroundedWheels == 0)
-			lastTimeInAir = Time.time;
+		if(F.I.s_laps == 0)
+		{
+			if (!F.I.gamePaused && curLap > 0)
+				lapTimer += Time.fixedDeltaTime;
+			if (vp.reallyGroundedWheels == 0)
+				lastTimeInAir = Time.time;
 
-		JumpDetector();
-		StuntDetector();
-		DriftDetector();
+			JumpDetector();
+			StuntDetector();
+			DriftDetector();
 
-		if (F.I.s_raceType != RaceType.Drift)
-			FlipDetector();
+			if (F.I.s_raceType != RaceType.Drift)
+				FlipDetector();
+		}
 	}
 	public bool GetStuntSeq(ref StuntsData outStuntsData)
 	{
@@ -259,10 +281,10 @@ public class RaceBox : NetworkBehaviour
 
 		stuntPai.level++;
 		stuntPai.score += (int)((starLevel + 1) * 1.5f * stunt.score);
-
+		stableLandingTimer = -1;
 		AcceptExtraStunt();
 		yield return null;
-		stunt.doneTimes = 0;
+		//stunt.doneTimes = 0;
 	}
 	public void AddLooper()
 	{
@@ -678,14 +700,17 @@ public class RaceBox : NetworkBehaviour
 	}
 	public void ResetOnTrack()
 	{
-		StuntPaiReset();
-		evoModule.Reset();
-		grantedComboTime = 0;
-		starLevel = 0;
-		stableLandingTimer = -1;
-		jumpTimer = 0;
-		if (F.I.s_raceType == RaceType.Drift)
-			ResetDrift();
+		if(F.I.s_laps > 0)
+		{
+			StuntPaiReset();
+			evoModule.Reset();
+			grantedComboTime = 0;
+			starLevel = 0;
+			stableLandingTimer = -1;
+			jumpTimer = 0;
+			if (F.I.s_raceType == RaceType.Drift)
+				ResetDrift();
+		}
 	}
 	public StuntSeqStatus StuntSeqEnded(out PtsAnimInfo pai)
 	{
@@ -788,61 +813,53 @@ public class RaceBox : NetworkBehaviour
 
 	public void NextLap()
 	{
-		if (curLap == 0 || vp.followAI.ProgressPercent > 0.9f || vp.followAI.pitsProgress > 0)
+		if(F.I.s_laps > 0)
 		{
-			vp.followAI.progress = 1;
-			vp.followAI.curWaypointIdx = 0;
-			vp.followAI.curStuntpointIdx = 0;
-			vp.followAI.curReplayPointIdx = 0;
-			vp.followAI.speedLimitDist = -1;
-			var curlaptime = CurLaptime;
-			lapTimer = 0;
-			if (curlaptime.HasValue)
+			//if (F.I.gameMode == MultiMode.Multiplayer)
+			//	BroadcastRaceboxStatsRpc(aero, drift, raceTime.ToString(), lapTimer, curLap);
+			if (curLap == 0 || vp.followAI.ProgressPercent > 0.9f || vp.followAI.pitsProgress > 0)
 			{
-				if (bestLapTime > curlaptime)
-					bestLapTime = curlaptime.Value;
+				vp.followAI.NextLap();
 
-				if (!vp.followAI.isCPU && bestLapTime < RaceManager.I.hud.bestLapTime)
+				var curlaptime = CurLaptime;
+				lapTimer = 0;
+				if (vp.Owner || !vp.IsSpawned && curlaptime.HasValue)
 				{
-					RaceManager.I.hud.bestLapTime = bestLapTime;
-					RaceManager.I.hud.lapRecordSeq.gameObject.SetActive(true);
+					if (bestLapTime > curlaptime)
+						bestLapTime = curlaptime.Value;
+
+					if (!vp.followAI.isCPU && bestLapTime < RaceManager.I.hud.bestLapTime)
+					{
+						RaceManager.I.hud.bestLapTime = bestLapTime;
+						RaceManager.I.hud.lapRecordSeq.gameObject.SetActive(true);
+					}
+				}
+				if (curLap <= F.I.s_laps)
+					curLap++;
+				if (F.I.s_raceType == RaceType.Knockout && curLap > 1 && RaceManager.I.Position(vp) + 1 == RaceManager.I.ActiveCarsInKnockout)
+				{ // last car is knocked-out
+					RaceManager.I.KnockOutLastCar();
+				}
+				if (curLap == F.I.s_laps + 1) // race finished
+				{
+					enabled = false;
 				}
 			}
-			if (curLap <= F.I.s_laps)
-				curLap++;
-			if (F.I.s_raceType == RaceType.Knockout && curLap > 1 && RaceManager.I.Position(vp) + 1 == RaceManager.I.ActiveCarsInKnockout)
-			{ // last car is knocked-out
-				RaceManager.I.KnockOutLastCar();
-			}
-			if (curLap == F.I.s_laps + 1) // race finished
-			{
-				enabled = false;
+
+			if (!enabled && F.I.gameMode == MultiMode.Multiplayer && vp.Owner)
+			{  // synchronize race results 
+				StartCoroutine(WaitToSynchronizeRaceResults());
 			}
 		}
+		
+	}
+	IEnumerator WaitToSynchronizeRaceResults()
+	{
+		yield return new WaitForSecondsRealtime(3); // wait till local copy of car passess through finishline, then synchronize
+		vp.SynchRaceboxValuesRpc(name, vp.sponsor, curLap, vp.followAI.dist, vp.followAI.progress, aero, drift, vp.RpcTarget.NotMe);
 	}
 	public void SetRacetime()
 	{
-		raceTime = DateTime.Now - F.I.raceStartDate;
-	}
-	/// <summary>
-	/// player has driven past finish or has been eliminated. Opponents become ghosts
-	/// </summary>
-	public void GoToGhostDrive()
-	{
-		int curPos = RaceManager.I.Position(vp);
-		if (curPos == 1)
-		{
-			RaceManager.I.hud.infoText.AddMessage(new(vp.tr.name + " WINS THE RACE!", BottomInfoType.CAR_WINS));
-		}
-		// in racemode after the end of a race, cars still run around the track, ghosts overtake each other. Don't let it change results
-		curLap += 100 * (F.I.s_cpuRivals + 1 - curPos);
-		vp.ghostComponent.SetHittable(false);
-		SetRacetime();
-		vp.followAI.SetCPU(true);
-	}
-
-	public void SetCurLap(int curLap)
-	{
-		this.curLap = curLap;
+		raceTime = DateTime.Now - OnlineCommunication.I.raceStartDate;
 	}
 }

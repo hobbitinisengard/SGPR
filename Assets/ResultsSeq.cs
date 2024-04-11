@@ -218,22 +218,6 @@ public class ResultsSeq : MonoBehaviour
 			yield return null;
 		}
 		audioSource.Stop();
-
-		if(F.I.gameMode == MultiMode.Multiplayer && F.I.scoringType == ScoringType.Championship)
-		{
-			ResultsView.PersistentResult[] resultData = new ResultsView.PersistentResult[F.I.s_cars.Count];
-			for(int i=0; i<F.I.s_cars.Count; ++i)
-			{
-				resultData[i] = new ResultsView.PersistentResult()
-				{
-					name = F.I.s_cars[i].name,
-					lap = F.I.s_cars[i].raceBox.bestLapTime,
-					stunt = F.I.s_cars[i].raceBox.Aero,
-					drift = F.I.s_cars[i].raceBox.drift,
-				};
-			}
-			ResultsView.resultData = resultData;
-		}
 		gameObject.SetActive(false);
 	}
 	void RowsBlinkColor(Color color)

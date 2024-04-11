@@ -1,12 +1,14 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
 using UnityEngine;
 using UnityEngine.UI;
 public class LeaderBoardTable : MonoBehaviour
 {
-	public ServerConnection server;
+	public ServerC server;
 	public GameObject LeaderboardRowPrefab;
 	public Sprite knob;
 	public Sprite crown;
@@ -15,13 +17,30 @@ public class LeaderBoardTable : MonoBehaviour
 		public Livery sponsor;
 		public int score;
 	}
-	public void OnEnable()
+	private void Start()
+	{
+		ServerC.I.callbacks.PlayerJoined += Refresh;
+		ServerC.I.callbacks.PlayerLeft += Refresh;
+	}
+
+	private void Refresh(List<int> list)
 	{
 		Refresh();
 	}
-	
+
+	private void Refresh(List<LobbyPlayerJoined> list)
+	{
+		Refresh();
+	}
+
 	public void Refresh()
 	{
+		if(gameObject.activeInHierarchy)
+			StartCoroutine(RefreshSeq());
+	}
+	IEnumerator RefreshSeq()
+	{
+		yield return null; // wait one frame before updating
 		Player[] players = new Player[server.lobby.Players.Count];
 		for (int i = 0; i < server.lobby.Players.Count; ++i)
 			players[i] = server.lobby.Players[i];
@@ -84,6 +103,17 @@ public class LeaderBoardTable : MonoBehaviour
 		newRow.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>().color = player.ReadColor();
 		newRow.GetChild(1).GetComponent<TextMeshProUGUI>().text = F.I.randomCars ? "*random*" : F.I.Car(player.carNameGet()).name;
 		newRow.GetChild(2).GetComponent<TextMeshProUGUI>().text = ((F.I.scoringType == ScoringType.Championship) ? "$ " : "") + player.ScoreGet().ToString();
+	}
+	void DefaultView()
+	{
+		var newRow = Instantiate(LeaderboardRowPrefab, transform).transform;
+		newRow.name = "Initializing";
+		newRow.GetChild(0).GetChild(0).GetComponent<Image>().sprite = knob;
+		newRow.GetChild(0).GetChild(0).GetComponent<Image>().color = Color.magenta;
+		newRow.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>().text = "";
+		newRow.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>().color = Color.magenta;
+		newRow.GetChild(1).GetComponent<TextMeshProUGUI>().text = "STARTING";
+		newRow.GetChild(2).GetComponent<TextMeshProUGUI>().text = "SERVER";
 	}
 }
 

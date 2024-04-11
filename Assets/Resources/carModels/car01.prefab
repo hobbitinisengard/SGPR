@@ -84917,7 +84917,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 1778777427
+  GlobalObjectIdHash: 1553044784
   InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
@@ -84938,7 +84938,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f0d889db27804635ada6f9fa36c8e9ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  UseUnreliableDeltas: 0
+  UseUnreliableDeltas: 1
   SyncPositionX: 1
   SyncPositionY: 1
   SyncPositionZ: 1
@@ -84948,7 +84948,7 @@ MonoBehaviour:
   SyncScaleX: 0
   SyncScaleY: 0
   SyncScaleZ: 0
-  PositionThreshold: 0.001
+  PositionThreshold: 0.1
   RotAngleThreshold: 0.01
   ScaleThreshold: 0.01
   UseQuaternionSynchronization: 0
@@ -85053,8 +85053,10 @@ MonoBehaviour:
   sampleText: {fileID: 8180295954061042356}
   carNumber: 1
   bodyObj: {fileID: 7136051627190437502}
-  accelInput: 0
-  steerInput: 0
+  accelInput:
+    m_InternalValue: 0
+  steerInput:
+    m_InternalValue: 0
   frontLights:
   - {fileID: 2712850293685523867}
   rearLights:
@@ -85303,8 +85305,6 @@ MonoBehaviour:
   searchForPits: 0
   outOfTrackTime: 0
   outOfTrackRequiredTime: 2
-  curStuntpointIdx: 0
-  curReplayPointIdx: 0
   aiStuntingProc: 0
   cpuSmoothCoeff: 10
   cpuFastCoeff: 50

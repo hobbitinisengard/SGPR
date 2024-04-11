@@ -44,8 +44,8 @@ public class PauseMenu : Sfxable
 		F.I.gamePaused = true;
 		paused.TransitionTo(0);
 		timeElapsed = 0;
-		restartButton.SetActive(F.I.raceStartDate != DateTime.MinValue);
-		endButton.SetActive(F.I.gameMode == MultiMode.Multiplayer && !MultiPlayerSelector.I.server.AmHost);
+		restartButton.SetActive(OnlineCommunication.I.raceStartDate != DateTime.MinValue);
+		endButton.SetActive(F.I.gameMode == MultiMode.Multiplayer && !ServerC.I.AmHost);
 		startColor = veil.color;
 		firstButton.Select();
 		PlaySFX("menublip2", true);
@@ -59,9 +59,7 @@ public class PauseMenu : Sfxable
 		PlaySFX("menublip2",true);
 		veil.color = startColor;
 
-		if(!F.I.s_inEditor)
-			F.I.raceStartDate = F.I.raceStartDate.AddSeconds(timeElapsed);
-		
-		timeElapsed = 0;
+		if(!F.I.s_inEditor && F.I.gameMode == MultiMode.Singleplayer)
+			OnlineCommunication.I.raceStartDate = OnlineCommunication.I.raceStartDate.AddSeconds(timeElapsed);
 	}
 }

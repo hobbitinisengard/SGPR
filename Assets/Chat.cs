@@ -4,11 +4,11 @@ using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using Unity.Netcode;
-using Unity.Services.Authentication;
 using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
 using UnityEngine;
 using UnityEngine.InputSystem;
+[Serializable]
 public class LobbyRelayId
 {
 	public ulong playerRelayId;
@@ -18,7 +18,6 @@ public class Chat : NetworkBehaviour
 {
 	public GameObject chatRowPrefab;
 
-	ServerConnection server;
 	[NonSerialized]
 	public Transform[] contents = new Transform[2];
 	[NonSerialized]
@@ -36,13 +35,13 @@ public class Chat : NetworkBehaviour
 	}
 	public override void OnNetworkSpawn()
 	{
-		StartCoroutine(Initialize());
 		base.OnNetworkSpawn();
+		StartCoroutine(Initialize());
 	}
 	public override void OnNetworkDespawn()
 	{
 		SetVisibility(false);
-		F.I.ActivePlayers.Remove(F.I.ActivePlayers.First(ap => ap.playerLobbyId == AuthenticationService.Instance.PlayerId));
+		ServerC.I.activePlayers.Clear();
 
 		base.OnNetworkDespawn();
 		foreach(var i in inputFields)
@@ -54,12 +53,11 @@ public class Chat : NetworkBehaviour
 	}
 	IEnumerator Initialize()
 	{
+		Debug.Log("chat INitialize()");
 		while (MultiPlayerSelector.I == null)
 			yield return null;
 
-		
 		chatButtonInput.action.performed += buttonPressed;
-		server = MultiPlayerSelector.I.server;
 		inputFields[0] = MultiPlayerSelector.I.chatInitializer.lobbyChatInputField;
 		inputFields[1] = MultiPlayerSelector.I.chatInitializer.raceChatInputField;
 
@@ -68,14 +66,17 @@ public class Chat : NetworkBehaviour
 
 		SetVisibility(false);
 
-		MultiPlayerSelector.I.server.callbacks.PlayerLeft += Callbacks_PlayerLeft;
-		MultiPlayerSelector.I.server.callbacks.PlayerJoined += Callbacks_PlayerJoined;
+		ServerC.I.callbacks.PlayerJoined += Callbacks_PlayerJoined;
+
 		F.I.chat = this;
+
+		foreach(var c in contents)
+			F.DestroyAllChildren(c);
 
 		foreach (var i in inputFields)
 		{
 			i.onSelect.AddListener(s => { texting = true;  MultiPlayerSelector.I.EnableSelectionOfTracks(false); });
-			i.onDeselect.AddListener(s => { texting = false; MultiPlayerSelector.I.EnableSelectionOfTracks(server.AmHost && !server.PlayerMe.ReadyGet()); });
+			i.onDeselect.AddListener(s => { texting = false; MultiPlayerSelector.I.EnableSelectionOfTracks(ServerC.I.AmHost && !ServerC.I.PlayerMe.ReadyGet()); });
 			i.onSubmit.AddListener(s =>
 			{
 				if (showChatCo != null)
@@ -84,7 +85,7 @@ public class Chat : NetworkBehaviour
 
 				if (s.Length > 0)
 				{
-					AddChatRow(server.PlayerMe, s);
+					AddChatRow(ServerC.I.PlayerMe, s);
 					
 					i.text = "";
 					if(F.I.actionHappening == ActionHappening.InRace)
@@ -137,12 +138,9 @@ public class Chat : NetworkBehaviour
 			AddChatRowRpc(p.Player.NameGet(), "has joined the server", Color.white, Color.gray, RpcTarget.Everyone);
 		}
 	}
-	public void Callbacks_PlayerLeft(List<int> players)
+	public void PlayerLeft(Player p)
 	{
-		foreach (var p in players)
-		{
-			AddChatRowRpc(server.lobby.Players[p].NameGet(), "has left the server", Color.white, Color.gray, RpcTarget.Everyone);
-		}
+		AddChatRowRpc(p.NameGet(), "has left the server", Color.white, Color.gray, RpcTarget.Everyone);
 	}
 	public void AddChatRow(Player p, string msg)
 	{

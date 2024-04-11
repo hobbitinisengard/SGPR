@@ -33,7 +33,7 @@ public class PlayerSettingsData
 	public string playerName = "";
 	public float steerGamma = 0;
 }
-public class Info : NetworkBehaviour
+public class Info : MonoBehaviour
 {
 	private void Awake()
 	{
@@ -60,11 +60,7 @@ public class Info : NetworkBehaviour
 		ReloadCarPartsData();
 		icons = Resources.LoadAll<Sprite>(trackImagesPath + "tiles");
 	}
-	public override void OnNetworkSpawn()
-	{
-		AddActivePlayerRpc(NetworkManager.LocalClientId, AuthenticationService.Instance.PlayerId);
-		base.OnNetworkSpawn();
-	}
+	
 	string _documentsSGPRpath;
 	public string documentsSGPRpath
 	{
@@ -81,12 +77,12 @@ public class Info : NetworkBehaviour
 	public int maxCarsInRace = 10;
 
 	public PlayerSettingsData playerData;
-	public async Task<string> SHA(string filePath)
+	public string SHA(string filePath)
 	{
 		string hash;
 		using (var cryptoProvider = new SHA1CryptoServiceProvider())
 		{
-			byte[] buffer = await File.ReadAllBytesAsync(filePath);
+			byte[] buffer = File.ReadAllBytes(filePath);
 			hash = BitConverter.ToString(cryptoProvider.ComputeHash(buffer));
 		}
 		return hash;
@@ -188,7 +184,7 @@ public class Info : NetworkBehaviour
 	public PathCreator universalPath;
 	
 	public List<int> stuntpointsContainer = new();
-	public List<ReplayCamStruct> replayCams = new();
+	public List<ReplayCam> replayCams = new();
 	public Vector3[] carSGPstats;
 	public Car[] cars;
 	public ScoringType scoringType;
@@ -197,7 +193,7 @@ public class Info : NetworkBehaviour
 	public Dictionary<string, PartSavable> carParts;
 	public SortedDictionary<string, TrackHeader> tracks;
 	public Dictionary<string, AudioClip> audioClips;
-	public DateTime raceStartDate = DateTime.MinValue;
+	
 	public bool loaded = false;
 	public int roadLayer = 6;
 	public int countdownSeconds = 5;
@@ -230,6 +226,9 @@ public class Info : NetworkBehaviour
 	/// </summary>
 	public string s_playerCarName = "car01";
 	public RaceType s_raceType = RaceType.Race;
+	/// <summary>
+	/// set to 0 to indicate freeroam
+	/// </summary>
 	public int s_laps = 3;
 	public bool s_inEditor = true;
 	public bool s_isNight = false;
@@ -252,18 +251,9 @@ public class Info : NetworkBehaviour
 	internal int hostId;
 	public int racingPathResolution = 10;
 	public readonly string version = "0.3";
-	/// <summary>
-	/// if in track editor or testDriving
-	/// </summary>
-	public bool InEditor
-	{
-		get
-		{
-			return s_inEditor && s_cars.Count < 2;
-		}
-	}
 
-	public List<LobbyRelayId> ActivePlayers = new();
+	public const float AfterMultiPlayerRaceWaitForPlayersSeconds = 30;
+
 	public EventSystem eventSystem;
 
 	public Car Car(string name)
@@ -316,7 +306,7 @@ public class Info : NetworkBehaviour
 			new (15000,CarGroup.Aero, "FLYING MANTIS","Super light and very fast."),
 			new (35000,CarGroup.Aero, "STUNT MONKEY","Monkey see, monkey do! Go bananas with this wild ride!"),
 			new (50000,CarGroup.Speed, "INFERNO","This speed demon is on fire!"),
-			new (35000,CarGroup.Team, "THE FORKSTER","Despite its looks, it moves like fork lightning!"),
+			new (35000,CarGroup.Team, "FORK","Despite its looks, it moves like fork lightning!"),
 			new (55000,CarGroup.Team, "WORM MOBILE","Super Speedy Buggy!"),
 			new (100000,CarGroup.Team, "FORMULA 17","Incredibly fast racing car."),
 			new (90000,CarGroup.Team, "TEAM MACHINE","The ultimate, hugely versatile stock car.")
@@ -453,32 +443,7 @@ public class Info : NetworkBehaviour
 		foreach (var c in clipsSFX)
 			audioClips.Add(c.name, c);
 	}
-	public void AddActivePlayer(ulong relayId, string lobbyId)
-	{
-		AddActivePlayerRpc(relayId, lobbyId);
-	}
-	[Rpc(SendTo.Everyone)]
-	public void AddActivePlayerRpc(ulong relayId, string lobbyId)
-	{
-		ActivePlayers.Add(new LobbyRelayId() { playerRelayId = relayId, playerLobbyId = lobbyId });
-	}
-	public void AskForLapOfLastClient()
-	{
-		ulong id = s_cars[^1].OwnerClientId;
-		AskForLapRpc(RpcTarget.Single(id, RpcTargetUse.Persistent));
-	}
 
-	[Rpc(SendTo.SpecifiedInParams)]
-	void AskForLapRpc(RpcParams p)
-	{
-		AnswerForLapRpc(RaceManager.I.playerCar.raceBox.curLap, RpcTarget.Single(p.Receive.SenderClientId, RpcTargetUse.Persistent));
-	}
-
-	[Rpc(SendTo.SpecifiedInParams)]
-	void AnswerForLapRpc(int curLap, RpcParams p)
-	{
-		RaceManager.I.playerCar.raceBox.SetCurLap(curLap);
-	}
 	/// <summary>
 	/// Loads latest path from StreamingAssets/Path.txt
 	/// </summary>

@@ -40,7 +40,7 @@ public class SGP_Bouncer : MonoBehaviour
 				);
 
 		// tilt car
-		//rb.AddForceAtPosition(vp.rb.mass * carCarUpCoeff * Vector3.up, collision.GetContact(0).point, ForceMode.Force);
+		rb.AddForceAtPosition(0.5f * rb.mass * transform.up, collision.GetContact(0).point, ForceMode.Force);
 	}
 	private void OnCollisionStay(Collision collision)
 	{

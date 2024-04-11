@@ -39,6 +39,7 @@ public class GreetingLogo : Sfxable
 	{
 		PlaySFX("fe-dialogconfirm");
 		goingUpSeq = true;
+		F.I.s_spectator = false;
 		toDemo = false;
 		outMoveInitPos = rt.localPosition;
 		timer = 0;

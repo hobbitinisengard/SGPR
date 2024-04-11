@@ -1,8 +1,9 @@
 using RVP;
 using System.Collections;
+using Unity.Netcode;
 using UnityEngine;
 
-public class Ghost : MonoBehaviour
+public class Ghost : NetworkBehaviour
 {
 	public bool hittable { get; private set; }
 	public bool justResetted { get; private set; }
@@ -10,10 +11,12 @@ public class Ghost : MonoBehaviour
 	public Renderer[] ghostableParts;
 	VehicleParent vp;
 	public Shader transpShader;
+	Coroutine ghostCo;
 	private void Awake()
 	{
 		vp = GetComponent<VehicleParent>();
 	}
+
 	public void SetHittable(bool isHittable, bool updateColliders = true)
 	{
 		if (updateColliders)
@@ -78,7 +81,23 @@ public class Ghost : MonoBehaviour
 		
 		return material;
 	}
-	public IEnumerator ResetSeq()
+	public void SetGhostAfterRace()
+	{
+		SetHittableRpc(false, true);
+	}
+	[Rpc(SendTo.Everyone)]
+	public void SetHittableRpc(bool isHittable, bool updateColliders)
+	{
+		SetHittable(isHittable, updateColliders);
+	}
+	[Rpc(SendTo.Everyone)]
+	public void StartGhostResettingRpc()
+	{
+		if (ghostCo != null)
+			StopCoroutine(ghostCo);
+		ghostCo = StartCoroutine(ResetSeq());
+	}
+	IEnumerator ResetSeq()
 	{
 		float timer = 5;
 		float prev = 9;

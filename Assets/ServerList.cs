@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using TMPro;
 using Unity.Services.Lobbies;
@@ -12,9 +13,11 @@ public class ServerList : MonoBehaviour
 	public EnterPasswordWnd enterPassWnd;
 	public MainMenuView lobbyView;
 	public MainMenuView thisView;
-	public ServerConnection server;
+	public ServerC server;
 	public Sprite padlock;
 	public Sprite knob;
+	[NonSerialized]
+	public GameObject buttonFromWhichWeJoinServer;
 	float lastRefreshTime = 0;
 	public void OnPasswordEntered(string code, string pass)
 	{
@@ -68,7 +71,7 @@ public class ServerList : MonoBehaviour
 				newRow.GetChild(0).GetChild(0).GetComponent<Image>().sprite = lobby.HasPassword ? padlock : knob;
 				newRow.GetChild(0).GetChild(0).GetComponent<Image>().color = (lobby.AvailableSlots == 0) ? Color.red : Color.green;
 				newRow.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>().text = lobby.Name;
-				newRow.GetChild(1).GetComponent<TextMeshProUGUI>().text = lobby.Data[ServerConnection.k_actionHappening].Value;
+				newRow.GetChild(1).GetComponent<TextMeshProUGUI>().text = lobby.Data[ServerC.k_actionHappening].Value;
 				newRow.GetChild(2).GetComponent<TextMeshProUGUI>().text = (lobby.MaxPlayers - lobby.AvailableSlots).ToString() + "/" + lobby.MaxPlayers.ToString();
 				playersOnlineRN += lobby.MaxPlayers - lobby.AvailableSlots;
 			}
@@ -85,9 +88,19 @@ public class ServerList : MonoBehaviour
 	}
 	public async void JoinLobby(string joinId)
 	{
-		if(await server.JoinLobby(joinId))
+		try
 		{
-			thisView.GoToView(lobbyView.gameObject);
+			if (await server.JoinLobby(joinId))
+			{
+				thisView.GoToView(lobbyView.gameObject);
+			}
+		}
+		catch
+		{
+			if(buttonFromWhichWeJoinServer)
+			{
+				Destroy(buttonFromWhichWeJoinServer);
+			}
 		}
 	}
 }

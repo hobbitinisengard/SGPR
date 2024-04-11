@@ -1,5 +1,7 @@
+using RVP;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UnityEngine;
@@ -11,8 +13,20 @@ public class ResultsView : MonoBehaviour
 	{
 		public string name;
 		public TimeSpan lap;
+		public TimeSpan raceTime;
 		public float drift;
 		public float stunt;
+		public PersistentResult(VehicleParent vp)
+		{
+			drift = vp.raceBox.drift;
+			lap = vp.raceBox.bestLapTime;
+			stunt = vp.raceBox.Aero;
+			raceTime = vp.raceBox.raceTime;
+			name = vp.transform.name;
+		}
+		public PersistentResult()
+		{
+		}
 	}
 	const int maxRowHeight = 50;
 	const int cols = 5;
@@ -31,7 +45,7 @@ public class ResultsView : MonoBehaviour
 	public GameObject medalPrefab;
 	public Sprite[] silverMedals; // race,lap,stunt,drift
 	public Sprite[] goldMedals;
-	public static PersistentResult[] resultData;
+	public static List<PersistentResult> resultData = new();
 	RectTransform gridTableTr;
 	Coroutine payoutCo;
 	Coroutine addingScoreCo;
@@ -39,6 +53,13 @@ public class ResultsView : MonoBehaviour
 	bool isAddingScore;
 	float grandScoreMoving = 0;
 	public int grandScoreFinal = 0;
+
+	readonly Comparison<PersistentResult> raceTimeComp = new((PersistentResult x, PersistentResult y) => x.raceTime.TotalMilliseconds.CompareTo(y.raceTime));
+	readonly Comparison<PersistentResult> knockoutComp = new((PersistentResult x, PersistentResult y) => y.raceTime.TotalMilliseconds.CompareTo(x.raceTime));
+	readonly Comparison<PersistentResult> stuntComp = new((PersistentResult x, PersistentResult y) => y.stunt.CompareTo(x.stunt));
+	readonly Comparison<PersistentResult> driftComp = new((PersistentResult x, PersistentResult y) => y.drift.CompareTo(x.drift));
+	readonly Comparison<PersistentResult> lapComp = new((PersistentResult x, PersistentResult y) => x.lap.CompareTo(y.lap));
+
 	private void Awake()
 	{
 		gridTableTr = gridTable.GetComponent<RectTransform>();
@@ -59,20 +80,32 @@ public class ResultsView : MonoBehaviour
 
 		resultData = null;
 	}
+	Comparison<PersistentResult> ComparisonBasedOnRaceType()
+	{
+		return F.I.s_raceType switch
+		{
+			RaceType.Race => raceTimeComp,
+			RaceType.Knockout => knockoutComp,
+			RaceType.Stunt => stuntComp,
+			RaceType.Drift => driftComp,
+			_ => raceTimeComp,
+		};
+	}
 	private void OnEnable()
 	{
 		// for testing 
 		//ResultRandomizer();
-
+		var comparison = ComparisonBasedOnRaceType();
+		resultData.Sort(comparison);
 		grandScoreFinal = 0;
 		grandScoreMoving = 0;
 		grandScore0Text.text = "      000000";
-		if(resultData == null || resultData.Length < 2)
+		if(resultData.Count < 2)
 		{
 			Debug.LogError("No resultData");
 			return;
 		}
-		int carsInSession = resultData.Length;
+		int carsInSession = resultData.Count;
 		var cellSize = gridTable.cellSize;
 		cellSize.y = Mathf.Clamp(gridTableTr.rect.height / (1 + carsInSession), 0, maxRowHeight);
 		gridTable.cellSize = cellSize;
@@ -80,7 +113,7 @@ public class ResultsView : MonoBehaviour
 		// grid has 5 rows and max 11 cols
 		for(int i=0; i<10;i++)
 		{
-			bool visible = i < resultData.Length;
+			bool visible = i < resultData.Count;
 			bool highlight = visible && F.I.playerData.playerName == resultData[i].name;
 			if (highlight)
 				finalPosition = i;
@@ -116,29 +149,29 @@ public class ResultsView : MonoBehaviour
 	}
 	int GetResultPos(Comparison<PersistentResult> comp)
 	{
-		Array.Sort(resultData, comp);
-		for (int i = 0; i < resultData.Length; ++i)
+		resultData.Sort(comp);
+		int index = resultData.FindIndex(pr => pr.name == F.I.playerData.playerName);
+		if(index != -1)
 		{
-			if (resultData[i].name == F.I.playerData.playerName)
-				return i+1;
+			return index + 1;
 		}
 		Debug.LogError("PlayerName not found in resultData");
 		return -1;
 	}
 	IEnumerator PayoutSeq()
 	{
-		int lapPos = GetResultPos((PersistentResult x, PersistentResult y) => { return x.lap.TotalMilliseconds.CompareTo(y.lap.TotalMilliseconds); });
-		int stuntPos = GetResultPos((PersistentResult x, PersistentResult y) => { return y.stunt.CompareTo(x.stunt); });
-		int driftPos = GetResultPos((PersistentResult x, PersistentResult y) => { return y.drift.CompareTo(x.drift); });
+		int lapPos = GetResultPos(lapComp);
+		int stuntPos = GetResultPos(stuntComp);
+		int driftPos = GetResultPos(driftComp);
 		Debug.Log(string.Format("lap,stunt,drift = {0}, {1}, {2}", lapPos, stuntPos, driftPos));
-		float positionPerc = (resultData.Length - finalPosition) / resultData.Length;
+		float positionPerc = (resultData.Count - finalPosition) / resultData.Count;
 		int positionBonus = 0;
 		int lapBonus = (lapPos <= 2) ? 5000 / lapPos : 0;
 		int stuntBonus = (int)((stuntPos <= 2) ? 5000f / stuntPos : 0);
 		int driftBonus = (int)((driftPos <= 2) ? 2500f / stuntPos : 0);
 		int aeroMeter = (int)resultData.First(r => r.name == F.I.playerData.playerName).stunt;
 
-		var p = MultiPlayerSelector.I.server.PlayerMe;
+		var p = ServerC.I.PlayerMe;
 		switch (F.I.scoringType)
 		{
 			case ScoringType.Championship:
@@ -287,8 +320,8 @@ public class ResultsView : MonoBehaviour
 	}
 	void ResultRandomizer()
 	{
-		resultData = new PersistentResult[R(2, 11)];
-		for(int i=0; i<resultData.Length; ++i)
+		resultData.AddRange(new PersistentResult[R(2, 11)]);
+		for(int i=0; i<resultData.Count; ++i)
 		{
 			resultData[i] = new PersistentResult()
 			{
@@ -298,7 +331,7 @@ public class ResultsView : MonoBehaviour
 				stunt = R(0, 100000),
 			};	
 		}
-		int x = R(0, resultData.Length);
+		int x = R(0, resultData.Count);
 		resultData[x].name = F.I.playerData.playerName;
 	}
 	string RandomString(int length)

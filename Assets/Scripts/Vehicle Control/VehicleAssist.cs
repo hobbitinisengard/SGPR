@@ -81,6 +81,8 @@ namespace RVP
 			rb = GetComponent<Rigidbody>();
 			vp = GetComponent<VehicleParent>();
 			initialAngularDrag = rb.angularDrag;
+			if (!vp.Owner)
+				enabled = false;
 		}
 
 		void FixedUpdate()

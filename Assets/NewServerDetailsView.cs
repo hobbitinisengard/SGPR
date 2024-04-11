@@ -1,5 +1,7 @@
+using System;
 using System.Linq;
 using TMPro;
+using Unity.Loading;
 using UnityEngine;
 
 public class NewServerDetailsView : MainMenuView
@@ -11,11 +13,10 @@ public class NewServerDetailsView : MainMenuView
    public TMP_InputField maxPlayersInputField;
    public TMP_InputField serverNameInputField;
    public TMP_InputField passInputField;
-   public ServerConnection server;
+   public ServerC server;
    const string newServerNameReg = "newServerName";
    const string newServerPlayersReg = "newServerPlayers";
    const string passwordReg = "password";
-
 	public new void Awake()
 	{
 		base.Awake();
@@ -60,17 +61,24 @@ public class NewServerDetailsView : MainMenuView
 	}
 	public async void CreateLobby()
 	{
+		if (server.isCreatingLobby)
+			return;
+
 		OkbuttonText.text = "WAIT";
-		string trackName = F.I.tracks.First(kv => kv.Value.valid).Key;
-		string sha = await F.I.SHA(F.I.tracksPath + trackName + ".data");
-		Debug.Log("CreateLobby start" + trackName + " " + sha);
-		if (await server.CreateLobby(trackName, sha))
+		
+		F.I.s_trackName = F.I.tracks.First(kv => kv.Value.valid).Key;
+		string sha = F.I.SHA(F.I.tracksPath + F.I.s_trackName + ".data");
+		Debug.Log("CreateLobby start" + F.I.s_trackName + " " + sha);
+		try
 		{
-			GoToView(lobbyView.gameObject);
+			if(await server.CreateLobby(F.I.s_trackName, sha))
+			{
+				GoToView(lobbyView.gameObject);
+			}
 		}
-	}
-	/// <summary>
-	/// SHA is performed on .data track file
-	/// </summary>
-	
+		catch(Exception e)
+		{
+			Debug.Log(e.Message);
+		}
+	}	
 }

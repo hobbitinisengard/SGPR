@@ -15,6 +15,7 @@ namespace RVP
 	public class CameraControl : MonoBehaviour
 	{
 		public InputActionReference moveRef;
+		public InputActionReference changeCamRef;
 
 		readonly Vector2[] camerasLH = new Vector2[] { new(8.5f, 3.5f), new(4.5f, 2), new(11, 4) };
 		int curCameraLH = 0;
@@ -107,7 +108,20 @@ namespace RVP
 			tr = transform;
 			cam = GetComponent<Camera>();
 			cam.depthTextureMode |= DepthTextureMode.Depth;
+			changeCamRef.action.performed += ChangeFollowCamera;
 		}
+
+		private void ChangeFollowCamera(InputAction.CallbackContext obj)
+		{
+			if (mode == Mode.Follow && !F.I.chat.texting)
+			{
+				curCameraLH++;
+				curCameraLH %= camerasLH.Length;
+				height = camerasLH[curCameraLH].y + vp.cameraHeightChange;
+				targetCamCarDistance = camerasLH[curCameraLH].x + vp.cameraDistanceChange;
+			}
+		}
+
 		private void OnEnable()
 		{
 			StartCoroutine(AllowChangingTarget());
@@ -156,16 +170,6 @@ namespace RVP
 				degs -= 360;
 			return degs;
 		}
-		private void Update()
-		{
-			if (mode == Mode.Follow && Input.GetKeyDown(KeyCode.C))
-			{
-				curCameraLH++;
-				curCameraLH %= camerasLH.Length;
-				height = camerasLH[curCameraLH].y + vp.cameraHeightChange;
-				targetCamCarDistance = camerasLH[curCameraLH].x + vp.cameraDistanceChange;
-			}
-		}
 		void FixedUpdate()
 		{
 			if (vp && targetBody && vp.tr.gameObject.activeSelf)
@@ -198,7 +202,7 @@ namespace RVP
 	
 		void ReplayCam()
 		{
-			tr.position = vp.followAI.replayCams[vp.followAI.curReplayPointIdx].cam.transform.position;
+			tr.position = vp.followAI.currentCam.cam.transform.position;
 			Vector3 camTarget = vp.tr.position - replayCamAgility * Time.fixedDeltaTime * vp.rb.velocity;
 			tr.rotation = Quaternion.LookRotation(camTarget - tr.position);
 		}

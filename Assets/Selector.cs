@@ -36,7 +36,6 @@ public class TrackSelectorTemplate : Selector
 	}
 	protected virtual void OnEnable()
 	{
-		F.I.s_spectator = false;
 		move2Ref.action.performed += CalculateTargetToSelect;
 		if (loadCo)
 			StopCoroutine(Load());
@@ -120,6 +119,7 @@ public class TrackSelectorTemplate : Selector
 						if (Trackclass.GetChild(j).name == F.I.s_trackName)
 						{
 							selectedTrack = Trackclass.GetChild(j);
+							break;
 						}
 					}
 				}
@@ -135,14 +135,26 @@ public class TrackSelectorTemplate : Selector
 		else
 		{
 			if (selectedTrack == null)
+			{
+				Debug.LogWarning("selectedTrack is null");
 				selectedTrack = trackContent.GetChild(0).GetChild(0);
+			}
 			F.I.s_trackName = selectedTrack.name;
 		}
-		Debug.Log(F.I.s_trackName);
+		radial.gameObject.SetActive(selectedTrack);
+		radial.SetChildrenActive(trackContent);
+		startButton.Select();
+
+		SetTrackShaenigans();
+		
+		loadCo = false;
+	}
+	protected void SetTrackShaenigans()
+	{
 		SetTiles();
 		SetRecords();
-		radial.gameObject.SetActive(selectedTrack);
 
+		// set description
 		if (selectedTrack == null)
 			trackDescText.text = "No tracks available";
 		else
@@ -151,13 +163,12 @@ public class TrackSelectorTemplate : Selector
 			if (radial.gameObject.activeSelf)
 				radial.SetAnimTo(selectedTrack.parent.GetSiblingIndex());
 		}
-		startButton.Select();
+
+		// focus on track
+		if (containerCo != null)
+			StopCoroutine(containerCo);
 		containerCo = StartCoroutine(MoveToTrack());
-		radial.SetChildrenActive(trackContent);
-
-		loadCo = false;
 	}
-
 	protected void CalculateTargetToSelect(InputAction.CallbackContext ctx)
 	{
 		if (!selectedTrack || loadCo)
@@ -197,19 +208,9 @@ public class TrackSelectorTemplate : Selector
 					F.I.s_trackName = selectedTrack.name;
 					PlaySFX("fe-bitmapscroll");
 				}
+
 				// new track has been selected
-				// set description
-				trackDescText.text = selectedTrack.name + "\n\n" + F.I.tracks[selectedTrack.name].desc;
-
-				if(radial.gameObject.activeSelf)
-					radial.SetAnimTo(selectedTrack.parent.GetSiblingIndex());
-
-				SetTiles();
-				SetRecords();
-				// focus on track
-				if (containerCo != null)
-					StopCoroutine(containerCo);
-				containerCo = StartCoroutine(MoveToTrack());
+				SetTrackShaenigans();
 			}
 		}
 	}
@@ -284,11 +285,35 @@ public class TrackSelectorTemplate : Selector
 				AddTile(F.I.IconNames[flag]);
 		}
 	}
+	protected bool FindSelectedTrackEqualToTrackname()
+	{
+		for (int i = 0; i < trackContent.childCount; ++i)
+		{
+			if (trackContent.GetChild(i).childCount > 0)
+			{
+				Transform Trackclass = trackContent.GetChild(i);
+				for (int j = 0; j < Trackclass.childCount; ++j)
+				{
+					if (Trackclass.GetChild(j).name == F.I.s_trackName)
+					{
+						selectedTrack = Trackclass.GetChild(j);
+						return true;
+					}
+				}
+			}
+		}
+		Debug.LogError("None of the tracks has name equal to s_trackName");
+		return false;
+	}
+
 	protected IEnumerator MoveToTrack()
 	{
 		yield return null;
 		if (!selectedTrack)
+		{
+			Debug.LogError("selected track is null");
 			yield break;
+		}
 		float timer = 0;
 		Vector2 initPos = trackContent.anchoredPosition;
 		Vector2 targetPos = new Vector2(-((RectTransform)selectedTrack).anchoredPosition.x,

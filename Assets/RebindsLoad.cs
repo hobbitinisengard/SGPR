@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
-public class RebindSaveLoad : MonoBehaviour
+public class RebindsLoad : MonoBehaviour
 {
 	public InputActionAsset actions;
 	public Button RebindControllerMenu;
@@ -14,11 +14,5 @@ public class RebindSaveLoad : MonoBehaviour
 		var rebinds = PlayerPrefs.GetString("rebinds");
 		if (!string.IsNullOrEmpty(rebinds))
 			actions.LoadBindingOverridesFromJson(rebinds);
-	}
-
-	public void OnDisable()
-	{
-		var rebinds = actions.SaveBindingOverridesAsJson();
-		PlayerPrefs.SetString("rebinds", rebinds);
 	}
 }

@@ -3,10 +3,10 @@ using System.Collections;
 using PathCreation;
 using System.Collections.Generic;
 using System;
+using UnityEngine.UIElements;
 
 namespace RVP
 {
-
 	[RequireComponent(typeof(VehicleParent))]
 	[DisallowMultipleComponent]
 	[AddComponentMenu("RVP/AI/Follow AI", 0)]
@@ -14,6 +14,14 @@ namespace RVP
 	// Class for following AI
 	public class FollowAI : MonoBehaviour
 	{
+		public class FollowTarget
+		{
+			public Vector3 pos;
+			/// <summary>
+			/// distance
+			/// </summary>
+			public float dist;
+		}
 		//struct PointAtDistanceJob : IJobParallelFor
 		//{
 		//	public NativeArray<float> dists;
@@ -34,7 +42,7 @@ namespace RVP
 		List<int> stuntPoints;
 		PathCreator universalPath;
 		int racingLineLayerNumber;
-		public List<ReplayCamStruct> replayCams { get; private set; }
+		public List<ReplayCam> replayCams { get; private set; }
 		[NonSerialized]
 		public PathCreator trackPathCreator;
 		PathCreator pitsPathCreator;
@@ -73,6 +81,7 @@ namespace RVP
 		// CPU settings
 		float tyreMult = 1;
 		float lowSpeed = 30;
+		FollowTarget target;
 		public CpuLevel cpuLevel;
 		public bool SGPshifting;
 		[Tooltip("Time limit in seconds which the vehicle is stuck before attempting to reverse")]
@@ -98,15 +107,15 @@ namespace RVP
 		public float outOfTrackRequiredTime = 1;
 		private Coroutine ghostCo;
 
-		private float steerAngle;
-		public int curStuntpointIdx;
-		public int curReplayPointIdx;
+		float steerAngle;
+		int curStuntpointIdx;
+		int curReplayPointIdx = 0;
 		public bool aiStuntingProc;
 		public float cpuSmoothCoeff = 5;
 		public float cpuFastCoeff = 50;
 		private bool revvingCo;
 		public float targetSteer;
-
+		public ReplayCam currentCam { get { return replayCams[curReplayPointIdx]; } }
 		public float ProgressPercent
 		{
 			get
@@ -121,14 +130,29 @@ namespace RVP
 				return universalPathProgress / universalPath.path.length;
 			}
 		}
+		public void NextLap()
+		{
+			vp.followAI.progress = 1;
+			vp.followAI.curWaypointIdx = 0;
+			vp.followAI.curStuntpointIdx = 0;
+			vp.followAI.curReplayPointIdx = 0;
+			vp.followAI.speedLimitDist = -1;
+		}
 		public void SetCPU(bool val)
 		{
-			cpuLevel = F.I.s_cpuLevel;
+			if (!vp.Owner)
+				return;
 			if (val == isCPU)
 				return;
+			cpuLevel = F.I.s_cpuLevel;
 			isCPU = val;
 			selfDriving = val;
 			vp.basicInput.enabled = RaceManager.I.playerCar == vp;
+			target = new FollowTarget()
+			{
+				dist = dist+10,
+				pos = trackPathCreator.path.GetPointAtDistance(dist+10)
+			};
 			//if (isCPU)
 			//{
 			//	vp.basicInput.enabled = false;
@@ -180,18 +204,18 @@ namespace RVP
 			this.stuntPoints = F.I.stuntpointsContainer;
 			this.replayCams = F.I.replayCams;
 			trackPathCreator = F.I.universalPath;
-			this.enabled = true;
+			universalPathLayer = F.I.racingLineLayer;
+			curReplayPointIdx = replayCams.Count - 1;
+			enabled = true;
 		}
-		private void OnEnable()
+		private void Start()
 		{
 			StartCoroutine(Initialize());
 		}
 		IEnumerator Initialize()
 		{
-			yield return null;
+			yield return null; // wait till other components initialize
 			maxPhysicalSteerAngle = vp.steeringControl.steeredWheels[0].steerRangeMax;
-			universalPathLayer = F.I.racingLineLayer;
-
 			dist = GetDist(1 << racingLineLayerNumber);
 			progress = dist;
 			SetCPU(isCPU);
@@ -275,7 +299,9 @@ namespace RVP
 			revvingCo = false;
 		}
 		void FixedUpdate()
-		{ 	
+		{
+			
+
 			if (vp.countdownTimer > 0)
 			{
 				vp.ebrakeInput = 1;
@@ -369,7 +395,7 @@ namespace RVP
 				}
 			}
 
-			if (selfDriving)
+			if (selfDriving && vp.Owner)
 			{
 				if (vp.BatteryPercent < 0.2f)
 				{
@@ -393,17 +419,6 @@ namespace RVP
 						if (curReplayPointIdx < replayCams.Count - 1)
 							++curReplayPointIdx;
 					}
-					//if (waypointsContainer[curWaypointIdx] < progress + lookAheadBase)
-					//{
-					//	if (curWaypointIdx == waypointsContainer.Count - 1)
-					//	{
-					//		tPos = trackPathCreator.path.GetPointAtDistance(5);
-					//	}
-					//	else
-					//		++curWaypointIdx;
-					//	tPos = trackPathCreator.path.GetPointAtDistance(waypointsContainer[curWaypointIdx]);
-					//}
-					//Debug.DrawLine((Vector3)tPos, (Vector3)tPos + 100 * Vector3.up, Color.blue);
 					tPos0 = trackPathCreator.path.GetPointAtDistance(dist);
 					tPos = trackPathCreator.path.GetPointAtDistance(dist + lookAheadBase * lookAheadSteerCurve.Evaluate(vp.velMag));
 					tPos2 = trackPathCreator.path.GetPointAtDistance(dist + lookAheadBase * lookAheadMultCurve.Evaluate(vp.velMag));
@@ -520,21 +535,26 @@ namespace RVP
 
 				if (!vp.raceBox.evoModule.stunting)
 				{
-					//Vector3 curTrackpathDir = trackPathCreator.path.GetDirectionAtDistance(progress);
-					//curTrackpathDir.y = 0;
+					//if (dist > target.dist)
+					//{
+					//	target.dist = trackPathCreator.path.GetClosestDistanceAlongPath(tr.position) + 10;
+					//	target.pos = trackPathCreator.path.GetPointAtDistance(target.dist);
+					//}
+					//target.dist += vp.velMag;
+					//target.pos = trackPathCreator.path.GetPointAtDistance(target.dist);
+
 					Vector3 targetDir;
 					if(aiStuntingProc)
 					{
 						targetDir = F.Flat((Vector3)tPos2 - transform.position);
-						targetSteer = Vector2.SignedAngle(targetDir, F.Flat(tr.forward));
 					}
 					else
 					{
 						targetDir = F.Flat((Vector3)tPos - transform.position);
 						var targetDir2 = F.Flat((Vector3)tPos2 - transform.position);
 						targetDir = Vector3.Lerp(targetDir2, targetDir, Vector3.Distance(vp.tr.position, (Vector3)tPos) / F.I.racingPathResolution);
-						targetSteer = Vector2.SignedAngle(targetDir, F.Flat(tr.forward));
 					}
+					targetSteer = Vector2.SignedAngle(targetDir, F.Flat(tr.forward));
 
 					if (!aiStuntingProc)
 						vp.SetSGPShift(targetSteer > 45);
@@ -596,6 +616,9 @@ namespace RVP
 		}
 		public IEnumerator ResetOnTrack()
 		{
+			if (!vp.Owner)
+				yield break;
+
 			vp.customCam = null;
 			OutOfPits();
 			vp.raceBox.ResetOnTrack();
@@ -621,9 +644,9 @@ namespace RVP
 				resetPos = trackPathCreator.path.GetPointAtDistance(progress);
 			}
 			// resetting sequence. Has to be done this way to prevent the car from occasional rolling
-			if (ghostCo != null)
-				StopCoroutine(ghostCo);
-			ghostCo = StartCoroutine(GetComponent<Ghost>().ResetSeq());
+			
+			
+				GetComponent<Ghost>().StartGhostResettingRpc();
 			//rb.isKinematic = true;
 			tr.position = h.point + Vector3.up;
 			yield return new WaitForFixedUpdate();

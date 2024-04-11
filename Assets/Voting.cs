@@ -12,7 +12,7 @@ public class Voting : NetworkBehaviour
 	float votingTimer;
 	int votesForRestart;
 	int votesForEnd;
-	const float votingThreshold = .6f;
+	const float votingThreshold = .51f;
 	Coroutine invalidatorCo;
 	List<string> playersThatVoted = new();
 	public static Voting I;
@@ -20,24 +20,20 @@ public class Voting : NetworkBehaviour
 	{
 		I = this;
 	}
-	public override void OnNetworkDespawn()
-	{
-		base.OnNetworkDespawn();
-	}
 	public void VoteForEnd()
 	{
-		if(MultiPlayerSelector.I.server.AmHost)
+		if(ServerC.I.AmHost)
 			VoteForEndPassedRpc();
 		else
-			VoteForRpc(MultiPlayerSelector.I.server.PlayerMe.Id, VoteFor.END);
+			VoteForRpc(ServerC.I.PlayerMe.Id, VoteFor.END);
 	}
 
 	public void VoteForRestart()
 	{
-		if (MultiPlayerSelector.I.server.AmHost)
+		if (ServerC.I.AmHost)
 			VoteForRestartPassedRpc();
 		else
-			VoteForRpc(MultiPlayerSelector.I.server.PlayerMe.Id, VoteFor.RESTART);
+			VoteForRpc(ServerC.I.PlayerMe.Id, VoteFor.RESTART);
 	}
 
 	[Rpc(SendTo.Server)]
@@ -46,10 +42,10 @@ public class Voting : NetworkBehaviour
 		if (playersThatVoted.Contains(playerLobbyId))
 			return;
 
-		Player p = MultiPlayerSelector.I.server.lobby.Players.First(p => p.Id == playerLobbyId);
+		Player p = ServerC.I.lobby.Players.First(p => p.Id == playerLobbyId);
 		playersThatVoted.Add(playerLobbyId);
 		
-		int votesRequiredToPass = (int)Mathf.Ceil(votingThreshold * (F.I.ActivePlayers.Count - 1));
+		int votesRequiredToPass = (int)Mathf.Ceil(votingThreshold * ServerC.I.activePlayers.Count);
 		string msg = null;
 		Color color = Color.yellow;
 		bool passed = false;
@@ -113,31 +109,5 @@ public class Voting : NetworkBehaviour
 	{
 		RaceManager.I.BackToMenu(applyScoring:false);
 	}
-
-
-	public void CountdownTillForceEveryoneToResults()
-	{
-		CountdownTillForceEveryoneToResultsRpc();
-	}
-	[Rpc(SendTo.Server)]
-	void CountdownTillForceEveryoneToResultsRpc()
-	{
-		StartCoroutine(CountdownTillForceEveryoneToResultsSeqCo());
-	}
-	IEnumerator CountdownTillForceEveryoneToResultsSeqCo()
-	{
-		Debug.Log("CountdownTillForceEveryoneToResultsSeqCo");
-		float timer = 30;
-		while(timer > 0)
-		{
-			timer -= Time.deltaTime;
-			yield return null;
-		}
-		TimeForRaceEndedRpc();
-	}
-	[Rpc(SendTo.Everyone)]
-	void TimeForRaceEndedRpc()
-	{
-		RaceManager.I.TimeForRaceEnded();
-	}
+	
 }
