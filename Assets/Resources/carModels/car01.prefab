@@ -84917,7 +84917,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 1553044784
+  GlobalObjectIdHash: 1778777427
   InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
@@ -84938,7 +84938,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f0d889db27804635ada6f9fa36c8e9ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  UseUnreliableDeltas: 1
+  UseUnreliableDeltas: 0
   SyncPositionX: 1
   SyncPositionY: 1
   SyncPositionZ: 1
@@ -85053,10 +85053,6 @@ MonoBehaviour:
   sampleText: {fileID: 8180295954061042356}
   carNumber: 1
   bodyObj: {fileID: 7136051627190437502}
-  accelInput:
-    m_InternalValue: 0
-  steerInput:
-    m_InternalValue: 0
   frontLights:
   - {fileID: 2712850293685523867}
   rearLights:
@@ -85150,6 +85146,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ea7d76ad0805fd5479e1b489d58e44d2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  curLap: 0
   w_A_dot: 0
   starLevel: 0
   drift: 0

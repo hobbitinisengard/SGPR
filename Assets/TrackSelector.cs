@@ -77,14 +77,10 @@ public class TrackSelector : TrackSelectorTemplate
 		if (!init)
 			dir = shiftInputRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
 
-		F.I.s_cpuLevel = (CpuLevel)F.Wraparound((int)F.I.s_cpuLevel+dir, 0, 3);
+		F.I.s_cpuLevel = CpuLevel.Normal;//(CpuLevel)F.Wraparound((int)F.I.s_cpuLevel+dir, 0, 3);
 		string cpuLevelStr = F.I.s_cpuLevel switch
 		{
-			CpuLevel.Easy => "Easy",
-			CpuLevel.Medium => "Medium",
-			CpuLevel.Hard => "Hard",
-			CpuLevel.Elite => "Elite",
-			_ => "Elite",
+			_ => "Normal",
 		};
 		CPULevelButtonText.text = "CPU: " + cpuLevelStr;
 	}

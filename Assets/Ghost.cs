@@ -83,15 +83,29 @@ public class Ghost : NetworkBehaviour
 	}
 	public void SetGhostAfterRace()
 	{
-		SetHittableRpc(false, true);
+		if (F.I.gameMode == MultiMode.Multiplayer)
+			SetHittableRpc(false, true);
+		else
+			SetHittable(false, true);
 	}
 	[Rpc(SendTo.Everyone)]
-	public void SetHittableRpc(bool isHittable, bool updateColliders)
+	void SetHittableRpc(bool isHittable, bool updateColliders)
 	{
 		SetHittable(isHittable, updateColliders);
 	}
+	public void StartGhostResetting()
+	{
+		if (F.I.gameMode == MultiMode.Multiplayer)
+			StartGhostResettingRpc();
+		else
+		{
+			if (ghostCo != null)
+				StopCoroutine(ghostCo);
+			ghostCo = StartCoroutine(ResetSeq());
+		}
+	}
 	[Rpc(SendTo.Everyone)]
-	public void StartGhostResettingRpc()
+	void StartGhostResettingRpc()
 	{
 		if (ghostCo != null)
 			StopCoroutine(ghostCo);

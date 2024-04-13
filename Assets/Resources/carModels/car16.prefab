@@ -83620,6 +83620,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6457121441695959639}
   - component: {fileID: 5969412531493064939}
+  - component: {fileID: 411616821831239868}
   - component: {fileID: 5969412531493064938}
   - component: {fileID: 5969412531493064935}
   - component: {fileID: 4194641081301078446}
@@ -83628,7 +83629,6 @@ GameObject:
   - component: {fileID: 8045125721435560817}
   - component: {fileID: 8319369162350912230}
   - component: {fileID: 865657811856999447}
-  - component: {fileID: 411616821831239868}
   - component: {fileID: -2271092705877300007}
   m_Layer: 9
   m_Name: car16
@@ -83707,6 +83707,27 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &411616821831239868
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5969412531493064941}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 3094933994
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
 --- !u!114 &5969412531493064938
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -83723,8 +83744,6 @@ MonoBehaviour:
   sampleText: {fileID: 6028913259068871233}
   carNumber: 16
   bodyObj: {fileID: 7136051627190437502}
-  accelInput: 0
-  steerInput: 0
   frontLights:
   - {fileID: 6657220250863250050}
   rearLights:
@@ -83896,6 +83915,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ea7d76ad0805fd5479e1b489d58e44d2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  curLap: 0
   w_A_dot: 0
   starLevel: 0
   drift: 0
@@ -84051,8 +84071,6 @@ MonoBehaviour:
   searchForPits: 0
   outOfTrackTime: 0
   outOfTrackRequiredTime: 2
-  curStuntpointIdx: 0
-  curReplayPointIdx: 0
   aiStuntingProc: 0
   cpuSmoothCoeff: 10
   cpuFastCoeff: 50
@@ -84100,27 +84118,6 @@ MonoBehaviour:
   - {fileID: 5228305639871473634}
   - {fileID: 3596460534430659167}
   transpShader: {fileID: 4800000, guid: bbb29bc6f1f0b704d989cac34a3a1b7e, type: 3}
---- !u!114 &411616821831239868
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5969412531493064941}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 3094933994
-  InScenePlacedSourceGlobalObjectIdHash: 0
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
 --- !u!114 &-2271092705877300007
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -116583,7 +116580,7 @@ Transform:
   m_GameObject: {fileID: 9013835206299173347}
   serializedVersion: 2
   m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 0.5, z: 0.04}
+  m_LocalPosition: {x: 0, y: 0.5, z: -0.115}
   m_LocalScale: {x: 0.97, y: 0.62, z: 0.58}
   m_ConstrainProportionsScale: 0
   m_Children: []

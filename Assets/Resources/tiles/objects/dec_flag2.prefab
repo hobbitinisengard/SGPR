@@ -113,8 +113,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -39.790283, y: 24.152344, z: -24.059256}
-  m_LocalScale: {x: 2, y: 2, z: 2}
-  m_ConstrainProportionsScale: 1
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3551140105058524867}
   m_Father: {fileID: 0}
@@ -161,7 +161,7 @@ Transform:
   m_GameObject: {fileID: 4389628657284520472}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -20.37, y: 0, z: 25.5}
+  m_LocalPosition: {x: -13.5, y: 0, z: 16.9}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -227,8 +227,8 @@ SkinnedMeshRenderer:
   m_BlendShapeWeights: []
   m_RootBone: {fileID: 0}
   m_AABB:
-    m_Center: {x: 20.300888, y: 1.4390249, z: -3.4298115}
-    m_Extent: {x: 13.325573, y: 7.155923, z: 16.199213}
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 0, y: 0, z: 0}
   m_DirtyAABB: 0
 --- !u!183 &1948655683910006095
 Cloth:
@@ -319,5 +319,5 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 38.68, y: 8.5, z: 23.9}
-  m_Center: {x: 1.65, y: 0, z: 0}
+  m_Size: {x: 26.8, y: 1, z: 17.79}
+  m_Center: {x: 1, y: 0, z: 0}

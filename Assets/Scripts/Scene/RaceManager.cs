@@ -223,7 +223,7 @@ namespace RVP
 			}
 			Debug.Assert(eliminatedCar != null);
 
-			eliminatedCar.KnockoutMeRpc();
+			eliminatedCar.KnockoutMe();
 
 			hud.infoText.AddMessage(new(eliminatedCar.transform.name + " IS ELIMINATED!", BottomInfoType.ELIMINATED));
 		}
@@ -272,7 +272,7 @@ namespace RVP
 		}
 		private void OnEnable()
 		{
-			OnlineCommunication.I.raceStartDate = DateTime.MinValue;
+			
 			StartCoroutine(editorPanel.LoadTrack());
 
 			SetPartOfDay();

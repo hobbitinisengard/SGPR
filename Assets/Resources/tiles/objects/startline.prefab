@@ -12,7 +12,8 @@ GameObject:
   - component: {fileID: 5620042888034038472}
   - component: {fileID: 4282821574427310218}
   - component: {fileID: 7703146049088901602}
-  m_Layer: 6
+  - component: {fileID: 4983928199872563720}
+  m_Layer: 15
   m_Name: startline
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -64,7 +65,7 @@ SkinnedMeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: ddce798a34f1bbb45bc395510c0da72c, type: 2}
+  - {fileID: 2100000, guid: 9a4796d253b4b904382daf2a87325a04, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -475,6 +476,27 @@ Cloth:
   - {x: 0.6666667, y: 0.16666667, z: 0.16666667}
   - {x: 0.5, y: 0.5, z: 0}
   m_VirtualParticleIndices: 
+--- !u!65 &4983928199872563720
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1206144495050368755}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 34.59624, y: 0.028699994, z: 5.943599}
+  m_Center: {x: 0, y: -0.014351904, z: -0.0000028618783}
 --- !u!1 &6809052868818372805
 GameObject:
   m_ObjectHideFlags: 0

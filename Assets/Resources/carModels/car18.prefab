@@ -77113,8 +77113,6 @@ MonoBehaviour:
   sampleText: {fileID: 2483951704411566523}
   carNumber: 18
   bodyObj: {fileID: 7136051627190437502}
-  accelInput: 0
-  steerInput: 0
   frontLights:
   - {fileID: 6657220250863250050}
   rearLights:
@@ -77286,6 +77284,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ea7d76ad0805fd5479e1b489d58e44d2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  curLap: 0
   w_A_dot: 0
   starLevel: 0
   drift: 0
@@ -77441,8 +77440,6 @@ MonoBehaviour:
   searchForPits: 0
   outOfTrackTime: 0
   outOfTrackRequiredTime: 2
-  curStuntpointIdx: 0
-  curReplayPointIdx: 0
   aiStuntingProc: 0
   cpuSmoothCoeff: 10
   cpuFastCoeff: 50

@@ -207,15 +207,18 @@ public class RaceBox : NetworkBehaviour
 	private void OnDisable()
 	{
 		vp.sampleText.gameObject.SetActive(false);
+
 		int curPos = RaceManager.I.Position(vp);
-		if (curPos == 1)
+		if (!F.I.s_inEditor && curPos == 1)
 		{
 			RaceManager.I.hud.infoText.AddMessage(new(vp.tr.name + " WINS THE RACE!", BottomInfoType.CAR_WINS));
 		}
 		// in racemode after the end of a race, cars still run around the track, ghosts overtake each other. Don't let it change results
 		curLap += 100 * (F.I.s_cpuRivals + 1 - curPos);
+
 		if (vp.Owner)
 			vp.ghostComponent.SetGhostAfterRace();
+
 		SetRacetime();
 		vp.followAI.SetCPU(true);
 
@@ -245,7 +248,7 @@ public class RaceBox : NetworkBehaviour
 	}
 	private void FixedUpdate()
 	{
-		if(F.I.s_laps == 0)
+		if(F.I.s_laps > 0)
 		{
 			if (!F.I.gamePaused && curLap > 0)
 				lapTimer += Time.fixedDeltaTime;
@@ -692,6 +695,7 @@ public class RaceBox : NetworkBehaviour
 			prevStuntPai = new PtsAnimInfo(stuntPai);
 			StuntPaiReset();
 		}
+
 	}
 	void StuntPaiReset()
 	{
@@ -815,15 +819,13 @@ public class RaceBox : NetworkBehaviour
 	{
 		if(F.I.s_laps > 0)
 		{
-			//if (F.I.gameMode == MultiMode.Multiplayer)
-			//	BroadcastRaceboxStatsRpc(aero, drift, raceTime.ToString(), lapTimer, curLap);
 			if (curLap == 0 || vp.followAI.ProgressPercent > 0.9f || vp.followAI.pitsProgress > 0)
 			{
 				vp.followAI.NextLap();
 
 				var curlaptime = CurLaptime;
 				lapTimer = 0;
-				if (vp.Owner || !vp.IsSpawned && curlaptime.HasValue)
+				if (vp.Owner && curlaptime.HasValue)
 				{
 					if (bestLapTime > curlaptime)
 						bestLapTime = curlaptime.Value;
@@ -855,6 +857,7 @@ public class RaceBox : NetworkBehaviour
 	}
 	IEnumerator WaitToSynchronizeRaceResults()
 	{
+		Debug.Log("WaitToSynchronizeRaceResults");
 		yield return new WaitForSecondsRealtime(3); // wait till local copy of car passess through finishline, then synchronize
 		vp.SynchRaceboxValuesRpc(name, vp.sponsor, curLap, vp.followAI.dist, vp.followAI.progress, aero, drift, vp.RpcTarget.NotMe);
 	}

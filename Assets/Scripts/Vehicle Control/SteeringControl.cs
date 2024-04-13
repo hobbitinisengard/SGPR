@@ -132,7 +132,6 @@ namespace RVP
 				vp.wheels[3].sidewaysFriction = vp.wheels[2].sidewaysFriction;
 			}
 			
-			
 			// Set steer angles in wheels
 			foreach (Suspension curSus in steeredWheels)
 			{

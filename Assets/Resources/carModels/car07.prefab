@@ -84389,6 +84389,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6457121441695959639}
   - component: {fileID: 5969412531493064939}
+  - component: {fileID: -2635304017130704376}
   - component: {fileID: 5969412531493064938}
   - component: {fileID: 5969412531493064935}
   - component: {fileID: 4194641081301078446}
@@ -84397,7 +84398,6 @@ GameObject:
   - component: {fileID: 8045125721435560817}
   - component: {fileID: 8319369162350912230}
   - component: {fileID: 865657811856999447}
-  - component: {fileID: -2635304017130704376}
   - component: {fileID: -6730701542445589292}
   m_Layer: 9
   m_Name: car07
@@ -84476,6 +84476,27 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &-2635304017130704376
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5969412531493064941}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  GlobalObjectIdHash: 3829508119
+  InScenePlacedSourceGlobalObjectIdHash: 0
+  AlwaysReplicateAsRoot: 0
+  SynchronizeTransform: 1
+  ActiveSceneSynchronization: 0
+  SceneMigrationSynchronization: 1
+  SpawnWithObservers: 1
+  DontDestroyWithOwner: 0
+  AutoObjectParentSync: 1
 --- !u!114 &5969412531493064938
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -84492,8 +84513,6 @@ MonoBehaviour:
   sampleText: {fileID: 270860654122157945}
   carNumber: 7
   bodyObj: {fileID: 7136051627190437502}
-  accelInput: 0
-  steerInput: 0
   frontLights:
   - {fileID: 2712850293685523867}
   rearLights:
@@ -84665,6 +84684,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ea7d76ad0805fd5479e1b489d58e44d2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  curLap: 0
   w_A_dot: 0
   starLevel: 0
   drift: 0
@@ -84820,8 +84840,6 @@ MonoBehaviour:
   searchForPits: 0
   outOfTrackTime: 0
   outOfTrackRequiredTime: 2
-  curStuntpointIdx: 0
-  curReplayPointIdx: 0
   aiStuntingProc: 0
   cpuSmoothCoeff: 10
   cpuFastCoeff: 50
@@ -84872,27 +84890,6 @@ MonoBehaviour:
   - {fileID: 5228305639871473634}
   - {fileID: 3596460534430659167}
   transpShader: {fileID: 4800000, guid: bbb29bc6f1f0b704d989cac34a3a1b7e, type: 3}
---- !u!114 &-2635304017130704376
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5969412531493064941}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 3829508119
-  InScenePlacedSourceGlobalObjectIdHash: 0
-  AlwaysReplicateAsRoot: 0
-  SynchronizeTransform: 1
-  ActiveSceneSynchronization: 0
-  SceneMigrationSynchronization: 1
-  SpawnWithObservers: 1
-  DontDestroyWithOwner: 0
-  AutoObjectParentSync: 1
 --- !u!114 &-6730701542445589292
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -193,9 +193,13 @@ namespace RVP
 				{
 					int index = F.I.s_cars.FindIndex(c => c.transform.name == vp.name);
 
-					Connect(F.I.s_cars[F.Wraparound(index + (move.x > 0 ? 1 : -1),0,F.I.s_cars.Count-1) % F.I.s_cars.Count], Mode.Replay);
+					if (F.I.s_cars[index] != vp)
+					{
+						Connect(F.I.s_cars[F.Wraparound(index + (move.x > 0 ? 1 : -1), 0, F.I.s_cars.Count - 1) % F.I.s_cars.Count], Mode.Replay);
 
-					RaceManager.I.hud.infoText.AddMessage(new Message(vp.transform.name, BottomInfoType.NEW_CAMERA_TARGET));
+						RaceManager.I.hud.infoText.AddMessage(new Message(vp.transform.name, BottomInfoType.NEW_CAMERA_TARGET));
+					}
+					
 				}
 			}
 		}
@@ -250,6 +254,8 @@ namespace RVP
 			smoothedRollAngle = Mathf.Lerp(smoothedRollAngle, scaledTurnAngle, rollCoeff * Time.fixedDeltaTime);
 			rollAngleDeg = smoothedRollAngle * Mathf.Lerp(0, 30, vp.velMag);
 			Vector3 rollUp = Quaternion.AngleAxis(-rollAngleDeg, vp.tr.forward) * Vector3.up;
+			
+			//Debug.DrawRay(vp.tr.position + Vector3.up * 3, targetUp, Color.white);
 			//camera look-position
 			// cos(45d) = 0.7f cos(0d) = 1 cos(90deg) = 0
 			if (vp.rb.velocity.magnitude < 1)
@@ -272,12 +278,15 @@ namespace RVP
 
 			targetForward = vp.tr.position + cHeight * Vector3.up - lookObj.position;
 			forwardLook = Vector3.Lerp(forwardLook, targetForward, forwardLookCoeff * Time.fixedDeltaTime);
-			if (Physics.Raycast(vp.tr.position, -targetUp, out RaycastHit hit, 1, castMask))
+			if (vp.reallyGroundedWheels > 0 && Physics.Raycast(vp.tr.position + vp.tr.up, -targetUp, out RaycastHit hit, Mathf.Infinity, castMask))
 			{
 				float dot = Vector3.Dot(targetUp, hit.normal);
 				// 0.9848 = cos(15d)
 				upLook = Vector3.Lerp(
 					 upLook, (dot < 0.9848077 && pitchLocked) ? targetUp : hit.normal, upLookCoeff * Time.fixedDeltaTime);
+				Debug.DrawRay(vp.tr.position + Vector3.up * 3, targetUp, Color.red);
+				Debug.DrawRay(vp.tr.position + Vector3.up * 3, hit.normal, Color.blue);
+
 			}
 			lookObj.rotation = Quaternion.LookRotation(forwardLook, upLook + rollUp);
 			//-------------

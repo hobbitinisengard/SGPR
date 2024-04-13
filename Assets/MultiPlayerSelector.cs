@@ -62,6 +62,8 @@ public class MultiPlayerSelector : TrackSelector
 	bool readyClicked = false;
 	[NonSerialized]
 	public ZippedTrackDataObject zippedTrackDataObject;
+	private Coroutine lobbyCntdwnCo;
+
 	protected override void Awake()
 	{
 		MultiPlayerSelector.I = this;
@@ -200,13 +202,13 @@ public class MultiPlayerSelector : TrackSelector
 
 		UpdateInteractableButtons();
 
-		if (ServerC.I.AmHost && ServerC.I.readyPlayers == ServerC.I.lobby.Players.Count)
+		if (F.I.actionHappening == ActionHappening.InLobby && ServerC.I.AmHost 
+			&& ServerC.I.readyPlayers == ServerC.I.lobby.Players.Count)
 		{
-			readyText.text = "START RACE";
-		}
-		else
-		{
-			readyText.text = (ServerC.I.AmHost ? "HOST " : "") + (ServerC.I.PlayerMe.ReadyGet() ? "NOT READY" : "READY");
+			if (lobbyCntdwnCo != null)
+				StopCoroutine(lobbyCntdwnCo);
+
+			lobbyCntdwnCo = StartCoroutine(LobbyCountdown());
 		}
 
 		if (changes.HostId.Changed)
@@ -390,19 +392,10 @@ public class MultiPlayerSelector : TrackSelector
 	}
 	public void SwitchReady(bool init = false)
 	{
-		if (!init && ServerC.I.AmHost && ServerC.I.readyPlayers == ServerC.I.lobby.Players.Count 
-			&& ServerC.I.lobby.Players.Count == ServerC.I.activePlayers.Count)
-		{
-			F.I.actionHappening = ActionHappening.InRace;
-			ServerC.I.lobby.Data[ServerC.k_actionHappening] = new DataObject(DataObject.VisibilityOptions.Public, F.I.actionHappening.ToString());
-			ServerC.I.UpdateServerData();
-			
-			thisView.ToRaceScene();
-		}
-		else
-		{
+		
+
 			ReadyButton(init);
-		}
+		
 	}
 	bool IsCurrentTrackSyncedWithServerTrack(string newSha = null)
 	{
@@ -477,9 +470,19 @@ public class MultiPlayerSelector : TrackSelector
 		{
 			Debug.Log("Ready switch failed: " + e.Message);
 		}
+
 		UpdateInteractableButtons();
-		readyText.text = (ServerC.I.AmHost && ServerC.I.readyPlayers == ServerC.I.lobby.Players.Count) ? "START RACE" : 
-			((ServerC.I.AmHost ? "HOST " : "") + (amReady ? "NOT READY" : "READY"));
+
+		readyText.text = ((ServerC.I.AmHost ? "HOST " : "") + (amReady ? "NOT READY" : "READY"));
+
+		if (lobbyCntdwnCo != null)
+			StopCoroutine(lobbyCntdwnCo);
+
+		if ((ServerC.I.AmHost && ServerC.I.readyPlayers == ServerC.I.lobby.Players.Count))
+		{
+			lobbyCntdwnCo = StartCoroutine(LobbyCountdown());
+		}
+		
 		leaderboard.Refresh();
 		
 		readyClicked = false;
@@ -494,6 +497,19 @@ public class MultiPlayerSelector : TrackSelector
 		scoringText.text = F.I.scoringType.ToString();
 
 		sponsorbText.transform.parent.gameObject.SetActive(F.I.scoringType == ScoringType.Championship);
+	}
+	IEnumerator LobbyCountdown()
+	{
+		yield return new WaitForSecondsRealtime(3);
+		if (ServerC.I.AmHost && ServerC.I.readyPlayers == ServerC.I.lobby.Players.Count
+			&& ServerC.I.lobby.Players.Count == ServerC.I.activePlayers.Count)
+		{
+			F.I.actionHappening = ActionHappening.InRace;
+			ServerC.I.lobby.Data[ServerC.k_actionHappening] = new DataObject(DataObject.VisibilityOptions.Public, F.I.actionHappening.ToString());
+			ServerC.I.UpdateServerData();
+
+			thisView.ToRaceScene();
+		}
 	}
 }
 

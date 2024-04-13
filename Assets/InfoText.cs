@@ -48,13 +48,6 @@ public class InfoText : MonoBehaviour
 	}
 	private void OnEnable()
 	{
-		liveMessages.Clear();
-		curMsgInQueue = null;
-		newPosY = msgHiddenPos;
-		SetBottomTextPos(newPosY);
-	}
-	private void OnDisable()
-	{
 		Reset();
 	}
 	public void Reset()
@@ -64,6 +57,8 @@ public class InfoText : MonoBehaviour
 			StopCoroutine(showingCo);
 		liveMessages.Clear();
 		curMsgInQueue = null;
+		newPosY = msgHiddenPos;
+		SetBottomTextPos(newPosY);
 	}
 	IEnumerator BottomTextShowing()
 	{

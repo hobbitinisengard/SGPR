@@ -211,7 +211,7 @@ namespace RVP
 		[NonSerialized]
 		public GameObject customCam;
 		private float lastNoBatteryMessage;
-		public bool Owner { get { return IsOwner || !IsSpawned; } }
+		public bool Owner { get { return IsOwner || F.I.gameMode == MultiMode.Singleplayer; } }
 		public Livery sponsor { get; private set; }
 		void ApplySponsor(Livery liv)
 		{
@@ -268,13 +268,20 @@ namespace RVP
 			originalDrag = rb.drag;
 			originalMass = rb.mass;
 			F.I.s_cars.Add(this);
+			
 		}
 		public override void OnNetworkSpawn()
 		{
 			base.OnNetworkSpawn();
-			if (!Owner && RaceManager.I.raceAlreadyStarted)
-			{ // latecomer's request to synch progress
-				RequestRaceboxValuesRpc(RpcTarget.Owner);
+				
+			if (!Owner)
+			{ 
+				basicInput.enabled = false;
+				if(RaceManager.I.raceAlreadyStarted)
+				{// latecomer's request to synch progress
+					Debug.Log("RequestRaceboxValuesRpc");
+					RequestRaceboxValuesRpc(RpcTarget.Owner);
+				}
 			}
 		}
 		
@@ -449,11 +456,13 @@ namespace RVP
 					//newCar.followAI.SetCPU(true); // CPU drives player's car
 				}
 			}
-			basicInput.enabled = RaceManager.I.playerCar == this;
+
 			sampleText.gameObject.SetActive(!F.I.s_spectator && F.I.gameMode == MultiMode.Multiplayer && RaceManager.I.playerCar != this);
 			RaceManager.I.cam.enabled = true;
 			RaceManager.I.DemoSGPLogo.SetActive(F.I.s_spectator);
 			RaceManager.I.hud.gameObject.SetActive(!F.I.s_spectator);
+
+			SGP_HUD.I.AddToProgressBar(this);
 
 			StartCoroutine(ApplySetup());
 
@@ -888,7 +897,7 @@ namespace RVP
 		public override void OnDestroy()
 		{
 			F.I.s_cars.Remove(this);
-
+			SGP_HUD.I.RemoveFromProgressBar(this);
 			if (norm)
 			{
 				Destroy(norm.gameObject);
@@ -932,9 +941,6 @@ namespace RVP
 			}
 			SetEbrake(0);
 		}
-
-
-
 		public void AddWheelGroup()
 		{
 			WheelCheckGroup wcg = new WheelCheckGroup
@@ -962,8 +968,14 @@ namespace RVP
 		{
 			energyRemaining = Mathf.Clamp(energyRemaining - batteryCapacity * 0.5f * batteryStuntIncreasePercent, 0, batteryCapacity);
 		}
-		[Rpc(SendTo.Everyone)]
-		public void KnockoutMeRpc()
+		public void KnockoutMe()
+		{
+			if (F.I.gameMode == MultiMode.Multiplayer)
+				KnockoutMeRpc();
+			else
+				KnockoutMeInternal();
+		}
+		void KnockoutMeInternal()
 		{
 			raceBox.enabled = false;
 			followAI.SetCPU(false);
@@ -973,6 +985,11 @@ namespace RVP
 			SetBrake(0);
 			SetSteer(0);
 			raceBox.SetRacetime();
+		}
+		[Rpc(SendTo.Everyone)]
+		void KnockoutMeRpc()
+		{
+			KnockoutMeInternal();
 		}
 	}
 

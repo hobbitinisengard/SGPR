@@ -44,7 +44,7 @@ public class PauseMenu : Sfxable
 		F.I.gamePaused = true;
 		paused.TransitionTo(0);
 		timeElapsed = 0;
-		restartButton.SetActive(OnlineCommunication.I.raceStartDate != DateTime.MinValue);
+		restartButton.SetActive(!F.I.s_inEditor);
 		endButton.SetActive(F.I.gameMode == MultiMode.Multiplayer && !ServerC.I.AmHost);
 		startColor = veil.color;
 		firstButton.Select();

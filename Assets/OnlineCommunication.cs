@@ -15,7 +15,7 @@ public class OnlineCommunication : NetworkBehaviour
 		get { return _parsedRaceStartDate; }
 		set
 		{
-			if (IsServer)
+			if (IsServer || F.I.gameMode == MultiMode.Singleplayer)
 			{
 				_parsedRaceStartDate = value;
 				_raceStartDate.Value = value.ToString();
@@ -24,9 +24,9 @@ public class OnlineCommunication : NetworkBehaviour
 	}
 	private void Awake()
 	{
-		OnlineCommunication.I = this;
 		raceStartDate = DateTime.MinValue;
-		_raceStartDate.OnValueChanged += raceStartDateChanged;
+		OnlineCommunication.I = this;
+		_raceStartDate.OnValueChanged += RaceStartDateChanged;
 	}
 	public override void OnNetworkSpawn()
 	{
@@ -34,7 +34,7 @@ public class OnlineCommunication : NetworkBehaviour
 		AddActivePlayerRpc(NetworkManager.LocalClientId, AuthenticationService.Instance.PlayerId);
 		
 	}
-	private void raceStartDateChanged(FixedString128Bytes previousValue, FixedString128Bytes newValue)
+	private void RaceStartDateChanged(FixedString128Bytes previousValue, FixedString128Bytes newValue)
 	{
 		_parsedRaceStartDate = DateTime.Parse(newValue.ToString());
 	}

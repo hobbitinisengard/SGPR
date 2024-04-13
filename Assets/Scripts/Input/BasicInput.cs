@@ -64,33 +64,41 @@ namespace RVP
 
 		void FixedUpdate()
 		{
-			Vector2 input2 = driveInput.action.ReadValue<Vector2>();
-			vp.SetAccel(Mathf.Clamp01(input2.y));
-			vp.SetBrake(Mathf.Abs(Mathf.Clamp(input2.y, -1, 0)));
-			vp.SetSteer(input2.x);
-			vp.SetBoost(boostInput.action.ReadValue<float>() == 1);
-
-			if (F.I.chat.texting)
-				return;
-
-			vp.SetHonkerInput(honkInput.action.ReadValue<float>()==1);
-			vp.SetSGPShift(evoInput.action.ReadValue<float>()==1);
-			if(resetOnTrackInput.action.ReadValue<float>()==1 
-				&& Time.time - resetOnTrackTime > 5)
+			if (vp.followAI.isCPU)
 			{
-				resetOnTrackTime = Time.time;
-				vp.ResetOnTrack();
+				if(!vp.followAI.Pitting)
+					vp.SetSteer(0);
 			}
-			vp.SetRoll(rollInput.action.ReadValue<float>());
-
-			if (!string.IsNullOrEmpty(upshiftButton))
+			else
 			{
-				vp.SetUpshift(Input.GetAxis(upshiftButton));
-			}
+				Vector2 input2 = driveInput.action.ReadValue<Vector2>();
+				vp.SetAccel(Mathf.Clamp01(input2.y));
+				vp.SetBrake(Mathf.Abs(Mathf.Clamp(input2.y, -1, 0)));
+				vp.SetSteer(input2.x);
+				vp.SetBoost(boostInput.action.ReadValue<float>() == 1);
 
-			if (!string.IsNullOrEmpty(downshiftButton))
-			{
-				vp.SetDownshift(Input.GetAxis(downshiftButton));
+				if (F.I.chat.texting)
+					return;
+
+				vp.SetHonkerInput(honkInput.action.ReadValue<float>() == 1);
+				vp.SetSGPShift(evoInput.action.ReadValue<float>() == 1);
+				if (resetOnTrackInput.action.ReadValue<float>() == 1
+					&& Time.time - resetOnTrackTime > 5)
+				{
+					resetOnTrackTime = Time.time;
+					vp.ResetOnTrack();
+				}
+				vp.SetRoll(rollInput.action.ReadValue<float>());
+
+				if (!string.IsNullOrEmpty(upshiftButton))
+				{
+					vp.SetUpshift(Input.GetAxis(upshiftButton));
+				}
+
+				if (!string.IsNullOrEmpty(downshiftButton))
+				{
+					vp.SetDownshift(Input.GetAxis(downshiftButton));
+				}
 			}
 		}
 	}

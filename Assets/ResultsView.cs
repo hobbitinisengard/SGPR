@@ -33,6 +33,7 @@ public class ResultsView : MonoBehaviour
 	const int addingSpeedPerSec = 10000;
 	int finalPosition;
 	AudioSource tickSnd;
+	public Button OKbutton;
 	public GridLayoutGroup gridTable;
 	public GameObject grandScore0;
 	public TextMeshProUGUI grandScore0Text;
@@ -100,11 +101,6 @@ public class ResultsView : MonoBehaviour
 		grandScoreFinal = 0;
 		grandScoreMoving = 0;
 		grandScore0Text.text = "      000000";
-		if(resultData.Count < 2)
-		{
-			Debug.LogError("No resultData");
-			return;
-		}
 		int carsInSession = resultData.Count;
 		var cellSize = gridTable.cellSize;
 		cellSize.y = Mathf.Clamp(gridTableTr.rect.height / (1 + carsInSession), 0, maxRowHeight);

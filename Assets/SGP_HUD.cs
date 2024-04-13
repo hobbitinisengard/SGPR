@@ -10,6 +10,7 @@ public enum BottomInfoType { NEW_LEADER, NO_BATT, PIT_OUT, PIT_IN, STUNT, CAR_WI
 
 public class SGP_HUD : MonoBehaviour
 {
+	public static SGP_HUD I;
 	public EndraceCountdownTimer endraceTimer;
 	public GameObject AEROText;
 	public GameObject DRIFTText;
@@ -87,7 +88,8 @@ public class SGP_HUD : MonoBehaviour
 	int carStarLevel = 0;
 	StuntsData stuntData;
 	public float dimStuntTableTimer = 0;
-	public Dictionary<VehicleParent, Transform> carProgressIcons = new Dictionary<VehicleParent, Transform>();
+	public Dictionary<VehicleParent, Transform> carProgressIcons = new();
+	public GameObject carProgressIconPrefab;
 	public TimeSpan bestLapTime;
 
 	/// <summary>
@@ -160,13 +162,7 @@ public class SGP_HUD : MonoBehaviour
 	}
 	public void Reset()
 	{
-		for (int i = 0; i < progressBar.childCount; ++i)
-		{
-			progressBar.GetChild(i).gameObject.SetActive(false);
-		}
-		ClearStuntInfo();
-		
-		carProgressIcons.Clear();
+		ClearStuntInfo();		
 		infoText.Reset();
 	}
 	public void OnDisable()
@@ -188,6 +184,7 @@ public class SGP_HUD : MonoBehaviour
 	}
 	private void Awake()
 	{
+		I = this;
 		stuntTemplate = StuntInfo.transform.GetChild(0).gameObject;
 		fullScaleGear = currentGear.transform.localScale.x;
 		smolScaleGear = fullScaleGear * 0.75f;
@@ -214,17 +211,7 @@ public class SGP_HUD : MonoBehaviour
 		transform.gameObject.SetActive(true);
 
 		gameObject.SetActive(true);
-
-		for (int i = 0; i < F.I.s_cars.Count; ++i)
-		{
-			progressBar.GetChild(i).gameObject.SetActive(true);
-			progressBar.GetChild(i).localScale = 0.75f * Vector3.one;
-			carProgressIcons.Add(F.I.s_cars[i], progressBar.GetChild(i));
-			progressBar.GetChild(i).name = F.I.s_cars[i].tr.name;
-			progressBar.GetChild(i).GetComponent<Image>().sprite = SponserSprites[(int)F.I.s_cars[i].sponsor-1];
-		}
-		carProgressIcons[vp].SetSiblingIndex(9);
-		carProgressIcons[vp].localScale = Vector3.one;
+	
 		bool inRace = F.I.s_laps > 0;
 
 		AERODisplay.SetActive(inRace);
@@ -234,6 +221,20 @@ public class SGP_HUD : MonoBehaviour
 		RECDisplay.SetActive(inRace);
 		LAPDisplay.SetActive(inRace);
 	}
+	public void AddToProgressBar(VehicleParent newCar)
+	{
+		var newProgressIcon = Instantiate(carProgressIconPrefab, progressBar).transform;
+		newProgressIcon.localScale = ((newCar == RaceManager.I.playerCar) ? 1 : 0.75f) * Vector3.one;
+		newProgressIcon.name = newCar.name;
+		newProgressIcon.GetComponent<Image>().sprite = SponserSprites[(int)newCar.sponsor - 1];
+		carProgressIcons.Add(newCar, progressBar.GetChild(progressBar.childCount-1));
+	}
+	public void RemoveFromProgressBar(VehicleParent delCar)
+	{
+		Destroy(carProgressIcons[delCar].gameObject);
+		carProgressIcons.Remove(delCar);
+	}
+
 	private void Update()
 	{
 		if (Input.GetKeyDown(KeyCode.F3) && F.I.s_cpuRivals == 0 && !pauseMenu.gameObject.activeSelf)
@@ -303,7 +304,7 @@ public class SGP_HUD : MonoBehaviour
 			}
 			else if (stuntPai != null)
 			{ // show animation and stunt info
-				if (F.I.s_raceType != RaceType.Drift && StuntInfo.transform.childCount < 3)
+				if (F.I.s_raceType != RaceType.Drift && StuntInfo.transform.childCount <= 2)
 				{
 					infoText.AddMessage(new Message(StuntInfo.transform.GetChild(1).GetComponent<StuntInfoOverlay>().ToString(), BottomInfoType.STUNT));
 				}
@@ -312,6 +313,12 @@ public class SGP_HUD : MonoBehaviour
 					dimStuntTableTimer = dimmingStuntTableTime;
 				}
 				ptsAnim.Play(stuntPai);
+
+				foreach (var s in stuntData)
+				{
+					s.positiveProgress = 0;
+					s.doneTimes = 0;
+				}
 			}
 		}
 		if (vp.raceBox.GetStuntSeq(ref stuntData))

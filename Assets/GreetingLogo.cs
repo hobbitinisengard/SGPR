@@ -83,7 +83,7 @@ public class GreetingLogo : Sfxable
 								F.I.s_spectator = true;
 								F.I.s_cpuRivals = 5;
 								F.I.s_inEditor = false;
-								F.I.s_cpuLevel = CpuLevel.Elite;
+								F.I.s_cpuLevel = CpuLevel.Normal;
 								F.I.s_trackName = track.Key;
 								F.I.s_isNight = UnityEngine.Random.value > 0.5f;
 								F.I.s_laps = 9;

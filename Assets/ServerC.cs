@@ -250,7 +250,7 @@ public class ServerC : MonoBehaviour
 	{
 		get
 		{
-			return !networkManager.didStart || networkManager.IsHost;
+			return networkManager.IsHost || F.I.gameMode == MultiMode.Singleplayer;
 		}
 	}
 

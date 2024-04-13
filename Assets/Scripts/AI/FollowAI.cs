@@ -4,6 +4,9 @@ using PathCreation;
 using System.Collections.Generic;
 using System;
 using UnityEngine.UIElements;
+using Unity.Netcode;
+using static UnityEditor.PlayerSettings;
+using UnityEditor.PackageManager.Requests;
 
 namespace RVP
 {
@@ -77,11 +80,11 @@ namespace RVP
 		public float slowingCoeff = 1;
 		float maxPhysicalSteerAngle = 5;
 		private int universalPathLayer;
-
+		const float reqDist = 10;
 		// CPU settings
 		float tyreMult = 1;
 		float lowSpeed = 30;
-		FollowTarget target;
+		FollowTarget target = new();
 		public CpuLevel cpuLevel;
 		public bool SGPshifting;
 		[Tooltip("Time limit in seconds which the vehicle is stuck before attempting to reverse")]
@@ -115,6 +118,7 @@ namespace RVP
 		public float cpuFastCoeff = 50;
 		private bool revvingCo;
 		public float targetSteer;
+		public bool Pitting { get { return pitsPathCreator != null; } }
 		public ReplayCam currentCam { get { return replayCams[curReplayPointIdx]; } }
 		public float ProgressPercent
 		{
@@ -147,12 +151,7 @@ namespace RVP
 			cpuLevel = F.I.s_cpuLevel;
 			isCPU = val;
 			selfDriving = val;
-			vp.basicInput.enabled = RaceManager.I.playerCar == vp;
-			target = new FollowTarget()
-			{
-				dist = dist+10,
-				pos = trackPathCreator.path.GetPointAtDistance(dist+10)
-			};
+			
 			//if (isCPU)
 			//{
 			//	vp.basicInput.enabled = false;
@@ -210,6 +209,7 @@ namespace RVP
 		}
 		private void Start()
 		{
+			
 			StartCoroutine(Initialize());
 		}
 		IEnumerator Initialize()
@@ -218,6 +218,10 @@ namespace RVP
 			maxPhysicalSteerAngle = vp.steeringControl.steeredWheels[0].steerRangeMax;
 			dist = GetDist(1 << racingLineLayerNumber);
 			progress = dist;
+			
+			target.dist = dist;
+			target.pos = trackPathCreator.path.GetPointAtDistance(dist);
+
 			SetCPU(isCPU);
 		}
 		int GetDist(int layer)
@@ -255,6 +259,10 @@ namespace RVP
 				{
 					dist = int.Parse(h.transform.name);
 				}
+				else
+				{
+					outOfTrackTime += Time.deltaTime;
+				}
 			}
 			return (int)dist;
 		}
@@ -271,7 +279,6 @@ namespace RVP
 				pitsPathCreator = null;
 				searchForPits = false;
 				selfDriving = isCPU;
-				vp.basicInput.enabled = RaceManager.I.playerCar == vp;
 			}
 		}
 		IEnumerator RevvingCoroutine()
@@ -322,7 +329,7 @@ namespace RVP
 			}
 			bool overRoad = Physics.Raycast(tr.position + Vector3.up, Vector3.down, out var _, Mathf.Infinity, 1 << F.I.roadLayer);
 			
-			if(trackPathCreator)
+			if(!pitsPathCreator)
 			{
 				if(vp.reallyGroundedWheels > 2 || rolledOverTime > 0)
 				{
@@ -535,29 +542,43 @@ namespace RVP
 
 				if (!vp.raceBox.evoModule.stunting)
 				{
-					//if (dist > target.dist)
-					//{
-					//	target.dist = trackPathCreator.path.GetClosestDistanceAlongPath(tr.position) + 10;
-					//	target.pos = trackPathCreator.path.GetPointAtDistance(target.dist);
-					//}
-					//target.dist += vp.velMag;
-					//target.pos = trackPathCreator.path.GetPointAtDistance(target.dist);
-
+					
+					float dTargetCar = Vector3.Distance(target.pos, vp.tr.position);
+					if (Mathf.Abs(target.dist - dist) > 2.5f * reqDist || target.dist < dist)
+					{ // reset target
+						target.dist = dist + reqDist;
+						target.pos = trackPathCreator.path.GetPointAtDistance(target.dist);
+					}
+					if (dTargetCar < .75f * reqDist) // car catching up
+					{
+						target.dist += 2 * vp.velMag * Time.fixedDeltaTime;
+						
+						target.pos = trackPathCreator.path.GetPointAtDistance(target.dist);
+					}
+					if (dTargetCar < reqDist) // go on
+					{ 
+						target.dist += vp.velMag * Time.fixedDeltaTime;
+						target.pos = trackPathCreator.path.GetPointAtDistance(target.dist);
+					}
+					//Debug.DrawRay(target.pos, Vector3.up * 100, Color.blue);
 					Vector3 targetDir;
 					if(aiStuntingProc)
 					{
-						targetDir = F.Flat((Vector3)tPos2 - transform.position);
+						targetDir = F.Flat((Vector3)tPos2 - vp.tr.position);
 					}
 					else
 					{
-						targetDir = F.Flat((Vector3)tPos - transform.position);
-						var targetDir2 = F.Flat((Vector3)tPos2 - transform.position);
-						targetDir = Vector3.Lerp(targetDir2, targetDir, Vector3.Distance(vp.tr.position, (Vector3)tPos) / F.I.racingPathResolution);
+						//targetDir = F.Flat((Vector3)tPos - transform.position);
+						//var targetDir2 = F.Flat((Vector3)tPos2 - transform.position);
+						//targetDir = Vector3.Lerp(targetDir2, targetDir, Vector3.Distance(vp.tr.position, (Vector3)tPos) / F.I.racingPathResolution);
+						if(pitsPathCreator)
+							targetDir = F.Flat((Vector3)tPos - vp.tr.position);
+						else
+						{
+							targetDir = F.Flat(target.pos - vp.tr.position);
+						}
 					}
 					targetSteer = Vector2.SignedAngle(targetDir, F.Flat(tr.forward));
-
-					if (!aiStuntingProc)
-						vp.SetSGPShift(targetSteer > 45);
 
 					//Debug.DrawRay(vp.tr.position + 3*Vector3.up, targetDir, Color.red);
 
@@ -619,6 +640,8 @@ namespace RVP
 			if (!vp.Owner)
 				yield break;
 
+			
+
 			vp.customCam = null;
 			OutOfPits();
 			vp.raceBox.ResetOnTrack();
@@ -630,8 +653,6 @@ namespace RVP
 			outOfTrackTime = 0;
 			reverseTime = 0;
 			stoppedTime = 0;
-			if (progress == 0 || !trackPathCreator)
-				yield break;
 
 			progress += 10;
 			Vector3 resetPos = trackPathCreator.path.GetPointAtDistance(progress);
@@ -643,17 +664,19 @@ namespace RVP
 				progress += 10;
 				resetPos = trackPathCreator.path.GetPointAtDistance(progress);
 			}
-			// resetting sequence. Has to be done this way to prevent the car from occasional rolling
-			
-			
-				GetComponent<Ghost>().StartGhostResettingRpc();
+			dist = progress;
+
+			vp.ghostComponent.StartGhostResetting();
 			//rb.isKinematic = true;
 			tr.position = h.point + Vector3.up;
 			yield return new WaitForFixedUpdate();
 			rb.angularVelocity = Vector3.zero;
 			rb.velocity = Vector3.zero;
 			tr.rotation = Quaternion.LookRotation(trackPathCreator.path.GetDirectionAtDistance(progress));
-			
+
+			target.dist = dist + reqDist;
+			target.pos = trackPathCreator.path.GetPointAtDistance(target.dist);
+
 			//rb.isKinematic = false;
 		}
 
@@ -662,7 +685,6 @@ namespace RVP
 			inPitsTime = Time.time;
 			this.pitsPathCreator = pitsPathCreator;
 			selfDriving = true;
-			vp.basicInput.enabled = false;
 		}
 	}
 

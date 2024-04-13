@@ -23,7 +23,7 @@ public enum ActionHappening { InLobby, InRace }
 public enum PavementType { Highway, RedSand, Asphalt, Electric, TimeTrial, Japanese, GreenSand, Random }
 public enum MultiMode { Singleplayer, Multiplayer };
 public enum RaceType { Race, Knockout, Stunt, Drift }
-public enum CpuLevel { Easy, Medium, Hard, Elite };
+public enum CpuLevel { Normal };
 
 [Serializable]
 public class PlayerSettingsData
@@ -232,7 +232,7 @@ public class Info : MonoBehaviour
 	public int s_laps = 3;
 	public bool s_inEditor = true;
 	public bool s_isNight = false;
-	public CpuLevel s_cpuLevel = CpuLevel.Elite;
+	public CpuLevel s_cpuLevel = CpuLevel.Normal;
 	public int s_cpuRivals = 0; // 0-9
 	public PavementType s_roadType = PavementType.Random;
 	public bool s_catchup = true;

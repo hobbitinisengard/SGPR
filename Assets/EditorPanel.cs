@@ -136,7 +136,7 @@ public class EditorPanel : MonoBehaviour
 	GameObject currentTileButton;
 	Transform currentTilesPanel;
 	UITest uiTest;
-	AnimationCurve buttonAnimationCurve = new ();
+	AnimationCurve buttonAnimationCurve = new();
 	Tile currentTile;
 	Vector3? anchor;
 	int yRot = 0;
@@ -212,9 +212,9 @@ public class EditorPanel : MonoBehaviour
 
 		pathCreators = raceManager.racingPaths;
 		racingLineContainers = new GameObject[pathCreators.Length];
-		for (int i=0; i<pathCreators.Length; ++i)
+		for (int i = 0; i < pathCreators.Length; ++i)
 		{
-			racingLineContainers[i] = new GameObject("racingLine"+i.ToString());
+			racingLineContainers[i] = new GameObject("racingLine" + i.ToString());
 		}
 		initialized = true;
 	}
@@ -285,7 +285,7 @@ public class EditorPanel : MonoBehaviour
 	}
 	private void OnEnable()
 	{
-		if(F.I.s_inEditor)
+		if (F.I.s_inEditor)
 			Initialize();
 		Cursor.visible = true;
 		ResetScale();
@@ -365,15 +365,15 @@ public class EditorPanel : MonoBehaviour
 				break;
 			case Mode.Build:
 				{
-					
+
 					if (Input.GetKeyDown(KeyCode.Alpha1))
 					{
 						ResetScale();
 					}
 					float scroll = Input.mouseScrollDelta.y;
-					
 
-					
+
+
 
 					if (uiTest.PointerOverUI())
 					{
@@ -388,7 +388,7 @@ public class EditorPanel : MonoBehaviour
 					}
 					else
 					{ // MOUSE OVER THE EDITOR
-						
+
 						if (Input.GetKeyDown(KeyCode.LeftAlt))
 						{ // pick tile
 							HideCurrentTile();
@@ -455,7 +455,7 @@ public class EditorPanel : MonoBehaviour
 								currentTile.SetPlaced();
 								InstantiateNewTile(currentTileButton.name);
 								StartCoroutine(ResetAnchors());
-								
+
 								return;
 							}
 
@@ -861,7 +861,7 @@ public class EditorPanel : MonoBehaviour
 	IEnumerator ClosingPath()
 	{
 		connectors.Clear();
-		
+
 		List<Vector3> Lpath = new List<Vector3>(100);
 		List<Vector3> Rpath = new List<Vector3>(100);
 		List<LoopReplacement> replacements = new();
@@ -939,7 +939,7 @@ public class EditorPanel : MonoBehaviour
 					i++;
 				}
 			}
-			
+
 			if (i >= 10000 || i < 2)
 			{
 				//Debug.Log("elements traversed: " + i);
@@ -956,7 +956,7 @@ public class EditorPanel : MonoBehaviour
 				Debug.DrawLine(Rpath[i], Rpath[i] + Vector3.up * 100, Color.red, 10);
 				trackPathDuplicates = true;
 			}
-			if(Lpath[i] == Lpath[i - 1])
+			if (Lpath[i] == Lpath[i - 1])
 			{
 				Debug.DrawLine(Lpath[i], Lpath[i] + Vector3.up * 100, Color.red, 10);
 				trackPathDuplicates = true;
@@ -968,9 +968,9 @@ public class EditorPanel : MonoBehaviour
 			loadingTrack = false;
 			yield break;
 		}
-		for(int i=0; i<pathCreators.Length; ++i)
+		for (int i = 0; i < pathCreators.Length; ++i)
 		{
-			K1999 k1999 = new (racingPathParams[i]);
+			K1999 k1999 = new(racingPathParams[i]);
 			k1999.LoadData(Lpath, Rpath);
 			k1999.CalcRaceLine();
 			racingLine = k1999.GetRacingLine(Lpath, Rpath);
@@ -1075,7 +1075,7 @@ public class EditorPanel : MonoBehaviour
 		isPathClosed = val;
 		connectButtonImage.color = val ? Color.green : Color.yellow;
 		pathFollower.SetActive(val);
-		if(!val)
+		if (!val)
 			racingLine = null;
 	}
 	void ClearConnectors()
@@ -1158,14 +1158,31 @@ public class EditorPanel : MonoBehaviour
 		distance ??= selector.Distance;
 
 		currentTile.AdjustScale(distance.Value);
-
-		if (url != null)
-		{
-			selectedFlag = currentTile.transform.GetChild(0).GetChild(0);
-			SetFillFromURL(url);
-		}
-		currentTile.url = url;
 		currentTile.name = name;
+
+		if (url != null && url.Length > 0)
+		{
+			try
+			{
+				var main = currentTile.transform.GetChild(0);
+				for (int i = 0; i < main.childCount; ++i)
+				{
+					if (main.GetChild(i).gameObject.layer == F.I.flagLayer)
+					{
+						selectedFlag = main.GetChild(i);
+						SetFillFromURL(url);
+						currentTile.url = url;
+
+						break;
+					}
+				}
+			}
+			catch
+			{
+
+			}
+			
+		}
 	}
 	public void SwitchToStuntzones()
 	{
@@ -1359,7 +1376,7 @@ public class EditorPanel : MonoBehaviour
 	public void CloseEditor()
 	{
 		YouSurePanel.HidePanel();
-		raceManager.BackToMenu(applyScoring:false);
+		raceManager.BackToMenu(applyScoring: false);
 	}
 	public void QuickSave()
 	{
@@ -1504,7 +1521,7 @@ public class EditorPanel : MonoBehaviour
 			author = trackAuthorInputField.text,
 			icons = icons.ToArray(),
 			desc = trackDescInputField.text,
-			records = new (this.records),
+			records = new(this.records),
 		};
 		header.valid = racingLine != null && racingLine.Length > 8 && header.records != null;
 		if (!header.valid)
@@ -1624,7 +1641,7 @@ public class EditorPanel : MonoBehaviour
 		gameObject.SetActive(true);
 		loadingTrack = true;
 		records = new();
-		
+
 		int skyboxNumber = F.I.skys[(int)F.I.tracks[F.I.s_trackName].envir];
 		string envirName = F.I.tracks[F.I.s_trackName].envir.ToString();
 		RemoveTrackLeftovers();
@@ -1753,7 +1770,7 @@ public class EditorPanel : MonoBehaviour
 		FileBrowser.SetFilters(false, new FileBrowser.Filter("track", ".track"));
 		yield return FileBrowser.WaitForLoadDialog(FileBrowser.PickMode.Files, false, F.I.tracksPath, null, "Select track..", "Load");
 
-		if(FileBrowser.Success)
+		if (FileBrowser.Success)
 		{
 			string filepath = FileBrowser.Result[0];
 			if (filepath.Length > 0)
@@ -1794,5 +1811,5 @@ public class EditorPanel : MonoBehaviour
 		}
 	}
 
-	
+
 }
