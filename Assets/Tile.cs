@@ -17,7 +17,7 @@ public class Tile : MonoBehaviour
 
 	public string url;
 
-	MeshCollider mc;
+	public MeshCollider mc { get; private set; }
 
 	GameObject lightObj;
 

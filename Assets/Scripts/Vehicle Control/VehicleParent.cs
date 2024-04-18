@@ -5,6 +5,7 @@ using Unity.Netcode;
 using Unity.Netcode.Components;
 using Newtonsoft.Json.Linq;
 using Unity.Collections;
+using System.Xml.Linq;
 
 namespace RVP
 {
@@ -76,6 +77,37 @@ namespace RVP
 		[System.NonSerialized]
 		NetworkVariable<bool> _SGPshiftbutton = new(writePerm: NetworkVariableWritePermission.Owner);
 		public bool SGPshiftbutton { get { return _SGPshiftbutton.Value; } set { _SGPshiftbutton.Value = value; } }
+		NetworkVariable<Livery> _sponsor = new(); //SERVER
+		public Livery sponsor { get { return _sponsor.Value; } 
+			set 
+			{ 
+				_sponsor.Value = value;
+				var mr = bodyObj.GetComponent<MeshRenderer>();
+				string matName = mr.sharedMaterial.name;
+				matName = matName[..^1] + ((int)sponsor).ToString();
+				Material newMat = Resources.Load<Material>("materials/" + matName);
+				newMat.name = matName;
+				mr.material = newMat;
+			} 
+		}
+		NetworkVariable<FixedString32Bytes> _name = new(); // SERVER
+		public new string name { get { return base.name; } 
+			set 
+			{ 
+				base.name = value;
+				_name.Value = value;
+				sampleText.textMesh.text = value;
+				if (value == F.I.playerData.playerName && Owner)
+				{
+					RaceManager.I.playerCar = this;
+					RaceManager.I.cam.Connect(this);
+					RaceManager.I.hud.Connect(this);
+					//newCar.followAI.SetCPU(true); // CPU drives player's car
+				}
+				SGP_HUD.I.AddToProgressBar(this);
+				sampleText.gameObject.SetActive(!F.I.s_spectator && F.I.gameMode == MultiMode.Multiplayer && RaceManager.I.playerCar != this);
+			}
+		}
 		[System.NonSerialized]
 		public bool SGPlockbutton;
 		[System.NonSerialized]
@@ -212,90 +244,22 @@ namespace RVP
 		public GameObject customCam;
 		private float lastNoBatteryMessage;
 		public bool Owner { get { return IsOwner || F.I.gameMode == MultiMode.Singleplayer; } }
-		public Livery sponsor { get; private set; }
-		void ApplySponsor(Livery liv)
-		{
-			sponsor = liv;
-			var mr = bodyObj.GetComponent<MeshRenderer>();
-			string matName = mr.sharedMaterial.name;
-			matName = matName[..^1] + ((int)sponsor).ToString();
-			Material newMat = Resources.Load<Material>("materials/" + matName);
-			newMat.name = matName;
-			mr.material = newMat;
-		}
 		[Rpc(SendTo.SpecifiedInParams)]
 		public void RelinquishRpc(RpcParams ps)
 		{
-			
 			NetworkObject.RemoveOwnership();
 			Destroy(gameObject);
-		}
-		public void SetSponsor(Livery liv)
-		{
-			if (F.I.gameMode == MultiMode.Multiplayer)
-				SetSponsorRpc(liv);
-			else
-				ApplySponsor(liv);
-		}
-		[Rpc(SendTo.Everyone)]
-		void SetSponsorRpc(Livery liv)
-		{
-			ApplySponsor(liv);
-		}
-		public void SetName(string name)
-		{
-			if (F.I.gameMode == MultiMode.Multiplayer)
-				SetNameRpc(name);
-			else
-				ApplyName(name);
-		}
-		[Rpc(SendTo.Everyone)]
-		void SetNameRpc(string name)
-		{
-			ApplyName(name);
-		}
-		void ApplyName(string name)
-		{
-			tr.name = name;
-		}
-		private void Awake()
-		{
-			ghostComponent = GetComponent<Ghost>();
-			followAI = GetComponent<FollowAI>();
-			raceBox = GetComponent<RaceBox>();
-			tr = transform;
-			rb = GetComponent<Rigidbody>();
-			originalDrag = rb.drag;
-			originalMass = rb.mass;
-			F.I.s_cars.Add(this);
-			
-		}
-		public override void OnNetworkSpawn()
-		{
-			base.OnNetworkSpawn();
-				
-			if (!Owner)
-			{ 
-				basicInput.enabled = false;
-				if(RaceManager.I.raceAlreadyStarted)
-				{// latecomer's request to synch progress
-					Debug.Log("RequestRaceboxValuesRpc");
-					RequestRaceboxValuesRpc(RpcTarget.Owner);
-				}
-			}
 		}
 		
 		[Rpc(SendTo.SpecifiedInParams)]
 		void RequestRaceboxValuesRpc(RpcParams ps)
 		{
-			SynchRaceboxValuesRpc(name, sponsor, raceBox.curLap, followAI.dist, followAI.progress, raceBox.Aero, raceBox.drift, 
+			SynchRaceboxValuesRpc(raceBox.curLap, followAI.dist, followAI.progress, raceBox.Aero, raceBox.drift, 
 				RpcTarget.Single(ps.Receive.SenderClientId, RpcTargetUse.Temp));
 		}
 		[Rpc(SendTo.SpecifiedInParams)]
-		public void SynchRaceboxValuesRpc(string name, Livery liv, int curLap, int dist, int progress, float aero, float drift, RpcParams ps)
+		public void SynchRaceboxValuesRpc( int curLap, int dist, int progress, float aero, float drift, RpcParams ps)
 		{
-			this.name = name;
-			sponsor = liv;
 			raceBox.curLap = curLap;
 			followAI.dist = dist;
 			followAI.progress = progress;
@@ -315,6 +279,7 @@ namespace RVP
 		int roadSurfaceType;
 		[NonSerialized]
 		public float tyresOffroad;
+		private Coroutine countdownCo;
 
 		public CatchupStatus catchupStatus { get; private set; }
 
@@ -410,9 +375,48 @@ namespace RVP
 			}
 			return new AnimationCurve(keys);
 		}
-		
+		void NameChanged(FixedString32Bytes prev, FixedString32Bytes next)
+		{
+			name = next.ToString();
+		}
+			
+		void SponsorChanged(Livery prev, Livery next) => sponsor = next;
+
+		public override void OnNetworkSpawn()
+		{
+			base.OnNetworkSpawn();
+
+			if (!Owner)
+			{
+				basicInput.enabled = false;
+				if (RaceManager.I.raceAlreadyStarted)
+				{// latecomer's request to synch progress
+					Debug.Log("RequestRaceboxValuesRpc");
+					RequestRaceboxValuesRpc(RpcTarget.Owner);
+				}
+			}
+			Initialize();
+			_sponsor.OnValueChanged += SponsorChanged;
+			_name.OnValueChanged += NameChanged;
+		}
+		private void Awake()
+		{
+			ghostComponent = GetComponent<Ghost>();
+			followAI = GetComponent<FollowAI>();
+			raceBox = GetComponent<RaceBox>();
+			tr = transform;
+			rb = GetComponent<Rigidbody>();
+			originalDrag = rb.drag;
+			originalMass = rb.mass;
+			F.I.s_cars.Add(this);
+		}
 
 		private void Start()
+		{
+			Initialize();
+		}
+
+		void Initialize()
 		{
 			if (F.I.gameMode == MultiMode.Multiplayer)
 			{
@@ -440,37 +444,22 @@ namespace RVP
 			//}
 
 			followAI.SetCPU(transform.name.Contains("CP"));
-			
+
 			if (F.I.s_spectator)
 			{
 				if (UnityEngine.Random.value > 0.5f)
 					RaceManager.I.cam.Connect(this, CameraControl.Mode.Replay);
 			}
-			else
-			{
-				if(tr.name == F.I.playerData.playerName)
-				{
-					RaceManager.I.playerCar = this;
-					RaceManager.I.cam.Connect(this);
-					RaceManager.I.hud.Connect(this);
-					//newCar.followAI.SetCPU(true); // CPU drives player's car
-				}
-			}
-
-			sampleText.gameObject.SetActive(!F.I.s_spectator && F.I.gameMode == MultiMode.Multiplayer && RaceManager.I.playerCar != this);
-			RaceManager.I.cam.enabled = true;
-			RaceManager.I.DemoSGPLogo.SetActive(F.I.s_spectator);
-			RaceManager.I.hud.gameObject.SetActive(!F.I.s_spectator);
-
-			SGP_HUD.I.AddToProgressBar(this);
-
 			StartCoroutine(ApplySetup());
 
 			if (F.I.s_isNight)
 				SetLights();
 
-			StartCoroutine(CountdownTimer(F.I.countdownSeconds));
+			if (countdownCo != null)
+				StopCoroutine(countdownCo);
+			countdownCo = StartCoroutine(CountdownTimer(F.I.countdownSeconds));
 		}
+		
 		IEnumerator ApplySetup()
 		{
 			yield return null;
@@ -932,7 +921,6 @@ namespace RVP
 		public IEnumerator CountdownTimer(float v)
 		{
 			countdownTimer = v;
-			GetComponent<SGP_Bouncer>().enabled = false;
 			while (countdownTimer > 0)
 			{
 				SetEbrake(1);

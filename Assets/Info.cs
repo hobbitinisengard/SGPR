@@ -14,6 +14,7 @@ using UnityEngine.EventSystems;
 using Unity.Netcode;
 using Unity.Multiplayer.Playmode;
 using Unity.Services.Authentication;
+using UnityEngine.InputSystem;
 public enum Envir { GER, JAP, SPN, FRA, ENG, USA, ITA, MEX };
 public enum CarGroup { Wild, Aero, Speed, Team };
 public enum Livery { Special = 1, TGR, Rline, Itex, Caltex, Titan, Mysuko }
@@ -74,9 +75,12 @@ public class Info : MonoBehaviour
 
 	public bool P2;
 
-	public int maxCarsInRace = 10;
+	public readonly int maxCarsInRace = 10;
 
 	public PlayerSettingsData playerData;
+
+	public InputActionReference shiftRef;
+	public InputActionReference escRef;
 	public string SHA(string filePath)
 	{
 		string hash;
@@ -196,7 +200,7 @@ public class Info : MonoBehaviour
 	
 	public bool loaded = false;
 	public int roadLayer = 6;
-	public int countdownSeconds = 5;
+	public readonly int countdownSeconds = 5;
 	public string visibleInPictureModeTag = "VisibleInPictureMode";
 	public int ignoreWheelCastLayer = 8;
 	public int vehicleLayer = 9;
@@ -209,6 +213,7 @@ public class Info : MonoBehaviour
 	public int pitsLineLayer = 17;
 	public int pitsZoneLayer = 18;
 	public int aeroTunnel = 19;
+	public int surfaceLayer = 23;
 	public int ghostLayer = 24;
 	public int carCarCollisionLayer = 26;
 

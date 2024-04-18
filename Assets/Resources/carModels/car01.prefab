@@ -84917,7 +84917,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 1778777427
+  GlobalObjectIdHash: 1553044784
   InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
@@ -101227,9 +101227,9 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0.5
+      value: 0.8
       inSlope: 0
-      outSlope: -0.013333334
+      outSlope: 0
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
@@ -101238,7 +101238,7 @@ MonoBehaviour:
       time: 30
       value: 0.1
       inSlope: -0.013333334
-      outSlope: 0
+      outSlope: -0.013333334
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
@@ -101272,6 +101272,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   gamma: 2
   shiftRearFriction: 0
+  asi: 0
 --- !u!1 &6779875396000727283
 GameObject:
   m_ObjectHideFlags: 0

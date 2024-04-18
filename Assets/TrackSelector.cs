@@ -43,7 +43,15 @@ public class TrackSelector : TrackSelectorTemplate
 		else
 		{
 			lapsButtonText.transform.parent.GetComponent<Button>().interactable = true;
+			rivalsButtonText.transform.parent.GetComponent<Button>().interactable = true;
 		}
+		if (F.I.s_raceType == RaceType.Drift)
+		{
+			F.I.s_cpuRivals = 0;
+			SwitchRivals(true);
+			rivalsButtonText.transform.parent.GetComponent<Button>().interactable = false;
+		}
+		
 		raceTypeButtonText.text = Enum.GetName(typeof(RaceType), F.I.s_raceType);
 	}
 	public void SwitchLaps(bool init = false)

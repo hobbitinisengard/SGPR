@@ -45,7 +45,7 @@ public class Voting : NetworkBehaviour
 		Player p = ServerC.I.lobby.Players.First(p => p.Id == playerLobbyId);
 		playersThatVoted.Add(playerLobbyId);
 		
-		int votesRequiredToPass = (int)Mathf.Ceil(votingThreshold * ServerC.I.activePlayers.Count);
+		int votesRequiredToPass = (int)Mathf.Ceil(votingThreshold * ServerC.I.lobby.Players.Count);
 		string msg = null;
 		Color color = Color.yellow;
 		bool passed = false;
@@ -101,6 +101,7 @@ public class Voting : NetworkBehaviour
 	[Rpc(SendTo.Everyone)]
 	void VoteForRestartPassedRpc()
 	{
+		RaceManager.I.RemoveCars();
 		RaceManager.I.StartRace();
 	}
 

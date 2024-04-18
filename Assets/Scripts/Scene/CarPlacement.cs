@@ -9,7 +9,6 @@ public class CarPlacement
 	/// 0 = pole position, 9 = last position
 	/// </summary>
 	public int position;
-	public ulong PlayerId;
 	/// <summary>
 	/// from 0 to 19
 	/// </summary>
@@ -20,7 +19,6 @@ public class CarPlacement
 	{
 		return new CarPlacement() {
 			carName = "car" + preferredCars.GetRandom().ToString("D2"),
-			PlayerId = 0,
 			position = pos,
 			name = "CP" + (pos + 1).ToString(),
 			sponsor = F.RandomLivery(),
@@ -31,7 +29,6 @@ public class CarPlacement
 		return new CarPlacement()
 		{
 			carName = F.I.s_playerCarName,
-			PlayerId = 0,
 			position = F.I.s_cpuRivals,
 			name = F.I.playerData.playerName,
 			sponsor = F.RandomLivery(),
@@ -43,7 +40,6 @@ public class CarPlacement
 		return new CarPlacement()
 		{
 			carName = p.carNameGet(),
-			PlayerId = ServerC.I.activePlayers.Find(p => p.playerLobbyId == ServerC.I.lobby.Players[pIndex].Id).playerRelayId,
 			position = (F.I.s_cpuRivals + pIndex),
 			name = p.NameGet(),
 			sponsor = p.SponsorGet(),

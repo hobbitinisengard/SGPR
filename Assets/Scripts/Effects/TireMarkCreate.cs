@@ -84,10 +84,6 @@ namespace RVP
 				initialEmissionRates[debrisParticles.Length] = sparks.emission.rateOverTime.constantMax;
 			}
 		}
-		public bool PowerSliding()
-		{
-			return Mathf.Abs(w.forwardSlip) > w.slipThreshold;
-		}
 		void Update()
 		{
 

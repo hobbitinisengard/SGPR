@@ -96,7 +96,7 @@ public class SGP_HUD : MonoBehaviour
 	/// Seconds required to dim stuntTableTimer
 	/// </summary>
 	const float dimmingStuntTableTime = 1;
-	
+
 	public void UpdateStuntSeqTable(in StuntsData sData)
 	{
 		if (sData == null)
@@ -160,14 +160,9 @@ public class SGP_HUD : MonoBehaviour
 		trans = null;
 		engine = null;
 	}
-	public void Reset()
-	{
-		ClearStuntInfo();		
-		infoText.Reset();
-	}
 	public void OnDisable()
 	{
-		Reset();
+		F.I.escRef.action.performed -= EscapePressed;
 	}
 	private void OnEnable()
 	{
@@ -181,6 +176,8 @@ public class SGP_HUD : MonoBehaviour
 
 		if (F.I.tracks[F.I.s_trackName].records.lap.secondsOrPts > 0)
 			bestLapTime = new TimeSpan(0, 0, 0, (int)F.I.tracks[F.I.s_trackName].records.lap.secondsOrPts, (int)(100 * (F.I.tracks[F.I.s_trackName].records.lap.secondsOrPts % 1f)));
+
+		F.I.escRef.action.performed += EscapePressed;
 	}
 	private void Awake()
 	{
@@ -200,7 +197,8 @@ public class SGP_HUD : MonoBehaviour
 			Debug.LogError("newVehicle is null");
 			return;
 		}
-		Reset();
+		ClearStuntInfo();
+		infoText.Reset();
 
 		vp = newVehicle;
 
@@ -211,7 +209,7 @@ public class SGP_HUD : MonoBehaviour
 		transform.gameObject.SetActive(true);
 
 		gameObject.SetActive(true);
-	
+
 		bool inRace = F.I.s_laps > 0;
 
 		AERODisplay.SetActive(inRace);
@@ -223,28 +221,32 @@ public class SGP_HUD : MonoBehaviour
 	}
 	public void AddToProgressBar(VehicleParent newCar)
 	{
-		var newProgressIcon = Instantiate(carProgressIconPrefab, progressBar).transform;
-		newProgressIcon.localScale = ((newCar == RaceManager.I.playerCar) ? 1 : 0.75f) * Vector3.one;
-		newProgressIcon.name = newCar.name;
-		newProgressIcon.GetComponent<Image>().sprite = SponserSprites[(int)newCar.sponsor - 1];
-		carProgressIcons.Add(newCar, progressBar.GetChild(progressBar.childCount-1));
+		if (carProgressIcons.ContainsKey(newCar))
+			return;
+		var Icon = Instantiate(carProgressIconPrefab, progressBar).transform;
+		Icon.localScale = ((newCar == RaceManager.I.playerCar) ? 1 : 0.75f) * Vector3.one;
+		Icon.name = newCar.name;
+		Icon.GetComponent<Image>().sprite = SponserSprites[(int)newCar.sponsor - 1];
+		carProgressIcons.Add(newCar, progressBar.GetChild(progressBar.childCount - 1));
 	}
 	public void RemoveFromProgressBar(VehicleParent delCar)
 	{
 		Destroy(carProgressIcons[delCar].gameObject);
 		carProgressIcons.Remove(delCar);
 	}
-
+	void EscapePressed(UnityEngine.InputSystem.InputAction.CallbackContext obj)
+	{
+		if ((DateTime.Now - OnlineCommunication.I.raceStartDate).TotalSeconds > 5
+			&& !componentPanel.gameObject.activeSelf && !raceManager.resultsSeq.gameObject.activeSelf)
+		{
+			pauseMenu.gameObject.SetActive(!pauseMenu.gameObject.activeSelf);
+		}
+	}
 	private void Update()
 	{
 		if (Input.GetKeyDown(KeyCode.F3) && F.I.s_cpuRivals == 0 && !pauseMenu.gameObject.activeSelf)
 		{
 			componentPanel.gameObject.SetActive(!componentPanel.gameObject.activeSelf);
-		}
-		if (raceManager.cancelInput.action.ReadValue<float>()==1 && (DateTime.Now - OnlineCommunication.I.raceStartDate).TotalSeconds > 5
-			&& !componentPanel.gameObject.activeSelf && !raceManager.resultsSeq.gameObject.activeSelf)
-		{
-			pauseMenu.gameObject.SetActive(true);
 		}
 	}
 	void FixedUpdate()
@@ -324,7 +326,7 @@ public class SGP_HUD : MonoBehaviour
 		if (vp.raceBox.GetStuntSeq(ref stuntData))
 			UpdateStuntSeqTable(stuntData);
 
-		
+
 
 		// HUD vibrates along with dampers
 		Vector3 hudPos = rt.anchoredPosition;
@@ -523,7 +525,7 @@ public class SGP_HUD : MonoBehaviour
 	}
 	int[] starTargets;
 	bool[] starCoroutines;
-	
+
 
 	IEnumerator SetStarVisible(int starNumber)
 	{
@@ -541,9 +543,9 @@ public class SGP_HUD : MonoBehaviour
 		{
 			if (starTargets[starNumber] == 1)
 			{
-				starImg.transform.localScale = Mathf.Lerp(2, 1, 2*timer) * Vector3.one;
+				starImg.transform.localScale = Mathf.Lerp(2, 1, 2 * timer) * Vector3.one;
 			}
-			c.a = Mathf.Lerp(beginA, starTargets[starNumber], 2*timer);
+			c.a = Mathf.Lerp(beginA, starTargets[starNumber], 2 * timer);
 			starImg.color = c;
 			timer += Time.deltaTime;
 			yield return null;

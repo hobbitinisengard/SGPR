@@ -63,44 +63,24 @@ public class SGP_Bouncer : MonoBehaviour
 			return;
 		if (contact.otherCollider.gameObject.layer != F.I.roadLayer)
 			return;
-		vp.colliding  = true;
+		vp.colliding = true;
 		Vector3 norm = contact.normal;
-		Vector3 addForce;
-		Vector3 direction;
-		if (norm.y < 0.1f) // sideways force based on car's velocity
+		Vector3 velMagUp = -Vector3.Cross(vp.tr.right, vp.rb.velocity.normalized);
+		if (Mathf.Abs(Vector2.Dot(velMagUp, norm)) < .5f) // sideways force based on car's velocity
 		{
 			if (collision.relativeVelocity.magnitude < 40)
 				return;
 			if (Time.time - lastSideBounceTime < debounceTime)
 				return;
+
 			//Debug.Log("sideways");
 			float mult = multCurve.Evaluate(Mathf.Abs(Vector3.Angle(-norm, vp.tr.forward)));
-			addForce = mult * collision.relativeVelocity;
-			direction = (norm + vp.tr.up).normalized;//Quaternion.AngleAxis(88, vp.tr.right) * norm;
+			Vector3 addForce = mult * collision.relativeVelocity;
+			Vector3 direction = (norm + vp.tr.up).normalized;//Quaternion.AngleAxis(88, vp.tr.right) * norm;
 			lastSideBounceTime = Time.time;
 			rb.AddForceAtPosition(direction * addForce.magnitude,
 			collision.GetContact(0).point,//vp.transform.position
 			ForceMode.VelocityChange);
-		}
-		else
-		{ // vertical force based on car's previous ramp speed
-			if (vp.brakeInput > 0)
-				return;
-			if (Time.time - lastBounceTime < debounceTime)
-				return;
-			lastBounceTime = Time.time;
-			//addForce = Vector3.Project(collision.relativeVelocity, -norm);
-			//Vector3 rightV = Vector3.Cross(-vp.rb.velocity.normalized,norm).normalized;
-
-			//direction = Vector3.Cross(rightV, norm).normalized;//(vp.rb.velocity - addForce).normalized;
-			////Debug.DrawRay(vp.centerOfMassObj.position, direction, Color.magenta, 4);
-			////Debug.DrawRay(vp.centerOfMassObj.position, -norm, Color.white, 4);
-			////Debug.Log(addForce.magnitude);
-			
-			////StartCoroutine(AddForceGradually(direction * addForce.magnitude));
-			//rb.AddForceAtPosition(direction * addForce.magnitude,
-			//vp.centerOfMassObj.position + direction, // contact.point
-			//ForceMode.VelocityChange);
 		}
 	}
 

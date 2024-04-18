@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 4983928199872563720}
   m_Layer: 15
   m_Name: startline
-  m_TagString: Untagged
+  m_TagString: VisibleInPictureMode
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

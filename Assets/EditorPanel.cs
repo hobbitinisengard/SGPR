@@ -12,6 +12,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using SimpleFileBrowser;
+using NUnit.Framework;
 
 public class ReplayCam
 {
@@ -171,6 +172,7 @@ public class EditorPanel : MonoBehaviour
 	private bool isPathClosed;
 	[NonSerialized]
 	public TrackRecords records = new();
+	GameObject unityRoadMesh;
 
 	public bool loadingTrack { get; private set; }
 	private void Awake()
@@ -1181,7 +1183,7 @@ public class EditorPanel : MonoBehaviour
 			{
 
 			}
-			
+
 		}
 	}
 	public void SwitchToStuntzones()
@@ -1783,6 +1785,48 @@ public class EditorPanel : MonoBehaviour
 				}
 			}
 		}
+	}
+	public void RemoveUnityOfRoadMeshes()
+	{
+		if (unityRoadMesh != null)
+			unityRoadMesh.SetActive(false);
+
+		//for (int i = 0; i < placedTilesContainer.transform.childCount; ++i)
+		//{
+		//	var tileTr = placedTilesContainer.transform.GetChild(i);
+		//	if (tileTr.gameObject.layer == F.I.roadLayer)
+		//	{
+		//		tileTr.GetComponent<Tile>().mc.enabled = true;
+		//	}
+		//}
+	}
+	public void GenerateUnityOfRoadMeshes()
+	{
+		List<CombineInstance> CIs = new(placedTilesContainer.transform.childCount);
+
+		for (int i = 0; i < placedTilesContainer.transform.childCount; ++i)
+		{
+			var tileTr = placedTilesContainer.transform.GetChild(i);
+			if (tileTr.gameObject.layer == F.I.roadLayer)
+			{
+				CIs.Add(new CombineInstance() { 
+					mesh = tileTr.GetComponent<Tile>().mc.sharedMesh, 
+					transform = tileTr.localToWorldMatrix 
+				});
+				//tileTr.GetComponent<Tile>().mc.enabled = false;
+			}
+		}
+		if (unityRoadMesh == null)
+		{
+			unityRoadMesh = new GameObject("unityRoadMesh");
+			unityRoadMesh.AddComponent<MeshCollider>();
+			unityRoadMesh.layer = F.I.roadLayer;
+		}
+	
+		Mesh mesh = new();
+		mesh.CombineMeshes(CIs.ToArray());
+		unityRoadMesh.GetComponent<MeshCollider>().sharedMesh = mesh;
+		unityRoadMesh.SetActive(true);
 	}
 	public void ToFreeRoamButton()
 	{

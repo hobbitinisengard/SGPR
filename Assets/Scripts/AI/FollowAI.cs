@@ -82,8 +82,8 @@ namespace RVP
 		private int universalPathLayer;
 		const float reqDist = 10;
 		// CPU settings
-		float tyreMult = 1;
-		float lowSpeed = 30;
+		//float tyreMult = 1;
+		//float lowSpeed = 30;
 		FollowTarget target = new();
 		public CpuLevel cpuLevel;
 		public bool SGPshifting;
@@ -108,7 +108,6 @@ namespace RVP
 		float inPitsTime;
 		public float outOfTrackTime;
 		public float outOfTrackRequiredTime = 1;
-		private Coroutine ghostCo;
 
 		float steerAngle;
 		int curStuntpointIdx;
@@ -136,11 +135,13 @@ namespace RVP
 		}
 		public void NextLap()
 		{
-			vp.followAI.progress = 1;
-			vp.followAI.curWaypointIdx = 0;
-			vp.followAI.curStuntpointIdx = 0;
-			vp.followAI.curReplayPointIdx = 0;
-			vp.followAI.speedLimitDist = -1;
+			progress = 1;
+			target.dist = progress;
+			target.pos = trackPathCreator.path.GetPointAtDistance(target.dist);
+			curWaypointIdx = 0;
+			curStuntpointIdx = 0;
+			curReplayPointIdx = 0;
+			speedLimitDist = -1;
 		}
 		public void SetCPU(bool val)
 		{
@@ -207,12 +208,14 @@ namespace RVP
 			curReplayPointIdx = replayCams.Count - 1;
 			enabled = true;
 		}
+
+		
 		private void Start()
 		{
-			
-			StartCoroutine(Initialize());
+			StartCoroutine(Prepare());
 		}
-		IEnumerator Initialize()
+
+		IEnumerator Prepare()
 		{
 			yield return null; // wait till other components initialize
 			maxPhysicalSteerAngle = vp.steeringControl.steeredWheels[0].steerRangeMax;
@@ -266,19 +269,21 @@ namespace RVP
 			}
 			return (int)dist;
 		}
-		void OutOfPits()
+		void OutOfPits(bool resetProgress = true)
 		{
-			if (pitsProgress > 0)
+			if (pitsPathCreator)
 			{
 				RaceManager.I.hud.infoText.AddMessage(new Message(vp.name + " RETURNS ON TRACK!", BottomInfoType.PIT_OUT));
 				speedLimit = 1024;
 				speedLimitDist = -1;
-				progress = GetDist(1 << racingLineLayerNumber);
+				if(resetProgress)
+					progress = GetDist(1 << racingLineLayerNumber) + 10;
 				if (pitsPathCreator)
 					pitsProgress = pitsPathCreator.path.length;
 				pitsPathCreator = null;
 				searchForPits = false;
 				selfDriving = isCPU;
+				vp.basicInput.enabled = true;
 			}
 		}
 		IEnumerator RevvingCoroutine()
@@ -350,10 +355,11 @@ namespace RVP
 			float pitsDist = 0;
 			if (pitsPathCreator)
 			{
-				if (Time.time - inPitsTime > 30)
+				if (Time.time - inPitsTime > 10)
 				{
 					OutOfPits();
 					StartCoroutine(ResetOnTrack());
+					return;
 				}
 				pitsDist = GetDist(1 << F.I.pitsLineLayer); // pitsDist
 
@@ -544,7 +550,7 @@ namespace RVP
 				{
 					
 					float dTargetCar = Vector3.Distance(target.pos, vp.tr.position);
-					if (Mathf.Abs(target.dist - dist) > 2.5f * reqDist || target.dist < dist)
+					if (Mathf.Abs(target.dist - dist) > 2 * reqDist || target.dist < dist)
 					{ // reset target
 						target.dist = dist + reqDist;
 						target.pos = trackPathCreator.path.GetPointAtDistance(target.dist);
@@ -583,7 +589,8 @@ namespace RVP
 					//Debug.DrawRay(vp.tr.position + 3*Vector3.up, targetDir, Color.red);
 
 					targetSteer = F.Sign(targetSteer) * Mathf.InverseLerp(0, maxPhysicalSteerAngle, Mathf.Abs(targetSteer));
-					targetSteer = Mathf.Lerp(vp.steerInput, targetSteer, cpuSmoothCoeff * Time.fixedDeltaTime);
+
+					targetSteer = Mathf.Lerp(vp.steerInput, targetSteer, Pitting ? 1 : cpuSmoothCoeff * Time.fixedDeltaTime);
 					vp.SetSteer(((reverseTime == 0) ? 1 : -1) * targetSteer);
 					vp.SetBoost(steerAngle < 2 && vp.BatteryPercent > 0.5f);
 				}
@@ -639,11 +646,9 @@ namespace RVP
 		{
 			if (!vp.Owner)
 				yield break;
-
 			
-
 			vp.customCam = null;
-			OutOfPits();
+			
 			vp.raceBox.ResetOnTrack();
 			vp.engine.transmission.ShiftToGear(2);
 			vp.ResetOnTrackBatteryPenalty();
@@ -654,7 +659,6 @@ namespace RVP
 			reverseTime = 0;
 			stoppedTime = 0;
 
-			progress += 10;
 			Vector3 resetPos = trackPathCreator.path.GetPointAtDistance(progress);
 			RaycastHit h;
 			while (!Physics.Raycast(resetPos + 5*Vector3.up, Vector3.down, out h, Mathf.Infinity, 1 << F.I.roadLayer)
@@ -667,17 +671,17 @@ namespace RVP
 			dist = progress;
 
 			vp.ghostComponent.StartGhostResetting();
-			//rb.isKinematic = true;
+			rb.isKinematic = true;
 			tr.position = h.point + Vector3.up;
 			yield return new WaitForFixedUpdate();
-			rb.angularVelocity = Vector3.zero;
-			rb.velocity = Vector3.zero;
+			//rb.angularVelocity = Vector3.zero;
+			//rb.velocity = Vector3.zero;
 			tr.rotation = Quaternion.LookRotation(trackPathCreator.path.GetDirectionAtDistance(progress));
 
 			target.dist = dist + reqDist;
 			target.pos = trackPathCreator.path.GetPointAtDistance(target.dist);
-
-			//rb.isKinematic = false;
+			OutOfPits(resetProgress:false);
+			rb.isKinematic = false;
 		}
 
 		public void DriveThruPits(in PathCreator pitsPathCreator)
@@ -685,6 +689,7 @@ namespace RVP
 			inPitsTime = Time.time;
 			this.pitsPathCreator = pitsPathCreator;
 			selfDriving = true;
+			vp.basicInput.enabled = false;
 		}
 	}
 

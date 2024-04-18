@@ -55,11 +55,11 @@ public class ResultsView : MonoBehaviour
 	float grandScoreMoving = 0;
 	public int grandScoreFinal = 0;
 
-	readonly Comparison<PersistentResult> raceTimeComp = new((PersistentResult x, PersistentResult y) => x.raceTime.TotalMilliseconds.CompareTo(y.raceTime));
-	readonly Comparison<PersistentResult> knockoutComp = new((PersistentResult x, PersistentResult y) => y.raceTime.TotalMilliseconds.CompareTo(x.raceTime));
+	readonly Comparison<PersistentResult> raceTimeComp = new((PersistentResult x, PersistentResult y) => x.raceTime.TotalMilliseconds.CompareTo(y.raceTime.TotalMilliseconds));
+	readonly Comparison<PersistentResult> knockoutComp = new((PersistentResult x, PersistentResult y) => y.raceTime.TotalMilliseconds.CompareTo(x.raceTime.TotalMilliseconds));
 	readonly Comparison<PersistentResult> stuntComp = new((PersistentResult x, PersistentResult y) => y.stunt.CompareTo(x.stunt));
 	readonly Comparison<PersistentResult> driftComp = new((PersistentResult x, PersistentResult y) => y.drift.CompareTo(x.drift));
-	readonly Comparison<PersistentResult> lapComp = new((PersistentResult x, PersistentResult y) => x.lap.CompareTo(y.lap));
+	readonly Comparison<PersistentResult> lapComp = new((PersistentResult x, PersistentResult y) => x.lap.TotalMilliseconds.CompareTo(y.lap.TotalMilliseconds));
 
 	private void Awake()
 	{
@@ -78,8 +78,6 @@ public class ResultsView : MonoBehaviour
 		grandScore1.SetActive(false);
 		addingScore.SetActive(false);
 		medalsTable.gameObject.SetActive(false);
-
-		resultData = null;
 	}
 	Comparison<PersistentResult> ComparisonBasedOnRaceType()
 	{
@@ -287,8 +285,8 @@ public class ResultsView : MonoBehaviour
 		{
 			grandScoreMoving = Mathf.Round(Mathf.Lerp(grandScoreInit, grandScoreInit + bonus, timer / timeRequired));
 			grandScore0Text.text = "      " + grandScoreMoving.ToString();
-			tickSnd.pitch = Mathf.LerpUnclamped(1, 1.5f, timer);
-			tickSnd.Play();
+			tickSnd.pitch = Mathf.LerpUnclamped(1, 1.3f, timer);
+				tickSnd.Play();
 			timer += Time.deltaTime;
 			yield return null;
 		}

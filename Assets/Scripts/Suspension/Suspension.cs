@@ -177,12 +177,19 @@ namespace RVP
 					compressTr.parent = tr;
 					compressTr.localPosition = Vector3.zero;
 					compressTr.localEulerAngles = new Vector3(camberAngle, 0, -casterAngle * flippedSideFactor);
-					compressCol = cap.AddComponent<CapsuleCollider>();
-					compressCol.direction = 1;
+
 					setHardColliderRadiusFactor = hardColliderRadiusFactor;
 					hardColliderRadiusFactorPrev = setHardColliderRadiusFactor;
-					compressCol.radius = wheel.rimWidth * hardColliderRadiusFactor;
+
+					//compressCol = cap.AddComponent<MeshCollider>();
+					//compressCol.sharedMesh = wheel.tr.GetChild(0).GetComponent<MeshFilter>().mesh;
+					//compressCol.convex = true;
+
+					compressCol = cap.AddComponent<CapsuleCollider>();
+					compressCol.direction = 1;
+					compressCol.radius = 0;// wheel.rimWidth * hardColliderRadiusFactor;
 					compressCol.height = (wheel.popped ? wheel.rimRadius : Mathf.Lerp(wheel.rimRadius, wheel.tireRadius, wheel.tirePressure)) * 2;
+
 					compressCol.sharedMaterial = RaceManager.frictionlessMatStatic;
 				}
 
@@ -223,28 +230,28 @@ namespace RVP
 			}
 
 			// Set hard collider size if it is changed during play mode
-			if (generateHardCollider)
-			{
-				setHardColliderRadiusFactor = hardColliderRadiusFactor;
+			//if (generateHardCollider)
+			//{
+			//	setHardColliderRadiusFactor = hardColliderRadiusFactor;
 
-				if (hardColliderRadiusFactorPrev != setHardColliderRadiusFactor || wheel.updatedSize || wheel.updatedPopped)
-				{
-					if (wheel.rimWidth > wheel.actualRadius)
-					{
-						compressCol.direction = 2;
-						compressCol.radius = wheel.actualRadius * hardColliderRadiusFactor;
-						compressCol.height = wheel.rimWidth * 2;
-					}
-					else
-					{
-						compressCol.direction = 1;
-						compressCol.radius = wheel.rimWidth * hardColliderRadiusFactor;
-						compressCol.height = wheel.actualRadius * 2;
-					}
-				}
+			//	if (hardColliderRadiusFactorPrev != setHardColliderRadiusFactor || wheel.updatedSize || wheel.updatedPopped)
+			//	{
+			//		if (wheel.rimWidth > wheel.actualRadius)
+			//		{
+			//			compressCol.direction = 2;
+			//			compressCol.radius = wheel.actualRadius * hardColliderRadiusFactor;
+			//			compressCol.height = wheel.rimWidth * 2;
+			//		}
+			//		else
+			//		{
+			//			compressCol.direction = 1;
+			//			compressCol.radius = wheel.rimWidth * hardColliderRadiusFactor;
+			//			compressCol.height = wheel.actualRadius * 2;
+			//		}
+			//	}
 
-				hardColliderRadiusFactorPrev = setHardColliderRadiusFactor;
-			}
+			//	hardColliderRadiusFactorPrev = setHardColliderRadiusFactor;
+			//}
 
 			// Set the drive of the wheel
 			if (wheel.connected)

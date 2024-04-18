@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using TMPro;
 using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
@@ -8,6 +9,8 @@ using UnityEngine.UI;
 
 public class ServerList : MonoBehaviour
 {
+	public GameObject tooManyPlayersText;
+	public Button startAServerButton;
 	public Transform content;
 	public GameObject rowPrefab;
 	public EnterPasswordWnd enterPassWnd;
@@ -28,6 +31,9 @@ public class ServerList : MonoBehaviour
 	private void OnEnable()
 	{
 		server.DisconnectFromLobby();
+		startAServerButton.interactable = false;
+		tooManyPlayersText.SetActive(false);
+		content.DestroyAllChildren();
 		Refresh();
 	}
 	public async void Refresh()
@@ -36,7 +42,7 @@ public class ServerList : MonoBehaviour
 			return;
 
 		lastRefreshTime = Time.time;
-
+		await Task.Delay(2000);
 		int playersOnlineRN = 0;
 		try
 		{
@@ -81,10 +87,10 @@ public class ServerList : MonoBehaviour
 			Debug.Log(e);
 		}
 
-		if(playersOnlineRN > 45)
-		{
-			thisView.GoToView(thisView.prevView);
-		}
+		tooManyPlayersText.SetActive(playersOnlineRN > 45);
+		startAServerButton.interactable = (!tooManyPlayersText.activeSelf);
+		if (tooManyPlayersText.activeSelf)
+			content.DestroyAllChildren();
 	}
 	public async void JoinLobby(string joinId)
 	{

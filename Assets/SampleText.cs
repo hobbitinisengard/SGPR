@@ -1,25 +1,28 @@
 using RVP;
+using System;
 using UnityEngine;
 
 public class SampleText : MonoBehaviour
 {
 	static Transform mainCamera;
-	TextMesh textMesh;
+	[NonSerialized]
+	public TextMesh textMesh;
 	VehicleParent vp;
 	float heightOverCar = 2;
 	const int textDistanceFromCamera = 5;
 	const int DistanceWhenTextInvisible = 60;
 	const int DistanceWhenTextTotallyVisible = 40;
-	void Start()
+	private void Awake()
 	{
+		textMesh = GetComponent<TextMesh>();
 		vp = transform.parent.GetComponent<VehicleParent>();
 		heightOverCar = transform.localPosition.y;
 		if (mainCamera == null)
 			mainCamera = GameObject.Find("MainCamera").transform;
-		textMesh = GetComponent<TextMesh>();
-		textMesh.text = transform.parent.name;
+	}
+	void Start()
+	{
 		textMesh.color = F.ReadColor(transform.parent.GetComponent<VehicleParent>().sponsor);
-
 		if (F.I.gameMode == MultiMode.Singleplayer)
 			gameObject.SetActive(false);
 	}

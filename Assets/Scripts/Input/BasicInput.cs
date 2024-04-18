@@ -33,6 +33,7 @@ namespace RVP
 			vp = transform.parent.GetComponent<VehicleParent>();
 			vp.basicInput = this;
 			playerInput = GameObject.Find("Canvas").GetComponent<PlayerInput>();
+			
 		}
 		void Update()
 		{

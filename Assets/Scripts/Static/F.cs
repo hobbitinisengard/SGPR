@@ -61,9 +61,9 @@ public static class F
 	{
 		return player.Data[ServerC.k_carName].Value;
 	}
-	public static void carNameSet(this Player player, string carName)
+	public static void carNameSet(this Player player)
 	{
-		player.Data[ServerC.k_carName].Value = carName;
+		player.Data[ServerC.k_carName].Value = F.I.s_playerCarName;
 	}
 	public static Color ReadColor(this Player player)
 	{
@@ -101,6 +101,14 @@ public static class F
 		return 1 - Mathf.Pow(1 - x, 5);
 	}
 	public static int Wraparound(int value, int min, int max)
+	{
+		if (value < min)
+			value = max;
+		else if (value > max)
+			value = min;
+		return value;
+	}
+	public static float Wraparound(float value, float min, float max)
 	{
 		if (value < min)
 			value = max;

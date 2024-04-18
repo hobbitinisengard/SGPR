@@ -16,8 +16,8 @@ using UnityEngine.UI;
 public class ChatInitializer
 {
 	[Header("Chat initialization references")]
-	public Transform lobbyChatContent;
-	public Transform raceChatContent;
+	public ScrollRect lobbyChat;
+	public ScrollRect raceChat;
 
 	public TMP_InputField lobbyChatInputField;
 	public TMP_InputField raceChatInputField;
@@ -94,7 +94,7 @@ public class MultiPlayerSelector : TrackSelector
 		dataTransferWnd.SetActive(false);
 		EnableSelectionOfTracks(ServerC.I.AmHost && !ServerC.I.PlayerMe.ReadyGet());
 		
-		if (!ServerC.I.AmHost && !IsCurrentTrackSyncedWithServerTrack())
+		if (!ServerC.I.AmHost && !IsCurrentTrackSyncedWithServerTrack(ServerC.I.lobby.Data[ServerC.k_trackSHA].Value))
 		{
 			RequestTrackSequence();
 		}
@@ -112,9 +112,9 @@ public class MultiPlayerSelector : TrackSelector
 	{
 		Debug.Log("ZippedTrackDataObject_OnNewTrackArrived()");
 		// refresh tracks menu
-		string trackName = ServerC.I.lobby.Data[ServerC.k_trackName].Value;
+		F.I.s_trackName = ServerC.I.lobby.Data[ServerC.k_trackName].Value;
 		loadCo = true;
-		StartCoroutine(Load(trackName));
+		StartCoroutine(Load(F.I.s_trackName));
 		while (loadCo)
 		{
 			await Task.Delay(300);
@@ -129,8 +129,8 @@ public class MultiPlayerSelector : TrackSelector
 			foreach (var pIndex in changes.PlayerLeft.Value)
 			{
 				F.I.chat.PlayerLeft(ServerC.I.lobby.Players[pIndex]);
-				if(ServerC.I.AmHost)
-					OnlineCommunication.I.DelActivePlayer(ServerC.I.lobby.Players[pIndex].Id);
+				//if(ServerC.I.AmHost)
+				//	OnlineCommunication.I.DelActivePlayer(ServerC.I.lobby.Players[pIndex].Id);
 			}
 		}
 		if (changes.Data.Changed)
@@ -228,9 +228,9 @@ public class MultiPlayerSelector : TrackSelector
 	public void DecodeConfig(string data)
 	{
 		
-		if(F.I.scoringType != (ScoringType)data[0])
+		if(F.I.scoringType != (ScoringType)(data[0] - '0')) // char to int
 		{
-			F.I.scoringType = (ScoringType)(data[0] - '0'); // char to int
+			F.I.scoringType = (ScoringType)(data[0] - '0'); 
 			ServerC.I.PlayerMe.ScoreSet(0);
 			ServerC.I.UpdatePlayerData();
 		}
@@ -263,14 +263,12 @@ public class MultiPlayerSelector : TrackSelector
 
 	async void RequestTrackSequence()
 	{
-		string trackName = ServerC.I.lobby.Data[ServerC.k_trackName].Value;
-
 		UpdateInteractableButtons();
-		dataTransferText.text = "Downloading track " + trackName + " from host..";
+		dataTransferText.text = "Downloading track " + F.I.s_trackName + " from host..";
 		dataTransferWnd.SetActive(true);
 		while (zippedTrackDataObject == null)
 			await Task.Delay(100);
-		zippedTrackDataObject.RequestTrackUpdate(trackName);
+		zippedTrackDataObject.RequestTrackUpdate();
 	}
 	
 	new IEnumerator ResetButtons()
@@ -307,13 +305,13 @@ public class MultiPlayerSelector : TrackSelector
 	}
 	public void SwitchSponsor(bool init)
 	{
-		int dir = 0;
+		var playerMe = ServerC.I.PlayerMe;
 		if (!init)
 		{
-			dir = shiftInputRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
+			int dir = F.I.shiftRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
+			playerMe.Data[ServerC.k_Sponsor].Value = ((Livery)F.Wraparound((int)playerMe.SponsorGet() + dir, 2, 7)).ToString();
+			playerMe.ScoreSet(0);
 		}
-		var playerMe = ServerC.I.PlayerMe;
-		playerMe.Data[ServerC.k_Sponsor].Value = ((Livery)F.Wraparound((int)playerMe.SponsorGet() + dir, 2, 7)).ToString();
 		sponsorbText.text = "Sponsor:" + playerMe.Data[ServerC.k_Sponsor].Value;
 	}
 	public void SwitchRandomCar(bool init = false)
@@ -326,7 +324,7 @@ public class MultiPlayerSelector : TrackSelector
 		{ 
 			int randomNr = UnityEngine.Random.Range(0, F.I.cars.Length);
 			F.I.s_playerCarName = "car" + (randomNr + 1).ToString("D2");
-			ServerC.I.PlayerMe.carNameSet(F.I.s_playerCarName);
+			ServerC.I.PlayerMe.carNameSet();
 		}
 		randomCarsText.text = "Cars:" + (F.I.randomCars ? "Random" : "Select");
 		garageBtn.interactable = !F.I.randomCars;
@@ -390,17 +388,76 @@ public class MultiPlayerSelector : TrackSelector
 
 		randomTracksText.text = "Tracks:" + (F.I.randomTracks ? "Random" : "Select");
 	}
-	public void SwitchReady(bool init = false)
+	public async void SwitchReady(bool init = false)
 	{
-		
+		if (readyClicked)
+			return;
 
-			ReadyButton(init);
-		
+		readyClicked = true;
+
+		var playerMe = ServerC.I.PlayerMe;
+
+		bool amReady = !init && !playerMe.ReadyGet();
+
+		if (Time.time - readyTimeoutTime < 1)
+			await Task.Delay(Mathf.RoundToInt((1 - (Time.time - readyTimeoutTime)) * 1000));
+
+		readyTimeoutTime = Time.time;
+
+		try
+		{
+			EnableSelectionOfTracks(!amReady && ServerC.I.AmHost);
+
+			if(!init)
+			{
+				if (F.I.actionHappening == ActionHappening.InRace && RaceManager.I.raceAlreadyStarted)
+				{// when we as client join ongoing race
+					OnlineCommunication.I.GibCar();
+					thisView.ToRaceScene();
+					playerMe.ReadySet(false);
+					ServerC.I.UpdatePlayerData();
+				}
+				else
+				{
+					playerMe.ReadySet(amReady);
+					playerMe.carNameSet();
+					ServerC.I.UpdatePlayerData();
+				}
+
+				if (ServerC.I.AmHost && amReady)
+				{// UPDATE HOST INFO
+					Debug.Log("ServerConnection.I new track=" + F.I.s_trackName);
+					ServerC.I.lobby.Data[ServerC.k_trackSHA] = new DataObject(DataObject.VisibilityOptions.Member, F.I.SHA(F.I.tracksPath + F.I.s_trackName + ".data"));
+					ServerC.I.lobby.Data[ServerC.k_trackName] = new DataObject(DataObject.VisibilityOptions.Member, F.I.s_trackName);
+					ServerC.I.UpdateServerData();
+				}
+			}
+		}
+		catch (LobbyServiceException e)
+		{
+			Debug.Log("Ready switch failed: " + e.Message);
+		}
+
+		UpdateInteractableButtons();
+
+		readyText.text = ((ServerC.I.AmHost ? "HOST " : "") + (amReady ? "NOT READY" : "READY"));
+
+		if (lobbyCntdwnCo != null)
+			StopCoroutine(lobbyCntdwnCo);
+
+		if ((ServerC.I.AmHost && ServerC.I.readyPlayers == ServerC.I.lobby.Players.Count))
+		{
+			lobbyCntdwnCo = StartCoroutine(LobbyCountdown());
+		}
+
+		leaderboard.Refresh();
+
+		readyClicked = false;
 	}
-	bool IsCurrentTrackSyncedWithServerTrack(string newSha = null)
+	bool IsCurrentTrackSyncedWithServerTrack(string ServerSideTrackSHA)
 	{
-		string ServerSideTrackSHA = (newSha == null) ? ServerC.I.lobby.Data[ServerC.k_trackSHA].Value : newSha;
 		string trackPath = F.I.tracksPath + F.I.s_trackName + ".data";
+		Debug.Log(trackPath);
 		if (!File.Exists(trackPath))
 			return false;
 		if(F.I.SHA(F.I.tracksPath + F.I.s_trackName + ".data") == ServerSideTrackSHA)
@@ -425,73 +482,11 @@ public class MultiPlayerSelector : TrackSelector
 		if (enabled && !F.I.randomTracks)
 			move2Ref.action.performed += CalculateTargetToSelect;
 	}
-	public async void ReadyButton(bool init = false)
-	{
-		if (readyClicked)
-			return;
-
-		readyClicked = true;
-
-		var playerMe = ServerC.I.PlayerMe;
-
-		bool amReady = !init && !playerMe.ReadyGet();
-		
-		if (Time.time - readyTimeoutTime < 1)
-			await Task.Delay(Mathf.RoundToInt((1 - (Time.time - readyTimeoutTime))*1000));
-
-		readyTimeoutTime = Time.time;
-
-		try
-		{
-			EnableSelectionOfTracks(!amReady && ServerC.I.AmHost);
-			
-			if (F.I.actionHappening == ActionHappening.InRace && RaceManager.I.raceAlreadyStarted)
-			{// when we as client join ongoing race
-				thisView.ToRaceScene();
-				playerMe.ReadySet(false);
-				ServerC.I.UpdatePlayerData();
-				OnlineCommunication.I.RequestCarForMeLatecomerRpc(OnlineCommunication.I.RpcTarget.Server);
-			}
-			else
-			{			
-				playerMe.ReadySet(amReady);
-				ServerC.I.UpdatePlayerData();
-			}
-
-			if (ServerC.I.AmHost && amReady)
-			{// UPDATE HOST INFO
-				Debug.Log("ServerConnection.I new track=" + F.I.s_trackName);
-				ServerC.I.lobby.Data[ServerC.k_trackSHA] = new DataObject(DataObject.VisibilityOptions.Member, F.I.SHA(F.I.tracksPath + F.I.s_trackName + ".data"));
-				ServerC.I.lobby.Data[ServerC.k_trackName] = new DataObject(DataObject.VisibilityOptions.Member, F.I.s_trackName);
-				ServerC.I.UpdateServerData();
-			}
-		}
-		catch (LobbyServiceException e)
-		{
-			Debug.Log("Ready switch failed: " + e.Message);
-		}
-
-		UpdateInteractableButtons();
-
-		readyText.text = ((ServerC.I.AmHost ? "HOST " : "") + (amReady ? "NOT READY" : "READY"));
-
-		if (lobbyCntdwnCo != null)
-			StopCoroutine(lobbyCntdwnCo);
-
-		if ((ServerC.I.AmHost && ServerC.I.readyPlayers == ServerC.I.lobby.Players.Count))
-		{
-			lobbyCntdwnCo = StartCoroutine(LobbyCountdown());
-		}
-		
-		leaderboard.Refresh();
-		
-		readyClicked = false;
-	}
 	public void SwitchScoring(bool init)
 	{
 		int dir = 0;
 		if (!init)
-			dir = shiftInputRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
+			dir = F.I.shiftRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
 
 		F.I.scoringType = (ScoringType)F.Wraparound((int)F.I.scoringType + dir, 0, Enum.GetNames(typeof(ScoringType)).Length - 1);
 		scoringText.text = F.I.scoringType.ToString();
@@ -502,7 +497,7 @@ public class MultiPlayerSelector : TrackSelector
 	{
 		yield return new WaitForSecondsRealtime(3);
 		if (ServerC.I.AmHost && ServerC.I.readyPlayers == ServerC.I.lobby.Players.Count
-			&& ServerC.I.lobby.Players.Count == ServerC.I.activePlayers.Count)
+			/*&& ServerC.I.lobby.Players.Count == ServerC.I.activePlayers.Count*/)
 		{
 			F.I.actionHappening = ActionHappening.InRace;
 			ServerC.I.lobby.Data[ServerC.k_actionHappening] = new DataObject(DataObject.VisibilityOptions.Public, F.I.actionHappening.ToString());

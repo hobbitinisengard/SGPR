@@ -10,6 +10,7 @@ using UnityEngine;
 using UnityEngine.Audio;
 using SimpleFileBrowser;
 using System.Collections;
+using UnityEditor;
 public enum PartType
 {
 	Suspension,
@@ -650,6 +651,7 @@ public class DriveSavable : PartSavable
 		holdComebackSpeed = vp.steeringControl.holdComebackSpeed;
 		steerLimitAt0 = vp.steeringControl.steerLimitCurve.keys[0].value;
 		steerLimitAt200 = vp.steeringControl.steerLimitCurve.keys[1].value;
+		
 		steerComebackAt0 = vp.steeringControl.steerComebackCurve.keys[0].value;
 		steerComebackAt200 = vp.steeringControl.steerComebackCurve.keys[1].value;
 	}
@@ -662,7 +664,12 @@ public class DriveSavable : PartSavable
 
 		vp.steeringControl.steerAdd = steerAdd;
 		vp.steeringControl.holdComebackSpeed = holdComebackSpeed;
-		vp.steeringControl.steerLimitCurve = AnimationCurve.Linear(0, steerLimitAt0, 56, steerLimitAt200);
+
+		vp.steeringControl.steerLimitCurve = new AnimationCurve(new Keyframe[] {
+			new (0, steerLimitAt0, 0, -0.03f),
+			new (56, steerLimitAt200, -0.0012f, 0)
+		});
+
 		vp.steeringControl.steerComebackCurve = AnimationCurve.Linear(0, steerComebackAt0, 56, steerComebackAt200);
 	}
 }

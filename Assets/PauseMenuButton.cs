@@ -2,6 +2,7 @@ using UnityEngine.EventSystems;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Audio;
+using UnityEngine.InputSystem;
 
 public class PauseMenuButton : MonoBehaviour, ISelectHandler, IDeselectHandler
 {
@@ -15,6 +16,7 @@ public class PauseMenuButton : MonoBehaviour, ISelectHandler, IDeselectHandler
 	public AudioMixer audioMixer;
 	public string exposedParameter;
 	public float indicatorLevel = 0.5f;
+	
 	private void Awake()
 	{
 		GetComponent<Button>().onClick.AddListener(OnClickDo);
@@ -35,9 +37,9 @@ public class PauseMenuButton : MonoBehaviour, ISelectHandler, IDeselectHandler
 	{
 		if (batteryMask)
 		{
-			indicatorLevel += 0.1f;
-			if (indicatorLevel > 1.05f)
-				indicatorLevel = 0;
+			indicatorLevel += (F.I.shiftRef.action.ReadValue<float>() > 0 ? -.1f : .1f);
+			indicatorLevel = F.Wraparound(indicatorLevel, 0, 1);
+
 			clickSoundEffect.Play();
 			SetBatteryGUI(indicatorLevel);
 

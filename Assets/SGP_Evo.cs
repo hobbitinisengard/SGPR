@@ -14,22 +14,18 @@ public class RotationDampStruct
 	float pos = 0;
 	public float targetPos = 0;
 	public float speed = 0;
-	//float prevSpeed = 0;
+	float prevSpeed = 0;
 	public float offset = 0;
 	private Axis axis;
-
-	public bool Active()
-	{
-		return Mathf.Abs(targetPos - pos) > 0.1f;
-	}
-	public float Pos()
-	{
-		return pos + offset;
-	}
+	public float Delta { get { return speed - prevSpeed; } }
+	public bool Active { get { return Mathf.Abs(targetPos - pos) > 0.1f; } }
+	public float Pos { get { return pos + offset; } }
 	public void UpdateTargetToValue(int target)
 	{
 		targetPos = target;
 		evoMaxSpeed = 5 * evoAcceleration;
+
+		//Debug.Log(targetPos + " " + pos + " " + speed);
 	}
 	public void UpdateTarget(Direction dir)
 	{
@@ -43,7 +39,7 @@ public class RotationDampStruct
 		{
 			if (pos > 315)
 			{
-				if (axis == Axis.X)
+				if (axis == Axis.X) // better landing
 					targetPos = 710;
 				else
 					targetPos = 720;
@@ -87,8 +83,9 @@ public class RotationDampStruct
 			else
 				targetPos = 270;
 		}
-		//Debug.Log(targetPos);
+		//Debug.Log(targetPos + " " + pos + " " + speed);
 	}
+
 	float degs(float deg)
 	{
 		if (deg > 360)
@@ -118,7 +115,7 @@ public class RotationDampStruct
 	public void SmoothDamp()
 	{
 		pos = degs(pos);
-		//prevSpeed = speed;
+		prevSpeed = speed;
 		pos = Mathf.SmoothDamp(pos, targetPos, ref speed,
 				 evoSmoothTime, evoMaxSpeed, Time.fixedDeltaTime);
 	}
@@ -130,7 +127,7 @@ public class RotationDampStruct
 	}
 	public void DecreaseMaxEvoSpeed()
 	{
-		if (!Active())
+		if (!Active)
 			evoMaxSpeed = speed;
 	}
 	public void CloseAdvancedMode()
@@ -187,9 +184,12 @@ public class SGP_Evo : MonoBehaviour
 		staticEvoMaxSpeed = r[0].staticEvoMaxSpeed;
 		evoAcceleration = r[0].evoAcceleration;
 	}
-	public bool IsStunting()
+	public bool IsStunting
 	{
-		return stunting;
+		get
+		{
+			return stunting;
+		}
 	}
 
 	void FixedUpdate()
@@ -211,9 +211,7 @@ public class SGP_Evo : MonoBehaviour
 			}
 		}
 
-		if (!stunting && Time.time - shiftPressTime < maxTimeToInit && 
-			((!flippedWhenInitiated && !vp.colliding && vp.reallyGroundedWheels == 0)
-				|| (flippedWhenInitiated && !vp.colliding &&!vp.crashing)))
+		if (!stunting && Time.time - shiftPressTime < maxTimeToInit && !vp.colliding && !vp.crashing && vp.reallyGroundedWheels == 0)
 		{
 			evoBloorp.Play();
 			stunting = true;
@@ -225,11 +223,14 @@ public class SGP_Evo : MonoBehaviour
 
 		if (stunting)
 		{
-			if (vp.crashing || vp.colliding || vp.reallyGroundedWheels > 0)
+			if (!flippedWhenInitiated && (vp.crashing || vp.colliding || vp.reallyGroundedWheels > 0))
 			{
 				stunting = false;
 				return;
 			}
+
+			if(flippedWhenInitiated && !vp.crashing && !vp.colliding && vp.reallyGroundedWheels == 0)
+				flippedWhenInitiated = false;
 
 			if (vp.SGPshiftbutton)
 			{
@@ -264,8 +265,8 @@ public class SGP_Evo : MonoBehaviour
 						r[1].UpdateTarget(Direction.ANTICLOCK);
 					r[1].IncreaseEvoSpeed();
 
-					int rest = (int)r[0].Pos() % 90;
-					r[0].UpdateTargetToValue(90*((int)r[0].Pos() / 90) + ((rest < 45) ? 0 : 90));
+					int rest = (int)r[0].Pos % 90;
+					r[0].UpdateTargetToValue(90 * ((int)r[0].Pos / 90) + ((rest < 45) ? 0 : 90));
 				}
 			}
 			else
@@ -281,12 +282,16 @@ public class SGP_Evo : MonoBehaviour
 
 			foreach (RotationDampStruct rds in r)
 				rds.SmoothDamp();
-			rb.rotation = Quaternion.Euler(r[0].Pos(), r[1].Pos(), r[2].Pos());
+
+
+			rb.rotation = Quaternion.Euler(r[0].Pos, r[1].Pos, r[2].Pos);
 			rb.angularVelocity = vp.transform.TransformDirection(Mathf.Deg2Rad * new Vector3(r[0].speed, r[1].speed, r[2].speed));
+
+			//rb.AddRelativeTorque(Mathf.Deg2Rad * new Vector3(r[0].Delta, r[1].Delta, r[2].Delta), ForceMode.VelocityChange);
 
 			//Vector3 delta = new Vector3(r[0].Delta(), r[1].Delta(), r[2].Delta());
 
-			//rb.AddRelativeTorque(mult*delta, ForceMode.VelocityChange);
+
 			//if(vp.name.Contains("Clone"))
 			//{
 			//    Debug.DrawRay(vp.transform.position, vp.transform.TransformDirection(localEvoAngularVelocity), Color.red, 3);
@@ -294,7 +299,6 @@ public class SGP_Evo : MonoBehaviour
 
 			//}
 		}
-	
 		prevSGPShiftButton = vp.SGPshiftbutton;
 	}
 

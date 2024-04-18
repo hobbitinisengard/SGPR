@@ -138,14 +138,14 @@ namespace RVP
 
 		public void Disconnect()
 		{
-			if (lookObj)
-				Destroy(lookObj.gameObject);
+			vp = null;
+			enabled = false;
 		}
 		public void Connect(VehicleParent car, Mode mode = Mode.Follow)
 		{
 			if (!lookObj)
 			{// lookObj is an object used to help position and rotate the camera
-				GameObject lookTemp = new GameObject("Camera Looker");
+				GameObject lookTemp = new ("Camera Looker");
 				lookObj = lookTemp.transform;
 			}
 			vp = car;
@@ -172,7 +172,7 @@ namespace RVP
 		}
 		void FixedUpdate()
 		{
-			if (vp && targetBody && vp.tr.gameObject.activeSelf)
+			if (vp && targetBody)
 			{
 				if (mode == Mode.Follow)
 				{
@@ -192,10 +192,11 @@ namespace RVP
 				if(Mathf.Abs(move.x) > 0.5f)
 				{
 					int index = F.I.s_cars.FindIndex(c => c.transform.name == vp.name);
+					index = F.Wraparound(index + (move.x > 0 ? 1 : -1), 0, F.I.s_cars.Count - 1);
 
 					if (F.I.s_cars[index] != vp)
 					{
-						Connect(F.I.s_cars[F.Wraparound(index + (move.x > 0 ? 1 : -1), 0, F.I.s_cars.Count - 1) % F.I.s_cars.Count], Mode.Replay);
+						Connect(F.I.s_cars[index], Mode.Replay);
 
 						RaceManager.I.hud.infoText.AddMessage(new Message(vp.transform.name, BottomInfoType.NEW_CAMERA_TARGET));
 					}

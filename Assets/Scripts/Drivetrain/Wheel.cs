@@ -477,7 +477,7 @@ namespace RVP
 			}
 		}
 
-		void Update()
+		void LateUpdate()
 		{
 			RotateWheel();
 
@@ -529,6 +529,8 @@ namespace RVP
 			float castDist = Mathf.Max(suspensionParent.suspensionDistance * Mathf.Max(0.001f, suspensionParent.targetCompression) + actualRadius, 0.001f);
 			//RaycastHit[] wheelHits = Physics.RaycastAll(transform.position, suspensionParent.springDirection, castDist, RaceManager.wheelCastMaskStatic);
 			bool validHit = Physics.Raycast(transform.position, suspensionParent.springDirection, out RaycastHit hit, castDist, RaceManager.wheelCastMaskStatic);
+			//bool validHit = Physics.BoxCast(transform.position, new Vector3(.05f,.1f,.05f), suspensionParent.springDirection, out RaycastHit hit, 
+			//	 vp.tr.rotation, castDist, RaceManager.wheelCastMaskStatic);
 			//bool validHit = false;
 			//float hitDist = Mathf.Infinity;
 
@@ -579,7 +581,6 @@ namespace RVP
 				{
 					contactVelocity = Vector3.zero;
 				}
-
 				GroundSurfaceInstance curSurface = hit.collider.GetComponent<GroundSurfaceInstance>();
 				TerrainSurface curTerrain = hit.collider.GetComponent<TerrainSurface>();
 

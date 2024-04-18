@@ -52,10 +52,11 @@ public class ZippedTrackDataObject : NetworkBehaviour
 		MultiPlayerSelector.I.zippedTrackDataObject = this;
 	}
 
-	public void RequestTrackUpdate(string newTrackName)
+	public void RequestTrackUpdate()
 	{
 		receivedTrack.Clear();
-		UpdateTrackRpc(newTrackName, RpcTarget.Server);
+		Debug.Log("RequestTrackUpdate");
+		UpdateTrackRpc(F.I.s_trackName, RpcTarget.Server);
 	}
 	[Rpc(SendTo.Server, AllowTargetOverride = true)]
 	void UpdateTrackRpc(string newTrackName, RpcParams rpcParams)

@@ -33,7 +33,7 @@ public class ViewSwitcher : MonoBehaviour
 	{
 		timer = 0;
 		// Action method can take place over multiple frames which disrupts the transition
-		float delta = Mathf.Max(0.01f, Time.deltaTime);
+		float delta = Mathf.Max(0.01f, Time.unscaledDeltaTime);
 		while (timer < duration)
 		{
 			if (timer >= 0.5f * duration && viewA.activeSelf)
@@ -105,8 +105,10 @@ public class ViewSwitcher : MonoBehaviour
 				lobbyView.SetActive(false);
 				resultsView.SetActive(true);
 			}
-			RaceManager.I.BackToEditor();
+			RaceManager.I.editorPanel.gameObject.SetActive(true);
+			RaceManager.I.RemoveCars();
 			RaceManager.I.editorPanel.RemoveTrackLeftovers();
+			Time.timeScale = 1;
 		}));
 	}
 }

@@ -8,6 +8,9 @@ using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
+using UnityEngine.UI.Extensions;
+using static UnityEngine.GraphicsBuffer;
 [Serializable]
 public class LobbyRelayId
 {
@@ -19,14 +22,13 @@ public class Chat : NetworkBehaviour
 	public GameObject chatRowPrefab;
 
 	[NonSerialized]
-	public Transform[] contents = new Transform[2];
+	public ScrollRect[] scrollRects = new ScrollRect[2];
 	[NonSerialized]
 	public TMP_InputField[] inputFields = new TMP_InputField[2];
 
 	public InputActionReference chatButtonInput;
 
 	public bool texting { get; private set; }
-	const int rows = 7;
 	Coroutine showChatCo;
 	// Chat is in-scene placed
 	private void Awake()
@@ -41,7 +43,7 @@ public class Chat : NetworkBehaviour
 	public override void OnNetworkDespawn()
 	{
 		SetVisibility(false);
-		ServerC.I.activePlayers.Clear();
+		//ServerC.I.activePlayers.Clear();
 
 		base.OnNetworkDespawn();
 		foreach(var i in inputFields)
@@ -61,8 +63,8 @@ public class Chat : NetworkBehaviour
 		inputFields[0] = MultiPlayerSelector.I.chatInitializer.lobbyChatInputField;
 		inputFields[1] = MultiPlayerSelector.I.chatInitializer.raceChatInputField;
 
-		contents[0] = MultiPlayerSelector.I.chatInitializer.lobbyChatContent;
-		contents[1] = MultiPlayerSelector.I.chatInitializer.raceChatContent;
+		scrollRects[0] = MultiPlayerSelector.I.chatInitializer.lobbyChat;
+		scrollRects[1] = MultiPlayerSelector.I.chatInitializer.raceChat;
 
 		SetVisibility(false);
 
@@ -70,8 +72,8 @@ public class Chat : NetworkBehaviour
 
 		F.I.chat = this;
 
-		foreach(var c in contents)
-			F.DestroyAllChildren(c);
+		foreach(var c in scrollRects)
+			F.DestroyAllChildren(c.content);
 
 		foreach (var i in inputFields)
 		{
@@ -100,7 +102,7 @@ public class Chat : NetworkBehaviour
 	void SetVisibility(bool enabled)
 	{
 		inputFields[1].gameObject.SetActive(enabled);
-		contents[1].gameObject.SetActive(enabled);
+		scrollRects[1].gameObject.SetActive(enabled);
 	}
 	private void buttonPressed(InputAction.CallbackContext obj)
 	{
@@ -153,20 +155,19 @@ public class Chat : NetworkBehaviour
 			StopCoroutine(showChatCo);
 		showChatCo = StartCoroutine(HideRaceChatAfterSeconds(10));
 
-		if (contents[0].childCount == rows)
+		foreach(var c in scrollRects)
 		{
-			Destroy(contents[0].GetChild(0).gameObject);
-			Destroy(contents[1].GetChild(0).gameObject);
-		}
-		foreach(var c in contents)
-		{
-			var newRow = Instantiate(chatRowPrefab, c);
-			var textA = newRow.transform.GetChild(0).GetComponent<TextMeshProUGUI>();
+			var newRow = Instantiate(chatRowPrefab, c.content).GetComponent<RectTransform>();
+			var textA = newRow.GetChild(0).GetComponent<TextMeshProUGUI>();
 			textA.text = name + ":";
 			textA.color = colorA;
-			var textB = newRow.transform.GetChild(1).GetComponent<TextMeshProUGUI>();
+			var textB = newRow.GetChild(1).GetComponent<TextMeshProUGUI>();
 			textB.text = "  " + message;
 			textB.color = colorB;
+			c.verticalScrollbar.value = 0;
+			
+			Canvas.ForceUpdateCanvases();
+			c.verticalNormalizedPosition = 0;
 		}
 	}
 }

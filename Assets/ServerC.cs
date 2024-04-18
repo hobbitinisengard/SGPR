@@ -27,7 +27,7 @@ public class ServerC : MonoBehaviour
 	/// <summary>
 	/// active players are connected to relay & lobby
 	/// </summary>
-	public List<LobbyRelayId> activePlayers = new();
+	//public List<LobbyRelayId> activePlayers = new();
 	public EncryptionType encryption = EncryptionType.DTLS;
 	public bool isCreatingLobby { get; private set; }
 	public string lobbyName;
@@ -108,12 +108,33 @@ public class ServerC : MonoBehaviour
 			await Lobbies.Instance.SubscribeToLobbyEventsAsync(lobby.Id, callbacks);
 		}
 	}
+	/// <summary>
+	/// from 0 
+	/// </summary>
+	public int LeaderboardPos
+	{
+		get
+		{
+			Player[] sortedPlayers = new Player[lobby.Players.Count];
+			for (int i = 0; i < sortedPlayers.Length; ++i)
+				sortedPlayers[i] = lobby.Players[i];
+
+			Array.Sort(sortedPlayers, (Player a, Player b) => 
+			{
+				return a.ScoreGet().CompareTo(b.ScoreGet());
+			});
+
+			int startingPos = Array.FindIndex(sortedPlayers, 0, p => p == PlayerMe);
+
+			return startingPos;
+		}
+	}
 	public async void DisconnectFromLobby()
 	{
 		if (lobby == null)
 			return;
 		DeleteLobby();
-		activePlayers.Clear();
+		//activePlayers.Clear();
 		heartbeatTimer.Pause();
 		pollForUpdatesTimer.Pause();
 		await LobbyService.Instance.RemovePlayerAsync(lobby.Id, AuthenticationService.Instance.PlayerId);
@@ -250,7 +271,7 @@ public class ServerC : MonoBehaviour
 	{
 		get
 		{
-			return networkManager.IsHost || F.I.gameMode == MultiMode.Singleplayer;
+			return F.I.gameMode == MultiMode.Singleplayer || networkManager.IsHost;
 		}
 	}
 

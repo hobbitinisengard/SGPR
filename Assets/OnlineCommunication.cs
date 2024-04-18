@@ -4,6 +4,8 @@ using System.Linq;
 using Unity.Collections;
 using Unity.Netcode;
 using Unity.Services.Authentication;
+using Unity.Services.Lobbies.Models;
+using UnityEngine;
 
 public class OnlineCommunication : NetworkBehaviour
 {
@@ -15,7 +17,7 @@ public class OnlineCommunication : NetworkBehaviour
 		get { return _parsedRaceStartDate; }
 		set
 		{
-			if (IsServer || F.I.gameMode == MultiMode.Singleplayer)
+			if (IsHost || F.I.gameMode == MultiMode.Singleplayer)
 			{
 				_parsedRaceStartDate = value;
 				_raceStartDate.Value = value.ToString();
@@ -28,40 +30,53 @@ public class OnlineCommunication : NetworkBehaviour
 		OnlineCommunication.I = this;
 		_raceStartDate.OnValueChanged += RaceStartDateChanged;
 	}
-	public override void OnNetworkSpawn()
-	{
-		base.OnNetworkSpawn();
-		AddActivePlayerRpc(NetworkManager.LocalClientId, AuthenticationService.Instance.PlayerId);
+	//public override void OnNetworkSpawn()
+	//{
+	//	base.OnNetworkSpawn();
+	//	AddActivePlayerRpc(NetworkManager.LocalClientId, AuthenticationService.Instance.PlayerId);
 		
-	}
+	//}
 	private void RaceStartDateChanged(FixedString128Bytes previousValue, FixedString128Bytes newValue)
 	{
 		_parsedRaceStartDate = DateTime.Parse(newValue.ToString());
 	}
-	public void DelActivePlayer(string id)
-	{
-		DelActivePlayerRpc(id);
-	}
+	//public void DelActivePlayer(string id)
+	//{
+	//	DelActivePlayerRpc(id);
+	//}
 
-	[Rpc(SendTo.Server)]
-	void AddActivePlayerRpc(ulong relayId, string lobbyId)
+	//[Rpc(SendTo.Server)]
+	//void AddActivePlayerRpc(ulong relayId, string lobbyId)
+	//{
+	//	if(false == ServerC.I.activePlayers.Any(ap => ap.playerLobbyId == lobbyId))
+	//	{
+	//		ServerC.I.activePlayers.Add(new LobbyRelayId() { playerRelayId = relayId, playerLobbyId = lobbyId });
+	//	}
+	//}
+	//[Rpc(SendTo.Server)]
+	//void DelActivePlayerRpc(string id)
+	//{
+	//	var el = ServerC.I.activePlayers.First(p => p.playerLobbyId == id);
+	//	if(el != null)
+	//		ServerC.I.activePlayers.Remove(el);
+	//}
+	public void GibCar()
 	{
-		if(false == ServerC.I.activePlayers.Any(ap => ap.playerLobbyId == lobbyId))
-		{
-			ServerC.I.activePlayers.Add(new LobbyRelayId() { playerRelayId = relayId, playerLobbyId = lobbyId });
-		}
+		GibCarRpc(ServerC.I.PlayerMe.Id, RpcTarget.Server);
 	}
-	[Rpc(SendTo.Server)]
-	void DelActivePlayerRpc(string id)
+	public void GibCar(Vector3 position, Quaternion rotation)
 	{
-		var el = ServerC.I.activePlayers.First(p => p.playerLobbyId == id);
-		if(el != null)
-			ServerC.I.activePlayers.Remove(el);
+		GibCarAtRpc(ServerC.I.PlayerMe.Id, position, rotation, RpcTarget.Server);
 	}
 	[Rpc(SendTo.SpecifiedInParams)]
-	public void RequestCarForMeLatecomerRpc(RpcParams ps)
+	void GibCarAtRpc(string lobbyId, Vector3 position, Quaternion rotation, RpcParams ps)
 	{
-		RaceManager.I.SpawnCarForLatecomer(ps.Receive.SenderClientId);
+		RaceManager.I.SpawnCarForPlayer(ps.Receive.SenderClientId, lobbyId, position, rotation);
+	}
+	[Rpc(SendTo.SpecifiedInParams)]
+	void GibCarRpc(string lobbyId, RpcParams ps)
+	{
+		RaceManager.I.SpawnCarForPlayer(ps.Receive.SenderClientId, lobbyId, null, null);
 	}
 	public void CountdownTillForceEveryoneToResults()
 	{
