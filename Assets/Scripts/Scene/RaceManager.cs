@@ -15,21 +15,11 @@ namespace RVP
 	[DisallowMultipleComponent]
 
 	public class RaceManager : MonoBehaviour
-	{
-		public bool raceAlreadyStarted
-		{
-			get
-			{
-				return OnlineCommunication.I.raceStartDate != DateTime.MinValue
-					&& DateTime.Now > OnlineCommunication.I.raceStartDate.AddSeconds(5);
-			}
-		}
+	{ 
 		AudioSource musicPlayer;
 		public GameObject Sun;
 		public ViewSwitcher viewSwitcher;
 		public PathCreator[] racingPaths;
-		public InputActionReference submitInput;
-		public InputActionReference cancelInput;
 		//public GameObject Sun;
 		[Tooltip("Reload the scene with the 'Restart' button in the input manager")]
 		public bool quickRestart = true;
@@ -89,7 +79,6 @@ namespace RVP
 		VehicleParent leader;
 		[NonSerialized]
 		public VehicleParent playerCar;
-		public event Action ClosingRace;
 
 		public static RaceManager I;
 		public enum InfoMessage
@@ -112,10 +101,10 @@ namespace RVP
 
 		public void RemoveCars()
 		{
-			ClosingRace?.Invoke();
 			hud.Disconnect();
 			hud.gameObject.SetActive(false);
 			cam.Disconnect();
+			
 			if(ServerC.I.AmHost)
 			{
 				for (int i = 0; i < F.I.s_cars.Count;i++)
@@ -128,8 +117,6 @@ namespace RVP
 			{
 				playerCar?.RelinquishRpc(playerCar.RpcTarget.Server);
 			}
-			
-			OnlineCommunication.I.raceStartDate = DateTime.MinValue;
 		}
 		public void BackToMenu(bool applyScoring)
 		{
@@ -178,7 +165,10 @@ namespace RVP
 			countDownSeq.gameObject.SetActive(false);
 
 			if (F.I.s_inEditor)
+			{
 				RemoveCars();
+				editorPanel.gameObject.SetActive(true);
+			}
 			else
 				BackToMenu(applyScoring: false);
 		}
@@ -189,6 +179,7 @@ namespace RVP
 			{
 				RaceType.Stunt => vp.raceBox.Aero,
 				RaceType.Drift => vp.raceBox.drift,
+				RaceType.TimeTrial => -(float)vp.raceBox.bestLapTime.TotalMilliseconds, // trick to compare in a descending order
 				_ => vp.raceBox.curLap + vp.followAI.ProgressPercent,
 			};
 		}
@@ -277,9 +268,7 @@ namespace RVP
 		}
 		private void OnEnable()
 		{
-			
 			StartCoroutine(editorPanel.LoadTrack());
-
 			SetPartOfDay();
 			if (F.I.s_inEditor)
 			{
@@ -290,7 +279,6 @@ namespace RVP
 				StartRace();
 			}
 		}
-		
 		void SetPitsLayer(int layer)
 		{
 			Transform t = editorPanel.placedTilesContainer.transform;
@@ -316,8 +304,8 @@ namespace RVP
 		}
 		public void StartRace()
 		{
-			ResultsView.resultData.Clear();
-			OnlineCommunication.I.raceStartDate = DateTime.Now.AddSeconds(5);
+			ResultsView.Clear();
+			F.I.raceStartDate = DateTime.Now.AddSeconds((ServerC.I.AmHost) ? 5 : 4.5f);
 			StartCoroutine(StartRaceCoroutine());
 		}
 		IEnumerator StartRaceCoroutine()
@@ -352,7 +340,6 @@ namespace RVP
 				musicPlayer.clip = Resources.Load<AudioClip>("music/" + F.I.tracks[F.I.s_trackName].envir.ToString());
 				musicPlayer.PlayDelayed(5);
 			}
-
 
 			SetPitsLayer(0);
 
@@ -445,31 +432,13 @@ namespace RVP
 
 			DemoSGPLogo.SetActive(F.I.s_spectator);
 			hud.gameObject.SetActive(!F.I.s_spectator);
+			countDownSeq.gameObject.SetActive(!F.I.s_spectator);
 
-			if (!raceAlreadyStarted)
-			{
-				countDownSeq.CountdownSeconds = F.I.countdownSeconds;
-				countDownSeq.gameObject.SetActive(!F.I.s_spectator);
-			}
 			if (F.I.s_spectator)
 				StartCoroutine(SpectatorLoop());
 		}
 		public void SpawnCarForPlayer(ulong relayId, string lobbyId, Vector3? position, Quaternion? rotation)
 		{
-			int index = ServerC.I.lobby.Players.FindIndex(p => p.Id == lobbyId);
-			Player p = ServerC.I.lobby.Players[index];
-			var carModel = Resources.Load<GameObject>(F.I.carPrefabsPath + p.carNameGet());
-			if(position == null)
-				position = (F.I.s_cars[^1].tr.position + Vector3.up * 3);
-			if(rotation == null)
-				rotation = F.I.s_cars[^1].tr.rotation;
-
-			int curLap = raceAlreadyStarted ? F.I.s_cars[^1].raceBox.curLap : 0;
-			var newCar = NetworkObject.InstantiateAndSpawn(carModel, networkManager, relayId, position:position.Value, rotation:rotation.Value).GetComponent<VehicleParent>();
-			newCar.sponsor = p.SponsorGet();
-			newCar.name = p.NameGet();
-			newCar.SetCurLapRpc(curLap, newCar.RpcTarget.Owner);
-
 			if (F.I.s_cars.Count == F.I.maxCarsInRace)
 			{
 				for (int i = F.I.s_cars.Count - 1; i >= 0; i--)
@@ -482,14 +451,27 @@ namespace RVP
 					}
 				}
 			}
+			int index = ServerC.I.lobby.Players.FindIndex(p => p.Id == lobbyId);
+			Player p = ServerC.I.lobby.Players[index];
+			var carModel = Resources.Load<GameObject>(F.I.carPrefabsPath + p.carNameGet());
+			if(position == null)
+				position = (F.I.s_cars[^1].tr.position + Vector3.up * 3);
+			if(rotation == null)
+				rotation = F.I.s_cars[^1].tr.rotation;
+
+			int curLap = OnlineCommunication.I.raceAlreadyStarted.Value ? F.I.s_cars[^1].raceBox.curLap-1 : 0;
+			var newCar = NetworkObject.InstantiateAndSpawn(carModel, networkManager, relayId, position:position.Value, rotation:rotation.Value).GetComponent<VehicleParent>();
+			newCar.sponsor = p.SponsorGet();
+			newCar.name = p.NameGet();
+			newCar.SetCurLapRpc(curLap, newCar.RpcTarget.Owner);
 		}
 
 		IEnumerator SpectatorLoop()
 		{
 			while (F.I.s_spectator)
 			{
-				if ((DateTime.Now - OnlineCommunication.I.raceStartDate).TotalSeconds > 60
-					|| (submitInput.action.ReadValue<float>() == 1) || (cancelInput.action.ReadValue<float>() == 1))
+				if ((DateTime.Now - F.I.raceStartDate).TotalSeconds > 60
+					|| (F.I.enterRef.action.ReadValue<float>() == 1) || (F.I.escRef.action.ReadValue<float>() == 1))
 				{
 					BackToMenu(applyScoring: false);
 					yield break;
@@ -582,6 +564,7 @@ namespace RVP
 			if (F.I.s_inEditor)
 			{
 				Debug.Log("back to editor");
+				editorPanel.gameObject.SetActive(true);
 				RemoveCars();
 			}
 			else
@@ -592,8 +575,11 @@ namespace RVP
 		}
 		public void TimeForRaceEnded()
 		{
-			if (playerCar != null)
-				playerCar.raceBox.enabled = false;
+			foreach(var c in F.I.s_cars)
+			{
+				if(c.raceBox.enabled)
+					c.raceBox.enabled = false;
+			}
 		}
 	}
 }

@@ -49,7 +49,10 @@ public class WormAntenna2 : MonoBehaviour
 	private void FixedUpdate()
 	{
 		if (halflife == 0 || frequency == 0) return;
-		Update_Follower();
+			Update_Follower();
+	}
+	private void LateUpdate()
+	{
 		Transform node = root;
 		Vector3 localUp = transform.up;
 		Vector3 followerPos = transform.InverseTransformPoint(follower.position);

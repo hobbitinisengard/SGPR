@@ -1,3 +1,4 @@
+using RVP;
 using System.Collections;
 using TMPro;
 using UnityEngine;
@@ -6,7 +7,8 @@ using UnityEngine.UIElements.Experimental;
 
 public class ResultsSeq : MonoBehaviour
 {
-	public SGP_HUD playerHUD;
+
+	public TextMeshProUGUI pressEnterText;
 	public Sprite[] ResultPositionSprites;
 	public Image imgResult;
 	float minImgResultPos;
@@ -35,11 +37,11 @@ public class ResultsSeq : MonoBehaviour
 	private void OnDisable()
 	{
 		RowsBlinkColor(Color.yellow);
-		playerHUD.raceManager.submitInput.action.performed -= OnEnterClicked;
+		F.I.enterRef.action.performed -= OnEnterClicked;
 	}
 	private void OnEnable()
 	{
-		playerHUD.raceManager.submitInput.action.performed += OnEnterClicked;
+		F.I.enterRef.action.performed += OnEnterClicked;
 
 		rightBoxLabelInt = 0;
 		foreach (var b in boxes)
@@ -53,7 +55,7 @@ public class ResultsSeq : MonoBehaviour
 		}
 
 		cosArg = 0;
-		playerResultPosition = playerHUD.raceManager.Position(playerHUD.vp);
+		playerResultPosition = RaceManager.I.Position(RaceManager.I.playerCar);
 		imgResult.sprite = ResultPositionSprites[playerResultPosition - 1];
 		imgResult.transform.GetChild(0).gameObject.SetActive(playerResultPosition > 3);
 		minImgResultPos = -Screen.height / 2f - imgResult.transform.GetComponent<RectTransform>().sizeDelta.y / 2f;
@@ -180,18 +182,27 @@ public class ResultsSeq : MonoBehaviour
 
 		while(true)
 		{
-			if (submitFlag && dimCo == null) // closing seq
+			if (F.I.gameMode == MultiMode.Multiplayer && ResultsView.Count != ServerC.I.lobby.Players.Count)
+				pressEnterText.text = "WAITING";
+			else
+				pressEnterText.text = "PRESS ENTER";
+
+			if (submitFlag && dimCo == null) // CLOSING SEQUENCE
 			{
 				submitFlag = false;
-				for (int i = 0; i < F.I.s_cars.Count; ++i)
-				{ 
-					leftRow.GetChild(i).gameObject.GetComponent<SlideInOut>().PlaySlideOut(true);
-					rightRow.GetChild(i).gameObject.GetComponent<SlideInOut>().PlaySlideOut(true);
-					foreach (var b in boxes)
-						b.GetComponent<SlideInOut>().PlaySlideOut(true);
+				if (F.I.gameMode == MultiMode.Singleplayer 
+					|| (F.I.gameMode == MultiMode.Multiplayer && ResultsView.Count == ServerC.I.lobby.Players.Count))
+				{
+					for (int i = 0; i < F.I.s_cars.Count; ++i)
+					{
+						leftRow.GetChild(i).gameObject.GetComponent<SlideInOut>().PlaySlideOut(true);
+						rightRow.GetChild(i).gameObject.GetComponent<SlideInOut>().PlaySlideOut(true);
+						foreach (var b in boxes)
+							b.GetComponent<SlideInOut>().PlaySlideOut(true);
+					}
+					dimCo = StartCoroutine(DimmerWorks());
+					yield break;
 				}
-				dimCo = StartCoroutine(DimmerWorks());
-				yield break;
 			}
 
 			RowsBlinkColor((timer % 1f < 0.5f) ? yellowDark : Color.yellow);
@@ -209,6 +220,7 @@ public class ResultsSeq : MonoBehaviour
 	}
 	IEnumerator DimmerWorks()
 	{
+		
 		float timer = 2;
 		while (timer > 0)
 		{

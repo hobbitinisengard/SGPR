@@ -27,6 +27,7 @@ public enum PartType
 }
 public class ComponentPanel : MonoBehaviour
 {
+	VehicleParent vp;
 	public GameObject settersPanel;
 	public GameObject mainMenu;
 	public AudioMixerSnapshot paused;
@@ -35,49 +36,42 @@ public class ComponentPanel : MonoBehaviour
 	/// shows component name or carConfig name if no component is selected
 	/// </summary>
 	public TextMeshProUGUI bottomNameText;
-	public RaceManager raceManager;
 	public GameObject YouSurePanel;
 	PartType selectedPart;
-	CarConfig carConfig;
 	private void OnEnable()
 	{
+		F.I.escRef.action.performed += OnEscPressed;
 		Cursor.visible = true;
 		paused.TransitionTo(0);
 		Time.timeScale = 0;
 		F.I.gamePaused = true;
-		if (carConfig == null)
+		if(vp == null)
 			NewSetupButton();
 	}
+
+	void OnEscPressed(UnityEngine.InputSystem.InputAction.CallbackContext obj)
+	{
+		BackToComponentMenu();
+	}
+
 	void OnDisable()
 	{
+		F.I.escRef.action.performed -= OnEscPressed;
 		Cursor.visible = false;
 		unPaused.TransitionTo(0);
 		Time.timeScale = 1;
 		F.I.gamePaused = false;
 	}
-	private void Awake()
-	{
-		raceManager.ClosingRace += Reset;
-	}
-	public void Reset()
-	{
-		carConfig = null;
-		bottomNameText.text = "-";
-	}
-	private void Update()
-	{
-		if (Input.GetKeyDown(KeyCode.Escape))
-			BackToComponentMenu();
-	}
+
 	public void NewSetupButton()
 	{
-		carConfig = new CarConfig(raceManager.hud.vp);
+		vp = RaceManager.I.playerCar;
 		YouSurePanel.SetActive(false);
 		mainMenu.SetActive(true);
 		settersPanel.SetActive(false);
 		if (mainMenu.activeSelf)
 		{
-			bottomNameText.text = carConfig.name;
+			bottomNameText.text = vp.carConfig.name;
 		}
 		PopulateCarConfigTable();
 	}
@@ -118,7 +112,7 @@ public class ComponentPanel : MonoBehaviour
 
 		// part can be custom or external
 		selectedPart = type.componentType;
-		bottomNameText.text = carConfig.GetPartName(selectedPart);
+		bottomNameText.text = vp.carConfig.GetPartName(selectedPart);
 
 		PopulatePropertyTable();
 	}
@@ -161,8 +155,8 @@ public class ComponentPanel : MonoBehaviour
 				{
 					string jsonText = File.ReadAllText(filepath);
 					bottomNameText.text = Path.GetFileNameWithoutExtension(filepath);
-					carConfig = new CarConfig(raceManager.hud.vp, bottomNameText.text, jsonText);
-
+					vp.carConfig = new CarConfig(bottomNameText.text, jsonText);
+					vp.carConfig.Apply();
 					mainMenu.SetActive(true);
 					settersPanel.SetActive(false);
 
@@ -188,7 +182,7 @@ public class ComponentPanel : MonoBehaviour
 						return;
 					}
 					bottomNameText.text = Path.GetFileNameWithoutExtension(filepath);
-					carConfig.SetPartTo(selectedPart, bottomNameText.text);
+					vp.carConfig.SetPartTo(selectedPart, bottomNameText.text);
 					mainMenu.SetActive(false);
 					settersPanel.SetActive(true);
 
@@ -205,7 +199,7 @@ public class ComponentPanel : MonoBehaviour
 				F.I.partsPath, "*." + F.I.partInfos[i].fileExtension);
 
 			int choiceIdx = -1;
-			string selectedPartName = carConfig.GetPartName((PartType)i);
+			string selectedPartName = vp.carConfig.GetPartName((PartType)i);
 			for (int j = 0; j < files.Length; ++j)
 			{
 				files[j] = Path.GetFileNameWithoutExtension(files[j]);
@@ -220,7 +214,7 @@ public class ComponentPanel : MonoBehaviour
 	{
 		for (int i = 0; i < settersPanel.transform.childCount; ++i)
 			Destroy(settersPanel.transform.GetChild(i).gameObject);
-		PartSavable curPart = carConfig.GetPart(selectedPart);
+		PartSavable curPart = vp.carConfig.GetPartReadonly(selectedPart);
 		var fields = curPart.GetType().GetFields();
 		GameObject propertySetter = Resources.Load<GameObject>("prefabs/SimpleSetter");
 		foreach (var field in fields)
@@ -237,7 +231,7 @@ public class ComponentPanel : MonoBehaviour
 			return;
 		F.I.ReloadCarPartsData();
 		PopulateCarConfigTable();
-		bottomNameText.text = (carConfig.Modified ? "*" : "") + carConfig.name;
+		bottomNameText.text = (vp.carConfig.Modified ? "*" : "") + vp.carConfig.name;
 		settersPanel.SetActive(false);
 		mainMenu.SetActive(true);
 
@@ -257,19 +251,19 @@ public class ComponentPanel : MonoBehaviour
 				var extensionFilter = new[] { new FileBrowser.Filter("SGPR car config file", CarConfig.extension) };
 				FileBrowser.SetFilters(false, extensionFilter);
 
-				yield return FileBrowser.WaitForSaveDialog(FileBrowser.PickMode.Files, false, F.I.partsPath, carConfig.name, "Save car config file..", "Save");
+				yield return FileBrowser.WaitForSaveDialog(FileBrowser.PickMode.Files, false, F.I.partsPath, vp.carConfig.name, "Save car config file..", "Save");
 
 				if (FileBrowser.Success)
 				{
 					string filepath = FileBrowser.Result[0];
 					if (filepath.Length > 3)
 					{
-						carConfig.PrepareForSave();
-						string serializedJson = JsonConvert.SerializeObject(carConfig, Formatting.Indented);
+						vp.carConfig.PrepareForSave();
+						string serializedJson = JsonConvert.SerializeObject(vp.carConfig, Formatting.Indented);
 						File.WriteAllText(filepath, serializedJson);
 
 						bottomNameText.text = Path.GetFileNameWithoutExtension(filepath);
-						carConfig.name = bottomNameText.text;
+						vp.carConfig.name = bottomNameText.text;
 						if (bottomNameText.text.Contains("car"))
 							F.I.ReloadCarConfigs();
 					}
@@ -280,20 +274,20 @@ public class ComponentPanel : MonoBehaviour
 				var extensionFilter = new[] { new FileBrowser.Filter("SGPR Car part", F.I.partInfos[(int)selectedPart].fileExtension) };
 				FileBrowser.SetFilters(false, extensionFilter);
 
-				yield return FileBrowser.WaitForSaveDialog(FileBrowser.PickMode.Files, false, F.I.partsPath, carConfig.GetPartName(selectedPart), "Save part file..", "Save");
+				yield return FileBrowser.WaitForSaveDialog(FileBrowser.PickMode.Files, false, F.I.partsPath, vp.carConfig.GetPartName(selectedPart), "Save part file..", "Save");
 				if (FileBrowser.Success)
 				{
 					string filepath = FileBrowser.Result[0];
 					if (filepath.Length > 3)
 					{
-						var curPart = carConfig.GetPart(selectedPart);
+						var curPart = vp.carConfig.GetPart(selectedPart);
 						string serializedJson = JsonConvert.SerializeObject(curPart, Formatting.Indented);
 						File.WriteAllText(filepath, serializedJson);
 						if (!File.Exists(filepath))
 							F.I.carParts.Add(bottomNameText.text, curPart);
 
 						bottomNameText.text = Path.GetFileNameWithoutExtension(filepath);
-						carConfig.SetPartTo(selectedPart, bottomNameText.text);
+						vp.carConfig.SetPartTo(selectedPart, bottomNameText.text);
 					}
 				}
 			}
@@ -301,14 +295,14 @@ public class ComponentPanel : MonoBehaviour
 	}
 	void EditCarConfigCallback(PartType newPartType, string partName)
 	{
-		if (carConfig != null)
+		if (vp.carConfig != null)
 		{
-			if (!carConfig.Modified)
+			if (!vp.carConfig.Modified)
 			{
 				bottomNameText.text = "*" + bottomNameText.text;
 			}
 			selectedPart = newPartType;
-			carConfig.SetPartTo(newPartType, partName);
+			vp.carConfig.SetPartTo(newPartType, partName);
 		}
 	}
 	void EditPartCallback()
@@ -316,9 +310,9 @@ public class ComponentPanel : MonoBehaviour
 		if (bottomNameText.text[0] != '*')
 		{
 			bottomNameText.text = "*" + bottomNameText.text;
-			carConfig.MarkModified(selectedPart);
+			vp.carConfig.MarkModified(selectedPart);
 		}
-		var curPart = carConfig.GetPart(selectedPart);
+		var curPart = vp.carConfig.GetPart(selectedPart);
 		var fields = curPart.GetType().GetFields();
 		int j = 0;
 		foreach (FieldInfo field in fields)
@@ -326,11 +320,11 @@ public class ComponentPanel : MonoBehaviour
 			field.SetValue(curPart, settersPanel.transform.GetChild(j).GetComponent<PropertySetter>().value);
 			j++;
 		}
-		curPart.Apply(raceManager.hud.vp);
+		curPart.Apply(RaceManager.I.hud.vp);
 	}
 }
 [Serializable]
-public class PartsStruct
+public class PartsArray
 {
 	public SuspensionSavable sus;
 	public BmsSavable bms;
@@ -409,16 +403,14 @@ public class CarConfig
 {
 	[NonSerialized]
 	public string name;
-	[NonSerialized]
-	public VehicleParent vp;
 	[JsonIgnore]
-	bool setAnyOtherCarPart;
+	bool carConfigModified;
 	[JsonIgnore]
 	public bool Modified
 	{
 		get
 		{
-			return setAnyOtherCarPart || modifiedParts.Any(p => p);
+			return carConfigModified || modifiedParts.Any(p => p);
 		}
 	}
 	/// <summary>
@@ -457,42 +449,36 @@ public class CarConfig
 	[SerializeField]
 	string[] externalParts;
 	[SerializeField]
-	PartsStruct customParts;
-	/// <summary>
-	/// Initialize from Json (json.net)
-	/// </summary>
+	PartsArray customParts;
 	public CarConfig()
-	{ }
+	{}
 	/// <summary>
 	/// Initialize from car's config
 	/// </summary>
 	/// <param name="vp"></param>
-	public CarConfig(VehicleParent vp)
+	public CarConfig(CarConfig cc)
 	{
-		this.vp = vp;
-		CarConfig original = vp.carConfig;
-		name = "car" + vp.carNumber.ToString();
+		name = cc.name;
 		externalParts = new string[10];
-		for (int i = 0; i < original.externalParts.Length; i++)
+		for (int i = 0; i < cc.externalParts.Length; i++)
 		{
-			externalParts[i] = original.externalParts[i];
+			externalParts[i] = cc.externalParts[i];
 		}
-		customParts = new PartsStruct();
-		customParts[PartType.Suspension] = new SuspensionSavable((SuspensionSavable)original.customParts[PartType.Suspension]);
-		customParts[PartType.Bms] = new BmsSavable((BmsSavable)original.customParts[PartType.Bms]);
-		customParts[PartType.Battery] = new BatterySavable((BatterySavable)original.customParts[PartType.Battery]);
-		customParts[PartType.Engine] = new EngineSavable((EngineSavable)original.customParts[PartType.Engine]);
-		customParts[PartType.Gears] = new GearboxSavable((GearboxSavable)original.customParts[PartType.Gears]);
-		customParts[PartType.Chassis] = new ChassisSavable((ChassisSavable)original.customParts[PartType.Chassis]);
-		customParts[PartType.Boost] = new BoostSavable((BoostSavable)original.customParts[PartType.Boost]);
-		customParts[PartType.Tyre] = new TyreSavable((TyreSavable)original.customParts[PartType.Tyre]);
-		customParts[PartType.Drive] = new DriveSavable((DriveSavable)original.customParts[PartType.Drive]);
-		customParts[PartType.Honk] = new HonkSavable((HonkSavable)original.customParts[PartType.Honk]);
+		customParts = new PartsArray();
+		customParts[PartType.Suspension] = new SuspensionSavable((SuspensionSavable)cc.customParts[PartType.Suspension]);
+		customParts[PartType.Bms] = new BmsSavable((BmsSavable)cc.customParts[PartType.Bms]);
+		customParts[PartType.Battery] = new BatterySavable((BatterySavable)cc.customParts[PartType.Battery]);
+		customParts[PartType.Engine] = new EngineSavable((EngineSavable)cc.customParts[PartType.Engine]);
+		customParts[PartType.Gears] = new GearboxSavable((GearboxSavable)cc.customParts[PartType.Gears]);
+		customParts[PartType.Chassis] = new ChassisSavable((ChassisSavable)cc.customParts[PartType.Chassis]);
+		customParts[PartType.Boost] = new BoostSavable((BoostSavable)cc.customParts[PartType.Boost]);
+		customParts[PartType.Tyre] = new TyreSavable((TyreSavable)cc.customParts[PartType.Tyre]);
+		customParts[PartType.Drive] = new DriveSavable((DriveSavable)cc.customParts[PartType.Drive]);
+		customParts[PartType.Honk] = new HonkSavable((HonkSavable)cc.customParts[PartType.Honk]);
 		Apply();
 	}
-	public CarConfig(VehicleParent vp, string name, string jsonText)
+	public CarConfig(string name, string jsonText)
 	{
-		this.vp = vp;
 		this.name = name;
 		var data = JsonConvert.DeserializeObject<CarConfig>(jsonText);
 		externalParts = data.externalParts;
@@ -501,9 +487,6 @@ public class CarConfig
 	}
 	public void Apply(VehicleParent vp = null)
 	{
-		if (vp == null)
-			vp = this.vp;
-
 		if (vp)
 		{
 			for (int i = 0; i < externalParts.Length; ++i)
@@ -512,12 +495,24 @@ public class CarConfig
 			}
 		}
 	}
+	/// <summary>
+	/// Use this only to read it
+	/// </summary>
+	public PartSavable GetPartReadonly(PartType type)
+	{
+		if (customParts[type] == null)
+			return F.I.carParts[externalParts[(int)type]];
+		return customParts[type];
+	}
+	/// <summary>
+	/// Use this if you want to read and modify it
+	/// </summary>
+	/// <param name="type"></param>
+	/// <returns></returns>
 	public PartSavable GetPart(PartType type)
 	{
 		if (customParts[type] == null)
-		{
 			customParts[type] = F.I.carParts[externalParts[(int)type]].Clone();
-		}
 		return customParts[type];
 	}
 	/// <param name="partName">set to null, to set as custom</param>
@@ -527,19 +522,17 @@ public class CarConfig
 		{
 			if (externalParts[(int)type] != null)
 			{// set part as custom
-				setAnyOtherCarPart = true;
+				carConfigModified = true;
 				customParts[type] = F.I.carParts[externalParts[(int)type]].Clone();
 				externalParts[(int)type] = null;
-				customParts[type].Apply(vp);
 			}
 		}
 		else
 		{  // set external part
-			setAnyOtherCarPart = true;
+			carConfigModified = true;
 			modifiedParts[(int)type] = false;
 			externalParts[(int)type] = partName;
 			customParts[type] = null;
-			F.I.carParts[externalParts[(int)type]].Apply(vp);
 		}
 	}
 	public string GetPartName(PartType type)
@@ -571,7 +564,7 @@ public class CarConfig
 				externalParts[i] = null;
 			modifiedParts[i] = false;
 		}
-		setAnyOtherCarPart = false;
+		carConfigModified = false;
 	}
 
 	public void MarkModified(PartType selectedPart)
@@ -943,18 +936,8 @@ public class ChassisSavable : PartSavable
 	}
 	public override void Apply(VehicleParent vp)
 	{
-		vp.originalMass = mass;
-		vp.rb.mass = mass;
-		vp.originalDrag = drag;
-		vp.rb.drag = drag;
-
-		if (F.I.s_raceType == RaceType.Drift)
-			vp.centerOfMassObj.localPosition = new Vector3(0, verticalCOM, -0.1f);
-		else
-			vp.centerOfMassObj.localPosition = new Vector3(0, verticalCOM, longtitunalCOM);
-
-		vp.SetCenterOfMass();
-		vp.rb.angularDrag = angularDrag;
+		vp.rb.centerOfMass = new Vector3(0, verticalCOM, (F.I.s_raceType == RaceType.Drift) ? 0 : longtitunalCOM);
+		vp.SetChassis(mass, drag, angularDrag);
 		vp.raceBox.evoModule.SetStuntCoeffs(evoSmoothTime, staticEvoMaxSpeed, evoAcceleration);
 		vp.GetComponent<SGP_DragsterEffect>().COM_Movement = vp.followAI.isCPU ? 0 : -dragsterEffect;
 	}
@@ -962,9 +945,10 @@ public class ChassisSavable : PartSavable
 	{
 		mass = vp.originalMass;
 		drag = vp.originalDrag;
-		longtitunalCOM = vp.centerOfMassObj.localPosition.z;
-		verticalCOM = vp.centerOfMassObj.localPosition.y;
-		angularDrag = vp.rb.angularDrag;
+		var com = vp.rb.centerOfMass;
+		longtitunalCOM = com.z;
+		verticalCOM = com.y;
+		angularDrag = vp.AngularDrag;
 		vp.raceBox.evoModule.GetStuntCoeffs(ref evoSmoothTime, ref staticEvoMaxSpeed, ref evoAcceleration);
 		dragsterEffect = -vp.GetComponent<SGP_DragsterEffect>().COM_Movement;
 	}

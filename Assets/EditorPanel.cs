@@ -179,7 +179,6 @@ public class EditorPanel : MonoBehaviour
 	{
 		ShowXAxisLineRenderer = GetComponent<LineRenderer>();
 		ShowXAxisToggle.onValueChanged.AddListener(SwitchXAxisRenderer);
-		F.I.universalPath = pathCreators[0];
 		F.I.stuntpointsContainer = stuntpointsContainer;
 		F.I.replayCams = replayCamsContainer;
 	}

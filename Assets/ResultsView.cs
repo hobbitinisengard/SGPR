@@ -6,11 +6,15 @@ using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-
+/// <summary>
+/// Scoring table with medals after race end
+/// </summary>
 public class ResultsView : MonoBehaviour
 {
 	public class PersistentResult
 	{
+		public VehicleParent vp;
+		public int pos;
 		public string name;
 		public TimeSpan lap;
 		public TimeSpan raceTime;
@@ -18,6 +22,8 @@ public class ResultsView : MonoBehaviour
 		public float stunt;
 		public PersistentResult(VehicleParent vp)
 		{
+			pos = F.I.s_cars.FindIndex(0, car => car == vp);
+			this.vp = vp;
 			drift = vp.raceBox.drift;
 			lap = vp.raceBox.bestLapTime;
 			stunt = vp.raceBox.Aero;
@@ -46,7 +52,28 @@ public class ResultsView : MonoBehaviour
 	public GameObject medalPrefab;
 	public Sprite[] silverMedals; // race,lap,stunt,drift
 	public Sprite[] goldMedals;
-	public static List<PersistentResult> resultData = new();
+	static List<PersistentResult> resultData = new();
+	public static void Clear()
+	{
+		resultData.Clear();
+	}
+	public static int Count
+	{
+		get { return resultData.Count; }
+	}
+	public static void Add(VehicleParent car)
+	{
+		var entry = resultData.FirstOrDefault(RD => RD.vp == car);
+		if(entry == default)
+		{
+			resultData.Add(new PersistentResult(car));
+			Debug.Log("Add to resultData " + car.name);
+		}
+		else
+		{
+			entry = new PersistentResult(car);
+		}
+	}
 	RectTransform gridTableTr;
 	Coroutine payoutCo;
 	Coroutine addingScoreCo;
@@ -87,6 +114,7 @@ public class ResultsView : MonoBehaviour
 			RaceType.Knockout => knockoutComp,
 			RaceType.Stunt => stuntComp,
 			RaceType.Drift => driftComp,
+			RaceType.TimeTrial => lapComp,
 			_ => raceTimeComp,
 		};
 	}

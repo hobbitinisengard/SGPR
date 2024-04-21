@@ -1,12 +1,15 @@
 using RVP;
 using UnityEngine;
-
+/// <summary>
+/// real-time center of mass setting (trickstart + drifts)
+/// </summary>
 public class SGP_DragsterEffect : MonoBehaviour
 {
 	GearboxTransmission gearbox;
 	public float COM_Movement = -0.6f;
 	bool modified_COM = false;
 	VehicleParent vp;
+	
 	void Awake()
 	{
 		vp = GetComponent<VehicleParent>();
@@ -16,6 +19,13 @@ public class SGP_DragsterEffect : MonoBehaviour
 			gearbox = engine.transmission;
 		}
 	}
+	private void Start()
+	{
+		if (F.I.s_raceType == RaceType.Drift)
+		{
+			enabled = false;
+		}
+	}
 
 	void Update()
 	{
@@ -23,19 +33,18 @@ public class SGP_DragsterEffect : MonoBehaviour
 		{
 			if (vp.engine.boosting && vp.velMag > 0 && Mathf.Abs(vp.velMag) < 30 && !gearbox.IsShifting() && gearbox.selectedGear != 1)
 			{
-				var pos = vp.centerOfMassObj.localPosition;
-				pos.z = COM_Movement * (1 - Mathf.Abs(vp.velMag) / 30);
-				
-				vp.centerOfMassObj.localPosition = pos;
-				vp.SetCenterOfMass();
+				ChassisSavable chassis = (ChassisSavable)vp.carConfig.GetPartReadonly(PartType.Chassis);
+				var pos = vp.rb.centerOfMass;
+
+				pos.z = chassis.longtitunalCOM + COM_Movement * (1 - Mathf.Abs(vp.velMag) / 30);
+
+				vp.rb.centerOfMass = pos;
 				modified_COM = true;
 			}
 			else if (modified_COM)
 			{
-				var pos = vp.centerOfMassObj.localPosition;
-				pos.z = 0;
-				vp.centerOfMassObj.localPosition = pos;
-				vp.SetCenterOfMass();
+				ChassisSavable chassis = (ChassisSavable)vp.carConfig.GetPartReadonly(PartType.Chassis);
+				vp.rb.centerOfMass = new Vector3(0, chassis.verticalCOM, chassis.longtitunalCOM);
 				modified_COM = false;
 			}
 		}

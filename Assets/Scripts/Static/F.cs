@@ -178,6 +178,10 @@ public static class F
 
 		return result;
 	}
+	public static Color RandomColor()
+	{
+		return new Color(UnityEngine.Random.value, UnityEngine.Random.value, UnityEngine.Random.value);
+	}
 
 	// Returns the topmost parent of a Transform with a certain component
 	public static T GetTopmostParentComponent<T>(this Transform tr) where T : Component

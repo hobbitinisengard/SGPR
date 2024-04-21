@@ -60,6 +60,6 @@ public class PauseMenu : Sfxable
 		veil.color = startColor;
 
 		if(!F.I.s_inEditor && F.I.gameMode == MultiMode.Singleplayer)
-			OnlineCommunication.I.raceStartDate = OnlineCommunication.I.raceStartDate.AddSeconds(timeElapsed);
+			F.I.raceStartDate = F.I.raceStartDate.AddSeconds(timeElapsed);
 	}
 }

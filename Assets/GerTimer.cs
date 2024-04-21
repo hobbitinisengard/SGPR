@@ -11,7 +11,7 @@ public class GerTimer : MonoBehaviour
 	{
 		if(!F.I.gamePaused)
 		{
-			if (OnlineCommunication.I.raceStartDate == DateTime.MinValue)
+			if (F.I.raceStartDate == DateTime.MinValue)
 			{
 				var timeNow = DateTime.Now;
 				int val = timeNow.Hour;
@@ -27,7 +27,8 @@ public class GerTimer : MonoBehaviour
 			}
 			else
 			{
-				TimeSpan timediff = DateTime.Now - OnlineCommunication.I.raceStartDate;
+			
+				TimeSpan timediff = (DateTime.Now - F.I.raceStartDate).Duration();
 				// minutes : seconds : ff
 				int val = timediff.Minutes;
 				digits[0].sprite = sprites[val / 10];

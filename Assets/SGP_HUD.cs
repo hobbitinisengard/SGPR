@@ -236,7 +236,7 @@ public class SGP_HUD : MonoBehaviour
 	}
 	void EscapePressed(UnityEngine.InputSystem.InputAction.CallbackContext obj)
 	{
-		if ((DateTime.Now - OnlineCommunication.I.raceStartDate).TotalSeconds > 5
+		if ((DateTime.Now - F.I.raceStartDate).TotalSeconds > 5
 			&& !componentPanel.gameObject.activeSelf && !raceManager.resultsSeq.gameObject.activeSelf)
 		{
 			pauseMenu.gameObject.SetActive(!pauseMenu.gameObject.activeSelf);

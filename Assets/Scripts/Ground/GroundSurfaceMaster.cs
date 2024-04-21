@@ -12,11 +12,6 @@ namespace RVP
 
 		public GroundSurface[] surfaceTypes;
 		public static GroundSurface[] surfaceTypesStatic;
-		public const int firstExternalGround = 4;
-		[NonSerialized]
-		public const float AirSteeringFriction = 0.5f;
-		[NonSerialized]
-		public const int AirSteeringSurfaceType = 7;
 		void Start()
 		{
 			surfaceTypesStatic = surfaceTypes;

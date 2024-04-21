@@ -73,7 +73,7 @@ public class StuntsData : IEnumerable<Stunt>
 
 public enum StuntSeqStatus { None, Ongoing, Ended };
 
-public class RaceBox : NetworkBehaviour
+public class RaceBox : MonoBehaviour
 {
 	public VehicleParent vp { get; private set; }
 	public SGP_Evo evoModule { get; private set; }
@@ -172,7 +172,7 @@ public class RaceBox : NetworkBehaviour
 		lapTimer = 3600 * 24; // 24 hours
 		bestLapTime = TimeSpan.MaxValue;//TimeSpan.FromSeconds(F.I.tracks[F.I.s_trackName].records[0].secondsOrPts);
 		raceTime = TimeSpan.MinValue;
-		//curLap = 0;
+		curLap = 0;
 		starLevel = 0;
 		stuntPai = new PtsAnimInfo(0, PtsAnimType.Evo, -1);
 	}
@@ -201,31 +201,7 @@ public class RaceBox : NetworkBehaviour
 				return "-";
 		}
 	}
-	/// <summary>
-	/// disabling raceBox means the race has ended for this car
-	/// Car has driven past finish or has been eliminated.
-	/// </summary>
-	private void OnDisable()
-	{
-		vp.sampleText.gameObject.SetActive(false);
-		SetRacetime();
-	}
-	[Rpc(SendTo.Everyone)]
-	void BroadcastRaceboxStatsRpc(float aero, float drift, double raceTime, double bestLap, int curLap)
-	{
-		try
-		{
-			this.aero = aero;
-			this.drift = drift;
-			this.raceTime = TimeSpan.FromMilliseconds(raceTime);
-			this.bestLapTime = TimeSpan.FromMilliseconds(bestLap);
-			this.curLap = curLap;
-			ResultsView.resultData.Add(new ResultsView.PersistentResult(vp));
-		}
-		catch
-		{
-		}
-	}
+
 	private void FixedUpdate()
 	{
 		if(F.I.s_laps > 0)
@@ -620,13 +596,13 @@ public class RaceBox : NetworkBehaviour
 				prevGroundedWheels0 = false;
 				stableLandingTimer = .5f;
 			}
-			if (stableLandingTimer > 0 && vp.reallyGroundedWheels == 4)
+			if (stableLandingTimer > 0 && vp.reallyGroundedWheels == 4 && vp.followAI.overRoad)
 				stableLandingTimer -= Time.fixedDeltaTime;
 
 			if (stableLandingTimer != -1 && vp.velMag < 14)
 				DeclineStunt();
 
-			if (stableLandingTimer != -1 && stableLandingTimer <= 0 && vp.wheels[0].curSurfaceType < GroundSurfaceMaster.firstExternalGround)
+			if (stableLandingTimer != -1 && stableLandingTimer <= 0)
 				AcceptStunt();
 
 			if (grantedComboTime > 0)
@@ -686,7 +662,7 @@ public class RaceBox : NetworkBehaviour
 	{
 		if(F.I.s_laps > 0)
 		{
-			StuntPaiReset();
+			DeclineStunt();
 			evoModule.Reset();
 			grantedComboTime = 0;
 			starLevel = 0;
@@ -803,12 +779,17 @@ public class RaceBox : NetworkBehaviour
 			{
 				vp.followAI.NextLap();
 
+				if (F.I.s_raceType == RaceType.TimeTrial)
+					vp.energyRemaining = vp.batteryCapacity;
+
 				var curlaptime = CurLaptime;
 				lapTimer = 0;
 				if (vp.Owner && curlaptime.HasValue)
 				{
 					if (bestLapTime > curlaptime)
+					{
 						bestLapTime = curlaptime.Value;
+					}
 
 					if (!vp.followAI.isCPU && bestLapTime < RaceManager.I.hud.bestLapTime)
 					{
@@ -818,14 +799,12 @@ public class RaceBox : NetworkBehaviour
 				}
 				if (curLap <= F.I.s_laps)
 					curLap++;
+
 				if (F.I.s_raceType == RaceType.Knockout && curLap > 1 && RaceManager.I.Position(vp) + 1 == RaceManager.I.ActiveCarsInKnockout)
 				{ // last car is knocked-out
 					RaceManager.I.KnockOutLastCar();
 				}
-				if (!enabled && F.I.gameMode == MultiMode.Multiplayer && vp.Owner)
-				{  // synchronize race results 
-					vp.SynchRaceboxValuesRpc(curLap, vp.followAI.dist, vp.followAI.progress, aero, drift, vp.RpcTarget.NotMe);
-				}
+
 				if (curLap == F.I.s_laps + 1) // race finished
 				{
 					int curPos = RaceManager.I.Position(vp);
@@ -834,12 +813,10 @@ public class RaceBox : NetworkBehaviour
 						RaceManager.I.hud.infoText.AddMessage(new(vp.tr.name + " WINS THE RACE!", BottomInfoType.CAR_WINS));
 					}
 					// in racemode after the end of a race, cars still run around the track, ghosts overtake each other. Don't let it change results
-					curLap += 100 * (F.I.s_cpuRivals + 1 - curPos);
+					curLap += 100 * (F.I.s_cars.Count - curPos);
 
 					if (vp.Owner)
 						vp.ghostComponent.SetGhostAfterRace();
-					
-					vp.followAI.SetCPU(true);
 
 					if (F.I.s_raceType == RaceType.Drift)
 					{
@@ -852,21 +829,48 @@ public class RaceBox : NetworkBehaviour
 							AcceptStunt();
 						}
 					}
-					if (F.I.gameMode == MultiMode.Multiplayer && vp.Owner)
+
+					if (F.I.gameMode == MultiMode.Multiplayer && vp.Owner && vp == RaceManager.I.playerCar)
 					{
-						Debug.Log("broadcastingRpc");
 						RaceManager.I.hud.endraceTimer.gameObject.SetActive(false);
-						BroadcastRaceboxStatsRpc(aero, drift, raceTime.TotalMilliseconds, bestLapTime.TotalMilliseconds, curLap);
 					}
 					if (enabled)
+					{
 						enabled = false;
+					}
 				}
 			}
 		}
-		
 	}
-	public void SetRacetime()
+	void SynchWithEveryone()
+	{// rpcs don't work on inactive components
+		Debug.Log(vp.name + " syncWithEveryone");
+		vp.SynchRaceboxValuesRpc(curLap, vp.followAI.dist, vp.followAI.progress, aero, drift, (float)(bestLapTime.TotalMilliseconds/1000f), vp.RpcTarget.Everyone);
+	}
+	/// <summary>
+	/// disabling raceBox means the race has ended for this car
+	/// Car has driven past finish or has been eliminated.
+	/// </summary>
+	private void OnDisable()
 	{
-		raceTime = DateTime.Now - OnlineCommunication.I.raceStartDate;
+		Debug.Log(vp.name + " onDisable");
+		vp.sampleText.gameObject.SetActive(false);
+		raceTime = DateTime.Now - F.I.raceStartDate;
+		
+		if (F.I.gameMode == MultiMode.Multiplayer && vp.Owner && vp == RaceManager.I.playerCar)
+		{
+			SynchWithEveryone(); 
+		}
+		vp.followAI.SetCPU(true);
+	}
+
+	public void UpdateValues(int curLap, int dist, int progress, float aero, float drift, float bestLapSecs)
+	{
+		this.aero = aero;
+		this.drift = drift;
+		this.bestLapTime = TimeSpan.FromMilliseconds(bestLapSecs*1000);
+		this.curLap = curLap;
+		vp.followAI.dist = dist;
+		vp.followAI.progress = progress;
 	}
 }

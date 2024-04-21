@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.PlayerLoop;
 using UnityEngine.UIElements.Experimental;
 
 // Worm models need to have their armature to be Z up.
@@ -48,10 +49,13 @@ public class WormAntenna : MonoBehaviour
 		follower.gameObject.layer = 2;
 		follower.position = goal.position;
 	}
-	private void FixedUpdate()
+	void FixedUpdate()
 	{
 		if (halflife == 0 || frequency == 0) return;
 		Update_Follower();
+	}
+	private void LateUpdate()
+	{
 		Transform node = root;
 		Vector3 localUp = transform.up;
 		for (int i = 0; i < nodes_number-1; ++i)
@@ -65,6 +69,7 @@ public class WormAntenna : MonoBehaviour
 		}
 		node.LookAt(follower.position, localUp);
 	}
+
 	private void Update_Follower()
 	{
 		// update goal variables

@@ -57,19 +57,20 @@ public class MultiPlayerSelector : TrackSelector
 	public ChatInitializer chatInitializer;
 
 	Sprite originalTrackSprite;
-
-	float readyTimeoutTime;
+	Coroutine timeoutRdyCo;
 	bool readyClicked = false;
 	[NonSerialized]
 	public ZippedTrackDataObject zippedTrackDataObject;
 	private Coroutine lobbyCntdwnCo;
+	Button readyButton;
+	private float readyTimeoutTime;
 
 	protected override void Awake()
 	{
 		MultiPlayerSelector.I = this;
 		ServerC.I.callbacks.PlayerDataChanged += Callbacks_PlayerDataChanged;
 		ServerC.I.callbacks.LobbyChanged += Callbacks_LobbyChanged;
-
+		readyButton = readyText.transform.parent.GetComponent<Button>();
 		garageBtn.onClick.AddListener(() =>
 		{
 			if (F.I.scoringType == ScoringType.Championship)
@@ -395,14 +396,11 @@ public class MultiPlayerSelector : TrackSelector
 
 		readyClicked = true;
 
-		var playerMe = ServerC.I.PlayerMe;
-
-		bool amReady = !init && !playerMe.ReadyGet();
-
-		if (Time.time - readyTimeoutTime < 1)
+		if (!init && Time.time - readyTimeoutTime < 1)
 			await Task.Delay(Mathf.RoundToInt((1 - (Time.time - readyTimeoutTime)) * 1000));
 
-		readyTimeoutTime = Time.time;
+		var playerMe = ServerC.I.PlayerMe;
+		bool amReady = !init && !playerMe.ReadyGet();
 
 		try
 		{
@@ -410,12 +408,20 @@ public class MultiPlayerSelector : TrackSelector
 
 			if(!init)
 			{
-				if (F.I.actionHappening == ActionHappening.InRace && RaceManager.I.raceAlreadyStarted)
+				readyTimeoutTime = Time.time;
+
+				if (!OnlineCommunication.I.IsSpawned)
+				{
+					Debug.LogWarning("Not synch yet");
+					readyClicked = false;
+					return;
+				}
+
+				if (F.I.actionHappening == ActionHappening.InRace)
 				{// when we as client join ongoing race
-					OnlineCommunication.I.GibCar();
 					thisView.ToRaceScene();
 					playerMe.ReadySet(false);
-					ServerC.I.UpdatePlayerData();
+					await Task.Run(() => { ServerC.I.UpdatePlayerData(); });
 				}
 				else
 				{
@@ -495,14 +501,14 @@ public class MultiPlayerSelector : TrackSelector
 	}
 	IEnumerator LobbyCountdown()
 	{
-		yield return new WaitForSecondsRealtime(3);
+		yield return new WaitForSecondsRealtime(2);
 		if (ServerC.I.AmHost && ServerC.I.readyPlayers == ServerC.I.lobby.Players.Count
 			/*&& ServerC.I.lobby.Players.Count == ServerC.I.activePlayers.Count*/)
 		{
 			F.I.actionHappening = ActionHappening.InRace;
 			ServerC.I.lobby.Data[ServerC.k_actionHappening] = new DataObject(DataObject.VisibilityOptions.Public, F.I.actionHappening.ToString());
 			ServerC.I.UpdateServerData();
-
+			ServerC.I.PlayerMe.ReadySet(false);
 			thisView.ToRaceScene();
 		}
 	}

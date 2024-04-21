@@ -9,15 +9,15 @@ public class GreetingLogo : Sfxable
 	public Color reddish;
 	public AnimationCurve jumpingCurve;
 	public TextMeshProUGUI bottomText;
-	public float timer;
-	public float timer2;
-	public float timer3;
-	public int jumps = 0;
+	float timer;
+	float timer2;
+	float timer3;
+	int jumps = 0;
 	public Button startButton;
 	public RectTransform blitz;
 	public GameObject nextMenu;
 	public InputActionReference submitRef;
-	private bool goingUpSeq;
+	bool goingUpSeq;
 
 	Vector2 outMoveInitPos;
 	Vector2 outMoveTargetPos = new Vector2(0, Screen.height);
@@ -50,7 +50,6 @@ public class GreetingLogo : Sfxable
 	}
 	private void OnEnable()
 	{
-		submitRef.action.performed += SubmitPressed;
 		var pos = blitz.anchoredPosition;
 		pos.y = rt.rect.height / 1.8f;
 		blitz.anchoredPosition = pos;
@@ -61,6 +60,7 @@ public class GreetingLogo : Sfxable
 		lastTryCo = 0;
 		goingUpSeq = false;
 		startButton.Select();
+		submitRef.action.performed += SubmitPressed;
 	}
 
 	void Update()

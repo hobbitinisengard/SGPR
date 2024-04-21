@@ -43,7 +43,6 @@ namespace RVP
 		//	}
 		//}
 		List<int> stuntPoints;
-		PathCreator universalPath;
 		int racingLineLayerNumber;
 		public List<ReplayCam> replayCams { get; private set; }
 		[NonSerialized]
@@ -117,20 +116,20 @@ namespace RVP
 		public float cpuFastCoeff = 50;
 		private bool revvingCo;
 		public float targetSteer;
+		public bool overRoad { get; private set; }
+
 		public bool Pitting { get { return pitsPathCreator != null; } }
 		public ReplayCam currentCam { get { return replayCams[curReplayPointIdx]; } }
 		public float ProgressPercent
 		{
 			get
 			{
-				if (universalPath == null)
-					return 0;
 				int universalPathProgress = GetDist(1 << universalPathLayer);
 				if (universalPathProgress > progress + 2 * radius || universalPathProgress < progress - 2 * radius)
 					universalPathProgress = progress;
 				if (progress == 1) // when driving directly past startline
 					return 0;
-				return universalPathProgress / universalPath.path.length;
+				return universalPathProgress / F.I.universalPath.path.length;
 			}
 		}
 		public void NextLap()
@@ -199,7 +198,6 @@ namespace RVP
 			tr = transform;
 			rb = GetComponent<Rigidbody>();
 			vp = GetComponent<VehicleParent>();
-			this.universalPath = F.I.universalPath;
 			this.racingLineLayerNumber = F.I.racingLineLayer;
 			this.stuntPoints = F.I.stuntpointsContainer;
 			this.replayCams = F.I.replayCams;
@@ -264,7 +262,7 @@ namespace RVP
 				}
 				else
 				{
-					outOfTrackTime += Time.deltaTime;
+					outOfTrackTime += Time.fixedDeltaTime;
 				}
 			}
 			return (int)dist;
@@ -292,9 +290,9 @@ namespace RVP
 			float targetRev = 0;
 			bool revHigher = true;
 			
-			while (vp.countdownTimer > 0)
+			while (CountDownSeq.Countdown > 0)
 			{
-				if (vp.countdownTimer < 0.5f)
+				if (CountDownSeq.Countdown < 0.5f)
 					vp.SetAccel(1);
 				else
 				{
@@ -312,9 +310,10 @@ namespace RVP
 		}
 		void FixedUpdate()
 		{
-			
+			if (!trackPathCreator)
+				return;
 
-			if (vp.countdownTimer > 0)
+			if (CountDownSeq.Countdown > 0)
 			{
 				vp.ebrakeInput = 1;
 				if (isCPU)
@@ -332,22 +331,19 @@ namespace RVP
 			{
 				StartCoroutine(ResetOnTrack());
 			}
-			bool overRoad = Physics.Raycast(tr.position + Vector3.up, Vector3.down, out var _, Mathf.Infinity, 1 << F.I.roadLayer);
+			overRoad = Physics.Raycast(tr.position + Vector3.up, Vector3.down, out var _, Mathf.Infinity, 1 << F.I.roadLayer); ;
 			
 			if(!pitsPathCreator)
 			{
-				if(vp.reallyGroundedWheels > 2 || rolledOverTime > 0)
-				{
-					if (!overRoad ||
-					(vp.velMag > 10 && Vector3.Dot(vp.forwardDir, trackPathCreator.path.GetDirectionAtDistance(dist)) < -0.5f))
-						outOfTrackTime += Time.fixedDeltaTime;
-					else if (vp.reallyGroundedWheels == 4 && overRoad && dist > (progress - 2 * radius) && dist < (progress + 2 * radius))
-						outOfTrackTime = 0;
+				if ((vp.reallyGroundedWheels == 4 && !overRoad) || // out of track
+					(overRoad && vp.velMag > 10 && vp.groundedWheels > 0 && Vector3.Dot(vp.forwardDir, trackPathCreator.path.GetDirectionAtDistance(dist)) < -0.5f) 
+					&& Vector3.Dot(vp.rb.velocity.normalized, trackPathCreator.path.GetDirectionAtDistance(dist)) < -0.5f) // wrong way drive
+					outOfTrackTime += Time.fixedDeltaTime;
 
-					if (outOfTrackTime > outOfTrackRequiredTime)
-					{
-						StartCoroutine(ResetOnTrack());
-					}
+				if (outOfTrackTime > outOfTrackRequiredTime 
+					|| vp.tr.position.y < -250) // out of bounds
+				{
+					StartCoroutine(ResetOnTrack());
 				}
 			}
 
@@ -387,6 +383,7 @@ namespace RVP
 						inPitsTime = Time.time;
 					}
 				}
+
 				dist = GetDist(1 << racingLineLayerNumber);
 
 				if (dist < progress)
@@ -663,7 +660,8 @@ namespace RVP
 			RaycastHit h;
 			while (!Physics.Raycast(resetPos + 5*Vector3.up, Vector3.down, out h, Mathf.Infinity, 1 << F.I.roadLayer)
 				|| Vector3.Dot(h.normal, Vector3.up) < -0.5f // while not hit road or hit culled face (backface raycasts are on)
-				|| Mathf.Abs(Vector3.Dot(h.normal, Vector3.up)) < .64f) // slope too big
+				|| Mathf.Abs(Vector3.Dot(h.normal, Vector3.up)) < .64f  // slope too big
+				|| h.transform.parent.name == "loop")
 			{
 				progress += 10;
 				resetPos = trackPathCreator.path.GetPointAtDistance(progress);

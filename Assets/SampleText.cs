@@ -16,6 +16,7 @@ public class SampleText : MonoBehaviour
 	{
 		textMesh = GetComponent<TextMesh>();
 		vp = transform.parent.GetComponent<VehicleParent>();
+		vp.sampleText = this;
 		heightOverCar = transform.localPosition.y;
 		if (mainCamera == null)
 			mainCamera = GameObject.Find("MainCamera").transform;
@@ -29,7 +30,7 @@ public class SampleText : MonoBehaviour
 
 	void LateUpdate()
 	{
-		Vector3 vec = (vp.rb.position + Vector3.up * heightOverCar - mainCamera.position).normalized;
+		Vector3 vec = (vp.tr.position + Vector3.up * heightOverCar - mainCamera.position).normalized;
 		transform.SetPositionAndRotation(mainCamera.position + textDistanceFromCamera * vec, Quaternion.LookRotation(vec));
 		SetTransp(Mathf.InverseLerp(DistanceWhenTextInvisible, DistanceWhenTextTotallyVisible, Vector3.Distance(transform.parent.position, mainCamera.position)));
 	}

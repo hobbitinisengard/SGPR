@@ -126,14 +126,13 @@ public class Ghost : NetworkBehaviour
 					prev = (int)(timer * 10);
 					SetHittable(prev % 2 == 0, false);
 				}
-				if(!F.I.gamePaused && !Physics.CheckSphere(transform.position, 1.5f, 1<<F.I.carCarCollisionLayer))
-					timer -= Time.deltaTime;
 			}
-			else
-			{
-				if(!F.I.gamePaused)
-					timer -= Time.deltaTime;
-			}
+
+			if (!F.I.gamePaused)
+				timer -= Time.deltaTime;
+
+			if (Physics.CheckSphere(transform.position, 1.5f, 1 << F.I.carCarCollisionLayer) && timer <= 0)
+				timer = 1;
 			yield return null;
 			justResetted = false;
 		}

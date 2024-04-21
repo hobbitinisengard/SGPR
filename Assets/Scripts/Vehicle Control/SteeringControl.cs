@@ -129,7 +129,7 @@ namespace RVP
 
 			if(F.I.s_raceType == RaceType.Drift)
 			{
-				float target = Mathf.Lerp(vp.wheels[2].initSidewaysFriction, driftRearFriction, vp.accelInput);
+				float target = Mathf.Lerp(vp.wheels[2].initSidewaysFriction, driftRearFriction, 2*vp.accelInput-1);
 				foreach(var w in vp.wheels)
 					w.sidewaysFriction = Mathf.Lerp(w.sidewaysFriction, target, 10 * Time.fixedDeltaTime);
 			}

@@ -9,6 +9,7 @@ public class SGP_Bouncer : MonoBehaviour
 	public float lastSideBounceTime;
 	public float lastVVBounceTime;
 	float debounceTime = .5f;
+	float mult = 5;
 	static AnimationCurve multCurve;
 	private void Awake()
 	{
@@ -34,10 +35,7 @@ public class SGP_Bouncer : MonoBehaviour
 
 		// bounce cars apart
 		if (Time.time - lastCarCarBounceTime > lastCarCarBounceTime)
-			rb.AddForceAtPosition(vp.rb.mass * collision.relativeVelocity.magnitude *
-				(collision.relativeVelocity.normalized + Vector3.up).normalized,
-				collision.GetContact(0).point//vp.rb.centerOfMass);
-				);
+			rb.AddForce(mult * collision.GetContact(0).otherCollider.attachedRigidbody.mass * collision.relativeVelocity.magnitude * -(collision.relativeVelocity.normalized + Vector3.up).normalized);
 
 		// tilt car
 		rb.AddForceAtPosition(0.5f * rb.mass * transform.up, collision.GetContact(0).point, ForceMode.Force);
@@ -59,13 +57,13 @@ public class SGP_Bouncer : MonoBehaviour
 		{
 			return;
 		}
-		if (vp.countdownTimer > 0)
+		if (CountDownSeq.Countdown > 0)
 			return;
 		if (contact.otherCollider.gameObject.layer != F.I.roadLayer)
 			return;
 		vp.colliding = true;
 		Vector3 norm = contact.normal;
-		Vector3 velMagUp = -Vector3.Cross(vp.tr.right, vp.rb.velocity.normalized);
+		Vector3 velMagUp = -Vector3.Cross(vp.tr.right, rb.velocity.normalized);
 		if (Mathf.Abs(Vector2.Dot(velMagUp, norm)) < .5f) // sideways force based on car's velocity
 		{
 			if (collision.relativeVelocity.magnitude < 40)

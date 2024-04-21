@@ -5,25 +5,22 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Unity.Services.Lobbies.Models;
 using UnityEngine;
 using UnityEngine.Audio;
 using System.Security.Cryptography;
 using PathCreation;
 using UnityEngine.EventSystems;
-using Unity.Netcode;
 using Unity.Multiplayer.Playmode;
-using Unity.Services.Authentication;
 using UnityEngine.InputSystem;
 public enum Envir { GER, JAP, SPN, FRA, ENG, USA, ITA, MEX };
 public enum CarGroup { Wild, Aero, Speed, Team };
 public enum Livery { Special = 1, TGR, Rline, Itex, Caltex, Titan, Mysuko }
-public enum RecordType { BestLap, RaceTime, StuntScore, DriftScore, TimeTrial }
+public enum RecordType { BestLap, RaceTime, StuntScore, DriftScore}
 public enum ScoringType { Championship, Points, Victory }
 public enum ActionHappening { InLobby, InRace }
 public enum PavementType { Highway, RedSand, Asphalt, Electric, TimeTrial, Japanese, GreenSand, Random }
 public enum MultiMode { Singleplayer, Multiplayer };
-public enum RaceType { Race, Knockout, Stunt, Drift }
+public enum RaceType { Race, Knockout, Stunt, Drift, TimeTrial }
 public enum CpuLevel { Normal };
 
 [Serializable]
@@ -81,6 +78,7 @@ public class Info : MonoBehaviour
 
 	public InputActionReference shiftRef;
 	public InputActionReference escRef;
+	public InputActionReference enterRef;
 	public string SHA(string filePath)
 	{
 		string hash;
@@ -148,10 +146,10 @@ public class Info : MonoBehaviour
 	/// <summary>
 	/// Number of track textures. Set pavementTypes+1 for random texture.
 	/// </summary>
-	public int pavementTypes = 6;
+	public readonly int pavementTypes = 6;
 
 	
-	public int RaceTypes = 4;
+	public readonly int RaceTypes = 5;
 
 	public readonly  Vector3[] invisibleLevelDimensions = new Vector3[]{
 		new (564, 1231,1), //ger
@@ -177,7 +175,7 @@ public class Info : MonoBehaviour
 		"ENGLAND\n\nEnglish go-kart track is a good location to test your driving skills. This place has a reputation for great races.",
 		"USA\n\nAre you looking for an intense experience? Racing on top of a multistorey parking lot located in the heart of New York will be a bombastic idea!",
 		"ITALY\n\nFeeling mediterranean? This italian coast is very scenic, especially at night. There are two dangers here to look out however: staircase descent and water!",
-		"MEXICO\n\nOnly some people are in the possession of info that there's this ancient place located in the middle of an unknown mexican forest, where aztecs used to race RC-cars. However no-one really knows how to get there."
+		"MEXICO\n\nOnly some people are in a possession of info that there's this ancient place located in the middle of an unknown mexican forest, where aztecs used to race RC-cars. However no-one really knows how to get there."
 	};
 
 	public readonly string carPrefabsPath = "carModels/";
@@ -200,7 +198,7 @@ public class Info : MonoBehaviour
 	
 	public bool loaded = false;
 	public int roadLayer = 6;
-	public readonly int countdownSeconds = 5;
+	
 	public string visibleInPictureModeTag = "VisibleInPictureMode";
 	public int ignoreWheelCastLayer = 8;
 	public int vehicleLayer = 9;
@@ -260,7 +258,7 @@ public class Info : MonoBehaviour
 	public const float AfterMultiPlayerRaceWaitForPlayersSeconds = 30;
 
 	public EventSystem eventSystem;
-
+	public DateTime raceStartDate;
 	public Car Car(string name)
 	{ // i.e. car05
 		try
@@ -333,7 +331,7 @@ public class Info : MonoBehaviour
 			{
 				string filepath = partsPath + "car" + (i + 1).ToString() + partInfos[^1].fileExtension;
 				string jsonText = File.ReadAllText(filepath);
-				cars[i].config = new CarConfig(null, null, jsonText);
+				cars[i].config = new CarConfig("car" + (i + 1).ToString(), jsonText);
 			});
 		}
 	}

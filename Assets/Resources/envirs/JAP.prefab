@@ -325,7 +325,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1a913f46a2393e24a8d0a5a11cb76d54, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  surfaceType: 4
+  surfaceType: 1
 --- !u!218 &6148428348444285923
 Terrain:
   m_ObjectHideFlags: 0
