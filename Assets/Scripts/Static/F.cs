@@ -11,6 +11,7 @@ public static class F
 	public static AnimationCurve curve2 = AnimationCurve.EaseInOut(0, 1, 1, 0);
 	public static AnimationCurve curve = AnimationCurve.EaseInOut(0, 0, 1, 1);
 	public static Info I;
+	
 	public static void CopyFilesRecursively(string sourcePath, string targetPath)
 	{
 		//Now Create all of the directories
@@ -25,46 +26,41 @@ public static class F
 			File.Copy(newPath, newPath.Replace(sourcePath, targetPath), true);
 		}
 	}
+	public static string GetQuickMessage(float number)
+	{
+		number = Mathf.Clamp(number, 1, 10);
+		return PlayerPrefs.GetString($"qm{number}");
+	}
+	public static void SetQuickMessage(float number, string message)
+	{
+		number = Mathf.Clamp(number, 1, 10);
+		PlayerPrefs.SetString($"qm{number}", message);
+	}
 	public static Livery SponsorGet(this Player player)
 	{
 		return (Livery)Enum.Parse(typeof(Livery), player.Data[ServerC.k_Sponsor].Value);
 	}
-	public static void SponsorSet(this Player player, Livery livery)
-	{
-		player.Data[ServerC.k_Sponsor].Value = livery.ToString();
-	}
+	
 	public static int ScoreGet(this Player player)
 	{
 		return int.Parse(player.Data[ServerC.k_score].Value);
 	}
-	public static void ScoreSet(this Player player, int newScore)
-	{
-		player.Data[ServerC.k_score].Value = newScore.ToString();
-	}
+	
 	public static bool ReadyGet(this Player player)
 	{
 		return bool.Parse(player.Data[ServerC.k_Ready].Value);
 	}
-	public static void ReadySet(this Player player, bool ready)
-	{
-		player.Data[ServerC.k_Ready].Value = ready.ToString();
-	}
+	
 	public static string NameGet(this Player player)
 	{
 		return player.Data[ServerC.k_Name].Value;
 	}
-	public static void NameSet(this Player player, string name)
-	{
-		player.Data[ServerC.k_Name].Value = name;
-	}
+	
 	public static string carNameGet(this Player player)
 	{
 		return player.Data[ServerC.k_carName].Value;
 	}
-	public static void carNameSet(this Player player)
-	{
-		player.Data[ServerC.k_carName].Value = F.I.s_playerCarName;
-	}
+	
 	public static Color ReadColor(this Player player)
 	{
 		return ReadColor(player.SponsorGet());
@@ -102,11 +98,7 @@ public static class F
 	}
 	public static int Wraparound(int value, int min, int max)
 	{
-		if (value < min)
-			value = max;
-		else if (value > max)
-			value = min;
-		return value;
+		return Wraparound(value, min, max);
 	}
 	public static float Wraparound(float value, float min, float max)
 	{
@@ -132,12 +124,21 @@ public static class F
 	{
 		return collection[UnityEngine.Random.Range(0, collection.Count)];
 	}
+	public static byte ToByte(this bool val)
+	{
+		return (byte)(val ? 1 : 0);
+	}
 	public static string ToLaptimeStr(this TimeSpan t)
 	{
 		string shortForm = "";
-		if (t.Hours > 0)
-			shortForm += string.Format("{0:D2}.", t.Hours);
-		shortForm += string.Format("{0:D2}:{1:D2}.{2:D2}", t.Minutes, t.Seconds, Mathf.RoundToInt(t.Milliseconds / 10f));
+		if (t.TotalHours < 10)
+		{
+			if (t.Hours > 0)
+				shortForm += string.Format("{0:D2}.", t.Hours);
+			shortForm += string.Format("{0:D2}:{1:D2}.{2:D2}", t.Minutes, t.Seconds, Mathf.RoundToInt(t.Milliseconds / 10f));
+		}
+		else
+			return "-";
 		return shortForm;
 	}
 
@@ -152,7 +153,7 @@ public static class F
 	}
 	public static float Duration(this AnimationCurve curve)
 	{
-		return curve.keys[curve.keys.Length - 1].time;
+		return curve.keys[^1].time;
 	}
 
 
@@ -301,7 +302,7 @@ public static class F
 	}
 	public static Vector2 Flat(this Vector3 v)
 	{
-		return new Vector2(v.x, v.z).normalized;
+		return new Vector2(v.x, v.z);
 	}
 	public static float Sign(float input)
 	{

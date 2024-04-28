@@ -302,9 +302,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   goal: {fileID: 3775699041580229304}
-  root: {fileID: 6495316931075121501}
-  halflife: 1
-  frequency: 2
+  targetHeight: 0.26
+  root: {fileID: 8622780247740421241}
 --- !u!1 &5269567352742529318
 GameObject:
   m_ObjectHideFlags: 0

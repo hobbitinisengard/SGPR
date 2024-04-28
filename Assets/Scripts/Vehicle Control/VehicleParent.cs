@@ -3,12 +3,68 @@ using System.Collections;
 using System;
 using Unity.Netcode;
 using Unity.Netcode.Components;
-using Newtonsoft.Json.Linq;
 using Unity.Collections;
-using System.Xml.Linq;
+using System.Collections.Generic;
 
 namespace RVP
 {
+	public struct StatePayload : INetworkSerializable
+	{
+		public int tick;
+		public ulong networkObjectId;
+		public Vector3 position;
+		public Quaternion rotation;
+		public Vector3 velocity;
+		public Vector3 angularVelocity;
+
+		public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+		{
+			serializer.SerializeValue(ref tick);
+			serializer.SerializeValue(ref networkObjectId);
+			serializer.SerializeValue(ref position);
+			serializer.SerializeValue(ref rotation);
+			serializer.SerializeValue(ref velocity);
+			serializer.SerializeValue(ref angularVelocity);
+		}
+	}
+	public struct CarInputState : INetworkSerializable
+	{
+		byte honkBoostShift;
+		ushort accel;
+		ushort steer;
+		ushort brake;
+		ushort roll;
+		void ApplyInput(VehicleParent vp)
+		{
+			vp.SetAccel(Mathf.HalfToFloat(accel));
+			vp.SetSteer(Mathf.HalfToFloat(steer));
+			vp.SetBrake(Mathf.HalfToFloat(brake));
+			vp.SetRoll(Mathf.HalfToFloat(roll));
+			vp.SetHonkerInput(honkBoostShift & 0x01);
+			vp.SetBoost((honkBoostShift >> 1) & 0x01);
+			vp.SetRoll((honkBoostShift >> 2) & 0x01);
+		}
+		public CarInputState(VehicleParent vp)
+		{
+			accel = Mathf.FloatToHalf(vp.accelInput);
+			steer = Mathf.FloatToHalf(vp.steerInput);
+			brake = Mathf.FloatToHalf(vp.brakeInput);
+			roll = Mathf.FloatToHalf(vp.rollInput);
+			honkBoostShift = (byte)(vp.honkInput | vp.boostButton << 1 | vp.SGPshiftbutton << 2);
+		}
+		public void NetworkSerialize<T>(BufferSerializer<T> s) where T : IReaderWriter
+		{
+			if(s.IsWriter)
+			{
+				s.SerializeValue(ref honkBoostShift);
+				s.SerializeValue(ref accel);
+				s.SerializeValue(ref steer);
+				s.SerializeValue(ref brake);
+				s.SerializeValue(ref roll);
+			}
+		}
+	}
+
 	public enum CatchupStatus { NoCatchup, Speeding, Slowing };
 	
 	[RequireComponent(typeof(Rigidbody))]
@@ -30,7 +86,7 @@ namespace RVP
 		/// </summary>
 		public int carNumber;
 		[NonSerialized]
-		public Ghost ghostComponent;
+		public Ghost ghost;
 		public GameObject bodyObj;
 		static double[] digitalBrakeInputEnv = { 0.050000, 0.055749, 0.061497, 0.067246, 0.072994, 0.078743, 0.084491, 0.090240, 0.095988, 0.100108, 0.104227, 0.108347, 0.112467, 0.116586, 0.120706, 0.124826, 0.128945, 0.131461, 0.133977, 0.136492, 0.139008, 0.141523, 0.144039, 0.146555, 0.149070, 0.150732, 0.152394, 0.154057, 0.155719, 0.157381, 0.159043, 0.160705, 0.162367, 0.164702, 0.167037, 0.169372, 0.171707, 0.174042, 0.176377, 0.178712, 0.181047, 0.184175, 0.187302, 0.190430, 0.193557, 0.198389, 0.203220, 0.208051, 0.212883, 0.217714, 0.222546, 0.227377, 0.232208, 0.234335, 0.236462, 0.238589, 0.240716, 0.242843, 0.244970, 0.247097, 0.249224, 0.251272, 0.253320, 0.255368, 0.257416, 0.263848, 0.270281, 0.276713, 0.283146, 0.289578, 0.296011, 0.302443, 0.308876, 0.313165, 0.317455, 0.321745, 0.326034, 0.330324, 0.334614, 0.338904, 0.343193, 0.349227, 0.355260, 0.361294, 0.367327, 0.373361, 0.379394, 0.385428, 0.391461, 0.400442, 0.409424, 0.418405, 0.427386, 0.436368, 0.445349, 0.454330, 0.463311, 0.472721, 0.482131, 0.491541, 0.500951, 0.510361, 0.519771, 0.529180, 0.538590, 0.560293, 0.581995, 0.603697, 0.625400, 0.647102, 0.668805, 0.690507, 0.712209, 0.735046, 0.757883, 0.780720, 0.803557, 0.826394, 0.849231, 0.872068, 0.888060, 0.904051, 0.920043, 0.936034, 0.952026, 0.968017, 0.984009, 1.000000 };
 		static AnimationCurve brakeCurve;
@@ -45,11 +101,32 @@ namespace RVP
 		[System.NonSerialized]
 		public Transform norm; // Normal orientation object
 
-		NetworkVariable<float> _accelInput = new(writePerm:NetworkVariableWritePermission.Owner);
+		//NetworkVariable<CarInputState> _networkInputState = new(writePerm: NetworkVariableWritePermission.Owner);
+
+		//[System.NonSerialized]
+		//public float accelInput;
+		//[System.NonSerialized]
+		//public int honkInput;
+		//[System.NonSerialized]
+		//public float brakeInput;
+		//[System.NonSerialized]
+		//[Range(-1, 1)]
+		//public float steerInput;
+		//[System.NonSerialized]
+		//public float ebrakeInput;
+		//[System.NonSerialized]
+		//public int boostButton;
+		//[System.NonSerialized]
+		//public int SGPshiftbutton;
+		//[System.NonSerialized]
+		//public float rollInput;
+		//NetworkVariable<Livery> _sponsor = new();
+
+		NetworkVariable<float> _accelInput = new(writePerm: NetworkVariableWritePermission.Owner);
 		public float accelInput { get { return _accelInput.Value; } set { _accelInput.Value = value; } }
 		[System.NonSerialized]
-		NetworkVariable<bool> _honkInput = new(writePerm: NetworkVariableWritePermission.Owner);
-		public bool honkInput { get { return _honkInput.Value; } set { _honkInput.Value = value; } }
+		NetworkVariable<int> _honkInput = new(writePerm: NetworkVariableWritePermission.Owner);
+		public int honkInput { get { return _honkInput.Value; } set { _honkInput.Value = value; } }
 		[System.NonSerialized]
 		NetworkVariable<float> _brakeInput = new(writePerm: NetworkVariableWritePermission.Owner);
 		public float brakeInput { get { return _brakeInput.Value; } set { _brakeInput.Value = value; } }
@@ -59,12 +136,17 @@ namespace RVP
 		[System.NonSerialized]
 		public float ebrakeInput;
 		[System.NonSerialized]
-		NetworkVariable<bool> _boostButton = new(writePerm: NetworkVariableWritePermission.Owner);
-		public bool boostButton { get { return _boostButton.Value; } set { _boostButton.Value = value; } }
+		NetworkVariable<int> _boostButton = new(writePerm: NetworkVariableWritePermission.Owner);
+		public int boostButton { get { return _boostButton.Value; } set { _boostButton.Value = value; } }
 		[System.NonSerialized]
-		NetworkVariable<bool> _SGPshiftbutton = new(writePerm: NetworkVariableWritePermission.Owner);
-		public bool SGPshiftbutton { get { return _SGPshiftbutton.Value; } set { _SGPshiftbutton.Value = value; } }
+		NetworkVariable<int> _SGPshiftbutton = new(writePerm: NetworkVariableWritePermission.Owner);
+		public int SGPshiftbutton { get { return _SGPshiftbutton.Value; } set { _SGPshiftbutton.Value = value; } }
+
+		[System.NonSerialized]
+		NetworkVariable<int> _rollButton = new(writePerm: NetworkVariableWritePermission.Owner);
+		public int rollInput { get { return _boostButton.Value; } set { _boostButton.Value = value; } }
 		NetworkVariable<Livery> _sponsor = new(); //SERVER
+
 		public Livery sponsor { get { return _sponsor.Value; } 
 			set 
 			{ 
@@ -110,8 +192,7 @@ namespace RVP
 		public float pitchInput;
 		[System.NonSerialized]
 		public float yawInput;
-		[System.NonSerialized]
-		public float rollInput;
+		
 
 		public GameObject[] frontLights;
 		public GameObject[] rearLights;
@@ -239,13 +320,15 @@ namespace RVP
 		[Rpc(SendTo.SpecifiedInParams)]
 		void RequestRaceboxValuesRpc(RpcParams ps)
 		{
-			SynchRaceboxValuesRpc(raceBox.curLap, followAI.dist, followAI.progress, raceBox.Aero, raceBox.drift, (float)(raceBox.bestLapTime.TotalMilliseconds/1000f),
+			SynchRaceboxValuesRpc(raceBox.curLap, followAI.dist, followAI.progress, raceBox.Aero, raceBox.drift, 
+				(float)(raceBox.bestLapTime.TotalMilliseconds/1000f), 
+				raceBox.enabled ? 0 : (float)raceBox.raceTime.TotalMilliseconds/1000f,
 				RpcTarget.Single(ps.Receive.SenderClientId, RpcTargetUse.Temp));
 		}
 		[Rpc(SendTo.SpecifiedInParams)]
-		public void SynchRaceboxValuesRpc(int curLap, int dist, int progress, float aero, float drift, float bestLapSecs, RpcParams ps)
+		public void SynchRaceboxValuesRpc(int curLap, int dist, int progress, float aero, float drift, float bestLapSecs, float raceTimeSecs, RpcParams ps)
 		{
-			raceBox.UpdateValues(curLap, dist, progress, aero/10f, drift, bestLapSecs);
+			raceBox.UpdateValues(curLap, dist, progress, aero/10f, drift, bestLapSecs, raceTimeSecs);
 			ResultsView.Add(this);
 		}
 		public FollowAI followAI { get; private set; }
@@ -330,11 +413,18 @@ namespace RVP
 		{
 			var mr = bodyObj.GetComponent<MeshRenderer>();
 			string matName = mr.sharedMaterial.name;
-			matName = matName[..^1] + ((int)sponsor).ToString();
-			Material newMat = Resources.Load<Material>("materials/" + matName);
-			newMat.name = matName;
-			mr.material = newMat;
-			RaceManager.I.hud.AddToProgressBar(this);
+			if((sponsor) != 0)
+			{
+				matName = matName[..^1] + ((int)sponsor).ToString();
+				Material newMat = Resources.Load<Material>("materials/" + matName);
+				newMat.name = matName;
+				mr.material = newMat;
+				RaceManager.I.hud.AddToProgressBar(this);
+			}
+			else
+			{
+				Debug.LogError($"on {name}, sponsor is 0");
+			}
 		}
 		void OnNameChanged()
 		{
@@ -345,10 +435,17 @@ namespace RVP
 				RaceManager.I.playerCar = this;
 				RaceManager.I.cam.Connect(this);
 				RaceManager.I.hud.Connect(this);
+				NetworkManager.OnTransportFailure += NetworkManager_OnTransportFailure;
 				//newCar.followAI.SetCPU(true); // CPU drives player's car
 			}
 			sampleText.gameObject.SetActive(!F.I.s_spectator && F.I.gameMode == MultiMode.Multiplayer && RaceManager.I.playerCar != this);
 		}
+
+		private void NetworkManager_OnTransportFailure()
+		{ 
+			RaceManager.I.ExitButton();
+		}
+
 		public void SetBatteryLoading(bool status)
 		{
 			foreach (var ps in batteryLoadingParticleSystems)
@@ -378,7 +475,7 @@ namespace RVP
 		}
 		private void Awake()
 		{
-			ghostComponent = GetComponent<Ghost>();
+			ghost = GetComponent<Ghost>();
 			followAI = GetComponent<FollowAI>();
 			raceBox = GetComponent<RaceBox>();
 			tr = transform;
@@ -400,6 +497,7 @@ namespace RVP
 					Debug.Log("RequestRaceboxValuesRpc");
 					RequestRaceboxValuesRpc(RpcTarget.Owner);
 				}
+				rb.interpolation = RigidbodyInterpolation.Extrapolate;
 			}
 			Initialize();
 		}
@@ -456,10 +554,16 @@ namespace RVP
 		{
 			yield return null;
 			yield return null;
+			while(sponsor == 0)
+			{ // sending sponsor info may come from the server after a while
+				yield return null;
+			}
 			carConfig = new CarConfig(F.I.cars[carNumber - 1].config);
 			carConfig.Apply(this);
 			OnNameChanged();
 			OnSponsorChanged();
+			if (F.I.s_raceType == RaceType.TimeTrial)
+				ghost.SetGhostPermanently();
 		}
 		[Rpc(SendTo.SpecifiedInParams)]
 		public void SetCurLapRpc(int curLap, RpcParams ps)
@@ -592,10 +696,10 @@ namespace RVP
 			else if (localVelocity.z >= 0 || burnout > 0)
 				reversing = false;
 		}
-		public void SetHonkerInput(bool f)
+		public void SetHonkerInput(int f)
 		{
 			honkInput = f;
-			if (honkInput)
+			if (honkInput == 1)
 			{
 				if (!honkerAudio.isPlaying)
 					honkerAudio.Play();
@@ -614,7 +718,7 @@ namespace RVP
 		// Set accel input
 		public void SetAccel(float f)
 		{
-			if (InFreeroam || !raceBox.enabled)
+			if (InFreeroam || !raceBox.enabled || F.I.s_raceType == RaceType.TimeTrial)
 				energyRemaining = batteryCapacity;
 			else if (BatteryPercent == 0 && Time.time - lastNoBatteryMessage > 60)
 			{
@@ -622,7 +726,10 @@ namespace RVP
 				lastNoBatteryMessage = Time.time;
 			}
 			f = Mathf.Clamp(f, -1, (BatteryPercent == 0) ? 0.75f : 1);
-			accelInput = f;
+
+			if(Owner)
+				accelInput = f;
+
 			if (energyRemaining > 0)
 				energyRemaining -= accelInput * engine.fuelConsumption * Time.deltaTime;
 		}
@@ -674,18 +781,18 @@ namespace RVP
 			}
 		}
 
-		public void SetBoost(bool b)
+		public void SetBoost(int b)
 		{
-			if (b && BatteryPercent > lowBatteryLevel)
+			if (b == 1 && BatteryPercent > lowBatteryLevel)
 			{
 				energyRemaining -= Time.deltaTime * engine.jetConsumption;
 			}
 			else
-				b = false;
+				b = 0;
 
 			boostButton = b;
 		}
-		public void SetSGPShift(bool b)
+		public void SetSGPShift(int b)
 		{
 			SGPshiftbutton = b;
 		}
@@ -712,7 +819,7 @@ namespace RVP
 		// Set roll rotate input
 		public void SetRoll(float f)
 		{
-			rollInput = Mathf.Clamp(f, -1, 1);
+			rollInput = (int)Mathf.Clamp(f, -1, 1);
 		}
 
 		// Do upshift input
@@ -857,6 +964,7 @@ namespace RVP
 		public override void OnDestroy()
 		{
 			F.I.s_cars.Remove(this);
+
 			SGP_HUD.I.RemoveFromProgressBar(this);
 			if (norm)
 			{

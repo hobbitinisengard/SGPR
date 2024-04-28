@@ -56,16 +56,16 @@ public class ZippedTrackDataObject : NetworkBehaviour
 	{
 		receivedTrack.Clear();
 		Debug.Log("RequestTrackUpdate");
-		UpdateTrackRpc(F.I.s_trackName, RpcTarget.Server);
+		UpdateTrackRpc(RpcTarget.Server);
 	}
 	[Rpc(SendTo.Server, AllowTargetOverride = true)]
-	void UpdateTrackRpc(string newTrackName, RpcParams rpcParams)
+	void UpdateTrackRpc(RpcParams rpcParams)
 	{
-		StartCoroutine(UpdateTrack(rpcParams.Receive.SenderClientId, newTrackName));
+		StartCoroutine(UpdateTrack(rpcParams.Receive.SenderClientId, F.I.s_trackName));
 	}
 	IEnumerator UpdateTrack(ulong clientId, string newTrackName)
 	{
-		Debug.Log("Server: Update track");
+		Debug.Log("Server: Update track " + newTrackName);
 		if (!updatingCachedTrack)
 		{
 			if (trackName != newTrackName)
@@ -149,6 +149,7 @@ public class ZippedTrackDataObject : NetworkBehaviour
 		}
 		else
 		{
+			Debug.Log($"Downloaded new track {trackName}");
 			File.Move(F.I.documentsSGPRpath + trackName + ".png", F.I.tracksPath + trackName + ".png");
 			File.Move(F.I.documentsSGPRpath + trackName + ".data", F.I.tracksPath + trackName + ".data");
 			File.Move(F.I.documentsSGPRpath + trackName + ".track", F.I.tracksPath + trackName + ".track");

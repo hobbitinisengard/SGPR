@@ -17519,7 +17519,6 @@ MonoBehaviour:
   SGPshifting: 0
   stopTimeReverse: 3
   reverseAttemptTime: 3
-  resetReverseCount: 1
   rollResetTime: 3
   rolledOverTime: 0
   lookAheadMultCurve:
@@ -17619,6 +17618,8 @@ MonoBehaviour:
   cpuSmoothCoeff: 10
   cpuFastCoeff: 50
   targetSteer: 0
+  raceEndedLapProgressPercent: 0
+  maxSteerPerFrame: 5
 --- !u!114 &8319369162350912230
 MonoBehaviour:
   m_ObjectHideFlags: 0

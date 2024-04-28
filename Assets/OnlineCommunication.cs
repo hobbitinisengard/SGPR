@@ -1,5 +1,5 @@
 using RVP;
-using System;
+using System.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -10,6 +10,18 @@ public class OnlineCommunication : NetworkBehaviour
 	private void Awake()
 	{
 		I = this;
+	}
+	public override async void OnNetworkSpawn()
+	{
+		base.OnNetworkSpawn();
+		if(F.I.actionHappening == ActionHappening.InRace)
+		{
+			while(MultiPlayerSelector.I.Busy)
+			{
+				await Task.Delay(100);
+			}
+			MultiPlayerSelector.I.thisView.ToRaceScene();
+		}
 	}
 	public void GibCar(Vector3 position, Quaternion rotation)
 	{

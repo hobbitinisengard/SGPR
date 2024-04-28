@@ -70,6 +70,5 @@ public class MainMenuButton : Sfxable, ISelectHandler, IDeselectHandler, ISubmit
 			yield return null;
 		}
 	}
-
 	
 }

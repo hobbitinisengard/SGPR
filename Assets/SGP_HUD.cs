@@ -163,6 +163,7 @@ public class SGP_HUD : MonoBehaviour
 	public void OnDisable()
 	{
 		F.I.escRef.action.performed -= EscapePressed;
+		ClearStuntInfo();
 	}
 	private void OnEnable()
 	{
@@ -236,8 +237,7 @@ public class SGP_HUD : MonoBehaviour
 	}
 	void EscapePressed(UnityEngine.InputSystem.InputAction.CallbackContext obj)
 	{
-		if ((DateTime.Now - F.I.raceStartDate).TotalSeconds > 5
-			&& !componentPanel.gameObject.activeSelf && !raceManager.resultsSeq.gameObject.activeSelf)
+		if (CountDownSeq.Countdown <=0 && !componentPanel.gameObject.activeSelf && !raceManager.resultsSeq.gameObject.activeSelf)
 		{
 			pauseMenu.gameObject.SetActive(!pauseMenu.gameObject.activeSelf);
 		}
@@ -278,7 +278,6 @@ public class SGP_HUD : MonoBehaviour
 		//}
 		if (!vp.raceBox.enabled && F.I.s_laps > 0)
 		{
-			Debug.Log("finished");
 			raceManager.PlayFinishSeq();
 			gameObject.SetActive(false);
 			return;
@@ -487,7 +486,6 @@ public class SGP_HUD : MonoBehaviour
 			{
 				blinker.color = Color.red;
 			}
-
 		}
 
 		if (progressDisplay.activeSelf)
@@ -496,10 +494,10 @@ public class SGP_HUD : MonoBehaviour
 			if (F.I.s_cars.Count > 1 && Time.time - progressBarUpdateTime > .5f)
 			{
 				progressBarUpdateTime = Time.time;
-				float playerDistance = vp.raceBox.curLap + vp.followAI.ProgressPercent;
+				float playerDistance = vp.raceBox.curLap + vp.followAI.LapProgressPercent;
 				foreach (var car in F.I.s_cars)
 				{
-					float distance = car.raceBox.curLap + car.followAI.ProgressPercent;
+					float distance = car.raceBox.curLap + car.followAI.LapProgressPercent;
 					float diff = Mathf.Clamp(distance - playerDistance, -1, 1);
 					if (F.I.s_catchup)
 					{
@@ -516,9 +514,16 @@ public class SGP_HUD : MonoBehaviour
 							car.SetCatchup(CatchupStatus.Speeding);
 						}
 					}
-					Vector3 pos = carProgressIcons[car].GetComponent<RectTransform>().anchoredPosition;
-					pos.x = 62 * diff; // from -62 to -62
-					carProgressIcons[car].GetComponent<RectTransform>().anchoredPosition = pos;
+					try
+					{
+						Vector3 pos = carProgressIcons[car].GetComponent<RectTransform>().anchoredPosition;
+						pos.x = 62 * diff; // from -62 to -62
+						carProgressIcons[car].GetComponent<RectTransform>().anchoredPosition = pos;
+					}
+					catch
+					{
+						Debug.LogWarning($"No carProgressIcon for {car.name}");
+					}
 				}
 			}
 		}

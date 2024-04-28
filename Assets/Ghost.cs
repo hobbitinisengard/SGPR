@@ -16,7 +16,6 @@ public class Ghost : NetworkBehaviour
 	{
 		vp = GetComponent<VehicleParent>();
 	}
-
 	public void SetHittable(bool isHittable, bool updateColliders = true)
 	{
 		if (updateColliders)
@@ -45,7 +44,6 @@ public class Ghost : NetworkBehaviour
 		material.SetFloat("_SpecularIntensity", .1f);
 		material.SetFloat("_Parallax", 0);
 		material.SetFloat("_Brightness", 1);
-		
 		//material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
 		//material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.Zero);
 		//material.SetInt("_ZWrite", 1);
@@ -81,7 +79,7 @@ public class Ghost : NetworkBehaviour
 		
 		return material;
 	}
-	public void SetGhostAfterRace()
+	public void SetGhostPermanently()
 	{
 		if (F.I.gameMode == MultiMode.Multiplayer)
 			SetHittableRpc(false, true);
@@ -136,6 +134,6 @@ public class Ghost : NetworkBehaviour
 			yield return null;
 			justResetted = false;
 		}
-		SetHittable(vp.raceBox.enabled);
+		SetHittable(vp.raceBox.enabled && F.I.s_raceType != RaceType.TimeTrial);
 	}
 }

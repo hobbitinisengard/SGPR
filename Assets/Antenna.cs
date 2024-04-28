@@ -4,18 +4,21 @@ using UnityEngine.UIElements.Experimental;
 
 public class Antenna : MonoBehaviour
 {
-	Transform goal;
-	Vector3 goal_vel = Vector3.zero;
-	VehicleParent vp;
-	Transform follower;
-	Vector3 follower_vel = Vector3.zero;
-
+	public Transform goal;
+	protected VehicleParent vp;
+	protected Transform follower;
+	protected Vector3 goal_vel;
+	protected Vector3 car_vel = Vector3.zero;
+	protected Vector3 car_prevVel;
+	protected Vector3 follower_vel = Vector3.zero;
+	protected float halflife = .5f; //drag
+	protected float frequency = 2; //Spring
+	protected Vector3 goal_pos;
+	protected Vector3 goal_prevPos;
+	protected Vector3 goal_initPos;
 	int nodes = 0;
-	public float halflife = 1; //drag
-	public float frequency = 2; //Spring
 	public float targetHeight = 0.26f; // how high above this should target be located?
-	Vector3 goal_pos = Vector3.zero;
-	Vector3 goal_prevPos = Vector3.zero;
+	
 	float[] nodes_y_heights;
 	// Start is called before the first frame update
 	Vector3 ElevateY(Vector3 pos, float height)
@@ -23,12 +26,11 @@ public class Antenna : MonoBehaviour
 		return pos + vp.tr.up * height;
 		//return new Vector3(pos.x, pos.y + height, pos.z);
 	}
-	private void OnDestroy()
+	protected void OnDestroy()
 	{
 		Destroy(follower.gameObject);
 	}
-
-	void Start()
+	private void Start()
 	{
 		vp = transform.GetTopmostParentComponent<VehicleParent>();
 		nodes = transform.childCount;
@@ -38,21 +40,23 @@ public class Antenna : MonoBehaviour
 			nodes_y_heights[i] = transform.localPosition.y + i * targetHeight;
 
 		goal = new GameObject("Goal").transform;
-		goal.parent = transform;
-		goal_pos = ElevateY(transform.position, targetHeight * (nodes + 1));
+		goal.parent = vp.tr;
+		goal.position = ElevateY(transform.position, targetHeight * (nodes + 1));
+		goal_pos = goal.localPosition;
 		goal_prevPos = goal_pos;
-		goal.position = goal_pos;
+		goal_initPos = goal_pos;
 
 		follower = new GameObject("Follower").transform;
 		follower.gameObject.layer = 2;
 		follower.position = goal.position;
+		follower.parent = vp.tr;
 	}
-	private void FixedUpdate()
+	protected void FixedUpdate()
 	{
 		if (halflife == 0 || frequency == 0) return;
 		Update_Follower();
 	}
-	private void LateUpdate()
+	void LateUpdate()
 	{
 		Vector3 Up = vp.upDir * targetHeight;
 		for (int i = 0; i < nodes - 1; ++i)
@@ -66,19 +70,22 @@ public class Antenna : MonoBehaviour
 		}
 		transform.GetChild(nodes - 1).transform.LookAt(follower.position);
 	}
-	private void Update_Follower()
+	protected void Update_Follower()
 	{
-		goal_prevPos = goal_pos;
-		goal_pos = goal.position;
+		goal_prevPos = goal_vel;
+		car_prevVel = car_vel;
+		car_vel = vp.localVelocity;
+		Vector3 a = -(car_vel - car_prevVel);
+		goal_pos = goal_initPos + a;
+		goal.localPosition = goal_pos;
 		goal_vel = goal_pos - goal_prevPos;
+		Vector3 follower_pos = follower.localPosition;
 
-		Vector3 follower_pos = follower.position;
-		damper_spring(ref follower_pos.x, ref follower_vel.x, goal_pos.x, goal_vel.x);
-		damper_spring(ref follower_pos.y, ref follower_vel.y, goal_pos.y, goal_vel.y);
-		damper_spring(ref follower_pos.z, ref follower_vel.z, goal_pos.z, goal_vel.z);
+		damper_spring(ref follower_pos.x, ref follower_vel.x,goal_pos.x, goal_vel.x);
+		damper_spring(ref follower_pos.y, ref follower_vel.y,goal_pos.y, goal_vel.y);
+		damper_spring(ref follower_pos.z, ref follower_vel.z,goal_pos.z, goal_vel.z);
 
-		follower.position = follower_pos;
-
+		follower.localPosition = follower_pos;
 
 		//goal_prevPos = goal_pos;
 		//goal_pos = goal.position;

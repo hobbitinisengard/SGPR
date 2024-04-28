@@ -1,6 +1,7 @@
 using System;
 using UnityEngine.UI;
 using TMPro;
+using static SlideInOut;
 
 public class TrackSelector : TrackSelectorTemplate
 {
@@ -98,9 +99,10 @@ public class TrackSelector : TrackSelectorTemplate
 		if (!init)
 			dir = shiftInputRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
 
-		F.I.s_cpuRivals = F.Wraparound(F.I.s_cpuRivals + dir, 0, maxCPURivals);
 
-		if (F.I.s_raceType == RaceType.Knockout)
+		F.I.s_cpuRivals = F.Wraparound(F.I.s_cpuRivals + dir, 0, (F.I.gameMode == MultiMode.Multiplayer) ? 0 : maxCPURivals);
+
+		if (F.I.s_raceType == RaceType.Knockout && ServerC.I.AmHost)
 		{
 			if (F.I.s_cpuRivals == 0 && F.I.maxCarsInRace - 1 == maxCPURivals)
 				F.I.s_cpuRivals = 1;
@@ -113,11 +115,10 @@ public class TrackSelector : TrackSelectorTemplate
 	
 	public void SwitchRoadType(bool init = false)
 	{
+		int dir = 0;
 		if (!init)
-		{
-			int dir = shiftInputRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
-			F.I.s_roadType = (PavementType)F.Wraparound((int)(F.I.s_roadType + dir), 0, F.I.pavementTypes+1);
-		}
+			dir = shiftInputRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
+		F.I.s_roadType = (PavementType)F.Wraparound((int)(F.I.s_roadType + dir), 0, (int)PavementType.LENGTH-1);
 		wayButtonText.text = "Tex: " + Enum.GetName(typeof(PavementType), F.I.s_roadType);
 	}
 	public void SwitchCatchup(bool init = false)
@@ -126,5 +127,4 @@ public class TrackSelector : TrackSelectorTemplate
 			F.I.s_catchup = !F.I.s_catchup;
 		catchupButtonText.text = "Catchup: " + (F.I.s_catchup ? "Yes" : "No");
 	}
-	
 }

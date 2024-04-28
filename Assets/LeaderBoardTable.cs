@@ -48,7 +48,7 @@ public class LeaderBoardTable : MonoBehaviour
 		// Team scoring
 		if (F.I.scoringType == ScoringType.Championship)
 		{
-			List<SponsorScore> scores = new();
+			List<SponsorScore> teamScores = new();
 
 			foreach (var p in server.lobby.Players)
 			{
@@ -56,25 +56,25 @@ public class LeaderBoardTable : MonoBehaviour
 				var playerSponsor = p.SponsorGet();
 				var playerScore = p.ScoreGet();
 
-				var teamScores = scores.Find(s => s.sponsor == playerSponsor);
+				var teamScore = teamScores.Find(s => playerSponsor == s.sponsor);
 
-				if (teamScores == null)
+				if (teamScore == null)
 				{
-					scores.Add(new SponsorScore { sponsor = playerSponsor, score = playerScore });
+					teamScores.Add(new SponsorScore { sponsor = playerSponsor, score = playerScore });
 				}
 				else
 				{
-					teamScores.score += playerScore;
+					teamScore.score += playerScore;
 				}
 			}
-			scores.Sort((y, x) => x.score.CompareTo(y.score));
+			teamScores.Sort((y, x) => x.score.CompareTo(y.score));
 
 			Array.Sort(players, (Player p2, Player p1) =>
 			{
 				Livery p1Sponsor = p1.SponsorGet();
 				Livery p2Sponsor = p2.SponsorGet();
-				var teamScoreA = scores.Find(s => s.sponsor == p1Sponsor).score;
-				var teamScoreB = scores.Find(s => s.sponsor == p2Sponsor).score;
+				var teamScoreA = teamScores.Find(s => s.sponsor == p1Sponsor).score;
+				var teamScoreB = teamScores.Find(s => s.sponsor == p2Sponsor).score;
 				return teamScoreA.CompareTo(teamScoreB);
 			});
 		}

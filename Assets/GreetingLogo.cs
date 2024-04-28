@@ -61,6 +61,7 @@ public class GreetingLogo : Sfxable
 		goingUpSeq = false;
 		startButton.Select();
 		submitRef.action.performed += SubmitPressed;
+		F.I.gameMode = MultiMode.Singleplayer;
 	}
 
 	void Update()

@@ -67,38 +67,49 @@ namespace RVP
 		{
 			if (vp.followAI.isCPU)
 			{
-				if(!vp.followAI.Pitting)
+				if (!vp.followAI.Pitting)
 					vp.SetSteer(0);
 			}
 			else
 			{
-				Vector2 input2 = driveInput.action.ReadValue<Vector2>();
-				vp.SetAccel(Mathf.Clamp01(input2.y));
-				vp.SetBrake(Mathf.Abs(Mathf.Clamp(input2.y, -1, 0)));
-				vp.SetSteer(input2.x);
-				vp.SetBoost(boostInput.action.ReadValue<float>() == 1);
-
-				if (F.I.chat.texting)
-					return;
-
-				vp.SetHonkerInput(honkInput.action.ReadValue<float>() == 1);
-				vp.SetSGPShift(evoInput.action.ReadValue<float>() == 1);
-				if (resetOnTrackInput.action.ReadValue<float>() == 1
-					&& Time.time - resetOnTrackTime > 5)
+				if (vp.Owner)
 				{
-					resetOnTrackTime = Time.time;
-					vp.ResetOnTrack();
+					Vector2 input2 = driveInput.action.ReadValue<Vector2>();
+					vp.SetAccel(Mathf.Clamp01(input2.y));
+					vp.SetBrake(Mathf.Abs(Mathf.Clamp(input2.y, -1, 0)));
+					vp.SetSteer(input2.x);
+					vp.SetBoost(boostInput.action.ReadValue<float>() == 1);
+
+					if (F.I.chat.texting)
+						return;
+
+					vp.SetHonkerInput(honkInput.action.ReadValue<float>() == 1);
+					vp.SetSGPShift(evoInput.action.ReadValue<float>() == 1);
+					if (resetOnTrackInput.action.ReadValue<float>() == 1
+						&& Time.time - resetOnTrackTime > 5)
+					{
+						resetOnTrackTime = Time.time;
+						vp.ResetOnTrack();
+					}
+					vp.SetRoll(rollInput.action.ReadValue<float>());
+
+					if (!string.IsNullOrEmpty(upshiftButton))
+					{
+						vp.SetUpshift(Input.GetAxis(upshiftButton));
+					}
+
+					if (!string.IsNullOrEmpty(downshiftButton))
+					{
+						vp.SetDownshift(Input.GetAxis(downshiftButton));
+					}
 				}
-				vp.SetRoll(rollInput.action.ReadValue<float>());
-
-				if (!string.IsNullOrEmpty(upshiftButton))
+				else
 				{
-					vp.SetUpshift(Input.GetAxis(upshiftButton));
-				}
-
-				if (!string.IsNullOrEmpty(downshiftButton))
-				{
-					vp.SetDownshift(Input.GetAxis(downshiftButton));
+					vp.SetAccel(vp.accelInput);
+					vp.SetBoost(vp.boostButton);
+					vp.SetHonkerInput(vp.honkInput);
+					vp.SetSGPShift(vp.SGPshiftbutton);
+					vp.SetRoll(vp.rollInput);
 				}
 			}
 		}

@@ -7,7 +7,6 @@ using UnityEngine.UIElements.Experimental;
 
 public class ResultsSeq : MonoBehaviour
 {
-
 	public TextMeshProUGUI pressEnterText;
 	public Sprite[] ResultPositionSprites;
 	public Image imgResult;
@@ -23,12 +22,13 @@ public class ResultsSeq : MonoBehaviour
 	string[] rightBoxLabels = new string[] { "BEST LAP", "RACE TIME", "AEROMILES", "DRIFT POINTS"};
 	int rightBoxLabelInt = 0;
 	Coroutine seq, dimCo,showResultCo, showTableCo;
-	int playerResultPosition = 0;
 	AudioSource audioSource;
 	public float d_invLerp;
 	public float d_minMax;
 	float cosArg;
 	private bool submitFlag;
+	private int playerResultPosition;
+	private Coroutine bottomTextCo;
 
 	private void Awake()
 	{
@@ -36,8 +36,9 @@ public class ResultsSeq : MonoBehaviour
 	}
 	private void OnDisable()
 	{
-		RowsBlinkColor(Color.yellow);
 		F.I.enterRef.action.performed -= OnEnterClicked;
+		if(bottomTextCo != null)
+			StopCoroutine(bottomTextCo);
 	}
 	private void OnEnable()
 	{
@@ -53,7 +54,6 @@ public class ResultsSeq : MonoBehaviour
 			leftRow.GetChild(i).gameObject.SetActive(false);
 			rightRow.GetChild(i).gameObject.SetActive(false);
 		}
-
 		cosArg = 0;
 		playerResultPosition = RaceManager.I.Position(RaceManager.I.playerCar);
 		imgResult.sprite = ResultPositionSprites[playerResultPosition - 1];
@@ -77,8 +77,8 @@ public class ResultsSeq : MonoBehaviour
 		audioSource.clip = F.I.audioClips[(playerResultPosition <= 3) ? "RacePodium" : "RaceNotPodium"];
 		audioSource.loop = false;
 		audioSource.Play();
-	}
 
+	}
 	private void OnEnterClicked(UnityEngine.InputSystem.InputAction.CallbackContext obj)
 	{
 		submitFlag = true;
@@ -161,6 +161,20 @@ public class ResultsSeq : MonoBehaviour
 			yield return null;
 		}
 	}
+	IEnumerator BottomText()
+	{
+		while(true)
+		{
+			if (F.I.gameMode == MultiMode.Multiplayer && ResultsView.Count < ServerC.I.lobby.Players.Count)
+				pressEnterText.text = "WAITING";
+			else
+			{
+				pressEnterText.text = "PRESS ENTER";
+				yield break;
+			}
+			yield return new WaitForSeconds(1);
+		}
+	}
 	IEnumerator ShowTableCo()
 	{
 		leftRow.GetComponent<VerticalLayoutGroup>().enabled = true;
@@ -180,13 +194,11 @@ public class ResultsSeq : MonoBehaviour
 
 		yield return null;
 
+		if (bottomTextCo != null)
+			StopCoroutine(bottomTextCo);
+		bottomTextCo = StartCoroutine(BottomText());
 		while(true)
 		{
-			if (F.I.gameMode == MultiMode.Multiplayer && ResultsView.Count != ServerC.I.lobby.Players.Count)
-				pressEnterText.text = "WAITING";
-			else
-				pressEnterText.text = "PRESS ENTER";
-
 			if (submitFlag && dimCo == null) // CLOSING SEQUENCE
 			{
 				submitFlag = false;
@@ -205,7 +217,18 @@ public class ResultsSeq : MonoBehaviour
 				}
 			}
 
-			RowsBlinkColor((timer % 1f < 0.5f) ? yellowDark : Color.yellow);
+			// update row colors
+			Color playerColor = (timer % 1f < 0.5f) ? yellowDark : Color.yellow;
+			bottomBoxLabel.color = playerColor;
+			for (int i = 0; i < leftRow.childCount; ++i)
+			{
+				Color rowColor = (i == playerResultPosition - 1) ? playerColor : Color.yellow;
+				// Acknowledge already set transparency of boxes. Set only color.
+				var a = rightRow.GetChild(i).GetChild(0).GetChild(0).GetComponent<TextMeshProUGUI>().color.a;
+				rowColor.a = a;
+				rightRow.GetChild(i).GetChild(0).GetChild(0).GetComponent<TextMeshProUGUI>().color = rowColor;
+				leftRow.GetChild(i).GetChild(0).GetChild(0).GetComponent<TextMeshProUGUI>().color = rowColor;
+			}
 
 			if (timer > TimeRequiredForUpdate)
 			{
@@ -213,6 +236,7 @@ public class ResultsSeq : MonoBehaviour
 				++rightBoxLabelInt;
 				rightBoxLabelInt %= rightBoxLabels.Length;
 				SetTableBoxesValues();
+				playerResultPosition = RaceManager.I.Position(RaceManager.I.playerCar);
 			}
 			timer += Time.deltaTime;
 			yield return null;
@@ -232,23 +256,15 @@ public class ResultsSeq : MonoBehaviour
 		audioSource.Stop();
 		gameObject.SetActive(false);
 	}
-	void RowsBlinkColor(Color color)
-	{
-		bottomBoxLabel.color = color;
-
-		// Acknowledge already set transparency of boxes. Set only color.
-		var a = rightRow.GetChild(playerResultPosition - 1).GetChild(0).GetChild(0).GetComponent<TextMeshProUGUI>().color.a;
-		color.a = a;
-		rightRow.GetChild(playerResultPosition - 1).GetChild(0).GetChild(0).GetComponent<TextMeshProUGUI>().color = color;
-		leftRow.GetChild(playerResultPosition - 1).GetChild(0).GetChild(0).GetComponent<TextMeshProUGUI>().color = color;
-	}
 	void SetTableBoxesValues()
 	{
-		for(int i=0; i<F.I.s_cars.Count; ++i)
+		rightBoxLabel.text = rightBoxLabels[rightBoxLabelInt];
+
+		for (int i=0; i<F.I.s_cars.Count; ++i)
 		{
 			leftRow.GetChild(i).GetChild(0).GetChild(0)
 						.GetComponent<TextMeshProUGUI>().text = F.I.s_cars[i].transform.name;
-			rightBoxLabel.text = rightBoxLabels[rightBoxLabelInt];
+			
 			rightRow.GetChild(i).GetChild(0).GetChild(0)
 						.GetComponent<TextMeshProUGUI>().text = F.I.s_cars[i].raceBox.Result((RecordType)rightBoxLabelInt);
 		}

@@ -26,8 +26,6 @@ public class Chat : NetworkBehaviour
 	[NonSerialized]
 	public TMP_InputField[] inputFields = new TMP_InputField[2];
 
-	public InputActionReference chatButtonInput;
-
 	public bool texting { get; private set; }
 	Coroutine showChatCo;
 	// Chat is in-scene placed
@@ -59,7 +57,8 @@ public class Chat : NetworkBehaviour
 		while (MultiPlayerSelector.I == null)
 			yield return null;
 
-		chatButtonInput.action.performed += buttonPressed;
+		F.I.chatButtonInput.action.performed += buttonPressed;
+		F.I.quickMessageRef.action.performed += QuickMessagePressed;
 		inputFields[0] = MultiPlayerSelector.I.chatInitializer.lobbyChatInputField;
 		inputFields[1] = MultiPlayerSelector.I.chatInitializer.raceChatInputField;
 
@@ -107,6 +106,14 @@ public class Chat : NetworkBehaviour
 	private void buttonPressed(InputAction.CallbackContext obj)
 	{
 		StartCoroutine(ButtonPressedSeq());
+	}
+	private void QuickMessagePressed(InputAction.CallbackContext obj)
+	{
+		if(F.I.gameMode == MultiMode.Multiplayer && F.I.actionHappening == ActionHappening.InRace)
+		{
+			float val = obj.ReadValue<float>();
+			AddChatRow(ServerC.I.PlayerMe, F.GetQuickMessage(val));
+		}
 	}
 	IEnumerator ButtonPressedSeq()
 	{

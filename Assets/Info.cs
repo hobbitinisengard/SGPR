@@ -18,7 +18,7 @@ public enum Livery { Special = 1, TGR, Rline, Itex, Caltex, Titan, Mysuko }
 public enum RecordType { BestLap, RaceTime, StuntScore, DriftScore}
 public enum ScoringType { Championship, Points, Victory }
 public enum ActionHappening { InLobby, InRace }
-public enum PavementType { Highway, RedSand, Asphalt, Electric, TimeTrial, Japanese, GreenSand, Random }
+public enum PavementType { Grid, Highway, Volcano, Asphalt, Energy,  Japan, Jungle, Random, LENGTH }
 public enum MultiMode { Singleplayer, Multiplayer };
 public enum RaceType { Race, Knockout, Stunt, Drift, TimeTrial }
 public enum CpuLevel { Normal };
@@ -36,15 +36,21 @@ public class Info : MonoBehaviour
 	private void Awake()
 	{
 		F.I = this;
-		P2 = CurrentPlayer.ReadOnlyTags().Count > 0;
-		if (P2)
+		MPtags = CurrentPlayer.ReadOnlyTags().Count;
+		switch(MPtags)
 		{
-			_documentsSGPRpath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Stunt GPR 2\\";
-			Debug.LogWarning("Player 2 Started");
+			case 1:
+				_documentsSGPRpath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Stunt GPR 2\\";
+				Debug.LogWarning("Player 2 Started");
+				break;
+			case 2:
+				_documentsSGPRpath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Stunt GPR 3\\";
+				Debug.LogWarning("Player 3 Started");
+				break;
+			default:
+				_documentsSGPRpath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Stunt GP Reloaded\\";
+				break;
 		}
-		else
-			_documentsSGPRpath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Stunt GP Reloaded\\";
-
 		if (!Directory.Exists(documentsSGPRpath))
 		{
 			Debug.LogWarning(documentsSGPRpath + " doesnt exist");
@@ -70,7 +76,7 @@ public class Info : MonoBehaviour
 	public string userdataPath { get { return documentsSGPRpath + "userdata.json"; } }
 	public string lastPath { get { return documentsSGPRpath + "path.txt"; } }
 
-	public bool P2;
+	int MPtags;
 
 	public readonly int maxCarsInRace = 10;
 
@@ -79,6 +85,8 @@ public class Info : MonoBehaviour
 	public InputActionReference shiftRef;
 	public InputActionReference escRef;
 	public InputActionReference enterRef;
+	public InputActionReference quickMessageRef;
+	public InputActionReference chatButtonInput;
 	public string SHA(string filePath)
 	{
 		string hash;
@@ -259,6 +267,8 @@ public class Info : MonoBehaviour
 
 	public EventSystem eventSystem;
 	public DateTime raceStartDate;
+	public readonly int maxConcurrentUsers = 30;
+
 	public Car Car(string name)
 	{ // i.e. car05
 		try

@@ -30,7 +30,6 @@ public class ServerList : MonoBehaviour
 
 	private void OnEnable()
 	{
-		server.DisconnectFromLobby();
 		startAServerButton.interactable = false;
 		tooManyPlayersText.SetActive(false);
 		content.DestroyAllChildren();
@@ -42,6 +41,8 @@ public class ServerList : MonoBehaviour
 			return;
 
 		lastRefreshTime = Time.time;
+		content.DestroyAllChildren();
+
 		await Task.Delay(2000);
 		int playersOnlineRN = 0;
 		try
@@ -68,7 +69,7 @@ public class ServerList : MonoBehaviour
 
 			QueryResponse lobbies = await Lobbies.Instance.QueryLobbiesAsync(options);
 
-			content.DestroyAllChildren();
+			
 			foreach(var lobby in lobbies.Results)
 			{
 				var newRow = Instantiate(rowPrefab, content).transform;
@@ -87,7 +88,7 @@ public class ServerList : MonoBehaviour
 			Debug.Log(e);
 		}
 
-		tooManyPlayersText.SetActive(playersOnlineRN > 45);
+		tooManyPlayersText.SetActive(playersOnlineRN > F.I.maxConcurrentUsers);
 		startAServerButton.interactable = (!tooManyPlayersText.activeSelf);
 		if (tooManyPlayersText.activeSelf)
 			content.DestroyAllChildren();

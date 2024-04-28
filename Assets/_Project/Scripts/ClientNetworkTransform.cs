@@ -1,4 +1,5 @@
-﻿using Unity.Netcode.Components;
+﻿using RVP;
+using Unity.Netcode.Components;
 using UnityEngine;
 public enum AuthorityMode
 {
@@ -10,6 +11,5 @@ public enum AuthorityMode
 public class ClientNetworkTransform : NetworkTransform
 {
 	public AuthorityMode authorityMode = AuthorityMode.Client;
-
 	protected override bool OnIsServerAuthoritative() => authorityMode == AuthorityMode.Server;
 }

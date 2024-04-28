@@ -1,5 +1,5 @@
 using UnityEngine;
-
+[DisallowMultipleComponent]
 public class SetGameMode : MonoBehaviour
 {
    public MultiMode setGameModeToThis;

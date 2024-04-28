@@ -34,24 +34,23 @@ public class ServerC : MonoBehaviour
 	public string password;
 	public int maxPlayers;
 	public const int basePort = 7770;
-	string connectionType => (encryption == EncryptionType.DTLS) ? k_dtlsEncryption : k_udpEncryption;
+	string connectionType => (encryption == EncryptionType.DTLS) ? "dtls" : "udp";
 
 	const int lobbyHeartbeatInterval = 15;
 	const int lobbyPollInterval = 60;
-	public static readonly string k_relayCode = "RelayJoinCode";
+	public const string k_relayCode = "RelayJoinCode";
 	public const string k_actionHappening = "ah";
 	public const string k_lobbyCode = "lc";
-	NetworkManager networkManager;
-
-	string k_dtlsEncryption = "dtls";
-	string k_udpEncryption = "udp";
+	public NetworkManager networkManager;
 	public LobbyEventCallbacks callbacks = new();
 	string callbacksLobbyId = "";
 	public ConcurrentQueue<string> createdLobbyIds = new();
 	public Lobby lobby;
 	public CountdownTimer heartbeatTimer = new(lobbyHeartbeatInterval);
 	CountdownTimer pollForUpdatesTimer = new(lobbyPollInterval);
-	private bool updatingPlayer;
+	bool updatingPlayer;
+	bool playerChanged;
+
 	public const string k_Ready = "r";
 	public const string k_Sponsor = "s";
 	public const string k_Name = "n";
@@ -97,7 +96,7 @@ public class ServerC : MonoBehaviour
 	}
 	void OnApplicationQuit()
 	{
-		DeleteLobby();
+		DeleteEmptyLobbies();
 	}
 	public async void AddCallbacksToLobby()
 	{
@@ -133,13 +132,14 @@ public class ServerC : MonoBehaviour
 	{
 		if (lobby == null)
 			return;
-		DeleteLobby();
-		//activePlayers.Clear();
 		heartbeatTimer.Pause();
 		pollForUpdatesTimer.Pause();
 		await LobbyService.Instance.RemovePlayerAsync(lobby.Id, AuthenticationService.Instance.PlayerId);
+		// only for host: networkManager.DisconnectClient(networkManager.LocalClientId);
 		networkManager.Shutdown();
 		callbacksLobbyId = "";
+		//DeleteEmptyLobbies();
+		Debug.Log("DISCONNECTED");
 	}
 	public async Task GetLobbyManually()
 	{
@@ -183,7 +183,7 @@ public class ServerC : MonoBehaviour
 		return playerMeData;
 	}
 
-	void DeleteLobby()
+	void DeleteEmptyLobbies()
 	{
 		while (createdLobbyIds.TryDequeue(out var lobbyId))
 		{
@@ -246,18 +246,22 @@ public class ServerC : MonoBehaviour
 		updatingPlayer = true;
 		try
 		{
-			await Task.Delay(100);
-			UpdatePlayerOptions options = new()
+			if(playerChanged)
 			{
-				Data = PlayerMe.Data
-			};
-			await LobbyService.Instance.UpdatePlayerAsync(lobby.Id, PlayerMe.Id, options);
+				await Task.Delay(100);
+				UpdatePlayerOptions options = new()
+				{
+					Data = PlayerMe.Data
+				};
+				await LobbyService.Instance.UpdatePlayerAsync(lobby.Id, PlayerMe.Id, options);
+			}
 		}
 		catch (LobbyServiceException e)
 		{
 			Debug.LogError("Failed to update player: " + e.Message);
 		}
 		updatingPlayer = false;
+		playerChanged = false;
 	}
 
 	public Player PlayerMe
@@ -274,7 +278,11 @@ public class ServerC : MonoBehaviour
 			return F.I.gameMode == MultiMode.Singleplayer || networkManager.IsHost;
 		}
 	}
-
+	public ActionHappening ActionHappening
+	{
+		get { return (ActionHappening)Enum.Parse(typeof(ActionHappening), lobby.Data[k_actionHappening].Value); }
+		set { lobby.Data[k_actionHappening] = new DataObject(DataObject.VisibilityOptions.Public, value.ToString()); }
+	}
 
 
 	private async Task Authenticate()
@@ -379,6 +387,7 @@ public class ServerC : MonoBehaviour
 			if (password != null && password.Length > 7)
 				o.Password = password;
 			lobby = await LobbyService.Instance.JoinLobbyByIdAsync(lobbyId, o);
+
 			AddCallbacksToLobby();
 			pollForUpdatesTimer.Start();
 
@@ -480,6 +489,50 @@ public class ServerC : MonoBehaviour
 			Debug.Log("Failed to heartbeat lobby " + e.Message);
 		}
 	}
-	
-	
+	public void SponsorSet(Livery livery)
+	{
+		string liv = livery.ToString();
+		if(liv != PlayerMe.Data[ServerC.k_Sponsor].Value)
+		{
+			PlayerMe.Data[ServerC.k_Sponsor].Value =liv;
+			playerChanged = true;
+		}
+	}
+	public void ScoreSet(int newScore)
+	{
+		if (newScore == 0)
+			Debug.LogWarning("ScoreSet 0");
+		string s = newScore.ToString();
+		if(s != PlayerMe.Data[ServerC.k_score].Value)
+		{
+			PlayerMe.Data[ServerC.k_score].Value = s;
+			playerChanged = true;
+		}
+	}
+	public void ReadySet(bool ready)
+	{
+		string r = ready.ToString();
+		if(r != PlayerMe.Data[ServerC.k_Ready].Value)
+		{
+			PlayerMe.Data[ServerC.k_Ready].Value = ready.ToString();
+			playerChanged = true;
+		}
+	}
+	public void NameSet(string name)
+	{
+		if(name != PlayerMe.Data[ServerC.k_Name].Value)
+		{
+			PlayerMe.Data[ServerC.k_Name].Value = name;
+			playerChanged = true;
+		}
+	}
+	public void CarNameSet()
+	{
+		if(PlayerMe.Data[ServerC.k_carName].Value != F.I.s_playerCarName)
+		{
+			PlayerMe.Data[ServerC.k_carName].Value = F.I.s_playerCarName;
+			playerChanged = true;
+		}
+	}
+
 }

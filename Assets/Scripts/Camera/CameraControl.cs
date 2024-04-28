@@ -285,15 +285,15 @@ namespace RVP
 				// 0.9848 = cos(15d)
 				upLook = Vector3.Lerp(
 					 upLook, (dot < 0.9848077 && pitchLocked) ? targetUp : hit.normal, upLookCoeff * Time.fixedDeltaTime);
-				Debug.DrawRay(vp.tr.position + Vector3.up * 3, targetUp, Color.red);
-				Debug.DrawRay(vp.tr.position + Vector3.up * 3, hit.normal, Color.blue);
+				//Debug.DrawRay(vp.tr.position + Vector3.up * 3, targetUp, Color.red);
+				//Debug.DrawRay(vp.tr.position + Vector3.up * 3, hit.normal, Color.blue);
 
 			}
 			lookObj.rotation = Quaternion.LookRotation(forwardLook, upLook + rollUp);
 			//-------------
 
 			// this.tr chases lookObj
-			if (vp.ghostComponent.justResetted)
+			if (vp.ghost.justResetted)
 			{
 				dampOffset = lookObj.position;
 				fastVelocity = Vector3.zero;
