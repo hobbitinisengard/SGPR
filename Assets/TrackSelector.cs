@@ -99,7 +99,7 @@ public class TrackSelector : TrackSelectorTemplate
 		if (!init)
 			dir = shiftInputRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
 
-
+		// disable CPU in multiplayer races to save bandwidth
 		F.I.s_cpuRivals = F.Wraparound(F.I.s_cpuRivals + dir, 0, (F.I.gameMode == MultiMode.Multiplayer) ? 0 : maxCPURivals);
 
 		if (F.I.s_raceType == RaceType.Knockout && ServerC.I.AmHost)

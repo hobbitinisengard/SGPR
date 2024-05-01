@@ -62,6 +62,7 @@ public class ServerC : MonoBehaviour
 	public const string k_duringRace = "d";
 	public const string k_trackSHA = "ts";
 	public const string k_trackName = "tn";
+	public const int tickRate = 10;
 	private void Awake()
 	{
 		networkManager = GetComponent<NetworkManager>();

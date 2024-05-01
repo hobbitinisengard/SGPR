@@ -209,9 +209,9 @@ namespace RVP
 			tr = transform;
 			rb = GetComponent<Rigidbody>();
 			vp = GetComponent<VehicleParent>();
-			this.racingLineLayerNumber = F.I.racingLineLayer;
-			this.stuntPoints = F.I.stuntpointsContainer;
-			this.replayCams = F.I.replayCams;
+			racingLineLayerNumber = F.I.racingLineLayer;
+			stuntPoints = F.I.stuntpointsContainer;
+			replayCams = F.I.replayCams;
 			trackPathCreator = F.I.universalPath;
 			universalPathLayer = F.I.racingLineLayer;
 			curReplayPointIdx = replayCams.Count - 1;
@@ -224,6 +224,7 @@ namespace RVP
 		IEnumerator Prepare()
 		{
 			yield return null; // wait till other components initialize
+
 			maxPhysicalSteerAngle = vp.steeringControl.steeredWheels[0].steerRangeMax;
 			dist = GetDist(1 << racingLineLayerNumber);
 
@@ -233,7 +234,6 @@ namespace RVP
 			}
 			target.dist = dist;
 			target.pos = trackPathCreator.path.GetPointAtDistance(dist);
-
 			SetCPU(isCPU);
 		}
 		int GetDist(int layer)
@@ -319,6 +319,7 @@ namespace RVP
 			vp.SetEbrake(0);
 			revvingCo = false;
 		}
+
 		void FixedUpdate()
 		{
 			if (!trackPathCreator)
@@ -616,7 +617,7 @@ namespace RVP
 			while (waitTimer > 0)
 			{
 				float stuntTimer = .5f;
-				vp.SetSGPShift(true);
+				vp.SetSGPShift(1);
 				if (vp.reallyGroundedWheels == 0)
 				{
 					vp.SetRoll(0);
@@ -652,7 +653,7 @@ namespace RVP
 				waitTimer -= Time.fixedDeltaTime;
 				yield return new WaitForFixedUpdate();
 			}
-			vp.SetSGPShift(false);
+			vp.SetSGPShift(0);
 			aiStuntingProc = false;
 		}
 		public IEnumerator ResetOnTrack()

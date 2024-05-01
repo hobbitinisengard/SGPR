@@ -10,14 +10,15 @@ public class MainMenuButton : Sfxable, ISelectHandler, IDeselectHandler, ISubmit
 	static Color32 selectedColor = new Color32(255, 255, 255, 255);
 	public Sprite dyndakSpriteOnSelect;
 	public string BottomTextOnSelect;
-	TextMeshProUGUI text;
+	TMP_Text text;
 	MainMenuView mainMenuView;
 	[System.NonSerialized]
 	public Button buttonComponent;
 	new void Awake()
 	{
 		base.Awake();
-		text = transform.GetChild(0).GetComponent<TextMeshProUGUI>();
+		if(!transform.GetChild(0).TryGetComponent(out text))
+			text = transform.GetChild(0).GetComponent<TMP_InputField>().textComponent;
 		text.color = deselectedColor;
 		buttonComponent = GetComponent<Button>();
 		mainMenuView = transform.FindParentComponent<MainMenuView>();

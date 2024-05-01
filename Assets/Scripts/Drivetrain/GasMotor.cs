@@ -70,7 +70,11 @@ namespace RVP
 			GetMaxRPM();
 		}
 
-		public override void FixedUpdate()
+		protected override void FixedUpdate()
+		{
+			FixedUpdateWorks(Time.fixedDeltaTime);
+		}
+		public void FixedUpdateWorks(float deltaTime)
 		{
 			base.FixedUpdate();
 			// Calculate proper input
@@ -93,7 +97,7 @@ namespace RVP
 				else
 					targetRPM = actualInput * limit2kRPM * 1000;
 
-				targetDrive.rpm = Mathf.Lerp(targetDrive.rpm, targetRPM, inertia * 20 * Time.fixedDeltaTime);
+				targetDrive.rpm = Mathf.Lerp(targetDrive.rpm, targetRPM, inertia * 20 * deltaTime);
 
 				curr_engine_krpm = targetDrive.feedbackRPM / 1000f;
 
@@ -127,11 +131,11 @@ namespace RVP
 						rpmTooHigh = true;
 						actualInput = 0;
 					}
-					
+
 				}
 				else
 					actualInput = 0;
-				targetDrive.torque = ( maxTorque + boostEval ) * torqueCurve.Evaluate(curr_engine_krpm) *
+				targetDrive.torque = (maxTorque + boostEval) * torqueCurve.Evaluate(curr_engine_krpm) *
 							Mathf.Lerp(targetDrive.torque,
 							Mathf.Abs(actualInput) * maxTorque,
 							inertia * Time.timeScale * health);
@@ -169,18 +173,26 @@ namespace RVP
 				}
 			}
 		}
-		public override void Update()
+		protected override void Update()
 		{
-			// Set audio pitch
+			UpdatePitch(Time.deltaTime);
+			base.Update();
+		}
+		public void UpdateWorks(float deltaTime)
+		{
+			UpdatePitch(deltaTime);
+			base.Update();
+		}
+		void UpdatePitch(float deltaTime)
+		{
 			if (engineAudio && ignition)
 			{
-				airPitch = (vp.groundedWheels > 0 || actualAccel != 0) ? 1 : Mathf.Lerp(airPitch, 0, 0.5f * Time.deltaTime);
+				airPitch = (vp.groundedWheels > 0 || actualAccel != 0) ? 1 : Mathf.Lerp(airPitch, 0, 0.5f * deltaTime);
 
 				targetPitch = Mathf.Abs((targetDrive.feedbackRPM * 0.001f) / limit2kRPM);
 			}
-
-			base.Update();
 		}
+		
 
 		/// <summary>
 		/// Calculates the max RPM and propagates its effects

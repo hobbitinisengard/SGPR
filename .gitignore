@@ -9,7 +9,7 @@ Assets/Unver/pics*
 Assets/StreamingAssets*
 Assets/AssetStoreTools*
 /Assets/Models/SGPTracks/
-
+/Assets/Smooth Sync/
 # Visual Studio cache directory
 .vs/
 *.blend1

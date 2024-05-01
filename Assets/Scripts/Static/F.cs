@@ -5,13 +5,35 @@ using System.Threading.Tasks;
 using Unity.Services.Lobbies.Models;
 using UnityEngine;
 using UnityEngine.Networking;
+public class CircularBuffer<T>
+{
+	T[] buffer;
+	int bufferSize;
+
+	public CircularBuffer(int bufferSize)
+	{
+		this.bufferSize = bufferSize;
+		buffer = new T[bufferSize];
+	}
+
+	public void Add(T item, int index) => buffer[index % bufferSize] = item;
+	public T Get(int index) => buffer[index % bufferSize];
+	public void Clear() => buffer = new T[bufferSize];
+}
 public static class F
 {
 	readonly public static int trackMask = 0;
 	public static AnimationCurve curve2 = AnimationCurve.EaseInOut(0, 1, 1, 0);
 	public static AnimationCurve curve = AnimationCurve.EaseInOut(0, 0, 1, 1);
 	public static Info I;
-	
+
+	/// <summary>
+	/// Sets any values of the Vector3
+	/// </summary>
+	public static Vector3 With(this Vector3 vector, float? x = null, float? y = null, float? z = null)
+	{
+		return new Vector3(x ?? vector.x, y ?? vector.y, z ?? vector.z);
+	}
 	public static void CopyFilesRecursively(string sourcePath, string targetPath)
 	{
 		//Now Create all of the directories
@@ -98,7 +120,11 @@ public static class F
 	}
 	public static int Wraparound(int value, int min, int max)
 	{
-		return Wraparound(value, min, max);
+		if (value < min)
+			value = max;
+		else if (value > max)
+			value = min;
+		return value;
 	}
 	public static float Wraparound(float value, float min, float max)
 	{
@@ -130,16 +156,16 @@ public static class F
 	}
 	public static string ToLaptimeStr(this TimeSpan t)
 	{
-		string shortForm = "";
-		if (t.TotalHours < 10)
+		string s = "";
+		if (t != TimeSpan.Zero && t.TotalHours < 10)
 		{
 			if (t.Hours > 0)
-				shortForm += string.Format("{0:D2}.", t.Hours);
-			shortForm += string.Format("{0:D2}:{1:D2}.{2:D2}", t.Minutes, t.Seconds, Mathf.RoundToInt(t.Milliseconds / 10f));
+				s += string.Format("{0:D2}.", t.Hours);
+			s += string.Format("{0:D2}:{1:D2}.{2:D2}", t.Minutes, t.Seconds, Mathf.RoundToInt(t.Milliseconds / 10f));
 		}
 		else
 			return "-";
-		return shortForm;
+		return s;
 	}
 
 	public static T[] InitializeArray<T>(int length) where T : new()

@@ -171,7 +171,7 @@ public class RaceBox : MonoBehaviour
 	{
 		lapTimer = 3600 * 24; // 24 hours
 		bestLapTime = TimeSpan.MaxValue;//TimeSpan.FromSeconds(F.I.tracks[F.I.s_trackName].records[0].secondsOrPts);
-		raceTime = TimeSpan.MinValue;
+		raceTime = TimeSpan.Zero;
 		curLap = 0;
 		starLevel = 0;
 		stuntPai = new PtsAnimInfo(0, PtsAnimType.Evo, -1);
@@ -193,23 +193,26 @@ public class RaceBox : MonoBehaviour
 				return "-";
 		}
 	}
-
-	private void FixedUpdate()
+	public void FixedUpdateWorks(float deltaTime)
 	{
-		if(F.I.s_laps > 0)
+		if (F.I.s_laps > 0)
 		{
 			if (!F.I.gamePaused && curLap > 0)
-				lapTimer += Time.fixedDeltaTime;
+				lapTimer += deltaTime;
 			if (vp.reallyGroundedWheels == 0)
 				lastTimeInAir = Time.time;
 
-			JumpDetector();
-			StuntDetector();
-			DriftDetector();
+			JumpDetector(deltaTime);
+			StuntDetector(deltaTime);
+			DriftDetector(deltaTime);
 
 			if (F.I.s_raceType != RaceType.Drift)
-				FlipDetector();
+				FlipDetector(deltaTime);
 		}
+	}
+	void FixedUpdate()
+	{
+		FixedUpdateWorks(Time.fixedDeltaTime);
 	}
 	public bool GetStuntSeq(ref StuntsData outStuntsData)
 	{
@@ -299,7 +302,7 @@ public class RaceBox : MonoBehaviour
 		starLevel = 0;
 	}
 
-	void DriftDetector()
+	void DriftDetector(float deltaTime)
 	{
 		// slide detector
 		if (vp.localVelocity.z > 5f)
@@ -313,7 +316,7 @@ public class RaceBox : MonoBehaviour
 			d_effectiveTurnAngle = 0;
 		}
 		prevSmoothedDriftAngle = smoothedDriftAngle;
-		smoothedDriftAngle = Mathf.Lerp(smoothedDriftAngle, d_effectiveTurnAngle, 10 * Time.fixedDeltaTime);
+		smoothedDriftAngle = Mathf.Lerp(smoothedDriftAngle, d_effectiveTurnAngle, 10 * deltaTime);
 
 
 		if (F.I.s_raceType == RaceType.Drift)
@@ -329,21 +332,21 @@ public class RaceBox : MonoBehaviour
 			if (vp.reallyGroundedWheels >= 3 && Mathf.Abs(smoothedDriftAngle) > 5 && vp.velMag > 30)
 			{ // drifting
 				float comboMult = (int)(9 / 8f * Mathf.Clamp(driftingTimer, 0, 8));
-				addDriftPoints = Time.fixedDeltaTime * vp.velMag * Mathf.InverseLerp(0, 60, Mathf.Abs(smoothedDriftAngle));
+				addDriftPoints = deltaTime * vp.velMag * Mathf.InverseLerp(0, 60, Mathf.Abs(smoothedDriftAngle));
 				grantedComboTime = 3;
-				driftingTimer += Time.fixedDeltaTime;
+				driftingTimer += deltaTime;
 				ProgressDrift((1 + comboMult) * addDriftPoints);
 			}
 			else
 				if(driftingTimer > 0)
-					driftingTimer-=Time.fixedDeltaTime;
+					driftingTimer-=deltaTime;
 
 			if (vp.velMag < 5)
 				ResetDrift();
 
 			topMeterSpeed = Mathf.Lerp(topMeterSpeed,
 				(vp.reallyGroundedWheels >= 3) ? addDriftPoints : 0,
-				Time.fixedDeltaTime * aeroMeterResponsiveness);
+				deltaTime * aeroMeterResponsiveness);
 			drift += topMeterSpeed;
 
 			if (prevSmoothedDriftAngle * smoothedDriftAngle <= 0 && vp.reallyGroundedWheels == 4 && driftingTimer > 1)
@@ -355,7 +358,7 @@ public class RaceBox : MonoBehaviour
 				driftingTimer = 0;
 			}
 			if (grantedComboTime > 0 && vp.reallyGroundedWheels > 0)
-				grantedComboTime = Mathf.Clamp(grantedComboTime-Time.fixedDeltaTime,0,3);
+				grantedComboTime = Mathf.Clamp(grantedComboTime-deltaTime,0,3);
 
 			if (grantedComboTime == 0)
 			{ // no drifting for long
@@ -382,7 +385,7 @@ public class RaceBox : MonoBehaviour
 			if (Mathf.Abs(smoothedDriftAngle) > 5 && vp.velMag > 30 && !vp.colliding)
 			{
 				driftingTime = Time.time;
-				driftingTimer += Time.fixedDeltaTime;
+				driftingTimer += deltaTime;
 			}
 			if (driftingTimer > 0 && Time.time - driftingTime > .3f)
 			{
@@ -401,7 +404,7 @@ public class RaceBox : MonoBehaviour
 			}
 		}
 	}
-	void StuntDetector()
+	void StuntDetector(float deltaTime)
 	{
 		// trickstart/wheelie/stoppie detection
 		if (vp.velMag < .5f)
@@ -411,15 +414,15 @@ public class RaceBox : MonoBehaviour
 		{
 			if(vp.wheels[0].groundedReally)
 				if(vp.wheels[1].groundedReally)
-					handstandTimer += Time.fixedDeltaTime;
+					handstandTimer += deltaTime;
 				else if(vp.wheels[2].groundedReally)
-					sidewinderLeftTimer += Time.fixedDeltaTime;
+					sidewinderLeftTimer += deltaTime;
 
 			if (vp.wheels[2].groundedReally)
 				if (vp.wheels[3].groundedReally)
-					wheelieTimer += Time.fixedDeltaTime;
+					wheelieTimer += deltaTime;
 				else if (vp.wheels[1].groundedReally)
-					sidewinderRightTimer += Time.fixedDeltaTime;
+					sidewinderRightTimer += deltaTime;
 
 			if (wheelieTimer > .6f)
 			{
@@ -458,7 +461,7 @@ public class RaceBox : MonoBehaviour
 			sidewinderLeftTimer = 0;
 		}
 	}
-	void FlipDetector() 
+	void FlipDetector(float deltaTime) 
 	{ 
 		if (vp.reallyGroundedWheels == 0)
 		{
@@ -532,19 +535,19 @@ public class RaceBox : MonoBehaviour
 						//Debug2Mono.DrawText(vp.transform.position, lA.x.ToString(),5,Color.blue);
 						//Debug.DrawRay(vp.transform.position, normA, Color.red, 5);
 						//Debug.Log(lA.x);
-						stunt.AddProgress(lA.x * Time.fixedDeltaTime, vp);
+						stunt.AddProgress(lA.x * deltaTime, vp);
 						foundMoves.x = 1;
 
 						//stunt.PrintProgress();
 					}
 					if (foundMoves.y == 0 && stunt.rotationAxis.y != 0 && lA.y != 0)
 					{
-						stunt.AddProgress(lA.y * Time.fixedDeltaTime, vp);
+						stunt.AddProgress(lA.y * deltaTime, vp);
 						foundMoves.y = 1;
 					}
 					if (foundMoves.z == 0 && stunt.rotationAxis.z != 0 && lA.z != 0)
 					{
-						stunt.AddProgress(lA.z * Time.fixedDeltaTime, vp);
+						stunt.AddProgress(lA.z * deltaTime, vp);
 						foundMoves.z = 1;
 					}
 
@@ -589,7 +592,7 @@ public class RaceBox : MonoBehaviour
 				stableLandingTimer = .5f;
 			}
 			if (stableLandingTimer > 0 && vp.reallyGroundedWheels == 4 && vp.followAI.overRoad)
-				stableLandingTimer -= Time.fixedDeltaTime;
+				stableLandingTimer -= deltaTime;
 
 			if (stableLandingTimer != -1 && vp.velMag < 14)
 				DeclineStunt();
@@ -600,7 +603,7 @@ public class RaceBox : MonoBehaviour
 			if (grantedComboTime > 0)
 			{
 				if (vp.reallyGroundedWheels > 0 && stableLandingTimer == -1)
-					grantedComboTime -= Time.fixedDeltaTime;
+					grantedComboTime -= deltaTime;
 			}
 			else
 			{// end combo
@@ -692,7 +695,7 @@ public class RaceBox : MonoBehaviour
 			return StuntSeqStatus.Ended;
 	}
 
-	private void JumpDetector()
+	private void JumpDetector(float deltaTime)
 	{
 		if (Time.timeScale != 0)
 		{
@@ -701,7 +704,7 @@ public class RaceBox : MonoBehaviour
 			float minAeroMeterVelocity = 0;
 			topMeterSpeed = Mathf.Lerp(topMeterSpeed,
 			(vp.reallyGroundedWheels == 0 && !vp.colliding) ? maxAeroMeterVelocity : minAeroMeterVelocity,
-			Time.deltaTime * aeroMeterResponsiveness);
+			deltaTime * aeroMeterResponsiveness);
 			aero += topMeterSpeed;
 
 			// jump detector
@@ -843,7 +846,7 @@ public class RaceBox : MonoBehaviour
 	{
 		//vp.followAI.raceEndedLapProgressPercent = (curLap-1) + vp.followAI.LapProgressPercent;
 		vp.sampleText.gameObject.SetActive(false);
-		raceTime = DateTime.Now - F.I.raceStartDate;
+		raceTime = DateTime.UtcNow - F.I.raceStartDate;
 		
 		if (F.I.gameMode == MultiMode.Multiplayer && vp.Owner && vp == RaceManager.I.playerCar)
 		{
@@ -863,8 +866,10 @@ public class RaceBox : MonoBehaviour
 		try
 		{
 			bestLapTime = TimeSpan.FromMilliseconds(bestLapSecs * 1000);
-			if(raceTimeSecs > 0)
+			if (raceTimeSecs > 0)
 				raceTime = TimeSpan.FromMilliseconds(raceTimeSecs * 1000);
+			else
+				raceTime = TimeSpan.Zero;
 		}
 		catch
 		{

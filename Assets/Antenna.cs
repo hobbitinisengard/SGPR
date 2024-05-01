@@ -8,8 +8,6 @@ public class Antenna : MonoBehaviour
 	protected VehicleParent vp;
 	protected Transform follower;
 	protected Vector3 goal_vel;
-	protected Vector3 car_vel = Vector3.zero;
-	protected Vector3 car_prevVel;
 	protected Vector3 follower_vel = Vector3.zero;
 	protected float halflife = .5f; //drag
 	protected float frequency = 2; //Spring
@@ -73,10 +71,7 @@ public class Antenna : MonoBehaviour
 	protected void Update_Follower()
 	{
 		goal_prevPos = goal_vel;
-		car_prevVel = car_vel;
-		car_vel = vp.localVelocity;
-		Vector3 a = -(car_vel - car_prevVel);
-		goal_pos = goal_initPos + a;
+		goal_pos = goal_initPos - vp.acceleration;
 		goal.localPosition = goal_pos;
 		goal_vel = goal_pos - goal_prevPos;
 		Vector3 follower_pos = follower.localPosition;

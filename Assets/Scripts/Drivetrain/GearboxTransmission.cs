@@ -105,8 +105,12 @@ namespace RVP
 		}
 		void FixedUpdate()
 		{
+			FixedUpdateWorks(Time.fixedDeltaTime);
+		}
+		public void FixedUpdateWorks(float deltaTime)
+		{
 			health = Mathf.Clamp01(health);
-			shiftTime = Mathf.Max(0, shiftTime - Time.timeScale * Time.fixedDeltaTime);
+			shiftTime = Mathf.Max(0, shiftTime - Time.timeScale * deltaTime);
 			d_feedback = targetDrive.feedbackRPM;
 			d_rpm = targetDrive.rpm;
 			if (shiftTime == 0 || currentGear < 2)

@@ -28,7 +28,7 @@ public class GerTimer : MonoBehaviour
 			else
 			{
 			
-				TimeSpan timediff = (DateTime.Now - F.I.raceStartDate).Duration();
+				TimeSpan timediff = (DateTime.UtcNow - F.I.raceStartDate).Duration();
 				// minutes : seconds : ff
 				int val = timediff.Minutes;
 				digits[0].sprite = sprites[val / 10];

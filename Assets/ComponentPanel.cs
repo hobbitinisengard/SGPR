@@ -1126,14 +1126,12 @@ public class SuspensionSavable : PartSavable
 	public float frontSpringForce;
 	public float frontSpringExponent;
 	public float frontSpringDampening;
-	public float frontExtendSpeed;
 	//rear
 	public float RearSteerRangeDegs;
 	public float RearSpringDistance;
 	public float RearSpringForce;
 	public float RearSpringExponent;
 	public float RearSpringDampening;
-	public float RearExtendSpeed;
 	public SuspensionSavable()
 	{
 	}
@@ -1148,12 +1146,10 @@ public class SuspensionSavable : PartSavable
 		frontSpringForce = original.frontSpringForce;
 		frontSpringExponent = original.frontSpringExponent;
 		frontSpringDampening = original.frontSpringDampening;
-		frontExtendSpeed = original.frontExtendSpeed;
 		RearSpringDistance = original.RearSpringDistance;
 		RearSpringForce = original.RearSpringForce;
 		RearSpringExponent = original.RearSpringExponent;
 		RearSpringDampening = original.RearSpringDampening;
-		RearExtendSpeed = original.RearExtendSpeed;
 	}
 	public override PartSavable Clone()
 	{
@@ -1173,7 +1169,6 @@ public class SuspensionSavable : PartSavable
 				w.suspensionParent.springForce = frontSpringForce;
 				w.suspensionParent.springExponent = frontSpringExponent;
 				w.suspensionParent.springDampening = frontSpringDampening;
-				w.suspensionParent.extendSpeed = frontExtendSpeed;
 			}
 			else
 			{
@@ -1181,7 +1176,6 @@ public class SuspensionSavable : PartSavable
 				w.suspensionParent.springForce = RearSpringForce;
 				w.suspensionParent.springExponent = RearSpringExponent;
 				w.suspensionParent.springDampening = RearSpringDampening;
-				w.suspensionParent.extendSpeed = RearExtendSpeed;
 			}
 			i++;
 		}
@@ -1193,13 +1187,11 @@ public class SuspensionSavable : PartSavable
 		frontSpringForce = vp.wheels[0].suspensionParent.springForce;
 		frontSpringExponent = vp.wheels[0].suspensionParent.springExponent;
 		frontSpringDampening = vp.wheels[0].suspensionParent.springDampening;
-		frontExtendSpeed = vp.wheels[0].suspensionParent.extendSpeed;
 
 		RearSpringDistance = vp.wheels[3].suspensionParent.suspensionDistance;
 		RearSpringForce = vp.wheels[3].suspensionParent.springForce;
 		RearSpringExponent = vp.wheels[3].suspensionParent.springExponent;
 		RearSpringDampening = vp.wheels[3].suspensionParent.springDampening;
-		RearExtendSpeed = vp.wheels[3].suspensionParent.extendSpeed;
 	}
 }
 

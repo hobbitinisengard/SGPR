@@ -307,7 +307,7 @@ namespace RVP
 		public void StartRace()
 		{
 			ResultsView.Clear();
-			F.I.raceStartDate = DateTime.Now.AddSeconds((ServerC.I.AmHost) ? 5 : 4.5f);
+			F.I.raceStartDate = DateTime.UtcNow.AddSeconds((ServerC.I.AmHost) ? 5 : 4.5f);
 			StartCoroutine(StartRaceCoroutine());
 		}
 		IEnumerator StartRaceCoroutine()
@@ -474,7 +474,7 @@ namespace RVP
 		{
 			while (F.I.s_spectator)
 			{
-				if ((DateTime.Now - F.I.raceStartDate).TotalSeconds > 60
+				if ((DateTime.UtcNow - F.I.raceStartDate).TotalSeconds > 60
 					|| (F.I.enterRef.action.ReadValue<float>() == 1) || (F.I.escRef.action.ReadValue<float>() == 1))
 				{
 					BackToMenu(applyScoring: false);

@@ -9,7 +9,7 @@ using UnityEngine.UI;
 
 public class ServerList : MonoBehaviour
 {
-	public GameObject tooManyPlayersText;
+	public TextMeshProUGUI dialogTextObj;
 	public Button startAServerButton;
 	public Transform content;
 	public GameObject rowPrefab;
@@ -31,9 +31,16 @@ public class ServerList : MonoBehaviour
 	private void OnEnable()
 	{
 		startAServerButton.interactable = false;
-		tooManyPlayersText.SetActive(false);
+		dialogTextObj.gameObject.SetActive(false);
 		content.DestroyAllChildren();
 		Refresh();
+	}
+	public void ShowErrorMessage(string msg)
+	{
+		dialogTextObj.gameObject.SetActive(true);
+		startAServerButton.interactable = false;
+		content.DestroyAllChildren();
+		dialogTextObj.text = msg;
 	}
 	public async void Refresh()
 	{
@@ -85,13 +92,13 @@ public class ServerList : MonoBehaviour
 		}
 		catch (LobbyServiceException e)
 		{
-			Debug.Log(e);
+			ShowErrorMessage(e.Message);
 		}
 
-		tooManyPlayersText.SetActive(playersOnlineRN > F.I.maxConcurrentUsers);
-		startAServerButton.interactable = (!tooManyPlayersText.activeSelf);
-		if (tooManyPlayersText.activeSelf)
-			content.DestroyAllChildren();
+		if(playersOnlineRN < F.I.maxConcurrentUsers)
+			startAServerButton.interactable = true;
+		else
+			ShowErrorMessage("Servers are overloaded. Try again later");
 	}
 	public async void JoinLobby(string joinId)
 	{
@@ -102,9 +109,10 @@ public class ServerList : MonoBehaviour
 				thisView.GoToView(lobbyView.gameObject);
 			}
 		}
-		catch
+		catch(Exception e)
 		{
-			if(buttonFromWhichWeJoinServer)
+			ShowErrorMessage(e.Message);
+			if (buttonFromWhichWeJoinServer)
 			{
 				Destroy(buttonFromWhichWeJoinServer);
 			}

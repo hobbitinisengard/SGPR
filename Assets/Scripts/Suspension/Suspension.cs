@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System;
 
 namespace RVP
 {
@@ -99,8 +100,9 @@ namespace RVP
 		public float springExponent = 1;
 		public float springDampening;
 
+		[NonSerialized]
 		[Tooltip("How quickly the suspension extends if it's not grounded")]
-		public float extendSpeed = 20;
+		public float extendSpeed = 10;
 
 		[Tooltip("Apply forces to prevent the wheel from intersecting with the ground, not necessary if generating a hard collider")]
 		public bool applyHardContactForce = true;
@@ -205,6 +207,10 @@ namespace RVP
 
 		void FixedUpdate()
 		{
+			Work(Time.fixedDeltaTime);
+		}
+		public void Work(float deltaTime)
+		{
 			upDir = tr.up;
 			forwardDir = tr.forward;
 			targetCompression = 1;
@@ -226,7 +232,7 @@ namespace RVP
 
 			if (targetCompression > 0)
 			{
-				ApplySuspensionForce();
+				ApplySuspensionForce(deltaTime);
 			}
 
 			// Set hard collider size if it is changed during play mode
@@ -268,8 +274,7 @@ namespace RVP
 				targetDrive.feedbackRPM = targetDrive.rpm;
 			}
 		}
-
-		void Update()
+		public void Update()
 		{
 			GetCamber();
 
@@ -283,7 +288,7 @@ namespace RVP
 		}
 
 		// Apply suspension forces to support vehicles
-		void ApplySuspensionForce()
+		void ApplySuspensionForce(float deltaTime)
 		{
 			if (wheel.grounded && wheel.connected)
 			{
@@ -328,8 +333,8 @@ namespace RVP
 				if (compression == 0 && !generateHardCollider && applyHardContactForce)
 				{
 					rb.AddForceAtPosition(
-						 -vp.norm.TransformDirection(0, 0, Mathf.Clamp(travelVel, -hardContactSensitivity * TimeMaster.fixedTimeFactor, 0)
-						 + penetration) * hardContactForce * Mathf.Clamp01(TimeMaster.fixedTimeFactor),
+						 -vp.norm.TransformDirection(0, 0, Mathf.Clamp(travelVel, -hardContactSensitivity * .01f / deltaTime, 0)
+						 + penetration) * hardContactForce * Mathf.Clamp01(.01f / deltaTime),
 						 applyForceAtGroundContact ? wheel.contactPoint.point : wheel.tr.position,
 						 vp.suspensionForceMode);
 				}

@@ -113,7 +113,7 @@ namespace RVP
 
 		private void ChangeFollowCamera(InputAction.CallbackContext obj)
 		{
-			if (mode == Mode.Follow && !F.I.chat.texting)
+			if (enabled && mode == Mode.Follow && !F.I.chat.texting)
 			{
 				curCameraLH++;
 				curCameraLH %= camerasLH.Length;

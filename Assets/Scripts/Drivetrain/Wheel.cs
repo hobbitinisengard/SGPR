@@ -348,6 +348,10 @@ namespace RVP
 
 		void FixedUpdate()
 		{
+			Work(Time.fixedDeltaTime);
+		}
+		public void Work(float deltaTime)
+		{
 			upDir = tr.up;
 			actualRadius = popped ? rimRadius : Mathf.Lerp(rimRadius, tireRadius, tirePressure);
 			circumference = Mathf.PI * actualRadius * 2;
@@ -360,14 +364,14 @@ namespace RVP
 
 			if (getContact)
 			{
-				GetWheelContact();
+				GetWheelContact(deltaTime);
 			}
 			else if (grounded)
 			{
-				contactPoint.point += localVel * Time.fixedDeltaTime;
+				contactPoint.point += localVel * deltaTime;
 			}
 
-			airTime = grounded ? 0 : airTime + Time.fixedDeltaTime;
+			airTime = grounded ? 0 : airTime + deltaTime;
 			forceApplicationPoint = applyForceAtGroundContact ? contactPoint.point : tr.position;
 
 			if (connected)
@@ -383,7 +387,8 @@ namespace RVP
 			}
 
 			// Get travel distance
-			travelDist = suspensionParent.compression < travelDist || grounded ? suspensionParent.compression : Mathf.Lerp(travelDist, suspensionParent.compression, suspensionParent.extendSpeed * Time.fixedDeltaTime);
+			travelDist = (suspensionParent.compression < travelDist || grounded) ? suspensionParent.compression
+				: Mathf.Lerp(travelDist, suspensionParent.compression, suspensionParent.extendSpeed * deltaTime);
 
 			PositionWheel();
 
@@ -476,7 +481,6 @@ namespace RVP
 
 			}
 		}
-
 		void LateUpdate()
 		{
 			RotateWheel();
@@ -523,9 +527,8 @@ namespace RVP
 		}
 
 		// Use raycasting to find the current contact point for the wheel
-		void GetWheelContact()
+		void GetWheelContact(float deltaTime)
 		{
-
 			float castDist = Mathf.Max(suspensionParent.suspensionDistance * Mathf.Max(0.001f, suspensionParent.targetCompression) + actualRadius, 0.001f);
 			//RaycastHit[] wheelHits = Physics.RaycastAll(transform.position, suspensionParent.springDirection, castDist, RaceManager.wheelCastMaskStatic);
 			bool validHit = Physics.Raycast(transform.position, suspensionParent.springDirection, out RaycastHit hit, castDist, RaceManager.wheelCastMaskStatic);
@@ -566,7 +569,7 @@ namespace RVP
 				grounded = true;
 				groundedReally = true;
 				contactPoint.distance = hit.distance - actualRadius;
-				contactPoint.point = hit.point + localVel * Time.fixedDeltaTime;
+				contactPoint.point = hit.point + localVel * deltaTime;
 				contactPoint.grounded = true;
 				contactPoint.normal = hit.normal;
 				contactPoint.relativeVelocity = tr.InverseTransformDirection(localVel);

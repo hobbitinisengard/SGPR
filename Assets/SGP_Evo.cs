@@ -113,12 +113,12 @@ public class RotationDampStruct
 		speed = 0;
 		evoMaxSpeed = 0;
 	}
-	public void SmoothDamp()
+	public void SmoothDamp(float deltaTime)
 	{
 		pos = degs(pos);
 		prevSpeed = speed;
 		pos = Mathf.SmoothDamp(pos, targetPos, ref speed,
-				 evoSmoothTime, evoMaxSpeed, Time.fixedDeltaTime);
+				 evoSmoothTime, evoMaxSpeed, deltaTime);
 	}
 	public void IncreaseEvoSpeed()
 	{
@@ -149,7 +149,7 @@ public class SGP_Evo : MonoBehaviour
 	Rigidbody rb;
 	VehicleParent vp;
 	float shiftPressTime;
-	bool prevSGPShiftButton = false;
+	int prevSGPShiftButton;
 	public bool stunting = false;
 	public bool flippedWhenInitiated = false;
 	float maxTimeToInit = 1f;
@@ -192,19 +192,18 @@ public class SGP_Evo : MonoBehaviour
 			return stunting;
 		}
 	}
-
-	void FixedUpdate()
+	public void FixedUpdateWorks(float deltaTime)
 	{
-		if (vp.SGPshiftbutton)
+		if (vp.SGPshiftbutton > 0)
 		{
-			if (!stunting && prevSGPShiftButton == false)
+			if (!stunting && prevSGPShiftButton == 0)
 			{ // shift press before jump
-				if(vp.reallyGroundedWheels > 0 && !vp.crashing)
+				if (vp.reallyGroundedWheels > 0 && !vp.crashing)
 				{
 					shiftPressTime = Time.time;
 					flippedWhenInitiated = false;
 				}
-				else if(vp.reallyGroundedWheels == 0 && vp.crashing)
+				else if (vp.reallyGroundedWheels == 0 && vp.crashing)
 				{
 					shiftPressTime = Time.time;
 					flippedWhenInitiated = true;
@@ -230,10 +229,10 @@ public class SGP_Evo : MonoBehaviour
 				return;
 			}
 
-			if(flippedWhenInitiated && !vp.crashing && !vp.colliding && vp.reallyGroundedWheels == 0)
+			if (flippedWhenInitiated && !vp.crashing && !vp.colliding && vp.reallyGroundedWheels == 0)
 				flippedWhenInitiated = false;
 
-			if (vp.SGPshiftbutton)
+			if (vp.SGPshiftbutton > 0)
 			{
 				if (vp.accelInput > 0.5f)
 				{ // backflip
@@ -262,7 +261,7 @@ public class SGP_Evo : MonoBehaviour
 				{ // rotation left/right 
 					if (vp.steerInput > 0.5f)
 						r[1].UpdateTarget(Direction.CLOCK);
-					else if(vp.steerInput < -0.5f)
+					else if (vp.steerInput < -0.5f)
 						r[1].UpdateTarget(Direction.ANTICLOCK);
 					r[1].IncreaseEvoSpeed();
 
@@ -276,20 +275,20 @@ public class SGP_Evo : MonoBehaviour
 				{
 					rds.DecreaseMaxEvoSpeed();
 					// rotation locking to 90 and 180deg turns off when not pressing shift
-					if (!vp.SGPshiftbutton)
+					if (vp.SGPshiftbutton == 0)
 						rds.CloseAdvancedMode();
 				}
 			}
 
 			foreach (RotationDampStruct rds in r)
-				rds.SmoothDamp();
+				rds.SmoothDamp(deltaTime);
 
-			if(r.Any(a => a.Active))
+			if (r.Any(a => a.Active))
 			{
 				rb.rotation = Quaternion.Euler(r[0].Pos, r[1].Pos, r[2].Pos);
 				rb.angularVelocity = vp.transform.TransformDirection(Mathf.Deg2Rad * new Vector3(r[0].speed, r[1].speed, r[2].speed));
 			}
-			
+
 			//rb.AddRelativeTorque(Mathf.Deg2Rad * new Vector3(r[0].Delta, r[1].Delta, r[2].Delta), ForceMode.VelocityChange);
 
 			//Vector3 delta = new Vector3(r[0].Delta(), r[1].Delta(), r[2].Delta());
@@ -303,6 +302,10 @@ public class SGP_Evo : MonoBehaviour
 			//}
 		}
 		prevSGPShiftButton = vp.SGPshiftbutton;
+	}
+	void FixedUpdate()
+	{
+		FixedUpdateWorks(Time.fixedDeltaTime);
 	}
 
 	internal void Reset()

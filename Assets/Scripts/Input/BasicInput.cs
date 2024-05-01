@@ -78,13 +78,13 @@ namespace RVP
 					vp.SetAccel(Mathf.Clamp01(input2.y));
 					vp.SetBrake(Mathf.Abs(Mathf.Clamp(input2.y, -1, 0)));
 					vp.SetSteer(input2.x);
-					vp.SetBoost(boostInput.action.ReadValue<float>() == 1);
+					vp.SetBoost((int)boostInput.action.ReadValue<float>());
 
 					if (F.I.chat.texting)
 						return;
 
-					vp.SetHonkerInput(honkInput.action.ReadValue<float>() == 1);
-					vp.SetSGPShift(evoInput.action.ReadValue<float>() == 1);
+					vp.SetHonkerInput((int)honkInput.action.ReadValue<float>());
+					vp.SetSGPShift((int)evoInput.action.ReadValue<float>());
 					if (resetOnTrackInput.action.ReadValue<float>() == 1
 						&& Time.time - resetOnTrackTime > 5)
 					{

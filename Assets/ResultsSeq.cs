@@ -77,7 +77,6 @@ public class ResultsSeq : MonoBehaviour
 		audioSource.clip = F.I.audioClips[(playerResultPosition <= 3) ? "RacePodium" : "RaceNotPodium"];
 		audioSource.loop = false;
 		audioSource.Play();
-
 	}
 	private void OnEnterClicked(UnityEngine.InputSystem.InputAction.CallbackContext obj)
 	{

@@ -23,7 +23,7 @@ public class CountDownSeq : Sfxable
 	{
 		img = transform.GetChild(0).GetComponent<Image>();
 		img.color = new Color(1, 1, 1, 0);
-		Countdown = (float)(F.I.raceStartDate - DateTime.Now).TotalMilliseconds / 1000f;
+		Countdown = (float)(F.I.raceStartDate - DateTime.UtcNow).TotalMilliseconds / 1000f;
 		if (seq != null)
 			StopCoroutine(seq);
 		seq = StartCoroutine(CountdownSeq());
