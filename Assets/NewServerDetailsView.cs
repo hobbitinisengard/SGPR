@@ -57,13 +57,11 @@ public class NewServerDetailsView : MainMenuView
 	}
 	public void CheckOKButton()
    {
-      Okbutton.SetActive(maxPlayersInputField.text.Length > 0 && serverNameInputField.text.Length > 0);
+      Okbutton.SetActive(!server.isCreatingLobby && maxPlayersInputField.text.Length > 0 && serverNameInputField.text.Length > 0
+			 && (passInputField.text.Length > 7 || passInputField.text.Length == 0));
 	}
 	public async void CreateLobby()
 	{
-		if (server.isCreatingLobby)
-			return;
-
 		OkbuttonText.text = "WAIT";
 		
 		F.I.s_trackName = F.I.tracks.First(kv => kv.Value.valid).Key;
