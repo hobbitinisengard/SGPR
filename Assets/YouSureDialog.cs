@@ -1,3 +1,4 @@
+using Newtonsoft.Json.Linq;
 using RVP;
 using System.Collections;
 using UnityEngine;
@@ -44,7 +45,9 @@ public class YouSureDialog : MonoBehaviour
 	private void OnDisable()
 	{
 		SetInteractibilityOfButtons(true);
-		notInteractableExternalButtonsContainer.transform.GetChild(2).GetComponent<Button>().Select();
+		var btnTr = notInteractableExternalButtonsContainer.transform.GetChild(2);
+		var btn = btnTr.GetComponent<Button>() ?? btnTr.GetChild(0).GetComponent<Button>();
+		btn.Select();
 		gameObject.SetActive(false);
 	}
 }

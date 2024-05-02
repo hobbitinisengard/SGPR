@@ -11,7 +11,7 @@ public class Connector : MonoBehaviour
 	public Connector connection;
 	[NonSerialized]
 	public TrackCamera trackCamera;
-	Tile tile;
+	public Tile tile { get; private set; }
 	public static Material blue;
 	public static Material red;
 	public static Material green;
@@ -42,7 +42,10 @@ public class Connector : MonoBehaviour
 	public void DisableCollider()
 	{
 		if (connection)
+		{
 			GetComponent<Collider>().enabled = false;
+			SwitchEndingCollision(false);
+		}
 	}
 	public void SetCamera(TrackCamera newCamera)
 	{
@@ -137,41 +140,63 @@ public class Connector : MonoBehaviour
 	private void OnDestroy()
 	{ // restore turned off connections of other tiles when destroying this tile
 		if(connection)
+		{
 			connection.GetComponent<Collider>().enabled = true;
+			connection.SwitchEndingCollision(true);
+		}
 		if (trackCamera)
 			trackCamera.SetMaterial(pink);
 	}
-	private void OnTriggerStay(Collider otherCollider)
+	/// <summary>
+	/// turns on/off collision of connector's tile's ending if tile has one
+	/// </summary>
+	void SwitchEndingCollision(bool enabled)
+	{
+		if (tile.Endings != null)
+		{ 
+			tile.Endings[transform.GetSiblingIndex() - 1].enabled = enabled;
+		}
+	}
+	private void OnTriggerStay(Collider otherConnectorsCollider)
 	{
 		if(tile.panel.mode == EditorPanel.Mode.Build)
 		{
 			if (!tile.placed)
 			{
-				tile.panel.SetPlacedConnector(otherCollider.transform.position);
+				tile.panel.SetPlacedAnchor(otherConnectorsCollider.transform.position); 
+				SwitchEndingCollision(false);
 			}
 			else
 			{
-				if (otherCollider.transform.FindParentComponent<Tile>().placed)
+				Tile otherTile = otherConnectorsCollider.transform.FindParentComponent<Tile>();
+				if (otherTile.placed)
 				{ // both connectors are placed, disable other one
-					otherCollider.enabled = false;
-					connection = otherCollider.GetComponent<Connector>();
+					otherConnectorsCollider.enabled = false;
+					connection = otherConnectorsCollider.GetComponent<Connector>();
+					SwitchEndingCollision(false);
 				}
 				else
-					tile.panel.SetFloatingConnector(otherCollider.transform.position);
+				{
+					tile.panel.SetFloatingConnector(otherConnectorsCollider.transform.position);
+					SwitchEndingCollision(false);
+				}
 			}
 		}
 	}
+	
 	private void OnTriggerExit(Collider other)
 	{
 		if (tile.panel.mode == EditorPanel.Mode.Build)
 		{
 			if (!tile.placed)
 			{
-				tile.panel.SetPlacedConnector(null);
+				tile.panel.SetPlacedAnchor(null);
+				SwitchEndingCollision(true);
 			}
 			else
 			{
 				tile.panel.SetFloatingConnector(null);
+				SwitchEndingCollision(true);
 			}
 		}
 	}

@@ -3,7 +3,7 @@
 public class Sfxable : MonoBehaviour
 {
 	static GameObject mainCameraObj;
-	private void Awake()
+	protected virtual void Awake()
 	{
 		if(!mainCameraObj)
 			mainCameraObj = GameObject.Find("MainCamera");
@@ -13,7 +13,7 @@ public class Sfxable : MonoBehaviour
 		var snd = Resources.Load<GameObject>("sfx/SoundInstance");
 		var go = Instantiate(snd, mainCameraObj.transform);
 		var audioSource = go.GetComponent<AudioSource>();
-		audioSource.clip = Info.audioClips[name];
+		audioSource.clip = F.I.audioClips[name];
 		if (ignorePause)
 		{
 			audioSource.ignoreListenerPause = true;

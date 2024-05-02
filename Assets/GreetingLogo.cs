@@ -1,22 +1,23 @@
 using UnityEngine.UI;
 using UnityEngine;
 using System.Collections;
-using RVP;
 using TMPro;
+using UnityEngine.InputSystem;
 
-public class GreetingLogo : MonoBehaviour
+public class GreetingLogo : Sfxable
 {
 	public Color reddish;
 	public AnimationCurve jumpingCurve;
 	public TextMeshProUGUI bottomText;
-	public float timer;
-	public float timer2;
-	public float timer3;
-	public int jumps = 0;
+	float timer;
+	float timer2;
+	float timer3;
+	int jumps = 0;
 	public Button startButton;
 	public RectTransform blitz;
 	public GameObject nextMenu;
-	private bool goingUpSeq;
+	public InputActionReference submitRef;
+	bool goingUpSeq;
 
 	Vector2 outMoveInitPos;
 	Vector2 outMoveTargetPos = new Vector2(0, Screen.height);
@@ -24,17 +25,34 @@ public class GreetingLogo : MonoBehaviour
 	private bool toDemo;
 	private int lastTryCo;
 	MainMenuView view;
-	void Start()
+	new void Awake()
 	{
+		base.Awake();
 		rt = GetComponent<RectTransform>();
-		float screenWidth = Screen.width;//transform.parent.GetComponent<RectTransform>().rect.width;
 		transform.GetChild(0).GetComponent<RectTransform>().localPosition = 
-			new Vector2(screenWidth, 0);
+			new Vector2(Screen.width, 0);
 		view = transform.parent.GetComponent<MainMenuView>();
 		Cursor.visible = false;
 	}
+
+	private void SubmitPressed(InputAction.CallbackContext obj)
+	{
+		PlaySFX("fe-dialogconfirm");
+		goingUpSeq = true;
+		F.I.s_spectator = false;
+		toDemo = false;
+		outMoveInitPos = rt.localPosition;
+		timer = 0;
+	}
+	private void OnDisable()
+	{
+		submitRef.action.performed -= SubmitPressed;
+	}
 	private void OnEnable()
 	{
+		var pos = blitz.anchoredPosition;
+		pos.y = rt.rect.height / 1.8f;
+		blitz.anchoredPosition = pos;
 		timer = 0;
 		timer2 = 0;
 		timer3 = 0;
@@ -42,7 +60,10 @@ public class GreetingLogo : MonoBehaviour
 		lastTryCo = 0;
 		goingUpSeq = false;
 		startButton.Select();
+		submitRef.action.performed += SubmitPressed;
+		F.I.gameMode = MultiMode.Singleplayer;
 	}
+
 	void Update()
 	{
 		if (goingUpSeq)
@@ -51,22 +72,22 @@ public class GreetingLogo : MonoBehaviour
 			{
 				if (toDemo)
 				{
-					int randomIdx = Mathf.RoundToInt((Info.tracks.Count - 1) * UnityEngine.Random.value);
+					int randomIdx = Mathf.RoundToInt((F.I.tracks.Count - 1) * UnityEngine.Random.value);
 					int i = 0;
 					bool cantFind = false;
-					foreach (var track in Info.tracks)
+					foreach (var track in F.I.tracks)
 					{
 						if ((cantFind && track.Key.Length > 3) || randomIdx == i)
 						{
 							if (track.Key.Length > 3 && track.Value.valid && track.Value.unlocked)
 							{
-								Info.s_spectator = true;
-								Info.s_rivals = 5;
-								Info.s_inEditor = false;
-								Info.s_cpuLevel = Info.CpuLevel.Elite;
-								Info.s_trackName = track.Key;
-								Info.s_isNight = UnityEngine.Random.value > 0.5f;
-								Info.s_laps = 9;
+								F.I.s_spectator = true;
+								F.I.s_cpuRivals = 5;
+								F.I.s_inEditor = false;
+								F.I.s_cpuLevel = CpuLevel.Normal;
+								F.I.s_trackName = track.Key;
+								F.I.s_isNight = UnityEngine.Random.value > 0.5f;
+								F.I.s_laps = 9;
 								break;
 							}
 							else
@@ -95,15 +116,6 @@ public class GreetingLogo : MonoBehaviour
 		}
 		else
 		{
-			if (Input.GetKeyDown(KeyCode.Return))
-			{
-				goingUpSeq = true;
-				toDemo = false;
-				outMoveInitPos = rt.localPosition;
-				timer = 0;
-				return;
-			}
-
 			Vector2 pos = rt.localPosition;
 			if (timer < 1)
 			{ // down move

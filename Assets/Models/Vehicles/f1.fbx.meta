@@ -1,97 +1,252 @@
 fileFormatVersion: 2
 guid: b81676d17244a1d4d82ab98d3f1a4321
-timeCreated: 1428446011
-licenseType: Pro
 ModelImporter:
-  serializedVersion: 18
-  fileIDToRecycleName:
-    100000: body
-    100002: collider
-    100004: controlarmfront
-    100006: controlarmrear
-    100008: driveaxle
-    100010: //RootNode
-    100012: hubfrontL
-    100014: hubfrontR
-    100016: hubrearL
-    100018: hubrearR
-    100020: rim
-    100022: steerarm
-    100024: tire
-    100026: colliderunder
-    100028: springrear
-    400000: body
-    400002: collider
-    400004: controlarmfront
-    400006: controlarmrear
-    400008: driveaxle
-    400010: //RootNode
-    400012: hubfrontL
-    400014: hubfrontR
-    400016: hubrearL
-    400018: hubrearR
-    400020: rim
-    400022: steerarm
-    400024: tire
-    400026: colliderunder
-    400028: springrear
-    2300000: body
-    2300002: collider
-    2300004: controlarmfront
-    2300006: controlarmrear
-    2300008: driveaxle
-    2300010: hubfrontL
-    2300012: hubfrontR
-    2300014: hubrearL
-    2300016: hubrearR
-    2300018: rim
-    2300020: steerarm
-    2300022: tire
-    2300024: colliderunder
-    2300026: springrear
-    3300000: body
-    3300002: collider
-    3300004: controlarmfront
-    3300006: controlarmrear
-    3300008: driveaxle
-    3300010: hubfrontL
-    3300012: hubfrontR
-    3300014: hubrearL
-    3300016: hubrearR
-    3300018: rim
-    3300020: steerarm
-    3300022: tire
-    3300024: colliderunder
-    3300026: springrear
-    4300000: collider
-    4300002: hubrearL
-    4300004: hubfrontL
-    4300006: controlarmrear
-    4300008: body
-    4300010: tire
-    4300012: rim
-    4300014: controlarmfront
-    4300016: driveaxle
-    4300018: hubfrontR
-    4300020: hubrearR
-    4300022: steerarm
-    4300024: colliderunder
-    4300026: springrear
+  serializedVersion: 22200
+  internalIDToNameTable:
+  - first:
+      1: 100000
+    second: body
+  - first:
+      1: 100002
+    second: collider
+  - first:
+      1: 100004
+    second: controlarmfront
+  - first:
+      1: 100006
+    second: controlarmrear
+  - first:
+      1: 100008
+    second: driveaxle
+  - first:
+      1: 100010
+    second: //RootNode
+  - first:
+      1: 100012
+    second: hubfrontL
+  - first:
+      1: 100014
+    second: hubfrontR
+  - first:
+      1: 100016
+    second: hubrearL
+  - first:
+      1: 100018
+    second: hubrearR
+  - first:
+      1: 100020
+    second: rim
+  - first:
+      1: 100022
+    second: steerarm
+  - first:
+      1: 100024
+    second: tire
+  - first:
+      1: 100026
+    second: colliderunder
+  - first:
+      1: 100028
+    second: springrear
+  - first:
+      4: 400000
+    second: body
+  - first:
+      4: 400002
+    second: collider
+  - first:
+      4: 400004
+    second: controlarmfront
+  - first:
+      4: 400006
+    second: controlarmrear
+  - first:
+      4: 400008
+    second: driveaxle
+  - first:
+      4: 400010
+    second: //RootNode
+  - first:
+      4: 400012
+    second: hubfrontL
+  - first:
+      4: 400014
+    second: hubfrontR
+  - first:
+      4: 400016
+    second: hubrearL
+  - first:
+      4: 400018
+    second: hubrearR
+  - first:
+      4: 400020
+    second: rim
+  - first:
+      4: 400022
+    second: steerarm
+  - first:
+      4: 400024
+    second: tire
+  - first:
+      4: 400026
+    second: colliderunder
+  - first:
+      4: 400028
+    second: springrear
+  - first:
+      23: 2300000
+    second: body
+  - first:
+      23: 2300002
+    second: collider
+  - first:
+      23: 2300004
+    second: controlarmfront
+  - first:
+      23: 2300006
+    second: controlarmrear
+  - first:
+      23: 2300008
+    second: driveaxle
+  - first:
+      23: 2300010
+    second: hubfrontL
+  - first:
+      23: 2300012
+    second: hubfrontR
+  - first:
+      23: 2300014
+    second: hubrearL
+  - first:
+      23: 2300016
+    second: hubrearR
+  - first:
+      23: 2300018
+    second: rim
+  - first:
+      23: 2300020
+    second: steerarm
+  - first:
+      23: 2300022
+    second: tire
+  - first:
+      23: 2300024
+    second: colliderunder
+  - first:
+      23: 2300026
+    second: springrear
+  - first:
+      33: 3300000
+    second: body
+  - first:
+      33: 3300002
+    second: collider
+  - first:
+      33: 3300004
+    second: controlarmfront
+  - first:
+      33: 3300006
+    second: controlarmrear
+  - first:
+      33: 3300008
+    second: driveaxle
+  - first:
+      33: 3300010
+    second: hubfrontL
+  - first:
+      33: 3300012
+    second: hubfrontR
+  - first:
+      33: 3300014
+    second: hubrearL
+  - first:
+      33: 3300016
+    second: hubrearR
+  - first:
+      33: 3300018
+    second: rim
+  - first:
+      33: 3300020
+    second: steerarm
+  - first:
+      33: 3300022
+    second: tire
+  - first:
+      33: 3300024
+    second: colliderunder
+  - first:
+      33: 3300026
+    second: springrear
+  - first:
+      43: 4300000
+    second: collider
+  - first:
+      43: 4300002
+    second: hubrearL
+  - first:
+      43: 4300004
+    second: hubfrontL
+  - first:
+      43: 4300006
+    second: controlarmrear
+  - first:
+      43: 4300008
+    second: body
+  - first:
+      43: 4300010
+    second: tire
+  - first:
+      43: 4300012
+    second: rim
+  - first:
+      43: 4300014
+    second: controlarmfront
+  - first:
+      43: 4300016
+    second: driveaxle
+  - first:
+      43: 4300018
+    second: hubfrontR
+  - first:
+      43: 4300020
+    second: hubrearR
+  - first:
+      43: 4300022
+    second: steerarm
+  - first:
+      43: 4300024
+    second: colliderunder
+  - first:
+      43: 4300026
+    second: springrear
+  externalObjects: {}
   materials:
-    importMaterials: 0
+    materialImportMode: 0
     materialName: 0
     materialSearch: 1
+    materialLocation: 0
   animations:
     legacyGenerateAnimations: 4
     bakeSimulation: 0
+    resampleCurves: 1
     optimizeGameObjects: 0
+    removeConstantScaleCurves: 0
     motionNodeName: 
+    rigImportErrors: 
+    rigImportWarnings: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    importAnimatedCustomProperties: 0
+    importConstraints: 0
     animationCompression: 1
-    animationRotationError: .5
-    animationPositionError: .5
-    animationScaleError: .5
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
     animationWrapMode: 0
     extraExposedTransformPaths: []
+    extraUserProperties: []
     clipAnimations: []
     isReadable: 1
   meshes:
@@ -99,38 +254,71 @@ ModelImporter:
     globalScale: 50
     meshCompression: 0
     addColliders: 0
+    useSRGBMaterialColor: 1
+    sortHierarchyByName: 1
+    importPhysicalCameras: 0
+    importVisibility: 0
     importBlendShapes: 1
+    importCameras: 0
+    importLights: 0
+    nodeNameCollisionStrategy: 0
+    fileIdsGeneration: 1
     swapUVChannels: 0
     generateSecondaryUV: 0
     useFileUnits: 1
-    optimizeMeshForGPU: 1
     keepQuads: 0
     weldVertices: 1
+    bakeAxisConversion: 0
+    preserveHierarchy: 0
+    skinWeightsMode: 0
+    maxBonesPerVertex: 4
+    minBoneWeight: 0.001
+    optimizeBones: 1
+    meshOptimizationFlags: -1
+    indexFormat: 1
     secondaryUVAngleDistortion: 8
     secondaryUVAreaDistortion: 15.000001
     secondaryUVHardAngle: 88
+    secondaryUVMarginMethod: 0
+    secondaryUVMinLightmapResolution: 40
+    secondaryUVMinObjectScale: 1
     secondaryUVPackMargin: 4
     useFileScale: 1
+    strictVertexDataChecks: 0
   tangentSpace:
     normalSmoothAngle: 60
-    splitTangentsAcrossUV: 1
     normalImportMode: 0
-    tangentImportMode: 1
+    tangentImportMode: 4
+    normalCalculationMode: 0
+    legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 1
+    blendShapeNormalImportMode: 1
+    normalSmoothingSource: 0
+  referencedClips: []
   importAnimation: 1
-  copyAvatar: 0
   humanDescription:
+    serializedVersion: 3
     human: []
     skeleton: []
-    armTwist: .5
-    foreArmTwist: .5
-    upperLegTwist: .5
-    legTwist: .5
-    armStretch: .0500000007
-    legStretch: .0500000007
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
     feetSpacing: 0
+    globalScale: 50
     rootMotionBoneName: 
+    hasTranslationDoF: 0
+    hasExtraRoot: 0
+    skeletonHasParents: 0
   lastHumanDescriptionAvatarSource: {instanceID: 0}
+  autoGenerateAvatarMappingIfUnspecified: 1
   animationType: 0
+  humanoidOversampling: 1
+  avatarSetup: 0
+  addHumanoidExtraRootOnlyWhenUsingAvatar: 0
+  importBlendShapeDeformPercent: 0
+  remapMaterialsIfMaterialImportModeIsNone: 1
   additionalBone: 0
   userData: 
   assetBundleName: 

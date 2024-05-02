@@ -26,49 +26,49 @@ public class TextureAssign : EditorWindow
 	string pngExtension = "*.png";
 	string jpgExtension = "*.jpg";
 
-    //This is to set the textures of the material using material.SetTexture()
-    //The source of this is in UnityStandardInput.cginc which is in the Unity build in shaders (separate download).
-    //The HD version can be found in Lit.shader
-    string albedoTextureID = "_MainTex";
-    string baseColorTextureID = "_BaseColorMap"; //HD SRP Lit shader.
-    string metallicTextureID = "_MetallicGlossMap";
-    string specGlossTextureID = "_SpecGlossMap";
-    string specularTextureID = "_SpecularColorMap"; //HD SRP Lit shader.
-    string maskTextureID = "_MaskMap"; //HD SRP Lit shader.
-    string bumpTextureID = "_BumpMap";
-    string normalTextureID = "_NormalMap"; //HD SRP Lit shader.
-    string parallaxTextureID = "_ParallaxMap";
-    string heightTextureID = "_HeightMap"; //HD SRP Lit shader.
-    string occlusionTextureID = "_OcclusionMap"; //In the HD SRP Lit shader, this is packed into the MaskMap.
-    string emissionTextureID = "_EmissionMap";
-    string emissiveTextureID = "_EmissiveColorMap"; //HD SRP Lit shader.
+	//This is to set the textures of the material using material.SetTexture()
+	//The source of this is in UnityStandardInput.cginc which is in the Unity build in shaders (separate download).
+	//The HD version can be found in Lit.shader
+	string albedoTextureID = "_MainTex";
+	string baseColorTextureID = "_BaseColorMap"; //HD SRP Lit shader.
+	string metallicTextureID = "_MetallicGlossMap";
+	string specGlossTextureID = "_SpecGlossMap";
+	string specularTextureID = "_SpecularColorMap"; //HD SRP Lit shader.
+	string maskTextureID = "_MaskMap"; //HD SRP Lit shader.
+	string bumpTextureID = "_BumpMap";
+	string normalTextureID = "_NormalMap"; //HD SRP Lit shader.
+	string parallaxTextureID = "_ParallaxMap";
+	string heightTextureID = "_HeightMap"; //HD SRP Lit shader.
+	string occlusionTextureID = "_OcclusionMap"; //In the HD SRP Lit shader, this is packed into the MaskMap.
+	string emissionTextureID = "_EmissionMap";
+	string emissiveTextureID = "_EmissiveColorMap"; //HD SRP Lit shader.
 
-    //These are the single color parameters of the material.
-    string albedoColorID = "_Color";
-    string baseColorID = "_BaseColor"; //HD SRP Lit shader.
-    string specColorID = "_SpecColor";
-    string specularColorID = "_SpecularColor"; //HD SRP Lit shader.
-    string emissionColorID = "_EmissionColor";
-    string emissiveColorID = "_EmissiveColor"; //HD SRP Lit shader.
+	//These are the single color parameters of the material.
+	string albedoColorID = "_Color";
+	string baseColorID = "_BaseColor"; //HD SRP Lit shader.
+	string specColorID = "_SpecColor";
+	string specularColorID = "_SpecularColor"; //HD SRP Lit shader.
+	string emissionColorID = "_EmissionColor";
+	string emissiveColorID = "_EmissiveColor"; //HD SRP Lit shader.
 
 
 
-    //These are the material sliders.
-    string metallicSliderID = "_Metallic";
-    string glossinessSliderID = "_Glossiness";
-    string smoothnessSliderID = "_Smoothness"; //HD SRP Lit shader.
-	string bumpSliderID = "_BumpScale"; 
+	//These are the material sliders.
+	string metallicSliderID = "_Metallic";
+	string glossinessSliderID = "_Glossiness";
+	string smoothnessSliderID = "_Smoothness"; //HD SRP Lit shader.
+	string bumpSliderID = "_BumpScale";
 	string normalSliderID = "_NormalScale"; //HD SRP Lit shader.
-	
 
-    //These are the names added to the textures when exported by Substance Painter.
-    const string albedoExtension = "_AlbedoTransparency";
+
+	//These are the names added to the textures when exported by Substance Painter.
+	const string albedoExtension = "_AlbedoTransparency";
 	const string metallicExtension = "_MetallicSmoothness";
 	const string specularExtension = "_SpecularSmoothness";
 	const string normalExtension = "_Normal";
 	const string heightExtension = "_Height"; //This texture has to be manually added to the export preset in SP, so make sure the name is correct.
 	const string occlusionExtension = "_AO"; //This texture has to be manually added to the export preset in SP, so make sure the name is correct. In the HD SRP Lit shader, this is packed into the MaskMap.
-    const string emissionExtension = "_Emission";
+	const string emissionExtension = "_Emission";
 	const string emissiveExtension = "_Emissive"; //HD SRP Lit shader.
 	const string maskExtension = "_MaskMap"; //HD SRP Lit shader.
 	const string baseExtension = "_BaseColor"; //HD SRP Lit shader.
@@ -76,18 +76,18 @@ public class TextureAssign : EditorWindow
 	//Texture keywords.
 	string metallicKeyword = "_METALLICGLOSSMAP";
 	string specGlossKeyword = "_SPECGLOSSMAP";
-    string metallicSpecGlossKeyword = "_METALLICSPECGLOSSMAP"; //For LW SRP Lit shader only.
-    string specularKeyword = "_SPECULARCOLORMAP"; //HD SRP Lit shader.
-    string maskKeyword = "_MASKMAP"; //HD SRP Lit shader.
-    string normalKeyword = "_NORMALMAP";
+	string metallicSpecGlossKeyword = "_METALLICSPECGLOSSMAP"; //For LW SRP Lit shader only.
+	string specularKeyword = "_SPECULARCOLORMAP"; //HD SRP Lit shader.
+	string maskKeyword = "_MASKMAP"; //HD SRP Lit shader.
+	string normalKeyword = "_NORMALMAP";
 	string normalTangentKeyword = "_NORMALMAP_TANGENT_SPACE";
 	string parallaxKeyword = "_PARALLAXMAP";
-    string heightKeyword = "_HEIGHTMAP"; //HD SRP Lit shader.
-    string emissionKeyword = "_EMISSION";
-    string emissiveColorKeyword = "_EMISSIVE_COLOR_MAP"; //HD SRP Lit shader.
-    string occlusionKeyword = "_OCCLUSIONMAP";
+	string heightKeyword = "_HEIGHTMAP"; //HD SRP Lit shader.
+	string emissionKeyword = "_EMISSION";
+	string emissiveColorKeyword = "_EMISSIVE_COLOR_MAP"; //HD SRP Lit shader.
+	string occlusionKeyword = "_OCCLUSIONMAP";
 
-    [MenuItem("Window/TextureAssign")]
+	[MenuItem("Window/TextureAssign")]
 	static void Init()
 	//public static void ShowWindow()
 	{
@@ -132,7 +132,7 @@ public class TextureAssign : EditorWindow
 			bool[] uniqueTextures = TagUniqueTextures(texturePathsList);
 
 			//Get all the game objects in the scene.
-			GameObject[] gameObjects = FindObjectsOfType(typeof(GameObject)) as GameObject[];
+			GameObject[] gameObjects = FindObjectsByType(typeof(GameObject), FindObjectsSortMode.None) as GameObject[];
 
 			//Loop through the game objects
 			for (int i = 0; i < gameObjects.Length; i++)
@@ -142,8 +142,8 @@ public class TextureAssign : EditorWindow
 					//Get the materials on a mesh (can be more than one).
 					Material[] materials = gameObjects[i].GetComponent<Renderer>().sharedMaterials;
 
-					for(int matIndex = 0; matIndex < materials.Length; matIndex++)
-					{ 
+					for (int matIndex = 0; matIndex < materials.Length; matIndex++)
+					{
 						Material material = materials[matIndex];
 
 						if (material != null)
@@ -202,7 +202,7 @@ public class TextureAssign : EditorWindow
 							}
 						}
 					}
-				}		
+				}
 			}
 
 			Debug.Log(redundantTextureAmount + " redundant textures replaced with a color or value.");
@@ -231,21 +231,21 @@ public class TextureAssign : EditorWindow
 
 			//An object is selected and textures are available.
 			if ((objects.Length != 0) && (texturePathsList.Count >= 1))
-            {
+			{
 				Debug.Log(texturePathsList.Count + " textures found.");
 
 				//Get the selected object.
-				if(objects[0] is GameObject) 
+				if (objects[0] is GameObject)
 				{
 					selectedObject = (GameObject)objects[0];
 
 					Material[] materials = selectedObject.GetComponent<Renderer>().sharedMaterials;
 
-					for(int matIndex = 0; matIndex < materials.Length; matIndex++)
-					{ 
+					for (int matIndex = 0; matIndex < materials.Length; matIndex++)
+					{
 						Material material = materials[matIndex];
 
-						if(material != null)
+						if (material != null)
 						{
 							bool textureFound = AssignTexturePathListToObject(selectedObject, material, matIndex, texturePathsList);
 
@@ -288,7 +288,7 @@ public class TextureAssign : EditorWindow
 			//An object is selected.
 			if (objects.Length != 0)
 			{
-				if(objects[0] is GameObject) 
+				if (objects[0] is GameObject)
 				{
 					//Get the selected object.
 					GameObject selectedObject = (GameObject)objects[0];
@@ -338,24 +338,24 @@ public class TextureAssign : EditorWindow
 	bool IsSkipMaterial(List<string> skipMaterialList, Material material)
 	{
 		//Loop through the list
-		for(int i = 0; i < skipMaterialList.Count; i++)
+		for (int i = 0; i < skipMaterialList.Count; i++)
 		{
-			if(material.name == skipMaterialList[i])
+			if (material.name == skipMaterialList[i])
 			{
 				return true;
 			}
-        }
+		}
 
 		return false;
-    }
+	}
 
 	bool IsTextureUnique(List<string> texturePathsList, bool[] uniqueTextures, string texturePath)
 	{
 		//Loop through all textures.
-		for(int i = 0; i < texturePathsList.Count; i++)
+		for (int i = 0; i < texturePathsList.Count; i++)
 		{
 			//Is this the texture we are looking for?
-			if(texturePath == texturePathsList[i])
+			if (texturePath == texturePathsList[i])
 			{
 				//Is this texture unique?
 				if (uniqueTextures[i] == true)
@@ -371,7 +371,7 @@ public class TextureAssign : EditorWindow
 		}
 
 		return false;
-    }
+	}
 
 	bool AssignFolderTexturesToObject(GameObject selectedObject, string folder)
 	{
@@ -388,18 +388,18 @@ public class TextureAssign : EditorWindow
 
 		Material[] materials = selectedObject.GetComponent<Renderer>().sharedMaterials;
 
-		for(int matIndex = 0; matIndex < materials.Length; matIndex++)
-		{ 
+		for (int matIndex = 0; matIndex < materials.Length; matIndex++)
+		{
 			Material material = materials[matIndex];
 
-			if(material != null)
+			if (material != null)
 			{
 				textureFound = AssignTexturePathListToObject(selectedObject, material, matIndex, texturePathsList);
 			}
 		}
 
 		return textureFound;
-    }
+	}
 
 	bool AssignTexturePathListToObject(GameObject selectedObject, Material material, int matIndex, List<string> texturePathsList)
 	{
@@ -433,7 +433,7 @@ public class TextureAssign : EditorWindow
 					else
 					{
 						Debug.Log("Select an object with a material.");
-					}					
+					}
 				}
 
 				else
@@ -444,13 +444,13 @@ public class TextureAssign : EditorWindow
 		}
 
 		return textureFound;
-    }
+	}
 
 	bool AreAllObjectTexturesUnique(GameObject selectedObject, string folder, List<string> allTexturesList, bool[] uniqueTextures)
 	{
 		bool unique = true;
 
-        List<string> texturePathsList = new List<string>();
+		List<string> texturePathsList = new List<string>();
 
 		//Get the texture paths in the selected folder.
 		string[] pngPaths = Directory.GetFiles(folder, pngExtension, SearchOption.AllDirectories);
@@ -481,12 +481,12 @@ public class TextureAssign : EditorWindow
 					//Is the texture unique?
 					bool thisTextureUnique = IsTextureUnique(allTexturesList, uniqueTextures, texturePathsList[i]);
 
-					if(!thisTextureUnique)
+					if (!thisTextureUnique)
 					{
 						unique = false;
 						break;
-                    }
-                }
+					}
+				}
 			}
 		}
 
@@ -547,16 +547,16 @@ public class TextureAssign : EditorWindow
 		string name = selectedObject.name;
 
 		//Loop through the characters of the name string.
-		for(int i = 0; i < name.Length; i++)
+		for (int i = 0; i < name.Length; i++)
 		{
 			//Look for the first split character.
-			if((name[i] == '.') || (name[i] == ':'))
+			if ((name[i] == '.') || (name[i] == ':'))
 			{
 				splitChar = name[i];
 				found = true;
 				break;
-            }
-        }
+			}
+		}
 
 		if (found)
 		{
@@ -567,7 +567,7 @@ public class TextureAssign : EditorWindow
 		else
 		{
 			meshPartName = selectedObject.name;
-        }		
+		}
 
 		return meshPartName;
 	}
@@ -596,7 +596,7 @@ public class TextureAssign : EditorWindow
 				//Add the texture paths to a list.
 				texturePathsList.AddRange(pngPaths);
 				texturePathsList.AddRange(jpgPaths);
-			}			
+			}
 		}
 
 		//If no folders are selected or no textures are found in the selected folder, get all textures in the project.
@@ -612,7 +612,7 @@ public class TextureAssign : EditorWindow
 		}
 
 		return texturePathsList;
-    }
+	}
 
 	void MakeMaterialUnique(GameObject inputObject)
 	{
@@ -694,7 +694,7 @@ public class TextureAssign : EditorWindow
 		{
 			Debug.Log("Select an object with a material.");
 		}
-    }
+	}
 
 	string GetNewMatName(string matName, int number)
 	{
@@ -729,7 +729,7 @@ public class TextureAssign : EditorWindow
 		string fileNameB;
 
 		//Initialize array.
-		for(int i = 0; i < uniqueTextures.Length; i++)
+		for (int i = 0; i < uniqueTextures.Length; i++)
 		{
 			uniqueTextures[i] = true;
 		}
@@ -741,18 +741,18 @@ public class TextureAssign : EditorWindow
 			for (int e = 0; e < texturePathsList.Count; e++)
 			{
 				//Don't compare the file with itself.
-				if(i != e)
+				if (i != e)
 				{
 					fileNameB = Path.GetFileName(texturePathsList[e]);
 
-					if(fileNameA == fileNameB)
+					if (fileNameA == fileNameB)
 					{
 						uniqueTextures[i] = false;
 
 						//This only breaks the inner loop.
 						break;
 					}
-				}				
+				}
 			}
 		}
 
@@ -762,132 +762,132 @@ public class TextureAssign : EditorWindow
 	//Rendering mode code can be found in StandardShaderGUI.cs
 	void SetTransparent(Material mat)
 	{
-        float mode = 0f;
+		float mode = 0f;
 
-        if (mat.HasProperty("_Mode"))
-        {
-            mode = mat.GetFloat("_Mode");
+		if (mat.HasProperty("_Mode"))
+		{
+			mode = mat.GetFloat("_Mode");
 
-            if (mode != 3f)
-            {
-                //Set the inspector GUI.
-                mat.SetFloat("_Mode", 3f);
+			if (mode != 3f)
+			{
+				//Set the inspector GUI.
+				mat.SetFloat("_Mode", 3f);
 
-                mat.SetOverrideTag("RenderType", "Transparent");
-                mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
-                mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-                mat.SetInt("_ZWrite", 0);
-                mat.DisableKeyword("_ALPHATEST_ON");
-                mat.DisableKeyword("_ALPHABLEND_ON");
-                mat.EnableKeyword("_ALPHAPREMULTIPLY_ON");
-                mat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
-            }
-        }
+				mat.SetOverrideTag("RenderType", "Transparent");
+				mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
+				mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+				mat.SetInt("_ZWrite", 0);
+				mat.DisableKeyword("_ALPHATEST_ON");
+				mat.DisableKeyword("_ALPHABLEND_ON");
+				mat.EnableKeyword("_ALPHAPREMULTIPLY_ON");
+				mat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
+			}
+		}
 
-        //For HD SRP.
-        if (mat.HasProperty("_SurfaceType"))
-        {
-            mode = mat.GetFloat("_SurfaceType");
+		//For HD SRP.
+		if (mat.HasProperty("_SurfaceType"))
+		{
+			mode = mat.GetFloat("_SurfaceType");
 
-            if (mode != 1f)
-            {
-                //Set the inspector GUI.
-                mat.SetFloat("_SurfaceType", 1f);
+			if (mode != 1f)
+			{
+				//Set the inspector GUI.
+				mat.SetFloat("_SurfaceType", 1f);
 
-                mat.SetOverrideTag("RenderType", "Transparent");
-                mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
-                mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-                mat.SetInt("_ZWrite", 0);
-                mat.DisableKeyword("_ALPHATEST_ON");
-                mat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
-            }
-        }
+				mat.SetOverrideTag("RenderType", "Transparent");
+				mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
+				mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+				mat.SetInt("_ZWrite", 0);
+				mat.DisableKeyword("_ALPHATEST_ON");
+				mat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
+			}
+		}
 
-        //For LW SRP.
-        if (mat.HasProperty("_Surface"))
-        {
-            mode = mat.GetFloat("_Surface");
+		//For LW SRP.
+		if (mat.HasProperty("_Surface"))
+		{
+			mode = mat.GetFloat("_Surface");
 
-            if (mode != 1f)
-            {
-                //Set the inspector GUI.
-                mat.SetFloat("_Surface", 1f);
+			if (mode != 1f)
+			{
+				//Set the inspector GUI.
+				mat.SetFloat("_Surface", 1f);
 
-                mat.SetOverrideTag("RenderType", "Transparent");
-                mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
-                mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-                mat.SetInt("_ZWrite", 0);
-                mat.DisableKeyword("_ALPHATEST_ON");
-                mat.EnableKeyword("_ALPHAPREMULTIPLY_ON");
-                mat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
-            }
-        }
-    }
+				mat.SetOverrideTag("RenderType", "Transparent");
+				mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
+				mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+				mat.SetInt("_ZWrite", 0);
+				mat.DisableKeyword("_ALPHATEST_ON");
+				mat.EnableKeyword("_ALPHAPREMULTIPLY_ON");
+				mat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
+			}
+		}
+	}
 
 	//Rendering mode code can be found in StandardShaderGUI.cs
 	void SetOpaque(Material mat)
 	{
-        float mode = 0f;
+		float mode = 0f;
 
-        if (mat.HasProperty("_Mode"))
-        {
-            mode = mat.GetFloat("_Mode");
+		if (mat.HasProperty("_Mode"))
+		{
+			mode = mat.GetFloat("_Mode");
 
-            if (mode != 0f)
-            {
-                //Set the inspector GUI.
-                mat.SetFloat("_Mode", 0f);
+			if (mode != 0f)
+			{
+				//Set the inspector GUI.
+				mat.SetFloat("_Mode", 0f);
 
-                mat.SetOverrideTag("RenderType", "");
-                mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
-                mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.Zero);
-                mat.SetInt("_ZWrite", 1);
-                mat.DisableKeyword("_ALPHATEST_ON");
-                mat.DisableKeyword("_ALPHABLEND_ON");
-                mat.DisableKeyword("_ALPHAPREMULTIPLY_ON");
-                mat.renderQueue = -1;
-            }
-        }
+				mat.SetOverrideTag("RenderType", "");
+				mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
+				mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.Zero);
+				mat.SetInt("_ZWrite", 1);
+				mat.DisableKeyword("_ALPHATEST_ON");
+				mat.DisableKeyword("_ALPHABLEND_ON");
+				mat.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+				mat.renderQueue = -1;
+			}
+		}
 
-        //For HD SRP.
-        if (mat.HasProperty("_SurfaceType"))
-        {
-            mode = mat.GetFloat("_SurfaceType");
+		//For HD SRP.
+		if (mat.HasProperty("_SurfaceType"))
+		{
+			mode = mat.GetFloat("_SurfaceType");
 
-            if (mode != 0f)
-            {
-                //Set the inspector GUI.
-                mat.SetFloat("_SurfaceType", 0f);
+			if (mode != 0f)
+			{
+				//Set the inspector GUI.
+				mat.SetFloat("_SurfaceType", 0f);
 
-                mat.SetOverrideTag("RenderType", "");
-                mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
-                mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.Zero);
-                mat.SetInt("_ZWrite", 1);
-                mat.DisableKeyword("_ALPHATEST_ON");
-                mat.renderQueue = -1;
-            }
-        }
+				mat.SetOverrideTag("RenderType", "");
+				mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
+				mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.Zero);
+				mat.SetInt("_ZWrite", 1);
+				mat.DisableKeyword("_ALPHATEST_ON");
+				mat.renderQueue = -1;
+			}
+		}
 
-        //For LW SRP.
-        if (mat.HasProperty("_Surface"))
-        {
-            mode = mat.GetFloat("_Surface");
+		//For LW SRP.
+		if (mat.HasProperty("_Surface"))
+		{
+			mode = mat.GetFloat("_Surface");
 
-            if (mode != 0f)
-            {
-                //Set the inspector GUI.
-                mat.SetFloat("_Surface", 0f);
+			if (mode != 0f)
+			{
+				//Set the inspector GUI.
+				mat.SetFloat("_Surface", 0f);
 
-                mat.SetOverrideTag("RenderType", "");
-                mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
-                mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.Zero);
-                mat.SetInt("_ZWrite", 1);
-                mat.DisableKeyword("_ALPHATEST_ON");
-                mat.DisableKeyword("_ALPHAPREMULTIPLY_ON");
-                mat.renderQueue = -1;
-            }
-        }
-    }
+				mat.SetOverrideTag("RenderType", "");
+				mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
+				mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.Zero);
+				mat.SetInt("_ZWrite", 1);
+				mat.DisableKeyword("_ALPHATEST_ON");
+				mat.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+				mat.renderQueue = -1;
+			}
+		}
+	}
 
 	bool DoesMaterialExist(string materialName)
 	{
@@ -971,22 +971,22 @@ public class TextureAssign : EditorWindow
 				//Get the textureExtension
 				textureExtension = textureName.Substring(lastIndex);
 
-                //Get the name without the textureExtension.
-                texturePart = textureName.Substring(0, lastIndex);
-            }
+				//Get the name without the textureExtension.
+				texturePart = textureName.Substring(0, lastIndex);
+			}
 
-			else 
+			else
 			{
 				valid = false;
 			}
 		}
-		
+
 		return valid;
 	}
 
 	static int FindLastChar(string arr, char value)
 	{
-		for (int i = (arr.Length-1); i >= 0; i--)
+		for (int i = (arr.Length - 1); i >= 0; i--)
 		{
 			if (arr[i] == value)
 			{
@@ -1082,15 +1082,15 @@ public class TextureAssign : EditorWindow
 	void AssignTexture(GameObject selectedObject, Material material, int matIndex, Texture2D texture, string texturePath, string textureExtension)
 	{
 		Color32[] pixelArray = null;
-        bool rgbaSame = false;
+		bool rgbaSame = false;
 		bool metalSame = false;
 		bool smoothnessSame = false;
 		Color32 rgbaColor;
 		float metallicValue;
 		float smoothnessValue;
-        bool hdLit = false;
+		bool hdLit = false;
 
-        TextureImporter importer = AssetImporter.GetAtPath(texturePath) as TextureImporter;
+		TextureImporter importer = AssetImporter.GetAtPath(texturePath) as TextureImporter;
 
 		//Set the maximum texture size.
 		importer.maxTextureSize = maxTextureSize;
@@ -1110,68 +1110,68 @@ public class TextureAssign : EditorWindow
 			pixelArray = texture.GetPixels32();
 		}
 
-        switch (textureExtension)
-        {
-            case albedoExtension:
+		switch (textureExtension)
+		{
+			case albedoExtension:
 
-                hdLit = false;
+				hdLit = false;
 
-                if (material.HasProperty(baseColorTextureID))
-                {
-                    hdLit = true;
-                }
+				if (material.HasProperty(baseColorTextureID))
+				{
+					hdLit = true;
+				}
 
-                if (replaceRedundantTextures == true)
-                {
-                    IsRGBASame(out rgbaSame, out rgbaColor, pixelArray);
+				if (replaceRedundantTextures == true)
+				{
+					IsRGBASame(out rgbaSame, out rgbaColor, pixelArray);
 
-                    if (rgbaSame)
-                    {                        
-                        if (hdLit == false)
-                        {
-                            //Remove texture.
-                            material.SetTexture(albedoTextureID, null);
+					if (rgbaSame)
+					{
+						if (hdLit == false)
+						{
+							//Remove texture.
+							material.SetTexture(albedoTextureID, null);
 
-                            //Set a uniform color.
-                            material.SetColor(albedoColorID, rgbaColor);
-                        }
+							//Set a uniform color.
+							material.SetColor(albedoColorID, rgbaColor);
+						}
 
-                        //For HD SRP Lit shader.
-                        else
-                        {
-                            //Remove texture.
-                            material.SetTexture(baseColorTextureID, null);
+						//For HD SRP Lit shader.
+						else
+						{
+							//Remove texture.
+							material.SetTexture(baseColorTextureID, null);
 
-                            //Set a uniform color.
-                            material.SetColor(baseColorID, rgbaColor);
-                        }
+							//Set a uniform color.
+							material.SetColor(baseColorID, rgbaColor);
+						}
 
-                        redundantTextureAmount++;                     
-                    }
-                }
+						redundantTextureAmount++;
+					}
+				}
 
-                if ((replaceRedundantTextures == false) || ((replaceRedundantTextures == true) && (rgbaSame == false)))
-                {
-                    if (hdLit == false)
-                    {
-                        //Assign the texture
-                        material.SetTexture(albedoTextureID, texture);
+				if ((replaceRedundantTextures == false) || ((replaceRedundantTextures == true) && (rgbaSame == false)))
+				{
+					if (hdLit == false)
+					{
+						//Assign the texture
+						material.SetTexture(albedoTextureID, texture);
 
-                        //This is important, otherwise the texture will look wrong if a texture is used).
-                        material.SetColor(albedoColorID, Color.white);
-                    }
+						//This is important, otherwise the texture will look wrong if a texture is used).
+						material.SetColor(albedoColorID, Color.white);
+					}
 
-                    //For HD SRP Lit shader.
-                    else
-                    {
-                        //Assign the texture
-                        material.SetTexture(baseColorTextureID, texture);
+					//For HD SRP Lit shader.
+					else
+					{
+						//Assign the texture
+						material.SetTexture(baseColorTextureID, texture);
 
-                        //This is important, otherwise the texture will look wrong if a texture is used).
-                        material.SetColor(baseColorID, Color.white);
-                    }
+						//This is important, otherwise the texture will look wrong if a texture is used).
+						material.SetColor(baseColorID, Color.white);
+					}
 
-                    assignedTextureAmount++;                 
+					assignedTextureAmount++;
 				}
 
 				if (processOpacity)
@@ -1187,38 +1187,38 @@ public class TextureAssign : EditorWindow
 					{
 						SetOpaque(material);
 					}
-				}							
+				}
 
 				break;
-				
+
 			//HD pipeline
-            case baseExtension:
+			case baseExtension:
 
-                if (replaceRedundantTextures == true)
-                {
-                    IsRGBASame(out rgbaSame, out rgbaColor, pixelArray);
+				if (replaceRedundantTextures == true)
+				{
+					IsRGBASame(out rgbaSame, out rgbaColor, pixelArray);
 
-                    if (rgbaSame)
-                    {                        
+					if (rgbaSame)
+					{
 						//Remove texture.
 						material.SetTexture(baseColorTextureID, null);
 
 						//Set a uniform color.
-						material.SetColor(baseColorID, rgbaColor);					
+						material.SetColor(baseColorID, rgbaColor);
 
-                        redundantTextureAmount++;                     
-                    }
-                }
+						redundantTextureAmount++;
+					}
+				}
 
-                if ((replaceRedundantTextures == false) || ((replaceRedundantTextures == true) && (rgbaSame == false)))
-                {
+				if ((replaceRedundantTextures == false) || ((replaceRedundantTextures == true) && (rgbaSame == false)))
+				{
 					//Assign the texture
 					material.SetTexture(baseColorTextureID, texture);
 
 					//This is important, otherwise the texture will look wrong if a texture is used).
 					material.SetColor(baseColorID, Color.white);
 
-                    assignedTextureAmount++;                 
+					assignedTextureAmount++;
 				}
 
 				if (processOpacity)
@@ -1234,87 +1234,87 @@ public class TextureAssign : EditorWindow
 					{
 						SetOpaque(material);
 					}
-				}							
+				}
 
 				break;
-				
-            case maskExtension:
+
+			case maskExtension:
 
 				//Assign the texture
 				material.EnableKeyword(maskKeyword);
 				material.SetTexture(maskTextureID, texture);
 
-				assignedTextureAmount++;                 
+				assignedTextureAmount++;
 
 				break;
 
 			case metallicExtension:
 
-                hdLit = false;
+				hdLit = false;
 
-                if (material.HasProperty(maskTextureID))
-                {
-                    hdLit = true;
-                }
+				if (material.HasProperty(maskTextureID))
+				{
+					hdLit = true;
+				}
 
-                if (replaceRedundantTextures == true)
+				if (replaceRedundantTextures == true)
 				{
 					//The metallic texture contains both a metallic and smoothness value.
 					IsMetallicSame(out metalSame, out metallicValue, pixelArray);
-					IsSmoothnessSame(out smoothnessSame, out smoothnessValue, pixelArray);                    
+					IsSmoothnessSame(out smoothnessSame, out smoothnessValue, pixelArray);
 
-                    if (metalSame && smoothnessSame)
+					if (metalSame && smoothnessSame)
 					{
-                        if (hdLit == false)
-                        {
-                            //Remove texture.
-                            material.SetTexture(metallicTextureID, null);
+						if (hdLit == false)
+						{
+							//Remove texture.
+							material.SetTexture(metallicTextureID, null);
 
-                            //Set the metal slider.
-                            material.SetFloat(metallicSliderID, metallicValue);
+							//Set the metal slider.
+							material.SetFloat(metallicSliderID, metallicValue);
 
-                            //Set the smoothness slider.
-                            material.SetFloat(glossinessSliderID, smoothnessValue);
+							//Set the smoothness slider.
+							material.SetFloat(glossinessSliderID, smoothnessValue);
 
-                            material.DisableKeyword(metallicKeyword);
-                            material.DisableKeyword(metallicSpecGlossKeyword); // For SRP LW Lit shader only.
-                            
-                        }
+							material.DisableKeyword(metallicKeyword);
+							material.DisableKeyword(metallicSpecGlossKeyword); // For SRP LW Lit shader only.
 
-                        //For HD SRP Lit shader.
-                        else
-                        {
-                            //Remove texture.
-                            material.SetTexture(maskTextureID, null);
+						}
 
-                            //Set the metal slider.
-                            material.SetFloat(metallicSliderID, metallicValue);
+						//For HD SRP Lit shader.
+						else
+						{
+							//Remove texture.
+							material.SetTexture(maskTextureID, null);
 
-                            //Set the smoothness slider.
-                            material.SetFloat(smoothnessSliderID, smoothnessValue);
+							//Set the metal slider.
+							material.SetFloat(metallicSliderID, metallicValue);
 
-                            material.DisableKeyword(maskKeyword);
-                        }
+							//Set the smoothness slider.
+							material.SetFloat(smoothnessSliderID, smoothnessValue);
 
-                        redundantTextureAmount++;
+							material.DisableKeyword(maskKeyword);
+						}
+
+						redundantTextureAmount++;
 					}
 				}
 
 				if ((replaceRedundantTextures == false) || ((replaceRedundantTextures == true) && !(metalSame && smoothnessSame)))
 				{
-                    if(hdLit == false)
-                    {
-                        material.EnableKeyword(metallicKeyword);
-                        material.EnableKeyword(metallicSpecGlossKeyword); // For SRP LW Lit shader only.
-                        material.SetTexture(metallicTextureID, texture);
-                    }
+					if (hdLit == false)
+					{
+						material.EnableKeyword(metallicKeyword);
+						material.EnableKeyword(metallicSpecGlossKeyword); // For SRP LW Lit shader only.
+						material.SetTexture(metallicTextureID, texture);
+					}
 
-                    //For HD SRP Lit shader.
-                    else
-                    {
-                        material.EnableKeyword(maskKeyword);
-                        material.SetTexture(maskTextureID, texture);
-                    }
+					//For HD SRP Lit shader.
+					else
+					{
+						material.EnableKeyword(maskKeyword);
+						material.SetTexture(maskTextureID, texture);
+					}
 
 					assignedTextureAmount++;
 				}
@@ -1323,49 +1323,49 @@ public class TextureAssign : EditorWindow
 
 			case specularExtension:
 
-                hdLit = false;
+				hdLit = false;
 
-                if (material.HasProperty(baseColorTextureID))
-                {
-                    hdLit = true;
-                }
+				if (material.HasProperty(baseColorTextureID))
+				{
+					hdLit = true;
+				}
 
-                if (replaceRedundantTextures == true)
+				if (replaceRedundantTextures == true)
 				{
 					//The specular texture contains both a specular and smoothness value.
 					IsRGBASame(out rgbaSame, out rgbaColor, pixelArray);
 					IsSmoothnessSame(out smoothnessSame, out smoothnessValue, pixelArray);
 
 					if (rgbaSame && smoothnessSame)
-					{                        
-                        if(hdLit == false)
-                        {
-                            //Remove texture.
-                            material.SetTexture(specGlossTextureID, null);
+					{
+						if (hdLit == false)
+						{
+							//Remove texture.
+							material.SetTexture(specGlossTextureID, null);
 
-                            //Set the specular color.
-                            material.SetColor(specColorID, rgbaColor);
+							//Set the specular color.
+							material.SetColor(specColorID, rgbaColor);
 
-                            //Set the smoothness slider.
-                            material.SetFloat(glossinessSliderID, smoothnessValue);
+							//Set the smoothness slider.
+							material.SetFloat(glossinessSliderID, smoothnessValue);
 
-                            material.DisableKeyword(specGlossKeyword);
-                        }
+							material.DisableKeyword(specGlossKeyword);
+						}
 
-                        //For HD SRP Lit shader.
-                        else
-                        {
-                            //Remove texture.
-                            material.SetTexture(specularTextureID, null);
+						//For HD SRP Lit shader.
+						else
+						{
+							//Remove texture.
+							material.SetTexture(specularTextureID, null);
 
-                            //Set the specular color.
-                            material.SetColor(specularColorID, rgbaColor);
+							//Set the specular color.
+							material.SetColor(specularColorID, rgbaColor);
 
-                            //Set the smoothness slider.
-                            material.SetFloat(smoothnessSliderID, smoothnessValue);
+							//Set the smoothness slider.
+							material.SetFloat(smoothnessSliderID, smoothnessValue);
 
-                            material.DisableKeyword(specularKeyword);
-                        }
+							material.DisableKeyword(specularKeyword);
+						}
 
 						redundantTextureAmount++;
 					}
@@ -1373,17 +1373,17 @@ public class TextureAssign : EditorWindow
 
 				if ((replaceRedundantTextures == false) || ((replaceRedundantTextures == true) && !(rgbaSame && smoothnessSame)))
 				{
-                    if(hdLit == false)
-                    {
-                        material.EnableKeyword(specGlossKeyword);
-                        material.SetTexture(specGlossTextureID, texture);
-                    }
+					if (hdLit == false)
+					{
+						material.EnableKeyword(specGlossKeyword);
+						material.SetTexture(specGlossTextureID, texture);
+					}
 
-                    else
-                    {
-                        material.EnableKeyword(specularKeyword);
-                        material.SetTexture(specularTextureID, texture);
-                    }
+					else
+					{
+						material.EnableKeyword(specularKeyword);
+						material.SetTexture(specularTextureID, texture);
+					}
 
 					assignedTextureAmount++;
 				}
@@ -1392,34 +1392,34 @@ public class TextureAssign : EditorWindow
 
 			case normalExtension:
 
-                hdLit = false;
+				hdLit = false;
 
-                if (material.HasProperty(normalTextureID))
-                {
+				if (material.HasProperty(normalTextureID))
+				{
 
-                    hdLit = true;
-                }
+					hdLit = true;
+				}
 
-                if (replaceRedundantTextures == true)
+				if (replaceRedundantTextures == true)
 				{
 					IsRGBASame(out rgbaSame, out rgbaColor, pixelArray);
 
 					if (rgbaSame)
 					{
-                        if (hdLit == false)
-                        {
-                            //Remove texture.
-                            material.SetTexture(bumpTextureID, null);
-                        }
+						if (hdLit == false)
+						{
+							//Remove texture.
+							material.SetTexture(bumpTextureID, null);
+						}
 
-                        //For HD SRP Lit shader.
-                        else
-                        {
-                            //Remove texture.
-                            material.SetTexture(normalTextureID, null);
-                        }
+						//For HD SRP Lit shader.
+						else
+						{
+							//Remove texture.
+							material.SetTexture(normalTextureID, null);
+						}
 
-                        //Same for legacy and HD pipeline.
+						//Same for legacy and HD pipeline.
 						material.DisableKeyword(normalKeyword);
 
 						redundantTextureAmount++;
@@ -1428,27 +1428,27 @@ public class TextureAssign : EditorWindow
 
 				if ((replaceRedundantTextures == false) || ((replaceRedundantTextures == true) && (rgbaSame == false)))
 				{
-                    
+
 					//material.shaderKeywords = new string[1]{normalKeyword};  
-                    material.EnableKeyword(normalKeyword);			
-					
+					material.EnableKeyword(normalKeyword);
+
 
 					//A normal map should be marked as a normal map.					
 					importer.textureType = TextureImporterType.NormalMap;
 
 					AssetDatabase.WriteImportSettingsIfDirty(texturePath);
 
-                    if (hdLit)
-                    {
+					if (hdLit)
+					{
 						material.EnableKeyword(normalTangentKeyword);
-                        material.SetTexture(normalTextureID, texture);
-                    }
+						material.SetTexture(normalTextureID, texture);
+					}
 
-                    else
-                    {
-                        material.SetTexture(bumpTextureID, texture);
-                    }
-					
+					else
+					{
+						material.SetTexture(bumpTextureID, texture);
+					}
+
 					assignedTextureAmount++;
 
 					UnityEditor.AssetDatabase.SaveAssets();
@@ -1459,34 +1459,34 @@ public class TextureAssign : EditorWindow
 
 			case heightExtension:
 
-                hdLit = false;
+				hdLit = false;
 
-                if (material.HasProperty(heightTextureID))
-                {
+				if (material.HasProperty(heightTextureID))
+				{
 
-                    hdLit = true;
-                }
+					hdLit = true;
+				}
 
-                if (replaceRedundantTextures == true)
+				if (replaceRedundantTextures == true)
 				{
 					IsRGBASame(out rgbaSame, out rgbaColor, pixelArray);
 
 					if (rgbaSame)
 					{
-                        if (hdLit == false)
-                        {
-                            //Remove texture.
-                            material.SetTexture(parallaxTextureID, null);
-                            material.DisableKeyword(parallaxKeyword);
-                        }
+						if (hdLit == false)
+						{
+							//Remove texture.
+							material.SetTexture(parallaxTextureID, null);
+							material.DisableKeyword(parallaxKeyword);
+						}
 
-                        //For HD SRP Lit shader.
-                        else
-                        {
-                            //Remove texture.
-                            material.SetTexture(heightTextureID, null);
-                            material.DisableKeyword(heightKeyword);
-                        }
+						//For HD SRP Lit shader.
+						else
+						{
+							//Remove texture.
+							material.SetTexture(heightTextureID, null);
+							material.DisableKeyword(heightKeyword);
+						}
 
 						redundantTextureAmount++;
 					}
@@ -1494,18 +1494,18 @@ public class TextureAssign : EditorWindow
 
 				if ((replaceRedundantTextures == false) || ((replaceRedundantTextures == true) && (rgbaSame == false)))
 				{
-                    if (hdLit == false)
-                    {
-                        material.EnableKeyword(parallaxKeyword);
-                        material.SetTexture(parallaxTextureID, texture);
-                    }
+					if (hdLit == false)
+					{
+						material.EnableKeyword(parallaxKeyword);
+						material.SetTexture(parallaxTextureID, texture);
+					}
 
-                    //For HD SRP Lit shader.
-                    else
-                    {
-                        material.EnableKeyword(heightKeyword);
-                        material.SetTexture(heightTextureID, texture);
-                    }
+					//For HD SRP Lit shader.
+					else
+					{
+						material.EnableKeyword(heightKeyword);
+						material.SetTexture(heightTextureID, texture);
+					}
 
 					assignedTextureAmount++;
 				}
@@ -1514,125 +1514,125 @@ public class TextureAssign : EditorWindow
 
 			case occlusionExtension:
 
-                hdLit = false;
+				hdLit = false;
 
-                if (material.HasProperty(occlusionTextureID))
-                {
-                    hdLit = false;
-                }
-
-                else
-                {
-                    hdLit = true;
-                }
-
-                if (replaceRedundantTextures == true)
+				if (material.HasProperty(occlusionTextureID))
 				{
-                    if (hdLit == false)
-                    {
-                        IsRGBASame(out rgbaSame, out rgbaColor, pixelArray);
-
-                        if (rgbaSame)
-                        {
-                            //Remove texture.
-                            material.SetTexture(occlusionTextureID, null);
-                            material.DisableKeyword(occlusionKeyword);
-                            redundantTextureAmount++;
-                        }
-                    }
+					hdLit = false;
 				}
 
-				if ((replaceRedundantTextures == false) || ((replaceRedundantTextures == true) && (rgbaSame == false)))
+				else
 				{
-                    if (hdLit == false)
-                    {
-                        material.EnableKeyword(occlusionKeyword);
-                        material.SetTexture(occlusionTextureID, texture);
-                        assignedTextureAmount++;
-                    }
+					hdLit = true;
 				}
-				
-				break;
 
-			case emissionExtension:
-
-                hdLit = false;
-
-                if (material.HasProperty(emissiveTextureID))
-                {
-                    hdLit = true;
-                }
-
-                if (replaceRedundantTextures == true)
+				if (replaceRedundantTextures == true)
 				{
-					IsRGBASame(out rgbaSame, out rgbaColor, pixelArray);
+					if (hdLit == false)
+					{
+						IsRGBASame(out rgbaSame, out rgbaColor, pixelArray);
 
-                    if (rgbaSame)
-                    {
-                        if (hdLit == false)
-                        {
-
-                            //The emission shader keyword has to be enabled even if no texture is used,
-                            //otherwise the shader won't refresh.
-                            material.EnableKeyword(emissionKeyword);
-
-                            //Remove texture.
-                            material.SetTexture(emissionTextureID, null);
-                            material.SetColor(emissionColorID, rgbaColor);
-                        }
-
-                        //For HD SRP Lit shader.
-                        else
-                        {
-
-                            //The emission shader keyword has to be enabled even if no texture is used,
-                            //otherwise the shader won't refresh.
-                            material.EnableKeyword(emissiveColorKeyword);
-
-                            //Remove texture.
-                            material.SetTexture(emissiveTextureID, null);
-                            material.SetColor(emissiveColorID, rgbaColor);
-                        }
-
-                        redundantTextureAmount++;
+						if (rgbaSame)
+						{
+							//Remove texture.
+							material.SetTexture(occlusionTextureID, null);
+							material.DisableKeyword(occlusionKeyword);
+							redundantTextureAmount++;
+						}
 					}
 				}
 
 				if ((replaceRedundantTextures == false) || ((replaceRedundantTextures == true) && (rgbaSame == false)))
 				{
-                    if(hdLit == false)
-                    {
-                        material.EnableKeyword(emissionKeyword);
-                        material.SetTexture(emissionTextureID, texture);
-
-                        //This is important, otherwise the texture will look wrong if a texture is used).
-                        material.SetColor(emissionColorID, Color.white);
-                    }
-
-                    //For HD SRP Lit shader.
-                    else
-                    {
-                        material.EnableKeyword(emissiveColorKeyword);
-                        material.SetTexture(emissiveTextureID, texture);
-
-                        //This is important, otherwise the texture will look wrong if a texture is used).
-                        material.SetColor(emissiveColorID, Color.white);
-                    }
-
-                    assignedTextureAmount++;
-                }
+					if (hdLit == false)
+					{
+						material.EnableKeyword(occlusionKeyword);
+						material.SetTexture(occlusionTextureID, texture);
+						assignedTextureAmount++;
+					}
+				}
 
 				break;
-				
-			//HD pipeline
-			case emissiveExtension:
 
-                if (replaceRedundantTextures == true)
+			case emissionExtension:
+
+				hdLit = false;
+
+				if (material.HasProperty(emissiveTextureID))
+				{
+					hdLit = true;
+				}
+
+				if (replaceRedundantTextures == true)
 				{
 					IsRGBASame(out rgbaSame, out rgbaColor, pixelArray);
 
-                    if (rgbaSame)
-                    {
+					if (rgbaSame)
+					{
+						if (hdLit == false)
+						{
+
+							//The emission shader keyword has to be enabled even if no texture is used,
+							//otherwise the shader won't refresh.
+							material.EnableKeyword(emissionKeyword);
+
+							//Remove texture.
+							material.SetTexture(emissionTextureID, null);
+							material.SetColor(emissionColorID, rgbaColor);
+						}
+
+						//For HD SRP Lit shader.
+						else
+						{
+
+							//The emission shader keyword has to be enabled even if no texture is used,
+							//otherwise the shader won't refresh.
+							material.EnableKeyword(emissiveColorKeyword);
+
+							//Remove texture.
+							material.SetTexture(emissiveTextureID, null);
+							material.SetColor(emissiveColorID, rgbaColor);
+						}
+
+						redundantTextureAmount++;
+					}
+				}
+
+				if ((replaceRedundantTextures == false) || ((replaceRedundantTextures == true) && (rgbaSame == false)))
+				{
+					if (hdLit == false)
+					{
+						material.EnableKeyword(emissionKeyword);
+						material.SetTexture(emissionTextureID, texture);
+
+						//This is important, otherwise the texture will look wrong if a texture is used).
+						material.SetColor(emissionColorID, Color.white);
+					}
+
+					//For HD SRP Lit shader.
+					else
+					{
+						material.EnableKeyword(emissiveColorKeyword);
+						material.SetTexture(emissiveTextureID, texture);
+
+						//This is important, otherwise the texture will look wrong if a texture is used).
+						material.SetColor(emissiveColorID, Color.white);
+					}
+
+					assignedTextureAmount++;
+				}
+
+				break;
+
+			//HD pipeline
+			case emissiveExtension:
+
+				if (replaceRedundantTextures == true)
+				{
+					IsRGBASame(out rgbaSame, out rgbaColor, pixelArray);
+
+					if (rgbaSame)
+					{
 
 						//The emission shader keyword has to be enabled even if no texture is used,
 						//otherwise the shader won't refresh.
@@ -1640,9 +1640,9 @@ public class TextureAssign : EditorWindow
 
 						//Remove texture.
 						material.SetTexture(emissiveTextureID, null);
-						material.SetColor(emissiveColorID, rgbaColor);                        
+						material.SetColor(emissiveColorID, rgbaColor);
 
-                        redundantTextureAmount++;
+						redundantTextureAmount++;
 					}
 				}
 
@@ -1653,14 +1653,14 @@ public class TextureAssign : EditorWindow
 
 					//This is important, otherwise the texture will look wrong if a texture is used).
 					material.SetColor(emissiveColorID, Color.white);
-                    
-                    assignedTextureAmount++;
-                }
+
+					assignedTextureAmount++;
+				}
 
 				break;
 
 			default:
-			break;
+				break;
 		}
 
 		selectedObject.GetComponent<Renderer>().sharedMaterials[matIndex] = material;
@@ -1675,4 +1675,3 @@ public class TextureAssign : EditorWindow
 		}
 	}
 }
- 

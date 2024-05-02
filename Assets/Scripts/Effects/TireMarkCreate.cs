@@ -51,7 +51,7 @@ namespace RVP
 		public ParticleSystem[] debrisParticles;
 		public ParticleSystem sparks;
 		float[] initialEmissionRates;
-		ParticleSystem.MinMaxCurve zeroEmission = new ParticleSystem.MinMaxCurve(0);
+		ParticleSystem.MinMaxCurve zeroEmission = new(0);
 		private void Awake()
 		{
 			debrisParticles = new ParticleSystem[]
@@ -60,9 +60,6 @@ namespace RVP
 				transform.GetChild(2).GetComponent<ParticleSystem>(),//mud
 				transform.GetChild(3).GetComponent<ParticleSystem>(),//dirt
 				transform.GetChild(4).GetComponent<ParticleSystem>(),//ice
-				transform.GetChild(2).GetComponent<ParticleSystem>(),//extmud
-				transform.GetChild(3).GetComponent<ParticleSystem>(),//exdirt
-				transform.GetChild(4).GetComponent<ParticleSystem>(),//exice
 			};
 		}
 
@@ -72,21 +69,18 @@ namespace RVP
 			w = GetComponent<Wheel>();
 
 			initialEmissionRates = new float[debrisParticles.Length + 1];
+
+			for (int i = 0; i < debrisParticles.Length; i++)
+				initialEmissionRates[i] = debrisParticles[i].emission.rateOverTime.constantMax;
+
 			for (int i = 0; i < debrisParticles.Length; i++)
 			{
-				initialEmissionRates[i] = debrisParticles[i].emission.rateOverTime.constantMax;
 				var em = debrisParticles[i].emission;
 				em.rateOverTime = zeroEmission;
 			}
 
 			if (sparks)
-			{
 				initialEmissionRates[debrisParticles.Length] = sparks.emission.rateOverTime.constantMax;
-			}
-		}
-		public bool PowerSliding()
-		{
-			return Mathf.Abs(w.forwardSlip) > w.slipThreshold;
 		}
 		void Update()
 		{
@@ -169,8 +163,9 @@ namespace RVP
 						else
 						{
 							em = debrisParticles[ps].emission;
-							em.rateOverTime = new ParticleSystem.MinMaxCurve(initialEmissionRates[ps] *
-								Mathf.Clamp01(Mathf.Abs(F.MaxAbs(w.sidewaysSlip, w.forwardSlip, alwaysScrape)) - w.slipThreshold));
+							var v = initialEmissionRates[ps] *
+								Mathf.Clamp01(Mathf.Abs(F.MaxAbs(w.sidewaysSlip, w.forwardSlip, alwaysScrape)) - w.slipThreshold);
+							em.rateOverTime = new ParticleSystem.MinMaxCurve(v);
 
 							if (sparks)
 							{

@@ -70,6 +70,8 @@ public class SC_TerrainEditor : MonoBehaviour
 	}
 	void Start()
 	{
+		areaSliderVal.slider.onValueChanged.AddListener(delegate { brushScaling(); });
+		strengthSliderVal.slider.onValueChanged.AddListener(delegate { brushScaling(); });
 		uiTest = GetComponent<UITest>();
 		//Create build target object
 		GameObject tmpObj = new GameObject("BuildTarget");
@@ -101,7 +103,7 @@ public class SC_TerrainEditor : MonoBehaviour
 			}
 		}
 
-		terrain.gameObject.layer = Info.terrainLayer;
+		terrain.gameObject.layer = F.I.terrainLayer;
 		strengthSliderVal.slider.value = 13;
 		areaSliderVal.slider.value = 13;
 		brushScaling();
@@ -142,7 +144,7 @@ public class SC_TerrainEditor : MonoBehaviour
 		Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 		hit = new RaycastHit();
 		//Do Raycast hit only against terrain layer
-		if (Physics.Raycast(ray, out hit, Mathf.Infinity, 1 << Info.terrainLayer))
+		if (Physics.Raycast(ray, out hit, Mathf.Infinity, 1 << F.I.terrainLayer))
 		{
 			onTerrain = true;
 			if (buildTarget)
@@ -269,24 +271,24 @@ public class SC_TerrainEditor : MonoBehaviour
 				//More
 				if (!Input.GetKey(KeyCode.LeftShift))
 				{
-					if (areaSliderVal.slider.value < 40)
+					if (areaSliderVal.slider.value < areaSliderVal.slider.maxValue)
 					{
-						areaSliderVal.slider.value = areaSliderVal.slider.value + 0.5f;
+						areaSliderVal.slider.value += 0.5f;
 					}
 					else
 					{
-						areaSliderVal.slider.value = 40;
+						areaSliderVal.slider.value = areaSliderVal.slider.maxValue;
 					}
 				}
 				else
 				{
-					if (strengthSliderVal.slider.value < 30)
+					if (strengthSliderVal.slider.value < strengthSliderVal.slider.maxValue)
 					{
-						strengthSliderVal.slider.value = strengthSliderVal.slider.value + 0.5f;
+						strengthSliderVal.slider.value += 0.5f;
 					}
 					else
 					{
-						strengthSliderVal.slider.value = 30;
+						strengthSliderVal.slider.value = strengthSliderVal.slider.maxValue;
 					}
 				}
 			}
@@ -295,28 +297,28 @@ public class SC_TerrainEditor : MonoBehaviour
 				//Less
 				if (!Input.GetKey(KeyCode.LeftShift))
 				{
-					if (areaSliderVal.slider.value > 10)
+					if (areaSliderVal.slider.value > areaSliderVal.slider.minValue)
 					{
-						areaSliderVal.slider.value = areaSliderVal.slider.value - 0.5f;
+						areaSliderVal.slider.value -= 0.5f;
 					}
 					else
 					{
-						areaSliderVal.slider.value = 10;
+						areaSliderVal.slider.value = areaSliderVal.slider.minValue;
 					}
 				}
 				else
 				{
-					if (strengthSliderVal.slider.value > 2)
+					if (strengthSliderVal.slider.value > strengthSliderVal.slider.minValue)
 					{
-						strengthSliderVal.slider.value = strengthSliderVal.slider.value - 0.5f;
+						strengthSliderVal.slider.value -= 0.5f;
 					}
 					else
 					{
-						strengthSliderVal.slider.value = 2;
+						strengthSliderVal.slider.value = strengthSliderVal.slider.minValue;
 					}
 				}
 			}
-			if (areaSliderVal.slider.value > 10)
+			if (areaSliderVal.slider.value > areaSliderVal.slider.minValue)
 				brushScaling();
 		}
 	}

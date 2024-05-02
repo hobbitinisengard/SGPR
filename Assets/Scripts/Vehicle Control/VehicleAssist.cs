@@ -81,9 +81,15 @@ namespace RVP
 			rb = GetComponent<Rigidbody>();
 			vp = GetComponent<VehicleParent>();
 			initialAngularDrag = rb.angularDrag;
+			if (!vp.Owner)
+				enabled = false;
 		}
 
 		void FixedUpdate()
+		{
+			FixedUpdateWorks(Time.fixedDeltaTime);
+		}
+		public void FixedUpdateWorks(float deltaTime)
 		{
 			if (vp.reallyGroundedWheels > 0)
 			{
@@ -106,7 +112,7 @@ namespace RVP
 			{
 				if (angularDragOnJump)
 				{
-					angDragTime = Mathf.Max(0, angDragTime - Time.timeScale * TimeMaster.inverseFixedTimeFactor);
+					angDragTime = Mathf.Max(0, angDragTime - deltaTime);
 					rb.angularDrag = angDragTime > 0 && vp.upDot > 0.5 ? 10 : initialAngularDrag;
 				}
 			}
@@ -126,7 +132,6 @@ namespace RVP
 				rb.AddRelativeForce(Vector3.down * vp.localVelocity.y, ForceMode.Acceleration);
 			}
 		}
-
 		// Apply assist for steering and drifting
 		void ApplySpinAssist()
 		{

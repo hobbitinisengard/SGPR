@@ -23,13 +23,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 631854869517580359}
+  serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 24.01, y: 92.61, z: 33.39}
   m_LocalScale: {x: 57.47, y: 10.629999, z: 5.0999994}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4434845338626987248}
-  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5664138969713867407
 GameObject:
@@ -59,13 +59,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5664138969713867407}
+  serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -1.6, y: 111.9, z: 18.82}
   m_LocalScale: {x: 57.47, y: 16.79, z: 8.3}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4434845338626987248}
-  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &2296931924363849627
 MeshFilter:
@@ -83,9 +83,17 @@ BoxCollider:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5664138969713867407}
   m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
   m_IsTrigger: 1
+  m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 2
+  serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!54 &6693291675129554938
@@ -95,10 +103,21 @@ Rigidbody:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5664138969713867407}
-  serializedVersion: 2
+  serializedVersion: 4
   m_Mass: 1
   m_Drag: 0
   m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
   m_UseGravity: 0
   m_IsKinematic: 1
   m_Interpolate: 0
@@ -129,6 +148,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 9118387089797390882, guid: c5f923143ad9e1c418a1d20196290002,
     type: 2}
   m_audioClip: {fileID: 8300000, guid: b22764d8f0184254396ebcebe4cb31dd, type: 3}
+  m_Resource: {fileID: 8300000, guid: b22764d8f0184254396ebcebe4cb31dd, type: 3}
   m_PlayOnAwake: 1
   m_Volume: 0.509
   m_Pitch: 1
@@ -241,13 +261,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5735319158848114046}
+  serializedVersion: 2
   m_LocalRotation: {x: 0.16554594, y: 0.023660056, z: 0.19804743, w: 0.9658219}
   m_LocalPosition: {x: -27.85, y: 67.05, z: 5.6}
   m_LocalScale: {x: 13.76, y: 3, z: 3.86}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4434845338626987248}
-  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 18.084, y: 6.722, z: 24.247}
 --- !u!33 &1621271128267071372
 MeshFilter:
@@ -265,9 +285,17 @@ BoxCollider:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5735319158848114046}
   m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
   m_IsTrigger: 1
+  m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 2
+  serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!54 &3400431772851773499
@@ -277,10 +305,21 @@ Rigidbody:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5735319158848114046}
-  serializedVersion: 2
+  serializedVersion: 4
   m_Mass: 1
   m_Drag: 0
   m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
   m_UseGravity: 0
   m_IsKinematic: 1
   m_Interpolate: 0
@@ -304,6 +343,7 @@ PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
+    serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: -9064114903961122858, guid: f87fff4c6d0fe8545b4250b3f56d89c0,
@@ -381,12 +421,40 @@ PrefabInstance:
       propertyPath: m_Name
       value: pits
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: f87fff4c6d0fe8545b4250b3f56d89c0,
+        type: 3}
+      propertyPath: m_TagString
+      value: VisibleInPictureMode
+      objectReference: {fileID: 0}
     - target: {fileID: 1448741924835085935, guid: f87fff4c6d0fe8545b4250b3f56d89c0,
         type: 3}
       propertyPath: m_Layer
       value: 11
       objectReference: {fileID: 0}
     m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: -6048770967118889175, guid: f87fff4c6d0fe8545b4250b3f56d89c0,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3453193569889574453}
+    - targetCorrespondingSourceObject: {fileID: -6048770967118889175, guid: f87fff4c6d0fe8545b4250b3f56d89c0,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7900420981452227902}
+    - targetCorrespondingSourceObject: {fileID: -6048770967118889175, guid: f87fff4c6d0fe8545b4250b3f56d89c0,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4013689436386302936}
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f87fff4c6d0fe8545b4250b3f56d89c0,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1730160311318745606}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f87fff4c6d0fe8545b4250b3f56d89c0,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3052458656574900642}
   m_SourcePrefab: {fileID: 100100000, guid: f87fff4c6d0fe8545b4250b3f56d89c0, type: 3}
 --- !u!1 &2108994544456111752 stripped
 GameObject:

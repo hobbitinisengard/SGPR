@@ -23,7 +23,7 @@ namespace RVP
 
         void Start() {
             vp = GetComponent<VehicleParent>();
-            setter = FindObjectOfType<MobileInput>();
+            setter = FindFirstObjectByType<MobileInput>();
         }
 
         void FixedUpdate() {
@@ -33,7 +33,7 @@ namespace RVP
                 vp.SetAccel(setter.accel);
                 vp.SetBrake(setter.brake);
                 vp.SetEbrake(setter.ebrake);
-                vp.SetBoost(setter.boost);
+                vp.SetBoost(setter.boost ? 1 : 0);
 
                 if (useAccelerometer) {
                     // Accelerometer input

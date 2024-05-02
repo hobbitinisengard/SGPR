@@ -1,7 +1,6 @@
 using UnityEngine.EventSystems;
 using UnityEngine;
 using UnityEngine.UI;
-using RVP;
 using System.Collections;
 using TMPro;
 
@@ -11,16 +10,22 @@ public class MainMenuButton : Sfxable, ISelectHandler, IDeselectHandler, ISubmit
 	static Color32 selectedColor = new Color32(255, 255, 255, 255);
 	public Sprite dyndakSpriteOnSelect;
 	public string BottomTextOnSelect;
-	TextMeshProUGUI text;
+	TMP_Text text;
 	MainMenuView mainMenuView;
 	[System.NonSerialized]
 	public Button buttonComponent;
-	void Awake()
+	new void Awake()
 	{
-		text = transform.GetChild(0).GetComponent<TextMeshProUGUI>();
+		base.Awake();
+		if(!transform.GetChild(0).TryGetComponent(out text))
+			text = transform.GetChild(0).GetComponent<TMP_InputField>().textComponent;
 		text.color = deselectedColor;
 		buttonComponent = GetComponent<Button>();
 		mainMenuView = transform.FindParentComponent<MainMenuView>();
+	}
+	private void OnDisable()
+	{
+		text.color = deselectedColor;
 	}
 	public void OnSubmit(BaseEventData eventData)
 	{
@@ -66,6 +71,5 @@ public class MainMenuButton : Sfxable, ISelectHandler, IDeselectHandler, ISubmit
 			yield return null;
 		}
 	}
-
 	
 }

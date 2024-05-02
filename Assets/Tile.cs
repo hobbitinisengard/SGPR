@@ -1,5 +1,6 @@
 using RVP;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -8,14 +9,19 @@ public class Tile : MonoBehaviour
 {
 	[NonSerialized]
 	public EditorPanel panel;
+	/// <summary>
+	/// Only one tile at a time may be not 'placed': the one that the player is currently selecting in track editor
+	/// </summary>
 	public bool placed { get; private set; }
 	public bool mirrored { get; private set; }
 
 	public string url;
 
-	MeshCollider mc;
+	public MeshCollider mc { get; private set; }
 
 	GameObject lightObj;
+
+	public MeshCollider[] Endings { get; private set; }
 
 	public void UpdateLights()
 	{
@@ -23,17 +29,17 @@ public class Tile : MonoBehaviour
 		{
 			for (int i = 0; i < lightObj.transform.childCount; ++i)
 			{
-				lightObj.transform.GetChild(i).gameObject.SetActive(Info.s_isNight);
+				lightObj.transform.GetChild(i).gameObject.SetActive(F.I.s_isNight);
 			}
 		}
 	}
 	private void Awake()
 	{
 		// add mesh collider to 'main' mesh 
-		if (transform.childCount == 0)
+		if (transform.childCount == 0) // tile isn't a road
 			mc = gameObject.AddComponent<MeshCollider>();
 		else
-		{
+		{ // tile is a road
 			var childObj = transform.GetChild(0);
 			if (childObj.name == "lights")
 			{
@@ -43,14 +49,32 @@ public class Tile : MonoBehaviour
 				UpdateLights();
 			}
 			else
-				mc = transform.GetChild(0).gameObject.AddComponent<MeshCollider>();
+			{
+				mc = childObj.gameObject.AddComponent<MeshCollider>();
+
+				if(childObj.childCount > 0)
+				{
+					List<MeshCollider> endings = new();
+					for (int i = 0; i < childObj.childCount; ++i)
+					{ // each ending requires mesh collider
+						GameObject mainMeshChild = childObj.GetChild(i).gameObject;
+						if (mainMeshChild.name[..3] == "end")
+						{
+							var ending = mainMeshChild.AddComponent<MeshCollider>();
+							endings.Add(ending);
+						}
+					}
+					if(endings.Count > 0)
+						Endings = endings.ToArray();
+				}
+			}
 		}
 		mc.enabled = true;
 
-		if(Info.s_roadType != Info.PavementType.Highway)
+		if(F.I.s_roadType != PavementType.Highway)
 		{
 			var mr = mc.transform.GetComponent<MeshRenderer>();
-			string replacementStr = "0" + ((int)Info.s_roadType).ToString();
+			string replacementStr = "0" + ((int)F.I.s_roadType).ToString();
 			var materials = mr.materials;
 			for (int i = 0; i < materials.Length; ++i)
 			{
@@ -72,7 +96,7 @@ public class Tile : MonoBehaviour
 			rb.useGravity = false;
 			rb.isKinematic = true;
 			connector.AddComponent<Connector>();
-			connector.layer = Info.connectorLayer;
+			connector.layer = F.I.connectorLayer;
 			var mf = connector.AddComponent<MeshFilter>();
 			var mr = connector.AddComponent<MeshRenderer>();
 			mf.mesh = Resources.Load<Mesh>("sphere");
@@ -84,7 +108,7 @@ public class Tile : MonoBehaviour
 	internal void SetPlaced()
 	{
 		placed = true;
-		mc.gameObject.layer = Info.roadLayer;
+		mc.gameObject.layer = F.I.roadLayer;
 		if (name.Contains("dirt")) //= mud
 			mc.gameObject.AddComponent<GroundSurfaceInstance>().surfaceType = 1;
 		else if (name.Contains("sand")) // =dust
@@ -117,10 +141,21 @@ public class Tile : MonoBehaviour
 	public bool MirrorTile()
 	{
 		mirrored = !mirrored;
+		
 		var mf = mc.transform.GetComponent<MeshFilter>();
 		mf.mesh = MirrorMesh(mf.mesh);
 		if (mc)
 			mc.sharedMesh = mf.mesh;
+
+		if(Endings != null)
+		{
+			foreach (MeshCollider end in Endings)
+			{ // mirror endings
+				mf = end.GetComponent<MeshFilter>();
+				mf.mesh = MirrorMesh(mf.mesh);
+				end.sharedMesh = mf.mesh;
+			}
+		}
 
 		if(transform.childCount>0)
 		{
@@ -201,7 +236,6 @@ public class Tile : MonoBehaviour
 
 		float scale = distance / mf.mesh.bounds.size.y;
 		transform.localScale = new Vector3(1, 1, scale);
-
 		{ // adjust UVs
 			Vector2[] uvs = mf.mesh.uv;
 			int submeshes = mf.mesh.subMeshCount;
@@ -225,7 +259,6 @@ public class Tile : MonoBehaviour
 			}
 			mf.mesh.uv = uvs;
 		}
-
 		// make connectors round again
 		for (int i = 1; i < transform.childCount; ++i)
 		{

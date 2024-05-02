@@ -4,8 +4,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Linq;
 using TMPro;
+using UnityEngine.InputSystem;
 
-public class EnvirSelector : Sfxable
+public class EnvirSelector : Selector
 {
 	private enum SortingCond { Difficulty, Name };
 	public TextMeshProUGUI envirDescText;
@@ -17,29 +18,34 @@ public class EnvirSelector : Sfxable
 	Transform selectedEnvir;
 	int persistentSelectedEnvir = 0;
 	Coroutine containerCo;
+
+	private void OnDisable()
+	{
+		move2Ref.action.performed -= CalculateTargetToSelect;
+	}
 	private void OnEnable()
 	{
+		move2Ref.action.performed += CalculateTargetToSelect;
 		startButton.Select();
 		selectedEnvir = envirContent.GetChild(0).GetChild(persistentSelectedEnvir);
-		Info.s_trackName = selectedEnvir.name;
+		F.I.s_trackName = selectedEnvir.name;
 		if (containerCo != null)
 			StopCoroutine(containerCo);
-		envirDescText.text = Info.EnvirDescs[selectedEnvir.GetSiblingIndex()];
+		envirDescText.text = F.I.EnvirDescs[selectedEnvir.GetSiblingIndex()];
 		containerCo = StartCoroutine(MoveToEnvir());
-		Info.s_inEditor = true;
+		F.I.s_inEditor = true;
 	}
 
 	void SetTile()
 	{
-		tile.sprite = Info.icons.First(i => i.name == selectedEnvir.name);
+		tile.sprite = F.I.icons.First(i => i.name == selectedEnvir.name);
 	}
-
-	void Update()
+	void CalculateTargetToSelect(InputAction.CallbackContext ctx)
 	{
 		if (!selectedEnvir)
 			return;
-		int x = Input.GetKeyDown(KeyCode.RightArrow) ? 1 : Input.GetKeyDown(KeyCode.LeftArrow) ? -1 : 0;
-
+		Vector2 move2 = move2Ref.action.ReadValue<Vector2>();
+		int x = Mathf.RoundToInt(move2.x);
 		if (x != 0)
 		{
 			int posx = x + selectedEnvir.GetSiblingIndex();
@@ -57,13 +63,13 @@ public class EnvirSelector : Sfxable
 				if (tempSelectedEnvir != null && tempSelectedEnvir != selectedEnvir)
 				{
 					selectedEnvir = tempSelectedEnvir;
-					Info.s_trackName = selectedEnvir.name;
+					F.I.s_trackName = selectedEnvir.name;
 					Debug.Log(selectedEnvir);
 					PlaySFX("fe-bitmapscroll");
 				}
 				// new track has been selected
 				// set description
-				envirDescText.text = Info.EnvirDescs[selectedEnvir.GetSiblingIndex()];
+				envirDescText.text = F.I.EnvirDescs[selectedEnvir.GetSiblingIndex()];
 				SetTile();
 				// focus on track
 				if (containerCo != null)
@@ -83,7 +89,7 @@ public class EnvirSelector : Sfxable
 			-selectedEnvir.parent.GetComponent<RectTransform>().anchoredPosition.y);
 		Vector2 scrollInitPos = new Vector2(scrollx.value, scrolly.value);
 		Vector2 scrollInitSize = new Vector2(scrollx.size, scrolly.size);
-		float envirInGroupPos = Info.InGroupPos(selectedEnvir);
+		float envirInGroupPos = F.I.InGroupPos(selectedEnvir);
 		float groupPos = envirContent.PosAmongstActive(selectedEnvir.parent, false);
 		Vector2 scrollTargetPos = new Vector2(envirInGroupPos, groupPos);
 		Vector2 scrollTargetSize = new Vector2(1f / selectedEnvir.parent.ActiveChildren(), 1f / envirContent.ActiveChildren());

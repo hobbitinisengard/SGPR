@@ -97,9 +97,9 @@ namespace PathCreation.Examples
                 {
                     pathTool.pathCreator = pathTool.GetComponent<PathCreator>();
                 }
-                else if (FindObjectOfType<PathCreator>())
+                else if (FindFirstObjectByType<PathCreator>())
                 {
-                    pathTool.pathCreator = FindObjectOfType<PathCreator>();
+                    pathTool.pathCreator = FindFirstObjectByType<PathCreator>();
                 }
             }
             return pathTool.pathCreator != null;

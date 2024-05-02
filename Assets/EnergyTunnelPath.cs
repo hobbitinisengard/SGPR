@@ -24,7 +24,7 @@ public class EnergyTunnelPath : MonoBehaviour
 			var col = castable.GetComponent<SphereCollider>();
 			col.radius = 1f;
 			col.isTrigger = true;
-			castable.layer = Info.pitsLineLayer;
+			castable.layer = F.I.pitsLineLayer;
 			castable.name = progress.ToString();
 			progress += 3f;
 		}

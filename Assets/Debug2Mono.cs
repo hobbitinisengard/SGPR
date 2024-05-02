@@ -35,7 +35,7 @@ public class Debug2Mono : MonoBehaviour
         {
             if (m_instance == null)
             {
-                m_instance = GameObject.FindObjectOfType<Debug2Mono>();
+                m_instance = Object.FindFirstObjectByType<Debug2Mono>();
                 if (m_instance == null)
                 {
                     var go = new GameObject("DeleteMeLater");

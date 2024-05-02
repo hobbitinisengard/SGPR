@@ -5,6 +5,7 @@ PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
+    serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 649a2de39d56c054990730702051ef8b,
@@ -67,7 +68,19 @@ PrefabInstance:
       propertyPath: m_Name
       value: jumptop
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 649a2de39d56c054990730702051ef8b,
+        type: 3}
+      propertyPath: m_TagString
+      value: VisibleInPictureMode
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 649a2de39d56c054990730702051ef8b,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -2786107043143051955}
   m_SourcePrefab: {fileID: 100100000, guid: 649a2de39d56c054990730702051ef8b, type: 3}
 --- !u!1 &1725163956158486393 stripped
 GameObject:
@@ -87,3 +100,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b84bb76c1b4c804b8ec131d5e92c350, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  url: 

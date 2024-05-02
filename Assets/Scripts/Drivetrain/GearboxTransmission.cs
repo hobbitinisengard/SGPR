@@ -39,7 +39,7 @@ namespace RVP
 		public float d_rpm;
 		public float actualFeedbackRPM;
 		Gear upperGear; // Next gear above current
-		public enum DriveType { FWD, RWD, AWD }
+		public enum DriveType { RWD, FWD, AWD }
 		DriveType drive;
 		public DriveType Drive
 		{
@@ -64,10 +64,6 @@ namespace RVP
 				}
 			}
 		}
-
-		//public Drive Drive
-		//[Tooltip("Multiplier for comparisons in automatic shifting calculations, should be 2 in most cases")]
-		//float shiftThreshold = 2;
 		public int selectedGear { get; private set; }
 		public bool IsShifting()
 		{
@@ -79,13 +75,13 @@ namespace RVP
 			shiftDelay = shiftDelaySeconds;
 			gears = new Gear[]
 			{
-				new Gear(-3.21f),
-				new Gear(0),
-				new Gear(3.21f),
-				new Gear(2.52f),
-				new Gear(2.0f),
-				new Gear(1.5f),
-				new Gear(1.2f)
+				new (-3.21f),
+				new (0),
+				new (3.21f),
+				new (2.52f),
+				new (2.0f),
+				new (1.5f),
+				new (1.2f)
 			};
 			currentGear = Mathf.Clamp(startGear, 0, gears.Length - 1);
 			selectedGear = currentGear;
@@ -109,8 +105,12 @@ namespace RVP
 		}
 		void FixedUpdate()
 		{
+			FixedUpdateWorks(Time.fixedDeltaTime);
+		}
+		public void FixedUpdateWorks(float deltaTime)
+		{
 			health = Mathf.Clamp01(health);
-			shiftTime = Mathf.Max(0, shiftTime - Time.timeScale * Time.fixedDeltaTime);
+			shiftTime = Mathf.Max(0, shiftTime - Time.timeScale * deltaTime);
 			d_feedback = targetDrive.feedbackRPM;
 			d_rpm = targetDrive.rpm;
 			if (shiftTime == 0 || currentGear < 2)
@@ -152,7 +152,7 @@ namespace RVP
 						CalculateRpmRanges();
 					}
 				}
-				if (automatic && vp.countdownTimer <= shiftDelaySeconds && vp.reallyGroundedWheels >= 2)
+				if (automatic && CountDownSeq.Countdown <= shiftDelaySeconds && vp.reallyGroundedWheels >= 2)
 				{
 					if (selectedGear == currentGear)
 					{

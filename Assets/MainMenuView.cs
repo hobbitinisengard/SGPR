@@ -1,8 +1,8 @@
 using UnityEngine;
 using UnityEngine.UI;
-using RVP;
 using System;
 using TMPro;
+using UnityEngine.InputSystem;
 
 public class MainMenuView : Sfxable
 {
@@ -13,30 +13,56 @@ public class MainMenuView : Sfxable
 	public TextMeshProUGUI bottomText;
 	public Sprite bgTile;
 	public AudioClip music;
-	ViewSwitcher dimmer;
+	public InputActionReference cancelInput;
+	public YouSureDialog youSureDialog;
+	public bool prevViewForbidden;
+	static ViewSwitcher dimmer;
+	protected override void Awake()
+	{
+		base.Awake();
 
+		if (dimmer == null)
+			dimmer = transform.FindParentComponent<ViewSwitcher>();
+	}
 	private void Start()
 	{
-		if (!Info.loaded)
+		if (!F.I.loaded)
 		{
-			Info.loaded = true;
+			F.I.loaded = true;
 			PlaySFX("fe-cardssuccess");
 		}
 	}
-	private void OnEnable()
+
+	void CancelPressed(InputAction.CallbackContext obj)
 	{
-		if(firstButtonToBeSelected)
-			firstButtonToBeSelected.Select();
-		dimmer = transform.FindParentComponent<ViewSwitcher>();
-		dimmer.SwitchBackgroundTo(bgTile);
+		GoBack();
 	}
-	void Update()
+	public void GoBack(bool ignoreYouSure = false)
 	{
-		if (prevView && Input.GetKeyDown(KeyCode.Escape))
+		if (ignoreYouSure || youSureDialog == null)
 		{
-			GoToView(prevView);
-			PlaySFX("fe-dialogcancel");
+			if (gameObject.activeSelf && prevView && !prevViewForbidden)
+			{
+				GoToView(prevView);
+				PlaySFX("fe-dialogcancel");
+			}
 		}
+		else
+		{
+			youSureDialog.gameObject.SetActive(true);
+		}
+	}
+	protected void OnDisable()
+	{
+		cancelInput.action.started -= CancelPressed;
+	}
+	protected void OnEnable()
+	{
+		cancelInput.action.started += CancelPressed;
+		if (firstButtonToBeSelected)
+			firstButtonToBeSelected.Select();
+		
+		dimmer.SwitchBackgroundTo(bgTile);
 	}
 	public void GoToView(GameObject view)
 	{
@@ -49,33 +75,34 @@ public class MainMenuView : Sfxable
 	}
 	public void ToRaceScene()
 	{
-		if (Info.s_trackName == null)
+		if (F.I.s_trackName == null || F.I.s_trackName.Length < 4)
 			PlaySFX("fe-cardserror");
 		else
 		{
 			PlaySFX("fe-gameload");
-			if (Info.s_roadType == Info.PavementType.Random)
-				Info.s_roadType = (Info.PavementType)Mathf.RoundToInt(Info.pavementTypes * UnityEngine.Random.value);
+			if (F.I.s_roadType == PavementType.Random)
+				F.I.s_roadType = (PavementType)Mathf.RoundToInt(F.I.pavementTypes * UnityEngine.Random.value);
 
 			for (int i = 0; i < transform.childCount; ++i)
 			{
 				if (transform.GetChild(i).gameObject.activeSelf)
 					F.PlaySlideOutOnChildren(transform.GetChild(i));
 			}
-			Info.s_inEditor = false;
+			F.I.s_inEditor = false;
 			dimmer.PlayDimmerToWorld();
 		}
-		
 	}
 	public void ToEditorScene()
 	{
-		if (Info.s_trackName == "MEX")
+		if (F.I.s_trackName == "MEX")
 			PlaySFX("fe-cardserror");
 		else
 		{
-			Info.s_roadType = Info.PavementType.Highway;
-			Info.s_inEditor = true;
-			Info.s_spectator = false;
+			
+			if (F.I.s_roadType == PavementType.Random)
+				F.I.s_roadType = (PavementType)Mathf.RoundToInt((F.I.pavementTypes * UnityEngine.Random.value));
+			F.I.s_inEditor = true;
+			F.I.s_spectator = false;
 			dimmer.PlayDimmerToWorld();
 		}
 	}

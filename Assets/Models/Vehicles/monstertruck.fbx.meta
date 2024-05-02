@@ -1,90 +1,237 @@
 fileFormatVersion: 2
 guid: 5bfe09224e072b14f915c4850d2e32a7
 ModelImporter:
-  serializedVersion: 18
-  fileIDToRecycleName:
-    100000: car_001
-    100002: //RootNode
-    100004: rim_001
-    100006: tire_001
-    100008: body
-    100010: colliderfront
-    100012: collidermid
-    100014: colliderunder
-    100016: rim
-    100018: tire
-    100020: tirenice
-    100022: axle
-    100024: spring
-    100026: rod
-    400000: car_001
-    400002: //RootNode
-    400004: rim_001
-    400006: tire_001
-    400008: body
-    400010: colliderfront
-    400012: collidermid
-    400014: colliderunder
-    400016: rim
-    400018: tire
-    400020: tirenice
-    400022: axle
-    400024: spring
-    400026: rod
-    2300000: car_001
-    2300002: rim_001
-    2300004: tire_001
-    2300006: body
-    2300008: colliderfront
-    2300010: collidermid
-    2300012: colliderunder
-    2300014: rim
-    2300016: tire
-    2300018: tirenice
-    2300020: axle
-    2300022: spring
-    2300024: rod
-    3300000: car_001
-    3300002: rim_001
-    3300004: tire_001
-    3300006: body
-    3300008: colliderfront
-    3300010: collidermid
-    3300012: colliderunder
-    3300014: rim
-    3300016: tire
-    3300018: tirenice
-    3300020: axle
-    3300022: spring
-    3300024: rod
-    4300000: car_001
-    4300002: rim_001
-    4300004: tire_001
-    4300006: colliderfront
-    4300008: collidermid
-    4300010: body
-    4300012: colliderunder
-    4300014: rim
-    4300016: tire
-    4300018: tirenice
-    4300020: axle
-    4300022: spring
-    4300024: rod
+  serializedVersion: 22200
+  internalIDToNameTable:
+  - first:
+      1: 100000
+    second: car_001
+  - first:
+      1: 100002
+    second: //RootNode
+  - first:
+      1: 100004
+    second: rim_001
+  - first:
+      1: 100006
+    second: tire_001
+  - first:
+      1: 100008
+    second: body
+  - first:
+      1: 100010
+    second: colliderfront
+  - first:
+      1: 100012
+    second: collidermid
+  - first:
+      1: 100014
+    second: colliderunder
+  - first:
+      1: 100016
+    second: rim
+  - first:
+      1: 100018
+    second: tire
+  - first:
+      1: 100020
+    second: tirenice
+  - first:
+      1: 100022
+    second: axle
+  - first:
+      1: 100024
+    second: spring
+  - first:
+      1: 100026
+    second: rod
+  - first:
+      4: 400000
+    second: car_001
+  - first:
+      4: 400002
+    second: //RootNode
+  - first:
+      4: 400004
+    second: rim_001
+  - first:
+      4: 400006
+    second: tire_001
+  - first:
+      4: 400008
+    second: body
+  - first:
+      4: 400010
+    second: colliderfront
+  - first:
+      4: 400012
+    second: collidermid
+  - first:
+      4: 400014
+    second: colliderunder
+  - first:
+      4: 400016
+    second: rim
+  - first:
+      4: 400018
+    second: tire
+  - first:
+      4: 400020
+    second: tirenice
+  - first:
+      4: 400022
+    second: axle
+  - first:
+      4: 400024
+    second: spring
+  - first:
+      4: 400026
+    second: rod
+  - first:
+      23: 2300000
+    second: car_001
+  - first:
+      23: 2300002
+    second: rim_001
+  - first:
+      23: 2300004
+    second: tire_001
+  - first:
+      23: 2300006
+    second: body
+  - first:
+      23: 2300008
+    second: colliderfront
+  - first:
+      23: 2300010
+    second: collidermid
+  - first:
+      23: 2300012
+    second: colliderunder
+  - first:
+      23: 2300014
+    second: rim
+  - first:
+      23: 2300016
+    second: tire
+  - first:
+      23: 2300018
+    second: tirenice
+  - first:
+      23: 2300020
+    second: axle
+  - first:
+      23: 2300022
+    second: spring
+  - first:
+      23: 2300024
+    second: rod
+  - first:
+      33: 3300000
+    second: car_001
+  - first:
+      33: 3300002
+    second: rim_001
+  - first:
+      33: 3300004
+    second: tire_001
+  - first:
+      33: 3300006
+    second: body
+  - first:
+      33: 3300008
+    second: colliderfront
+  - first:
+      33: 3300010
+    second: collidermid
+  - first:
+      33: 3300012
+    second: colliderunder
+  - first:
+      33: 3300014
+    second: rim
+  - first:
+      33: 3300016
+    second: tire
+  - first:
+      33: 3300018
+    second: tirenice
+  - first:
+      33: 3300020
+    second: axle
+  - first:
+      33: 3300022
+    second: spring
+  - first:
+      33: 3300024
+    second: rod
+  - first:
+      43: 4300000
+    second: car_001
+  - first:
+      43: 4300002
+    second: rim_001
+  - first:
+      43: 4300004
+    second: tire_001
+  - first:
+      43: 4300006
+    second: colliderfront
+  - first:
+      43: 4300008
+    second: collidermid
+  - first:
+      43: 4300010
+    second: body
+  - first:
+      43: 4300012
+    second: colliderunder
+  - first:
+      43: 4300014
+    second: rim
+  - first:
+      43: 4300016
+    second: tire
+  - first:
+      43: 4300018
+    second: tirenice
+  - first:
+      43: 4300020
+    second: axle
+  - first:
+      43: 4300022
+    second: spring
+  - first:
+      43: 4300024
+    second: rod
+  externalObjects: {}
   materials:
-    importMaterials: 0
+    materialImportMode: 0
     materialName: 0
     materialSearch: 1
+    materialLocation: 0
   animations:
     legacyGenerateAnimations: 4
     bakeSimulation: 0
+    resampleCurves: 1
     optimizeGameObjects: 0
+    removeConstantScaleCurves: 0
     motionNodeName: 
+    rigImportErrors: 
+    rigImportWarnings: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    importAnimatedCustomProperties: 0
+    importConstraints: 0
     animationCompression: 1
-    animationRotationError: .5
-    animationPositionError: .5
-    animationScaleError: .5
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
     animationWrapMode: 0
     extraExposedTransformPaths: []
+    extraUserProperties: []
     clipAnimations: []
     isReadable: 1
   meshes:
@@ -92,38 +239,71 @@ ModelImporter:
     globalScale: 50
     meshCompression: 0
     addColliders: 0
+    useSRGBMaterialColor: 1
+    sortHierarchyByName: 1
+    importPhysicalCameras: 0
+    importVisibility: 0
     importBlendShapes: 1
+    importCameras: 0
+    importLights: 0
+    nodeNameCollisionStrategy: 0
+    fileIdsGeneration: 1
     swapUVChannels: 0
     generateSecondaryUV: 0
     useFileUnits: 1
-    optimizeMeshForGPU: 1
     keepQuads: 0
     weldVertices: 1
+    bakeAxisConversion: 0
+    preserveHierarchy: 0
+    skinWeightsMode: 0
+    maxBonesPerVertex: 4
+    minBoneWeight: 0.001
+    optimizeBones: 1
+    meshOptimizationFlags: -1
+    indexFormat: 1
     secondaryUVAngleDistortion: 8
     secondaryUVAreaDistortion: 15.000001
     secondaryUVHardAngle: 88
+    secondaryUVMarginMethod: 0
+    secondaryUVMinLightmapResolution: 40
+    secondaryUVMinObjectScale: 1
     secondaryUVPackMargin: 4
     useFileScale: 1
+    strictVertexDataChecks: 0
   tangentSpace:
     normalSmoothAngle: 60
-    splitTangentsAcrossUV: 1
     normalImportMode: 0
-    tangentImportMode: 1
+    tangentImportMode: 4
+    normalCalculationMode: 0
+    legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 1
+    blendShapeNormalImportMode: 1
+    normalSmoothingSource: 0
+  referencedClips: []
   importAnimation: 1
-  copyAvatar: 0
   humanDescription:
+    serializedVersion: 3
     human: []
     skeleton: []
-    armTwist: .5
-    foreArmTwist: .5
-    upperLegTwist: .5
-    legTwist: .5
-    armStretch: .0500000007
-    legStretch: .0500000007
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
     feetSpacing: 0
+    globalScale: 50
     rootMotionBoneName: 
+    hasTranslationDoF: 0
+    hasExtraRoot: 0
+    skeletonHasParents: 0
   lastHumanDescriptionAvatarSource: {instanceID: 0}
+  autoGenerateAvatarMappingIfUnspecified: 1
   animationType: 0
+  humanoidOversampling: 1
+  avatarSetup: 0
+  addHumanoidExtraRootOnlyWhenUsingAvatar: 0
+  importBlendShapeDeformPercent: 0
+  remapMaterialsIfMaterialImportModeIsNone: 1
   additionalBone: 0
   userData: 
   assetBundleName: 

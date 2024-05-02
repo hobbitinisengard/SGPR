@@ -5,6 +5,7 @@ PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
+    serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 418dfcfcf2a6c5946b7b1293356e53b7,
@@ -67,7 +68,19 @@ PrefabInstance:
       propertyPath: m_Name
       value: turn90_smol
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 418dfcfcf2a6c5946b7b1293356e53b7,
+        type: 3}
+      propertyPath: m_TagString
+      value: VisibleInPictureMode
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 418dfcfcf2a6c5946b7b1293356e53b7,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7257021077752638817}
   m_SourcePrefab: {fileID: 100100000, guid: 418dfcfcf2a6c5946b7b1293356e53b7, type: 3}
 --- !u!1 &4923301677659275684 stripped
 GameObject:

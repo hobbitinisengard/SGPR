@@ -5,8 +5,11 @@ using UnityEngine.UI;
 
 public class PauseMenu : Sfxable
 {
+	public SGP_HUD hud;
 	public Button firstButton;
 	public GameObject restartButton;
+	public GameObject endButton;
+	public GameObject steerGamma;
 	public Image veil;
 	public AudioMixer mainMixer;
 	public AudioMixerSnapshot paused;
@@ -16,8 +19,11 @@ public class PauseMenu : Sfxable
 	public Color blackColor;
 	public float duration = 3;
 	float timeElapsed = 0;
-	private void Awake()
+	[NonSerialized]
+	public bool controllerInUse = false;
+	private new void Awake()
 	{
+		base.Awake();
 		clickSoundEffect = GetComponent<AudioSource>();
 		clickSoundEffect.ignoreListenerPause = true;
 	}
@@ -32,11 +38,14 @@ public class PauseMenu : Sfxable
 	}
 	private void OnEnable()
 	{
-		Time.timeScale = 0;
-		Info.gamePaused = true;
+		steerGamma.SetActive(F.I.controllerInUse);
+		if(F.I.gameMode == MultiMode.Singleplayer)
+			Time.timeScale = 0;
+		F.I.gamePaused = true;
 		paused.TransitionTo(0);
 		timeElapsed = 0;
-		restartButton.SetActive(Info.raceStartDate != DateTime.MinValue);
+		restartButton.SetActive(!F.I.s_inEditor);
+		endButton.SetActive(F.I.gameMode == MultiMode.Multiplayer && !ServerC.I.AmHost);
 		startColor = veil.color;
 		firstButton.Select();
 		PlaySFX("menublip2", true);
@@ -44,15 +53,13 @@ public class PauseMenu : Sfxable
 	private void OnDisable()
 	{
 		unPaused.TransitionTo(0);
-		Info.gamePaused = false;
+		F.I.gamePaused = false;
 		Time.timeScale = 1;
-		Info.SaveSettingsDataToJson(mainMixer);
+		F.I.SaveSettingsDataToJson(mainMixer);
 		PlaySFX("menublip2",true);
 		veil.color = startColor;
 
-		if(!Info.s_inEditor)
-			Info.raceStartDate = Info.raceStartDate.AddSeconds(timeElapsed);
-		
-		timeElapsed = 0;
+		if(!F.I.s_inEditor && F.I.gameMode == MultiMode.Singleplayer)
+			F.I.raceStartDate = F.I.raceStartDate.AddSeconds(timeElapsed);
 	}
 }

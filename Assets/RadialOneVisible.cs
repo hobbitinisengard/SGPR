@@ -3,7 +3,6 @@ using UnityEngine.UI.Extensions;
 using UnityEngine.UI;
 using System.Collections;
 using UnityEngine.UIElements.Experimental;
-using RVP;
 using TMPro;
 
 public class RadialOneVisible : MonoBehaviour
@@ -25,6 +24,13 @@ public class RadialOneVisible : MonoBehaviour
 		for (int i = 0; i < transform.childCount; ++i)
 			SetColor(transform.GetChild(i),0);
 	}
+	private void OnDisable()
+	{
+		if (radialCo != null)
+			StopCoroutine(radialCo);
+		if (rad.gameObject.activeSelf)
+			SetVisibility(1);
+	}
 	void SetColor(Transform child, float a)
 	{
 		if(type == Type.Image)
@@ -39,16 +45,11 @@ public class RadialOneVisible : MonoBehaviour
 		else
 			return child.GetComponent<TextMeshProUGUI>().color.a;
 	}
-	public void SetChildrenActive(in bool[] isActive)
+	public void SetChildrenActive(Transform imageContent)
 	{
-		if(isActive.Length != transform.childCount)
-		{
-			Debug.LogError("wrong len");
-			return;
-		}
 		for(int i=0; i<transform.childCount; ++i)
 		{
-			transform.GetChild(i).gameObject.SetActive(isActive[i]);
+			transform.GetChild(i).gameObject.SetActive(imageContent.GetChild(i).gameObject.activeSelf);
 		}
 	}
 	public void SetAnimTo(int childIndex)
@@ -74,38 +75,41 @@ public class RadialOneVisible : MonoBehaviour
 
 		if (radialCo != null)
 			StopCoroutine(radialCo);
-		radialCo = StartCoroutine(Set());
+		if(rad.gameObject.activeSelf)
+			radialCo = StartCoroutine(Set());
 	}
-	IEnumerator Set()
+	IEnumerator Set(float timer = 0)
 	{
 		yield return null;//gameobject's states of active/not active are refreshed after one frame
 		initPos = rad.StartAngle / 360;
 		targetPos = 1 - transform.PosAmongstActive(selected);
-
-		float timer = 0;
 		
 		while (timer <= 1.1f)
 		{
-			float ppTimer = Easing.OutCubic(timer);
-			float value = Mathf.Lerp(initPos, targetPos, ppTimer);
-			rad.StartAngle = 360 * (value);
-			rad.CalculateLayoutInputHorizontal();
-			for(int i=0; i<transform.childCount; ++i)
-			{
-				Transform child = transform.GetChild(i);
-				if (child == selected)
-					SetColor(selected, Mathf.Clamp01(ppTimer));
-				else if (child == prevSelected)
-					SetColor(prevSelected, Mathf.Clamp01(1 - ppTimer));
-				else
-				{
-					float curA = GetColor(child);
-					SetColor(child, Mathf.Lerp(curA, 0, ppTimer));
-				}
-			}
+			SetVisibility(timer);
 			timer += Time.deltaTime;
 			yield return null;
-		} 
+		}
+	}
+	void SetVisibility(float timer)
+	{
+		float ppTimer = Easing.OutCubic(timer);
+		float value = Mathf.Lerp(initPos, targetPos, ppTimer);
+		rad.StartAngle = 360 * (value);
+		rad.CalculateLayoutInputHorizontal();
+		for (int i = 0; i < transform.childCount; ++i)
+		{
+			Transform child = transform.GetChild(i);
+			if (child == selected)
+				SetColor(selected, Mathf.Clamp01(ppTimer));
+			else if (child == prevSelected)
+				SetColor(prevSelected, Mathf.Clamp01(1 - ppTimer));
+			else
+			{
+				float curA = GetColor(child);
+				SetColor(child, Mathf.Lerp(curA, 0, ppTimer));
+			}
+		}
 	}
 }
 

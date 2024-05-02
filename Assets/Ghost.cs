@@ -1,24 +1,21 @@
 using RVP;
 using System.Collections;
+using Unity.Netcode;
 using UnityEngine;
 
-public class Ghost : MonoBehaviour
+public class Ghost : NetworkBehaviour
 {
 	public bool hittable { get; private set; }
 	public bool justResetted { get; private set; }
 	public Collider[] colliders;
-	public MeshRenderer[] ghostableParts;
+	public Renderer[] ghostableParts;
 	VehicleParent vp;
 	public Shader transpShader;
+	Coroutine ghostCo;
 	private void Awake()
 	{
 		vp = GetComponent<VehicleParent>();
 	}
-	// debug ghost
-	//private void Start()
-	//{
-	//	SetHittable(false);
-	//}
 	public void SetHittable(bool isHittable, bool updateColliders = true)
 	{
 		if (updateColliders)
@@ -26,7 +23,7 @@ public class Ghost : MonoBehaviour
 			hittable = isHittable;
 			foreach (var c in colliders)
 			{
-				c.gameObject.layer = isHittable ? Info.carCarCollisionLayer : Info.ghostLayer;
+				c.gameObject.layer = isHittable ? F.I.carCarCollisionLayer : F.I.ghostLayer;
 			}
 		}
 		foreach (var r in ghostableParts)
@@ -46,6 +43,7 @@ public class Ghost : MonoBehaviour
 		material.SetFloat("_Glossiness", 1);
 		material.SetFloat("_SpecularIntensity", .1f);
 		material.SetFloat("_Parallax", 0);
+		material.SetFloat("_Brightness", 1);
 		//material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
 		//material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.Zero);
 		//material.SetInt("_ZWrite", 1);
@@ -53,7 +51,6 @@ public class Ghost : MonoBehaviour
 		//material.DisableKeyword("_ALPHABLEND_ON");
 		//material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
 		//material.renderQueue = -1; // Set it back to the default opaque render queue
-
 		return material;
 	}
 
@@ -66,6 +63,7 @@ public class Ghost : MonoBehaviour
 		material.SetFloat("_Glossiness", 1);
 		material.SetFloat("_SpecularIntensity", .1f);
 		material.SetFloat("_Parallax", 0);
+		material.SetFloat("_Brightness", 4);
 		//var c = material.color;
 		//c.a = 0.5f;
 		//material.color = c;
@@ -78,10 +76,40 @@ public class Ghost : MonoBehaviour
 		//material.EnableKeyword("_ALPHABLEND_ON");
 		//material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
 		//material.renderQueue = 3500;
-
+		
 		return material;
 	}
-	public IEnumerator ResetSeq()
+	public void SetGhostPermanently()
+	{
+		if (F.I.gameMode == MultiMode.Multiplayer)
+			SetHittableRpc(false, true);
+		else
+			SetHittable(false, true);
+	}
+	[Rpc(SendTo.Everyone)]
+	void SetHittableRpc(bool isHittable, bool updateColliders)
+	{
+		SetHittable(isHittable, updateColliders);
+	}
+	public void StartGhostResetting()
+	{
+		if (F.I.gameMode == MultiMode.Multiplayer)
+			StartGhostResettingRpc();
+		else
+		{
+			if (ghostCo != null)
+				StopCoroutine(ghostCo);
+			ghostCo = StartCoroutine(ResetSeq());
+		}
+	}
+	[Rpc(SendTo.Everyone)]
+	void StartGhostResettingRpc()
+	{
+		if (ghostCo != null)
+			StopCoroutine(ghostCo);
+		ghostCo = StartCoroutine(ResetSeq());
+	}
+	IEnumerator ResetSeq()
 	{
 		float timer = 5;
 		float prev = 9;
@@ -96,17 +124,16 @@ public class Ghost : MonoBehaviour
 					prev = (int)(timer * 10);
 					SetHittable(prev % 2 == 0, false);
 				}
-				if(!Info.gamePaused && !Physics.CheckSphere(transform.position, 1.5f, 1<<Info.carCarCollisionLayer))
-					timer -= Time.deltaTime;
 			}
-			else
-			{
-				if(!Info.gamePaused)
-					timer -= Time.deltaTime;
-			}
+
+			if (!F.I.gamePaused)
+				timer -= Time.deltaTime;
+
+			if (Physics.CheckSphere(transform.position, 1.5f, 1 << F.I.carCarCollisionLayer) && timer <= 0)
+				timer = 1;
 			yield return null;
 			justResetted = false;
 		}
-		SetHittable(vp.raceBox.enabled);
+		SetHittable(vp.raceBox.enabled && F.I.s_raceType != RaceType.TimeTrial);
 	}
 }

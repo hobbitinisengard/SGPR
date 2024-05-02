@@ -7,72 +7,159 @@ using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Audio;
-using static Info;
+using System.Security.Cryptography;
+using PathCreation;
+using UnityEngine.EventSystems;
+using Unity.Multiplayer.Playmode;
+using UnityEngine.InputSystem;
+public enum Envir { GER, JAP, SPN, FRA, ENG, USA, ITA, MEX };
+public enum CarGroup { Wild, Aero, Speed, Team };
+public enum Livery { Special = 1, TGR, Rline, Itex, Caltex, Titan, Mysuko }
+public enum RecordType { BestLap, RaceTime, StuntScore, DriftScore}
+public enum ScoringType { Championship, Points, Victory }
+public enum ActionHappening { InLobby, InRace }
+public enum PavementType { Grid, Highway, Volcano, Asphalt, Energy,  Japan, Jungle, Random, LENGTH }
+public enum MultiMode { Singleplayer, Multiplayer };
+public enum RaceType { Race, Knockout, Stunt, Drift, TimeTrial }
+public enum CpuLevel { Normal };
 
-public static class Info
+[Serializable]
+public class PlayerSettingsData
 {
-	public readonly static string documentsSGPRpath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Stunt GP Reloaded\\";
-	public readonly static string partsPath = documentsSGPRpath + "parts\\";
-	public readonly static string tracksPath = documentsSGPRpath + "tracks\\";
-	public readonly static string userdataPath = documentsSGPRpath + "userdata.json";
-	public readonly static string lastPath = documentsSGPRpath + "path.txt";
-	public static PlayerSettingsData ReadSettingsDataFromJson()
+	public float musicVol = 1;
+	public float sfxVol = 1;
+	public string playerName = "";
+	public float steerGamma = 0;
+}
+public class Info : MonoBehaviour
+{
+	private void Awake()
 	{
-		PlayerSettingsData settingsData;
+		F.I = this;
+		MPtags = CurrentPlayer.ReadOnlyTags().Count;
+		switch(MPtags)
+		{
+			case 1:
+				_documentsSGPRpath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Stunt GPR 2\\";
+				Debug.LogWarning("Player 2 Started");
+				break;
+			case 2:
+				_documentsSGPRpath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Stunt GPR 3\\";
+				Debug.LogWarning("Player 3 Started");
+				break;
+			default:
+				_documentsSGPRpath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\STUNT GP REMASTERED\\";
+				break;
+		}
+		if (!Directory.Exists(documentsSGPRpath))
+		{
+			Debug.LogWarning(documentsSGPRpath + " doesnt exist");
+			Directory.CreateDirectory(documentsSGPRpath);
+			F.CopyFilesRecursively(Application.streamingAssetsPath, documentsSGPRpath);
+		}
+
+		PopulateSFXData();
+		ReloadCarsData();
+		PopulateTrackData();
+		ReloadCarPartsData();
+		icons = Resources.LoadAll<Sprite>(trackImagesPath + "tiles");
+	}
+	
+	string _documentsSGPRpath;
+	public string documentsSGPRpath
+	{
+		get { return _documentsSGPRpath; }
+		private set { _documentsSGPRpath = value; }
+	}
+	public string partsPath { get { return documentsSGPRpath + "parts\\"; } }
+	public string tracksPath { get { return documentsSGPRpath + "tracks\\"; } }
+	public string userdataPath { get { return documentsSGPRpath + "userdata.json"; } }
+	public string lastPath { get { return documentsSGPRpath + "path.txt"; } }
+
+	int MPtags;
+
+	public readonly int maxCarsInRace = 10;
+
+	public PlayerSettingsData playerData;
+
+	public InputActionReference shiftRef;
+	public InputActionReference escRef;
+	public InputActionReference enterRef;
+	public InputActionReference quickMessageRef;
+	public InputActionReference chatButtonInput;
+	public string SHA(string filePath)
+	{
+		string hash;
+		using (var cryptoProvider = new SHA1CryptoServiceProvider())
+		{
+			byte[] buffer = File.ReadAllBytes(filePath);
+			hash = BitConverter.ToString(cryptoProvider.ComputeHash(buffer));
+		}
+		return hash;
+	}
+	public string SHA(in byte[] buffer)
+	{
+		using var cryptoProvider = new SHA1CryptoServiceProvider();
+		return BitConverter.ToString(cryptoProvider.ComputeHash(buffer));
+	}
+	//public static void MessageSet(this Player player, string msg)
+	//{
+	//	player.Data[k_message].Value = msg;
+	//}
+	
+
+	public void ReadSettingsDataFromJson()
+	{
 		if (!File.Exists(userdataPath))
 		{
-			settingsData = new PlayerSettingsData();
-			string serializedSettings = JsonConvert.SerializeObject(settingsData);
+			Debug.Log("No " + userdataPath);
+			playerData = new PlayerSettingsData();
+			string serializedSettings = JsonConvert.SerializeObject(playerData);
 			File.WriteAllText(userdataPath, serializedSettings);
 		}
 		else
 		{
+			Debug.Log(userdataPath);
 			string playerSettings = File.ReadAllText(userdataPath);
-			settingsData = JsonConvert.DeserializeObject<PlayerSettingsData>(playerSettings);
+			playerData = JsonConvert.DeserializeObject<PlayerSettingsData>(playerSettings);
+			Debug.Log(playerData == null);
 		}
-		return settingsData;
 	}
-	public static void SaveSettingsDataToJson(in AudioMixer mainMixer)
+	public void SaveSettingsDataToJson(in AudioMixer mainMixer)
 	{
-		var settingsData = new PlayerSettingsData()
-		{
-			lastPlayerName = s_playerName,
-			musicVol = ReadMixerLevelLog("musicVol", mainMixer),
-			sfxVol = ReadMixerLevelLog("sfxVol", mainMixer)
-		};
-
-		string jsonText = JsonConvert.SerializeObject(settingsData);
+		playerData.musicVol = ReadMixerLevelLog("musicVol", mainMixer);
+		playerData.sfxVol = ReadMixerLevelLog("sfxVol", mainMixer);
+		string jsonText = JsonConvert.SerializeObject(playerData);
 		File.WriteAllText(userdataPath, jsonText);
 	}
-	public static PartInfo[] partInfos = new PartInfo[]
+
+	public PartInfo[] partInfos = new PartInfo[]
 	{
-		new PartInfo("Itex", "suscfg"),
-		new PartInfo("Mysuko", "bmscfg"),
-		new PartInfo("Titan", "batcfg"),
-		new PartInfo("Caltex", "engcfg"),
-		new PartInfo("TGR", "chacfg"),
-		new PartInfo("Itex", "grscfg"),
-		new PartInfo("Mysuko", "jetcfg"),
-		new PartInfo("Rline", "tyrcfg"),
-		new PartInfo("TGR", "drvcfg"),
-		new PartInfo("Titan", "hnkcfg"),
-		new PartInfo("", "carcfg"),
+		new ("Itex", ".suscfg"),
+		new ("Mysuko", ".bmscfg"),
+		new ("Titan", ".batcfg"),
+		new ("Caltex", ".engcfg"),
+		new ("TGR", ".chacfg"),
+		new ("Itex", ".grscfg"),
+		new ("Mysuko", ".jetcfg"),
+		new ("Rline", ".tyrcfg"),
+		new ("TGR", ".drvcfg"),
+		new ("Titan", ".hnkcfg"),
+		new ("", ".carcfg"),
 	};
 	//public static string[] extensionsSuffixes = new string[] { "suscfg", "bmscfg", "batcfg",
 	//		"engcfg", "chacfg", "grscfg", "jetcfg", "tyrcfg", "drvcfg", "carcfg" };
-	public enum Livery { Special = 1, TGR, Rline, Itex, Caltex, Titan, Mysuko }
-	public const int Liveries = 7;
-	public enum RecordType { BestLap, RaceTime, StuntScore, DriftScore }
-	public enum PavementType { Highway, RedSand, Asphalt, Electric, TimeTrial, Japanese, GreenSand, Random }
-	/// <summary>
-	/// valid pavements from 0 to ..
-	/// </summary>
-	public const int pavementTypes = 6;
 
-	public enum RaceType { Race, Knockout, Stunt, Drift }
-	public const int RaceTypes = 4;
-	public enum Envir { GER, JAP, SPN, FRA, ENG, USA, ITA, MEX };
-	public readonly static Vector3[] invisibleLevelDimensions = new Vector3[]{
+
+	/// <summary>
+	/// Number of track textures. Set pavementTypes+1 for random texture.
+	/// </summary>
+	public readonly int pavementTypes = 6;
+
+	
+	public readonly int RaceTypes = 5;
+
+	public readonly  Vector3[] invisibleLevelDimensions = new Vector3[]{
 		new (564, 1231,1), //ger
 		new (800, 800,1), //jap
 		new (1462, 1316,1),
@@ -82,10 +169,12 @@ public static class Info
 		new (1406, 1337,1),// ita
 		new (564, 1231,1), //mex
 	};
-	public static readonly int[] skys = new int[] { 8, 2, 5, 1, 4, 3, 7, 9 };
+	public readonly int[] skys = new int[] { 8, 2, 5, 1, 4, 3, 7, 9 };
 
-	public const int Environments = 8;
-	public static readonly string[] EnvirDescs =
+	public int Environments = 8;
+	public int Liveries = 7;
+
+	public readonly string[] EnvirDescs =
 	{
 		"GERMANY\n\nLoud crowd cheering and powerful spotlights..This german arena is really a place to show off.",
 		"JAPAN\n\nHere in this calm japanese dojo placed on the outskirts of Kyoto you can meditate or organize a race!",
@@ -94,83 +183,109 @@ public static class Info
 		"ENGLAND\n\nEnglish go-kart track is a good location to test your driving skills. This place has a reputation for great races.",
 		"USA\n\nAre you looking for an intense experience? Racing on top of a multistorey parking lot located in the heart of New York will be a bombastic idea!",
 		"ITALY\n\nFeeling mediterranean? This italian coast is very scenic, especially at night. There are two dangers here to look out however: staircase descent and water!",
-		"MEXICO\n\nOnly some people are in the possession of info that there's this ancient place located in the middle of an unknown mexican forest, where aztecs used to race RC-cars. However no-one really knows how to get there."
+		"MEXICO\n\nOnly some people are in a possession of info that there's this ancient place located in the middle of an unknown mexican forest, where aztecs used to race RC-cars. However no-one really knows how to get there."
 	};
-	public enum CarGroup { Wild, Aero, Speed, Team };
-	public enum TrackOrigin { Original, Custom };
-	public static readonly string carPrefabsPath = "carModels/";
-	public static readonly string carImagesPath = "carImages/";
-	public static readonly string trackImagesPath = "trackImages/";
-	public static readonly string editorTilesPath = "tiles/objects/";
-	public static Vector3[] carSGPstats;
-	public static Car[] cars;
-	public static Dictionary<string, PartSavable> carParts;
-	public static SortedDictionary<string, TrackHeader> tracks;
-	public static Dictionary<string, AudioClip> audioClips;
-	public static DateTime raceStartDate = DateTime.MinValue;
-	public static bool loaded = false;
-	public const int roadLayer = 6;
-	public const int ignoreWheelCastLayer = 8;
-	public const int vehicleLayer = 9;
-	public const int connectorLayer = 11;
-	public const int invisibleLevelLayer = 12;
-	public const int terrainLayer = 13;
-	public const int cameraLayer = 14;
-	public const int flagLayer = 15;
-	public static readonly int[] racingLineLayers = new int[] {16,25,27};
-	public const int pitsLineLayer = 17;
-	public const int pitsZoneLayer = 18;
-	public const int aeroTunnel = 19;
-	public const int ghostLayer = 24;
-	public const int carCarCollisionLayer = 26;
+
+	public readonly string carPrefabsPath = "carModels/";
+	public readonly string carImagesPath = "carImages/";
+	public readonly string trackImagesPath = "trackImages/";
+	public readonly string editorTilesPath = "tiles/objects/";
+	public Chat chat;
+	public PathCreator universalPath;
+	
+	public List<int> stuntpointsContainer = new();
+	public List<ReplayCam> replayCams = new();
+	public Vector3[] carSGPstats;
+	public Car[] cars;
+	public ScoringType scoringType;
+	public MultiMode gameMode = MultiMode.Singleplayer;
+	public ActionHappening actionHappening = ActionHappening.InLobby;
+	public Dictionary<string, PartSavable> carParts;
+	public SortedDictionary<string, TrackHeader> tracks;
+	public Dictionary<string, AudioClip> audioClips;
+	
+	public bool loaded = false;
+	public int roadLayer = 6;
+	
+	public string visibleInPictureModeTag = "VisibleInPictureMode";
+	public int ignoreWheelCastLayer = 8;
+	public int vehicleLayer = 9;
+	public int connectorLayer = 11;
+	public int invisibleLevelLayer = 12;
+	public int terrainLayer = 13;
+	public int cameraLayer = 14;
+	public int flagLayer = 15;
+	public int racingLineLayer = 16;
+	public int pitsLineLayer = 17;
+	public int pitsZoneLayer = 18;
+	public int aeroTunnel = 19;
+	public int surfaceLayer = 23;
+	public int ghostLayer = 24;
+	public int carCarCollisionLayer = 26;
 
 	/// <summary>
 	/// Only one object at the time can have this layer
 	/// </summary>
-	public const int selectionLayer = 20;
+	public int selectionLayer = 20;
 
 	// curr/next session data
-	public static bool s_spectator;
-	public static List<VehicleParent> s_cars = new List<VehicleParent>();
-	public static string s_trackName = "USA";
-	public static string s_playerCarName = "car01";
-	public static string s_playerName = "P1";
-	public static RaceType s_raceType = RaceType.Race;
-	public static int s_laps = 3;
-	public static bool s_inEditor = true;
-	public static bool s_isNight = false;
-	public enum CpuLevel { Easy, Medium, Hard, Elite};
-	public static CpuLevel s_cpuLevel = CpuLevel.Elite;
-	public static int s_rivals = 0; // 0-9
-	public static PavementType s_roadType = PavementType.Random;
-	public static bool s_catchup = true;
-	public static int s_resultPos = 3;
+	public bool s_spectator;
+	public List<VehicleParent> s_cars = new();
+	public string s_trackName = "USA";
+	/// <summary>
+	/// e.g car01
+	/// </summary>
+	public string s_playerCarName = "car01";
+	public RaceType s_raceType = RaceType.Race;
+	/// <summary>
+	/// set to 0 to indicate freeroam
+	/// </summary>
+	public int s_laps = 3;
+	public bool s_inEditor = true;
+	public bool s_isNight = false;
+	public CpuLevel s_cpuLevel = CpuLevel.Normal;
+	public int s_cpuRivals = 0; // 0-9
+	public PavementType s_roadType = PavementType.Random;
+	public bool s_catchup = true;
+	public int s_resultPos = 3;
+	public int ServerIdGenerator = 0;
 
-	public static readonly string[] IconNames =
+	public readonly string[] IconNames =
 	{
 		"Stunty", "Loop", "Jumpy", "Windy", "Intersecting", "No_pits", "No_jumps", "Icy", "Sandy", "Offroad"
 	};
-	public static Sprite[] icons;
-	public static bool gamePaused;
-	public static readonly string version = "0.2b";
+	public Sprite[] icons;
+	public bool gamePaused;
+	internal bool controllerInUse;
+	internal bool randomCars;
+	internal bool randomTracks;
+	internal int hostId;
+	public int racingPathResolution = 10;
+	public readonly string version = "0.3";
 
-	public static bool InRace 
-	{ 
-		get
+	public const float AfterMultiPlayerRaceWaitForPlayersSeconds = 30;
+
+	public EventSystem eventSystem;
+	public DateTime raceStartDate;
+	public readonly int maxConcurrentUsers = 30;
+
+	public Car Car(string name)
+	{ // i.e. car05
+		try
 		{
-			return !s_inEditor || s_cars.Count > 1;
+			int i = int.Parse(name[3..]);
+			return cars[i - 1];
+		}
+		catch
+		{
+			Debug.Log(name);
+			return cars[0];
 		}
 	}
-
-	public static Car Car(string name)
-	{ // i.e. car05
-		int i = int.Parse(name[3..]);
-		return cars[i - 1];
-	}
-	public static void ReloadCarPartsData()
+	public void ReloadCarPartsData()
 	{
-		string[] extensionsSuffixes = Info.partInfos.Select(i => i.fileExtension).ToArray();
-		string[] filepaths = Directory.GetFiles(Info.partsPath)
+		string[] extensionsSuffixes = partInfos.Select(i => i.fileExtension).ToArray();
+		string[] filepaths = Directory.GetFiles(partsPath)
 			.Where(filepath => extensionsSuffixes.Any(filepath.ToLower().EndsWith))
 			.ToArray();
 		if (carParts == null)
@@ -182,58 +297,59 @@ public static class Info
 			ComponentPanel.AddPart(filepath);
 		}
 	}
-	public static void ReloadCarsData()
+	public void ReloadCarsData()
 	{
 		if (cars == null)
 		{
 			cars = new Car[]
 			{
-			new Car(1,CarGroup.Speed, "MEAN STREAK\n\nFast, light and agile, this racer offers much for those who wish to modify their vehicle."),
-			new Car(1,CarGroup.Wild, "THE HUSTLER\n\nSturdy 4x4 pick-up truck with an eye for the outrageous!"),
-			new Car(1,CarGroup.Aero, "TWIN EAGLE\n\nTake flight with this light and speedy stuntcar."),
-			new Car(1,CarGroup.Aero, "SKY HAWK\n\nGet airborne with this very versatile stunt car."),
-			new Car(1,CarGroup.Speed, "THE PHANTOM\n\nFast, sleek and tough to handle."),
-			new Car(1,CarGroup.Wild, "ROAD HOG\n\nRock and Roll with the rough ridin' road hog."),
-			new Car(1,CarGroup.Wild, "DUNE RAT\n\nDefy the laws of physics in this buggy."),
-			new Car(1,CarGroup.Speed, "NITRO LIGHTNIN''\n\nSupercharged super speed. Easy does it!"),
-			new Car(1,CarGroup.Speed, "ALLEY KAT\n\nSleek and powerful, this cat is ready to roar."),
-			new Car(1,CarGroup.Wild, "SAND SHARK\n\nThis beachcomber is at home on any stunt circuit."),
-			//new Car(0,CarGroup.Wild, "THE BRUTE\n\nUnleash the Brute for no-nonsense on the road!"),
-			//new Car(0,CarGroup.Aero, "WILD DART\n\nFly fast and true with this stuntcar."),
-			//new Car(0,CarGroup.Wild, "RAGING BULL\n\nPowerful and fast, this streetwise 4x4 is incredible."),
-			//new Car(0,CarGroup.Aero, "FLYING MANTIS\n\nSuper light and very fast."),
-			//new Car(0,CarGroup.Aero, "STUNT MONKEY\n\nMonkey see, monkey do! Go bananas with this wild ride!"),
-			//new Car(0,CarGroup.Speed, "INFERNO\n\nThis speed demon is on fire!"),
-			//new Car(0,CarGroup.Team, "THE FORKSTER\n\nDespite its looks, it moves like fork lightning!"),
-			//new Car(0,CarGroup.Team, "WORMS MOBILE\n\nSuper Speedy Buggy!"),
-			//new Car(0,CarGroup.Team, "FORMULA 17\n\nIncredibly fast racing car."),
-			//new Car(0,CarGroup.Team, "TEAM MACHINE\n\nThe ultimate, hugely versatile stock car.")
+			new (0,CarGroup.Speed, "MEAN STREAK","Fast, light and agile, this racer offers much for those who wish to modify their vehicle."),
+			new (45000,CarGroup.Wild, "THE HUSTLER","Sturdy 4x4 pick-up truck with an eye for the outrageous!"),
+			new (50000,CarGroup.Aero, "TWIN EAGLE","Take flight with this light and speedy stuntcar."),
+			new (0,CarGroup.Aero, "SKY HAWK","Get airborne with this very versatile stunt car."),
+			new (30000,CarGroup.Speed, "THE PHANTOM","Fast, sleek and tough to handle."),
+			new (30000,CarGroup.Wild, "ROAD HOG","Rock and Roll with the rough ridin' road hog."),
+			new (0,CarGroup.Wild, "DUNE RAT","Defy the laws of physics in this buggy."),
+			new (50000,CarGroup.Speed, "LIGHTNIN'","Supercharged super speed. Easy does it!"),
+			new (30000,CarGroup.Speed, "ALLEY KAT","Sleek and powerful, this cat is ready to roar."),
+			new (40000,CarGroup.Wild, "SAND SHARK","This beachcomber is at home on any stunt circuit."),
+			new (45000,CarGroup.Wild, "THE BRUTE","Unleash the Brute for no-nonsense on the road!"),
+			new (70000,CarGroup.Aero, "WILD DART","Fly fast and true with this stuntcar."),
+			new (65000,CarGroup.Wild, "RAGING BULL","Powerful and fast, this streetwise 4x4 is incredible."),
+			new (15000,CarGroup.Aero, "FLYING MANTIS","Super light and very fast."),
+			new (35000,CarGroup.Aero, "STUNT MONKEY","Monkey see, monkey do! Go bananas with this wild ride!"),
+			new (50000,CarGroup.Speed, "INFERNO","This speed demon is on fire!"),
+			new (35000,CarGroup.Team, "FORK","Despite its looks, it moves like fork lightning!"),
+			new (55000,CarGroup.Team, "WORM MOBILE","Super Speedy Buggy!"),
+			new (100000,CarGroup.Team, "FORMULA 17","Incredibly fast racing car."),
+			new (90000,CarGroup.Team, "TEAM MACHINE","The ultimate, hugely versatile stock car.")
+
 			};
 		}
 		ReloadCarConfigs();
 	}
-	public static async void ReloadCarConfigs()
+	public async void ReloadCarConfigs()
 	{
 		string carSuffix = partInfos[^1].fileExtension;
-		string[] filepaths = Directory.GetFiles(Info.partsPath)
+		string[] filepaths = Directory.GetFiles(partsPath)
 			.Where(filepath => filepath.ToLower().EndsWith(carSuffix))
 			.ToArray();
 
 		for (int i = 0; i < cars.Length; ++i)
 		{
-			await Task.Run(() => 
+			await Task.Run(() =>
 			{
-				string filepath = Info.partsPath + "car" + (i + 1).ToString() + "." + partInfos[^1].fileExtension;
+				string filepath = partsPath + "car" + (i + 1).ToString() + partInfos[^1].fileExtension;
 				string jsonText = File.ReadAllText(filepath);
-				cars[i].config = new CarConfig(null, null, jsonText);
-			}); 
+				cars[i].config = new CarConfig("car" + (i + 1).ToString(), jsonText);
+			});
 		}
 	}
-	public static void AddCar()
+	public void AddCar()
 	{
 		tracks["car" + (1 + Mathf.RoundToInt(19 * UnityEngine.Random.value)).ToString()].unlocked = true;
 	}
-	public static void PopulateTrackData()
+	public void PopulateTrackData()
 	{
 		if (tracks == null)
 			tracks = new SortedDictionary<string, TrackHeader>();
@@ -291,16 +407,31 @@ public static class Info
 		{
 			string trackJson = File.ReadAllText(path);
 			string name = Path.GetFileNameWithoutExtension(path);
+			string recordsPath = tracksPath + name + ".rec";
 			TrackHeader header = JsonConvert.DeserializeObject<TrackHeader>(trackJson);
 			tracks.Add(name, header);
+			
+			
+			if (File.Exists(recordsPath))
+			{
+				string recordsJson = File.ReadAllText(recordsPath);
+				TrackRecords records = JsonConvert.DeserializeObject<TrackRecords>(recordsJson);
+				tracks[name].records = records;
+			}
+			else
+			{
+				tracks[name].records = new();
+				string json = JsonConvert.SerializeObject(tracks[name].records);
+				File.WriteAllText(tracksPath + name + ".rec", json);
+			}
 		}
 	}
-	public static float ReadMixerLevelLog(string exposedParameter, AudioMixer mixer)
+	public  float ReadMixerLevelLog(string exposedParameter, AudioMixer mixer)
 	{
 		mixer.GetFloat(exposedParameter, out float inVal);
 		return Mathf.Pow(10, 3 / 160f * inVal);
 	}
-	public static void SetMixerLevelLog(string exposedParameter, float val01, in AudioMixer mixer)
+	public void SetMixerLevelLog(string exposedParameter, float val01, in AudioMixer mixer)
 	{
 		float toLogLevel = 80 * 2 / 3f * Mathf.Log10(val01);
 		if (toLogLevel < -80)
@@ -308,13 +439,13 @@ public static class Info
 		Debug.Log("set" + exposedParameter + " to level:" + toLogLevel.ToString());
 		mixer.SetFloat(exposedParameter, toLogLevel);
 	}
-	public static float InGroupPos(Transform child)
+	public float InGroupPos(Transform child)
 	{
 		if (child.parent.childCount <= 1)
 			return 0;
 		return (float)child.GetSiblingIndex() / (child.parent.childCount - 1);
 	}
-	internal static void PopulateSFXData()
+	internal void PopulateSFXData()
 	{
 		if (audioClips == null)
 			audioClips = new Dictionary<string, AudioClip>();
@@ -330,7 +461,7 @@ public static class Info
 	/// Loads latest path from StreamingAssets/Path.txt
 	/// </summary>
 	/// <returns></returns>
-	public static string LoadLastFolderPath()
+	public string LoadLastFolderPath()
 	{
 		string MyDocuments = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 
@@ -346,7 +477,7 @@ public static class Info
 	/// <summary>
 	/// Saves latest path to My Documents\path.txt
 	/// </summary>
-	public static void SaveLastFolderPath(string path)
+	public void SaveLastFolderPath(string path)
 	{
 		if (path == null)
 		{
@@ -354,54 +485,101 @@ public static class Info
 			return;
 		}
 		Debug.Log(path);
-		StreamWriter w = new StreamWriter(lastPath);
+		StreamWriter w = new (lastPath);
 		w.WriteLine(path);
 		w.Close();
 	}
-	public static string ToLaptimeStr(this TimeSpan t)
+	
+}
+[Serializable]
+public class Record
+{
+	public string playerName;
+	public float secondsOrPts;
+	public float requiredSecondsOrPts;
+	public Record(string playerName, float secondsOrPts, float requiredSecondsOrPts = 0)
 	{
-		string shortForm = "";
-		if (t.Hours > 0)
-			shortForm += string.Format("{0:D2}.", t.Hours);
-		shortForm += string.Format("{0:D2}:{1:D2}.{2:D2}", t.Minutes, t.Seconds, Mathf.RoundToInt(t.Milliseconds / 10f));
-		return shortForm;
+		this.playerName = playerName;
+		this.secondsOrPts = secondsOrPts;
+		this.requiredSecondsOrPts = requiredSecondsOrPts;
+	}
+	private Record()
+	{
+		this.playerName = null;
+		this.secondsOrPts = 0;
+		this.requiredSecondsOrPts = 0;
+	}
+	public Record(Record r)
+	{
+		this.playerName = r.playerName;
+		this.secondsOrPts = r.secondsOrPts;
+		this.requiredSecondsOrPts = r.requiredSecondsOrPts;
 	}
 }
 [Serializable]
-public class TrackHeader
+public class TrackRecords
 {
-	[Serializable]
-	public class Record
+	public Record lap;
+	public Record race;
+	public Record stunt;
+	public Record drift;
+	public TrackRecords()
 	{
-		public string playerName;
-		public float secondsOrPts;
-		public float requiredSecondsOrPts;
-		public Record(string playerName, float secondsOrPts, float requiredSecondsOrPts = 0)
+		lap = new(null, 35999, 35999);
+		race = new(null, 0);
+		stunt = new(null, 0);
+		drift = new(null, 0);
+	}
+	public TrackRecords(TrackRecords records)
+	{
+		lap = records.lap;
+		race = records.race;
+		stunt = records.stunt;
+		drift = records.drift;
+	}
+	public Record this[int key]
+	{
+		get
 		{
-			this.playerName = playerName;
-			this.secondsOrPts = secondsOrPts;
-			this.requiredSecondsOrPts = requiredSecondsOrPts;
-		}
-		private Record()
-		{
-			this.playerName = null;
-			this.secondsOrPts = 0;
-			this.requiredSecondsOrPts = 0;
-		}
-		public static Record[] RecordTemplate()
-		{
-			return new Record[]
+			return key switch
 			{
-				new Record(null, 35999,35999),
-				new Record(null, 0),
-				new Record(null, 0),
-				new Record(null, 0),
+				0 => lap,
+				1 => race,
+				2 => stunt,
+				3 => drift,
+				_ => lap,
 			};
+		}
+		set
+		{
+			switch(key)
+			{
+				case 0:
+					lap = value;
+					break;
+				case 1:
+					race = value;
+					break;
+				case 2:
+					stunt = value;
+					break;
+				case 3:
+					drift = value;
+					break;
+			}
 		}
 	}
 
+}
+
+[Serializable]
+public class TrackHeader
+{
 	public string author;
 	public string desc;
+	/// <summary>
+	/// whether the track can be raced on (has its path closed)
+	/// </summary>
 	public bool valid;
 	public Envir envir;
 	public CarGroup preferredCarClass;
@@ -414,18 +592,12 @@ public class TrackHeader
 	/// <summary>
 	/// lap, race, stunt, drift 
 	/// </summary>
-	public Record[] records;
+	[NonSerialized]
+	public TrackRecords records;
 
 	public TrackHeader()
 	{
-		// lap race stunt drift
-		records = new Record[]
-		{
-			new Record(null, 3599),
-			new Record(null, 0),
-			new Record(null, 0),
-			new Record(null, 0)
-		};
+		records = new();
 	}
 	public TrackHeader(int unlocked, CarGroup prefCarClass, int trackDifficulty,
 		Envir envir, string author, int[] icons, string desc, bool valid = true)
@@ -439,8 +611,20 @@ public class TrackHeader
 		this.desc = desc;
 		this.valid = valid;
 		this.icons = icons;
-
 	}
+
+	public TrackHeader(TrackHeader h)
+	{
+		this.unlocked = h.unlocked;
+		this.preferredCarClass = h.preferredCarClass;
+		this.difficulty = h.difficulty;
+		this.envir = h.envir;
+		this.author = h.author;
+		this.desc = h.desc;
+		this.valid = h.valid;
+		this.icons = h.icons;
+	}
+
 	public int TrackOrigin()
 	{
 		return (author != "Team17") ? 1 : 0;
@@ -450,21 +634,16 @@ public class TrackHeader
 public class Car
 {
 	public string desc;
+	public string name;
 	public CarGroup category;
 	public CarConfig config;
-	public bool unlocked;
-	public Car(int unlocked, CarGroup carClass, string desc)
+	public int price;
+	public Car(int price, CarGroup carClass, string name, string desc)
 	{
 		this.desc = desc;
 		this.category = carClass;
-		//if (sgpBars == null)
-		//{
-		//	sgpBars = new float[3];
-		//	for (int i = 0; i < 3; ++i)
-		//		sgpBars[i] = UnityEngine.Random.value;
-		//}
-		//this.sgpBars = sgpBars;
-		this.unlocked = unlocked > 0;
+		this.name = name;
+		this.price = price;
 	}
 }
 public struct PartInfo

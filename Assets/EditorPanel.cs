@@ -1,7 +1,6 @@
 using Newtonsoft.Json;
 using PathCreation;
 using RVP;
-using SFB;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -12,8 +11,10 @@ using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using SimpleFileBrowser;
+using NUnit.Framework;
 
-public struct ReplayCamStruct
+public class ReplayCam
 {
 	public int dist;
 	public TrackCamera cam;
@@ -27,7 +28,7 @@ public class RacingPathParams
 	public int Iterations;
 }
 
-public class EditorPanel : Sfxable
+public class EditorPanel : MonoBehaviour
 {
 	const int connectorRadius = 5;
 	/// <summary>
@@ -65,7 +66,6 @@ public class EditorPanel : Sfxable
 			this.infoImage = infoImage;
 		}
 	}
-
 	public enum Mode
 	{
 		None, Terrain, Build, Connect, Arrow,
@@ -81,7 +81,7 @@ public class EditorPanel : Sfxable
 	public List<int> stuntpointsContainer = new List<int>();
 	[NonSerialized]
 	public List<int> waypointsContainer = new List<int>(32);
-	public List<ReplayCamStruct> replayCamsContainer = new List<ReplayCamStruct>(32);
+	public List<ReplayCam> replayCamsContainer = new List<ReplayCam>(32);
 	public GameObject waypointTriggerPrefab;
 	public GameObject pathFollower;
 	public RenderTexture renderTexture;
@@ -126,6 +126,9 @@ public class EditorPanel : Sfxable
 	public Slider WindExtZ;
 	public Slider WindRanX;
 	public Slider WindRanZ;
+	public Slider initialRotationSlider;
+	public Toggle ShowXAxisToggle;
+	LineRenderer ShowXAxisLineRenderer;
 	public Button terrainBtn;
 	public RacingPathParams[] racingPathParams;//20,0,0,50
 	Vector3? lastEditorCameraPosition;
@@ -134,7 +137,7 @@ public class EditorPanel : Sfxable
 	GameObject currentTileButton;
 	Transform currentTilesPanel;
 	UITest uiTest;
-	AnimationCurve buttonAnimationCurve = new AnimationCurve();
+	AnimationCurve buttonAnimationCurve = new();
 	Tile currentTile;
 	Vector3? anchor;
 	int yRot = 0;
@@ -168,10 +171,17 @@ public class EditorPanel : Sfxable
 	private Vector3 intersectionSnapLocation = -Vector3.one;
 	private bool isPathClosed;
 	[NonSerialized]
-	public TrackHeader.Record[] records = TrackHeader.Record.RecordTemplate();
+	public TrackRecords records = new();
+	GameObject unityRoadMesh;
 
 	public bool loadingTrack { get; private set; }
-
+	private void Awake()
+	{
+		ShowXAxisLineRenderer = GetComponent<LineRenderer>();
+		ShowXAxisToggle.onValueChanged.AddListener(SwitchXAxisRenderer);
+		F.I.stuntpointsContainer = stuntpointsContainer;
+		F.I.replayCams = replayCamsContainer;
+	}
 	private void OnDisable()
 	{
 		tileGroups.SetActive(false);
@@ -182,8 +192,8 @@ public class EditorPanel : Sfxable
 	}
 	private void Initialize()
 	{
-		tileGroups.SetActive(Info.s_inEditor);
-		bottomMenu.SetActive(Info.s_inEditor);
+		tileGroups.SetActive(F.I.s_inEditor);
+		bottomMenu.SetActive(F.I.s_inEditor);
 
 		if (initialized)
 			return;
@@ -192,7 +202,7 @@ public class EditorPanel : Sfxable
 		selector = new CSelector(scalatorButtonImage);
 		uiTest = GetComponent<UITest>();
 		currentTilesPanel = TilesMain.transform;
-		if (Info.s_inEditor)
+		if (F.I.s_inEditor)
 		{
 			flyCamera.enabled = true;
 		}
@@ -203,13 +213,17 @@ public class EditorPanel : Sfxable
 
 		pathCreators = raceManager.racingPaths;
 		racingLineContainers = new GameObject[pathCreators.Length];
-		for (int i=0; i<pathCreators.Length; ++i)
+		for (int i = 0; i < pathCreators.Length; ++i)
 		{
-			racingLineContainers[i] = new GameObject("racingLine"+i.ToString());
+			racingLineContainers[i] = new GameObject("racingLine" + i.ToString());
 		}
 		initialized = true;
 	}
-	public void SetPlacedConnector(Vector3? position)
+	public void SwitchXAxisRenderer(bool newState)
+	{
+		ShowXAxisLineRenderer.enabled = newState;
+	}
+	public void SetPlacedAnchor(Vector3? position)
 	{
 		placedConnector = position;
 	}
@@ -246,6 +260,10 @@ public class EditorPanel : Sfxable
 		windRandom.z = maxWind * sliderVal;
 		ApplyWindToCloths();
 	}
+	public void SetInitialRotation()
+	{
+		placedTilesContainer.transform.rotation = Quaternion.Euler(0, initialRotationSlider.value, 0);
+	}
 	void ApplyWindToCloths()
 	{
 		for (int i = 0; i < placedTilesContainer.transform.childCount; ++i)
@@ -268,7 +286,7 @@ public class EditorPanel : Sfxable
 	}
 	private void OnEnable()
 	{
-		if(Info.s_inEditor)
+		if (F.I.s_inEditor)
 			Initialize();
 		Cursor.visible = true;
 		ResetScale();
@@ -278,20 +296,6 @@ public class EditorPanel : Sfxable
 		{
 			flyCamera.transform.SetPositionAndRotation(lastEditorCameraPosition.Value, lastEditorCameraRotation);
 		}
-	}
-	float SetInvisibleLevelByScroll()
-	{
-		float scroll = Input.mouseScrollDelta.y;
-		if (scroll != 0)
-		{
-			var p = invisibleLevel.position;
-			if (scroll > 0)
-				p.y += Input.GetKey(KeyCode.LeftShift) ? 5 : 1;
-			else
-				p.y -= Input.GetKey(KeyCode.LeftShift) ? 5 : 1;
-			invisibleLevel.position = p;
-		}
-		return scroll;
 	}
 	public void DisplayMessageFor(string str, float timer)
 	{
@@ -307,14 +311,14 @@ public class EditorPanel : Sfxable
 	}
 	void RotateCurrentTileAround(in Vector3 axis, float angle)
 	{
-		currentTile.transform.RotateAround(currentTile.transform.position, axis, angle);
+		currentTile.transform.RotateAround(currentTile.transform.localPosition, axis, angle);
 	}
 
 	void Update()
 	{
 		if (Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.N))
 		{
-			Info.s_isNight = !Info.s_isNight;
+			F.I.s_isNight = !F.I.s_isNight;
 			raceManager.SetPartOfDay();
 			skybox.GetComponent<SkyboxController>().SetNightTimeLights();
 			SetEnvirLights();
@@ -335,7 +339,7 @@ public class EditorPanel : Sfxable
 				{
 					Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 					if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity,
-						1 << Info.roadLayer | 1 << Info.terrainLayer))
+						1 << F.I.roadLayer | 1 << F.I.terrainLayer))
 					{
 						arrow.transform.position = hit.point;
 						if (Input.GetMouseButtonDown(1))
@@ -362,24 +366,15 @@ public class EditorPanel : Sfxable
 				break;
 			case Mode.Build:
 				{
+
 					if (Input.GetKeyDown(KeyCode.Alpha1))
 					{
 						ResetScale();
 					}
-					float scroll = SetInvisibleLevelByScroll();
+					float scroll = Input.mouseScrollDelta.y;
 
-					if (scroll != 0 && Input.GetKey(KeyCode.Tab))
-					{
-						int dir = scroll > 0 ? -1 : 1;
-						selector.Distance = Mathf.Clamp(selector.Distance + dir * 2.5f, 10, 200);
-						if (currentTile)
-						{
 
-							Destroy(currentTile.gameObject);
-							InstantiateNewTile(currentTileButton.name);
-						}
-						DisplayMessageFor(selector.Distance.ToString("F1"), 1);
-					}
+
 
 					if (uiTest.PointerOverUI())
 					{
@@ -394,12 +389,13 @@ public class EditorPanel : Sfxable
 					}
 					else
 					{ // MOUSE OVER THE EDITOR
+
 						if (Input.GetKeyDown(KeyCode.LeftAlt))
 						{ // pick tile
 							HideCurrentTile();
 							Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 							if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity,
-								1 << Info.roadLayer))
+								1 << F.I.roadLayer))
 							{
 								var pickedTile = hit.transform.GetComponent<Tile>();
 								if (pickedTile == null)
@@ -410,7 +406,7 @@ public class EditorPanel : Sfxable
 									selector.Distance = pickedTile.Length();
 									DisplayMessageFor(selector.Distance.ToString(), 3);
 								}
-								SetCurrentTileTo(GetButtonForTile(pickedTile.transform.name), pickedTile.Length(), pickedTile.transform.rotation);
+								SetCurrentTileTo(GetButtonForTile(pickedTile.transform.name), pickedTile.Length(), pickedTile.transform.localRotation);
 								invisibleLevel.position = new Vector3(0, pickedTile.transform.position.y, 0);
 							}
 						}
@@ -419,7 +415,7 @@ public class EditorPanel : Sfxable
 							HideCurrentTile();
 							Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 							if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity,
-								1 << Info.roadLayer))
+								1 << F.I.roadLayer))
 							{
 								HideCurrentTile();
 								if (Input.GetMouseButtonDown(0))
@@ -434,10 +430,19 @@ public class EditorPanel : Sfxable
 						}
 						else if (currentTile)
 						{// PLACING 
-							if (!currentTile.gameObject.activeSelf)
+
+							if (Input.GetKey(KeyCode.Space))
+							{
+								HideCurrentTile();
+							}
+							else
 							{
 								currentTile.gameObject.SetActive(true);
-								return;
+							}
+							if (ShowXAxisToggle.isOn)
+							{
+								ShowXAxisLineRenderer.SetPositions(
+									new Vector3[] { currentTile.transform.position, currentTile.transform.position + 50 * currentTile.transform.right });
 							}
 							if (Input.GetKeyDown(KeyCode.Q))
 							{
@@ -448,10 +453,10 @@ public class EditorPanel : Sfxable
 							{
 								// PLACE TILE
 								SetPathClosed(false);
-								currentTile.GetComponent<Tile>().SetPlaced();
+								currentTile.SetPlaced();
 								InstantiateNewTile(currentTileButton.name);
 								StartCoroutine(ResetAnchors());
-								
+
 								return;
 							}
 
@@ -480,18 +485,29 @@ public class EditorPanel : Sfxable
 									yRot = (yRot + dir * 45) % 360;
 								}
 							}
-							if (scroll != 0 && (Input.GetKey(KeyCode.Z) || Input.GetKey(KeyCode.C)))
+							if (scroll != 0)
 							{ // YAW, ROLL ROTATIONS
-								int dir = 1 * (scroll > 0 ? -1 : 1);
-								if (Input.GetKey(KeyCode.Z))
+								int dir = (scroll > 0 ? -1 : 1);
+								if (Input.GetKey(KeyCode.Tab))
+								{
+									selector.Distance = Mathf.Clamp(selector.Distance + dir * 2.5f, 10, 200);
+									if (currentTile)
+									{
+
+										Destroy(currentTile.gameObject);
+										InstantiateNewTile(currentTileButton.name);
+									}
+									DisplayMessageFor(selector.Distance.ToString("F1"), 1);
+								}
+								else if (Input.GetKey(KeyCode.Z))
 								{
 									xRot = (xRot + dir) % 360;
-									if (xRot % 90 == 0)
+									if (xRot % 90 == 0 && xRot != 0)
 									{
 										xRot = 0;
 										var euler = currentTile.transform.eulerAngles;
 										euler.x = ((currentTile.transform.GetComponent<MeshFilter>() == null) ? 0 : -90) + xRot;
-										currentTile.transform.rotation = Quaternion.Euler(euler);
+										currentTile.transform.localRotation = Quaternion.Euler(euler);
 									}
 									else
 									{
@@ -502,12 +518,12 @@ public class EditorPanel : Sfxable
 								else if (Input.GetKey(KeyCode.C))
 								{
 									zRot = (zRot + dir) % 360;
-									if (zRot % 90 == 0)
+									if (zRot % 90 == 0 && zRot != 0)
 									{
 										zRot = 0;
 										var euler = currentTile.transform.eulerAngles;
 										euler.z = zRot;
-										currentTile.transform.rotation = Quaternion.Euler(euler);
+										currentTile.transform.localRotation = Quaternion.Euler(euler);
 									}
 									else
 									{
@@ -515,13 +531,23 @@ public class EditorPanel : Sfxable
 									}
 									DisplayMessageFor(zRot.ToString(), 1);
 								}
+								else
+								{
+									var p = invisibleLevel.position;
+									if (scroll > 0)
+										p.y += Input.GetKey(KeyCode.LeftShift) ? 5 : 1;
+									else
+										p.y -= Input.GetKey(KeyCode.LeftShift) ? 5 : 1;
+									invisibleLevel.position = p;
+								}
 							}
+							Debug.DrawRay(currentTile.transform.position, 100 * currentTile.transform.right, Color.red);
 							Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
 							if (Input.GetKey(KeyCode.LeftControl))
 							{ // pick height
 								if (Physics.Raycast(ray, out hit, Mathf.Infinity,
-									1 << Info.roadLayer | 1 << Info.terrainLayer))
+									1 << F.I.roadLayer | 1 << F.I.terrainLayer))
 								{
 									var p = invisibleLevel.position;
 									p.y = hit.point.y;
@@ -535,7 +561,7 @@ public class EditorPanel : Sfxable
 								currentTile.transform.position = curPosition;
 							}
 							else if (Physics.Raycast(ray, out hit, Mathf.Infinity,
-								1 << Info.invisibleLevelLayer | 1 << Info.roadLayer | 1 << Info.terrainLayer))
+								1 << F.I.invisibleLevelLayer | 1 << F.I.roadLayer | 1 << F.I.terrainLayer))
 							{ // tile preview location
 								curPosition = hit.point;
 								if (anchor == null && placedConnector != null && floatingConnector != null)
@@ -571,18 +597,18 @@ public class EditorPanel : Sfxable
 				{
 					if (selectingOtherConnector)
 					{
-						flyCamera.transform.GetComponent<Camera>().cullingMask |= 1 << Info.connectorLayer;
+						flyCamera.transform.GetComponent<Camera>().cullingMask |= 1 << F.I.connectorLayer;
 
 						if (Input.GetMouseButtonDown(0))
 						{
 							Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-							if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, 1 << Info.connectorLayer))
+							if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, 1 << F.I.connectorLayer))
 							{
 								var c = hit.transform.GetComponent<Connector>();
 								if (!c.marked)
 								{
 									selectedConnector = c;
-									flyCamera.transform.GetComponent<Camera>().cullingMask &= ~(1 << Info.connectorLayer);
+									flyCamera.transform.GetComponent<Camera>().cullingMask &= ~(1 << F.I.connectorLayer);
 								}
 							}
 						}
@@ -597,7 +623,7 @@ public class EditorPanel : Sfxable
 						{
 							Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
-							if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, 1 << Info.connectorLayer))
+							if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, 1 << F.I.connectorLayer))
 							{
 								var c = hit.transform.GetComponent<Connector>();
 								if (!c.marked)
@@ -634,16 +660,16 @@ public class EditorPanel : Sfxable
 					if (Input.GetMouseButtonDown(0))
 					{
 						Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-						if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, 1 << Info.cameraLayer | 1 << Info.connectorLayer))
+						if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, 1 << F.I.cameraLayer | 1 << F.I.connectorLayer))
 						{
-							if (hit.transform.gameObject.layer == Info.cameraLayer)
+							if (hit.transform.gameObject.layer == F.I.cameraLayer)
 							{
 								if (Input.GetKey(KeyCode.X))
 									Destroy(hit.transform.gameObject);
 								else
 								{
 									selectedCamera = hit.transform.gameObject;
-									flyCamera.transform.GetComponent<Camera>().cullingMask |= 1 << Info.connectorLayer;
+									flyCamera.transform.GetComponent<Camera>().cullingMask |= 1 << F.I.connectorLayer;
 									DisplayMessageFor("Selected", 1);
 								}
 							}
@@ -651,7 +677,7 @@ public class EditorPanel : Sfxable
 							{
 								hit.transform.gameObject.GetComponent<Connector>().SetCamera(
 									selectedCamera.GetComponent<TrackCamera>());
-								flyCamera.transform.GetComponent<Camera>().cullingMask &= ~(1 << Info.connectorLayer);
+								flyCamera.transform.GetComponent<Camera>().cullingMask &= ~(1 << F.I.connectorLayer);
 							}
 						}
 					}
@@ -662,12 +688,12 @@ public class EditorPanel : Sfxable
 					if (selector.Distance == 0) // searching to add connectors
 					{
 						Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-						if (Physics.Raycast(ray, out _, Mathf.Infinity, 1 << Info.roadLayer | 1 << Info.connectorLayer))
+						if (Physics.Raycast(ray, out _, Mathf.Infinity, 1 << F.I.roadLayer | 1 << F.I.connectorLayer))
 						{
-							flyCamera.transform.GetComponent<Camera>().cullingMask |= 1 << Info.connectorLayer;
+							flyCamera.transform.GetComponent<Camera>().cullingMask |= 1 << F.I.connectorLayer;
 							if (Input.GetMouseButtonDown(0))
 							{
-								if (Physics.Raycast(ray, out RaycastHit hit2, Mathf.Infinity, 1 << Info.connectorLayer))
+								if (Physics.Raycast(ray, out RaycastHit hit2, Mathf.Infinity, 1 << F.I.connectorLayer))
 								{
 									var c = hit2.transform.GetComponent<Connector>();
 									if (!c.marked)
@@ -690,7 +716,7 @@ public class EditorPanel : Sfxable
 						}
 						else
 						{
-							flyCamera.transform.GetComponent<Camera>().cullingMask &= ~(1 << Info.connectorLayer);
+							flyCamera.transform.GetComponent<Camera>().cullingMask &= ~(1 << F.I.connectorLayer);
 						}
 					}
 					else
@@ -703,7 +729,7 @@ public class EditorPanel : Sfxable
 				if (Input.GetMouseButtonDown(0))
 				{
 					Ray r = Camera.main.ScreenPointToRay(Input.mousePosition);
-					if (Physics.Raycast(r, out RaycastHit hit, Mathf.Infinity, 1 << Info.flagLayer))
+					if (Physics.Raycast(r, out RaycastHit hit, Mathf.Infinity, 1 << F.I.flagLayer))
 					{
 						selectedFlag = hit.transform;
 						fillMenu.SetActive(true);
@@ -715,7 +741,7 @@ public class EditorPanel : Sfxable
 					if (Input.GetMouseButtonDown(0))
 					{
 						Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-						var hits = Physics.RaycastAll(ray, Mathf.Infinity, 1 << Info.connectorLayer);
+						var hits = Physics.RaycastAll(ray, Mathf.Infinity, 1 << F.I.connectorLayer);
 						foreach (var h in hits)
 						{
 							var c = h.transform.GetComponent<Connector>();
@@ -757,10 +783,10 @@ public class EditorPanel : Sfxable
 	//{
 	//	Vector3 center = Vector3.zero;
 	//	GameObject tileMain = c.transform.parent.GetChild(0).gameObject;
-	//	tileMain.layer = Info.selectionLayer;
+	//	tileMain.layer = F.I.selectionLayer;
 	//	Vector3 rayPoint = tileMain.transform.position;
 	//	rayPoint.y += 100;
-	//	if (Physics.Raycast(rayPoint, Vector3.down, out RaycastHit hit, Mathf.Infinity, 1 << Info.selectionLayer))
+	//	if (Physics.Raycast(rayPoint, Vector3.down, out RaycastHit hit, Mathf.Infinity, 1 << F.I.selectionLayer))
 	//	{
 	//		center = rayPoint;
 	//		center.y = hit.point.y;
@@ -769,7 +795,7 @@ public class EditorPanel : Sfxable
 	//	{
 	//		Debug.LogError("GetCenter failed");
 	//	}
-	//	tileMain.layer = Info.roadLayer;
+	//	tileMain.layer = F.I.roadLayer;
 	//	return center;
 	//}
 	/// <param name="intersection">returned intersection</param>
@@ -812,13 +838,6 @@ public class EditorPanel : Sfxable
 			selectedFlag.FindParentComponent<Tile>().url = texturePath;
 		}
 	}
-	public async void SetFillLocally()
-	{
-		string texturePath = StandaloneFileBrowser.OpenFilePanel("Load image (square shaped)",
-			Info.documentsSGPRpath, "jpg", false)[0];
-
-		await SetFlagsTexture(texturePath);
-	}
 	public async void SetFillFromURL(string path)
 	{
 		await SetFlagsTexture(path);
@@ -842,9 +861,8 @@ public class EditorPanel : Sfxable
 
 	IEnumerator ClosingPath()
 	{
-		Debug.Log("begin closing path");
 		connectors.Clear();
-		
+
 		List<Vector3> Lpath = new List<Vector3>(100);
 		List<Vector3> Rpath = new List<Vector3>(100);
 		List<LoopReplacement> replacements = new();
@@ -887,6 +905,7 @@ public class EditorPanel : Sfxable
 							cur.Colorize(Connector.red);
 							connectors.Add(cur);
 						}
+						//Debug.DrawRay(cur.transform.position, Vector3.up * 100, Color.red);
 						selectingOtherConnector = true;
 						yield return null;
 					}
@@ -922,9 +941,9 @@ public class EditorPanel : Sfxable
 				}
 			}
 
-			//Debug.Log("elements traversed: " + i);
-			if (i > 100 || i < 2)
+			if (i >= 10000 || i < 2)
 			{
+				//Debug.Log("elements traversed: " + i);
 				loadingTrack = false;
 				yield break;
 			}
@@ -938,7 +957,7 @@ public class EditorPanel : Sfxable
 				Debug.DrawLine(Rpath[i], Rpath[i] + Vector3.up * 100, Color.red, 10);
 				trackPathDuplicates = true;
 			}
-			if(Lpath[i] == Lpath[i - 1])
+			if (Lpath[i] == Lpath[i - 1])
 			{
 				Debug.DrawLine(Lpath[i], Lpath[i] + Vector3.up * 100, Color.red, 10);
 				trackPathDuplicates = true;
@@ -946,13 +965,13 @@ public class EditorPanel : Sfxable
 		}
 		if (trackPathDuplicates)
 		{
-			Debug.LogError("Rpath duplicate found");
+			DisplayMessageFor("Rpath duplicate found", 2);
 			loadingTrack = false;
 			yield break;
 		}
-		for(int i=0; i<pathCreators.Length; ++i)
+		for (int i = 0; i < pathCreators.Length; ++i)
 		{
-			K1999 k1999 = new (racingPathParams[i]);
+			K1999 k1999 = new(racingPathParams[i]);
 			k1999.LoadData(Lpath, Rpath);
 			k1999.CalcRaceLine();
 			racingLine = k1999.GetRacingLine(Lpath, Rpath);
@@ -1000,9 +1019,9 @@ public class EditorPanel : Sfxable
 					var col = castable.GetComponent<SphereCollider>();
 					col.radius = 1;
 					col.isTrigger = true;
-					castable.layer = Info.racingLineLayers[i];
+					castable.layer = F.I.racingLineLayer;
 					castable.name = progress.ToString(CultureInfo.InvariantCulture);
-					progress += 10;
+					progress += F.I.racingPathResolution;
 				}
 
 				// generate stuntpoints for cars
@@ -1012,7 +1031,7 @@ public class EditorPanel : Sfxable
 				{
 					if (c.isStuntZone || c.trackCamera != null)
 					{
-						var hits = Physics.OverlapSphere(c.transform.position + Vector3.up, 30, 1 << Info.racingLineLayers[i]);
+						Collider[] hits = Physics.OverlapSphere(c.transform.position + Vector3.up, 30, 1 << F.I.racingLineLayer);
 						float min = 999;
 						int closestIdx = 0;
 						for (int j = 0; j < hits.Length; ++j)
@@ -1028,7 +1047,7 @@ public class EditorPanel : Sfxable
 							stuntpointsContainer.Add(int.Parse(hits[closestIdx].name));
 						if (c.trackCamera != null)
 						{
-							replayCamsContainer.Add(new ReplayCamStruct { cam = c.trackCamera, dist = int.Parse(hits[closestIdx].name) });
+							replayCamsContainer.Add(new ReplayCam { cam = c.trackCamera, dist = int.Parse(hits[closestIdx].name) });
 						}
 					}
 				}
@@ -1050,7 +1069,6 @@ public class EditorPanel : Sfxable
 				//}
 			}
 		}
-		Debug.Log("end closing path");
 		loadingTrack = false;
 	}
 	void SetPathClosed(bool val)
@@ -1058,7 +1076,7 @@ public class EditorPanel : Sfxable
 		isPathClosed = val;
 		connectButtonImage.color = val ? Color.green : Color.yellow;
 		pathFollower.SetActive(val);
-		if(!val)
+		if (!val)
 			racingLine = null;
 	}
 	void ClearConnectors()
@@ -1094,7 +1112,7 @@ public class EditorPanel : Sfxable
 	{
 		SetCurrentTileTo(button, null, null);
 	}
-	public void SetCurrentTileTo(GameObject button, float? Length = null, Quaternion? rotation = null)
+	public void SetCurrentTileTo(GameObject button, float? Length = null, Quaternion? localRotation = null)
 	{
 		// play GUI animation
 		DeselectIconAndRemoveCurrentTile();
@@ -1106,9 +1124,9 @@ public class EditorPanel : Sfxable
 		StartCoroutine(AnimateButton(button.transform.GetChild(0)));
 
 		//PlaySFX("click");
-		InstantiateNewTile(button.name, Length, rotation);
+		InstantiateNewTile(button.name, Length, localRotation);
 	}
-	void InstantiateNewTile(string name, float? distance = null, Quaternion? rotation = null, Vector3? position = null,
+	void InstantiateNewTile(string name, float? distance = null, Quaternion? localRotation = null, Vector3? position = null,
 		bool? mirror = null, string url = null)
 	{
 		GameObject original;
@@ -1118,7 +1136,7 @@ public class EditorPanel : Sfxable
 		}
 		else
 		{
-			original = Resources.Load<GameObject>(Info.editorTilesPath + name);
+			original = Resources.Load<GameObject>(F.I.editorTilesPath + name);
 			cachedTiles.Add(name, original);
 		}
 		currentTile = Instantiate(original, placedTilesContainer.transform)
@@ -1127,10 +1145,10 @@ public class EditorPanel : Sfxable
 
 		currentTile.transform.position = position == null ? curPosition : position.Value;
 
-		rotation ??= Quaternion.Euler(new Vector3(
+		localRotation ??= Quaternion.Euler(new Vector3(
 			((currentTile.transform.GetComponent<MeshFilter>() != null) ? -90 : 0) + xRot, yRot, zRot));
 
-		currentTile.transform.rotation = rotation.Value;
+		currentTile.transform.localRotation = localRotation.Value;
 		currentTile.GetComponent<Tile>().panel = this;
 
 		mirror ??= curMirror;
@@ -1141,14 +1159,31 @@ public class EditorPanel : Sfxable
 		distance ??= selector.Distance;
 
 		currentTile.AdjustScale(distance.Value);
-
-		if (url != null)
-		{
-			selectedFlag = currentTile.transform.GetChild(0).GetChild(0);
-			SetFillFromURL(url);
-		}
-		currentTile.url = url;
 		currentTile.name = name;
+
+		if (url != null && url.Length > 0)
+		{
+			try
+			{
+				var main = currentTile.transform.GetChild(0);
+				for (int i = 0; i < main.childCount; ++i)
+				{
+					if (main.GetChild(i).gameObject.layer == F.I.flagLayer)
+					{
+						selectedFlag = main.GetChild(i);
+						SetFillFromURL(url);
+						currentTile.url = url;
+
+						break;
+					}
+				}
+			}
+			catch
+			{
+
+			}
+
+		}
 	}
 	public void SwitchToStuntzones()
 	{
@@ -1187,7 +1222,7 @@ public class EditorPanel : Sfxable
 				case Mode.Connect:
 					pathFollower.SetActive(false);
 					ClearConnectors();
-					flyCamera.transform.GetComponent<Camera>().cullingMask &= ~(1 << Info.connectorLayer);
+					flyCamera.transform.GetComponent<Camera>().cullingMask &= ~(1 << F.I.connectorLayer);
 					break;
 				case Mode.Arrow:
 					if (arrow)
@@ -1199,10 +1234,10 @@ public class EditorPanel : Sfxable
 						Destroy(newCamera.gameObject);
 					cameraMenu.gameObject.SetActive(false);
 					UnmarkAllAndDisableCollidersOfConnectedConnectors();
-					flyCamera.transform.GetComponent<Camera>().cullingMask &= ~(1 << Info.connectorLayer | 1 << Info.cameraLayer);
+					flyCamera.transform.GetComponent<Camera>().cullingMask &= ~(1 << F.I.connectorLayer | 1 << F.I.cameraLayer);
 					break;
 				case Mode.Scalator:
-					flyCamera.transform.GetComponent<Camera>().cullingMask &= ~(1 << Info.connectorLayer);
+					flyCamera.transform.GetComponent<Camera>().cullingMask &= ~(1 << F.I.connectorLayer);
 					selector.Reset();
 					break;
 				case Mode.FillTool:
@@ -1210,14 +1245,14 @@ public class EditorPanel : Sfxable
 					break;
 				case Mode.StuntZonesTool:
 
-					flyCamera.transform.GetComponent<Camera>().cullingMask &= ~(1 << Info.connectorLayer);
+					flyCamera.transform.GetComponent<Camera>().cullingMask &= ~(1 << F.I.connectorLayer);
 
 					UnmarkAllAndDisableCollidersOfConnectedConnectors();
 
 					break;
 				case Mode.Cross:
 					selector.Reset();
-					flyCamera.transform.GetComponent<Camera>().cullingMask &= ~(1 << Info.connectorLayer);
+					flyCamera.transform.GetComponent<Camera>().cullingMask &= ~(1 << F.I.connectorLayer);
 					break;
 				default:
 					break;
@@ -1244,15 +1279,15 @@ public class EditorPanel : Sfxable
 					break;
 				case Mode.SetCamera:
 					cameraMenu.gameObject.SetActive(true);
-					flyCamera.transform.GetComponent<Camera>().cullingMask |= 1 << Info.cameraLayer;
+					flyCamera.transform.GetComponent<Camera>().cullingMask |= 1 << F.I.cameraLayer;
 					EnableAllCollidersAndMark(neverMark);
 					break;
 				case Mode.StuntZonesTool:
-					flyCamera.transform.GetComponent<Camera>().cullingMask |= 1 << Info.connectorLayer;
+					flyCamera.transform.GetComponent<Camera>().cullingMask |= 1 << F.I.connectorLayer;
 					EnableAllCollidersAndMark(isStuntZonePred);
 					break;
 				case Mode.Cross:
-					flyCamera.transform.GetComponent<Camera>().cullingMask |= 1 << Info.connectorLayer;
+					flyCamera.transform.GetComponent<Camera>().cullingMask |= 1 << F.I.connectorLayer;
 					break;
 				default:
 					break;
@@ -1341,9 +1376,8 @@ public class EditorPanel : Sfxable
 	}
 	public void CloseEditor()
 	{
-		YouSurePanel.
-		HidePanel();
-		raceManager.BackToMenu();
+		YouSurePanel.HidePanel();
+		raceManager.BackToMenu(applyScoring: false);
 	}
 	public void QuickSave()
 	{
@@ -1360,7 +1394,7 @@ public class EditorPanel : Sfxable
 		TrackSavableData TRACK = new TrackSavableData();
 		TRACK.windExternal = windExternal;
 		TRACK.windRandom = windRandom;
-
+		TRACK.initialRotation = (int)initialRotationSlider.value;
 		int stuntyCount = 0, loopCount = 0, jumpCount = 0, jumpyCount = 0, windyCount = 0,
 			crossCount = 0, pitsCount = 0, icyCount = 0, sandyCount = 0, grassyCount = 0;
 		string prevTileName = "";
@@ -1410,7 +1444,7 @@ public class EditorPanel : Sfxable
 				TileSavable tSavable = new TileSavable();
 				tSavable.name_id = id;
 				tSavable.position = tile.transform.position;
-				tSavable.rotation = tile.transform.rotation;
+				tSavable.rotation = tile.transform.localRotation;
 				tSavable.length = tile.Length();
 				tSavable.url = tile.url;
 				tSavable.mirrored = tile.mirrored;
@@ -1444,7 +1478,7 @@ public class EditorPanel : Sfxable
 
 		List<int> icons = new List<int>();
 		if (stuntyCount >= 10)
-			icons.Add(0); // as in Info.IconNames
+			icons.Add(0); // as in F.I.IconNames
 		if (loopCount >= 1)
 			icons.Add(1);
 		if (jumpyCount >= 5)
@@ -1470,46 +1504,52 @@ public class EditorPanel : Sfxable
 		// save image
 		Texture2D tex = F.toTexture2D(renderTexture);
 		byte[] textureData = tex.EncodeToPNG();
-		string path = Path.Combine(Info.tracksPath, trackName.text + ".png");
+		string path = Path.Combine(F.I.tracksPath, trackName.text + ".png");
 		File.WriteAllBytes(path, textureData);
 
 		// save track editor data
-		string trackJson = JsonConvert.SerializeObject(TRACK);
-		path = Path.Combine(Info.tracksPath, trackName.text + ".data");
-		File.WriteAllText(path, trackJson);
+		string JsonContent = JsonConvert.SerializeObject(TRACK);
+		path = Path.Combine(F.I.tracksPath, trackName.text + ".data");
+		File.WriteAllText(path, JsonContent);
 
 		// save track header
 		TrackHeader header = new()
 		{
 			unlocked = true,
-			preferredCarClass = (Info.CarGroup)carGroupDropdown.value,
+			preferredCarClass = (CarGroup)carGroupDropdown.value,
 			difficulty = trackDifficultyDropdown.value,
-			envir = Info.tracks[Info.s_trackName].envir,
+			envir = F.I.tracks[F.I.s_trackName].envir,
 			author = trackAuthorInputField.text,
 			icons = icons.ToArray(),
 			desc = trackDescInputField.text,
-			records = this.records,
+			records = new(this.records),
 		};
 		header.valid = racingLine != null && racingLine.Length > 8 && header.records != null;
 		if (!header.valid)
 		{
 			DisplayMessageFor("Drive at least once to validate track", 3);
 		}
-		trackJson = JsonConvert.SerializeObject(header, Formatting.Indented);
-		path = Path.Combine(Info.tracksPath, trackName.text + ".track");
-		File.WriteAllText(path, trackJson);
-		if (!Info.tracks.ContainsKey(trackName.text))
-			Info.tracks.Add(trackName.text, header);
+		JsonContent = JsonConvert.SerializeObject(header, Formatting.Indented);
+		path = Path.Combine(F.I.tracksPath, trackName.text + ".track");
+		File.WriteAllText(path, JsonContent);
+
+		//serialize records aside from .track file
+		JsonContent = JsonConvert.SerializeObject(header.records, Formatting.Indented);
+		path = Path.Combine(F.I.tracksPath, trackName.text + ".rec");
+		File.WriteAllText(path, JsonContent);
+
+		if (!F.I.tracks.ContainsKey(trackName.text))
+			F.I.tracks.Add(trackName.text, header);
 		else
-			Info.tracks[trackName.text] = header;
+			F.I.tracks[trackName.text] = header;
 	}
 	public void SetPylonVisibility(bool isVisible)
 	{
 		for (int i = 0; i < placedTilesContainer.transform.childCount; ++i)
 		{
-			var tile = placedTilesContainer.transform.GetChild(i).gameObject;
-			if (tile.name.Contains("pylon") || tile.name == "reflector")
-				tile.SetActive(isVisible);
+			var tile = placedTilesContainer.transform.GetChild(i);
+			if (!tile.CompareTag(F.I.visibleInPictureModeTag))
+				tile.gameObject.SetActive(isVisible);
 		}
 	}
 	//HeightsSavableWrapper ConvertHeights(float[,] heights)
@@ -1583,7 +1623,7 @@ public class EditorPanel : Sfxable
 		{
 			var lights = envir.transform.Find("Lights");
 			if (lights != null)
-				lights.gameObject.SetActive(Info.s_isNight);
+				lights.gameObject.SetActive(F.I.s_isNight);
 		}
 	}
 	public void RemoveTrackLeftovers()
@@ -1601,10 +1641,10 @@ public class EditorPanel : Sfxable
 			Initialize();
 		gameObject.SetActive(true);
 		loadingTrack = true;
-		records = TrackHeader.Record.RecordTemplate();
-		
-		int skyboxNumber = Info.skys[(int)Info.tracks[Info.s_trackName].envir];
-		string envirName = Info.tracks[Info.s_trackName].envir.ToString();
+		records = new();
+
+		int skyboxNumber = F.I.skys[(int)F.I.tracks[F.I.s_trackName].envir];
+		string envirName = F.I.tracks[F.I.s_trackName].envir.ToString();
 		RemoveTrackLeftovers();
 		skybox = Instantiate(Resources.Load<GameObject>("envirs/" + "sky" + skyboxNumber.ToString()));
 		envir = Instantiate(Resources.Load<GameObject>("envirs/" + envirName));
@@ -1617,12 +1657,12 @@ public class EditorPanel : Sfxable
 		terrainBtn.gameObject.SetActive(terrain != null);
 
 		SetEnvirLights();
-		trackName.text = Info.s_trackName;
-		string path = Path.Combine(Info.tracksPath, Info.s_trackName + ".data");
+		trackName.text = F.I.s_trackName;
+		string path = Path.Combine(F.I.tracksPath, F.I.s_trackName + ".data");
 
 		terrainEditor.SetTerrain(terrain);
 
-		invisibleLevel.localScale = Info.invisibleLevelDimensions[(int)Info.tracks[Info.s_trackName].envir];
+		invisibleLevel.localScale = F.I.invisibleLevelDimensions[(int)F.I.tracks[F.I.s_trackName].envir];
 
 
 		for (int i = 0; i < placedTilesContainer.transform.childCount; ++i)
@@ -1651,19 +1691,20 @@ public class EditorPanel : Sfxable
 		TrackSavableData TRACK = JsonConvert.DeserializeObject<TrackSavableData>(trackJson);
 
 
-		trackDescInputField.text = Info.tracks[Info.s_trackName].desc;
-		trackDescInputFieldPlaceholder.text = Info.tracks[Info.s_trackName].desc;
+		trackDescInputField.text = F.I.tracks[F.I.s_trackName].desc;
+		trackDescInputFieldPlaceholder.text = F.I.tracks[F.I.s_trackName].desc;
 
-		trackAuthorInputField.text = Info.tracks[Info.s_trackName].author;
-		trackAuthorInputFieldPlaceholder.text = Info.tracks[Info.s_trackName].author;
+		trackAuthorInputField.text = F.I.tracks[F.I.s_trackName].author;
+		trackAuthorInputFieldPlaceholder.text = F.I.tracks[F.I.s_trackName].author;
 
-		trackDifficultyDropdown.value = Info.tracks[Info.s_trackName].difficulty;
+		trackDifficultyDropdown.value = F.I.tracks[F.I.s_trackName].difficulty;
 
-		carGroupDropdown.value = (int)Info.tracks[Info.s_trackName].preferredCarClass;
+		carGroupDropdown.value = (int)F.I.tracks[F.I.s_trackName].preferredCarClass;
 
 		windExternal = TRACK.windExternal;
 		windRandom = TRACK.windRandom;
-
+		initialRotationSlider.value = TRACK.initialRotation;
+		SetInitialRotation();
 
 		if (TRACK.replayCams != null)
 		{
@@ -1680,6 +1721,7 @@ public class EditorPanel : Sfxable
 				InstantiateNewTile(TRACK.tileNames[tile.name_id], tile.length, tile.rotation, tile.position, tile.mirrored, tile.url);
 				currentTile.SetPlaced();
 			}
+
 			for (int i = 0; i < TRACK.tiles.Count; ++i)
 			{ // set up connectors properly
 				Transform tile = placedTilesContainer.transform.GetChild(i);
@@ -1716,24 +1758,74 @@ public class EditorPanel : Sfxable
 		ApplyWindToCloths();
 		SetHeightsmap(TRACK.heights);
 		SwitchToConnect();
-		
 	}
 	public void OpenLoadTrackFileBrowser()
 	{
+		StartCoroutine(OpenLoadTrackFileBrowserCo());
+	}
+	IEnumerator OpenLoadTrackFileBrowserCo()
+	{
 		if (savePanel.activeSelf || toolsPanel.activeSelf)
-			return;
+			yield break;
 
-		string filepath = StandaloneFileBrowser.OpenFilePanel("Select track",
-			Info.tracksPath, "track", false)[0];
-		if (filepath.Length > 0)
+		FileBrowser.SetFilters(false, new FileBrowser.Filter("track", ".track"));
+		yield return FileBrowser.WaitForLoadDialog(FileBrowser.PickMode.Files, false, F.I.tracksPath, null, "Select track..", "Load");
+
+		if (FileBrowser.Success)
 		{
-			string newTrackName = Path.GetFileNameWithoutExtension(filepath);
-			if (Info.tracks.ContainsKey(newTrackName))
+			string filepath = FileBrowser.Result[0];
+			if (filepath.Length > 0)
 			{
-				Info.s_trackName = newTrackName;
-				StartCoroutine(LoadTrack());
+				string newTrackName = Path.GetFileNameWithoutExtension(filepath);
+				if (F.I.tracks.ContainsKey(newTrackName))
+				{
+					F.I.s_trackName = newTrackName;
+					StartCoroutine(LoadTrack());
+				}
 			}
 		}
+	}
+	public void RemoveUnityOfRoadMeshes()
+	{
+		if (unityRoadMesh != null)
+			unityRoadMesh.SetActive(false);
+
+		//for (int i = 0; i < placedTilesContainer.transform.childCount; ++i)
+		//{
+		//	var tileTr = placedTilesContainer.transform.GetChild(i);
+		//	if (tileTr.gameObject.layer == F.I.roadLayer)
+		//	{
+		//		tileTr.GetComponent<Tile>().mc.enabled = true;
+		//	}
+		//}
+	}
+	public void GenerateUnityOfRoadMeshes()
+	{
+		List<CombineInstance> CIs = new(placedTilesContainer.transform.childCount);
+
+		for (int i = 0; i < placedTilesContainer.transform.childCount; ++i)
+		{
+			var tileTr = placedTilesContainer.transform.GetChild(i);
+			if (tileTr.gameObject.layer == F.I.roadLayer)
+			{
+				CIs.Add(new CombineInstance() { 
+					mesh = tileTr.GetComponent<Tile>().mc.sharedMesh, 
+					transform = tileTr.localToWorldMatrix 
+				});
+				//tileTr.GetComponent<Tile>().mc.enabled = false;
+			}
+		}
+		if (unityRoadMesh == null)
+		{
+			unityRoadMesh = new GameObject("unityRoadMesh");
+			unityRoadMesh.AddComponent<MeshCollider>();
+			unityRoadMesh.layer = F.I.roadLayer;
+		}
+	
+		Mesh mesh = new();
+		mesh.CombineMeshes(CIs.ToArray());
+		unityRoadMesh.GetComponent<MeshCollider>().sharedMesh = mesh;
+		unityRoadMesh.SetActive(true);
 	}
 	public void ToFreeRoamButton()
 	{
@@ -1742,9 +1834,9 @@ public class EditorPanel : Sfxable
 	public void ToValidate()
 	{
 		SwitchTo(Mode.None);
-		Info.s_laps = 3;
-		Info.s_rivals = 3;
-		Info.s_raceType = Info.RaceType.Race;
+		F.I.s_laps = 3;
+		F.I.s_cpuRivals = 3;
+		F.I.s_raceType = RaceType.Race;
 		if (trackName.text.Length == 3)
 		{
 			DisplayMessageFor("Save track!", 2);
@@ -1762,5 +1854,5 @@ public class EditorPanel : Sfxable
 		}
 	}
 
-	
+
 }

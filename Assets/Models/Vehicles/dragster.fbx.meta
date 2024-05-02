@@ -1,66 +1,162 @@
 fileFormatVersion: 2
 guid: e264fa361de1ddd4ea5d512bd35fc88b
 ModelImporter:
-  serializedVersion: 18
-  fileIDToRecycleName:
-    100000: chassis
-    100002: collider
-    100004: colliderwing
-    100006: collidetunder
-    100008: //RootNode
-    100010: rimfront
-    100012: rimrear
-    100014: tirefront
-    100016: tirerear
-    400000: chassis
-    400002: collider
-    400004: colliderwing
-    400006: collidetunder
-    400008: //RootNode
-    400010: rimfront
-    400012: rimrear
-    400014: tirefront
-    400016: tirerear
-    2300000: chassis
-    2300002: collider
-    2300004: colliderwing
-    2300006: collidetunder
-    2300008: rimfront
-    2300010: rimrear
-    2300012: tirefront
-    2300014: tirerear
-    3300000: chassis
-    3300002: collider
-    3300004: colliderwing
-    3300006: collidetunder
-    3300008: rimfront
-    3300010: rimrear
-    3300012: tirefront
-    3300014: tirerear
-    4300000: colliderwing
-    4300002: collidetunder
-    4300004: collider
-    4300006: tirefront
-    4300008: rimfront
-    4300010: chassis
-    4300012: rimrear
-    4300014: tirerear
+  serializedVersion: 22200
+  internalIDToNameTable:
+  - first:
+      1: 100000
+    second: chassis
+  - first:
+      1: 100002
+    second: collider
+  - first:
+      1: 100004
+    second: colliderwing
+  - first:
+      1: 100006
+    second: collidetunder
+  - first:
+      1: 100008
+    second: //RootNode
+  - first:
+      1: 100010
+    second: rimfront
+  - first:
+      1: 100012
+    second: rimrear
+  - first:
+      1: 100014
+    second: tirefront
+  - first:
+      1: 100016
+    second: tirerear
+  - first:
+      4: 400000
+    second: chassis
+  - first:
+      4: 400002
+    second: collider
+  - first:
+      4: 400004
+    second: colliderwing
+  - first:
+      4: 400006
+    second: collidetunder
+  - first:
+      4: 400008
+    second: //RootNode
+  - first:
+      4: 400010
+    second: rimfront
+  - first:
+      4: 400012
+    second: rimrear
+  - first:
+      4: 400014
+    second: tirefront
+  - first:
+      4: 400016
+    second: tirerear
+  - first:
+      23: 2300000
+    second: chassis
+  - first:
+      23: 2300002
+    second: collider
+  - first:
+      23: 2300004
+    second: colliderwing
+  - first:
+      23: 2300006
+    second: collidetunder
+  - first:
+      23: 2300008
+    second: rimfront
+  - first:
+      23: 2300010
+    second: rimrear
+  - first:
+      23: 2300012
+    second: tirefront
+  - first:
+      23: 2300014
+    second: tirerear
+  - first:
+      33: 3300000
+    second: chassis
+  - first:
+      33: 3300002
+    second: collider
+  - first:
+      33: 3300004
+    second: colliderwing
+  - first:
+      33: 3300006
+    second: collidetunder
+  - first:
+      33: 3300008
+    second: rimfront
+  - first:
+      33: 3300010
+    second: rimrear
+  - first:
+      33: 3300012
+    second: tirefront
+  - first:
+      33: 3300014
+    second: tirerear
+  - first:
+      43: 4300000
+    second: colliderwing
+  - first:
+      43: 4300002
+    second: collidetunder
+  - first:
+      43: 4300004
+    second: collider
+  - first:
+      43: 4300006
+    second: tirefront
+  - first:
+      43: 4300008
+    second: rimfront
+  - first:
+      43: 4300010
+    second: chassis
+  - first:
+      43: 4300012
+    second: rimrear
+  - first:
+      43: 4300014
+    second: tirerear
+  externalObjects: {}
   materials:
-    importMaterials: 0
+    materialImportMode: 0
     materialName: 0
     materialSearch: 1
+    materialLocation: 0
   animations:
     legacyGenerateAnimations: 4
     bakeSimulation: 0
+    resampleCurves: 1
     optimizeGameObjects: 0
+    removeConstantScaleCurves: 0
     motionNodeName: 
-    pivotNodeName: 
+    rigImportErrors: 
+    rigImportWarnings: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    importAnimatedCustomProperties: 0
+    importConstraints: 0
     animationCompression: 1
-    animationRotationError: .5
-    animationPositionError: .5
-    animationScaleError: .5
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
     animationWrapMode: 0
     extraExposedTransformPaths: []
+    extraUserProperties: []
     clipAnimations: []
     isReadable: 1
   meshes:
@@ -68,38 +164,72 @@ ModelImporter:
     globalScale: 50
     meshCompression: 0
     addColliders: 0
+    useSRGBMaterialColor: 1
+    sortHierarchyByName: 1
+    importPhysicalCameras: 0
+    importVisibility: 0
     importBlendShapes: 1
+    importCameras: 0
+    importLights: 0
+    nodeNameCollisionStrategy: 0
+    fileIdsGeneration: 1
     swapUVChannels: 0
     generateSecondaryUV: 0
     useFileUnits: 1
-    optimizeMeshForGPU: 1
     keepQuads: 0
     weldVertices: 1
+    bakeAxisConversion: 0
+    preserveHierarchy: 0
+    skinWeightsMode: 0
+    maxBonesPerVertex: 4
+    minBoneWeight: 0.001
+    optimizeBones: 1
+    meshOptimizationFlags: -1
+    indexFormat: 1
     secondaryUVAngleDistortion: 8
     secondaryUVAreaDistortion: 15.000001
     secondaryUVHardAngle: 88
+    secondaryUVMarginMethod: 0
+    secondaryUVMinLightmapResolution: 40
+    secondaryUVMinObjectScale: 1
     secondaryUVPackMargin: 4
     useFileScale: 1
+    strictVertexDataChecks: 0
   tangentSpace:
     normalSmoothAngle: 60
-    splitTangentsAcrossUV: 1
     normalImportMode: 0
-    tangentImportMode: 1
+    tangentImportMode: 4
+    normalCalculationMode: 0
+    legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 1
+    blendShapeNormalImportMode: 1
+    normalSmoothingSource: 0
+  referencedClips: []
   importAnimation: 1
-  copyAvatar: 0
   humanDescription:
+    serializedVersion: 3
     human: []
     skeleton: []
-    armTwist: .5
-    foreArmTwist: .5
-    upperLegTwist: .5
-    legTwist: .5
-    armStretch: .0500000007
-    legStretch: .0500000007
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
     feetSpacing: 0
+    globalScale: 50
     rootMotionBoneName: 
+    hasTranslationDoF: 0
+    hasExtraRoot: 0
+    skeletonHasParents: 0
   lastHumanDescriptionAvatarSource: {instanceID: 0}
+  autoGenerateAvatarMappingIfUnspecified: 1
   animationType: 0
+  humanoidOversampling: 1
+  avatarSetup: 0
+  addHumanoidExtraRootOnlyWhenUsingAvatar: 0
+  importBlendShapeDeformPercent: 0
+  remapMaterialsIfMaterialImportModeIsNone: 1
   additionalBone: 0
   userData: 
   assetBundleName: 
+  assetBundleVariant: 

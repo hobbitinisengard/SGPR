@@ -1,42 +1,105 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System;
-using JetBrains.Annotations;
+using Unity.Netcode;
+using Unity.Collections;
 
 namespace RVP
 {
-	public enum CatchupStatus { NoCatchup, Speeding, Slowing };
+	//public struct StatePayload : INetworkSerializable
+	//{
+	//	public int tick;
+	//	public DateTime timestamp;
+	//	public Vector3 position;
+	//	public Quaternion rotation;
+	//	public Vector3 velocity;
+	//	public Vector3 angularVelocity;
 
+	//	public StatePayload(int tick, VehicleParent vp) : this()
+	//	{
+	//		this.tick = tick;
+	//		timestamp = DateTime.UtcNow;
+	//		position = vp.tr.position;
+	//		rotation = vp.tr.rotation;
+	//		velocity = vp.rb.velocity;
+	//		angularVelocity = vp.rb.angularVelocity;
+	//	}
+
+	//	public void NetworkSerialize<T>(BufferSerializer<T> s) where T : IReaderWriter
+	//	{
+	//		s.SerializeValue(ref tick);
+	//		s.SerializeValue(ref position);
+	//		s.SerializeValue(ref rotation);
+	//		s.SerializeValue(ref velocity);
+	//		s.SerializeValue(ref angularVelocity);
+	//		s.SerializeValue(ref timestamp);
+	//	}
+	//}
+	//public struct InputPayload : INetworkSerializable
+	//{
+	//	public int tick;
+	//	byte honkBoostShift;
+	//	ushort accel;
+	//	ushort steer;
+	//	ushort brake;
+	//	ushort roll;
+	//	public void ApplyToCar(VehicleParent vp)
+	//	{
+	//		vp.SetAccel(Mathf.HalfToFloat(accel));
+	//		vp.SetSteer(Mathf.HalfToFloat(steer));
+	//		vp.SetBrake(Mathf.HalfToFloat(brake));
+	//		vp.SetRoll(Mathf.HalfToFloat(roll));
+	//		vp.SetHonkerInput(honkBoostShift & 0x01);
+	//		vp.SetBoost((honkBoostShift >> 1) & 0x01);
+	//		vp.SetRoll((honkBoostShift >> 2) & 0x01);
+	//	}
+	//	public InputPayload(VehicleParent vp, int tick)
+	//	{
+	//		accel = Mathf.FloatToHalf(vp.accelInput);
+	//		steer = Mathf.FloatToHalf(vp.steerInput);
+	//		brake = Mathf.FloatToHalf(vp.brakeInput);
+	//		roll = Mathf.FloatToHalf(vp.rollInput);
+	//		honkBoostShift = (byte)(vp.honkInput | vp.boostButton << 1 | vp.SGPshiftbutton << 2);
+	//		this.tick = tick;
+			
+	//	}
+	//	public void NetworkSerialize<T>(BufferSerializer<T> s) where T : IReaderWriter
+	//	{
+	//		if(s.IsWriter)
+	//		{
+	//			s.SerializeValue(ref honkBoostShift);
+	//			s.SerializeValue(ref accel);
+	//			s.SerializeValue(ref steer);
+	//			s.SerializeValue(ref brake);
+	//			s.SerializeValue(ref roll);
+				
+	//			s.SerializeValue(ref tick);
+	//		}
+	//	}
+	//}
+
+	public enum CatchupStatus { NoCatchup, Speeding, Slowing };
+	
 	[RequireComponent(typeof(Rigidbody))]
 	[DisallowMultipleComponent]
 	[AddComponentMenu("RVP/Vehicle Controllers/Vehicle Parent", 0)]
-
+	
 	// Vehicle root class
-	public class VehicleParent : MonoBehaviour
+	public class VehicleParent : NetworkBehaviour
 	{
+		public MeshRenderer[] springRenderers;
 		public AudioSource honkerAudio;
-		CarConfig carCfg;
-		public CarConfig carConfig
-		{
-			get
-			{
-				if (carCfg == null)
-					return Info.cars[carNumber - 1].config;
-				else
-					return carCfg;
-			}
-			set
-			{
-				carCfg = value;
-				carCfg.Apply(this);
-			}
-		}
+		public SampleText sampleText;
+		[NonSerialized]
+		public BasicInput basicInput;
+		[NonSerialized]
+		public CarConfig carConfig;
 		/// <summary>
 		/// from 1 to 20
 		/// </summary>
 		public int carNumber;
 		[NonSerialized]
-		public Ghost ghostComponent;
+		public Ghost ghost;
 		public GameObject bodyObj;
 		static double[] digitalBrakeInputEnv = { 0.050000, 0.055749, 0.061497, 0.067246, 0.072994, 0.078743, 0.084491, 0.090240, 0.095988, 0.100108, 0.104227, 0.108347, 0.112467, 0.116586, 0.120706, 0.124826, 0.128945, 0.131461, 0.133977, 0.136492, 0.139008, 0.141523, 0.144039, 0.146555, 0.149070, 0.150732, 0.152394, 0.154057, 0.155719, 0.157381, 0.159043, 0.160705, 0.162367, 0.164702, 0.167037, 0.169372, 0.171707, 0.174042, 0.176377, 0.178712, 0.181047, 0.184175, 0.187302, 0.190430, 0.193557, 0.198389, 0.203220, 0.208051, 0.212883, 0.217714, 0.222546, 0.227377, 0.232208, 0.234335, 0.236462, 0.238589, 0.240716, 0.242843, 0.244970, 0.247097, 0.249224, 0.251272, 0.253320, 0.255368, 0.257416, 0.263848, 0.270281, 0.276713, 0.283146, 0.289578, 0.296011, 0.302443, 0.308876, 0.313165, 0.317455, 0.321745, 0.326034, 0.330324, 0.334614, 0.338904, 0.343193, 0.349227, 0.355260, 0.361294, 0.367327, 0.373361, 0.379394, 0.385428, 0.391461, 0.400442, 0.409424, 0.418405, 0.427386, 0.436368, 0.445349, 0.454330, 0.463311, 0.472721, 0.482131, 0.491541, 0.500951, 0.510361, 0.519771, 0.529180, 0.538590, 0.560293, 0.581995, 0.603697, 0.625400, 0.647102, 0.668805, 0.690507, 0.712209, 0.735046, 0.757883, 0.780720, 0.803557, 0.826394, 0.849231, 0.872068, 0.888060, 0.904051, 0.920043, 0.936034, 0.952026, 0.968017, 0.984009, 1.000000 };
 		static AnimationCurve brakeCurve;
@@ -51,20 +114,79 @@ namespace RVP
 		[System.NonSerialized]
 		public Transform norm; // Normal orientation object
 
+		NetworkVariable<Livery> _sponsor = new(); //SERVER
+
 		[System.NonSerialized]
 		public float accelInput;
 		[System.NonSerialized]
-		public bool honkInput;
+		public int honkInput;
 		[System.NonSerialized]
 		public float brakeInput;
+		[System.NonSerialized]
 		[Range(-1, 1)]
 		public float steerInput;
 		[System.NonSerialized]
 		public float ebrakeInput;
 		[System.NonSerialized]
-		public bool boostButton;
+		public int boostButton;
 		[System.NonSerialized]
-		public bool SGPshiftbutton;
+		public int SGPshiftbutton;
+		[System.NonSerialized]
+		public float rollInput;
+
+		//NetworkVariable<float> _accelInput = new(writePerm: NetworkVariableWritePermission.Owner);
+		//public float accelInput { get { return _accelInput.Value; } set { _accelInput.Value = value; } }
+		//[System.NonSerialized]
+		//NetworkVariable<int> _honkInput = new(writePerm: NetworkVariableWritePermission.Owner);
+		//public int honkInput { get { return _honkInput.Value; } set { _honkInput.Value = value; } }
+		//[System.NonSerialized]
+		//NetworkVariable<float> _brakeInput = new(writePerm: NetworkVariableWritePermission.Owner);
+		//public float brakeInput { get { return _brakeInput.Value; } set { _brakeInput.Value = value; } }
+		//[Range(-1, 1)]
+		//NetworkVariable<float> _steerInput = new(writePerm: NetworkVariableWritePermission.Owner);
+		//public float steerInput { get { return _steerInput.Value; } set { _steerInput.Value = value; } }
+		//[System.NonSerialized]
+		//public float ebrakeInput;
+		//[System.NonSerialized]
+		//NetworkVariable<int> _boostButton = new(writePerm: NetworkVariableWritePermission.Owner);
+		//public int boostButton { get { return _boostButton.Value; } set { _boostButton.Value = value; } }
+		//[System.NonSerialized]
+		//NetworkVariable<int> _SGPshiftbutton = new(writePerm: NetworkVariableWritePermission.Owner);
+		//public int SGPshiftbutton { get { return _SGPshiftbutton.Value; } set { _SGPshiftbutton.Value = value; } }
+
+		//[System.NonSerialized]
+		//NetworkVariable<int> _rollButton = new(writePerm: NetworkVariableWritePermission.Owner);
+		//public int rollInput { get { return _boostButton.Value; } set { _boostButton.Value = value; } }
+		
+		public Livery sponsor { get { return _sponsor.Value; } 
+			set 
+			{ 
+				if(ServerC.I.AmHost)
+				{
+					_sponsor.Value = value;
+				}
+			} 
+		}
+		NetworkVariable<FixedString32Bytes> _name = new(); // SERVER
+		public new string name 
+		{ 
+			get
+			{ 
+				return _name.Value.ToString(); 
+			} 
+			set 
+			{
+				if (ServerC.I.AmHost)
+				{
+					base.name = value;
+					_name.Value = value;
+				}
+			}
+		}
+		public static bool InFreeroam
+		{
+			get { return F.I.s_inEditor && F.I.s_cpuRivals == 0; }
+		}
 		[System.NonSerialized]
 		public bool SGPlockbutton;
 		[System.NonSerialized]
@@ -81,8 +203,7 @@ namespace RVP
 		public float pitchInput;
 		[System.NonSerialized]
 		public float yawInput;
-		[System.NonSerialized]
-		public float rollInput;
+		
 
 		public GameObject[] frontLights;
 		public GameObject[] rearLights;
@@ -139,9 +260,10 @@ namespace RVP
 		public float upDot; // Dot product between upDir and GlobalControl.worldUpDir
 		[System.NonSerialized]
 		public float velMag; // Velocity magnitude
+		Vector3 prevVel;
 		[System.NonSerialized]
 		public float sqrVelMag; // Velocity squared magnitude
-
+		public Vector3 acceleration { get; private set; }
 		[System.NonSerialized]
 		public bool reversing;
 		[Tooltip("convention for placing wheels is FL, FR, RL, RR")]
@@ -159,14 +281,12 @@ namespace RVP
 
 		[Tooltip("Lower center of mass by suspension height")]
 		public bool suspensionCenterOfMass;
-		public Transform centerOfMassObj;
 
 		public ForceMode wheelForceMode = ForceMode.Acceleration;
 		public ForceMode suspensionForceMode = ForceMode.Acceleration;
 
 		[Tooltip("Tow vehicle to instantiate")]
 		public GameObject towVehicle;
-		GameObject newTow;
 		[System.NonSerialized]
 		public VehicleParent inputInherit; // Vehicle which to inherit input from
 
@@ -197,28 +317,42 @@ namespace RVP
 		/// </summary>
 		public bool colliding;
 		public bool crashing; // serious impact
-		//[Tooltip("Sideways friction when vehicle is in air. 0=no steering in air")]
-		//public float inAirFriction = 0.25f;
 		[NonSerialized]
 		public GameObject customCam;
 		private float lastNoBatteryMessage;
-
-		/// <summary>
-		/// allowed values: 0-6
-		/// </summary>
-		public int sponsor { get; private set; }
-
-		public float countdownTimer;
-
+		public bool Owner { get { return IsOwner || F.I.gameMode == MultiMode.Singleplayer; } }
+		[Rpc(SendTo.SpecifiedInParams)]
+		public void RelinquishRpc(RpcParams ps)
+		{
+			NetworkObject.RemoveOwnership();
+			Destroy(gameObject);
+		}
+		
+		[Rpc(SendTo.SpecifiedInParams)]
+		void RequestRaceboxValuesRpc(RpcParams ps)
+		{
+			SynchRaceboxValuesRpc(raceBox.curLap, followAI.dist, followAI.progress, raceBox.Aero, raceBox.drift, 
+				(float)(raceBox.bestLapTime.TotalMilliseconds/1000f), 
+				raceBox.enabled ? 0 : (float)raceBox.raceTime.TotalMilliseconds/1000f,
+				RpcTarget.Single(ps.Receive.SenderClientId, RpcTargetUse.Temp));
+		}
+		[Rpc(SendTo.SpecifiedInParams)]
+		public void SynchRaceboxValuesRpc(int curLap, int dist, int progress, float aero, float drift, float bestLapSecs, float raceTimeSecs, RpcParams ps)
+		{
+			raceBox.UpdateValues(curLap, dist, progress, aero/10f, drift, bestLapSecs, raceTimeSecs);
+			ResultsView.Add(this);
+		}
 		public FollowAI followAI { get; private set; }
 		public RaceBox raceBox { get; private set; }
 
-		public float carLen { get; private set; }
 		float catchupGripMult = 1.1f;
-		
-
+		int roadSurfaceType;
+		[NonSerialized]
+		public float tyresOffroad;
 		public CatchupStatus catchupStatus { get; private set; }
-
+		public float AngularDrag { get { return rb.angularDrag; } }
+		SGP_DragsterEffect dragsterEffect;
+		// NETCODE - reconciliation and extrapolation
 		public void SetBattery(float capacity, float chargingSpeed, float lowBatPercent, float evoBountyPercent)
 		{
 			energyRemaining = capacity;
@@ -230,7 +364,7 @@ namespace RVP
 
 		public void SetCatchup(CatchupStatus newStatus)
 		{
-			if (Info.s_catchup)
+			if (F.I.s_catchup)
 			{
 				switch (newStatus)
 				{
@@ -283,6 +417,42 @@ namespace RVP
 				catchupStatus = newStatus;
 			}
 		}
+		void OnSponsorChanged()
+		{
+			var mr = bodyObj.GetComponent<MeshRenderer>();
+			string matName = mr.sharedMaterial.name;
+			if((sponsor) != 0)
+			{
+				matName = matName[..^1] + ((int)sponsor).ToString();
+				Material newMat = Resources.Load<Material>("materials/" + matName);
+				newMat.name = matName;
+				mr.material = newMat;
+				RaceManager.I.hud.AddToProgressBar(this);
+			}
+			else
+			{
+				Debug.LogError($"on {name}, sponsor is 0");
+			}
+		}
+		void OnNameChanged()
+		{
+			base.name = name;
+			sampleText.textMesh.text = name;
+			if (name == F.I.playerData.playerName && Owner)
+			{
+				RaceManager.I.playerCar = this;
+				RaceManager.I.cam.Connect(this);
+				RaceManager.I.hud.Connect(this);
+				NetworkManager.OnTransportFailure += NetworkManager_OnTransportFailure;
+				//newCar.followAI.SetCPU(true); // CPU drives player's car
+			}
+			sampleText.gameObject.SetActive(!F.I.s_spectator && F.I.gameMode == MultiMode.Multiplayer && RaceManager.I.playerCar != this);
+		}
+
+		private void NetworkManager_OnTransportFailure()
+		{ 
+			RaceManager.I.ExitButton();
+		}
 
 		public void SetBatteryLoading(bool status)
 		{
@@ -313,51 +483,99 @@ namespace RVP
 		}
 		private void Awake()
 		{
-			ghostComponent = GetComponent<Ghost>();
+			ghost = GetComponent<Ghost>();
 			followAI = GetComponent<FollowAI>();
 			raceBox = GetComponent<RaceBox>();
 			tr = transform;
 			rb = GetComponent<Rigidbody>();
 			originalDrag = rb.drag;
 			originalMass = rb.mass;
+
+			F.I.s_cars.Add(this);
+
+			dragsterEffect = GetComponent<SGP_DragsterEffect>();
 		}
-		void Start()
+		public override void OnNetworkSpawn()
 		{
-			if (brakeCurve == null)
+			base.OnNetworkSpawn();
+			if (!Owner)
 			{
-				brakeCurve = GenerateBrakeCurve();
+				//rb.isKinematic = true;
+				basicInput.enabled = false;
+				if (OnlineCommunication.I.raceAlreadyStarted.Value)
+				{// latecomer's request to synch progress
+					Debug.Log("RequestRaceboxValuesRpc");
+					RequestRaceboxValuesRpc(RpcTarget.Owner);
+				}
 			}
+			Initialize();
+		}
+		
+		private void Start()
+		{
+			Initialize();
+		}
+
+		void Initialize()
+		{
+			Color c = F.RandomColor();
+			foreach(var s in springRenderers)
+				s.material.color = c;
+
+			brakeCurve ??= GenerateBrakeCurve();
+
 			// Create normal orientation object
 			GameObject normTemp = new GameObject(tr.name + "'s Normal Orientation");
 			norm = normTemp.transform;
-			carLen = tr.GetChild(0).GetComponent<MeshFilter>().mesh.bounds.extents.z * 2;
-			SetCenterOfMass();
 
 			// Instantiate tow vehicle
-			if (towVehicle)
+			//if (towVehicle)
+			//{
+			//	newTow = Instantiate(towVehicle, Vector3.zero, tr.rotation);
+			//	newTow.SetActive(false);
+			//	newTow.transform.position = tr.TransformPoint(newTow.GetComponent<Joint>().connectedAnchor - newTow.GetComponent<Joint>().anchor);
+			//	newTow.GetComponent<Joint>().connectedBody = rb;
+			//	newTow.SetActive(true);
+			//	newTow.GetComponent<VehicleParent>().inputInherit = this;
+			//}
+
+			followAI.SetCPU(transform.name.Contains("CP"));
+
+			if (F.I.s_spectator)
 			{
-				newTow = Instantiate(towVehicle, Vector3.zero, tr.rotation) as GameObject;
-				newTow.SetActive(false);
-				newTow.transform.position = tr.TransformPoint(newTow.GetComponent<Joint>().connectedAnchor - newTow.GetComponent<Joint>().anchor);
-				newTow.GetComponent<Joint>().connectedBody = rb;
-				newTow.SetActive(true);
-				newTow.GetComponent<VehicleParent>().inputInherit = this;
+				if (UnityEngine.Random.value > 0.5f)
+					RaceManager.I.cam.Connect(this, CameraControl.Mode.Replay);
 			}
+			
+			StartCoroutine(ApplySetup());
 
-			//if (sparks)
-			//{
-			//	sparks.transform.parent = null;
-			//}
-
-			//if (wheelGroups.Length > 0)
-			//{
-			//	StartCoroutine(WheelCheckLoop());
-			//}
+			if (F.I.s_isNight)
+				SetLights();
 		}
-
+		
+		IEnumerator ApplySetup()
+		{
+			yield return null;
+			yield return null;
+			while(sponsor == 0)
+			{ // sending sponsor info may come from the server after a while
+				yield return null;
+			}
+			carConfig = new CarConfig(F.I.cars[carNumber - 1].config);
+			carConfig.Apply(this);
+			OnNameChanged();
+			OnSponsorChanged();
+			if (F.I.s_raceType == RaceType.TimeTrial)
+				ghost.SetGhostPermanently();
+		}
+		[Rpc(SendTo.SpecifiedInParams)]
+		public void SetCurLapRpc(int curLap, RpcParams ps)
+		{
+			raceBox.curLap = curLap;
+		}
 		void Update()
 		{
-			if (Physics.Raycast(tr.position, rb.velocity, 200, 1 << Info.aeroTunnel))
+			if (Physics.Raycast(tr.position, rb.velocity, 200, 1 << F.I.aeroTunnel))
 			{ // aerodynamic tunnel
 				rb.drag = 0;
 			}
@@ -391,8 +609,14 @@ namespace RVP
 				InheritInputOneShot();
 			}
 
-			if (reallyGroundedWheels == 0)
-				roadNoiseSnd.volume = reallyGroundedWheels == 0 ? 0 : Mathf.Lerp(0, 80, velMag);
+			if (wheels[2].curSurfaceType != roadSurfaceType)
+			{
+				roadSurfaceType = wheels[2].curSurfaceType;
+				roadNoiseSnd.clip = GroundSurfaceMaster.surfaceTypesStatic[roadSurfaceType].roadNoise;
+			}
+			float volume = Mathf.InverseLerp(0, 80, velMag);
+
+			roadNoiseSnd.volume = (F.I.gamePaused || reallyGroundedWheels == 0) ? 0 : volume;// (1 + 80 * 2 / 3f * Mathf.Log10(volume)); 
 
 			if (brakeInput > 0 && !reversing)
 			{
@@ -421,8 +645,7 @@ namespace RVP
 			// Debug.DrawRay(norm.position, norm.up, Color.green);
 			// Debug.DrawRay(norm.position, norm.right, Color.red);
 		}
-
-		void FixedUpdate()
+		public void FixedUpdate()
 		{
 			if (inputInherit)
 			{
@@ -437,9 +660,16 @@ namespace RVP
 
 			GetGroundedWheels();
 
+			prevVel = localVelocity;
 			localVelocity = tr.InverseTransformDirection(rb.velocity - wheelContactsVelocity);
+			acceleration = localVelocity - prevVel;
+
 			localAngularVel = tr.InverseTransformDirection(rb.angularVelocity);
+			
 			velMag = rb.velocity.magnitude;
+
+			
+
 			sqrVelMag = rb.velocity.sqrMagnitude;
 			forwardDir = tr.forward;
 			rightDir = tr.right;
@@ -450,35 +680,17 @@ namespace RVP
 			norm.transform.position = tr.position;
 			norm.transform.rotation = Quaternion.LookRotation(reallyGroundedWheels == 0 ? upDir : wheelNormalAverage, forwardDir);
 
-			// Check if performing a burnout
-			if (reallyGroundedWheels > 0 && !hover && !accelAxisIsBrake && burnoutThreshold >= 0 && accelInput > burnoutThreshold && brakeInput > burnoutThreshold)
-			{
-				burnout = Mathf.Lerp(burnout, ((5 - Mathf.Min(5, Mathf.Abs(localVelocity.z))) / 5) * Mathf.Abs(accelInput), Time.fixedDeltaTime * (1 - burnoutSmoothness) * 10);
-			}
-			else if (burnout > 0.01f)
-			{
-				burnout = Mathf.Lerp(burnout, 0, Time.fixedDeltaTime * (1 - burnoutSmoothness) * 10);
-			}
-			else
-			{
-				burnout = 0;
-			}
+			
 
-			if (engine)
-			{
-				burnout *= engine.health;
-			}
-
-			// Check if reversing
-			if (brakeIsReverse && brakeInput > 0 && localVelocity.z < 1 && burnout == 0)
+			if (brakeIsReverse && brakeInput > 0 && localVelocity.z < 1)
 				reversing = true;
 			else if (localVelocity.z >= 0 || burnout > 0)
 				reversing = false;
 		}
-		public void SetHonkerInput(bool f)
+		public void SetHonkerInput(int f)
 		{
 			honkInput = f;
-			if (honkInput)
+			if (honkInput == 1)
 			{
 				if (!honkerAudio.isPlaying)
 					honkerAudio.Play();
@@ -492,20 +704,23 @@ namespace RVP
 		public void SetHonkerAudio(int type)
 		{
 			type = Mathf.Clamp(type, 1, 6);
-			honkerAudio.clip = Info.audioClips["hornloop0" + type.ToString()];
+			honkerAudio.clip = F.I.audioClips["hornloop0" + type.ToString()];
 		}
 		// Set accel input
 		public void SetAccel(float f)
 		{
-			if (!raceBox.enabled)
+			if (InFreeroam || !raceBox.enabled || F.I.s_raceType == RaceType.TimeTrial)
 				energyRemaining = batteryCapacity;
-			else if (BatteryPercent < lowBatteryLevel && Time.time - lastNoBatteryMessage > 60)
+			else if (BatteryPercent == 0 && Time.time - lastNoBatteryMessage > 60)
 			{
-				raceBox.raceManager.hud.AddMessage(new Message(name + " IS OUT OF BATTERY!", BottomInfoType.NO_BATT));
+				RaceManager.I.hud.infoText.AddMessage(new Message(name + " IS OUT OF BATTERY!", BottomInfoType.NO_BATT));
 				lastNoBatteryMessage = Time.time;
 			}
-			f = Mathf.Clamp(f, -1, (BatteryPercent < lowBatteryLevel) ? 0.75f : 1);
-			accelInput = f;
+			f = Mathf.Clamp(f, -1, (BatteryPercent == 0) ? 0.75f : 1);
+
+			if(Owner)
+				accelInput = f;
+
 			if (energyRemaining > 0)
 				energyRemaining -= accelInput * engine.fuelConsumption * Time.deltaTime;
 		}
@@ -539,7 +754,6 @@ namespace RVP
 				}
 			}
 		}
-		// Set steer input
 		public void SetSteer(float f)
 		{
 			steerInput = Mathf.Clamp(f, -1, 1);
@@ -557,19 +771,22 @@ namespace RVP
 				ebrakeInput = Mathf.Clamp01(f);
 			}
 		}
-
 		public void SetBoost(bool b)
 		{
-			if (b && BatteryPercent > lowBatteryLevel)
+			SetBoost(b ? 1 : 0);
+		}
+		public void SetBoost(int b)
+		{
+			if (b == 1 && BatteryPercent > lowBatteryLevel)
 			{
 				energyRemaining -= Time.deltaTime * engine.jetConsumption;
 			}
 			else
-				b = false;
+				b = 0;
 
 			boostButton = b;
 		}
-		public void SetSGPShift(bool b)
+		public void SetSGPShift(int b)
 		{
 			SGPshiftbutton = b;
 		}
@@ -596,7 +813,7 @@ namespace RVP
 		// Set roll rotate input
 		public void SetRoll(float f)
 		{
-			rollInput = Mathf.Clamp(f, -1, 1);
+			rollInput = (int)Mathf.Clamp(f, -1, 1);
 		}
 
 		// Do upshift input
@@ -641,36 +858,6 @@ namespace RVP
 			upshiftPressed = inputInherit.upshiftPressed;
 			downshiftPressed = inputInherit.downshiftPressed;
 		}
-
-		// Change the center of mass of the vehicle
-		public void SetCenterOfMass()
-		{
-			float susAverage = 0;
-
-			// Get average suspension height
-			if (suspensionCenterOfMass)
-			{
-				if (hover)
-				{
-					for (int i = 0; i < hoverWheels.Length; i++)
-					{
-						susAverage = (i == 0) ? hoverWheels[i].hoverDistance : (susAverage + hoverWheels[i].hoverDistance) * 0.5f;
-					}
-				}
-				else
-				{
-					for (int i = 0; i < wheels.Length; i++)
-					{
-						float newSusDist = wheels[i].transform.parent.GetComponent<Suspension>().suspensionDistance;
-						susAverage = (i == 0) ? newSusDist : (susAverage + newSusDist) * 0.5f;
-					}
-				}
-			}
-			rb.centerOfMass = centerOfMassObj.localPosition + new Vector3(0, susAverage, 0);
-			//Debug.Log(transform.name + rb.centerOfMass);
-			rb.inertiaTensor = rb.inertiaTensor; // This is required due to decoupling of inertia tensor from center of mass in Unity 5.3
-		}
-
 		// Get the number of grounded wheels and the normals and velocities of surfaces they're sitting on
 		void GetGroundedWheels()
 		{
@@ -719,7 +906,7 @@ namespace RVP
 					{
 						if (Mathf.Abs(Vector3.Dot(curCol.normal, col.relativeVelocity.normalized)) > 0.1f && col.relativeVelocity.magnitude > 10)
 						{
-							crashSnd.PlayOneShot(crashClips[UnityEngine.Random.Range(0, crashClips.Length)], 
+							crashSnd.PlayOneShot(crashClips[UnityEngine.Random.Range(0, crashClips.Length)],
 								Mathf.Clamp01(col.relativeVelocity.magnitude * 0.1f));
 							crashing = canCrash;
 						}
@@ -743,18 +930,19 @@ namespace RVP
 			{
 				foreach (ContactPoint curCol in col.contacts)
 				{
-					if (!curCol.thisCollider.CompareTag("Underside") 
+					if (!curCol.thisCollider.CompareTag("Underside")
 						&& curCol.thisCollider.gameObject.layer != RaceManager.ignoreWheelCastLayer)
 					{
 						nowCrashing = canCrash;
 
 						//if (reallyGroundedWheels >= 2)
 						{
-							scrapeSnd.Play();
+							if (!scrapeSnd.isPlaying)
+								scrapeSnd.Play();
 							// play sparks
 							sparks.transform.position = curCol.point;
 							sparks.transform.rotation = Quaternion.LookRotation(col.relativeVelocity.normalized, curCol.normal);
-							if(!sparks.isPlaying)
+							if (!sparks.isPlaying)
 								sparks.Play();
 						}
 					}
@@ -764,9 +952,11 @@ namespace RVP
 			if (!(colliding || crashing))
 				scrapeSnd.Stop();
 		}
-
-		void OnDestroy()
+		public override void OnDestroy()
 		{
+			F.I.s_cars.Remove(this);
+
+			SGP_HUD.I.RemoveFromProgressBar(this);
 			if (norm)
 			{
 				Destroy(norm.gameObject);
@@ -776,6 +966,7 @@ namespace RVP
 			{
 				Destroy(sparks.gameObject);
 			}
+			base.OnDestroy();
 		}
 
 		// Loop through all wheel groups to check for wheel contacts
@@ -787,48 +978,15 @@ namespace RVP
 				wheelGroups[i == 0 ? wheelGroups.Length - 1 : i - 1].Deactivate();
 				yield return new WaitForFixedUpdate();
 			}
-
 			wheelLoopDone = true;
 		}
 
 		internal void ResetOnTrack()
 		{
-			GetComponent<RaceBox>().ResetOnTrack();
-			var rot = tr.rotation.eulerAngles;
-			if (Mathf.Abs(rot.x) > 100)
-				rot.x = 0;
-			else if (Mathf.Abs(rot.z) > 100)
-				rot.z = 0;
-			tr.rotation = Quaternion.Euler(rot);
-			ResetOnTrackBatteryPenalty();
+			if (CountDownSeq.Countdown > 0)
+				return;
+			StartCoroutine(followAI.ResetOnTrack());
 		}
-
-		public IEnumerator CountdownTimer(float v)
-		{
-			countdownTimer = v;
-			GetComponent<SGP_Bouncer>().enabled = false;
-			while (countdownTimer > 0)
-			{
-				SetEbrake(1);
-				countdownTimer -= Time.deltaTime;
-				yield return null;
-			}
-			GetComponent<SGP_Bouncer>().enabled = true;
-			SetEbrake(0);
-		}
-
-		public void SetSponsor(int v)
-		{
-			v = Mathf.Clamp(v, 0, Info.Liveries - 1);
-			sponsor = v;
-			var mr = bodyObj.GetComponent<MeshRenderer>();
-			string matName = mr.sharedMaterial.name;
-			matName = matName.Substring(0, matName.Length - 1) + (v + 1).ToString();
-			Material newMat = Resources.Load<Material>("materials/" + matName);
-			newMat.name = matName;
-			mr.material = newMat;
-		}
-
 		public void AddWheelGroup()
 		{
 			WheelCheckGroup wcg = new WheelCheckGroup
@@ -842,7 +1000,7 @@ namespace RVP
 		{
 			if (!batteryLoadingSnd.isPlaying)
 			{
-				batteryLoadingSnd.clip = Info.audioClips["elec" + Mathf.RoundToInt(3 * UnityEngine.Random.value)];
+				batteryLoadingSnd.clip = F.I.audioClips["elec" + Mathf.RoundToInt(3 * UnityEngine.Random.value)];
 				batteryLoadingSnd.Play();
 			}
 			energyRemaining = Mathf.Clamp(energyRemaining + batteryChargingSpeed * Time.deltaTime, 0, batteryCapacity);
@@ -855,6 +1013,37 @@ namespace RVP
 		public void ResetOnTrackBatteryPenalty()
 		{
 			energyRemaining = Mathf.Clamp(energyRemaining - batteryCapacity * 0.5f * batteryStuntIncreasePercent, 0, batteryCapacity);
+		}
+		public void KnockoutMe()
+		{
+			if (F.I.gameMode == MultiMode.Multiplayer)
+				KnockoutMeRpc();
+			else
+				KnockoutMeInternal();
+		}
+		void KnockoutMeInternal()
+		{
+			followAI.SetCPU(false);
+			followAI.selfDriving = false;
+			basicInput.enabled = false;
+			SetAccel(0);
+			SetBrake(0);
+			SetSteer(0);
+			raceBox.enabled = false;
+		}
+		[Rpc(SendTo.Everyone)]
+		void KnockoutMeRpc()
+		{
+			KnockoutMeInternal();
+		}
+
+		public void SetChassis(float mass, float drag, float angularDrag)
+		{
+			originalMass = mass;
+			rb.mass = mass;
+			originalDrag = drag;
+			rb.drag = drag;
+			rb.angularDrag = angularDrag;
 		}
 	}
 

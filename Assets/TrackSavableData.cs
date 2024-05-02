@@ -3,6 +3,8 @@ using Vector2Int = UnityEngine.Vector2Int;
 using Quaternion = UnityEngine.Quaternion;
 using System.Collections.Generic;
 using System;
+using Unity.Netcode;
+using Unity.Collections;
 
 [Serializable]
 internal class TrackSavableData
@@ -13,6 +15,7 @@ internal class TrackSavableData
 	public List<TileSavable> tiles;
 	public Vector3[] replayCams;
 	public float[,] heights;
+	public int initialRotation;
 }
 
 [Serializable]
@@ -40,6 +43,22 @@ public class ConnectorSavable
 	public Vector2Int connectionData; 
 	public int cameraID; // connected to id'th camera in camerasContainer
 	public bool isStuntZone;
+}
+
+public class ByteWrapper : INetworkSerializable
+{
+	public byte data;
+	public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+	{
+		if (serializer.IsWriter)
+		{
+			serializer.GetFastBufferWriter().WriteValueSafe(data);
+		}
+		else
+		{
+			serializer.GetFastBufferReader().ReadValueSafe(out data);
+		}
+	}
 }
 
 
