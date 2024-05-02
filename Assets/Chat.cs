@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using TMPro;
 using Unity.Netcode;
 using Unity.Services.Lobbies;
@@ -9,8 +8,6 @@ using Unity.Services.Lobbies.Models;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
-using UnityEngine.UI.Extensions;
-using static UnityEngine.GraphicsBuffer;
 [Serializable]
 public class LobbyRelayId
 {

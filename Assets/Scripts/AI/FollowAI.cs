@@ -3,10 +3,6 @@ using System.Collections;
 using PathCreation;
 using System.Collections.Generic;
 using System;
-using UnityEngine.UIElements;
-using Unity.Netcode;
-using static UnityEditor.PlayerSettings;
-using UnityEditor.PackageManager.Requests;
 
 namespace RVP
 {

@@ -344,7 +344,10 @@ public static class F
 	{
 		return (Livery)(UnityEngine.Random.Range(0, F.I.Liveries) + 1);
 	}
-	
+	internal static void Deselect()
+	{
+		F.I.eventSystem.SetSelectedGameObject(null);
+	}
 
 #if UNITY_EDITOR
 	// Returns whether the given object is part of a prefab (meant to be used with selected objects in the inspector)
@@ -353,16 +356,6 @@ public static class F
 		return UnityEditor.Selection.assetGUIDs.Length > 0
 			 && UnityEditor.PrefabUtility.GetPrefabAssetType(componentOrGameObject) != UnityEditor.PrefabAssetType.NotAPrefab
 			 && UnityEditor.PrefabUtility.GetPrefabAssetType(componentOrGameObject) != UnityEditor.PrefabAssetType.MissingAsset;
-	}
-
-	internal static float FlatDistance(Vector3 a, Vector3 b)
-	{
-		return Mathf.Sqrt(Mathf.Pow(a.x - b.x, 2) + Mathf.Pow(a.z - b.z, 2));
-	}
-
-	internal static void Deselect()
-	{
-		F.I.eventSystem.SetSelectedGameObject(null);
 	}
 #endif
 }

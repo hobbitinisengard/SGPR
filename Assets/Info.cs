@@ -48,7 +48,7 @@ public class Info : MonoBehaviour
 				Debug.LogWarning("Player 3 Started");
 				break;
 			default:
-				_documentsSGPRpath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Stunt GP Reloaded\\";
+				_documentsSGPRpath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\STUNT GP REMASTERED\\";
 				break;
 		}
 		if (!Directory.Exists(documentsSGPRpath))

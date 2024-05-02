@@ -15,6 +15,8 @@ public class LoadSelector : TrackSelectorTemplate
 		File.Delete(F.I.tracksPath + selectedTrack.name + ".track");
 		File.Delete(F.I.tracksPath + selectedTrack.name + ".data");
 		File.Delete(F.I.tracksPath + selectedTrack.name + ".png");
+		if (File.Exists(F.I.tracksPath + selectedTrack.name + ".rec"))
+			File.Delete(F.I.tracksPath + selectedTrack.name + ".rec");
 
 		int children = selectedTrack.parent.childCount;
 		int index = Mathf.Clamp(selectedTrack.GetSiblingIndex(),0,children-2);

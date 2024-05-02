@@ -31,7 +31,9 @@ public class CountDownSeq : Sfxable
 
 	IEnumerator CountdownSeq()
 	{
-		float lastTime = Time.time;
+		int lastTime = Mathf.FloorToInt(timer);
+		img.sprite = countdownSprites[3];
+
 		while (timer > 0)
 		{
 			if (timer < 4)
@@ -40,12 +42,11 @@ public class CountDownSeq : Sfxable
 					img.color = Color.white;
 				else
 					img.color = new Color(1, 1, 1, 2 * timer % 1f);
-
-				img.sprite = countdownSprites[Mathf.FloorToInt(timer)];
-				if (Time.time - lastTime >= 1)
+				if(Mathf.FloorToInt(timer) != lastTime)
 				{
+					lastTime = Mathf.FloorToInt(timer);
+					img.sprite = countdownSprites[lastTime];
 					PlaySFX((Mathf.FloorToInt(timer) == 0) ? "start2" : "start1");
-					lastTime = Time.time;
 				}
 			}
 			timer -= Time.deltaTime;

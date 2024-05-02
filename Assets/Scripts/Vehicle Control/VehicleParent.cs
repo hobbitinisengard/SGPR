@@ -261,7 +261,6 @@ namespace RVP
 		[System.NonSerialized]
 		public float velMag; // Velocity magnitude
 		Vector3 prevVel;
-		Vector3 vel;
 		[System.NonSerialized]
 		public float sqrVelMag; // Velocity squared magnitude
 		public Vector3 acceleration { get; private set; }
@@ -574,32 +573,8 @@ namespace RVP
 		{
 			raceBox.curLap = curLap;
 		}
-		void FixedUpdate()
-		{
-			//if (F.I.gameMode == MultiMode.Multiplayer)
-			//{
-			//	while (networkTimer.ShouldTick())
-			//	{
-			//		if(IsOwner)
-			//			HandleOwnerTick();
-			//		else
-			//		{
-			//			HandleWatcherTick();
-			//		}
-			//	}
-			//	Extrapolate();
-			//}
-			FixedUpdateWorks(Time.fixedDeltaTime);
-		}
 		void Update()
 		{
-			//if(F.I.gameMode == MultiMode.Multiplayer)
-			//{
-			//	networkTimer.Update(Time.deltaTime);
-			//	extrapolationTimer.Tick(Time.deltaTime);
-			//	Extrapolate();
-			//}
-
 			if (Physics.Raycast(tr.position, rb.velocity, 200, 1 << F.I.aeroTunnel))
 			{ // aerodynamic tunnel
 				rb.drag = 0;
@@ -670,13 +645,7 @@ namespace RVP
 			// Debug.DrawRay(norm.position, norm.up, Color.green);
 			// Debug.DrawRay(norm.position, norm.right, Color.red);
 		}
-		private void LateUpdate()
-		{
-			prevVel = vel;
-			vel = localVelocity;
-			acceleration = vel - prevVel;
-		}
-		public void FixedUpdateWorks(float deltaTime)
+		public void FixedUpdate()
 		{
 			if (inputInherit)
 			{
@@ -691,7 +660,10 @@ namespace RVP
 
 			GetGroundedWheels();
 
+			prevVel = localVelocity;
 			localVelocity = tr.InverseTransformDirection(rb.velocity - wheelContactsVelocity);
+			acceleration = localVelocity - prevVel;
+
 			localAngularVel = tr.InverseTransformDirection(rb.angularVelocity);
 			
 			velMag = rb.velocity.magnitude;
@@ -708,27 +680,9 @@ namespace RVP
 			norm.transform.position = tr.position;
 			norm.transform.rotation = Quaternion.LookRotation(reallyGroundedWheels == 0 ? upDir : wheelNormalAverage, forwardDir);
 
-			// Check if performing a burnout
-			if (reallyGroundedWheels > 0 && !hover && !accelAxisIsBrake && burnoutThreshold >= 0 && accelInput > burnoutThreshold && brakeInput > burnoutThreshold)
-			{
-				burnout = Mathf.Lerp(burnout, ((5 - Mathf.Min(5, Mathf.Abs(localVelocity.z))) / 5) * Mathf.Abs(accelInput), deltaTime * (1 - burnoutSmoothness) * 10);
-			}
-			else if (burnout > 0.01f)
-			{
-				burnout = Mathf.Lerp(burnout, 0, deltaTime * (1 - burnoutSmoothness) * 10);
-			}
-			else
-			{
-				burnout = 0;
-			}
+			
 
-			if (engine)
-			{
-				burnout *= engine.health;
-			}
-
-			// Check if reversing
-			if (brakeIsReverse && brakeInput > 0 && localVelocity.z < 1 && burnout == 0)
+			if (brakeIsReverse && brakeInput > 0 && localVelocity.z < 1)
 				reversing = true;
 			else if (localVelocity.z >= 0 || burnout > 0)
 				reversing = false;
