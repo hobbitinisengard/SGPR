@@ -106,10 +106,10 @@ public class Chat : NetworkBehaviour
 	}
 	private void QuickMessagePressed(InputAction.CallbackContext obj)
 	{
-		if(F.I.gameMode == MultiMode.Multiplayer && F.I.actionHappening == ActionHappening.InRace)
+		if(F.I.gameMode == MultiMode.Multiplayer && F.I.actionHappening == ActionHappening.InRace && !texting)
 		{
-			float val = obj.ReadValue<float>();
-			AddChatRow(ServerC.I.PlayerMe, F.GetQuickMessage(val));
+			int msgIndex = (int)obj.ReadValue<float>(); // returns 1 - 10
+			AddChatRow(ServerC.I.PlayerMe, F.GetQuickMessage(msgIndex-1));
 		}
 	}
 	IEnumerator ButtonPressedSeq()

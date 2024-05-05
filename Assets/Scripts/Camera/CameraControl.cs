@@ -216,7 +216,7 @@ namespace RVP
 			pitchAngle = WrapAround180Degs(vp.tr.localEulerAngles.x);
 			
 			bool pitchLocked = false;
-			if (vp.reallyGroundedWheels == 4)
+			if (vp.reallyGroundedWheels > 2)
 			{
 				if (pitchAngle < -maxPitch)
 				{
@@ -233,7 +233,7 @@ namespace RVP
 			}
 			else
 			{
-				targetUp = vp.tr.up;
+				targetUp = vp.wheels[2].contactPoint.normal;
 				targetForward = targetBody.velocity;
 			}
 

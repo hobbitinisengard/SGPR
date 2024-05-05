@@ -48,15 +48,15 @@ public static class F
 			File.Copy(newPath, newPath.Replace(sourcePath, targetPath), true);
 		}
 	}
-	public static string GetQuickMessage(float number)
+	public static string GetQuickMessage(int number)
 	{
-		number = Mathf.Clamp(number, 1, 10);
-		return PlayerPrefs.GetString($"qm{number}");
+		number = Mathf.Clamp(number, 0, 9);
+		return F.I.playerData.quickMessages[number];
 	}
-	public static void SetQuickMessage(float number, string message)
+	public static void SetQuickMessage(int number, string message)
 	{
-		number = Mathf.Clamp(number, 1, 10);
-		PlayerPrefs.SetString($"qm{number}", message);
+		number = Mathf.Clamp(number, 0, 9);
+		F.I.playerData.quickMessages[number] =  message;
 	}
 	public static Livery SponsorGet(this Player player)
 	{

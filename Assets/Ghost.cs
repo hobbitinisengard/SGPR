@@ -36,12 +36,14 @@ public class Ghost : NetworkBehaviour
 	}
 	public Material ToOpaqueMode(Material material)
 	{
+		float specularIntensity = material.GetFloat("_SpecularIntensity");
+		float smoothness = material.GetFloat("_Glossiness");
 		material.shader = transpShader;
 		material.SetInt("_ZWrite", 1);
 		material.SetFloat("_IntensityTransparentMap", material.name.Contains("Roof") ? 0.2f : 0);
 
-		material.SetFloat("_Glossiness", 1);
-		material.SetFloat("_SpecularIntensity", .1f);
+		material.SetFloat("_Glossiness", smoothness);
+		material.SetFloat("_SpecularIntensity", specularIntensity);
 		material.SetFloat("_Parallax", 0);
 		material.SetFloat("_Brightness", 1);
 		//material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
@@ -56,12 +58,14 @@ public class Ghost : NetworkBehaviour
 
 	public Material ToFadeMode(Material material)
 	{
+		float specularIntensity = material.GetFloat("_SpecularIntensity");
+		float smoothness = material.GetFloat("_Glossiness");
 		material.shader = transpShader;
 		material.SetInt("_ZWrite", 1);
 		material.SetFloat("_IntensityTransparentMap", 0.7f);
 
-		material.SetFloat("_Glossiness", 1);
-		material.SetFloat("_SpecularIntensity", .1f);
+		material.SetFloat("_Glossiness", smoothness);
+		material.SetFloat("_SpecularIntensity", specularIntensity);
 		material.SetFloat("_Parallax", 0);
 		material.SetFloat("_Brightness", 4);
 		//var c = material.color;

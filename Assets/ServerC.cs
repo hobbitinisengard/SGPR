@@ -374,6 +374,10 @@ public class ServerC : MonoBehaviour
 	{
 		return (ScoringType)(lobby.Data[k_raceConfig].Value[0] - '0');
 	}
+	public Livery GetSponsor()
+	{
+		return (Livery)Enum.Parse(typeof(Livery), PlayerMe.Data[k_Sponsor].Value);
+	}
 	/// <summary>
 	/// Connect to lobby Id or Quick Join
 	/// </summary>
@@ -490,15 +494,6 @@ public class ServerC : MonoBehaviour
 			Debug.Log("Failed to heartbeat lobby " + e.Message);
 		}
 	}
-	public void SponsorSet(Livery livery)
-	{
-		string liv = livery.ToString();
-		if(liv != PlayerMe.Data[ServerC.k_Sponsor].Value)
-		{
-			PlayerMe.Data[ServerC.k_Sponsor].Value =liv;
-			playerChanged = true;
-		}
-	}
 	public void ScoreSet(int newScore)
 	{
 		if (newScore == 0)
@@ -535,5 +530,9 @@ public class ServerC : MonoBehaviour
 			playerChanged = true;
 		}
 	}
-
+	public void SponsorSet()
+	{
+		PlayerMe.Data[ServerC.k_carName].Value = F.I.s_PlayerCarSponsor.ToString();
+		playerChanged = true;
+	}
 }

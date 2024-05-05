@@ -498,11 +498,6 @@ namespace RVP
                 curWheel.FixTire();
                 curWheel.damage = 0;
             }
-
-            // Fix hover wheels
-            foreach (HoverWheel curHoverWheel in vp.hoverWheels) {
-                curHoverWheel.Reattach();
-            }
         }
 
         // Draw collisionIgnoreHeight gizmos

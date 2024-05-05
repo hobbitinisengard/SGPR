@@ -31,7 +31,7 @@ public class CarPlacement
 			carName = F.I.s_playerCarName,
 			position = F.I.s_cpuRivals,
 			name = F.I.playerData.playerName,
-			sponsor = F.RandomLivery(),
+			sponsor = (F.I.s_PlayerCarSponsor == Livery.Random) ? F.RandomLivery() : F.I.s_PlayerCarSponsor,
 		};
 	}
 	public static CarPlacement OnlinePlayer(int pos, Player p)

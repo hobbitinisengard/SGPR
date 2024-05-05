@@ -8,17 +8,20 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: TubeMetal
-  m_Shader: {fileID: 46, guid: 0000000000000000f000000000000000, type: 0}
-  m_ValidKeywords: []
+  m_Shader: {fileID: 4800000, guid: ed04895971c00fc498c346df2ac0e9b4, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords:
+  - _SOURCE_SPECULARALPHA
   m_InvalidKeywords:
   - _BLENDMAINNORMAL_ON
-  - _SOURCE_SPECULARALPHA
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: -1
   stringTagMap: {}
   disabledShaderPasses: []
+  m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
@@ -93,7 +96,7 @@ Material:
     - _EmissionIntensity: 1
     - _EnableDetailMask: 0
     - _GlossMapScale: 0.451
-    - _Glossiness: 0
+    - _Glossiness: 0.5
     - _GlossyReflections: 1
     - _IntensityMask: 1
     - _InvertABaseColor: 0
@@ -108,7 +111,7 @@ Material:
     - _Source: 0
     - _SourceMask: 0
     - _SpecularHighlights: 1
-    - _SpecularIntensity: 0
+    - _SpecularIntensity: 0.2
     - _SpreadDetailMap: 0
     - _SrcBlend: 1
     - _UVSec: 0
@@ -123,3 +126,4 @@ Material:
     - _GlobalXYTilingXYZWOffsetXY: {r: 1, g: 1, b: 0, a: 0}
     - _SpecularColor: {r: 1, g: 1, b: 1, a: 0}
   m_BuildTextureStacks: []
+  m_AllowLocking: 1
