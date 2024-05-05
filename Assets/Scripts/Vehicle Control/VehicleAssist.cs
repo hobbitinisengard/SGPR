@@ -93,7 +93,7 @@ namespace RVP
 		{
 			if (vp.reallyGroundedWheels > 0)
 			{
-				groundedFactor = basedOnWheelsGrounded ? vp.reallyGroundedWheels / (vp.hover ? vp.hoverWheels.Length : vp.wheels.Length) : 1;
+				groundedFactor = basedOnWheelsGrounded ? vp.reallyGroundedWheels / vp.wheels.Length : 1;
 
 				angDragTime = 20;
 				rb.angularDrag = initialAngularDrag;

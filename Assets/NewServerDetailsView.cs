@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using TMPro;
-using Unity.Loading;
 using UnityEngine;
 
 public class NewServerDetailsView : MainMenuView
@@ -14,15 +13,12 @@ public class NewServerDetailsView : MainMenuView
    public TMP_InputField serverNameInputField;
    public TMP_InputField passInputField;
    public ServerC server;
-   const string newServerNameReg = "newServerName";
-   const string newServerPlayersReg = "newServerPlayers";
-   const string passwordReg = "password";
 	public new void Awake()
 	{
 		base.Awake();
-		serverNameInputField.text = PlayerPrefs.GetString(newServerNameReg);
-      maxPlayersInputField.text = PlayerPrefs.GetString(newServerPlayersReg);
-      passInputField.text = PlayerPrefs.GetString(passwordReg);
+		serverNameInputField.text = F.I.playerData.serverName;
+		maxPlayersInputField.text = F.I.playerData.serverMaxPlayers;
+      passInputField.text = F.I.playerData.serverPassword;
 		serverNameInputField.onEndEdit.AddListener(SetServerName);
 		maxPlayersInputField.onEndEdit.AddListener(SetMaxPlayers);
 		passInputField.onEndEdit.AddListener(SetPassword);
@@ -37,7 +33,7 @@ public class NewServerDetailsView : MainMenuView
 	}
 	public void SetServerName(string str)
    {
-      PlayerPrefs.SetString(newServerNameReg, str);
+		F.I.playerData.serverName = str;
       server.lobbyName = str;
       CheckOKButton();
    }
@@ -46,12 +42,12 @@ public class NewServerDetailsView : MainMenuView
    {
 		server.maxPlayers = Mathf.Clamp(int.Parse(val), 2, 10);
       maxPlayersInputField.text = server.maxPlayers.ToString();
-		PlayerPrefs.SetString(newServerPlayersReg, maxPlayersInputField.text);
+		F.I.playerData.serverMaxPlayers = maxPlayersInputField.text;
 		CheckOKButton();
 	}
 	public void SetPassword(string str)
 	{
-		PlayerPrefs.SetString(passwordReg, str);
+		F.I.playerData.serverPassword = str;
 		server.password = str;
 		CheckOKButton();
 	}
@@ -63,7 +59,7 @@ public class NewServerDetailsView : MainMenuView
 	public async void CreateLobby()
 	{
 		OkbuttonText.text = "WAIT";
-		
+		F.I.SaveSettingsDataToJson();
 		F.I.s_trackName = F.I.tracks.First(kv => kv.Value.valid).Key;
 		string sha = F.I.SHA(F.I.tracksPath + F.I.s_trackName + ".data");
 		Debug.Log("CreateLobby start" + F.I.s_trackName + " " + sha);

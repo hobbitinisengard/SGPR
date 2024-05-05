@@ -120,6 +120,7 @@ public class ResultsView : MonoBehaviour
 		grandScore1.SetActive(false);
 		addingScore.SetActive(false);
 		medalsTable.gameObject.SetActive(false);
+		Clear();
 	}
 	Comparison<ResultInfo> ComparisonBasedOnRaceType()
 	{
@@ -137,6 +138,7 @@ public class ResultsView : MonoBehaviour
 	{
 		// for testing 
 		//ResultRandomizer();
+
 		var comparison = ComparisonBasedOnRaceType();
 		resultData.Sort(comparison);
 		grandScoreFinal = 0;
@@ -232,6 +234,7 @@ public class ResultsView : MonoBehaviour
 		Debug.Log($"Set points {p.ScoreGet()} + {grandScoreFinal}");
 		ServerC.I.ScoreSet(p.ScoreGet() + grandScoreFinal);
 		ServerC.I.UpdatePlayerData();
+
 		grandScore0.SetActive(true);
 
 		medalsTable.DestroyAllChildren();
@@ -332,8 +335,8 @@ public class ResultsView : MonoBehaviour
 			grandScoreMoving = Mathf.Round(Mathf.Lerp(grandScoreInit, grandScoreInit + bonus, timer / timeRequired));
 			grandScore0Text.text = "      " + grandScoreMoving.ToString();
 			tickSnd.pitch = Mathf.LerpUnclamped(1, 1.3f, timer);
-				tickSnd.Play();
-			timer += Time.deltaTime;
+			tickSnd.Play();
+			timer += 2*Time.deltaTime;
 			yield return null;
 		}
 		yield return new WaitForSeconds(1);

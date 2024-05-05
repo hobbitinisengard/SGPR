@@ -96,11 +96,8 @@ public class EditorPanel : MonoBehaviour
 	public GameObject savePanel;
 	public GameObject toolsPanel;
 	public TMP_InputField trackNameInputField;
-	public TextMeshProUGUI trackNameInputFieldPlaceholder;
 	public TMP_InputField trackDescInputField;
-	public TextMeshProUGUI trackDescInputFieldPlaceholder;
 	public TMP_InputField trackAuthorInputField;
-	public TextMeshProUGUI trackAuthorInputFieldPlaceholder;
 	public TMP_Dropdown trackDifficultyDropdown;
 	public TMP_Dropdown carGroupDropdown;
 	public Transform invisibleLevel;
@@ -1675,7 +1672,6 @@ public class EditorPanel : MonoBehaviour
 		}
 
 		trackNameInputField.text = trackName.text;
-		trackNameInputFieldPlaceholder.text = trackName.text;
 
 		yield return null; // update containers
 
@@ -1692,10 +1688,8 @@ public class EditorPanel : MonoBehaviour
 
 
 		trackDescInputField.text = F.I.tracks[F.I.s_trackName].desc;
-		trackDescInputFieldPlaceholder.text = F.I.tracks[F.I.s_trackName].desc;
 
 		trackAuthorInputField.text = F.I.tracks[F.I.s_trackName].author;
-		trackAuthorInputFieldPlaceholder.text = F.I.tracks[F.I.s_trackName].author;
 
 		trackDifficultyDropdown.value = F.I.tracks[F.I.s_trackName].difficulty;
 

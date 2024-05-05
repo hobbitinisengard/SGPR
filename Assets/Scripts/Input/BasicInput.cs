@@ -65,7 +65,7 @@ namespace RVP
 
 		void FixedUpdate()
 		{
-			if (vp.followAI.isCPU)
+			if (vp.followAI.selfDriving)
 			{
 				if (!vp.followAI.Pitting)
 					vp.SetSteer(0);

@@ -73,8 +73,7 @@ namespace RVP
 		protected virtual void FixedUpdate()
 		{
 			health = Mathf.Clamp01(health);
-			if (canBoost && ignition && health > 0 && 
-				 (vp.hover ? vp.accelInput != 0 || Mathf.Abs(vp.localVelocity.z) > 1 : vp.accelInput > 0))
+			if (canBoost && ignition && vp.accelInput > 0)
 			{
 				if (((boostReleased && !boosting) || boosting) && vp.boostButton == 1)
 				{
@@ -95,7 +94,7 @@ namespace RVP
 				boosting = false;
 			}
 
-			if (vp.boostButton == 0)
+			if (vp.boostButton == 0 || vp.accelInput == 0)
 			{
 				boostReleased = true;
 			}

@@ -235,9 +235,10 @@ public class TrackSelectorTemplate : Selector
 			Record recordData = selectedTrack ? F.I.tracks[selectedTrack.name].records[i] : new Record(null, 0, 0);
 
 			string valueStr = (recordData == null || recordData.playerName == null || recordData.secondsOrPts == 0 
-				|| recordData.secondsOrPts > 35000) ? "" : recordData.playerName;
+				|| ( i<= 1 && recordData.secondsOrPts > 35000)) ? "" : recordData.playerName;
 
 			record.GetChild(1).GetComponent<Text>().text = valueStr;
+
 			if (recordData == null || recordData.secondsOrPts == 0 || recordData.secondsOrPts == 35999)
 				valueStr = "";
 			else

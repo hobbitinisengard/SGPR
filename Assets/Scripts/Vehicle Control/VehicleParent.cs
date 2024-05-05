@@ -87,6 +87,7 @@ namespace RVP
 	// Vehicle root class
 	public class VehicleParent : NetworkBehaviour
 	{
+		public GameObject carReflectionPrefab;
 		public MeshRenderer[] springRenderers;
 		public AudioSource honkerAudio;
 		public SampleText sampleText;
@@ -268,7 +269,6 @@ namespace RVP
 		public bool reversing;
 		[Tooltip("convention for placing wheels is FL, FR, RL, RR")]
 		public Wheel[] wheels;
-		public HoverWheel[] hoverWheels;
 		public WheelCheckGroup[] wheelGroups;
 		bool wheelLoopDone = false;
 		public bool hover;
@@ -352,6 +352,8 @@ namespace RVP
 		public CatchupStatus catchupStatus { get; private set; }
 		public float AngularDrag { get { return rb.angularDrag; } }
 		SGP_DragsterEffect dragsterEffect;
+		
+
 		// NETCODE - reconciliation and extrapolation
 		public void SetBattery(float capacity, float chargingSpeed, float lowBatPercent, float evoBountyPercent)
 		{
@@ -443,6 +445,10 @@ namespace RVP
 				RaceManager.I.playerCar = this;
 				RaceManager.I.cam.Connect(this);
 				RaceManager.I.hud.Connect(this);
+
+				var reflectionProbe = Instantiate(carReflectionPrefab, transform);
+				reflectionProbe.transform.localPosition = Vector3.up;
+
 				NetworkManager.OnTransportFailure += NetworkManager_OnTransportFailure;
 				//newCar.followAI.SetCPU(true); // CPU drives player's car
 			}
@@ -518,6 +524,8 @@ namespace RVP
 
 		void Initialize()
 		{
+			
+
 			Color c = F.RandomColor();
 			foreach(var s in springRenderers)
 				s.material.color = c;
@@ -555,16 +563,17 @@ namespace RVP
 		
 		IEnumerator ApplySetup()
 		{
-			yield return null;
-			yield return null;
 			while(sponsor == 0)
 			{ // sending sponsor info may come from the server after a while
 				yield return null;
 			}
-			carConfig = new CarConfig(F.I.cars[carNumber - 1].config);
-			carConfig.Apply(this);
 			OnNameChanged();
 			OnSponsorChanged();
+			
+			yield return new WaitForSeconds(.5f); // wait for all the components to load
+			carConfig = new CarConfig(F.I.cars[carNumber - 1].config);
+			carConfig.Apply(this);
+			
 			if (F.I.s_raceType == RaceType.TimeTrial)
 				ghost.SetGhostPermanently();
 		}
@@ -865,32 +874,17 @@ namespace RVP
 			reallyGroundedWheels = 0;
 			wheelContactsVelocity = Vector3.zero;
 
-			if (hover)
+			for (int i = 0; i < wheels.Length; i++)
 			{
-				for (int i = 0; i < hoverWheels.Length; i++)
+				if (wheels[i].grounded)
 				{
-
-					if (hoverWheels[i].grounded)
-					{
-						wheelNormalAverage = i == 0 ? hoverWheels[i].contactPoint.normal : (wheelNormalAverage + hoverWheels[i].contactPoint.normal).normalized;
-						groundedWheels++;
-					}
+					wheelContactsVelocity = (i == 0) ? wheels[i].contactVelocity : (wheelContactsVelocity + wheels[i].contactVelocity) * 0.5f;
+					wheelNormalAverage = (i == 0) ? wheels[i].contactPoint.normal : (wheelNormalAverage + wheels[i].contactPoint.normal).normalized;
+					groundedWheels++;
 				}
-			}
-			else
-			{
-				for (int i = 0; i < wheels.Length; i++)
+				if (wheels[i].groundedReally)
 				{
-					if (wheels[i].grounded)
-					{
-						wheelContactsVelocity = (i == 0) ? wheels[i].contactVelocity : (wheelContactsVelocity + wheels[i].contactVelocity) * 0.5f;
-						wheelNormalAverage = (i == 0) ? wheels[i].contactPoint.normal : (wheelNormalAverage + wheels[i].contactPoint.normal).normalized;
-						groundedWheels++;
-					}
-					if (wheels[i].groundedReally)
-					{
-						reallyGroundedWheels++;
-					}
+					reallyGroundedWheels++;
 				}
 			}
 		}
@@ -1052,18 +1046,12 @@ namespace RVP
 	public class WheelCheckGroup
 	{
 		public Wheel[] wheels;
-		public HoverWheel[] hoverWheels;
 
 		public void Activate()
 		{
 			foreach (Wheel curWheel in wheels)
 			{
 				curWheel.getContact = true;
-			}
-
-			foreach (HoverWheel curHover in hoverWheels)
-			{
-				curHover.getContact = true;
 			}
 		}
 
@@ -1072,11 +1060,6 @@ namespace RVP
 			foreach (Wheel curWheel in wheels)
 			{
 				curWheel.getContact = false;
-			}
-
-			foreach (HoverWheel curHover in hoverWheels)
-			{
-				curHover.getContact = false;
 			}
 		}
 	}

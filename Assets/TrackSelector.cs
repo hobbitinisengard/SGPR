@@ -1,7 +1,6 @@
 using System;
 using UnityEngine.UI;
 using TMPro;
-using static SlideInOut;
 
 public class TrackSelector : TrackSelectorTemplate
 {
@@ -11,7 +10,8 @@ public class TrackSelector : TrackSelectorTemplate
 	public TextMeshProUGUI CPULevelButtonText;
 	public TextMeshProUGUI rivalsButtonText;
 	public TextMeshProUGUI wayButtonText;
-	public TextMeshProUGUI catchupButtonText;
+	public TextMeshProUGUI sponsorButtonText;
+
 	protected int maxCPURivals = 9;
 	protected override void OnEnable()
 	{
@@ -26,6 +26,7 @@ public class TrackSelector : TrackSelectorTemplate
 		SwitchLaps(true);
 		SwitchRaceType(true);
 		SwitchRivals(true);
+		SwitchSponsor(true);
 		SwitchRoadType(true);
 	}
 	public void SwitchRaceType(bool init = false)
@@ -119,12 +120,21 @@ public class TrackSelector : TrackSelectorTemplate
 		if (!init)
 			dir = shiftInputRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
 		F.I.s_roadType = (PavementType)F.Wraparound((int)(F.I.s_roadType + dir), 0, (int)PavementType.LENGTH-1);
-		wayButtonText.text = "Tex: " + Enum.GetName(typeof(PavementType), F.I.s_roadType);
+		wayButtonText.text = "Tex: " + F.I.s_roadType.ToString();
 	}
 	public void SwitchCatchup(bool init = false)
 	{
 		if (!init)
 			F.I.s_catchup = !F.I.s_catchup;
-		catchupButtonText.text = "Catchup: " + (F.I.s_catchup ? "Yes" : "No");
+		sponsorButtonText.text = "Catchup: " + (F.I.s_catchup ? "Yes" : "No");
+	}
+	public void SwitchSponsor(bool init = false)
+	{
+		if (!init)
+		{
+			int dir = F.I.shiftRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
+			F.I.s_PlayerCarSponsor = (Livery)F.Wraparound((int)F.I.s_PlayerCarSponsor + dir, (F.I.gameMode == MultiMode.Singleplayer) ? 0 : 1, F.I.Liveries);
+		}
+		sponsorButtonText.text = "Sponsor:" + F.I.s_PlayerCarSponsor.ToString();
 	}
 }

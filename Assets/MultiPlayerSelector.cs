@@ -40,7 +40,6 @@ public class MultiPlayerSelector : TrackSelector
 	
 	public LeaderBoardTable leaderboard;
 	public TextMeshProUGUI ipText;
-	public TextMeshProUGUI sponsorbText;
 	public TextMeshProUGUI randomCarsText;
 	public TextMeshProUGUI randomTracksText;
 	public TextMeshProUGUI readyText;
@@ -332,17 +331,17 @@ public class MultiPlayerSelector : TrackSelector
 			yield return null;
 		}
 		base.ResetButtons();
-		SwitchReady(true);
 		SwitchScoring(true);
 		SwitchRandomCar(true);
 		SwitchRandomTrack(true);
 		UpdateInteractableButtons();
+		SwitchReady(true);
 	}
 	void UpdateInteractableButtons()
 	{
 		bool isHost = ServerC.I.AmHost;
 		bool notRdy = !ServerC.I.PlayerMe.ReadyGet();
-		sponsorbText.transform.parent.gameObject.SetActive(F.I.scoringType == ScoringType.Championship && notRdy);
+		
 		sortButton.gameObject.SetActive(isHost && notRdy);
 		garageBtn.gameObject.SetActive(notRdy);
 		scoringText.text = F.I.scoringType.ToString();
@@ -355,19 +354,9 @@ public class MultiPlayerSelector : TrackSelector
 		CPULevelButtonText.transform.parent.GetComponent<Button>().interactable = isHost && notRdy;
 		rivalsButtonText.transform.parent.GetComponent<Button>().interactable = isHost && notRdy;
 		wayButtonText.transform.parent.GetComponent<Button>().interactable = isHost && notRdy;
-		catchupButtonText.transform.parent.GetComponent<Button>().interactable = isHost && notRdy;
+		sponsorButtonText.transform.parent.gameObject.SetActive(F.I.scoringType == ScoringType.Championship && notRdy);
 	}
-	public void SwitchSponsor(bool init)
-	{
-		var playerMe = ServerC.I.PlayerMe;
-		if (!init)
-		{
-			int dir = F.I.shiftRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
-			playerMe.Data[ServerC.k_Sponsor].Value = ((Livery)F.Wraparound((int)playerMe.SponsorGet() + dir, 2, 7)).ToString();
-			ServerC.I.ScoreSet(0);
-		}
-		sponsorbText.text = "Sponsor:" + playerMe.Data[ServerC.k_Sponsor].Value;
-	}
+	
 	public void SwitchRandomCar(bool init = false)
 	{
 		if (!init)
@@ -475,9 +464,10 @@ public class MultiPlayerSelector : TrackSelector
 					Debug.Log("ServerConnection.I new track=" + F.I.s_trackName);
 					ServerC.I.lobby.Data[ServerC.k_trackSHA] = new DataObject(DataObject.VisibilityOptions.Member, F.I.SHA(F.I.tracksPath + F.I.s_trackName + ".data"));
 					ServerC.I.lobby.Data[ServerC.k_trackName] = new DataObject(DataObject.VisibilityOptions.Member, F.I.s_trackName);
-					if(F.I.scoringType != ServerC.I.GetScoringType())
+					if(F.I.scoringType != ServerC.I.GetScoringType() || F.I.s_PlayerCarSponsor != ServerC.I.GetSponsor())
 					{
 						ServerC.I.ScoreSet(0);
+						ServerC.I.SponsorSet();
 					}
 					ServerC.I.UpdateServerData();
 				}
@@ -545,7 +535,7 @@ public class MultiPlayerSelector : TrackSelector
 		F.I.scoringType = (ScoringType)F.Wraparound((int)F.I.scoringType + dir, 0, Enum.GetNames(typeof(ScoringType)).Length - 1);
 		scoringText.text = F.I.scoringType.ToString();
 		
-		sponsorbText.transform.parent.gameObject.SetActive(F.I.scoringType == ScoringType.Championship);
+		sponsorButtonText.transform.parent.gameObject.SetActive(F.I.scoringType == ScoringType.Championship);
 	}
 	IEnumerator LobbyCountdown()
 	{

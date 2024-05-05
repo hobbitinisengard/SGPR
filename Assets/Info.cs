@@ -14,11 +14,11 @@ using Unity.Multiplayer.Playmode;
 using UnityEngine.InputSystem;
 public enum Envir { GER, JAP, SPN, FRA, ENG, USA, ITA, MEX };
 public enum CarGroup { Wild, Aero, Speed, Team };
-public enum Livery { Special = 1, TGR, Rline, Itex, Caltex, Titan, Mysuko }
+public enum Livery { Random=0, Special=1, TGR, Rline, Itex, Caltex, Titan, Mysuko }
 public enum RecordType { BestLap, RaceTime, StuntScore, DriftScore}
 public enum ScoringType { Championship, Points, Victory }
 public enum ActionHappening { InLobby, InRace }
-public enum PavementType { Grid, Highway, Volcano, Asphalt, Energy,  Japan, Jungle, Random, LENGTH }
+public enum PavementType { Arena, Volcano, Asphalt, Energy, Grid, Japan, Jungle, Random, LENGTH }
 public enum MultiMode { Singleplayer, Multiplayer };
 public enum RaceType { Race, Knockout, Stunt, Drift, TimeTrial }
 public enum CpuLevel { Normal };
@@ -30,6 +30,10 @@ public class PlayerSettingsData
 	public float sfxVol = 1;
 	public string playerName = "";
 	public float steerGamma = 0;
+	public string serverName = "";
+	public string serverPassword = "";
+	public string serverMaxPlayers = "10";
+	public string[] quickMessages = new string[10];
 }
 public class Info : MonoBehaviour
 {
@@ -76,12 +80,13 @@ public class Info : MonoBehaviour
 	public string userdataPath { get { return documentsSGPRpath + "userdata.json"; } }
 	public string lastPath { get { return documentsSGPRpath + "path.txt"; } }
 
+	public Livery s_PlayerCarSponsor;
+
 	int MPtags;
 
 	public readonly int maxCarsInRace = 10;
 
 	public PlayerSettingsData playerData;
-
 	public InputActionReference shiftRef;
 	public InputActionReference escRef;
 	public InputActionReference enterRef;
@@ -124,6 +129,11 @@ public class Info : MonoBehaviour
 			playerData = JsonConvert.DeserializeObject<PlayerSettingsData>(playerSettings);
 			Debug.Log(playerData == null);
 		}
+	}
+	public void SaveSettingsDataToJson()
+	{
+		string jsonText = JsonConvert.SerializeObject(playerData);
+		File.WriteAllText(userdataPath, jsonText);
 	}
 	public void SaveSettingsDataToJson(in AudioMixer mainMixer)
 	{

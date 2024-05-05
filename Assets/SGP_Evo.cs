@@ -223,7 +223,7 @@ public class SGP_Evo : MonoBehaviour
 
 		if (stunting)
 		{
-			if (!flippedWhenInitiated && (vp.crashing || vp.colliding || vp.reallyGroundedWheels > 0))
+			if (!flippedWhenInitiated && (vp.rb.isKinematic || vp.crashing || vp.colliding || vp.reallyGroundedWheels > 0))
 			{
 				stunting = false;
 				return;
