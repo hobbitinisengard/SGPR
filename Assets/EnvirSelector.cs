@@ -6,7 +6,7 @@ using System.Linq;
 using TMPro;
 using UnityEngine.InputSystem;
 
-public class EnvirSelector : Selector
+public class EnvirSelector : Sfxable
 {
 	private enum SortingCond { Difficulty, Name };
 	public TextMeshProUGUI envirDescText;
@@ -21,11 +21,11 @@ public class EnvirSelector : Selector
 
 	private void OnDisable()
 	{
-		move2Ref.action.performed -= CalculateTargetToSelect;
+		F.I.move2Ref.action.performed -= CalculateTargetToSelect;
 	}
 	private void OnEnable()
 	{
-		move2Ref.action.performed += CalculateTargetToSelect;
+		F.I.move2Ref.action.performed += CalculateTargetToSelect;
 		startButton.Select();
 		selectedEnvir = envirContent.GetChild(0).GetChild(persistentSelectedEnvir);
 		F.I.s_trackName = selectedEnvir.name;
@@ -44,7 +44,7 @@ public class EnvirSelector : Selector
 	{
 		if (!selectedEnvir)
 			return;
-		Vector2 move2 = move2Ref.action.ReadValue<Vector2>();
+		Vector2 move2 = F.I.move2Ref.action.ReadValue<Vector2>();
 		int x = Mathf.RoundToInt(move2.x);
 		if (x != 0)
 		{

@@ -17,6 +17,10 @@ public class LeaderBoardTable : MonoBehaviour
 		public Livery sponsor;
 		public int score;
 	}
+	private void OnEnable()
+	{
+		Refresh();
+	}
 	private void Start()
 	{
 		ServerC.I.callbacks.PlayerJoined += Refresh;
@@ -80,7 +84,7 @@ public class LeaderBoardTable : MonoBehaviour
 		}
 		else
 		{ // Individual scoring
-			Array.Sort(players, (Player p2, Player p1) => p2.ScoreGet().CompareTo(p1.ScoreGet()));
+			Array.Sort(players, (Player a, Player b) => b.ScoreGet().CompareTo(a.ScoreGet()));
 		}
 
 		// TITLE + PLAYERS
@@ -101,7 +105,12 @@ public class LeaderBoardTable : MonoBehaviour
 		newRow.GetChild(0).GetChild(0).GetComponent<Image>().color = player.ReadyGet() ? Color.green : Color.yellow;
 		newRow.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>().text = player.NameGet();
 		newRow.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>().color = player.ReadColor();
-		newRow.GetChild(1).GetComponent<TextMeshProUGUI>().text = F.I.randomCars ? "*random*" : F.I.Car(player.carNameGet()).name;
+
+		string carNr = (player == ServerC.I.PlayerMe) ? F.I.s_playerCarName : player.carNameGet();
+		string carName = F.I.Car(carNr).name;
+
+		newRow.GetChild(1).GetComponent<TextMeshProUGUI>().text = F.I.randomCars ? "*random*" : carName;
+
 		newRow.GetChild(2).GetComponent<TextMeshProUGUI>().text = ((F.I.scoringType == ScoringType.Championship) ? "$ " : "") + player.ScoreGet().ToString();
 	}
 	void DefaultView()

@@ -59,7 +59,7 @@ namespace RVP
 			if (!string.IsNullOrEmpty(lightsButton))
 			{
 				if (Input.GetButtonDown(lightsButton))
-					vp.SetLights();
+					vp.Switchlights();
 			}
 		}
 

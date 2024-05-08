@@ -5,7 +5,7 @@ public class LoadSelector : TrackSelectorTemplate
 {
 	public void RemoveCurrentTrack()
 	{
-		if (selectedTrack == null)
+		if (selectedTrack == null || selectedTrack.parent.childCount == 1)
 		{
 			PlaySFX("fe-cardserror");
 			return;

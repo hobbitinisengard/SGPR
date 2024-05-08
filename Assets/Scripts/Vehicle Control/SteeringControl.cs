@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using System;
-using static UnityEngine.GraphicsBuffer;
 
 namespace RVP
 {
@@ -37,7 +36,6 @@ namespace RVP
 		public float shiftRearFriction;
 		internal float driftRearFriction;
 		internal float driftRearFrictionInit;
-		private float absPrevSteer;
 		[Range(0, 1)]
 		public float asi;
 
@@ -95,9 +93,7 @@ namespace RVP
 				
 				if (asi >= holdCurveValue)
 				{
-					var newSteerLimit = steerLimitCurve.Evaluate(vp.velMag);
-					if (newSteerLimit > steerLimit)
-						steerLimit = newSteerLimit;
+					steerLimit = steerLimitCurve.Evaluate(vp.velMag);
 					servoAudio.volume = 1f;
 					servoAudio.pitch = (Mathf.Abs(targetSteer) > asi) ? 1.5f : 1;
 
@@ -109,12 +105,6 @@ namespace RVP
 					steerLimit = steerLimitCurve.Evaluate(vp.localVelocity.z);
 					servoAudio.volume = 0;
 					holdDuration = Mathf.Lerp(holdDuration, asi, holdComebackSpeed * 10 * Time.fixedDeltaTime);
-					//if (holdDuration > .0001f)
-					//{
-					//	holdDuration *= Mathf.Clamp01(holdComebackSpeed * 50 * Time.fixedDeltaTime);
-					//}
-					//else
-					//	holdDuration = 0;
 				}
 
 				if (F.I.controllerInUse)

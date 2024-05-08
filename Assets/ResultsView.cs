@@ -29,7 +29,7 @@ public class ResultsView : MonoBehaviour
 			raceTime = vp.raceBox.raceTime;
 			name = vp.transform.name;
 			pos = RaceManager.I.Position(vp) - 1;
-			Debug.Log($"ResultInfo pos={pos}");
+			//Debug.Log($"ResultInfo pos={pos}");
 		}
 		public ResultInfo(VehicleParent vp)
 		{
@@ -82,7 +82,6 @@ public class ResultsView : MonoBehaviour
 		if(entry == default)
 		{
 			resultData.Add(new ResultInfo(car));
-			Debug.Log("Add to resultData " + car.name);
 		}
 		else
 		{

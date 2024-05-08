@@ -50,7 +50,7 @@ public class Chat : NetworkBehaviour
 	}
 	IEnumerator Initialize()
 	{
-		Debug.Log("chat INitialize()");
+		//Debug.Log("chat INitialize()");
 		while (MultiPlayerSelector.I == null)
 			yield return null;
 
@@ -109,7 +109,9 @@ public class Chat : NetworkBehaviour
 		if(F.I.gameMode == MultiMode.Multiplayer && F.I.actionHappening == ActionHappening.InRace && !texting)
 		{
 			int msgIndex = (int)obj.ReadValue<float>(); // returns 1 - 10
-			AddChatRow(ServerC.I.PlayerMe, F.GetQuickMessage(msgIndex-1));
+			string msg = F.GetQuickMessage(msgIndex - 1);
+			if(msg.Length > 0)
+				AddChatRow(ServerC.I.PlayerMe, msg);
 		}
 	}
 	IEnumerator ButtonPressedSeq()

@@ -121,7 +121,6 @@ public class ZippedTrackDataObject : NetworkBehaviour
 		bool localTrackExists = File.Exists(F.I.tracksPath + trackName + ".data");
 		if (localTrackExists)
 		{
-			
 			// rename local track to trackName+number
 			string newName = trackName + "0";
 			for (int i = 1; i < 1000; ++i)

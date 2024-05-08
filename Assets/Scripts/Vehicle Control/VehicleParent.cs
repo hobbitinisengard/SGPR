@@ -332,8 +332,8 @@ namespace RVP
 		void RequestRaceboxValuesRpc(RpcParams ps)
 		{
 			SynchRaceboxValuesRpc(raceBox.curLap, followAI.dist, followAI.progress, raceBox.Aero, raceBox.drift, 
-				(float)(raceBox.bestLapTime.TotalMilliseconds/1000f), 
-				raceBox.enabled ? 0 : (float)raceBox.raceTime.TotalMilliseconds/1000f,
+				(float)raceBox.bestLapTime.TotalSeconds, 
+				(float)raceBox.raceTime.TotalSeconds,
 				RpcTarget.Single(ps.Receive.SenderClientId, RpcTargetUse.Temp));
 		}
 		[Rpc(SendTo.SpecifiedInParams)]
@@ -351,10 +351,7 @@ namespace RVP
 		public float tyresOffroad;
 		public CatchupStatus catchupStatus { get; private set; }
 		public float AngularDrag { get { return rb.angularDrag; } }
-		SGP_DragsterEffect dragsterEffect;
-		
 
-		// NETCODE - reconciliation and extrapolation
 		public void SetBattery(float capacity, float chargingSpeed, float lowBatPercent, float evoBountyPercent)
 		{
 			energyRemaining = capacity;
@@ -425,6 +422,8 @@ namespace RVP
 			string matName = mr.sharedMaterial.name;
 			if((sponsor) != 0)
 			{
+				if (matName.Contains("Instance"))
+					matName = matName[..matName.IndexOf(' ')];
 				matName = matName[..^1] + ((int)sponsor).ToString();
 				Material newMat = Resources.Load<Material>("materials/" + matName);
 				newMat.name = matName;
@@ -498,8 +497,6 @@ namespace RVP
 			originalMass = rb.mass;
 
 			F.I.s_cars.Add(this);
-
-			dragsterEffect = GetComponent<SGP_DragsterEffect>();
 		}
 		public override void OnNetworkSpawn()
 		{
@@ -510,7 +507,7 @@ namespace RVP
 				basicInput.enabled = false;
 				if (OnlineCommunication.I.raceAlreadyStarted.Value)
 				{// latecomer's request to synch progress
-					Debug.Log("RequestRaceboxValuesRpc");
+					//Debug.Log("RequestRaceboxValuesRpc");
 					RequestRaceboxValuesRpc(RpcTarget.Owner);
 				}
 			}
@@ -557,8 +554,11 @@ namespace RVP
 			
 			StartCoroutine(ApplySetup());
 
-			if (F.I.s_isNight)
-				SetLights();
+			lightsInput = F.I.s_isNight;
+			foreach (var l in frontLights)
+				l.SetActive(lightsInput);
+			foreach (var l in rearLights)
+				l.SetActive(lightsInput);
 		}
 		
 		IEnumerator ApplySetup()
@@ -799,7 +799,7 @@ namespace RVP
 		{
 			SGPshiftbutton = b;
 		}
-		public void SetLights()
+		public void Switchlights()
 		{
 			lightsInput = !lightsInput;
 			foreach (var l in frontLights)

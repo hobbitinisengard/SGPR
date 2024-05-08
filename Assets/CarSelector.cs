@@ -6,7 +6,7 @@ using UnityEngine.UI;
 using UnityEngine.UIElements.Experimental;
 
 public enum GarageType { Unlocked, Earned, Wild, Aero, Speed, Specials }
-public class CarSelector : Selector
+public class CarSelector : Sfxable
 {
 	public RectTransform[] bars;
 	public Text carDescText;
@@ -42,13 +42,13 @@ public class CarSelector : Selector
 	}
 	private void OnDisable()
 	{ // in unity, 
-		move2Ref.action.performed -= CalculateTargetToSelect;
+		F.I.move2Ref.action.performed -= CalculateTargetToSelect;
 		persistentSelectedCar = selectedCar.name;
 		F.I.s_playerCarName = selectedCar.name;
 	}
 	private void OnEnable()
 	{
-		move2Ref.action.performed += CalculateTargetToSelect;
+		F.I.move2Ref.action.performed += CalculateTargetToSelect;
 		if (loadCo)
 		{
 			StopCoroutine(Load());
@@ -152,7 +152,7 @@ public class CarSelector : Selector
 			return;
 		d_co = containerCo == null;
 
-		Vector2 move2 = move2Ref.action.ReadValue<Vector2>();
+		Vector2 move2 = F.I.move2Ref.action.ReadValue<Vector2>();
 		int x = Mathf.RoundToInt(move2.x);
 		int y = Mathf.RoundToInt(-move2.y);
 
