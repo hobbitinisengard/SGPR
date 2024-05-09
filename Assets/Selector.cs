@@ -2,11 +2,12 @@
 using System.Collections;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
-public class TrackSelectorTemplate : Selector
+public class TrackSelectorTemplate : Sfxable
 {
 	public GameObject trackImageTemplate;
 	public MainMenuButton startButton;
@@ -31,12 +32,12 @@ public class TrackSelectorTemplate : Selector
 
 	protected virtual void OnDisable()
 	{
-		move2Ref.action.performed -= CalculateTargetToSelect;
+		F.I.move2Ref.action.performed -= CalculateTargetToSelect;
 		persistentSelectedTrack = selectedTrack.name;
 	}
 	protected virtual void OnEnable()
 	{
-		move2Ref.action.performed += CalculateTargetToSelect;
+		F.I.move2Ref.action.performed += CalculateTargetToSelect;
 		if (loadCo)
 			StopCoroutine(Load());
 		StartCoroutine(Load());
@@ -45,8 +46,7 @@ public class TrackSelectorTemplate : Selector
 	{
 		if (checkForValid)
 			return trackValid;
-		else
-			return true;
+		return true;
 	}
 	bool[] PopulateContent()
 	{
@@ -100,8 +100,7 @@ public class TrackSelectorTemplate : Selector
 
 		bool reloadContent = (visibleTracks != validTracks) || forceReload;
 
-		bool[] existingTrackClasses = reloadContent ? PopulateContent() 
-			: new bool[] { trackContent.GetChild(0).gameObject.activeSelf, trackContent.GetChild(1).gameObject.activeSelf };
+		bool[] existingTrackClasses = reloadContent ? PopulateContent() : new bool[] {true, true };
 
 		yield return null; // wait for one frame for active objects to refresh
 
@@ -127,37 +126,43 @@ public class TrackSelectorTemplate : Selector
 			// disable track classes without children (required for sliders to work)
 			trackContent.GetChild(i).gameObject.SetActive(existingTrackClasses[i]);
 		}
-		if (F.I.randomTracks)
+
+		if (selectedTrack == null)
 		{
-			var randomClass =  trackContent.GetChild(UnityEngine.Random.Range(0, 2));
-			F.I.s_trackName = randomClass.GetChild(UnityEngine.Random.Range(0, randomClass.childCount)).name;
+			Debug.LogWarning("selectedTrack is null");
+			selectedTrack = trackContent.GetChild(0).GetChild(0);
 		}
-		else
-		{
-			if (selectedTrack == null)
-			{
-				Debug.LogWarning("selectedTrack is null");
-				selectedTrack = trackContent.GetChild(0).GetChild(0);
-			}
-			F.I.s_trackName = selectedTrack.name;
-		}
+		F.I.s_trackName = selectedTrack.name;
+
 		radial.gameObject.SetActive(selectedTrack);
 		radial.SetChildrenActive(trackContent);
 		startButton.Select();
-
 		SetTrackShaenigans();
-		
 		loadCo = false;
 	}
 	protected void SetTrackShaenigans()
 	{
+		trackContent.GetChild(0).gameObject.SetActive(!F.I.randomTracks);
+		trackContent.GetChild(1).gameObject.SetActive(!F.I.randomTracks);
+
 		SetTiles();
 		SetRecords();
 
+		scrollx.gameObject.SetActive(!F.I.randomTracks);
+		scrolly.gameObject.SetActive(!F.I.randomTracks);
+		
+		radial.gameObject.SetActive(!F.I.randomTracks);
 		// set description
 		if (selectedTrack == null)
-			trackDescText.text = "No tracks available";
-		else
+		{
+			FindSelectedTrackEqualToTrackname();
+			if (selectedTrack == null)
+			{
+				Debug.LogError("selectedTrack is null");
+				trackDescText.text = "No tracks available";
+			}
+		}
+		else if (!F.I.randomTracks)
 		{
 			trackDescText.text = selectedTrack.name + "\n\n" + F.I.tracks[selectedTrack.name].desc;
 			if (radial.gameObject.activeSelf)
@@ -167,14 +172,15 @@ public class TrackSelectorTemplate : Selector
 		// focus on track
 		if (containerCo != null)
 			StopCoroutine(containerCo);
-		containerCo = StartCoroutine(MoveToTrack());
+		if(gameObject.activeInHierarchy)
+			containerCo = StartCoroutine(MoveToTrack());
 	}
 	protected void CalculateTargetToSelect(InputAction.CallbackContext ctx)
 	{
 		if (!selectedTrack || loadCo)
 			return;
-		Vector2 move2 = move2Ref.action.ReadValue<Vector2>();
-		int mult = (shiftInputRef.action.ReadValue<float>() > 0) ? 5 : 1;
+		Vector2 move2 = F.I.move2Ref.action.ReadValue<Vector2>();
+		int mult = (F.I.shiftInputRef.action.ReadValue<float>() > 0) ? 5 : 1;
 		int x = Mathf.RoundToInt(move2.x) * mult;
 		int y = Mathf.RoundToInt(-move2.y) * mult;
 		bool gotoHome = Input.GetKeyDown(KeyCode.Home);
@@ -228,33 +234,36 @@ public class TrackSelectorTemplate : Selector
 	}
 	protected void SetRecords()
 	{
-		for (int i = 0; i < recordsContainer.childCount; ++i)
+		if (!F.I.randomTracks)
 		{
-			Transform record = recordsContainer.GetChild(i);
-
-			Record recordData = selectedTrack ? F.I.tracks[selectedTrack.name].records[i] : new Record(null, 0, 0);
-
-			string valueStr = (recordData == null || recordData.playerName == null || recordData.secondsOrPts == 0 
-				|| ( i<= 1 && recordData.secondsOrPts > 35000)) ? "" : recordData.playerName;
-
-			record.GetChild(1).GetComponent<Text>().text = valueStr;
-
-			if (recordData == null || recordData.secondsOrPts == 0 || recordData.secondsOrPts == 35999)
-				valueStr = "";
-			else
+			for (int i = 0; i < recordsContainer.childCount; ++i)
 			{
-				if (i <= 1) // lap, race, stunt, grip
-					valueStr = TimeSpan.FromSeconds(recordData.secondsOrPts).ToLaptimeStr();
-				else
-					valueStr = Mathf.RoundToInt(recordData.secondsOrPts).ToString();
-			}
-			record.GetChild(2).GetComponent<Text>().text = valueStr;
+				Transform record = recordsContainer.GetChild(i);
 
-			if (recordData != null && (i > 0 && recordData.secondsOrPts > recordData.requiredSecondsOrPts)
-				|| (i == 0 && recordData.secondsOrPts < recordData.requiredSecondsOrPts))
-				record.GetChild(2).GetComponent<Text>().color = Color.yellow;
-			else
-				record.GetChild(2).GetComponent<Text>().color = Color.white;
+				Record recordData = selectedTrack ? F.I.tracks[selectedTrack.name].records[i] : new Record(null, 0, 0);
+
+				string valueStr = (recordData == null || recordData.playerName == null || recordData.secondsOrPts == 0
+					|| (i <= 1 && recordData.secondsOrPts > 35000)) ? "" : recordData.playerName;
+
+				record.GetChild(1).GetComponent<Text>().text = valueStr;
+
+				if (recordData == null || recordData.secondsOrPts == 0 || recordData.secondsOrPts == 35999)
+					valueStr = "";
+				else
+				{
+					if (i <= 1) // lap, race, stunt, grip
+						valueStr = TimeSpan.FromSeconds(recordData.secondsOrPts).ToLaptimeStr();
+					else
+						valueStr = Mathf.RoundToInt(recordData.secondsOrPts).ToString();
+				}
+				record.GetChild(2).GetComponent<Text>().text = valueStr;
+
+				if (recordData != null && (i > 0 && recordData.secondsOrPts > recordData.requiredSecondsOrPts)
+					|| (i == 0 && recordData.secondsOrPts < recordData.requiredSecondsOrPts))
+					record.GetChild(2).GetComponent<Text>().color = Color.yellow;
+				else
+					record.GetChild(2).GetComponent<Text>().color = Color.white;
+			}
 		}
 	}
 	protected void SetTiles()
@@ -277,14 +286,20 @@ public class TrackSelectorTemplate : Selector
 		for (int i = 1; i < tilesContainer.childCount; ++i)
 			Destroy(tilesContainer.GetChild(i).gameObject);
 
-		if (selectedTrack)
+
+		if (! F.I.randomTracks)
 		{
-			AddTile(Enum.GetName(typeof(CarGroup), F.I.tracks[selectedTrack.name].preferredCarClass));
-			AddTile(Enum.GetName(typeof(Envir), F.I.tracks[selectedTrack.name].envir));
-			AddTile((F.I.tracks[selectedTrack.name].difficulty + 4).ToString());
-			foreach (var flag in F.I.tracks[selectedTrack.name].icons)
-				AddTile(F.I.IconNames[flag]);
+			if (selectedTrack)
+			{
+				AddTile(Enum.GetName(typeof(CarGroup), F.I.tracks[selectedTrack.name].preferredCarClass));
+				AddTile(Enum.GetName(typeof(Envir), F.I.tracks[selectedTrack.name].envir));
+				AddTile((F.I.tracks[selectedTrack.name].difficulty + 4).ToString());
+				foreach (var flag in F.I.tracks[selectedTrack.name].icons)
+					AddTile(F.I.IconNames[flag]);
+			}
 		}
+
+		tilesContainer.gameObject.SetActive(!F.I.randomTracks);
 	}
 	protected bool FindSelectedTrackEqualToTrackname()
 	{
@@ -303,16 +318,15 @@ public class TrackSelectorTemplate : Selector
 				}
 			}
 		}
-		Debug.LogError("None of the tracks has name equal to s_trackName");
+		Debug.LogError($"None of the tracks is {F.I.s_trackName}");
 		return false;
 	}
 
 	protected IEnumerator MoveToTrack()
 	{
 		yield return null;
-		if (!selectedTrack)
+		if (!selectedTrack || F.I.randomTracks)
 		{
-			Debug.LogError("selected track is null");
 			yield break;
 		}
 		float timer = 0;
@@ -343,8 +357,5 @@ public class TrackSelectorTemplate : Selector
 
 public class Selector : Sfxable
 {
-	public InputActionReference move2Ref;
-	public InputActionReference shiftInputRef;
-	public InputActionReference ctrlInputRef;
-	public InputActionReference altInputRef;
+	
 }

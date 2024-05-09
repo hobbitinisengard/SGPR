@@ -40,6 +40,12 @@ public class ZippedTrackDataObject : NetworkBehaviour
 	List<byte> receivedTrack = new(1500000);
 	string trackName = "";
 	bool updatingCachedTrack = false;
+	private void OnApplicationQuit()
+	{
+		var zipFiles = Directory.GetFiles(F.I.documentsSGPRpath, "*.zip");
+		foreach (var zipDir in zipFiles)
+			File.Delete(zipDir);
+	}
 	public override void OnNetworkSpawn()
 	{
 		base.OnNetworkSpawn();
@@ -121,7 +127,6 @@ public class ZippedTrackDataObject : NetworkBehaviour
 		bool localTrackExists = File.Exists(F.I.tracksPath + trackName + ".data");
 		if (localTrackExists)
 		{
-			
 			// rename local track to trackName+number
 			string newName = trackName + "0";
 			for (int i = 1; i < 1000; ++i)

@@ -1,5 +1,3 @@
-using System;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -22,7 +20,6 @@ public class EnterNameInputField : Sfxable
 	private void Start()
 	{
 		glg = GetComponent<GridLayoutGroup>();
-
 		// write F.I.s_playerName for the first time
 		foreach(char c in F.I.playerData.playerName)
 		{

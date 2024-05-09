@@ -154,7 +154,7 @@ namespace RVP
 				return;
 
 			if (F.I.gameMode == MultiMode.Multiplayer && ServerC.I.AmHost)
-				Voting.I.VoteForEnd(); // host's decision is immediate
+				Voting.I.EndForEveryone(); // host's decision is immediate
 
 			musicPlayer.Stop();
 			countDownSeq.gameObject.SetActive(false);
@@ -463,7 +463,9 @@ namespace RVP
 				}
 			}
 
-			int curLap = OnlineCommunication.I.raceAlreadyStarted.Value ? F.I.s_cars[^1].raceBox.curLap-1 : 0;
+			int curLap = F.I.s_cars[^1].raceBox.curLap - 1;
+			if (curLap < 0)
+				curLap = 0;
 			var newCar = NetworkObject.InstantiateAndSpawn(carModel, networkManager, relayId, position:position.Value, rotation:rotation.Value).GetComponent<VehicleParent>();
 			newCar.sponsor = p.SponsorGet();
 			newCar.name = p.NameGet();

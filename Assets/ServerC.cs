@@ -63,6 +63,7 @@ public class ServerC : MonoBehaviour
 	public const string k_trackSHA = "ts";
 	public const string k_trackName = "tn";
 	public const int tickRate = 10;
+	public event Action OnLobbyExit;
 	private void Awake()
 	{
 		networkManager = GetComponent<NetworkManager>();
@@ -104,7 +105,7 @@ public class ServerC : MonoBehaviour
 		if (callbacksLobbyId != lobby.Id)
 		{
 			callbacksLobbyId = lobby.Id;
-			Debug.Log("subscribe to lobby events");
+			//Debug.Log("subscribe to lobby events");
 			await Lobbies.Instance.SubscribeToLobbyEventsAsync(lobby.Id, callbacks);
 		}
 	}
@@ -129,6 +130,10 @@ public class ServerC : MonoBehaviour
 			return startingPos;
 		}
 	}
+	public void SetTrackName()
+	{
+		lobby.Data[k_trackName] = new DataObject(DataObject.VisibilityOptions.Member, F.I.s_trackName);
+	}
 	public async void DisconnectFromLobby()
 	{
 		if (lobby == null)
@@ -141,6 +146,7 @@ public class ServerC : MonoBehaviour
 		callbacksLobbyId = "";
 		//DeleteEmptyLobbies();
 		Debug.Log("DISCONNECTED");
+		OnLobbyExit.Invoke();
 	}
 	public async Task GetLobbyManually()
 	{
@@ -200,7 +206,8 @@ public class ServerC : MonoBehaviour
 	{
 		string encodeConfig = ((int)F.I.scoringType).ToString() + (F.I.randomCars ? "1" : "0") + (F.I.randomTracks ? "1" : "0")
 			+ ((int)F.I.s_raceType).ToString() + (F.I.s_laps).ToString("D2") + (F.I.s_isNight ? "1" : "0") + ((int)F.I.s_cpuLevel).ToString()
-			+ (F.I.s_cpuRivals).ToString() + ((int)F.I.s_roadType).ToString() + (F.I.s_catchup ? "1" : "0");
+			+ "0" + ((int)F.I.s_roadType).ToString() + (F.I.s_catchup ? "1" : "0");
+		// "0" - cpuCars
 		return encodeConfig;
 	}
 	public Player Host
@@ -332,7 +339,7 @@ public class ServerC : MonoBehaviour
 					{
 						k_actionHappening, new DataObject(
 							visibility: DataObject.VisibilityOptions.Public,
-							value: ActionHappening.InLobby.ToString())
+							value: F.I.actionHappening.ToString())
 					},
 					{
 						k_raceConfig, new DataObject(
@@ -398,8 +405,6 @@ public class ServerC : MonoBehaviour
 
 			string relayJoinCode = lobby.Data[k_relayCode].Value;
 			await JoinRelayByCode(relayJoinCode);
-
-			
 		}
 		catch (Exception e)
 		{
@@ -468,7 +473,8 @@ public class ServerC : MonoBehaviour
 		catch (RelayServiceException e)
 		{
 			Debug.LogError("failed to get join relay: " + e.Message);
-			return default;
+			throw new RelayServiceException (e);
+			//return default;
 		}
 	}
 	async Task HandlePollForUpdateAsync()

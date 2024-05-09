@@ -19,7 +19,7 @@ public class ResultsSeq : MonoBehaviour
 	public Image dimmer;
 	//AnimationCurve pulseCurve;
 	Color yellowDark = new (0.3607f, 0.3607f, 0);
-	string[] rightBoxLabels = new string[] { "BEST LAP", "RACE TIME", "AEROMILES", "DRIFT POINTS"};
+	string[] rightBoxLabels = new string[] { "BEST LAP", "RACE-TIME", "AEROMILES", "DRIFT"};
 	int rightBoxLabelInt = 0;
 	Coroutine seq, dimCo,showResultCo, showTableCo;
 	AudioSource audioSource;

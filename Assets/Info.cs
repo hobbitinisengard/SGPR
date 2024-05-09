@@ -80,7 +80,7 @@ public class Info : MonoBehaviour
 	public string userdataPath { get { return documentsSGPRpath + "userdata.json"; } }
 	public string lastPath { get { return documentsSGPRpath + "path.txt"; } }
 
-	public Livery s_PlayerCarSponsor;
+	public Livery s_PlayerCarSponsor = Livery.Special;
 
 	int MPtags;
 
@@ -92,6 +92,10 @@ public class Info : MonoBehaviour
 	public InputActionReference enterRef;
 	public InputActionReference quickMessageRef;
 	public InputActionReference chatButtonInput;
+	public InputActionReference move2Ref;
+	public InputActionReference shiftInputRef;
+	public InputActionReference ctrlInputRef;
+	public InputActionReference altInputRef;
 	public string SHA(string filePath)
 	{
 		string hash;

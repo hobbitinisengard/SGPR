@@ -20,7 +20,7 @@ public class TrackSelector : TrackSelectorTemplate
 	}
 	public void ResetButtons()
 	{
-		SwitchCatchup(true);
+		//SwitchCatchup(true);
 		SwitchCPULevel(true);
 		SwitchDayNight(true);
 		SwitchLaps(true);
@@ -33,7 +33,7 @@ public class TrackSelector : TrackSelectorTemplate
 	{
 		int dir = 0;
 		if (!init)
-			dir = shiftInputRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
+			dir = F.I.shiftInputRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
 
 		F.I.s_raceType = (RaceType)F.Wraparound((int)F.I.s_raceType+dir,0,F.I.RaceTypes-1);
 
@@ -60,13 +60,13 @@ public class TrackSelector : TrackSelectorTemplate
 	{
 		if (!init)
 		{
-			if (shiftInputRef.action.ReadValue<float>() > 0.5f)
+			if (F.I.shiftInputRef.action.ReadValue<float>() > 0.5f)
 				F.I.s_laps -= 3;
 			else
 			{
-				if (ctrlInputRef.action.ReadValue<float>() > 0.5f)
+				if (F.I.ctrlInputRef.action.ReadValue<float>() > 0.5f)
 					F.I.s_laps -= 1;
-				else if (altInputRef.action.ReadValue<float>() > 0.5f)
+				else if (F.I.altInputRef.action.ReadValue<float>() > 0.5f)
 					F.I.s_laps += 1;
 				else
 					F.I.s_laps += 3;
@@ -85,7 +85,7 @@ public class TrackSelector : TrackSelectorTemplate
 	{
 		int dir = 0;
 		if (!init)
-			dir = shiftInputRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
+			dir = F.I.shiftInputRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
 
 		F.I.s_cpuLevel = CpuLevel.Normal;//(CpuLevel)F.Wraparound((int)F.I.s_cpuLevel+dir, 0, 3);
 		string cpuLevelStr = F.I.s_cpuLevel switch
@@ -98,7 +98,7 @@ public class TrackSelector : TrackSelectorTemplate
 	{
 		int dir = 0;
 		if (!init)
-			dir = shiftInputRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
+			dir = F.I.shiftInputRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
 
 		// disable CPU in multiplayer races to save bandwidth
 		F.I.s_cpuRivals = F.Wraparound(F.I.s_cpuRivals + dir, 0, (F.I.gameMode == MultiMode.Multiplayer) ? 0 : maxCPURivals);
@@ -118,7 +118,7 @@ public class TrackSelector : TrackSelectorTemplate
 	{
 		int dir = 0;
 		if (!init)
-			dir = shiftInputRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
+			dir = F.I.shiftInputRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
 		F.I.s_roadType = (PavementType)F.Wraparound((int)(F.I.s_roadType + dir), 0, (int)PavementType.LENGTH-1);
 		wayButtonText.text = "Tex: " + F.I.s_roadType.ToString();
 	}
@@ -130,11 +130,12 @@ public class TrackSelector : TrackSelectorTemplate
 	}
 	public void SwitchSponsor(bool init = false)
 	{
+		int dir = 0;
 		if (!init)
 		{
-			int dir = F.I.shiftRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
-			F.I.s_PlayerCarSponsor = (Livery)F.Wraparound((int)F.I.s_PlayerCarSponsor + dir, (F.I.gameMode == MultiMode.Singleplayer) ? 0 : 1, F.I.Liveries);
+			dir = F.I.shiftRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
 		}
+		F.I.s_PlayerCarSponsor = (Livery)F.Wraparound((int)F.I.s_PlayerCarSponsor + dir, (F.I.gameMode == MultiMode.Singleplayer) ? 0 : 1, F.I.Liveries);
 		sponsorButtonText.text = "Sponsor:" + F.I.s_PlayerCarSponsor.ToString();
 	}
 }

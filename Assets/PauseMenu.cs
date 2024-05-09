@@ -45,7 +45,7 @@ public class PauseMenu : Sfxable
 		paused.TransitionTo(0);
 		timeElapsed = 0;
 		restartButton.SetActive(!F.I.s_inEditor);
-		endButton.SetActive(F.I.gameMode == MultiMode.Multiplayer && !ServerC.I.AmHost);
+		endButton.SetActive(F.I.gameMode == MultiMode.Multiplayer);
 		startColor = veil.color;
 		firstButton.Select();
 		PlaySFX("menublip2", true);

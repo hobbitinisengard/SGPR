@@ -21,13 +21,13 @@ public class ServerList : MonoBehaviour
 	public Sprite knob;
 	[NonSerialized]
 	public GameObject buttonFromWhichWeJoinServer;
-	float lastRefreshTime = 0;
+	float lastRefreshTime = -MinimumRefreshInterval;
+	const int MinimumRefreshInterval = 3;
 	public void OnPasswordEntered(string code, string pass)
 	{
 		server.password = pass;
 		JoinLobby(code);
 	}
-
 	private void OnEnable()
 	{
 		startAServerButton.interactable = false;
@@ -44,7 +44,7 @@ public class ServerList : MonoBehaviour
 	}
 	public async void Refresh()
 	{
-		if (Time.time - lastRefreshTime < 3)
+		if (Time.time - lastRefreshTime < MinimumRefreshInterval)
 			return;
 
 		lastRefreshTime = Time.time;
