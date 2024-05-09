@@ -1019,7 +1019,6 @@ namespace RVP
 		{
 			followAI.SetCPU(false);
 			followAI.selfDriving = false;
-			basicInput.enabled = false;
 			SetAccel(0);
 			SetBrake(0);
 			SetSteer(0);

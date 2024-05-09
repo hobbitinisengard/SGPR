@@ -22,10 +22,7 @@ public class Voting : NetworkBehaviour
 	}
 	public void VoteForEnd()
 	{
-		if(ServerC.I.AmHost)
-			VoteForEndPassedRpc();
-		else
-			VoteForRpc(ServerC.I.PlayerMe.Id, VoteFor.END);
+		VoteForRpc(ServerC.I.PlayerMe.Id, VoteFor.END);
 	}
 
 	public void VoteForRestart()
@@ -105,6 +102,10 @@ public class Voting : NetworkBehaviour
 		RaceManager.I.StartRace();
 	}
 
+	public void EndForEveryone()
+	{
+		VoteForEndPassedRpc();
+	}
 	[Rpc(SendTo.Everyone)]
 	void VoteForEndPassedRpc()
 	{

@@ -154,7 +154,7 @@ namespace RVP
 				return;
 
 			if (F.I.gameMode == MultiMode.Multiplayer && ServerC.I.AmHost)
-				Voting.I.VoteForEnd(); // host's decision is immediate
+				Voting.I.EndForEveryone(); // host's decision is immediate
 
 			musicPlayer.Stop();
 			countDownSeq.gameObject.SetActive(false);

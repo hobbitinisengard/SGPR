@@ -40,6 +40,12 @@ public class ZippedTrackDataObject : NetworkBehaviour
 	List<byte> receivedTrack = new(1500000);
 	string trackName = "";
 	bool updatingCachedTrack = false;
+	private void OnApplicationQuit()
+	{
+		var zipFiles = Directory.GetFiles(F.I.documentsSGPRpath, "*.zip");
+		foreach (var zipDir in zipFiles)
+			File.Delete(zipDir);
+	}
 	public override void OnNetworkSpawn()
 	{
 		base.OnNetworkSpawn();
