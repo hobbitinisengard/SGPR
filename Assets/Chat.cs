@@ -80,7 +80,6 @@ public class Chat : NetworkBehaviour
 
 				if (s.Length > 0)
 				{
-					Debug.Log(".");
 					AddChatRow(ServerC.I.PlayerMe, s);
 					
 					i.text = "";
@@ -157,13 +156,11 @@ public class Chat : NetworkBehaviour
 		color ??= Color.white;
 		
 		AddChatRowRpc(p.NameGet(), bytes, p.ReadColor(), color.Value);
-		Debug.Log(msg);
 	}
 	[Rpc(SendTo.Everyone)]
 	public void AddChatRowRpc(string name, byte[] msgBytes, Color32 colorA, Color32 colorB)
 	{
 		string msg = Encoding.UTF8.GetString(msgBytes);
-		Debug.Log(msg);
 		if (showChatCo != null)
 			StopCoroutine(showChatCo);
 		showChatCo = StartCoroutine(HideRaceChatAfterSeconds(10));

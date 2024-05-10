@@ -154,6 +154,9 @@ public class ServerC : MonoBehaviour
 	}
 	Dictionary<string, PlayerDataObject> InitializePlayerData()
 	{
+		if (F.I.s_PlayerCarSponsor == Livery.Random)
+			F.I.s_PlayerCarSponsor = Livery.Special;
+
 		Dictionary<string, PlayerDataObject> playerMeData = new()
 		{
 			{
