@@ -18917,9 +18917,11 @@ MonoBehaviour:
   wheelGroups:
   - wheels:
     - {fileID: 6779875394929326516}
+  - wheels:
     - {fileID: 6779875396295812404}
   - wheels:
     - {fileID: 6779875396142811108}
+  - wheels:
     - {fileID: 6779875395201521068}
   hover: 0
   reallyGroundedWheels: 0
@@ -23050,7 +23052,7 @@ Transform:
   m_GameObject: {fileID: 8056641051364790439}
   serializedVersion: 2
   m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 0.0001, y: 0, z: -0.0465}
+  m_LocalPosition: {x: 0.0001, y: -0.115, z: -0.047}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

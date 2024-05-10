@@ -179,7 +179,7 @@ public class ServerC : MonoBehaviour
 			{
 				k_Sponsor, new PlayerDataObject(
 					visibility: PlayerDataObject.VisibilityOptions.Member,
-					value: ((Livery)Random.Range(1,F.I.Liveries+1)).ToString())
+					value: F.I.s_PlayerCarSponsor.ToString())
 			},
 			//{
 			//	F.I.k_message, new PlayerDataObject(

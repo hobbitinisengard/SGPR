@@ -1,4 +1,5 @@
 using RVP;
+using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
@@ -204,7 +205,7 @@ public class ResultsSeq : MonoBehaviour
 				if (F.I.gameMode == MultiMode.Singleplayer 
 					|| (F.I.gameMode == MultiMode.Multiplayer && ResultsView.Count == ServerC.I.lobby.Players.Count))
 				{
-					for (int i = 0; i < F.I.s_cars.Count; ++i)
+					for (int i = 0; i < leftRow.ActiveChildren(); ++i)
 					{
 						leftRow.GetChild(i).gameObject.GetComponent<SlideInOut>().PlaySlideOut(true);
 						rightRow.GetChild(i).gameObject.GetComponent<SlideInOut>().PlaySlideOut(true);
@@ -258,14 +259,14 @@ public class ResultsSeq : MonoBehaviour
 	void SetTableBoxesValues()
 	{
 		rightBoxLabel.text = rightBoxLabels[rightBoxLabelInt];
-
-		for (int i=0; i<F.I.s_cars.Count; ++i)
+		var list = ResultsView.List;
+		for (int i=0; i<list.Count; ++i)
 		{
 			leftRow.GetChild(i).GetChild(0).GetChild(0)
-						.GetComponent<TextMeshProUGUI>().text = F.I.s_cars[i].transform.name;
+						.GetComponent<TextMeshProUGUI>().text = list[i].name;
 			
 			rightRow.GetChild(i).GetChild(0).GetChild(0)
-						.GetComponent<TextMeshProUGUI>().text = F.I.s_cars[i].raceBox.Result((RecordType)rightBoxLabelInt);
+						.GetComponent<TextMeshProUGUI>().text = list[i].Result((RecordType)rightBoxLabelInt);
 		}
 	}
 }

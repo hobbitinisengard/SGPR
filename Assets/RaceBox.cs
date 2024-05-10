@@ -176,23 +176,6 @@ public class RaceBox : MonoBehaviour
 		starLevel = 0;
 		stuntPai = new PtsAnimInfo(0, PtsAnimType.Evo, -1);
 	}
-	
-	public string Result(RecordType recordType)
-	{
-		switch (recordType)
-		{
-			case RecordType.BestLap:
-				return bestLapTime.ToLaptimeStr();
-			case RecordType.RaceTime:
-				return raceTime.ToLaptimeStr();
-			case RecordType.StuntScore:
-				return ((int)(aero * 10)).ToString();
-			case RecordType.DriftScore:
-				return drift.ToString("F0");
-			default:
-				return "-";
-		}
-	}
 	public void FixedUpdateWorks(float deltaTime)
 	{
 		if (F.I.s_laps > 0)
@@ -835,7 +818,6 @@ public class RaceBox : MonoBehaviour
 						enabled = false;
 					}
 				}
-
 				lapTimer = 0;
 			}
 		}
@@ -846,18 +828,16 @@ public class RaceBox : MonoBehaviour
 	/// </summary>
 	private void OnDisable()
 	{
-		if(raceTime == TimeSpan.Zero)
-		{
-			vp.sampleText.gameObject.SetActive(false);
+		vp.sampleText.gameObject.SetActive(false);
+		if (raceTime == TimeSpan.Zero)
 			raceTime = DateTime.UtcNow - F.I.raceStartDate;
 
-			if (F.I.gameMode == MultiMode.Multiplayer && vp.Owner && vp == RaceManager.I.playerCar)
-			{
-				vp.SynchRaceboxValuesRpc(curLap, vp.followAI.dist, vp.followAI.progress, aero, drift, (float)bestLapTime.TotalSeconds,
-					(float)raceTime.TotalSeconds, vp.RpcTarget.Everyone);
-			}
-			vp.followAI.SetCPU(true);
+		if (F.I.gameMode == MultiMode.Multiplayer && vp.Owner && vp == RaceManager.I.playerCar)
+		{
+			vp.SynchRaceboxValuesRpc(curLap, vp.followAI.dist, vp.followAI.progress, aero, drift, (float)bestLapTime.TotalSeconds,
+				(float)raceTime.TotalSeconds, vp.RpcTarget.Everyone);
 		}
+		vp.followAI.SetCPU(true);
 	}
 
 	public void UpdateValues(int curLap, int dist, int progress, float aero, float drift, float bestLapSecs, float raceTimeSecs)

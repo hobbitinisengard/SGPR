@@ -51,8 +51,6 @@ public class MultiPlayerSelector : TrackSelector
 	
 	public GameObject zippedTrackDataObjectPrefab;
 
-	public ChatInitializer chatInitializer;
-
 	bool readyClicked = false;
 	[NonSerialized]
 	public ZippedTrackDataObject zippedTrackDataObject;
@@ -115,6 +113,8 @@ public class MultiPlayerSelector : TrackSelector
 	}
 	protected override void OnEnable()
 	{
+		F.I.chat.UpdateCanvases();
+
 		if (afterEnabledCo != null)
 			StopCoroutine(afterEnabledCo);
 		afterEnabledCo = StartCoroutine(EnableSeq());
@@ -248,7 +248,9 @@ public class MultiPlayerSelector : TrackSelector
 			return;
 		}
 
-		if(trackChanged)
+		ServerC.I.UpdatePlayerData();
+
+		if (trackChanged)
 		{
 			F.I.s_trackName = ServerC.I.lobby.Data[ServerC.k_trackName].Value;
 			string newSha = ServerC.I.lobby.Data[ServerC.k_trackSHA].Value;
@@ -291,7 +293,6 @@ public class MultiPlayerSelector : TrackSelector
 		if (refreshLeaderboard)
 			leaderboard.Refresh();
 
-		ServerC.I.UpdatePlayerData();
 	}
 	public void DecodeConfig(string data)
 	{
@@ -367,8 +368,13 @@ public class MultiPlayerSelector : TrackSelector
 		{ 
 			int randomNr = UnityEngine.Random.Range(0, F.I.cars.Length);
 			F.I.s_playerCarName = "car" + (randomNr + 1).ToString("D2");
-			ServerC.I.CarNameSet();
 		}
+		else
+		{
+			F.I.s_playerCarName = "car01";
+		}
+
+		ServerC.I.CarNameSet();
 		randomCarsText.text = "Cars:" + (F.I.randomCars ? "Random" : "Select");
 		garageBtn.interactable = !F.I.randomCars;
 	}
@@ -456,11 +462,13 @@ public class MultiPlayerSelector : TrackSelector
 					Debug.Log("ServerConnection.I new track=" + F.I.s_trackName);
 					ServerC.I.lobby.Data[ServerC.k_trackSHA] = new DataObject(DataObject.VisibilityOptions.Member, F.I.SHA(F.I.tracksPath + F.I.s_trackName + ".data"));
 					ServerC.I.lobby.Data[ServerC.k_trackName] = new DataObject(DataObject.VisibilityOptions.Member, F.I.s_trackName);
-					if(F.I.scoringType != ServerC.I.GetScoringType() || F.I.s_PlayerCarSponsor != ServerC.I.GetSponsor())
-					{
+
+					if(F.I.scoringType != ServerC.I.GetScoringType() 
+						|| (F.I.scoringType == ScoringType.Championship && F.I.s_PlayerCarSponsor != ServerC.I.GetSponsor()))
 						ServerC.I.ScoreSet(0);
+					if(F.I.s_PlayerCarSponsor != ServerC.I.GetSponsor())
 						ServerC.I.SponsorSet();
-					}
+
 					ServerC.I.UpdateServerData();
 				}
 				ServerC.I.ReadySet(amReady);
@@ -535,7 +543,7 @@ public class MultiPlayerSelector : TrackSelector
 	}
 	IEnumerator LobbyCountdown()
 	{
-		yield return new WaitForSecondsRealtime(2);
+		yield return new WaitForSecondsRealtime(2.5f);
 		if (ServerC.I.AmHost && ServerC.I.readyPlayers == ServerC.I.lobby.Players.Count
 			/*&& ServerC.I.lobby.Players.Count == ServerC.I.activePlayers.Count*/)
 		{
