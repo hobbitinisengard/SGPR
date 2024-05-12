@@ -74,10 +74,6 @@ public class Chat : NetworkBehaviour
 			i.onDeselect.AddListener(s => { texting = false; MultiPlayerSelector.I.EnableSelectionOfTracks(ServerC.I.AmHost && !ServerC.I.PlayerMe.ReadyGet()); });
 			i.onSubmit.AddListener(s =>
 			{
-				if (showChatCo != null)
-					StopCoroutine(showChatCo);
-				showChatCo = StartCoroutine(HideRaceChatAfterSeconds(10));
-
 				if (s.Length > 0)
 				{
 					AddChatRow(ServerC.I.PlayerMe, s);
@@ -163,7 +159,7 @@ public class Chat : NetworkBehaviour
 		string msg = Encoding.UTF8.GetString(msgBytes);
 		if (showChatCo != null)
 			StopCoroutine(showChatCo);
-		showChatCo = StartCoroutine(HideRaceChatAfterSeconds(10));
+		showChatCo = StartCoroutine(HideRaceChatAfterSeconds(5));
 
 		foreach(var c in scrollRects)
 		{

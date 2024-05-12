@@ -1743,6 +1743,11 @@ public class EditorPanel : MonoBehaviour
 			}
 		}
 		currentTile = null;
+
+		// after placing tiles, if random pavement, set it back to random
+		if (F.I.randomPavement)
+			F.I.s_roadType = PavementType.Random;
+
 		windExternal = TRACK.windExternal;
 		windRandom = TRACK.windRandom;
 		WindExtX.value = windExternal.x / maxWind;

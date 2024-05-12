@@ -29,16 +29,15 @@ public class ViewSwitcher : MonoBehaviour
 		duration = dimCurve.keys[dimCurve.length - 1].time;
 	}
 	public void SwitchBackgroundTo(in Sprite sprite) => background.SwitchBackgroundTo(sprite);
-	IEnumerator Play(Action method = null)
+	IEnumerator Transition(Action method = null)
 	{
 		timer = 0;
-		// Action method can take place over multiple frames which disrupts the transition
+		// Action method can take place over multiple frames which can disrupt the transition
 		float delta = Mathf.Max(0.01f, Time.unscaledDeltaTime);
 		while (timer < duration)
 		{
 			if (timer >= 0.5f * duration && viewA.activeSelf)
 			{
-				//Debug.Log("switch");
 				method?.Invoke();
 				viewA.SetActive(false);
 				viewB.SetActive(true);
@@ -56,22 +55,19 @@ public class ViewSwitcher : MonoBehaviour
 		c.a = a;
 		blackness.color = c;
 	}
-	public void PlayDimmer(GameObject viewA, GameObject viewB)
+	public void PlayDimmer(MainMenuView viewA, MainMenuView viewB)
 	{
-		this.viewA = viewA;
-		this.viewB = viewB;
-		var Bcomp = viewB.GetComponent<MainMenuView>();
-		var Acomp = viewA.GetComponent<MainMenuView>();
-		if (!Bcomp.prevView)
-			Bcomp.prevView = viewA;
+		this.viewA = viewA.gameObject;
+		this.viewB = viewB.gameObject;
+		
 		// switch music if
-		if (Bcomp.music && (!Acomp.music || Acomp.music != Bcomp.music))
+		if (viewB.music && (!viewA.music || viewA.music != viewB.music))
 		{
-			menuMusic.clip = Bcomp.music;
+			menuMusic.clip = viewB.music;
 			menuMusic.Play();
 		}
 		
-		StartCoroutine(Play());
+		StartCoroutine(Transition());
 	}
 	/// <summary>
 	/// switch between world <---> menu
@@ -81,7 +77,7 @@ public class ViewSwitcher : MonoBehaviour
 		this.viewA = viewA;
 		this.viewB = viewB;
 		// switch music if
-		StartCoroutine(Play());
+		StartCoroutine(Transition());
 	}
 	/// <summary>
 	/// Dims to targetVisibility. 0 = menu fully visible, 1 = blackness
@@ -91,7 +87,7 @@ public class ViewSwitcher : MonoBehaviour
 		menuMusic.Stop();
 		this.viewA = menu;
 		this.viewB = world;
-		StartCoroutine(Play());
+		StartCoroutine(Transition());
 	}
 	public void PlayDimmerToMenu(bool applyScoring)
 	{
@@ -99,7 +95,7 @@ public class ViewSwitcher : MonoBehaviour
 		this.viewA = world;
 		this.viewB = menu;
 		
-		StartCoroutine(Play(() => {
+		StartCoroutine(Transition(() => {
 			if (applyScoring && F.I.gameMode == MultiMode.Multiplayer && ResultsView.Count > 1)
 			{
 				lobbyView.SetActive(false);

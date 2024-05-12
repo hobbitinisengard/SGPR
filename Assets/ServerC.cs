@@ -155,7 +155,7 @@ public class ServerC : MonoBehaviour
 	Dictionary<string, PlayerDataObject> InitializePlayerData()
 	{
 		if (F.I.s_PlayerCarSponsor == Livery.Random)
-			F.I.s_PlayerCarSponsor = Livery.Special;
+			F.I.s_PlayerCarSponsor = (Livery)UnityEngine.Random.Range(1, F.I.Liveries + 1);
 
 		Dictionary<string, PlayerDataObject> playerMeData = new()
 		{
@@ -182,13 +182,8 @@ public class ServerC : MonoBehaviour
 			{
 				k_Sponsor, new PlayerDataObject(
 					visibility: PlayerDataObject.VisibilityOptions.Member,
-					value: F.I.s_PlayerCarSponsor.ToString())
+					value: ((int)F.I.s_PlayerCarSponsor).ToString())
 			},
-			//{
-			//	F.I.k_message, new PlayerDataObject(
-			//		visibility: PlayerDataObject.VisibilityOptions.Member,
-			//		value: "")
-			//},
 		};
 		return playerMeData;
 	}
@@ -516,10 +511,10 @@ public class ServerC : MonoBehaviour
 	}
 	public void ReadySet(bool ready)
 	{
-		string r = ready.ToString();
+		string r = ready ? "1" : "0";
 		if(r != PlayerMe.Data[ServerC.k_Ready].Value)
 		{
-			PlayerMe.Data[ServerC.k_Ready].Value = ready.ToString();
+			PlayerMe.Data[ServerC.k_Ready].Value = r;
 			playerChanged = true;
 		}
 	}
@@ -541,7 +536,7 @@ public class ServerC : MonoBehaviour
 	}
 	public void SponsorSet()
 	{
-		PlayerMe.Data[ServerC.k_carName].Value = F.I.s_PlayerCarSponsor.ToString();
+		PlayerMe.Data[ServerC.k_carName].Value = ((int)F.I.s_PlayerCarSponsor).ToString();
 		playerChanged = true;
 	}
 }

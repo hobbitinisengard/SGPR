@@ -5,7 +5,7 @@ public class RemapViewHack : MonoBehaviour
 {
    public MainMenuView MainMenuView;
 	public InputActionReference cancelReference;
-	GameObject prevView;
+	MainMenuView prevView;
 	// disable quitting remap menu when rebinding by removing prevView from MainMenu component
 	private void OnEnable()
 	{

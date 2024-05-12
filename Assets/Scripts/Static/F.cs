@@ -60,7 +60,7 @@ public static class F
 	}
 	public static Livery SponsorGet(this Player player)
 	{
-		return (Livery)Enum.Parse(typeof(Livery), player.Data[ServerC.k_Sponsor].Value);
+		return (Livery)int.Parse(player.Data[ServerC.k_Sponsor].Value);
 	}
 	
 	public static int ScoreGet(this Player player)
@@ -70,7 +70,7 @@ public static class F
 	
 	public static bool ReadyGet(this Player player)
 	{
-		return bool.Parse(player.Data[ServerC.k_Ready].Value);
+		return player.Data[ServerC.k_Ready].Value == "1";
 	}
 	
 	public static string NameGet(this Player player)

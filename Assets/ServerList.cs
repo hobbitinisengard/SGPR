@@ -106,7 +106,7 @@ public class ServerList : MonoBehaviour
 		{
 			if (await server.JoinLobby(joinId))
 			{
-				thisView.GoToView(lobbyView.gameObject);
+				thisView.GoToView(lobbyView);
 			}
 		}
 		catch(Exception e)

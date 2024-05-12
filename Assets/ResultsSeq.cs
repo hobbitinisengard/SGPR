@@ -1,5 +1,4 @@
 using RVP;
-using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
@@ -28,7 +27,7 @@ public class ResultsSeq : MonoBehaviour
 	public float d_minMax;
 	float cosArg;
 	private bool submitFlag;
-	private int playerResultPosition;
+	private Coroutine setTableBoxesValuesCo;
 	private Coroutine bottomTextCo;
 
 	private void Awake()
@@ -56,11 +55,10 @@ public class ResultsSeq : MonoBehaviour
 			rightRow.GetChild(i).gameObject.SetActive(false);
 		}
 		cosArg = 0;
-		playerResultPosition = RaceManager.I.Position(RaceManager.I.playerCar);
+		var playerResultPosition = RaceManager.I.Position(RaceManager.I.playerCar);
 		imgResult.sprite = ResultPositionSprites[playerResultPosition - 1];
 		imgResult.transform.GetChild(0).gameObject.SetActive(playerResultPosition > 3);
 		minImgResultPos = -Screen.height / 2f - imgResult.transform.GetComponent<RectTransform>().sizeDelta.y / 2f;
-		SetTableBoxesValues();
 		imgResult = transform.GetChild(0).GetComponent<Image>();
 		rightBoxLabel.text = rightBoxLabels[rightBoxLabelInt];
 		if (showResultCo != null)
@@ -151,11 +149,8 @@ public class ResultsSeq : MonoBehaviour
 				{
 					b.gameObject.SetActive(true);
 				}
-			}
-
-			if (timer >= 13 && showTableCo==null)
-			{
-				showTableCo = StartCoroutine(ShowTableCo());
+				if(showTableCo == null)
+					showTableCo = StartCoroutine(ShowTableCo());
 				yield break;
 			}
 			yield return null;
@@ -177,40 +172,34 @@ public class ResultsSeq : MonoBehaviour
 	}
 	IEnumerator ShowTableCo()
 	{
-		leftRow.GetComponent<VerticalLayoutGroup>().enabled = true;
-		rightRow.GetComponent<VerticalLayoutGroup>().enabled = true;
-
-		float TimeRequiredForUpdate = 8;
+		float TimeRequiredForUpdate = 5;
 		float timer = TimeRequiredForUpdate+1;
-		for (int i = leftRow.childCount-1; i >=0 ; --i)
-		{
-			leftRow.GetChild(i).gameObject.SetActive(i + 1 <= F.I.s_cars.Count);
-			rightRow.GetChild(i).gameObject.SetActive(i + 1 <= F.I.s_cars.Count);
-		}
-		yield return null;
-
-		leftRow.GetComponent<VerticalLayoutGroup>().enabled = false;
-		rightRow.GetComponent<VerticalLayoutGroup>().enabled = false;
-
-		yield return null;
 
 		if (bottomTextCo != null)
 			StopCoroutine(bottomTextCo);
 		bottomTextCo = StartCoroutine(BottomText());
+
 		while(true)
 		{
 			if (submitFlag && dimCo == null) // CLOSING SEQUENCE
 			{
 				submitFlag = false;
 				if (F.I.gameMode == MultiMode.Singleplayer 
-					|| (F.I.gameMode == MultiMode.Multiplayer && ResultsView.Count == ServerC.I.lobby.Players.Count))
+					|| (F.I.gameMode == MultiMode.Multiplayer && ResultsView.Count >= ServerC.I.lobby.Players.Count))
 				{
-					for (int i = 0; i < leftRow.ActiveChildren(); ++i)
+					foreach (var b in boxes)
+						b.GetComponent<SlideInOut>().PlaySlideOut(true);
+
+					if (setTableBoxesValuesCo != null)
+						StopCoroutine(setTableBoxesValuesCo);
+
+					int activeOnes = leftRow.ActiveChildren();
+					
+					for (int i = 0; i < activeOnes; ++i)
 					{
 						leftRow.GetChild(i).gameObject.GetComponent<SlideInOut>().PlaySlideOut(true);
 						rightRow.GetChild(i).gameObject.GetComponent<SlideInOut>().PlaySlideOut(true);
-						foreach (var b in boxes)
-							b.GetComponent<SlideInOut>().PlaySlideOut(true);
+						yield return new WaitForSecondsRealtime(.2f);
 					}
 					dimCo = StartCoroutine(DimmerWorks());
 					yield break;
@@ -222,21 +211,31 @@ public class ResultsSeq : MonoBehaviour
 			bottomBoxLabel.color = playerColor;
 			for (int i = 0; i < leftRow.childCount; ++i)
 			{
-				Color rowColor = (i == playerResultPosition - 1) ? playerColor : Color.yellow;
+				var leftChildText = leftRow.GetChild(i).GetChild(0).GetChild(0).GetComponent<TextMeshProUGUI>();
+				var rightChildText = rightRow.GetChild(i).GetChild(0).GetChild(0).GetComponent<TextMeshProUGUI>();
+				Color rowColor =  (leftChildText.text == F.I.playerData.playerName) ? playerColor : Color.yellow;
 				// Acknowledge already set transparency of boxes. Set only color.
-				var a = rightRow.GetChild(i).GetChild(0).GetChild(0).GetComponent<TextMeshProUGUI>().color.a;
+				var a = rightChildText.color.a;
 				rowColor.a = a;
-				rightRow.GetChild(i).GetChild(0).GetChild(0).GetComponent<TextMeshProUGUI>().color = rowColor;
-				leftRow.GetChild(i).GetChild(0).GetChild(0).GetComponent<TextMeshProUGUI>().color = rowColor;
+				rightChildText.color = rowColor;
+				leftChildText.color = rowColor;
 			}
-
+			
 			if (timer > TimeRequiredForUpdate)
 			{
 				timer = 0;
 				++rightBoxLabelInt;
 				rightBoxLabelInt %= rightBoxLabels.Length;
-				SetTableBoxesValues();
-				playerResultPosition = RaceManager.I.Position(RaceManager.I.playerCar);
+
+				if (setTableBoxesValuesCo != null)
+					StopCoroutine(setTableBoxesValuesCo);
+				setTableBoxesValuesCo = StartCoroutine(SetTableBoxesValues());
+			}
+			if (ResultsView.Count != leftRow.ActiveChildren())
+			{
+				if (setTableBoxesValuesCo != null)
+					StopCoroutine(setTableBoxesValuesCo);
+				setTableBoxesValuesCo = StartCoroutine(SetTableBoxesValues());
 			}
 			timer += Time.deltaTime;
 			yield return null;
@@ -245,7 +244,7 @@ public class ResultsSeq : MonoBehaviour
 	IEnumerator DimmerWorks()
 	{
 		
-		float timer = 2;
+		float timer = .5f;
 		while (timer > 0)
 		{
 			//dimmer.color = new Color(0,0,0, 1-timer/2f);
@@ -256,17 +255,27 @@ public class ResultsSeq : MonoBehaviour
 		audioSource.Stop();
 		gameObject.SetActive(false);
 	}
-	void SetTableBoxesValues()
+	IEnumerator SetTableBoxesValues()
 	{
 		rightBoxLabel.text = rightBoxLabels[rightBoxLabelInt];
 		var list = ResultsView.List;
-		for (int i=0; i<list.Count; ++i)
+		for (int i = 0; i < list.Count; ++i)
 		{
 			leftRow.GetChild(i).GetChild(0).GetChild(0)
 						.GetComponent<TextMeshProUGUI>().text = list[i].name;
-			
+
 			rightRow.GetChild(i).GetChild(0).GetChild(0)
 						.GetComponent<TextMeshProUGUI>().text = list[i].Result((RecordType)rightBoxLabelInt);
+		}
+
+		for (int i = 0; i < ResultsView.Count; ++i)
+		{
+			if(!leftRow.GetChild(i).gameObject.activeSelf)
+			{
+				leftRow.GetChild(i).gameObject.SetActive(i + 1 <= ResultsView.Count);
+				rightRow.GetChild(i).gameObject.SetActive(i + 1 <= ResultsView.Count);
+				yield return new WaitForSecondsRealtime(0.25f);
+			}
 		}
 	}
 }

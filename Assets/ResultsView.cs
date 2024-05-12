@@ -15,7 +15,6 @@ public class ResultsView : MonoBehaviour
 	{
 		public VehicleParent vp;
 		public ulong id;
-		public int pos;
 		public string name;
 		public TimeSpan lap;
 		public TimeSpan raceTime;
@@ -24,17 +23,16 @@ public class ResultsView : MonoBehaviour
 		public void Update(VehicleParent vp)
 		{
 			this.vp = vp;
-			id = vp.OwnerClientId;
 			drift = vp.raceBox.drift;
 			lap = vp.raceBox.bestLapTime;
 			aeromiles = vp.raceBox.Aero;
 			raceTime = vp.raceBox.raceTime;
 			name = vp.transform.name;
-			pos = RaceManager.I.Position(vp) - 1;
-			//Debug.Log($"ResultInfo pos={pos}");
+			Debug.Log($"ResultInfo. Swój= {id == ServerC.I.networkManager.LocalClientId}");
 		}
 		public ResultInfo(VehicleParent vp)
 		{
+			id = vp.OwnerClientId;
 			Update(vp);
 		}
 		public ResultInfo()
@@ -49,7 +47,7 @@ public class ResultsView : MonoBehaviour
 				case RecordType.RaceTime:
 					return raceTime.ToLaptimeStr();
 				case RecordType.StuntScore:
-					return ((int)(aeromiles * 10)).ToString();
+					return ((int)(aeromiles)).ToString();
 				case RecordType.DriftScore:
 					return drift.ToString("F0");
 				default:
@@ -163,11 +161,8 @@ public class ResultsView : MonoBehaviour
 	}
 	private void OnEnable()
 	{
-		// for testing 
-		//ResultRandomizer();
+		//ResultRandomizer(); // for testing 
 
-		var comparison = ComparisonBasedOnRaceType();
-		resultData.Sort(comparison);
 		grandScoreFinal = 0;
 		grandScoreMoving = 0;
 		grandScore0Text.text = "      000000";
@@ -175,16 +170,16 @@ public class ResultsView : MonoBehaviour
 		var cellSize = gridTable.cellSize;
 		cellSize.y = Mathf.Clamp(gridTableTr.rect.height / (1 + carsInSession), 0, maxRowHeight);
 		gridTable.cellSize = cellSize;
-
-		resultData.Sort((a, b) => a.pos.CompareTo(b.pos));
+		var comparison = ComparisonBasedOnRaceType();
+		resultData.Sort(comparison);
 		// grid has 5 rows and max 11 cols
-		for(int i=0; i<10;i++)
+		for (int i=0; i<10;i++)
 		{
 			bool visible = i < resultData.Count;
-			bool highlight = visible && ServerC.I.networkManager.LocalClientId == resultData[i].id;
+			bool highlight = visible && ServerC.I.networkManager.LocalClientId == resultData[i].id && resultData[i].name == F.I.playerData.playerName;
 			if (highlight)
-				finalPosition = resultData[i].pos;
-			SetText(gridTableTr.GetChild(cols + cols * i + 0), visible ? Pos(resultData[i].pos) : null, highlight);
+				finalPosition = i;
+			SetText(gridTableTr.GetChild(cols + cols * i + 0), visible ? Pos(i) : null, highlight);
 			SetText(gridTableTr.GetChild(cols + cols * i + 1), visible ? resultData[i].name : null, highlight);
 			SetText(gridTableTr.GetChild(cols + cols * i + 2), visible ? resultData[i].lap.ToLaptimeStr() : null, highlight);
 			SetText(gridTableTr.GetChild(cols + cols * i + 3), visible ? resultData[i].aeromiles.ToString("N0") : null, highlight);
@@ -214,7 +209,7 @@ public class ResultsView : MonoBehaviour
 		}
 		tr.gameObject.SetActive(content!=null);
 	}
-	int GetResultPos(Comparison<ResultInfo> comp)
+	int Result(Comparison<ResultInfo> comp)
 	{
 		resultData.Sort(comp);
 		int index = resultData.FindIndex(pr => pr.name == F.I.playerData.playerName);
@@ -227,9 +222,9 @@ public class ResultsView : MonoBehaviour
 	}
 	IEnumerator PayoutSeq()
 	{
-		int lapPos = GetResultPos(lapComp);
-		int stuntPos = GetResultPos(stuntComp);
-		int driftPos = GetResultPos(driftComp);
+		int lapPos = Result(lapComp);
+		int stuntPos = Result(stuntComp);
+		int driftPos = Result(driftComp);
 		Debug.Log(string.Format("lap,stunt,drift = {0}, {1}, {2}", lapPos, stuntPos, driftPos));
 		float positionPerc = (resultData.Count - finalPosition) / (float)resultData.Count;
 		int positionBonus = 0;

@@ -18,7 +18,7 @@ public enum Livery { Random = 0, Special = 1, TGR, Rline, Itex, Caltex, Titan, M
 public enum RecordType { BestLap, RaceTime, StuntScore, DriftScore }
 public enum ScoringType { Championship, Points, Victory }
 public enum ActionHappening { InLobby, InRace }
-public enum PavementType { Arena, Volcano, Asphalt, Energy, Grid, Japan, Jungle, Random, LENGTH }
+public enum PavementType { Arena, Volcano, Asphalt, Energy, Grid, Japan, Jungle, Random }
 public enum MultiMode { Singleplayer, Multiplayer };
 public enum RaceType { Race, Knockout, Stunt, Drift, TimeTrial }
 public enum CpuLevel { Normal };
@@ -243,7 +243,7 @@ public class Info : MonoBehaviour
 	/// Only one object at the time can have this layer
 	/// </summary>
 	public int selectionLayer = 20;
-
+	public bool randomPavement = true;
 	// curr/next session data
 	public bool s_spectator;
 	public List<VehicleParent> s_cars = new();
@@ -641,9 +641,13 @@ public class TrackHeader
 		this.icons = h.icons;
 	}
 
-	public int TrackOrigin()
+	public int TrackOrigin
 	{
-		return (author != "Team17") ? 1 : 0;
+		get { return (author == "Team17") ? 0 : 1; }
+	}
+	public bool IsOriginal
+	{
+		get { return TrackOrigin == 0; }
 	}
 }
 

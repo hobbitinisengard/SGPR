@@ -119,7 +119,8 @@ public class TrackSelector : TrackSelectorTemplate
 		int dir = 0;
 		if (!init)
 			dir = F.I.shiftInputRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
-		F.I.s_roadType = (PavementType)F.Wraparound((int)(F.I.s_roadType + dir), 0, (int)PavementType.LENGTH-1);
+		F.I.s_roadType = (PavementType)F.Wraparound((int)(F.I.s_roadType + dir), 0, F.I.pavementTypes+1);
+		F.I.randomPavement = F.I.s_roadType == PavementType.Random;
 		wayButtonText.text = "Tex: " + F.I.s_roadType.ToString();
 	}
 	public void SwitchCatchup(bool init = false)
@@ -130,12 +131,11 @@ public class TrackSelector : TrackSelectorTemplate
 	}
 	public void SwitchSponsor(bool init = false)
 	{
-		int dir = 0;
 		if (!init)
 		{
-			dir = F.I.shiftRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
+			int dir = F.I.shiftRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
+			F.I.s_PlayerCarSponsor = (Livery)F.Wraparound((int)F.I.s_PlayerCarSponsor + dir, (F.I.gameMode == MultiMode.Singleplayer) ? 0 : 1, F.I.Liveries);
 		}
-		F.I.s_PlayerCarSponsor = (Livery)F.Wraparound((int)F.I.s_PlayerCarSponsor + dir, (F.I.gameMode == MultiMode.Singleplayer) ? 0 : 1, F.I.Liveries);
 		sponsorButtonText.text = "Sponsor:" + F.I.s_PlayerCarSponsor.ToString();
 	}
 }

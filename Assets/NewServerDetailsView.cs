@@ -67,7 +67,7 @@ public class NewServerDetailsView : MainMenuView
 		{
 			if(await server.CreateLobby(F.I.s_trackName, sha))
 			{
-				GoToView(lobbyView.gameObject);
+				GoToView(lobbyView);
 			}
 		}
 		catch(Exception e)

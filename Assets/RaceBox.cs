@@ -830,14 +830,21 @@ public class RaceBox : MonoBehaviour
 	{
 		vp.sampleText.gameObject.SetActive(false);
 		if (raceTime == TimeSpan.Zero)
+		{
 			raceTime = DateTime.UtcNow - F.I.raceStartDate;
 
-		if (F.I.gameMode == MultiMode.Multiplayer && vp.Owner && vp == RaceManager.I.playerCar)
-		{
-			vp.SynchRaceboxValuesRpc(curLap, vp.followAI.dist, vp.followAI.progress, aero, drift, (float)bestLapTime.TotalSeconds,
-				(float)raceTime.TotalSeconds, vp.RpcTarget.Everyone);
+			if (F.I.gameMode == MultiMode.Multiplayer && vp.Owner)
+			{
+				vp.SynchRaceboxValuesRpc(curLap, vp.followAI.dist, vp.followAI.progress, aero, drift, (float)bestLapTime.TotalSeconds,
+					(float)raceTime.TotalSeconds, vp.RpcTarget.Everyone);
+			}
+			else if (F.I.gameMode == MultiMode.Singleplayer)
+			{
+				ResultsView.Add(vp);
+			}
+
+			vp.followAI.SetCPU(true);
 		}
-		vp.followAI.SetCPU(true);
 	}
 
 	public void UpdateValues(int curLap, int dist, int progress, float aero, float drift, float bestLapSecs, float raceTimeSecs)
@@ -849,6 +856,7 @@ public class RaceBox : MonoBehaviour
 		vp.followAI.progress = progress;
 		bestLapTime = TimeSpan.FromSeconds(bestLapSecs);
 		raceTime = TimeSpan.FromSeconds(raceTimeSecs);
-		Debug.Log($"{vp.name}: {curLap}, {raceTime}, {bestLapTime}");
+		//Debug.Log($"{vp.name}: {curLap}, {raceTime}, {bestLapTime}");
+
 	}
 }
