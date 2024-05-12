@@ -7,7 +7,6 @@ using System.IO;
 using System.Collections.Generic;
 using Unity.Services.Lobbies.Models;
 using Unity.Netcode;
-using System.Threading.Tasks;
 
 namespace RVP
 {
@@ -159,6 +158,7 @@ namespace RVP
 			musicPlayer.Stop();
 			countDownSeq.gameObject.SetActive(false);
 
+			
 			if (F.I.s_inEditor)
 			{
 				RemoveCars();
@@ -266,12 +266,16 @@ namespace RVP
 		private void OnDisable()
 		{
 			playerCar = null;
+			F.I.raceStartDate = DateTime.MinValue;
 			DemoSGPLogo.SetActive(false);
 		}
 		private void OnEnable()
 		{
 			StartCoroutine(editorPanel.LoadTrack());
 			SetPartOfDay();
+
+			F.I.chat.SetVisibility(false);
+
 			if (F.I.s_inEditor)
 			{
 				RemoveCars();

@@ -7,7 +7,7 @@ using UnityEngine.InputSystem;
 public class MainMenuView : Sfxable
 {
 	[NonSerialized]
-	public GameObject prevView;
+	public MainMenuView prevView;
 	public Image dyndak;
 	public Button firstButtonToBeSelected;
 	public TextMeshProUGUI bottomText;
@@ -37,13 +37,17 @@ public class MainMenuView : Sfxable
 	{
 		GoBack();
 	}
+	/// <summary>
+	/// Go backwards
+	/// </summary>
+	/// <param name="ignoreYouSure"></param>
 	public void GoBack(bool ignoreYouSure = false)
 	{
 		if (ignoreYouSure || youSureDialog == null)
 		{
 			if (gameObject.activeSelf && prevView && !prevViewForbidden)
 			{
-				GoToView(prevView);
+				SwitchView(prevView);
 				PlaySFX("fe-dialogcancel");
 			}
 		}
@@ -51,6 +55,26 @@ public class MainMenuView : Sfxable
 		{
 			youSureDialog.gameObject.SetActive(true);
 		}
+	}
+	/// <summary>
+	/// Go forward
+	/// </summary>
+	public void GoToView(MainMenuView view)
+	{
+		if(!view.prevViewForbidden)
+			view.prevView = this;
+		SwitchView(view);
+	}
+	void SwitchView(MainMenuView view)
+	{
+		if (view == null)
+			return;
+		for (int i = 0; i < transform.childCount; ++i)
+		{
+			if (transform.GetChild(i).gameObject.activeSelf)
+				F.PlaySlideOutOnChildren(transform.GetChild(i));
+		}
+		dimmer.PlayDimmer(this, view);
 	}
 	protected void OnDisable()
 	{
@@ -63,15 +87,6 @@ public class MainMenuView : Sfxable
 			firstButtonToBeSelected.Select();
 		
 		dimmer.SwitchBackgroundTo(bgTile);
-	}
-	public void GoToView(GameObject view)
-	{
-		for(int i=0; i< transform.childCount; ++i)
-		{
-			if(transform.GetChild(i).gameObject.activeSelf)
-				F.PlaySlideOutOnChildren(transform.GetChild(i));
-		}
-		dimmer.PlayDimmer(gameObject, view);
 	}
 	public void ToRaceScene()
 	{

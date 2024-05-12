@@ -339,7 +339,7 @@ namespace RVP
 		[Rpc(SendTo.SpecifiedInParams)]
 		public void SynchRaceboxValuesRpc(int curLap, int dist, int progress, float aero, float drift, float bestLapSecs, float raceTimeSecs, RpcParams ps)
 		{
-			raceBox.UpdateValues(curLap, dist, progress, aero/10f, drift, bestLapSecs, raceTimeSecs);
+			raceBox.UpdateValues(curLap, dist, progress, aero, drift, bestLapSecs, raceTimeSecs);
 			ResultsView.Add(this);
 		}
 		public FollowAI followAI { get; private set; }

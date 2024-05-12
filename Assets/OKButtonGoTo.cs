@@ -4,8 +4,8 @@ using UnityEngine.UI;
 public class OKButtonGoTo : MonoBehaviour
 {
 	public MainMenuView menuView;
-	public GameObject onExhibitionGoToThis;
-	public GameObject onMultiplayerGoToThis;
+	public MainMenuView onExhibitionGoToThis;
+	public MainMenuView onMultiplayerGoToThis;
 	private void OnEnable()
 	{
 		GetComponent<Button>().onClick.AddListener(GoToView);	

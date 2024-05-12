@@ -14,11 +14,11 @@ using Unity.Multiplayer.Playmode;
 using UnityEngine.InputSystem;
 public enum Envir { GER, JAP, SPN, FRA, ENG, USA, ITA, MEX };
 public enum CarGroup { Wild, Aero, Speed, Team };
-public enum Livery { Random=0, Special=1, TGR, Rline, Itex, Caltex, Titan, Mysuko }
-public enum RecordType { BestLap, RaceTime, StuntScore, DriftScore}
+public enum Livery { Random = 0, Special = 1, TGR, Rline, Itex, Caltex, Titan, Mysuko }
+public enum RecordType { BestLap, RaceTime, StuntScore, DriftScore }
 public enum ScoringType { Championship, Points, Victory }
 public enum ActionHappening { InLobby, InRace }
-public enum PavementType { Arena, Volcano, Asphalt, Energy, Grid, Japan, Jungle, Random, LENGTH }
+public enum PavementType { Arena, Volcano, Asphalt, Energy, Grid, Japan, Jungle, Random }
 public enum MultiMode { Singleplayer, Multiplayer };
 public enum RaceType { Race, Knockout, Stunt, Drift, TimeTrial }
 public enum CpuLevel { Normal };
@@ -41,7 +41,7 @@ public class Info : MonoBehaviour
 	{
 		F.I = this;
 		MPtags = CurrentPlayer.ReadOnlyTags().Count;
-		switch(MPtags)
+		switch (MPtags)
 		{
 			case 1:
 				_documentsSGPRpath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Stunt GPR 2\\";
@@ -68,7 +68,7 @@ public class Info : MonoBehaviour
 		ReloadCarPartsData();
 		icons = Resources.LoadAll<Sprite>(trackImagesPath + "tiles");
 	}
-	
+
 	string _documentsSGPRpath;
 	public string documentsSGPRpath
 	{
@@ -96,6 +96,8 @@ public class Info : MonoBehaviour
 	public InputActionReference shiftInputRef;
 	public InputActionReference ctrlInputRef;
 	public InputActionReference altInputRef;
+	public InputActionReference pointRef;
+
 	public string SHA(string filePath)
 	{
 		string hash;
@@ -115,7 +117,7 @@ public class Info : MonoBehaviour
 	//{
 	//	player.Data[k_message].Value = msg;
 	//}
-	
+
 
 	public void ReadSettingsDataFromJson()
 	{
@@ -170,10 +172,10 @@ public class Info : MonoBehaviour
 	/// </summary>
 	public readonly int pavementTypes = 6;
 
-	
+
 	public readonly int RaceTypes = 5;
 
-	public readonly  Vector3[] invisibleLevelDimensions = new Vector3[]{
+	public readonly Vector3[] invisibleLevelDimensions = new Vector3[]{
 		new (564, 1231,1), //ger
 		new (800, 800,1), //jap
 		new (1462, 1316,1),
@@ -206,7 +208,7 @@ public class Info : MonoBehaviour
 	public readonly string editorTilesPath = "tiles/objects/";
 	public Chat chat;
 	public PathCreator universalPath;
-	
+
 	public List<int> stuntpointsContainer = new();
 	public List<ReplayCam> replayCams = new();
 	public Vector3[] carSGPstats;
@@ -217,10 +219,10 @@ public class Info : MonoBehaviour
 	public Dictionary<string, PartSavable> carParts;
 	public SortedDictionary<string, TrackHeader> tracks;
 	public Dictionary<string, AudioClip> audioClips;
-	
+
 	public bool loaded = false;
 	public int roadLayer = 6;
-	
+
 	public string visibleInPictureModeTag = "VisibleInPictureMode";
 	public int ignoreWheelCastLayer = 8;
 	public int vehicleLayer = 9;
@@ -241,7 +243,7 @@ public class Info : MonoBehaviour
 	/// Only one object at the time can have this layer
 	/// </summary>
 	public int selectionLayer = 20;
-
+	public bool randomPavement = true;
 	// curr/next session data
 	public bool s_spectator;
 	public List<VehicleParent> s_cars = new();
@@ -424,8 +426,8 @@ public class Info : MonoBehaviour
 			string recordsPath = tracksPath + name + ".rec";
 			TrackHeader header = JsonConvert.DeserializeObject<TrackHeader>(trackJson);
 			tracks.Add(name, header);
-			
-			
+
+
 			if (File.Exists(recordsPath))
 			{
 				string recordsJson = File.ReadAllText(recordsPath);
@@ -440,7 +442,7 @@ public class Info : MonoBehaviour
 			}
 		}
 	}
-	public  float ReadMixerLevelLog(string exposedParameter, AudioMixer mixer)
+	public float ReadMixerLevelLog(string exposedParameter, AudioMixer mixer)
 	{
 		mixer.GetFloat(exposedParameter, out float inVal);
 		return Mathf.Pow(10, 3 / 160f * inVal);
@@ -499,11 +501,11 @@ public class Info : MonoBehaviour
 			return;
 		}
 		Debug.Log(path);
-		StreamWriter w = new (lastPath);
+		StreamWriter w = new(lastPath);
 		w.WriteLine(path);
 		w.Close();
 	}
-	
+
 }
 [Serializable]
 public class Record
@@ -566,7 +568,7 @@ public class TrackRecords
 		}
 		set
 		{
-			switch(key)
+			switch (key)
 			{
 				case 0:
 					lap = value;
@@ -639,9 +641,13 @@ public class TrackHeader
 		this.icons = h.icons;
 	}
 
-	public int TrackOrigin()
+	public int TrackOrigin
 	{
-		return (author != "Team17") ? 1 : 0;
+		get { return (author == "Team17") ? 0 : 1; }
+	}
+	public bool IsOriginal
+	{
+		get { return TrackOrigin == 0; }
 	}
 }
 

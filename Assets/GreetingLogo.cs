@@ -15,7 +15,7 @@ public class GreetingLogo : Sfxable
 	int jumps = 0;
 	public Button startButton;
 	public RectTransform blitz;
-	public GameObject nextMenu;
+	public MainMenuView nextMenu;
 	public InputActionReference submitRef;
 	bool goingUpSeq;
 

@@ -62,40 +62,35 @@ public class ZippedTrackDataObject : NetworkBehaviour
 	{
 		receivedTrack.Clear();
 		Debug.Log("RequestTrackUpdate");
-		UpdateTrackRpc(RpcTarget.Server);
+		UpdateTrackRpc(F.I.s_trackName, RpcTarget.Server);
 	}
 	[Rpc(SendTo.Server, AllowTargetOverride = true)]
-	void UpdateTrackRpc(RpcParams rpcParams)
+	void UpdateTrackRpc(string trackNameRequestedByClient, RpcParams rpcParams)
 	{
-		StartCoroutine(UpdateTrack(rpcParams.Receive.SenderClientId, F.I.s_trackName));
+		StartCoroutine(UpdateTrack(rpcParams.Receive.SenderClientId, trackNameRequestedByClient));
 	}
 	IEnumerator UpdateTrack(ulong clientId, string newTrackName)
 	{
 		Debug.Log("Server: Update track " + newTrackName);
-		if (!updatingCachedTrack)
+		while (updatingCachedTrack)
+			yield return null;
+
+		if (trackName != newTrackName)
 		{
-			if (trackName != newTrackName)
+			updatingCachedTrack = true;
+			Debug.Log("writing");
+			string zipPath = F.I.documentsSGPRpath + newTrackName + ".zip";
+			if (File.Exists(zipPath))
+				File.Delete(zipPath);
+			using (ZipArchive zip = ZipFile.Open(zipPath, ZipArchiveMode.Create))
 			{
-				updatingCachedTrack = true;
-				Debug.Log("writing");
-				string zipPath = F.I.documentsSGPRpath + newTrackName + ".zip";
-				if (File.Exists(zipPath))
-					File.Delete(zipPath);
-				using (ZipArchive zip = ZipFile.Open(zipPath, ZipArchiveMode.Create))
-				{
-					zip.CreateEntryFromFile(F.I.tracksPath + newTrackName + ".track", newTrackName + ".track");
-					zip.CreateEntryFromFile(F.I.tracksPath + newTrackName + ".png", newTrackName + ".png");
-					zip.CreateEntryFromFile(F.I.tracksPath + newTrackName + ".data", newTrackName + ".data");
-				}
-				zippedTrack = File.ReadAllBytes(zipPath);
-				trackName = newTrackName;
-				updatingCachedTrack = false;
+				zip.CreateEntryFromFile(F.I.tracksPath + newTrackName + ".track", newTrackName + ".track");
+				zip.CreateEntryFromFile(F.I.tracksPath + newTrackName + ".png", newTrackName + ".png");
+				zip.CreateEntryFromFile(F.I.tracksPath + newTrackName + ".data", newTrackName + ".data");
 			}
-		}
-		else
-		{
-			while (updatingCachedTrack)
-				yield return null;
+			zippedTrack = File.ReadAllBytes(zipPath);
+			trackName = newTrackName;
+			updatingCachedTrack = false;
 		}
 
 		Debug.Assert(zippedTrack != null);

@@ -14,29 +14,45 @@ public class ResultsView : MonoBehaviour
 	public class ResultInfo
 	{
 		public VehicleParent vp;
-		public int pos;
+		public ulong id;
 		public string name;
 		public TimeSpan lap;
 		public TimeSpan raceTime;
 		public float drift;
-		public float stunt;
+		public float aeromiles;
 		public void Update(VehicleParent vp)
 		{
 			this.vp = vp;
 			drift = vp.raceBox.drift;
 			lap = vp.raceBox.bestLapTime;
-			stunt = vp.raceBox.Aero;
+			aeromiles = vp.raceBox.Aero;
 			raceTime = vp.raceBox.raceTime;
 			name = vp.transform.name;
-			pos = RaceManager.I.Position(vp) - 1;
-			//Debug.Log($"ResultInfo pos={pos}");
+			Debug.Log($"ResultInfo. Swój= {id == ServerC.I.networkManager.LocalClientId}");
 		}
 		public ResultInfo(VehicleParent vp)
 		{
+			id = vp.OwnerClientId;
 			Update(vp);
 		}
 		public ResultInfo()
 		{
+		}
+		public string Result(RecordType recordType)
+		{
+			switch (recordType)
+			{
+				case RecordType.BestLap:
+					return lap.ToLaptimeStr();
+				case RecordType.RaceTime:
+					return raceTime.ToLaptimeStr();
+				case RecordType.StuntScore:
+					return ((int)(aeromiles)).ToString();
+				case RecordType.DriftScore:
+					return drift.ToString("F0");
+				default:
+					return "-";
+			}
 		}
 	}
 	const int maxRowHeight = 50;
@@ -58,6 +74,15 @@ public class ResultsView : MonoBehaviour
 	public Sprite[] silverMedals; // race,lap,stunt,drift
 	public Sprite[] goldMedals;
 	readonly static List<ResultInfo> resultData = new();
+	public static List<ResultInfo> List
+	{
+		get
+		{
+			var comparison = ComparisonBasedOnRaceType();
+			resultData.Sort(comparison);
+			return resultData;
+		}
+	}
 	public static ResultInfo Get(VehicleParent vp)
 	{
 		return resultData.FirstOrDefault(r => r.vp == vp);
@@ -88,6 +113,7 @@ public class ResultsView : MonoBehaviour
 			entry.Update(car);
 		}
 	}
+
 	RectTransform gridTableTr;
 	Coroutine payoutCo;
 	Coroutine addingScoreCo;
@@ -96,11 +122,11 @@ public class ResultsView : MonoBehaviour
 	float grandScoreMoving = 0;
 	public int grandScoreFinal = 0;
 
-	readonly Comparison<ResultInfo> raceTimeComp = new((ResultInfo x, ResultInfo y) => x.raceTime.TotalMilliseconds.CompareTo(y.raceTime.TotalMilliseconds));
-	readonly Comparison<ResultInfo> knockoutComp = new((ResultInfo x, ResultInfo y) => y.raceTime.TotalMilliseconds.CompareTo(x.raceTime.TotalMilliseconds));
-	readonly Comparison<ResultInfo> stuntComp = new((ResultInfo x, ResultInfo y) => y.stunt.CompareTo(x.stunt));
-	readonly Comparison<ResultInfo> driftComp = new((ResultInfo x, ResultInfo y) => y.drift.CompareTo(x.drift));
-	readonly Comparison<ResultInfo> lapComp = new((ResultInfo x, ResultInfo y) => x.lap.TotalMilliseconds.CompareTo(y.lap.TotalMilliseconds));
+	static readonly Comparison<ResultInfo> raceTimeComp = new((ResultInfo x, ResultInfo y) => x.raceTime.TotalMilliseconds.CompareTo(y.raceTime.TotalMilliseconds));
+	static readonly Comparison<ResultInfo> knockoutComp = new((ResultInfo x, ResultInfo y) => y.raceTime.TotalMilliseconds.CompareTo(x.raceTime.TotalMilliseconds));
+	static readonly Comparison<ResultInfo> stuntComp = new((ResultInfo x, ResultInfo y) => y.aeromiles.CompareTo(x.aeromiles));
+	static readonly Comparison<ResultInfo> driftComp = new((ResultInfo x, ResultInfo y) => y.drift.CompareTo(x.drift));
+	static readonly Comparison<ResultInfo> lapComp = new((ResultInfo x, ResultInfo y) => x.lap.TotalMilliseconds.CompareTo(y.lap.TotalMilliseconds));
 
 	private void Awake()
 	{
@@ -121,7 +147,7 @@ public class ResultsView : MonoBehaviour
 		medalsTable.gameObject.SetActive(false);
 		Clear();
 	}
-	Comparison<ResultInfo> ComparisonBasedOnRaceType()
+	static Comparison<ResultInfo> ComparisonBasedOnRaceType()
 	{
 		return F.I.s_raceType switch
 		{
@@ -135,11 +161,8 @@ public class ResultsView : MonoBehaviour
 	}
 	private void OnEnable()
 	{
-		// for testing 
-		//ResultRandomizer();
+		//ResultRandomizer(); // for testing 
 
-		var comparison = ComparisonBasedOnRaceType();
-		resultData.Sort(comparison);
 		grandScoreFinal = 0;
 		grandScoreMoving = 0;
 		grandScore0Text.text = "      000000";
@@ -147,19 +170,19 @@ public class ResultsView : MonoBehaviour
 		var cellSize = gridTable.cellSize;
 		cellSize.y = Mathf.Clamp(gridTableTr.rect.height / (1 + carsInSession), 0, maxRowHeight);
 		gridTable.cellSize = cellSize;
-
-		resultData.Sort((a, b) => a.pos.CompareTo(b.pos));
+		var comparison = ComparisonBasedOnRaceType();
+		resultData.Sort(comparison);
 		// grid has 5 rows and max 11 cols
-		for(int i=0; i<10;i++)
+		for (int i=0; i<10;i++)
 		{
 			bool visible = i < resultData.Count;
-			bool highlight = visible && F.I.playerData.playerName == resultData[i].name;
+			bool highlight = visible && ServerC.I.networkManager.LocalClientId == resultData[i].id && resultData[i].name == F.I.playerData.playerName;
 			if (highlight)
-				finalPosition = resultData[i].pos;
-			SetText(gridTableTr.GetChild(cols + cols * i + 0), visible ? Pos(resultData[i].pos) : null, highlight);
+				finalPosition = i;
+			SetText(gridTableTr.GetChild(cols + cols * i + 0), visible ? Pos(i) : null, highlight);
 			SetText(gridTableTr.GetChild(cols + cols * i + 1), visible ? resultData[i].name : null, highlight);
 			SetText(gridTableTr.GetChild(cols + cols * i + 2), visible ? resultData[i].lap.ToLaptimeStr() : null, highlight);
-			SetText(gridTableTr.GetChild(cols + cols * i + 3), visible ? resultData[i].stunt.ToString("N0") : null, highlight);
+			SetText(gridTableTr.GetChild(cols + cols * i + 3), visible ? resultData[i].aeromiles.ToString("N0") : null, highlight);
 			SetText(gridTableTr.GetChild(cols + cols * i + 4), visible ? resultData[i].drift.ToString("N0") : null, highlight);
 		}
 		if (payoutCo != null)
@@ -186,7 +209,7 @@ public class ResultsView : MonoBehaviour
 		}
 		tr.gameObject.SetActive(content!=null);
 	}
-	int GetResultPos(Comparison<ResultInfo> comp)
+	int Result(Comparison<ResultInfo> comp)
 	{
 		resultData.Sort(comp);
 		int index = resultData.FindIndex(pr => pr.name == F.I.playerData.playerName);
@@ -199,16 +222,16 @@ public class ResultsView : MonoBehaviour
 	}
 	IEnumerator PayoutSeq()
 	{
-		int lapPos = GetResultPos(lapComp);
-		int stuntPos = GetResultPos(stuntComp);
-		int driftPos = GetResultPos(driftComp);
+		int lapPos = Result(lapComp);
+		int stuntPos = Result(stuntComp);
+		int driftPos = Result(driftComp);
 		Debug.Log(string.Format("lap,stunt,drift = {0}, {1}, {2}", lapPos, stuntPos, driftPos));
 		float positionPerc = (resultData.Count - finalPosition) / (float)resultData.Count;
 		int positionBonus = 0;
 		int lapBonus = (lapPos <= 2) ? 5000 / lapPos : 0;
 		int stuntBonus = (int)((stuntPos <= 2) ? 5000f / stuntPos : 0);
 		int driftBonus = (int)((driftPos <= 2) ? 2500f / stuntPos : 0);
-		int aeroMeter = (int)resultData.First(r => r.name == F.I.playerData.playerName).stunt;
+		int aeroMeter = (int)resultData.First(r => r.name == F.I.playerData.playerName).aeromiles;
 
 		
 		switch (F.I.scoringType)
@@ -370,7 +393,7 @@ public class ResultsView : MonoBehaviour
 				drift = R(0, 100000),
 				lap = TimeSpan.FromMilliseconds(R(30 * 1000, 2 * 3600 * 1000)),
 				name = RandomString(R(3, 12)),
-				stunt = R(0, 100000),
+				aeromiles = R(0, 100000),
 			};	
 		}
 		int x = R(0, resultData.Count);

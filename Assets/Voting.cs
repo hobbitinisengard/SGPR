@@ -59,8 +59,11 @@ public class Voting : NetworkBehaviour
 			color = Color.red;
 			passed = votesForEnd >= votesRequiredToPass;
 		}
-		F.I.chat.AddChatRowRpc(p.NameGet(), msg, p.ReadColor(), color, F.I.chat.RpcTarget.Everyone);
+
+		F.I.chat.AddChatRow(p, msg, color);
+
 		if (invalidatorCo != null)
+
 			StopCoroutine(invalidatorCo);
 
 		if(passed)
@@ -89,8 +92,9 @@ public class Voting : NetworkBehaviour
 			votingTimer -= Time.deltaTime;
 			yield return null;
 		}
-		if(votingTimer > -1)
-			F.I.chat.AddChatRowRpc("*SERVER*", "all votes expired", Color.gray, Color.gray, F.I.chat.RpcTarget.Everyone);
+		if (votingTimer > -1)
+			F.I.chat.AddChatRowAsServer("all votes expired");
+
 		votesForEnd = 0;
 		votesForRestart = 0;
 		playersThatVoted.Clear();

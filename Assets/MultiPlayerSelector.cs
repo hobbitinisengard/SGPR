@@ -11,6 +11,7 @@ using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
 using UnityEngine;
 using UnityEngine.UI;
+using static SlideInOut;
 [Serializable]
 public class ChatInitializer
 {
@@ -50,8 +51,6 @@ public class MultiPlayerSelector : TrackSelector
 	public CarSelector carSelector;
 	
 	public GameObject zippedTrackDataObjectPrefab;
-
-	public ChatInitializer chatInitializer;
 
 	bool readyClicked = false;
 	[NonSerialized]
@@ -115,6 +114,8 @@ public class MultiPlayerSelector : TrackSelector
 	}
 	protected override void OnEnable()
 	{
+		F.I.chat.UpdateCanvases();
+
 		if (afterEnabledCo != null)
 			StopCoroutine(afterEnabledCo);
 		afterEnabledCo = StartCoroutine(EnableSeq());
@@ -248,7 +249,9 @@ public class MultiPlayerSelector : TrackSelector
 			return;
 		}
 
-		if(trackChanged)
+		ServerC.I.UpdatePlayerData();
+
+		if (trackChanged)
 		{
 			F.I.s_trackName = ServerC.I.lobby.Data[ServerC.k_trackName].Value;
 			string newSha = ServerC.I.lobby.Data[ServerC.k_trackSHA].Value;
@@ -291,7 +294,6 @@ public class MultiPlayerSelector : TrackSelector
 		if (refreshLeaderboard)
 			leaderboard.Refresh();
 
-		ServerC.I.UpdatePlayerData();
 	}
 	public void DecodeConfig(string data)
 	{
@@ -329,6 +331,7 @@ public class MultiPlayerSelector : TrackSelector
 	
 	public new void ResetButtons()
 	{
+		base.ResetButtons();
 		SwitchScoring(true);
 		SwitchRandomCar(true);
 		SwitchRandomTrack(true);
@@ -362,13 +365,20 @@ public class MultiPlayerSelector : TrackSelector
 		if (!init)
 		{
 			F.I.randomCars = !F.I.randomCars;
+
+			if (F.I.randomCars)
+			{
+				int randomNr = UnityEngine.Random.Range(0, F.I.cars.Length);
+				F.I.s_playerCarName = "car" + (randomNr + 1).ToString("D2");
+			}
+			else
+			{
+				F.I.s_playerCarName = "car01";
+			}
 		}
-		if(F.I.randomCars)
-		{ 
-			int randomNr = UnityEngine.Random.Range(0, F.I.cars.Length);
-			F.I.s_playerCarName = "car" + (randomNr + 1).ToString("D2");
-			ServerC.I.CarNameSet();
-		}
+		
+
+		ServerC.I.CarNameSet();
 		randomCarsText.text = "Cars:" + (F.I.randomCars ? "Random" : "Select");
 		garageBtn.interactable = !F.I.randomCars;
 	}
@@ -449,19 +459,29 @@ public class MultiPlayerSelector : TrackSelector
 					return;
 				}
 
-				if (ServerC.I.AmHost && amReady)
-				{// UPDATE HOST INFO
-					if (F.I.randomTracks)
-						PickRandomTrack();
-					Debug.Log("ServerConnection.I new track=" + F.I.s_trackName);
-					ServerC.I.lobby.Data[ServerC.k_trackSHA] = new DataObject(DataObject.VisibilityOptions.Member, F.I.SHA(F.I.tracksPath + F.I.s_trackName + ".data"));
-					ServerC.I.lobby.Data[ServerC.k_trackName] = new DataObject(DataObject.VisibilityOptions.Member, F.I.s_trackName);
-					if(F.I.scoringType != ServerC.I.GetScoringType() || F.I.s_PlayerCarSponsor != ServerC.I.GetSponsor())
-					{
+				if (amReady)
+				{
+					if(F.I.scoringType != ServerC.I.GetScoringType() 
+						|| (F.I.scoringType == ScoringType.Championship && F.I.s_PlayerCarSponsor != ServerC.I.GetSponsor()))
 						ServerC.I.ScoreSet(0);
-						ServerC.I.SponsorSet();
+
+					if(F.I.scoringType != ScoringType.Championship)
+					{
+						F.I.s_PlayerCarSponsor = (Livery)UnityEngine.Random.Range(1,F.I.Liveries+1);
 					}
-					ServerC.I.UpdateServerData();
+
+					if(F.I.s_PlayerCarSponsor != ServerC.I.GetSponsor())
+						ServerC.I.SponsorSet();
+
+					if (ServerC.I.AmHost)
+					{
+						if (F.I.randomTracks)
+							PickRandomTrack();
+						Debug.Log("ServerConnection.I new track=" + F.I.s_trackName);
+						ServerC.I.lobby.Data[ServerC.k_trackSHA] = new DataObject(DataObject.VisibilityOptions.Member, F.I.SHA(F.I.tracksPath + F.I.s_trackName + ".data"));
+						ServerC.I.lobby.Data[ServerC.k_trackName] = new DataObject(DataObject.VisibilityOptions.Member, F.I.s_trackName);
+						ServerC.I.UpdateServerData();
+					}
 				}
 				ServerC.I.ReadySet(amReady);
 				ServerC.I.CarNameSet();
@@ -470,7 +490,7 @@ public class MultiPlayerSelector : TrackSelector
 		}
 		catch (LobbyServiceException e)
 		{
-			Debug.Log("Ready switch failed: " + e.Message);
+			Debug.LogError("Ready switch failed: " + e.Message);
 		}
 
 		UpdateInteractableButtons();
@@ -535,7 +555,7 @@ public class MultiPlayerSelector : TrackSelector
 	}
 	IEnumerator LobbyCountdown()
 	{
-		yield return new WaitForSecondsRealtime(2);
+		yield return new WaitForSecondsRealtime(2.5f);
 		if (ServerC.I.AmHost && ServerC.I.readyPlayers == ServerC.I.lobby.Players.Count
 			/*&& ServerC.I.lobby.Players.Count == ServerC.I.activePlayers.Count*/)
 		{

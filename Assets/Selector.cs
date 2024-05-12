@@ -2,7 +2,6 @@
 using System.Collections;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -18,6 +17,7 @@ public class TrackSelectorTemplate : Sfxable
 	public Transform recordsContainer;
 	public MainMenuButton sortButton;
 	public TextMeshProUGUI trackDescText;
+	public TextMeshProUGUI trackAuthorText;
 	public RadialOneVisible radial;
 	/// <summary>
 	/// If true, populate menu only with valid tracks
@@ -75,7 +75,7 @@ public class TrackSelectorTemplate : Sfxable
 			TrackHeader track = F.I.tracks[trackName];
 			if (track.unlocked && ValidCheck(track.valid))
 			{
-				int trackOrigin = track.TrackOrigin();
+				int trackOrigin = track.TrackOrigin;
 				var newtrack = Instantiate(trackImageTemplate, trackContent.GetChild(trackOrigin));
 				newtrack.name = trackName;
 				newtrack.GetComponent<Image>().sprite = IMG2Sprite.LoadNewSprite(Path.Combine(F.I.tracksPath, trackName + ".png"));
@@ -148,8 +148,8 @@ public class TrackSelectorTemplate : Sfxable
 		SetTiles();
 		SetRecords();
 
-		scrollx.gameObject.SetActive(!F.I.randomTracks);
-		scrolly.gameObject.SetActive(!F.I.randomTracks);
+		scrollx.gameObject.SetActive(!F.I.randomTracks && ServerC.I.AmHost);
+		scrolly.gameObject.SetActive(!F.I.randomTracks && ServerC.I.AmHost);
 		
 		radial.gameObject.SetActive(!F.I.randomTracks);
 		// set description
@@ -160,11 +160,18 @@ public class TrackSelectorTemplate : Sfxable
 			{
 				Debug.LogError("selectedTrack is null");
 				trackDescText.text = "No tracks available";
+				trackAuthorText.text = "";
 			}
 		}
 		else if (!F.I.randomTracks)
 		{
 			trackDescText.text = selectedTrack.name + "\n\n" + F.I.tracks[selectedTrack.name].desc;
+
+			if (F.I.tracks[selectedTrack.name].IsOriginal || F.I.tracks[selectedTrack.name].author == "")
+				trackAuthorText.text = "";
+			else
+				trackAuthorText.text = "by " + F.I.tracks[selectedTrack.name].author;
+
 			if (radial.gameObject.activeSelf)
 				radial.SetAnimTo(selectedTrack.parent.GetSiblingIndex());
 		}

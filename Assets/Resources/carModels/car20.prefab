@@ -18077,14 +18077,15 @@ MonoBehaviour:
   - {fileID: 6779875396295812404}
   - {fileID: 6779875396142811108}
   - {fileID: 6779875395201521068}
-  hoverWheels: []
   wheelGroups:
   - wheels:
     - {fileID: 6779875394929326516}
+  - wheels:
     - {fileID: 6779875396295812404}
+  - wheels:
     - {fileID: 6779875396142811108}
+  - wheels:
     - {fileID: 6779875395201521068}
-    hoverWheels: []
   hover: 0
   reallyGroundedWheels: 0
   suspensionCenterOfMass: 1
