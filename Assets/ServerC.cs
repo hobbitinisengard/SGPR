@@ -381,7 +381,52 @@ public class ServerC : MonoBehaviour
 	}
 	public Livery GetSponsor()
 	{
-		return (Livery)Enum.Parse(typeof(Livery), PlayerMe.Data[k_Sponsor].Value);
+		return (Livery)int.Parse(PlayerMe.Data[k_Sponsor].Value);
+	}
+	public void SponsorSet()
+	{
+		string s = ((int)F.I.s_PlayerCarSponsor).ToString();
+		if(s != PlayerMe.Data[ServerC.k_Sponsor].Value)
+		{
+			PlayerMe.Data[ServerC.k_Sponsor].Value = s;
+			playerChanged = true;
+		}
+	}
+	public void ScoreSet(int newScore)
+	{
+		if (newScore == 0)
+			Debug.LogWarning("ScoreSet 0");
+		string s = newScore.ToString();
+		if (s != PlayerMe.Data[ServerC.k_score].Value)
+		{
+			PlayerMe.Data[ServerC.k_score].Value = s;
+			playerChanged = true;
+		}
+	}
+	public void ReadySet(bool ready)
+	{
+		string r = ready ? "1" : "0";
+		if (r != PlayerMe.Data[ServerC.k_Ready].Value)
+		{
+			PlayerMe.Data[ServerC.k_Ready].Value = r;
+			playerChanged = true;
+		}
+	}
+	public void NameSet(string name)
+	{
+		if (name != PlayerMe.Data[ServerC.k_Name].Value)
+		{
+			PlayerMe.Data[ServerC.k_Name].Value = name;
+			playerChanged = true;
+		}
+	}
+	public void CarNameSet()
+	{
+		if (PlayerMe.Data[ServerC.k_carName].Value != F.I.s_playerCarName)
+		{
+			PlayerMe.Data[ServerC.k_carName].Value = F.I.s_playerCarName;
+			playerChanged = true;
+		}
 	}
 	/// <summary>
 	/// Connect to lobby Id or Quick Join
@@ -498,45 +543,6 @@ public class ServerC : MonoBehaviour
 			Debug.Log("Failed to heartbeat lobby " + e.Message);
 		}
 	}
-	public void ScoreSet(int newScore)
-	{
-		if (newScore == 0)
-			Debug.LogWarning("ScoreSet 0");
-		string s = newScore.ToString();
-		if(s != PlayerMe.Data[ServerC.k_score].Value)
-		{
-			PlayerMe.Data[ServerC.k_score].Value = s;
-			playerChanged = true;
-		}
-	}
-	public void ReadySet(bool ready)
-	{
-		string r = ready ? "1" : "0";
-		if(r != PlayerMe.Data[ServerC.k_Ready].Value)
-		{
-			PlayerMe.Data[ServerC.k_Ready].Value = r;
-			playerChanged = true;
-		}
-	}
-	public void NameSet(string name)
-	{
-		if(name != PlayerMe.Data[ServerC.k_Name].Value)
-		{
-			PlayerMe.Data[ServerC.k_Name].Value = name;
-			playerChanged = true;
-		}
-	}
-	public void CarNameSet()
-	{
-		if(PlayerMe.Data[ServerC.k_carName].Value != F.I.s_playerCarName)
-		{
-			PlayerMe.Data[ServerC.k_carName].Value = F.I.s_playerCarName;
-			playerChanged = true;
-		}
-	}
-	public void SponsorSet()
-	{
-		PlayerMe.Data[ServerC.k_carName].Value = ((int)F.I.s_PlayerCarSponsor).ToString();
-		playerChanged = true;
-	}
+	
+	
 }

@@ -420,7 +420,7 @@ public class MultiPlayerSelector : TrackSelector
 		if (F.I.randomTracks)
 		{
 			EnableSelectionOfTracks(false);
-			trackDescText.text = "*RANDOM TRACK*";
+			trackDescText.text = "*random*";
 		}
 		else
 		{
@@ -470,8 +470,13 @@ public class MultiPlayerSelector : TrackSelector
 						F.I.s_PlayerCarSponsor = (Livery)UnityEngine.Random.Range(1,F.I.Liveries+1);
 					}
 
-					if(F.I.s_PlayerCarSponsor != ServerC.I.GetSponsor())
-						ServerC.I.SponsorSet();
+					if(F.I.randomCars)
+					{
+						int randomNr = UnityEngine.Random.Range(0, F.I.cars.Length);
+						F.I.s_playerCarName = "car" + (randomNr + 1).ToString("D2");
+					}
+
+					ServerC.I.SponsorSet();
 
 					if (ServerC.I.AmHost)
 					{

@@ -1,5 +1,6 @@
 using RVP;
 using System;
+using System.Collections;
 using UnityEngine;
 
 public class SampleText : MonoBehaviour
@@ -20,10 +21,6 @@ public class SampleText : MonoBehaviour
 		heightOverCar = transform.localPosition.y;
 		if (mainCamera == null)
 			mainCamera = GameObject.Find("MainCamera").transform;
-	}
-	void Start()
-	{
-		textMesh.color = F.ReadColor(transform.parent.GetComponent<VehicleParent>().sponsor);
 		if (F.I.gameMode == MultiMode.Singleplayer)
 			gameObject.SetActive(false);
 	}

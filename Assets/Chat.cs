@@ -121,6 +121,8 @@ public class Chat : NetworkBehaviour
 
 		if (F.I.actionHappening == ActionHappening.InRace)
 			inputFields[1].Select();
+		else
+			inputFields[0].Select();
 	}
 
 	IEnumerator HideRaceChatAfterSeconds(float timer)

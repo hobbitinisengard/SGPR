@@ -429,6 +429,7 @@ namespace RVP
 				newMat.name = matName;
 				mr.material = newMat;
 				RaceManager.I.hud.AddToProgressBar(this);
+				sampleText.textMesh.color = F.ReadColor(sponsor);
 			}
 			else
 			{
