@@ -11,7 +11,6 @@ using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
 using UnityEngine;
 using UnityEngine.UI;
-using static SlideInOut;
 [Serializable]
 public class ChatInitializer
 {
@@ -45,6 +44,7 @@ public class MultiPlayerSelector : TrackSelector
 	public TextMeshProUGUI randomTracksText;
 	public TextMeshProUGUI readyText;
 	public TextMeshProUGUI scoringText;
+	public TextMeshProUGUI levelText;
 	public Button garageBtn;
 	public GameObject dataTransferWnd;
 	public TextMeshProUGUI dataTransferText;
@@ -60,6 +60,9 @@ public class MultiPlayerSelector : TrackSelector
 	private Coroutine afterEnabledCo;
 
 	public bool Busy { get { return dataTransferWnd.activeSelf; } }
+
+	List<int> alreadyRacedOnTracks = new();
+
 	protected override void Awake()
 	{
 		I = this;
@@ -311,7 +314,10 @@ public class MultiPlayerSelector : TrackSelector
 		F.I.s_cpuLevel = (CpuLevel)(data[7] - '0');
 		F.I.s_cpuRivals = data[8] - '0';
 		F.I.s_roadType = (PavementType)(data[9]-'0');
-		F.I.s_catchup = data[10] == '1';
+		F.I.s_catchup = false;
+		F.I.teams = data[10] == '1';
+		F.I.MpLevel = byte.Parse(data[11..13]);
+		F.I.MpLevels = byte.Parse(data[13..15]);
 	}
 	private void Callbacks_PlayerDataChanged(Dictionary<int, Dictionary<string, ChangedOrRemovedLobbyValue<PlayerDataObject>>> playerDatas)
 	{
@@ -338,6 +344,7 @@ public class MultiPlayerSelector : TrackSelector
 		UpdateInteractableButtons();
 		SwitchReady(true);
 		SwitchScoring(true);
+		SwitchLevel(true);
 	}
 
 	void UpdateInteractableButtons()
@@ -357,7 +364,8 @@ public class MultiPlayerSelector : TrackSelector
 		CPULevelButtonText.transform.parent.GetComponent<Button>().interactable = isHost && notRdy;
 		rivalsButtonText.transform.parent.GetComponent<Button>().interactable = isHost && notRdy;
 		wayButtonText.transform.parent.GetComponent<Button>().interactable = isHost && notRdy;
-		sponsorButtonText.transform.parent.gameObject.SetActive(F.I.scoringType == ScoringType.Championship && notRdy);
+		levelText.transform.parent.GetComponent<Button>().interactable = isHost && notRdy;
+		sponsorButtonText.transform.parent.gameObject.SetActive(notRdy && (isHost || F.I.teams));
 	}
 	
 	public void SwitchRandomCar(bool init = false)
@@ -386,22 +394,27 @@ public class MultiPlayerSelector : TrackSelector
 	{
 		if (F.I.tracks.Any(kv => kv.Key.Length > 3 && kv.Value.valid))
 		{
-			while (true)
-			{
-				int random = UnityEngine.Random.Range(0, F.I.tracks.Count);
+			int validTracks = F.I.tracks.Count(t => t.Value.valid && t.Key.Length > 3);
+			if (alreadyRacedOnTracks.Count == validTracks)
+				alreadyRacedOnTracks.Clear();
+
+			int randomTrkNr = UnityEngine.Random.Range(0, F.I.tracks.Count);
+
+			for(int j=0; j<2; j++) // do max twice
+			{	 
 				int i = 0;
 				foreach (var t in F.I.tracks)
 				{
-					if (i == random)
+					if (i == randomTrkNr)
 					{
-						if (F.I.tracks[t.Key].valid)
+						if (F.I.tracks[t.Key].valid && !alreadyRacedOnTracks.Contains(randomTrkNr))
 						{
 							F.I.s_trackName = t.Key;
 							ServerC.I.SetTrackName();
 							Debug.Log(F.I.s_trackName);
 							return;
 						}
-						break;
+						randomTrkNr = (randomTrkNr + 1) % (validTracks-1);
 					}
 					i++;
 				}
@@ -462,10 +475,13 @@ public class MultiPlayerSelector : TrackSelector
 				if (amReady)
 				{
 					if(F.I.scoringType != ServerC.I.GetScoringType() 
-						|| (F.I.scoringType == ScoringType.Championship && F.I.s_PlayerCarSponsor != ServerC.I.GetSponsor()))
+						|| (F.I.teams && F.I.s_PlayerCarSponsor != ServerC.I.GetSponsor()))
+					{
 						ServerC.I.ScoreSet(0);
-
-					if(F.I.scoringType != ScoringType.Championship)
+						alreadyRacedOnTracks.Clear();
+					}
+						
+					if(!F.I.teams)
 					{
 						F.I.s_PlayerCarSponsor = (Livery)UnityEngine.Random.Range(1,F.I.Liveries+1);
 					}
@@ -480,10 +496,20 @@ public class MultiPlayerSelector : TrackSelector
 
 					if (ServerC.I.AmHost)
 					{
+						if (F.I.MpLevels != ServerC.I.GetMpLevels())
+						{
+							ServerC.I.ScoreSet(0);
+							alreadyRacedOnTracks.Clear();
+							F.I.MpLevel = 1;
+						}
+
 						if (F.I.randomTracks)
 							PickRandomTrack();
-						Debug.Log("ServerConnection.I new track=" + F.I.s_trackName);
-						ServerC.I.lobby.Data[ServerC.k_trackSHA] = new DataObject(DataObject.VisibilityOptions.Member, F.I.SHA(F.I.tracksPath + F.I.s_trackName + ".data"));
+
+						//Debug.Log("ServerConnection.I new track=" + F.I.s_trackName);
+
+						ServerC.I.lobby.Data[ServerC.k_trackSHA] = 
+							new DataObject(DataObject.VisibilityOptions.Member, F.I.SHA(F.I.tracksPath + F.I.s_trackName + ".data"));
 						ServerC.I.lobby.Data[ServerC.k_trackName] = new DataObject(DataObject.VisibilityOptions.Member, F.I.s_trackName);
 						ServerC.I.UpdateServerData();
 					}
@@ -558,18 +584,40 @@ public class MultiPlayerSelector : TrackSelector
 		
 		sponsorButtonText.transform.parent.gameObject.SetActive(F.I.scoringType == ScoringType.Championship);
 	}
+	public void SwitchLevel(bool init = false)
+	{
+		if (!init)
+		{
+			if (F.I.shiftInputRef.action.ReadValue<float>() > 0.5f)
+				F.I.MpLevels -= 3;
+			else
+				F.I.MpLevels += 3;
+		}
+		F.I.MpLevels = F.Wraparound(F.I.MpLevels, 0, 99);
+		if (F.I.MpLevels == 0)
+			levelText.text = $"Race: {F.I.MpLevel}";
+		else
+			levelText.text = $"Race: {F.I.MpLevel} / {F.I.MpLevels}";
+	}
+
 	IEnumerator LobbyCountdown()
 	{
 		yield return new WaitForSecondsRealtime(2.5f);
-		if (ServerC.I.AmHost && ServerC.I.readyPlayers == ServerC.I.lobby.Players.Count
-			/*&& ServerC.I.lobby.Players.Count == ServerC.I.activePlayers.Count*/)
+		if (ServerC.I.AmHost && ServerC.I.readyPlayers == ServerC.I.lobby.Players.Count)
 		{
-			F.I.actionHappening = ActionHappening.InRace;
-			ServerC.I.ActionHappening = F.I.actionHappening;
-			ServerC.I.UpdateServerData();
-			ServerC.I.ReadySet(false);
-			ServerC.I.UpdatePlayerData();
-			thisView.ToRaceScene();
+
+			if (!F.I.teams || (F.I.teams && ServerC.I.TeamsInLobby > 1))
+			{
+				F.I.actionHappening = ActionHappening.InRace;
+				ServerC.I.ActionHappening = F.I.actionHappening;
+				ServerC.I.UpdateServerData();
+				thisView.ToRaceScene();
+			}
+			else
+			{
+				ServerC.I.ReadySet(false);
+				ServerC.I.UpdatePlayerData();
+			}
 		}
 	}
 }

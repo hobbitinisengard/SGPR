@@ -4,8 +4,6 @@ using UnityEngine;
 using static PtsAnim;
 using System.Collections.Generic;
 using System.Collections;
-using Unity.Netcode;
-using System.Linq;
 
 public class StuntRotInfo
 {
@@ -172,7 +170,6 @@ public class RaceBox : MonoBehaviour
 		lapTimer = 3600 * 24; // 24 hours
 		bestLapTime = TimeSpan.FromHours(12);
 		raceTime = TimeSpan.Zero;
-		curLap = 0;
 		starLevel = 0;
 		stuntPai = new PtsAnimInfo(0, PtsAnimType.Evo, -1);
 	}
@@ -751,7 +748,7 @@ public class RaceBox : MonoBehaviour
 
 	public void NextLap()
 	{
-		if(F.I.s_laps > 0)
+		if(F.I.s_laps > 0 && enabled)
 		{
 			if (curLap == 0 || vp.followAI.LapProgressPercent > 0.9f || vp.followAI.pitsProgress > 0)
 			{
@@ -773,28 +770,46 @@ public class RaceBox : MonoBehaviour
 							bestLapTime = curlaptime.Value;
 						}
 
-						if (!vp.followAI.isCPU && bestLapTime < RaceManager.I.hud.bestLapTime)
+						if (!vp.followAI.isCPU && RaceManager.I.playerCar == vp)
 						{
-							RaceManager.I.hud.bestLapTime = bestLapTime;
-							RaceManager.I.hud.lapRecordSeq.gameObject.SetActive(true);
+							if(RaceManager.I.hud.RECDisplay.activeSelf)
+							{
+								if (bestLapTime.TotalSeconds < F.I.tracks[F.I.s_trackName].records.lap.secondsOrPts)
+								{
+									RaceManager.I.hud.lapRecordSeq.gameObject.SetActive(true);
+									RaceManager.I.hud.SetRec(bestLapTime);
+								}
+							}
+
+							if (RaceManager.I.hud.RECScoreDisplay.activeSelf)
+							{
+								if (drift > F.I.tracks[F.I.s_trackName].records.drift.secondsOrPts)
+								{
+									RaceManager.I.hud.SetScore((int)drift);
+								}
+								if (aero > F.I.tracks[F.I.s_trackName].records.stunt.secondsOrPts)
+								{
+									RaceManager.I.hud.SetScore((int)aero);
+								}
+							}
 						}
 					}
 
-					if (F.I.s_raceType == RaceType.Knockout && curLap > 1 && RaceManager.I.Position(vp) + 1 == RaceManager.I.ActiveCarsInKnockout)
-					{ // last car is knocked-out
-						RaceManager.I.KnockOutLastCar();
+					if (F.I.s_raceType == RaceType.Knockout &&  (curLap-1) == (F.I.s_laps - RaceManager.I.Position(vp)))
+					{
+						RaceManager.I.KnockoutCarsBehind(vp);
 					}
 
-					if (curLap == F.I.s_laps + 1) // race finished
+					if (curLap-1 == F.I.s_laps) // race finished
 					{
-						int curPos = RaceManager.I.Position(vp);
+						int curPos = RaceManager.I.Position(vp) + 1;
 						if (!F.I.s_inEditor && curPos == 1)
 						{
 							RaceManager.I.hud.infoText.AddMessage(new(vp.tr.name + " WINS THE RACE!", BottomInfoType.CAR_WINS));
 							OnlineCommunication.I.CountdownTillForceEveryoneToResults();
 						}
 						// in racemode after the end of a race, cars still run around the track, ghosts overtake each other. Don't let it change results
-						curLap += 100 * (F.I.s_cars.Count + 1 - curPos);
+						curLap += 100 * (F.I.maxCarsInRace - curPos);
 
 						if (vp.Owner)
 							vp.ghost.SetGhostPermanently();
@@ -833,6 +848,8 @@ public class RaceBox : MonoBehaviour
 		{
 			raceTime = DateTime.UtcNow - F.I.raceStartDate;
 
+			Debug.Log(vp.name + " " + raceTime.ToString());
+
 			if (F.I.gameMode == MultiMode.Multiplayer && vp.Owner)
 			{
 				vp.SynchRaceboxValuesRpc(curLap, vp.followAI.dist, vp.followAI.progress, aero, drift, (float)bestLapTime.TotalSeconds,
@@ -856,7 +873,7 @@ public class RaceBox : MonoBehaviour
 		vp.followAI.progress = progress;
 		bestLapTime = TimeSpan.FromSeconds(bestLapSecs);
 		raceTime = TimeSpan.FromSeconds(raceTimeSecs);
-		//Debug.Log($"{vp.name}: {curLap}, {raceTime}, {bestLapTime}");
+		Debug.Log($"{vp.name}: {raceTime}");
 
 	}
 }

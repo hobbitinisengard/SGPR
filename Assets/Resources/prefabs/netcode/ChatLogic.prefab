@@ -72,5 +72,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   chatRowPrefab: {fileID: 6819056972471739823, guid: 909618722cc2f4a44b8694c2888b72a8,
     type: 3}
-  chatButtonInput: {fileID: -980489343879862613, guid: 72cc30aa17c8b9249b1e17052dd5f7ae,
-    type: 3}
+  scrollRects:
+  - {fileID: 0}
+  - {fileID: 0}
+  inputFields:
+  - {fileID: 0}
+  - {fileID: 0}
+  readyButton: {fileID: 0}

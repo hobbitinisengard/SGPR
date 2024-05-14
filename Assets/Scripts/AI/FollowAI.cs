@@ -21,23 +21,6 @@ namespace RVP
 			/// </summary>
 			public float dist;
 		}
-		//struct PointAtDistanceJob : IJobParallelFor
-		//{
-		//	public NativeArray<float> dists;
-		//	public NativeArray<Vector4> results;
-		//	public Action<float, EndOfPathInstruction, Vector4> processFunction;
-		//	public void Execute(int index)
-		//	{
-		//		// You can perform the same operations as an external method here
-		//		results[index] = processFunction(dists[index], EndOfPathInstruction.Loop);
-		//	}
-
-		//	private Vector3 PerformProcessing(Vector3 input)
-		//	{
-		//		// Your processing logic here
-		//		return input * 2;
-		//	}
-		//}
 		List<int> stuntPoints;
 		int racingLineLayerNumber;
 		public List<ReplayCam> replayCams { get; private set; }
@@ -74,7 +57,6 @@ namespace RVP
 		public float hardCornerDot = 0.7f;
 		public float slowingCoeff = 1;
 		float maxPhysicalSteerAngle = 5;
-		private int universalPathLayer;
 		const float reqDist = 10;
 		// CPU settings
 		//float tyreMult = 1;
@@ -113,26 +95,27 @@ namespace RVP
 		private bool revvingCo;
 		public float targetSteer;
 		public bool overRoad { get; private set; }
-		public float raceEndedLapProgressPercent;
 		public float maxSteerPerFrame = 5;
 
 		public bool Pitting { get { return pitsPathCreator != null; } }
 		public ReplayCam currentCam { get { return replayCams[curReplayPointIdx]; } }
+
+		float lapProgressPercent;
 		public float LapProgressPercent
 		{
 			get
 			{
-				//if (vp.raceBox.enabled)
-				//{
-				int universalPathProgress = GetDist(1 << universalPathLayer);
-				if (universalPathProgress > progress + 2 * radius || universalPathProgress < progress - 2 * radius)
-					universalPathProgress = progress;
-				if (progress == 1) // when driving directly past startline
-					return 0;
-				return universalPathProgress / F.I.universalPath.path.length;
-				//}
-				//else
-				//	return raceEndedLapProgressPercent;
+				if (vp.raceBox.enabled)
+				{
+					int universalPathProgress = GetDist(1 << F.I.racingLineLayer);
+					if (universalPathProgress > progress + 2 * radius || universalPathProgress < progress - 2 * radius)
+						universalPathProgress = progress;
+					if (progress == 1) // when driving directly past startline
+						lapProgressPercent = 0;
+					else
+						lapProgressPercent =  universalPathProgress / F.I.universalPath.path.length;
+				}
+				return lapProgressPercent;
 			}
 		}
 		private bool NextStuntpointIn(float distanceOffset)
@@ -209,7 +192,6 @@ namespace RVP
 			stuntPoints = F.I.stuntpointsContainer;
 			replayCams = F.I.replayCams;
 			trackPathCreator = F.I.universalPath;
-			universalPathLayer = F.I.racingLineLayer;
 			curReplayPointIdx = replayCams.Count - 1;
 			enabled = true;
 		}
@@ -668,6 +650,8 @@ namespace RVP
 			outOfTrackTime = 0;
 			reverseTime = 0;
 			stoppedTime = 0;
+
+			progress = Mathf.Clamp(progress + 5, 0, (int)(trackPathCreator.path.length-5));
 
 			Vector3 resetPos = trackPathCreator.path.GetPointAtDistance(progress);
 			RaycastHit h;

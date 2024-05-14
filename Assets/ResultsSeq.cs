@@ -56,8 +56,8 @@ public class ResultsSeq : MonoBehaviour
 		}
 		cosArg = 0;
 		var playerResultPosition = RaceManager.I.Position(RaceManager.I.playerCar);
-		imgResult.sprite = ResultPositionSprites[playerResultPosition - 1];
-		imgResult.transform.GetChild(0).gameObject.SetActive(playerResultPosition > 3);
+		imgResult.sprite = ResultPositionSprites[playerResultPosition];
+		imgResult.transform.GetChild(0).gameObject.SetActive(playerResultPosition > 2);
 		minImgResultPos = -Screen.height / 2f - imgResult.transform.GetComponent<RectTransform>().sizeDelta.y / 2f;
 		imgResult = transform.GetChild(0).GetComponent<Image>();
 		rightBoxLabel.text = rightBoxLabels[rightBoxLabelInt];
@@ -73,7 +73,7 @@ public class ResultsSeq : MonoBehaviour
 		dimCo = showResultCo = showTableCo = null;
 		seq = StartCoroutine(Seq());
 		audioSource.volume = 1;
-		audioSource.clip = F.I.audioClips[(playerResultPosition <= 3) ? "RacePodium" : "RaceNotPodium"];
+		audioSource.clip = F.I.audioClips[(playerResultPosition <= 2) ? "RacePodium" : "RaceNotPodium"];
 		audioSource.loop = false;
 		audioSource.Play();
 	}

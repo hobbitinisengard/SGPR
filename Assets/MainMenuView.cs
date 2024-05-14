@@ -61,7 +61,7 @@ public class MainMenuView : Sfxable
 	/// </summary>
 	public void GoToView(MainMenuView view)
 	{
-		if (view != prevView && !view.prevViewForbidden)
+		if (view != prevView && !view.prevViewForbidden && !prevViewForbidden)
 			view.prevView = this;
 		
 		SwitchView(view);

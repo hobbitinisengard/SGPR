@@ -18,6 +18,7 @@ public class ResultsView : MonoBehaviour
 		public string name;
 		public TimeSpan lap;
 		public TimeSpan raceTime;
+		public float progress;
 		public float drift;
 		public float aeromiles;
 		public void Update(VehicleParent vp)
@@ -25,10 +26,10 @@ public class ResultsView : MonoBehaviour
 			this.vp = vp;
 			drift = vp.raceBox.drift;
 			lap = vp.raceBox.bestLapTime;
+			progress = vp.raceBox.curLap + vp.followAI.LapProgressPercent;
 			aeromiles = vp.raceBox.Aero;
 			raceTime = vp.raceBox.raceTime;
 			name = vp.transform.name;
-			Debug.Log($"ResultInfo. Swój= {id == ServerC.I.networkManager.LocalClientId}");
 		}
 		public ResultInfo(VehicleParent vp)
 		{
@@ -122,11 +123,11 @@ public class ResultsView : MonoBehaviour
 	float grandScoreMoving = 0;
 	public int grandScoreFinal = 0;
 
-	static readonly Comparison<ResultInfo> raceTimeComp = new((ResultInfo x, ResultInfo y) => x.raceTime.TotalMilliseconds.CompareTo(y.raceTime.TotalMilliseconds));
-	static readonly Comparison<ResultInfo> knockoutComp = new((ResultInfo x, ResultInfo y) => y.raceTime.TotalMilliseconds.CompareTo(x.raceTime.TotalMilliseconds));
+	static readonly Comparison<ResultInfo> raceComp = new((ResultInfo x, ResultInfo y) => x.raceTime.TotalSeconds.CompareTo(y.raceTime.TotalSeconds));
+	static readonly Comparison<ResultInfo> knockoutComp = new((ResultInfo x, ResultInfo y) => y.progress.CompareTo(x.progress));
 	static readonly Comparison<ResultInfo> stuntComp = new((ResultInfo x, ResultInfo y) => y.aeromiles.CompareTo(x.aeromiles));
 	static readonly Comparison<ResultInfo> driftComp = new((ResultInfo x, ResultInfo y) => y.drift.CompareTo(x.drift));
-	static readonly Comparison<ResultInfo> lapComp = new((ResultInfo x, ResultInfo y) => x.lap.TotalMilliseconds.CompareTo(y.lap.TotalMilliseconds));
+	static readonly Comparison<ResultInfo> lapComp = new((ResultInfo x, ResultInfo y) => x.lap.TotalSeconds.CompareTo(y.lap.TotalSeconds));
 
 	private void Awake()
 	{
@@ -151,12 +152,12 @@ public class ResultsView : MonoBehaviour
 	{
 		return F.I.s_raceType switch
 		{
-			RaceType.Race => raceTimeComp,
+			RaceType.Race => raceComp,
 			RaceType.Knockout => knockoutComp,
 			RaceType.Stunt => stuntComp,
 			RaceType.Drift => driftComp,
 			RaceType.TimeTrial => lapComp,
-			_ => raceTimeComp,
+			_ => raceComp,
 		};
 	}
 	private void OnEnable()

@@ -1,8 +1,8 @@
+using System.Collections;
 using UnityEngine;
 
 public class Roller : MonoBehaviour
 {
-	GameObject obj;
 	RectTransform rt;
 	float height;
 	public float target = 0;
@@ -11,37 +11,46 @@ public class Roller : MonoBehaviour
 	bool clockWork = true;
 	float pos0;
 	float scale;
-	void Start()
+	Coroutine playCo;
+	void Awake()
 	{
-		obj = GetComponent<Transform>().gameObject;
-		rt = obj.GetComponent<RectTransform>();
+		rt = transform.GetComponent<RectTransform>();
 		height = rt.sizeDelta.y;
 		pos0 = rt.anchoredPosition.y;
 		scale = rt.localScale.y;
 	}
-
-	void Update()
+	private void OnEnable()
 	{
-		if (!clockWork)
+		PlayAnim();
+	}
+
+	IEnumerator Move()
+	{
+		while(Mathf.Abs(current - target) > Mathf.Epsilon)
 		{
-			current = target;
-		}
-		else if (Mathf.Abs(current - target) > Mathf.Epsilon) // current != target
-		{
-			if (current >= 0.99f && target > 0 && target < 1f)
+			if (!clockWork)
 			{
-				current = 0;
+				current = target;
 			}
-			float step = Time.deltaTime * coeff;
-			current = Mathf.Lerp(current, target > current ? target : 1, step);
+			else if (Mathf.Abs(current - target) > Mathf.Epsilon) // current != target
+			{
+				if (current >= 0.99f && target > 0 && target < 1f)
+				{
+					current = 0;
+				}
+				float step = Time.deltaTime * coeff;
+				current = Mathf.Lerp(current, target > current ? target : 1, step);
+			}
+			Vector3 pos = rt.anchoredPosition;
+			pos.y = Mathf.Lerp(pos0, scale * height - pos0, current);
+			rt.anchoredPosition = pos;
+
+			yield return null;
 		}
-		Vector3 pos = rt.anchoredPosition;
-		pos.y = Mathf.Lerp(pos0, scale * height - pos0, current);
-		rt.anchoredPosition = pos;
 	}
 	public void SetActive(bool value)
 	{
-		obj.SetActive(value);
+		gameObject.SetActive(value);
 	}
 	/// <summary>
 	/// Sets roller to targetValue with centering effect
@@ -51,13 +60,14 @@ public class Roller : MonoBehaviour
 		newTarget = Mathf.Clamp(newTarget, 0, 9);
 		clockWork = true;
 
-		if (!obj.activeSelf)
-			obj.SetActive(true);
+		if (!gameObject.activeSelf)
+			gameObject.SetActive(true);
 
 		newTarget /= 10f;
 		if (Mathf.Abs(newTarget - target) > Mathf.Epsilon)
 		{
 			target = newTarget;
+			PlayAnim();
 		}
 	}
 	/// <summary>
@@ -67,9 +77,19 @@ public class Roller : MonoBehaviour
 	{
 		clockWork = false;
 
-		if (!obj.activeSelf)
-			obj.SetActive(true);
+		if (!gameObject.activeSelf)
+			gameObject.SetActive(true);
 
 		target = frac;
+		PlayAnim();
+	}
+	void PlayAnim()
+	{
+		if(enabled)
+		{
+			if (playCo != null)
+				StopCoroutine(playCo);
+			playCo = StartCoroutine(Move());
+		}
 	}
 }

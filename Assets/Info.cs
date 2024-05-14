@@ -264,6 +264,7 @@ public class Info : MonoBehaviour
 	public PavementType s_roadType = PavementType.Random;
 	public bool s_catchup = true;
 	public int s_resultPos = 3;
+	public bool teams = false;
 	public int ServerIdGenerator = 0;
 
 	public readonly string[] IconNames =
@@ -283,6 +284,8 @@ public class Info : MonoBehaviour
 
 	public EventSystem eventSystem;
 	public DateTime raceStartDate;
+	public int MpLevels;
+	public int MpLevel;
 	public readonly int maxConcurrentUsers = 30;
 
 	public Car Car(string name)

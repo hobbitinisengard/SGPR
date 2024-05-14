@@ -199,13 +199,35 @@ public class ServerC : MonoBehaviour
 			}
 		}
 	}
-
+	public int TeamsInLobby
+	{
+		get 
+		{
+			if (!F.I.teams)
+				return 0;
+			bool[] teams = new bool[F.I.Liveries];
+			foreach(var p in lobby.Players)
+			{
+				teams[(int)p.SponsorGet()-1] = true;
+			}
+			return teams.Count(t => t);
+		}
+	}
 	string EncodeConfig()
 	{
-		string encodeConfig = ((int)F.I.scoringType).ToString() + (F.I.randomCars ? "1" : "0") + (F.I.randomTracks ? "1" : "0")
-			+ ((int)F.I.s_raceType).ToString() + (F.I.s_laps).ToString("D2") + (F.I.s_isNight ? "1" : "0") + ((int)F.I.s_cpuLevel).ToString()
-			+ "0" + ((int)F.I.s_roadType).ToString() + (F.I.s_catchup ? "1" : "0");
-		// "0" - cpuCars
+		string encodeConfig = 
+			((int)F.I.scoringType).ToString() 
+			+ (F.I.randomCars ? "1" : "0") 
+			+ (F.I.randomTracks ? "1" : "0")
+			+ ((int)F.I.s_raceType).ToString() 
+			+ (F.I.s_laps).ToString("D2") 
+			+ (F.I.s_isNight ? "1" : "0") 
+			+ ((int)F.I.s_cpuLevel).ToString()
+			+ "0" // "0" - cpuCars
+			+ ((int)F.I.s_roadType).ToString() 
+			+ (F.I.teams ? "1" : "0")
+			+ F.I.MpLevel.ToString("D2")
+			+ F.I.MpLevels.ToString("D2");
 		return encodeConfig;
 	}
 	public Player Host
@@ -379,6 +401,14 @@ public class ServerC : MonoBehaviour
 	{
 		return (ScoringType)(lobby.Data[k_raceConfig].Value[0] - '0');
 	}
+	public bool GetTeams()
+	{
+		return lobby.Data[k_raceConfig].Value[10] == '1';
+	}
+	public int GetMpLevels()
+	{
+		return byte.Parse(lobby.Data[k_raceConfig].Value[13..15]);
+	}
 	public Livery GetSponsor()
 	{
 		return (Livery)int.Parse(PlayerMe.Data[k_Sponsor].Value);
@@ -543,6 +573,6 @@ public class ServerC : MonoBehaviour
 			Debug.Log("Failed to heartbeat lobby " + e.Message);
 		}
 	}
-	
+
 	
 }

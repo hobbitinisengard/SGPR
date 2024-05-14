@@ -332,8 +332,7 @@ namespace RVP
 		void RequestRaceboxValuesRpc(RpcParams ps)
 		{
 			SynchRaceboxValuesRpc(raceBox.curLap, followAI.dist, followAI.progress, raceBox.Aero, raceBox.drift, 
-				(float)raceBox.bestLapTime.TotalSeconds, 
-				(float)raceBox.raceTime.TotalSeconds,
+				(float)raceBox.bestLapTime.TotalSeconds, (float)raceBox.raceTime.TotalSeconds, 
 				RpcTarget.Single(ps.Receive.SenderClientId, RpcTargetUse.Temp));
 		}
 		[Rpc(SendTo.SpecifiedInParams)]
@@ -502,16 +501,6 @@ namespace RVP
 		public override void OnNetworkSpawn()
 		{
 			base.OnNetworkSpawn();
-			if (!Owner)
-			{
-				//rb.isKinematic = true;
-				basicInput.enabled = false;
-				if (OnlineCommunication.I.raceAlreadyStarted.Value)
-				{// latecomer's request to synch progress
-					//Debug.Log("RequestRaceboxValuesRpc");
-					RequestRaceboxValuesRpc(RpcTarget.Owner);
-				}
-			}
 			Initialize();
 		}
 		
@@ -522,8 +511,6 @@ namespace RVP
 
 		void Initialize()
 		{
-			
-
 			Color c = F.RandomColor();
 			foreach(var s in springRenderers)
 				s.material.color = c;
@@ -533,17 +520,6 @@ namespace RVP
 			// Create normal orientation object
 			GameObject normTemp = new GameObject(tr.name + "'s Normal Orientation");
 			norm = normTemp.transform;
-
-			// Instantiate tow vehicle
-			//if (towVehicle)
-			//{
-			//	newTow = Instantiate(towVehicle, Vector3.zero, tr.rotation);
-			//	newTow.SetActive(false);
-			//	newTow.transform.position = tr.TransformPoint(newTow.GetComponent<Joint>().connectedAnchor - newTow.GetComponent<Joint>().anchor);
-			//	newTow.GetComponent<Joint>().connectedBody = rb;
-			//	newTow.SetActive(true);
-			//	newTow.GetComponent<VehicleParent>().inputInherit = this;
-			//}
 
 			followAI.SetCPU(transform.name.Contains("CP"));
 
@@ -577,6 +553,17 @@ namespace RVP
 			
 			if (F.I.s_raceType == RaceType.TimeTrial)
 				ghost.SetGhostPermanently();
+
+			if (!Owner)
+			{
+				//rb.isKinematic = true;
+				basicInput.enabled = false;
+				if (OnlineCommunication.I.raceAlreadyStarted.Value)
+				{// latecomer's request to synch progress
+				 //Debug.Log("RequestRaceboxValuesRpc");
+					RequestRaceboxValuesRpc(RpcTarget.Owner);
+				}
+			}
 		}
 		[Rpc(SendTo.SpecifiedInParams)]
 		public void SetCurLapRpc(int curLap, RpcParams ps)

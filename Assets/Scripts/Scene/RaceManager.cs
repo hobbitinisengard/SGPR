@@ -7,6 +7,7 @@ using System.IO;
 using System.Collections.Generic;
 using Unity.Services.Lobbies.Models;
 using Unity.Netcode;
+using System.Linq;
 
 namespace RVP
 {
@@ -88,13 +89,7 @@ namespace RVP
 		{
 			get
 			{
-				int activeCars = 0;
-				foreach (var car in F.I.s_cars)
-				{
-					if (car.raceBox.enabled)
-						activeCars++;
-				}
-				return activeCars;
+				return F.I.s_cars.Count(c => c.raceBox.enabled);
 			}
 		}
 
@@ -172,7 +167,7 @@ namespace RVP
 			}
 		}
 
-		public float RaceProgress(VehicleParent vp)
+		public float LiveProgress(VehicleParent vp)
 		{
 			return F.I.s_raceType switch
 			{
@@ -182,47 +177,40 @@ namespace RVP
 				_ => vp.raceBox.curLap + vp.followAI.LapProgressPercent,
 			};
 		}
-		/// <summary>
-		/// returns in range from 1 to Info.s_cars inclusive
-		/// </summary>
 		public int Position(VehicleParent vp)
 		{
 			if (F.I.s_cars.Count > 0)
 			{
-				F.I.s_cars.Sort((carA, carB) => RaceProgress(carB).CompareTo(RaceProgress(carA)));
+				F.I.s_cars.Sort((carA, carB) => LiveProgress(carB).CompareTo(LiveProgress(carA)));
 				if (leader != F.I.s_cars[0])
 				{
-					if (leader != null)
-						hud.infoText.AddMessage(new(F.I.s_cars[0].name + " TAKES THE LEAD!", BottomInfoType.NEW_LEADER));
-
 					leader = F.I.s_cars[0];
+					hud.infoText.AddMessage(new(F.I.s_cars[0].name + " TAKES THE LEAD!", BottomInfoType.NEW_LEADER));
 				}
 				for (int i = 0; i < F.I.s_cars.Count; ++i)
 				{
 					if (F.I.s_cars[i] == vp)
-						return Mathf.Clamp(i + 1, 1,10);
+						return Mathf.Clamp(i, 0,9);
 				}
 			}
-			return 1;
+			return 0;
 		}
 
-		public void KnockOutLastCar()
+		public void KnockoutCarsBehind(VehicleParent survivorCar)
 		{
-			F.I.s_cars.Sort((carA, carB) => RaceProgress(carB).CompareTo(RaceProgress(carA)));
-			VehicleParent eliminatedCar = null;
-			for (int i = F.I.s_cars.Count - 1; i >= 0; --i)
+			F.I.s_cars.Sort((carA, carB) => LiveProgress(carB).CompareTo(LiveProgress(carA)));
+
+			
+			for (int i = F.I.s_cars.FindIndex(c => c == survivorCar)+1; i < F.I.s_cars.Count; ++i)
 			{
 				if (F.I.s_cars[i].raceBox.enabled)
 				{
-					eliminatedCar = F.I.s_cars[i];
-					break;
+					var eliminatedCar = F.I.s_cars[i];
+					eliminatedCar.KnockoutMe();
+					hud.infoText.AddMessage(new(eliminatedCar.tr.name + " IS ELIMINATED!", BottomInfoType.ELIMINATED));
 				}
 			}
-			Debug.Assert(eliminatedCar != null);
-
-			eliminatedCar.KnockoutMe();
-
-			hud.infoText.AddMessage(new(eliminatedCar.transform.name + " IS ELIMINATED!", BottomInfoType.ELIMINATED));
+			
 		}
 		//Color HDRColor(float r, float g, float b, int intensity = 0)
 		//{
