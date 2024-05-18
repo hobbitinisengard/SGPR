@@ -134,8 +134,10 @@ public class TrackSelector : TrackSelectorTemplate
 		if (!init)
 		{
 			int dir = F.I.shiftRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
-			F.I.s_PlayerCarSponsor = (Livery)F.Wraparound((int)F.I.s_PlayerCarSponsor + dir, 0, F.I.Liveries);
+			F.I.s_PlayerCarSponsor = (Livery)F.Wraparound((int)F.I.s_PlayerCarSponsor + dir, 
+				ServerC.I.AmHost ? 0 : 1, F.I.Liveries);
 		}
+		F.I.teams = F.I.s_PlayerCarSponsor != Livery.Random;
 		sponsorButtonText.text = "Sponsor:" + F.I.s_PlayerCarSponsor.ToString();
 	}
 }

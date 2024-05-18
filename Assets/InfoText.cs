@@ -22,8 +22,7 @@ public class InfoText : MonoBehaviour
 
 	Queue<Message> liveMessages = new();
 	Message curMsgInQueue = new();
-	Color32 bottomTextColor1 = new(255, 223, 0, 255);
-	Color32 bottomTextColor2 = new(255, 64, 64, 255);
+	
 	const float msgHiddenPos = 0;
 	const float msgVisiblePos = 80;
 	public float newPosY = 0;
@@ -73,7 +72,7 @@ public class InfoText : MonoBehaviour
 				infoText.text = curMsgInQueue.text;
 				newPosY = Mathf.Lerp(msgHiddenPos, msgVisiblePos, bottomTextAnim.Evaluate(timer));
 				SetBottomTextPos(newPosY);
-				infoText.color = timer % 1f > 0.5f ? bottomTextColor1 : bottomTextColor2;
+				infoText.color = timer % 1f > 0.5f ? F.I.yellow : F.I.red;
 
 				timer += Time.deltaTime;
 				yield return null;

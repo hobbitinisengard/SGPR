@@ -13,7 +13,6 @@ public class MainMenuView : Sfxable
 	public TextMeshProUGUI bottomText;
 	public Sprite bgTile;
 	public AudioClip music;
-	public InputActionReference cancelInput;
 	public YouSureDialog youSureDialog;
 	public bool prevViewForbidden;
 	static ViewSwitcher dimmer;
@@ -77,13 +76,13 @@ public class MainMenuView : Sfxable
 		}
 		dimmer.PlayDimmer(this, view);
 	}
-	protected void OnDisable()
+	protected virtual void OnDisable()
 	{
-		cancelInput.action.started -= CancelPressed;
+		F.I.escRef.action.started -= CancelPressed;
 	}
-	protected void OnEnable()
+	protected virtual void OnEnable()
 	{
-		cancelInput.action.started += CancelPressed;
+		F.I.escRef.action.started += CancelPressed;
 		if (firstButtonToBeSelected)
 			firstButtonToBeSelected.Select();
 		

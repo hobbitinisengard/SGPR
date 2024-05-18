@@ -848,7 +848,7 @@ public class RaceBox : MonoBehaviour
 		{
 			raceTime = DateTime.UtcNow - F.I.raceStartDate;
 
-			Debug.Log(vp.name + " " + raceTime.ToString());
+			//Debug.Log(vp.name + " " + raceTime.ToString());
 
 			if (F.I.gameMode == MultiMode.Multiplayer && vp.Owner)
 			{

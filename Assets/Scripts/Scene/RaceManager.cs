@@ -324,14 +324,16 @@ namespace RVP
 			}
 			editorPanel.gameObject.SetActive(false);
 
-			if (F.I.tracks[F.I.s_trackName].envir == Envir.SPN && F.I.s_isNight)
+			if ((F.I.tracks[F.I.s_trackName].envir == Envir.SPN 
+				|| F.I.tracks[F.I.s_trackName].envir == Envir.ENG
+				|| F.I.tracks[F.I.s_trackName].envir == Envir.FRA) && F.I.s_isNight)
 			{
-				musicPlayer.clip = Resources.Load<AudioClip>("music/SPN2");
+				musicPlayer.clip = Resources.Load<AudioClip>($"music/{F.I.tracks[F.I.s_trackName].envir}2");
 				musicPlayer.Play();
 			}
 			else
 			{
-				musicPlayer.clip = Resources.Load<AudioClip>("music/" + F.I.tracks[F.I.s_trackName].envir.ToString());
+				musicPlayer.clip = Resources.Load<AudioClip>($"music/{F.I.tracks[F.I.s_trackName].envir}");
 				musicPlayer.PlayDelayed(5);
 			}
 
@@ -486,6 +488,13 @@ namespace RVP
 			if(ServerC.I.AmHost)
 				OnlineCommunication.I.raceAlreadyStarted.Value = false;
 
+			if(F.I.gameMode == MultiMode.Multiplayer)
+			{
+				int addPoints = F.I.resultsView.CalculatePoints();
+				ServerC.I.ScoreSet(ServerC.I.PlayerMe.ScoreGet() + addPoints);
+				ServerC.I.UpdatePlayerData();
+			}
+			
 			musicPlayer.Stop();
 			if(F.I.gameMode == MultiMode.Multiplayer)
 				yield return new WaitForSeconds(1);

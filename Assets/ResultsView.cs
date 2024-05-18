@@ -9,7 +9,7 @@ using UnityEngine.UI;
 /// <summary>
 /// Scoring table with medals after race end
 /// </summary>
-public class ResultsView : MonoBehaviour
+public class ResultsView : MainMenuView
 {
 	public class ResultInfo
 	{
@@ -61,6 +61,7 @@ public class ResultsView : MonoBehaviour
 	const int addingSpeedPerSec = 10000;
 	int finalPosition;
 	AudioSource tickSnd;
+	public WinnersView winnersView;
 	public Button OKbutton;
 	public GridLayoutGroup gridTable;
 	public GameObject grandScore0;
@@ -122,19 +123,41 @@ public class ResultsView : MonoBehaviour
 	bool isAddingScore;
 	float grandScoreMoving = 0;
 	public int grandScoreFinal = 0;
-
+	private int lapPos;
+	private int stuntPos;
+	private int driftPos;
+	private float positionPerc;
+	private int positionBonus;
+	private int lapBonus;
+	private int stuntBonus;
+	private int driftBonus;
+	private int aeroMeter;
 	static readonly Comparison<ResultInfo> raceComp = new((ResultInfo x, ResultInfo y) => x.raceTime.TotalSeconds.CompareTo(y.raceTime.TotalSeconds));
 	static readonly Comparison<ResultInfo> knockoutComp = new((ResultInfo x, ResultInfo y) => y.progress.CompareTo(x.progress));
 	static readonly Comparison<ResultInfo> stuntComp = new((ResultInfo x, ResultInfo y) => y.aeromiles.CompareTo(x.aeromiles));
 	static readonly Comparison<ResultInfo> driftComp = new((ResultInfo x, ResultInfo y) => y.drift.CompareTo(x.drift));
 	static readonly Comparison<ResultInfo> lapComp = new((ResultInfo x, ResultInfo y) => x.lap.TotalSeconds.CompareTo(y.lap.TotalSeconds));
 
-	private void Awake()
+	public void OKButton()
 	{
+		if (F.I.Rounds > 0 && F.I.CurRound > F.I.Rounds)
+		{
+			winnersView.PrepareView();
+			GoToView(winnersView);
+		}
+		else
+		{
+			GoToView(MultiPlayerSelector.I.thisView);
+		}
+	}
+
+	protected override void Awake()
+	{
+		base.Awake();
 		gridTableTr = gridTable.GetComponent<RectTransform>();
 		tickSnd = GetComponent<AudioSource>();
 	}
-	private void OnDisable()
+	protected override void OnDisable()
 	{
 		if (addingScoreCo != null)
 			StopCoroutine(addingScoreCo);
@@ -147,6 +170,7 @@ public class ResultsView : MonoBehaviour
 		addingScore.SetActive(false);
 		medalsTable.gameObject.SetActive(false);
 		Clear();
+		base.OnDisable();
 	}
 	static Comparison<ResultInfo> ComparisonBasedOnRaceType()
 	{
@@ -160,13 +184,13 @@ public class ResultsView : MonoBehaviour
 			_ => raceComp,
 		};
 	}
-	private void OnEnable()
+	
+	protected override void OnEnable()
 	{
+		F.I.CurRound++;
 		//ResultRandomizer(); // for testing 
-
-		grandScoreFinal = 0;
 		grandScoreMoving = 0;
-		grandScore0Text.text = "      000000";
+		grandScore0Text.text = "      0";
 		int carsInSession = resultData.Count;
 		var cellSize = gridTable.cellSize;
 		cellSize.y = Mathf.Clamp(gridTableTr.rect.height / (1 + carsInSession), 0, maxRowHeight);
@@ -189,6 +213,8 @@ public class ResultsView : MonoBehaviour
 		if (payoutCo != null)
 			StopCoroutine(payoutCo);
 		payoutCo = StartCoroutine(PayoutSeq());
+		
+		base.OnEnable();
 	}
 	string Pos(int i)
 	{
@@ -221,20 +247,19 @@ public class ResultsView : MonoBehaviour
 		Debug.LogError("PlayerName not found in resultData");
 		return -1;
 	}
-	IEnumerator PayoutSeq()
+	public int CalculatePoints()
 	{
-		int lapPos = Result(lapComp);
-		int stuntPos = Result(stuntComp);
-		int driftPos = Result(driftComp);
+		lapPos = Result(lapComp);
+		stuntPos = Result(stuntComp);
+		driftPos = Result(driftComp);
 		Debug.Log(string.Format("lap,stunt,drift = {0}, {1}, {2}", lapPos, stuntPos, driftPos));
-		float positionPerc = (resultData.Count - finalPosition) / (float)resultData.Count;
-		int positionBonus = 0;
-		int lapBonus = (lapPos <= 2) ? 5000 / lapPos : 0;
-		int stuntBonus = (int)((stuntPos <= 2) ? 5000f / stuntPos : 0);
-		int driftBonus = (int)((driftPos <= 2) ? 2500f / stuntPos : 0);
-		int aeroMeter = (int)resultData.First(r => r.name == F.I.playerData.playerName).aeromiles;
+		positionPerc = (resultData.Count - finalPosition) / (float)resultData.Count;
+		positionBonus = 0;
+		lapBonus = (lapPos <= 2) ? 5000 / lapPos : 0;
+		stuntBonus = (int)((stuntPos <= 2) ? 5000f / stuntPos : 0);
+		driftBonus = (int)((driftPos <= 2) ? 2500f / stuntPos : 0);
+		aeroMeter = (int)resultData.First(r => r.name == F.I.playerData.playerName).aeromiles;
 
-		
 		switch (F.I.scoringType)
 		{
 			case ScoringType.Championship:
@@ -253,11 +278,11 @@ public class ResultsView : MonoBehaviour
 				break;
 		}
 
-		var p = ServerC.I.PlayerMe;
-		Debug.Log($"Set points {p.ScoreGet()} + {grandScoreFinal}");
-		ServerC.I.ScoreSet(p.ScoreGet() + grandScoreFinal);
-		ServerC.I.UpdatePlayerData();
-
+		return grandScoreFinal;
+	}
+	IEnumerator PayoutSeq()
+	{
+		//Debug.Log($"Set points {p.ScoreGet()} + {grandScoreFinal}");
 		grandScore0.SetActive(true);
 
 		medalsTable.DestroyAllChildren();
@@ -341,6 +366,7 @@ public class ResultsView : MonoBehaviour
 		grandScore1Text.text = "      " + grandScoreFinal;
 		tickSnd.pitch = 1;
 		tickSnd.Play();
+		grandScoreFinal = 0;
 	}
 	IEnumerator AddingScoreSeq(string recordType, float bonus, Sprite medal)
 	{ 
@@ -380,34 +406,23 @@ public class ResultsView : MonoBehaviour
 			yield return null;
 		}
 	}
-	int R(int min, int max)
-	{
-		return UnityEngine.Random.Range(min, max);
-	}
+	
+	
 	void ResultRandomizer()
 	{
-		resultData.AddRange(new ResultInfo[R(2, 11)]);
+		resultData.AddRange(new ResultInfo[F.R(2, 11)]);
 		for(int i=0; i<resultData.Count; ++i)
 		{
 			resultData[i] = new ResultInfo()
 			{
-				drift = R(0, 100000),
-				lap = TimeSpan.FromMilliseconds(R(30 * 1000, 2 * 3600 * 1000)),
-				name = RandomString(R(3, 12)),
-				aeromiles = R(0, 100000),
+				drift = F.R(0, 100000),
+				lap = TimeSpan.FromMilliseconds(F.R(30 * 1000, 2 * 3600 * 1000)),
+				name = F.RandomString(F.R(3, 12)),
+				aeromiles = F.R(0, 100000),
 			};	
 		}
-		int x = R(0, resultData.Count);
+		int x = F.R(0, resultData.Count);
 		resultData[x].name = F.I.playerData.playerName;
 	}
-	string RandomString(int length)
-	{
-		var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-		var stringChars = new char[length];
-
-		for (int i = 0; i < stringChars.Length; i++)
-			stringChars[i] = chars[R(0,chars.Length)];
-
-		return new string(stringChars);
-	}
+	
 }

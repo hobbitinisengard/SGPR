@@ -192,6 +192,7 @@ namespace RVP
 			stuntPoints = F.I.stuntpointsContainer;
 			replayCams = F.I.replayCams;
 			trackPathCreator = F.I.universalPath;
+			Debug.Log(trackPathCreator == null);
 			curReplayPointIdx = replayCams.Count - 1;
 			enabled = true;
 		}

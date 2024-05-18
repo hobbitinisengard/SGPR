@@ -14,6 +14,11 @@ using System.Linq;
 using System;
 using Random = UnityEngine.Random;
 using System.Collections.Concurrent;
+class SponsorScore
+{
+	public Livery sponsor;
+	public int score;
+}
 public class ServerC : MonoBehaviour
 {
 	//public Dictionary<string, PlayerDataObject> playerMeData;
@@ -87,6 +92,90 @@ public class ServerC : MonoBehaviour
 			return lobby.Players.Count(p => p.ReadyGet() == true);
 		}
 	}
+
+	List<Player> RandomResults()
+	{
+		int playersNum = UnityEngine.Random.Range(1, 11);
+		List<Player> players = new (playersNum);
+		for (int i = 0; i < playersNum; ++i)
+		{
+			Dictionary<string, PlayerDataObject> Data = new()
+			{
+				[ServerC.k_Name] = new PlayerDataObject(PlayerDataObject.VisibilityOptions.Public,
+					(i == 0) ? F.I.playerData.playerName : F.RandomString(F.R(3, 13))),
+				[ServerC.k_Sponsor] = new PlayerDataObject(PlayerDataObject.VisibilityOptions.Public, (F.R(1, F.I.Liveries + 1)).ToString())
+			};
+			players.Add(new Player(data: Data));
+
+			switch (F.I.scoringType)
+			{
+				case ScoringType.Championship:
+					players[i].Data[ServerC.k_score] = new PlayerDataObject(PlayerDataObject.VisibilityOptions.Public, F.R(0, 10).ToString());
+					break;
+				case ScoringType.Points:
+					players[i].Data[ServerC.k_score] = new PlayerDataObject(PlayerDataObject.VisibilityOptions.Public, F.R(0, 500).ToString());
+					break;
+				case ScoringType.Victory:
+					players[i].Data[ServerC.k_score] = new PlayerDataObject(PlayerDataObject.VisibilityOptions.Public, F.R(0, 50).ToString());
+					break;
+				default:
+					break;
+			}
+		}
+		return players;
+	}
+	public Player[] scoreSortedPlayers
+	{
+		get
+		{
+			// DEBUG
+			//var lobbyPlayers = RandomResults();
+			var lobbyPlayers = lobby.Players;
+
+			Player[] players = new Player[lobbyPlayers.Count];
+			for (int i = 0; i < lobbyPlayers.Count; ++i)
+				players[i] = lobbyPlayers[i];
+
+			// Team scoring
+			if (F.I.teams)
+			{
+				List<SponsorScore> teamScores = new();
+
+				foreach (var p in lobbyPlayers)
+				{
+
+					var playerSponsor = p.SponsorGet();
+					var playerScore = p.ScoreGet();
+
+					var teamScore = teamScores.Find(s => playerSponsor == s.sponsor);
+
+					if (teamScore == null)
+					{
+						teamScores.Add(new SponsorScore { sponsor = playerSponsor, score = playerScore });
+					}
+					else
+					{
+						teamScore.score += playerScore;
+					}
+				}
+				teamScores.Sort((y, x) => x.score.CompareTo(y.score));
+
+				Array.Sort(players, (Player p2, Player p1) =>
+				{
+					Livery p1Sponsor = p1.SponsorGet();
+					Livery p2Sponsor = p2.SponsorGet();
+					var teamScoreA = teamScores.Find(s => s.sponsor == p1Sponsor).score;
+					var teamScoreB = teamScores.Find(s => s.sponsor == p2Sponsor).score;
+					return teamScoreA.CompareTo(teamScoreB);
+				});
+			}
+			else
+			{ // Individual scoring
+				Array.Sort(players, (Player a, Player b) => b.ScoreGet().CompareTo(a.ScoreGet()));
+			}
+			return players;
+		}
+	}
 	private async void Start()
 	{
 		await Authenticate();
@@ -154,9 +243,6 @@ public class ServerC : MonoBehaviour
 	}
 	Dictionary<string, PlayerDataObject> InitializePlayerData()
 	{
-		if (F.I.s_PlayerCarSponsor == Livery.Random)
-			F.I.s_PlayerCarSponsor = (Livery)UnityEngine.Random.Range(1, F.I.Liveries + 1);
-
 		Dictionary<string, PlayerDataObject> playerMeData = new()
 		{
 			{
@@ -226,8 +312,8 @@ public class ServerC : MonoBehaviour
 			+ "0" // "0" - cpuCars
 			+ ((int)F.I.s_roadType).ToString() 
 			+ (F.I.teams ? "1" : "0")
-			+ F.I.MpLevel.ToString("D2")
-			+ F.I.MpLevels.ToString("D2");
+			+ F.I.CurRound.ToString("D2")
+			+ F.I.Rounds.ToString("D2");
 		return encodeConfig;
 	}
 	public Player Host
@@ -405,7 +491,7 @@ public class ServerC : MonoBehaviour
 	{
 		return lobby.Data[k_raceConfig].Value[10] == '1';
 	}
-	public int GetMpLevels()
+	public int GetRounds()
 	{
 		return byte.Parse(lobby.Data[k_raceConfig].Value[13..15]);
 	}

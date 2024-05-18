@@ -375,7 +375,7 @@ public class SGP_HUD : MonoBehaviour
 			if (letter == 0 && speed < 10)
 				SpeedoRows[i].color = new Color32(128, 128, 128, 128);
 			else
-				SpeedoRows[i].color = new Color32(255, 255, 255, 255);
+				SpeedoRows[i].color = Color.white;
 			speed /= 10;
 		}
 		// Update battery level

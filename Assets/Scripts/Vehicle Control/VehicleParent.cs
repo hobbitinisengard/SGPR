@@ -115,7 +115,10 @@ namespace RVP
 		[System.NonSerialized]
 		public Transform norm; // Normal orientation object
 
-		NetworkVariable<Livery> _sponsor = new(); //SERVER
+		/// <summary>
+		/// This can't be set to random.
+		/// </summary>
+		NetworkVariable<Livery> _sponsor = new();
 
 		[System.NonSerialized]
 		public float accelInput;
@@ -159,15 +162,23 @@ namespace RVP
 		//NetworkVariable<int> _rollButton = new(writePerm: NetworkVariableWritePermission.Owner);
 		//public int rollInput { get { return _boostButton.Value; } set { _boostButton.Value = value; } }
 		
-		public Livery sponsor { get { return _sponsor.Value; } 
+		public Livery sponsor 
+		{ 
+			get 
+			{
+				return _sponsor.Value;
+			} 
 			set 
 			{ 
 				if(ServerC.I.AmHost)
 				{
+					if (value == Livery.Random)
+						value = F.RandomLivery();
 					_sponsor.Value = value;
 				}
 			} 
 		}
+
 		NetworkVariable<FixedString32Bytes> _name = new(); // SERVER
 		public new string name 
 		{ 
@@ -419,21 +430,14 @@ namespace RVP
 		{
 			var mr = bodyObj.GetComponent<MeshRenderer>();
 			string matName = mr.sharedMaterial.name;
-			if((sponsor) != 0)
-			{
-				if (matName.Contains("Instance"))
-					matName = matName[..matName.IndexOf(' ')];
-				matName = matName[..^1] + ((int)sponsor).ToString();
-				Material newMat = Resources.Load<Material>("materials/" + matName);
-				newMat.name = matName;
-				mr.material = newMat;
-				RaceManager.I.hud.AddToProgressBar(this);
-				sampleText.textMesh.color = F.ReadColor(sponsor);
-			}
-			else
-			{
-				Debug.LogError($"on {name}, sponsor is 0");
-			}
+			if (matName.Contains("Instance"))
+				matName = matName[..matName.IndexOf(' ')];
+			matName = matName[..^1] + ((int)sponsor).ToString();
+			Material newMat = Resources.Load<Material>("materials/" + matName);
+			newMat.name = matName;
+			mr.material = newMat;
+			RaceManager.I.hud.AddToProgressBar(this);
+			sampleText.textMesh.color = F.ReadColor(sponsor);
 		}
 		void OnNameChanged()
 		{
@@ -506,9 +510,10 @@ namespace RVP
 		
 		private void Start()
 		{
-			Initialize();
+			if(F.I.gameMode == MultiMode.Singleplayer)
+				Initialize();
 		}
-
+		
 		void Initialize()
 		{
 			Color c = F.RandomColor();
@@ -540,7 +545,7 @@ namespace RVP
 		
 		IEnumerator ApplySetup()
 		{
-			while(sponsor == 0)
+			while (sponsor == Livery.Random)
 			{ // sending sponsor info may come from the server after a while
 				yield return null;
 			}
