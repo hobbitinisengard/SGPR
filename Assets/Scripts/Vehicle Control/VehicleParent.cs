@@ -3,6 +3,7 @@ using System.Collections;
 using System;
 using Unity.Netcode;
 using Unity.Collections;
+using System.Linq;
 
 namespace RVP
 {
@@ -332,23 +333,25 @@ namespace RVP
 		public GameObject customCam;
 		private float lastNoBatteryMessage;
 		public bool Owner { get { return IsOwner || F.I.gameMode == MultiMode.Singleplayer; } }
+		[NonSerialized]
+		public int lastRoundScore;
 		[Rpc(SendTo.SpecifiedInParams)]
 		public void RelinquishRpc(RpcParams ps)
 		{
 			NetworkObject.RemoveOwnership();
 			Destroy(gameObject);
 		}
-		
 		[Rpc(SendTo.SpecifiedInParams)]
 		void RequestRaceboxValuesRpc(RpcParams ps)
 		{
-			SynchRaceboxValuesRpc(raceBox.curLap, followAI.dist, followAI.progress, raceBox.Aero, raceBox.drift, 
+			SynchRaceboxValuesRpc(ServerC.I.PlayerMe.ScoreGet(), raceBox.curLap, followAI.dist, followAI.progress, raceBox.Aero, raceBox.drift, 
 				(float)raceBox.bestLapTime.TotalSeconds, (float)raceBox.raceTime.TotalSeconds, 
 				RpcTarget.Single(ps.Receive.SenderClientId, RpcTargetUse.Temp));
 		}
 		[Rpc(SendTo.SpecifiedInParams)]
-		public void SynchRaceboxValuesRpc(int curLap, int dist, int progress, float aero, float drift, float bestLapSecs, float raceTimeSecs, RpcParams ps)
+		public void SynchRaceboxValuesRpc(int lastRoundScore, int curLap, int dist, int progress, float aero, float drift, float bestLapSecs, float raceTimeSecs, RpcParams ps)
 		{
+			this.lastRoundScore = lastRoundScore;
 			raceBox.UpdateValues(curLap, dist, progress, aero, drift, bestLapSecs, raceTimeSecs);
 			ResultsView.Add(this);
 		}
@@ -359,6 +362,7 @@ namespace RVP
 		int roadSurfaceType;
 		[NonSerialized]
 		public float tyresOffroad;
+
 		public CatchupStatus catchupStatus { get; private set; }
 		public float AngularDrag { get { return rb.angularDrag; } }
 
@@ -438,6 +442,11 @@ namespace RVP
 			mr.material = newMat;
 			RaceManager.I.hud.AddToProgressBar(this);
 			sampleText.textMesh.color = F.ReadColor(sponsor);
+			if (F.I.gameMode == MultiMode.Multiplayer)
+			{
+				ServerC.I.ReadySet(PlayerState.InRace);
+				ServerC.I.UpdatePlayerData();
+			}
 		}
 		void OnNameChanged()
 		{
@@ -516,6 +525,7 @@ namespace RVP
 		
 		void Initialize()
 		{
+			
 			Color c = F.RandomColor();
 			foreach(var s in springRenderers)
 				s.material.color = c;
@@ -533,14 +543,14 @@ namespace RVP
 				if (UnityEngine.Random.value > 0.5f)
 					RaceManager.I.cam.Connect(this, CameraControl.Mode.Replay);
 			}
-			
-			StartCoroutine(ApplySetup());
 
 			lightsInput = F.I.s_isNight;
 			foreach (var l in frontLights)
 				l.SetActive(lightsInput);
 			foreach (var l in rearLights)
 				l.SetActive(lightsInput);
+
+			StartCoroutine(ApplySetup());
 		}
 		
 		IEnumerator ApplySetup()

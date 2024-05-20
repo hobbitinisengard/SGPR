@@ -852,7 +852,7 @@ public class RaceBox : MonoBehaviour
 
 			if (F.I.gameMode == MultiMode.Multiplayer && vp.Owner)
 			{
-				vp.SynchRaceboxValuesRpc(curLap, vp.followAI.dist, vp.followAI.progress, aero, drift, (float)bestLapTime.TotalSeconds,
+				vp.SynchRaceboxValuesRpc(ServerC.I.PlayerMe.ScoreGet(), curLap, vp.followAI.dist, vp.followAI.progress, aero, drift, (float)bestLapTime.TotalSeconds,
 					(float)raceTime.TotalSeconds, vp.RpcTarget.Everyone);
 			}
 			else if (F.I.gameMode == MultiMode.Singleplayer)
@@ -873,7 +873,6 @@ public class RaceBox : MonoBehaviour
 		vp.followAI.progress = progress;
 		bestLapTime = TimeSpan.FromSeconds(bestLapSecs);
 		raceTime = TimeSpan.FromSeconds(raceTimeSecs);
-		Debug.Log($"{vp.name}: {raceTime}");
-
+		//Debug.Log($"{vp.name}: {raceTime}");
 	}
 }

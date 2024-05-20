@@ -96,7 +96,7 @@ public class MainMenuView : Sfxable
 		{
 			PlaySFX("fe-gameload");
 			if (F.I.s_roadType == PavementType.Random)
-				F.I.s_roadType = (PavementType)Mathf.RoundToInt(F.I.pavementTypes * UnityEngine.Random.value);
+				F.I.s_roadType = F.RandomRoadType();
 
 			for (int i = 0; i < transform.childCount; ++i)
 			{
@@ -113,9 +113,8 @@ public class MainMenuView : Sfxable
 			PlaySFX("fe-cardserror");
 		else
 		{
-			
 			if (F.I.s_roadType == PavementType.Random)
-				F.I.s_roadType = (PavementType)Mathf.RoundToInt((F.I.pavementTypes * UnityEngine.Random.value));
+				F.I.s_roadType = F.RandomRoadType();
 			F.I.s_inEditor = true;
 			F.I.s_spectator = false;
 			dimmer.PlayDimmerToWorld();

@@ -310,6 +310,7 @@ namespace RVP
 			{
 				yield return null;
 			}
+
 			hud.pauseMenu.gameObject.SetActive(false);
 			editorPanel.pathFollower.SetActive(false);
 			for (int i = 0; i < editorPanel.placedTilesContainer.transform.childCount; ++i)
@@ -487,13 +488,6 @@ namespace RVP
 		{
 			if(ServerC.I.AmHost)
 				OnlineCommunication.I.raceAlreadyStarted.Value = false;
-
-			if(F.I.gameMode == MultiMode.Multiplayer)
-			{
-				int addPoints = F.I.resultsView.CalculatePoints();
-				ServerC.I.ScoreSet(ServerC.I.PlayerMe.ScoreGet() + addPoints);
-				ServerC.I.UpdatePlayerData();
-			}
 			
 			musicPlayer.Stop();
 			if(F.I.gameMode == MultiMode.Multiplayer)

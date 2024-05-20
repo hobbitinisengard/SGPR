@@ -79,7 +79,7 @@ public class TrackSelector : TrackSelectorTemplate
 	{
 		if (!init)
 			F.I.s_isNight = !F.I.s_isNight;
-		nightButtonText.text = F.I.s_isNight ? "Night" : "Daytime";
+		nightButtonText.text = F.I.s_isNight ? "Night" : "Day";
 	}
 	public void SwitchCPULevel(bool init = false)
 	{
@@ -117,8 +117,14 @@ public class TrackSelector : TrackSelectorTemplate
 	public void SwitchRoadType(bool init = false)
 	{
 		int dir = 0;
-		if (!init)
+		if (init)
+		{
+			if (F.I.randomPavement)
+				F.I.s_roadType = PavementType.Random;
+		}
+		else
 			dir = F.I.shiftInputRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
+
 		F.I.s_roadType = (PavementType)F.Wraparound((int)(F.I.s_roadType + dir), 0, F.I.pavementTypes+1);
 		F.I.randomPavement = F.I.s_roadType == PavementType.Random;
 		wayButtonText.text = "Tex: " + F.I.s_roadType.ToString();

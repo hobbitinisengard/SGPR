@@ -50,7 +50,6 @@ public class Chat : NetworkBehaviour
 	
 		SetVisibility(false);
 	
-		ServerC.I.callbacks.PlayerJoined += Callbacks_PlayerJoined;
 
 		foreach(var c in scrollRects)
 			F.DestroyAllChildren(c.content);
@@ -126,14 +125,7 @@ public class Chat : NetworkBehaviour
 		yield return new WaitForSecondsRealtime(timer);
 		SetVisibility(false);
 	}
-		
-	public void Callbacks_PlayerJoined(List<LobbyPlayerJoined> newPlayers)
-	{
-		foreach (var p in newPlayers)
-		{
-			AddChatRowLocally(p.Player.NameGet(), "has joined the server", Color.white, Color.grey);
-		}
-	}
+	
 	public void PlayerLeft(Player p)
 	{
 		AddChatRowLocally(p.NameGet(), "has left the server", Color.white, Color.grey);

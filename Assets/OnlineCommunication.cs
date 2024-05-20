@@ -39,7 +39,7 @@ public class OnlineCommunication : NetworkBehaviour
 	[Rpc(SendTo.Everyone)]
 	void CountdownTillForceEveryoneToResultsRpc()
 	{
-		if (RaceManager.I.playerCar.raceBox.enabled)
+		if (RaceManager.I.playerCar && RaceManager.I.playerCar.raceBox.enabled)
 			RaceManager.I.hud.endraceTimer.gameObject.SetActive(true);
 	}
 }

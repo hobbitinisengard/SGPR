@@ -20,6 +20,7 @@ public class LeaderBoardTable : MonoBehaviour
 	{
 		ServerC.I.callbacks.PlayerJoined += Refresh;
 		ServerC.I.callbacks.PlayerLeft += Refresh;
+
 	}
 
 	private void Refresh(List<int> list)
@@ -34,15 +35,7 @@ public class LeaderBoardTable : MonoBehaviour
 
 	public void Refresh()
 	{
-		if(gameObject.activeInHierarchy)
-			StartCoroutine(RefreshSeq());
-	}
-
-	IEnumerator RefreshSeq()
-	{
-		yield return null; // wait one frame before updating
-
-		var players = ServerC.I.scoreSortedPlayers;
+		var players = ServerC.I.ScoreSortedPlayers;
 
 		// TITLE + PLAYERS
 		for (int i=1; i<transform.childCount; ++i)
@@ -68,7 +61,7 @@ public class LeaderBoardTable : MonoBehaviour
 
 		newRow.GetChild(1).GetComponent<TextMeshProUGUI>().text = F.I.randomCars ? "*random*" : carName;
 
-		newRow.GetChild(2).GetComponent<TextMeshProUGUI>().text = (F.I.teams ? "$ " : "") + player.ScoreGet().ToString();
+		newRow.GetChild(2).GetComponent<TextMeshProUGUI>().text = (F.I.scoringType == ScoringType.Championship ? "$ " : "") + player.ScoreGet().ToString();
 	}
 	//void DefaultView()
 	//{

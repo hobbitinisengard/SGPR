@@ -1,10 +1,89 @@
+using Newtonsoft.Json;
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
-using Unity.Services.Lobbies.Models;
 using UnityEngine;
 using UnityEngine.UI;
+[Serializable]
+public class RankingRowData
+{
+	public string name;
+	public string dateStr;
+	public byte rounds;
+	/// <summary>
+	/// Returns money in championship mode or win percentage in victory mode or points mode
+	/// </summary>
+	public float moneyOrPerc;
 
+	[JsonConstructor]
+	public RankingRowData(string name, string dateStr, byte rounds, float moneyOrPerc)
+	{
+		this.name = name;
+		this.dateStr = dateStr;
+		this.rounds = rounds;
+		this.moneyOrPerc = moneyOrPerc;
+	}
+	public RankingRowData(IEnumerable<ResultInfo> sortedPlayers)
+	{
+		ResultInfo me = sortedPlayers.First(p => p.id == ServerC.I.networkManager.LocalClientId);
+		
+		dateStr = DateTime.Now.ToString();
+		rounds = F.I.Rounds;
+		float absoluteScore = 0;
+		if (F.I.teams)
+		{
+			name = me.name;
+
+			foreach (var p in sortedPlayers)
+			{
+				if (p.sponsor == me.sponsor)
+				{
+					absoluteScore += p.score;
+					if(p != me)
+						name += " " + p.name;
+				}
+			}
+		}
+		else
+		{
+			name = me.name;
+			absoluteScore = me.score;
+		}
+			
+
+		switch (F.I.scoringType)
+		{
+			case ScoringType.Championship:
+				moneyOrPerc = absoluteScore;
+				break;
+			case ScoringType.Points:
+				moneyOrPerc = absoluteScore / sortedPlayers.Sum(p => p.score);
+				break;
+			case ScoringType.Victory:
+				moneyOrPerc = absoluteScore / sortedPlayers.Sum(p => p.score);
+				break;
+			default:
+				moneyOrPerc = 0;
+				break;
+		}
+	}
+	/// <summary>
+	/// The more rounds, the more win value
+	/// </summary>
+	[JsonIgnore]
+	public float WinValue
+	{
+		get
+		{
+			if (F.I.scoringType == ScoringType.Championship)
+				return moneyOrPerc;
+			else
+				return moneyOrPerc * rounds;
+		}
+	}
+}
 public class RankingView : MainMenuView
 {
    public TextMeshProUGUI upBarText;
@@ -20,6 +99,8 @@ public class RankingView : MainMenuView
 	/// </summary>
 	private float scrollTarget;
 	private Transform selectedRow;
+	[NonSerialized]
+	public List<ResultInfo> sortedResults;
 	public void OKButton()
 	{
 		GoToView(MultiPlayerSelector.I.thisView);
@@ -50,11 +131,13 @@ public class RankingView : MainMenuView
 		F.I.move2Ref.action.performed -= Move;
 		SetColorOfRow(selectedRow, Color.white);
 		F.I.SaveRanking();
+		ServerC.I.ScoreSet(0);
+		ServerC.I.UpdatePlayerData();
 	}
 	protected override void OnEnable()
 	{
 		F.I.move2Ref.action.performed += Move;
-		Player[] players = ServerC.I.scoreSortedPlayers;
+		List<ResultInfo> players = ResultsView.SortedResultsByFinishPos;
 		RankingRowData newEntry = new RankingRowData(players);
 
 		string gameName;
@@ -114,9 +197,9 @@ public class RankingView : MainMenuView
 				row.GetChild(3).GetComponent<TextMeshProUGUI>().text = "Round " + curNode.Value.rounds.ToString();
 				row.GetChild(4).GetComponent<TextMeshProUGUI>().text = F.I.scoringType switch
 				{
-					ScoringType.Championship => $"${curNode.Value.moneyOrPerc}",
-					ScoringType.Points => $"{curNode.Value.moneyOrPerc} %",
-					ScoringType.Victory => $"{curNode.Value.moneyOrPerc} %",
+					ScoringType.Championship => curNode.Value.moneyOrPerc.ToString("F1"),
+					ScoringType.Points => (100*curNode.Value.moneyOrPerc).ToString("F1"),
+					ScoringType.Victory => (100*curNode.Value.moneyOrPerc).ToString("F1"),
 					_ => null,
 				};
 			}
@@ -194,7 +277,6 @@ public class RankingView : MainMenuView
 	
 	void SetColorOfRow(Transform row, Color c)
 	{
-		Debug.Log(c != Color.white);
 		for (int i = 0; i < row.childCount; ++i)
 			row.GetChild(i).GetComponent<TextMeshProUGUI>().color = c;
 	}

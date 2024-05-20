@@ -1,9 +1,6 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
-using Unity.Services.Authentication;
-using Unity.Services.Lobbies.Models;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -26,20 +23,17 @@ public class WinnersView : MainMenuView
 	}
 	public void PrepareView()
 	{
-		var players = ServerC.I.scoreSortedPlayers;
-
-		//foreach(var p in players) // DEBUG
-		//{
-		//	Debug.Log(string.Format("{0}, {1}, {2}", p.NameGet(), p.ScoreGet(), p.SponsorGet()));
-		//}
+		
+		var players = ResultsView.SortedResultsByScore;
+		rankingView.sortedResults = players;
 
 		if (F.I.teams) 
 		{
-			List<Player> winnerPlayers = new();
-			Livery winningTeam = players[0].SponsorGet();
+			List<ResultInfo> winnerPlayers = new();
+			Livery winningTeam = players[0].sponsor;
 			foreach(var p in players)
 			{
-				if(p.SponsorGet() == winningTeam)
+				if(p.sponsor == winningTeam)
 				{
 					winnerPlayers.Add(p);
 				}
@@ -49,7 +43,7 @@ public class WinnersView : MainMenuView
 			string joinStr = winnerPlayers.Count == 2 ? " & " : ", ";
 			for(int i=0; i<winnerPlayers.Count; ++i)
 			{
-				description.text += winnerPlayers[i];
+				description.text += winnerPlayers[i].name;
 				if ((i + 1) < winnerPlayers.Count)
 					description.text += joinStr;
 			}
@@ -57,21 +51,21 @@ public class WinnersView : MainMenuView
 
 			result123Obj.gameObject.SetActive(false);
 			succOverObj.gameObject.SetActive(true);
-			succOverObj.sprite = succOverSprites[winnerPlayers.Count(winner => winner.Id == AuthenticationService.Instance.PlayerId)]; 
+			succOverObj.sprite = succOverSprites[winnerPlayers.Count(winner => winner.id == ServerC.I.networkManager.LocalClientId)]; 
 		}
 		else
 		{
-			if(players.Length < 4)
+			if(players.Count < 4)
 			{
-				description.text = players[0].NameGet() + " WINS THE GAME!";
+				description.text = players[0].name + " WINS THE GAME!";
 				result123Obj.gameObject.SetActive(false);
 				succOverObj.gameObject.SetActive(true);
-				succOverObj.sprite = succOverSprites[(players[0].Id == AuthenticationService.Instance.PlayerId) ? 1 : 0];
+				succOverObj.sprite = succOverSprites[(players[0].id == ServerC.I.networkManager.LocalClientId) ? 1 : 0];
 			}
 			else
 			{
-				description.text = players[0].NameGet() + " WINS THE GAME!";
-				int pos = Array.FindIndex(players, 0, p => p.Id == AuthenticationService.Instance.PlayerId);
+				description.text = players[0].name + " WINS THE GAME!";
+				int pos = players.FindIndex(p => p.id == ServerC.I.networkManager.LocalClientId);
 				if(pos <= 2)
 				{
 					succOverObj.gameObject.SetActive(false);

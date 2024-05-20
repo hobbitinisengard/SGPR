@@ -13,6 +13,7 @@ using UnityEngine.EventSystems;
 using Unity.Multiplayer.Playmode;
 using UnityEngine.InputSystem;
 using Unity.Services.Lobbies.Models;
+public enum PlayerState { InRace, InLobbyUnready, InLobbyReady};
 public enum Envir { GER, JAP, SPN, FRA, ENG, USA, ITA, MEX };
 public enum CarGroup { Wild, Aero, Speed, Team };
 public enum Livery { Random = 0, Special = 1, TGR, Rline, Itex, Caltex, Titan, Mysuko }
@@ -46,74 +47,7 @@ public class RankingData
 	public LinkedList<RankingRowData> Pts = new();
 	public LinkedList<RankingRowData> Champ = new();
 }
-[Serializable]
-public class RankingRowData
-{
-	public string name;
-	public string dateStr;
-	public byte rounds;
-	/// <summary>
-	/// Returns money in championship mode or win percentage in victory mode or points mode
-	/// </summary>
-	public float moneyOrPerc;
 
-	[JsonConstructor]
-	public RankingRowData(string name, string dateStr, byte rounds, float moneyOrPerc)
-	{
-		this.name = name;
-		this.dateStr = dateStr;
-		this.rounds = rounds;
-		this.moneyOrPerc = moneyOrPerc;
-	}
-	public RankingRowData(Player[] sortedLobbyPlayers)
-	{
-		var me = ServerC.I.PlayerMe;
-		name = me.NameGet();
-		dateStr = DateTime.Now.ToString();
-		rounds = F.I.Rounds;
-		float absoluteScore = 0;
-		if (F.I.teams)
-		{
-			foreach (var p in sortedLobbyPlayers)
-			{
-				if (p.SponsorGet() == me.SponsorGet())
-					absoluteScore += p.ScoreGet();
-			}
-		}
-		else
-			absoluteScore = me.ScoreGet();
-
-		switch (F.I.scoringType)
-		{
-			case ScoringType.Championship:
-				moneyOrPerc = absoluteScore;
-				break;
-			case ScoringType.Points:
-				moneyOrPerc = absoluteScore / (rounds * 10);
-				break;
-			case ScoringType.Victory:
-				moneyOrPerc = absoluteScore / rounds;
-				break;
-			default:
-				moneyOrPerc = 0;
-				break;
-		}
-	}
-	/// <summary>
-	/// The more rounds, the more win value
-	/// </summary>
-	[JsonIgnore]
-	public float WinValue
-	{
-		get 
-		{
-			if (F.I.scoringType == ScoringType.Championship)
-				return moneyOrPerc;
-			else 
-				return moneyOrPerc * rounds; 
-		}
-	}
-}
 public class Info : MonoBehaviour
 {
 	private void Awake()
@@ -348,6 +282,7 @@ public class Info : MonoBehaviour
 	/// Only one object at the time can have this layer
 	/// </summary>
 	public int selectionLayer = 20;
+	[NonSerialized]
 	public bool randomPavement = true;
 	// curr/next session data
 	public bool s_spectator;
@@ -357,6 +292,7 @@ public class Info : MonoBehaviour
 	/// e.g car01
 	/// </summary>
 	public string s_playerCarName = "car01";
+	[NonSerialized]
 	public RaceType s_raceType = RaceType.Race;
 	/// <summary>
 	/// set to 0 to indicate freeroam
@@ -366,6 +302,7 @@ public class Info : MonoBehaviour
 	public bool s_isNight = false;
 	public CpuLevel s_cpuLevel = CpuLevel.Normal;
 	public int s_cpuRivals = 0; // 0-9
+	[NonSerialized]
 	public PavementType s_roadType = PavementType.Random;
 	public bool s_catchup = true;
 	public int s_resultPos = 3;

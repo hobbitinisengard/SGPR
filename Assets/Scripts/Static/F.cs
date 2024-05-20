@@ -76,10 +76,13 @@ public static class F
 	{
 		return int.Parse(player.Data[ServerC.k_score].Value);
 	}
-	
 	public static bool ReadyGet(this Player player)
 	{
-		return player.Data[ServerC.k_Ready].Value == "1";
+		return int.Parse(player.Data[ServerC.k_Ready].Value) == (int)PlayerState.InLobbyReady;
+	}
+	public static PlayerState PlayerStateGet(this Player player)
+	{
+		return (PlayerState)int.Parse(player.Data[ServerC.k_Ready].Value);
 	}
 	
 	public static string NameGet(this Player player)
@@ -120,7 +123,7 @@ public static class F
 					break;
 			}
 		}
-		return Color.yellow;
+		return Color.white;
 	}
 
 	public static float EasingOutQuint(float x)
@@ -357,11 +360,10 @@ public static class F
 	{
 		return (Livery)UnityEngine.Random.Range(1, F.I.Liveries + 1);
 	}
-	internal static void Deselect()
+	public static PavementType RandomRoadType()
 	{
-		F.I.eventSystem.SetSelectedGameObject(null);
+		return (PavementType)UnityEngine.Random.Range(0, F.I.pavementTypes + 1);
 	}
-
 #if UNITY_EDITOR
 	// Returns whether the given object is part of a prefab (meant to be used with selected objects in the inspector)
 	public static bool IsPrefab(UnityEngine.Object componentOrGameObject)

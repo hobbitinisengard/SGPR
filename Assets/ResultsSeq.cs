@@ -26,9 +26,10 @@ public class ResultsSeq : MonoBehaviour
 	public float d_invLerp;
 	public float d_minMax;
 	float cosArg;
-	private bool submitFlag;
-	private Coroutine setTableBoxesValuesCo;
-	private Coroutine bottomTextCo;
+	bool submitFlag;
+	Coroutine setTableBoxesValuesCo;
+	Coroutine bottomTextCo;
+	private float lastRoundEndedTime;
 
 	private void Awake()
 	{
@@ -42,6 +43,8 @@ public class ResultsSeq : MonoBehaviour
 	}
 	private void OnEnable()
 	{
+		lastRoundEndedTime = 0;
+		submitFlag = false;
 		F.I.enterRef.action.performed += OnEnterClicked;
 
 		rightBoxLabelInt = 0;
@@ -161,9 +164,16 @@ public class ResultsSeq : MonoBehaviour
 		while(true)
 		{
 			if (F.I.gameMode == MultiMode.Multiplayer && ResultsView.Count < ServerC.I.lobby.Players.Count)
+			{
 				pressEnterText.text = "WAITING";
+			}
 			else
 			{
+				if (F.I.gameMode == MultiMode.Multiplayer)
+				{
+					if (F.I.CurRound == F.I.Rounds)
+						lastRoundEndedTime = Time.time;
+				}
 				pressEnterText.text = "PRESS ENTER";
 				yield break;
 			}
@@ -183,10 +193,10 @@ public class ResultsSeq : MonoBehaviour
 		{
 			if (submitFlag && dimCo == null) // CLOSING SEQUENCE
 			{
-				submitFlag = false;
 				if (F.I.gameMode == MultiMode.Singleplayer 
 					|| (F.I.gameMode == MultiMode.Multiplayer && ResultsView.Count >= ServerC.I.lobby.Players.Count))
 				{
+					
 					foreach (var b in boxes)
 						b.GetComponent<SlideInOut>().PlaySlideOut(true);
 
@@ -201,6 +211,11 @@ public class ResultsSeq : MonoBehaviour
 						rightRow.GetChild(i).gameObject.GetComponent<SlideInOut>().PlaySlideOut(true);
 						yield return new WaitForSecondsRealtime(.2f);
 					}
+
+					// Wait for scores of online players to be updated before proceeding to ResultsView and WinnerView
+					if (F.I.CurRound == F.I.Rounds && lastRoundEndedTime != 0)
+						yield return new WaitForSecondsRealtime(3 - (Time.time - lastRoundEndedTime));
+
 					dimCo = StartCoroutine(DimmerWorks());
 					yield break;
 				}
@@ -258,14 +273,14 @@ public class ResultsSeq : MonoBehaviour
 	IEnumerator SetTableBoxesValues()
 	{
 		rightBoxLabel.text = rightBoxLabels[rightBoxLabelInt];
-		var list = ResultsView.List;
+		var list = ResultsView.SortedResultsByFinishPos;
 		for (int i = 0; i < list.Count; ++i)
 		{
 			leftRow.GetChild(i).GetChild(0).GetChild(0)
 						.GetComponent<TextMeshProUGUI>().text = list[i].name;
 
 			rightRow.GetChild(i).GetChild(0).GetChild(0)
-						.GetComponent<TextMeshProUGUI>().text = list[i].Result((RecordType)rightBoxLabelInt);
+						.GetComponent<TextMeshProUGUI>().text = list[i].ToString((RecordType)rightBoxLabelInt);
 		}
 
 		for (int i = 0; i < ResultsView.Count; ++i)

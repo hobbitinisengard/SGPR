@@ -8,6 +8,6 @@ public class SliderValue : MonoBehaviour
    public Slider slider;
    public void SetText(float value)
    {
-      text.text = value.ToString();
+      text.text = value.ToString("F1");
    }
 }

@@ -1628,9 +1628,9 @@ public class EditorPanel : MonoBehaviour
 		if (skybox != null)
 			Destroy(skybox);
 		if (envir != null)
-			Destroy(envir);
+			DestroyImmediate(envir);
 		if (terrain != null)
-			Destroy(terrain.gameObject);
+			DestroyImmediate(terrain.gameObject);
 	}
 	public IEnumerator LoadTrack()
 	{
@@ -1708,6 +1708,9 @@ public class EditorPanel : MonoBehaviour
 			}
 		}
 
+		if (F.I.randomPavement || F.I.s_roadType == PavementType.Random)
+			F.I.s_roadType = F.RandomRoadType();
+
 		if (TRACK.tiles != null)
 		{
 			foreach (var tile in TRACK.tiles)
@@ -1743,10 +1746,6 @@ public class EditorPanel : MonoBehaviour
 			}
 		}
 		currentTile = null;
-
-		// after placing tiles, if random pavement, set it back to random
-		if (F.I.randomPavement)
-			F.I.s_roadType = PavementType.Random;
 
 		windExternal = TRACK.windExternal;
 		windRandom = TRACK.windRandom;
