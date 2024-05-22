@@ -587,7 +587,7 @@ namespace RVP
 		}
 		void Update()
 		{
-			if (Physics.Raycast(tr.position, rb.velocity, 200, 1 << F.I.aeroTunnel))
+			if (Physics.OverlapBox(tr.position, Vector3.one, Quaternion.identity, 1 << F.I.aeroTunnel).Length > 0)
 			{ // aerodynamic tunnel
 				rb.drag = 0;
 			}

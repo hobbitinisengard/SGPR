@@ -483,11 +483,12 @@ public class EditorPanel : MonoBehaviour
 								}
 							}
 							if (scroll != 0)
-							{ // YAW, ROLL ROTATIONS
+							{ 
 								int dir = (scroll > 0 ? -1 : 1);
 								if (Input.GetKey(KeyCode.Tab))
-								{
-									selector.Distance = Mathf.Clamp(selector.Distance + dir * 2.5f, 10, 200);
+								{ // SCALATOR
+									float morePrecision = Input.GetKey(KeyCode.LeftShift) ? .25f : 1; 
+									selector.Distance = Mathf.Clamp(selector.Distance + dir * 2.5f * morePrecision, 10, 200);
 									if (currentTile)
 									{
 
@@ -497,7 +498,7 @@ public class EditorPanel : MonoBehaviour
 									DisplayMessageFor(selector.Distance.ToString("F1"), 1);
 								}
 								else if (Input.GetKey(KeyCode.Z))
-								{
+								{// YAW ROTATION
 									xRot = (xRot + dir) % 360;
 									if (xRot % 90 == 0 && xRot != 0)
 									{
@@ -513,7 +514,7 @@ public class EditorPanel : MonoBehaviour
 									DisplayMessageFor(xRot.ToString(), 1);
 								}
 								else if (Input.GetKey(KeyCode.C))
-								{
+								{ // ROLL ROTATION
 									zRot = (zRot + dir) % 360;
 									if (zRot % 90 == 0 && zRot != 0)
 									{

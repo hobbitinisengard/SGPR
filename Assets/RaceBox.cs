@@ -748,7 +748,7 @@ public class RaceBox : MonoBehaviour
 
 	public void NextLap()
 	{
-		if(F.I.s_laps > 0 && enabled)
+		if(F.I.s_laps > 0)
 		{
 			if (curLap == 0 || vp.followAI.LapProgressPercent > 0.9f || vp.followAI.pitsProgress > 0)
 			{
@@ -757,7 +757,7 @@ public class RaceBox : MonoBehaviour
 				if (F.I.s_raceType == RaceType.TimeTrial)
 					vp.energyRemaining = vp.batteryCapacity;
 
-				if (curLap <= F.I.s_laps)
+				if (curLap <= F.I.s_laps && enabled)
 				{
 					curLap++;
 

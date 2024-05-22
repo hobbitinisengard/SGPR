@@ -17832,6 +17832,8 @@ MonoBehaviour:
   speedLimitDist: 0
   hardCornerDot: 0.22
   slowingCoeff: 1
+  target:
+    dist: 0
   cpuLevel: 0
   SGPshifting: 0
   stopTimeReverse: 3
@@ -17935,7 +17937,6 @@ MonoBehaviour:
   cpuSmoothCoeff: 10
   cpuFastCoeff: 50
   targetSteer: 0
-  raceEndedLapProgressPercent: 0
   maxSteerPerFrame: 5
 --- !u!114 &8319369162350912230
 MonoBehaviour:
@@ -22180,13 +22181,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 9013835206299173347}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 0.5, z: -0.115}
-  m_LocalScale: {x: 0.97, y: 0.62, z: 0.58}
+  m_LocalRotation: {x: -0.6798255, y: 0, z: 0, w: 0.73337394}
+  m_LocalPosition: {x: 0, y: 0.594, z: 0.053}
+  m_LocalScale: {x: 0.85, y: 0.86, z: 0.74}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6457121441695959639}
-  m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: -85.66, y: 0, z: 0}
 --- !u!33 &6422790546457577318
 MeshFilter:
   m_ObjectHideFlags: 0

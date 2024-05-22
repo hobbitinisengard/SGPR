@@ -199,7 +199,6 @@ namespace RVP
 		public void KnockoutCarsBehind(VehicleParent survivorCar)
 		{
 			F.I.s_cars.Sort((carA, carB) => LiveProgress(carB).CompareTo(LiveProgress(carA)));
-
 			
 			for (int i = F.I.s_cars.FindIndex(c => c == survivorCar)+1; i < F.I.s_cars.Count; ++i)
 			{
@@ -210,7 +209,6 @@ namespace RVP
 					hud.infoText.AddMessage(new(eliminatedCar.tr.name + " IS ELIMINATED!", BottomInfoType.ELIMINATED));
 				}
 			}
-			
 		}
 		//Color HDRColor(float r, float g, float b, int intensity = 0)
 		//{
