@@ -12,6 +12,8 @@ using PathCreation;
 using UnityEngine.EventSystems;
 using Unity.Multiplayer.Playmode;
 using UnityEngine.InputSystem;
+using Unity.Services.Lobbies.Models;
+public enum PlayerState { InRace, InLobbyUnready, InLobbyReady};
 public enum Envir { GER, JAP, SPN, FRA, ENG, USA, ITA, MEX };
 public enum CarGroup { Wild, Aero, Speed, Team };
 public enum Livery { Random = 0, Special = 1, TGR, Rline, Itex, Caltex, Titan, Mysuko }
@@ -35,6 +37,17 @@ public class PlayerSettingsData
 	public string serverMaxPlayers = "10";
 	public string[] quickMessages = new string[10];
 }
+[Serializable]
+public class RankingData
+{
+	public LinkedList<RankingRowData> TeamVic = new();
+	public LinkedList<RankingRowData> TeamPts = new();
+	public LinkedList<RankingRowData> TeamChamp = new();
+	public LinkedList<RankingRowData> Vic = new();
+	public LinkedList<RankingRowData> Pts = new();
+	public LinkedList<RankingRowData> Champ = new();
+}
+
 public class Info : MonoBehaviour
 {
 	private void Awake()
@@ -66,6 +79,7 @@ public class Info : MonoBehaviour
 		ReloadCarsData();
 		PopulateTrackData();
 		ReloadCarPartsData();
+		LoadRanking();
 		icons = Resources.LoadAll<Sprite>(trackImagesPath + "tiles");
 	}
 
@@ -78,6 +92,7 @@ public class Info : MonoBehaviour
 	public string partsPath { get { return documentsSGPRpath + "parts\\"; } }
 	public string tracksPath { get { return documentsSGPRpath + "tracks\\"; } }
 	public string userdataPath { get { return documentsSGPRpath + "userdata.json"; } }
+	public string rankingPath { get { return documentsSGPRpath + "ranking.json"; } }
 	public string lastPath { get { return documentsSGPRpath + "path.txt"; } }
 
 	public Livery s_PlayerCarSponsor = Livery.Special;
@@ -98,6 +113,26 @@ public class Info : MonoBehaviour
 	public InputActionReference altInputRef;
 	public InputActionReference pointRef;
 
+	public RankingData rankingData;
+	public async void LoadRanking()
+	{
+		if (!File.Exists(rankingPath))
+		{
+			rankingData = new RankingData();
+			string serializedRanking = JsonConvert.SerializeObject(rankingData);
+			await File.WriteAllTextAsync(rankingPath, serializedRanking);
+		}
+		else
+		{
+			string serializedRanking = await File.ReadAllTextAsync(rankingPath);
+			rankingData = JsonConvert.DeserializeObject<RankingData>(serializedRanking);
+		}
+	}
+	public async void SaveRanking()
+	{
+		string serializedRanking = JsonConvert.SerializeObject(rankingData);
+		await File.WriteAllTextAsync(rankingPath, serializedRanking);
+	}
 	public string SHA(string filePath)
 	{
 		string hash;
@@ -206,6 +241,8 @@ public class Info : MonoBehaviour
 	public readonly string carImagesPath = "carImages/";
 	public readonly string trackImagesPath = "trackImages/";
 	public readonly string editorTilesPath = "tiles/objects/";
+	public ResultsView resultsView;
+	[NonSerialized]
 	public Chat chat;
 	public PathCreator universalPath;
 
@@ -224,25 +261,28 @@ public class Info : MonoBehaviour
 	public int roadLayer = 6;
 
 	public string visibleInPictureModeTag = "VisibleInPictureMode";
-	public int ignoreWheelCastLayer = 8;
-	public int vehicleLayer = 9;
-	public int connectorLayer = 11;
-	public int invisibleLevelLayer = 12;
-	public int terrainLayer = 13;
-	public int cameraLayer = 14;
-	public int flagLayer = 15;
-	public int racingLineLayer = 16;
-	public int pitsLineLayer = 17;
-	public int pitsZoneLayer = 18;
-	public int aeroTunnel = 19;
-	public int surfaceLayer = 23;
-	public int ghostLayer = 24;
-	public int carCarCollisionLayer = 26;
+	public readonly int ignoreWheelCastLayer = 8;
+	public readonly int vehicleLayer = 9;
+	public readonly int connectorLayer = 11;
+	public readonly int invisibleLevelLayer = 12;
+	public readonly int terrainLayer = 13;
+	public readonly int cameraLayer = 14;
+	public readonly int flagLayer = 15;
+	public readonly int racingLineLayer = 16;
+	public readonly int pitsLineLayer = 17;
+	public readonly int pitsZoneLayer = 18;
+	public readonly int aeroTunnel = 19;
+	public readonly int surfaceLayer = 23;
+	public readonly int ghostLayer = 24;
+	public readonly int carCarCollisionLayer = 26;
 
+	public readonly Color32 yellow = new(255, 223, 0, 255);
+	public readonly Color32 red = new(255, 64, 64, 255);
 	/// <summary>
 	/// Only one object at the time can have this layer
 	/// </summary>
 	public int selectionLayer = 20;
+	[NonSerialized]
 	public bool randomPavement = true;
 	// curr/next session data
 	public bool s_spectator;
@@ -252,6 +292,7 @@ public class Info : MonoBehaviour
 	/// e.g car01
 	/// </summary>
 	public string s_playerCarName = "car01";
+	[NonSerialized]
 	public RaceType s_raceType = RaceType.Race;
 	/// <summary>
 	/// set to 0 to indicate freeroam
@@ -261,9 +302,11 @@ public class Info : MonoBehaviour
 	public bool s_isNight = false;
 	public CpuLevel s_cpuLevel = CpuLevel.Normal;
 	public int s_cpuRivals = 0; // 0-9
+	[NonSerialized]
 	public PavementType s_roadType = PavementType.Random;
 	public bool s_catchup = true;
 	public int s_resultPos = 3;
+	public bool teams = false;
 	public int ServerIdGenerator = 0;
 
 	public readonly string[] IconNames =
@@ -283,6 +326,9 @@ public class Info : MonoBehaviour
 
 	public EventSystem eventSystem;
 	public DateTime raceStartDate;
+	public byte Rounds = 0;
+	public byte CurRound;
+	
 	public readonly int maxConcurrentUsers = 30;
 
 	public Car Car(string name)

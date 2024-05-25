@@ -18,15 +18,11 @@ public class LoadSelector : TrackSelectorTemplate
 		if (File.Exists(F.I.tracksPath + selectedTrack.name + ".rec"))
 			File.Delete(F.I.tracksPath + selectedTrack.name + ".rec");
 
-		int children = selectedTrack.parent.childCount;
-		int index = Mathf.Clamp(selectedTrack.GetSiblingIndex(),0,children-2);
+		int idx = selectedTrack.GetSiblingIndex();
 		Destroy(selectedTrack.gameObject);
-		if (selectedTrack.parent.childCount == 0)
-			selectedTrack = null;
-		else
-			selectedTrack = trackContent.GetChild(1).GetChild(index);
+		selectedTrack = selectedTrack.parent.GetChild(idx-1);
 
-		StartCoroutine(Load());
+		StartCoroutine(Load(selectedTrack.name));
 		//containerCo = StartCoroutine(MoveToTrack());
 	}
 	//bool[] PopulateContent()

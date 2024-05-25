@@ -13,7 +13,6 @@ public class MainMenuView : Sfxable
 	public TextMeshProUGUI bottomText;
 	public Sprite bgTile;
 	public AudioClip music;
-	public InputActionReference cancelInput;
 	public YouSureDialog youSureDialog;
 	public bool prevViewForbidden;
 	static ViewSwitcher dimmer;
@@ -61,8 +60,9 @@ public class MainMenuView : Sfxable
 	/// </summary>
 	public void GoToView(MainMenuView view)
 	{
-		if(!view.prevViewForbidden)
+		if (view != prevView && !view.prevViewForbidden && !prevViewForbidden)
 			view.prevView = this;
+		
 		SwitchView(view);
 	}
 	void SwitchView(MainMenuView view)
@@ -76,13 +76,13 @@ public class MainMenuView : Sfxable
 		}
 		dimmer.PlayDimmer(this, view);
 	}
-	protected void OnDisable()
+	protected virtual void OnDisable()
 	{
-		cancelInput.action.started -= CancelPressed;
+		F.I.escRef.action.started -= CancelPressed;
 	}
-	protected void OnEnable()
+	protected virtual void OnEnable()
 	{
-		cancelInput.action.started += CancelPressed;
+		F.I.escRef.action.started += CancelPressed;
 		if (firstButtonToBeSelected)
 			firstButtonToBeSelected.Select();
 		
@@ -96,7 +96,7 @@ public class MainMenuView : Sfxable
 		{
 			PlaySFX("fe-gameload");
 			if (F.I.s_roadType == PavementType.Random)
-				F.I.s_roadType = (PavementType)Mathf.RoundToInt(F.I.pavementTypes * UnityEngine.Random.value);
+				F.I.s_roadType = F.RandomRoadType();
 
 			for (int i = 0; i < transform.childCount; ++i)
 			{
@@ -113,9 +113,8 @@ public class MainMenuView : Sfxable
 			PlaySFX("fe-cardserror");
 		else
 		{
-			
 			if (F.I.s_roadType == PavementType.Random)
-				F.I.s_roadType = (PavementType)Mathf.RoundToInt((F.I.pavementTypes * UnityEngine.Random.value));
+				F.I.s_roadType = F.RandomRoadType();
 			F.I.s_inEditor = true;
 			F.I.s_spectator = false;
 			dimmer.PlayDimmerToWorld();

@@ -3,6 +3,7 @@ using System.Collections;
 using System;
 using Unity.Netcode;
 using Unity.Collections;
+using System.Linq;
 
 namespace RVP
 {
@@ -87,6 +88,7 @@ namespace RVP
 	// Vehicle root class
 	public class VehicleParent : NetworkBehaviour
 	{
+		public Renderer antennaFlag;
 		public GameObject carReflectionPrefab;
 		public MeshRenderer[] springRenderers;
 		public AudioSource honkerAudio;
@@ -115,7 +117,10 @@ namespace RVP
 		[System.NonSerialized]
 		public Transform norm; // Normal orientation object
 
-		NetworkVariable<Livery> _sponsor = new(); //SERVER
+		/// <summary>
+		/// This can't be set to random.
+		/// </summary>
+		NetworkVariable<Livery> _sponsor = new();
 
 		[System.NonSerialized]
 		public float accelInput;
@@ -159,15 +164,23 @@ namespace RVP
 		//NetworkVariable<int> _rollButton = new(writePerm: NetworkVariableWritePermission.Owner);
 		//public int rollInput { get { return _boostButton.Value; } set { _boostButton.Value = value; } }
 		
-		public Livery sponsor { get { return _sponsor.Value; } 
+		public Livery sponsor 
+		{ 
+			get 
+			{
+				return _sponsor.Value;
+			} 
 			set 
 			{ 
 				if(ServerC.I.AmHost)
 				{
+					if (value == Livery.Random)
+						value = F.RandomLivery();
 					_sponsor.Value = value;
 				}
 			} 
 		}
+
 		NetworkVariable<FixedString32Bytes> _name = new(); // SERVER
 		public new string name 
 		{ 
@@ -321,24 +334,25 @@ namespace RVP
 		public GameObject customCam;
 		private float lastNoBatteryMessage;
 		public bool Owner { get { return IsOwner || F.I.gameMode == MultiMode.Singleplayer; } }
+		[NonSerialized]
+		public int lastRoundScore;
 		[Rpc(SendTo.SpecifiedInParams)]
 		public void RelinquishRpc(RpcParams ps)
 		{
 			NetworkObject.RemoveOwnership();
 			Destroy(gameObject);
 		}
-		
 		[Rpc(SendTo.SpecifiedInParams)]
 		void RequestRaceboxValuesRpc(RpcParams ps)
 		{
-			SynchRaceboxValuesRpc(raceBox.curLap, followAI.dist, followAI.progress, raceBox.Aero, raceBox.drift, 
-				(float)raceBox.bestLapTime.TotalSeconds, 
-				(float)raceBox.raceTime.TotalSeconds,
+			SynchRaceboxValuesRpc(ServerC.I.PlayerMe.ScoreGet(), raceBox.curLap, followAI.dist, followAI.progress, raceBox.Aero, raceBox.drift, 
+				(float)raceBox.bestLapTime.TotalSeconds, (float)raceBox.raceTime.TotalSeconds, 
 				RpcTarget.Single(ps.Receive.SenderClientId, RpcTargetUse.Temp));
 		}
 		[Rpc(SendTo.SpecifiedInParams)]
-		public void SynchRaceboxValuesRpc(int curLap, int dist, int progress, float aero, float drift, float bestLapSecs, float raceTimeSecs, RpcParams ps)
+		public void SynchRaceboxValuesRpc(int lastRoundScore, int curLap, int dist, int progress, float aero, float drift, float bestLapSecs, float raceTimeSecs, RpcParams ps)
 		{
+			this.lastRoundScore = lastRoundScore;
 			raceBox.UpdateValues(curLap, dist, progress, aero, drift, bestLapSecs, raceTimeSecs);
 			ResultsView.Add(this);
 		}
@@ -349,6 +363,7 @@ namespace RVP
 		int roadSurfaceType;
 		[NonSerialized]
 		public float tyresOffroad;
+
 		public CatchupStatus catchupStatus { get; private set; }
 		public float AngularDrag { get { return rb.angularDrag; } }
 
@@ -420,19 +435,20 @@ namespace RVP
 		{
 			var mr = bodyObj.GetComponent<MeshRenderer>();
 			string matName = mr.sharedMaterial.name;
-			if((sponsor) != 0)
+			if (matName.Contains("Instance"))
+				matName = matName[..matName.IndexOf(' ')];
+			matName = matName[..^1] + ((int)sponsor).ToString();
+			Material newMat = Resources.Load<Material>("materials/" + matName);
+			newMat.name = matName;
+			mr.material = newMat;
+			if(antennaFlag != null)
+				antennaFlag.material = newMat;
+			RaceManager.I.hud.AddToProgressBar(this);
+			sampleText.textMesh.color = F.ReadColor(sponsor);
+			if (F.I.gameMode == MultiMode.Multiplayer)
 			{
-				if (matName.Contains("Instance"))
-					matName = matName[..matName.IndexOf(' ')];
-				matName = matName[..^1] + ((int)sponsor).ToString();
-				Material newMat = Resources.Load<Material>("materials/" + matName);
-				newMat.name = matName;
-				mr.material = newMat;
-				RaceManager.I.hud.AddToProgressBar(this);
-			}
-			else
-			{
-				Debug.LogError($"on {name}, sponsor is 0");
+				ServerC.I.ReadySet(PlayerState.InRace);
+				ServerC.I.UpdatePlayerData();
 			}
 		}
 		void OnNameChanged()
@@ -501,28 +517,18 @@ namespace RVP
 		public override void OnNetworkSpawn()
 		{
 			base.OnNetworkSpawn();
-			if (!Owner)
-			{
-				//rb.isKinematic = true;
-				basicInput.enabled = false;
-				if (OnlineCommunication.I.raceAlreadyStarted.Value)
-				{// latecomer's request to synch progress
-					//Debug.Log("RequestRaceboxValuesRpc");
-					RequestRaceboxValuesRpc(RpcTarget.Owner);
-				}
-			}
 			Initialize();
 		}
 		
 		private void Start()
 		{
-			Initialize();
+			if(F.I.gameMode == MultiMode.Singleplayer)
+				Initialize();
 		}
-
+		
 		void Initialize()
 		{
 			
-
 			Color c = F.RandomColor();
 			foreach(var s in springRenderers)
 				s.material.color = c;
@@ -533,17 +539,6 @@ namespace RVP
 			GameObject normTemp = new GameObject(tr.name + "'s Normal Orientation");
 			norm = normTemp.transform;
 
-			// Instantiate tow vehicle
-			//if (towVehicle)
-			//{
-			//	newTow = Instantiate(towVehicle, Vector3.zero, tr.rotation);
-			//	newTow.SetActive(false);
-			//	newTow.transform.position = tr.TransformPoint(newTow.GetComponent<Joint>().connectedAnchor - newTow.GetComponent<Joint>().anchor);
-			//	newTow.GetComponent<Joint>().connectedBody = rb;
-			//	newTow.SetActive(true);
-			//	newTow.GetComponent<VehicleParent>().inputInherit = this;
-			//}
-
 			followAI.SetCPU(transform.name.Contains("CP"));
 
 			if (F.I.s_spectator)
@@ -551,19 +546,19 @@ namespace RVP
 				if (UnityEngine.Random.value > 0.5f)
 					RaceManager.I.cam.Connect(this, CameraControl.Mode.Replay);
 			}
-			
-			StartCoroutine(ApplySetup());
 
 			lightsInput = F.I.s_isNight;
 			foreach (var l in frontLights)
 				l.SetActive(lightsInput);
 			foreach (var l in rearLights)
 				l.SetActive(lightsInput);
+
+			StartCoroutine(ApplySetup());
 		}
 		
 		IEnumerator ApplySetup()
 		{
-			while(sponsor == 0)
+			while (sponsor == Livery.Random)
 			{ // sending sponsor info may come from the server after a while
 				yield return null;
 			}
@@ -576,7 +571,23 @@ namespace RVP
 			
 			if (F.I.s_raceType == RaceType.TimeTrial)
 				ghost.SetGhostPermanently();
+
+			
+
+			if (!Owner)
+			{
+				//rb.isKinematic = true;
+				basicInput.enabled = false;
+				if (OnlineCommunication.I.raceAlreadyStarted.Value)
+				{// latecomer's request to synch progress
+				 //Debug.Log("RequestRaceboxValuesRpc");
+					RequestRaceboxValuesRpc(RpcTarget.Owner);
+				}
+			}
+			ResultsView.Add(this);
 		}
+
+
 		[Rpc(SendTo.SpecifiedInParams)]
 		public void SetCurLapRpc(int curLap, RpcParams ps)
 		{
@@ -584,7 +595,7 @@ namespace RVP
 		}
 		void Update()
 		{
-			if (Physics.Raycast(tr.position, rb.velocity, 200, 1 << F.I.aeroTunnel))
+			if (Physics.OverlapBox(tr.position, Vector3.one, Quaternion.identity, 1 << F.I.aeroTunnel).Length > 0)
 			{ // aerodynamic tunnel
 				rb.drag = 0;
 			}
@@ -949,7 +960,6 @@ namespace RVP
 		public override void OnDestroy()
 		{
 			F.I.s_cars.Remove(this);
-
 			SGP_HUD.I.RemoveFromProgressBar(this);
 			if (norm)
 			{

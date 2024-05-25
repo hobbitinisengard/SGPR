@@ -9,18 +9,14 @@ using Unity.Services.Lobbies.Models;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
-[Serializable]
-public class LobbyRelayId
-{
-	public ulong playerRelayId;
-	public string playerLobbyId;
-}
 public class Chat : NetworkBehaviour
 {
 	public GameObject chatRowPrefab;
 
 	public ScrollRect[] scrollRects;
 	public TMP_InputField[] inputFields;
+
+	public Button readyButton;
 
 	public bool texting { get; private set; }
 	Coroutine showChatCo;
@@ -32,7 +28,7 @@ public class Chat : NetworkBehaviour
 	public override void OnNetworkSpawn()
 	{
 		base.OnNetworkSpawn();
-		StartCoroutine(Initialize());
+		Initialize();
 	}
 	public override void OnNetworkDespawn()
 	{
@@ -47,23 +43,13 @@ public class Chat : NetworkBehaviour
 			i.onSubmit.RemoveAllListeners();
 		}
 	}
-	IEnumerator Initialize()
+	void Initialize()
 	{
-		//Debug.Log("chat INitialize()");
-		while (MultiPlayerSelector.I == null)
-			yield return null;
-	
 		F.I.chatButtonInput.action.performed += buttonPressed;
 		F.I.quickMessageRef.action.performed += QuickMessagePressed;
-		//inputFields[0] = MultiPlayerSelector.I.chatInitializer.lobbyChatInputField;
-		//inputFields[1] = MultiPlayerSelector.I.chatInitializer.raceChatInputField;
-	
-		//scrollRects[0] = MultiPlayerSelector.I.chatInitializer.lobbyChat;
-		//scrollRects[1] = MultiPlayerSelector.I.chatInitializer.raceChat;
 	
 		SetVisibility(false);
 	
-		ServerC.I.callbacks.PlayerJoined += Callbacks_PlayerJoined;
 
 		foreach(var c in scrollRects)
 			F.DestroyAllChildren(c.content);
@@ -74,6 +60,8 @@ public class Chat : NetworkBehaviour
 			i.onDeselect.AddListener(s => { texting = false; MultiPlayerSelector.I.EnableSelectionOfTracks(ServerC.I.AmHost && !ServerC.I.PlayerMe.ReadyGet()); });
 			i.onSubmit.AddListener(s =>
 			{
+				readyButton.Select();
+
 				if (s.Length > 0)
 				{
 					AddChatRow(ServerC.I.PlayerMe, s);
@@ -81,9 +69,15 @@ public class Chat : NetworkBehaviour
 					i.text = "";
 					if(F.I.actionHappening == ActionHappening.InRace)
 					{
-						F.Deselect();
+						//F.Deselect();
 						inputFields[1].gameObject.SetActive(false);
 					}
+				}
+				else
+				{
+					if (showChatCo != null)
+						StopCoroutine(showChatCo);
+					showChatCo = StartCoroutine(HideRaceChatAfterSeconds(5));
 				}
 			});
 		}
@@ -121,6 +115,8 @@ public class Chat : NetworkBehaviour
 
 		if (F.I.actionHappening == ActionHappening.InRace)
 			inputFields[1].Select();
+		else
+			inputFields[0].Select();
 	}
 
 	IEnumerator HideRaceChatAfterSeconds(float timer)
@@ -129,23 +125,16 @@ public class Chat : NetworkBehaviour
 		yield return new WaitForSecondsRealtime(timer);
 		SetVisibility(false);
 	}
-		
-	public void Callbacks_PlayerJoined(List<LobbyPlayerJoined> newPlayers)
-	{
-		foreach (var p in newPlayers)
-		{
-			AddChatRowRpc(p.Player.NameGet(), Encoding.UTF8.GetBytes("has joined the server"), Color.white, Color.gray);
-		}
-	}
+	
 	public void PlayerLeft(Player p)
 	{
-		AddChatRowRpc(p.NameGet(), Encoding.UTF8.GetBytes("has left the server"), Color.white, Color.gray);
+		AddChatRowLocally(p.NameGet(), "has left the server", Color.white, Color.grey);
 	}
 	public void AddChatRowAsServer(string msg)
 	{
-		byte[] bytes = Encoding.UTF8.GetBytes(msg); // for polish chars
-		AddChatRowRpc("", bytes, Color.gray, Color.gray);
+		AddChatRowLocally("", msg, Color.gray, Color.gray);
 	}
+	
 	public void AddChatRow(Player p, string msg, Color? color = null)
 	{
 		byte[] bytes = Encoding.UTF8.GetBytes(msg); // for polish chars
@@ -157,18 +146,22 @@ public class Chat : NetworkBehaviour
 	public void AddChatRowRpc(string name, byte[] msgBytes, Color32 colorA, Color32 colorB)
 	{
 		string msg = Encoding.UTF8.GetString(msgBytes);
+		AddChatRowLocally(name, msg, colorA, colorB);
+	}
+	public void AddChatRowLocally(string name, string msg, Color32 colorA, Color32 colorB)
+	{
 		if (showChatCo != null)
 			StopCoroutine(showChatCo);
 		showChatCo = StartCoroutine(HideRaceChatAfterSeconds(5));
 
-		foreach(var c in scrollRects)
+		foreach (var c in scrollRects)
 		{
 			var newRow = Instantiate(chatRowPrefab, c.content).GetComponent<RectTransform>();
 			var textA = newRow.GetChild(0).GetComponent<TextMeshProUGUI>();
-			textA.text = name + ":";
+			textA.text = name;
 			textA.color = colorA;
 			var textB = newRow.GetChild(1).GetComponent<TextMeshProUGUI>();
-			textB.text = "  " + msg;
+			textB.text = ((textA.text.Length > 0) ? ":  " : "") + msg;
 			textB.color = colorB;
 		}
 		UpdateCanvases();

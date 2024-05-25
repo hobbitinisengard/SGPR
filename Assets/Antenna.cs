@@ -15,7 +15,8 @@ public class Antenna : MonoBehaviour
 	protected Vector3 goal_prevPos;
 	protected Vector3 goal_initPos;
 	int nodes = 0;
-	public float targetHeight = 0.26f; // how high above this should target be located?
+
+	public float targetHeight = 0.26f; // how high above this should target be located?. Always 0.05 bigger than mesh height
 	
 	float[] nodes_y_heights;
 	// Start is called before the first frame update

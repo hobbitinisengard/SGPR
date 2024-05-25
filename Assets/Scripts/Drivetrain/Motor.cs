@@ -142,7 +142,7 @@ namespace RVP
 				if (ignition && health > 0)
 				{
 					engineAudio.enabled = true;					
-					engineAudio.pitch = Mathf.Lerp(engineAudio.pitch, Mathf.Lerp(minPitch, maxPitch, targetPitch),
+					engineAudio.pitch = Mathf.LerpUnclamped(engineAudio.pitch, Mathf.Lerp(minPitch, maxPitch, targetPitch),
 						20 * Time.deltaTime) + Mathf.Sin(Time.time * 200 * (1 - health)) * (1 - health) * 0.1f * damagePitchWiggle;
 					idlingEngineAudio.pitch = engineAudio.pitch;
 					// blend idling engine audio with revving audio

@@ -14,6 +14,12 @@ using System.Linq;
 using System;
 using Random = UnityEngine.Random;
 using System.Collections.Concurrent;
+using UnityEditor;
+class SponsorScore
+{
+	public Livery sponsor;
+	public int score;
+}
 public class ServerC : MonoBehaviour
 {
 	//public Dictionary<string, PlayerDataObject> playerMeData;
@@ -84,7 +90,92 @@ public class ServerC : MonoBehaviour
 	{
 		get
 		{
-			return lobby.Players.Count(p => p.ReadyGet() == true);
+			return lobby.Players.Count(p => p.ReadyGet());
+		}
+	}
+
+	List<Player> RandomResults()
+	{
+		int playersNum = UnityEngine.Random.Range(1, 11);
+		List<Player> players = new(playersNum);
+		for (int i = 0; i < playersNum; ++i)
+		{
+			Dictionary<string, PlayerDataObject> Data = new()
+			{
+				[ServerC.k_Name] = new PlayerDataObject(PlayerDataObject.VisibilityOptions.Public,
+					(i == 0) ? F.I.playerData.playerName : F.RandomString(F.R(3, 13))),
+				[ServerC.k_Sponsor] = new PlayerDataObject(PlayerDataObject.VisibilityOptions.Public, (F.R(1, F.I.Liveries + 1)).ToString())
+			};
+			players.Add(new Player(data: Data));
+
+			switch (F.I.scoringType)
+			{
+				case ScoringType.Championship:
+					players[i].Data[ServerC.k_score] = new PlayerDataObject(PlayerDataObject.VisibilityOptions.Public, F.R(0, 10).ToString());
+					break;
+				case ScoringType.Points:
+					players[i].Data[ServerC.k_score] = new PlayerDataObject(PlayerDataObject.VisibilityOptions.Public, F.R(0, 500).ToString());
+					break;
+				case ScoringType.Victory:
+					players[i].Data[ServerC.k_score] = new PlayerDataObject(PlayerDataObject.VisibilityOptions.Public, F.R(0, 50).ToString());
+					break;
+				default:
+					break;
+			}
+		}
+		return players;
+	}
+	public Player[] ScoreSortedPlayers
+	{
+		get
+		{
+			// DEBUG
+			//var lobbyPlayers = RandomResults();
+			var lobbyPlayers = lobby.Players;
+
+			Player[] players = new Player[lobbyPlayers.Count];
+			for (int i = 0; i < lobbyPlayers.Count; ++i)
+				players[i] = lobbyPlayers[i];
+
+			// Team scoring
+			if (F.I.teams)
+			{
+				List<SponsorScore> teamScores = new();
+
+				foreach (var p in lobbyPlayers)
+				{
+
+					var playerSponsor = p.SponsorGet();
+					var playerScore = p.ScoreGet();
+
+					var teamScore = teamScores.Find(s => playerSponsor == s.sponsor);
+
+					if (teamScore == null)
+					{
+						teamScores.Add(new SponsorScore { sponsor = playerSponsor, score = playerScore });
+					}
+					else
+					{
+						teamScore.score += playerScore;
+					}
+				}
+				teamScores.Sort((y, x) => x.score.CompareTo(y.score));
+
+				Array.Sort(players, (Player p2, Player p1) =>
+				{
+					Livery p1Sponsor = p1.SponsorGet();
+					Livery p2Sponsor = p2.SponsorGet();
+					var teamScoreA = teamScores.Find(s => s.sponsor == p1Sponsor).score;
+					var teamScoreB = teamScores.Find(s => s.sponsor == p2Sponsor).score;
+					return teamScoreA.CompareTo(teamScoreB);
+				});
+			}
+			else
+			{ // Individual scoring
+
+				Array.Sort(players, (Player a, Player b) => b.ScoreGet().CompareTo(a.ScoreGet()));
+			}
+			return players;
 		}
 	}
 	private async void Start()
@@ -120,7 +211,7 @@ public class ServerC : MonoBehaviour
 			for (int i = 0; i < sortedPlayers.Length; ++i)
 				sortedPlayers[i] = lobby.Players[i];
 
-			Array.Sort(sortedPlayers, (Player a, Player b) => 
+			Array.Sort(sortedPlayers, (Player a, Player b) =>
 			{
 				return a.ScoreGet().CompareTo(b.ScoreGet());
 			});
@@ -154,9 +245,6 @@ public class ServerC : MonoBehaviour
 	}
 	Dictionary<string, PlayerDataObject> InitializePlayerData()
 	{
-		if (F.I.s_PlayerCarSponsor == Livery.Random)
-			F.I.s_PlayerCarSponsor = (Livery)UnityEngine.Random.Range(1, F.I.Liveries + 1);
-
 		Dictionary<string, PlayerDataObject> playerMeData = new()
 		{
 			{
@@ -172,7 +260,7 @@ public class ServerC : MonoBehaviour
 			{
 				k_Ready, new PlayerDataObject(
 					visibility: PlayerDataObject.VisibilityOptions.Member,
-					value: "false")
+					value: ((int)PlayerState.InLobbyUnready).ToString())
 			},
 			{
 				k_score, new PlayerDataObject(
@@ -199,13 +287,40 @@ public class ServerC : MonoBehaviour
 			}
 		}
 	}
-
+	public int TeamsInLobby
+	{
+		get
+		{
+			if (!F.I.teams)
+				return 0;
+			bool[] teams = new bool[F.I.Liveries];
+			foreach (var p in lobby.Players)
+			{
+				int sponsor = Mathf.Clamp((int)p.SponsorGet(), 1, F.I.Liveries);
+				teams[sponsor] = true;
+			}
+			return teams.Count(t => t);
+		}
+	}
 	string EncodeConfig()
 	{
-		string encodeConfig = ((int)F.I.scoringType).ToString() + (F.I.randomCars ? "1" : "0") + (F.I.randomTracks ? "1" : "0")
-			+ ((int)F.I.s_raceType).ToString() + (F.I.s_laps).ToString("D2") + (F.I.s_isNight ? "1" : "0") + ((int)F.I.s_cpuLevel).ToString()
-			+ "0" + ((int)F.I.s_roadType).ToString() + (F.I.s_catchup ? "1" : "0");
-		// "0" - cpuCars
+		string encodeConfig =
+			((int)F.I.scoringType).ToString()
+			+ (F.I.randomCars ? "1" : "0")
+			+ (F.I.randomTracks ? "1" : "0")
+			+ ((int)F.I.s_raceType).ToString()
+			+ (F.I.s_laps).ToString("D2")
+			+ (F.I.s_isNight ? "1" : "0")
+			+ ((int)F.I.s_cpuLevel).ToString()
+			+ "0" // "0" - cpuCars
+			+ ((int)F.I.s_roadType).ToString()
+			+ (F.I.teams ? "1" : "0");
+
+		if (ServerC.I.AnyClientsStillInRace)
+			encodeConfig += GetCurRound().ToString("D2") + GetRounds().ToString("D2");
+		else
+			encodeConfig += F.I.CurRound.ToString("D2") + F.I.Rounds.ToString("D2");
+
 		return encodeConfig;
 	}
 	public Player Host
@@ -252,7 +367,7 @@ public class ServerC : MonoBehaviour
 		updatingPlayer = true;
 		try
 		{
-			if(playerChanged)
+			if (playerChanged)
 			{
 				await Task.Delay(100);
 				UpdatePlayerOptions options = new()
@@ -290,6 +405,15 @@ public class ServerC : MonoBehaviour
 		set { lobby.Data[k_actionHappening] = new DataObject(DataObject.VisibilityOptions.Public, value.ToString()); }
 	}
 
+	public bool AnyClientsStillInRace
+	{
+		get
+		{
+			if (lobby == null)
+				return false;
+			return lobby.Players.Any(p => p.PlayerStateGet() == PlayerState.InRace);
+		}
+	}
 
 	private async Task Authenticate()
 	{
@@ -379,9 +503,73 @@ public class ServerC : MonoBehaviour
 	{
 		return (ScoringType)(lobby.Data[k_raceConfig].Value[0] - '0');
 	}
+	public bool GetTeams()
+	{
+		return lobby.Data[k_raceConfig].Value[10] == '1';
+	}
+	public int GetCurRound()
+	{
+		return byte.Parse(lobby.Data[k_raceConfig].Value[11..13]);
+	}
+	public int GetRounds()
+	{
+		return byte.Parse(lobby.Data[k_raceConfig].Value[13..15]);
+	}
 	public Livery GetSponsor()
 	{
-		return (Livery)Enum.Parse(typeof(Livery), PlayerMe.Data[k_Sponsor].Value);
+		return (Livery)int.Parse(PlayerMe.Data[k_Sponsor].Value);
+	}
+	public void SponsorSet()
+	{
+		string s = ((int)F.I.s_PlayerCarSponsor).ToString();
+		if (s != PlayerMe.Data[ServerC.k_Sponsor].Value)
+		{
+			PlayerMe.Data[ServerC.k_Sponsor].Value = s;
+			playerChanged = true;
+		}
+	}
+	public void ScoreSet(int newScore)
+	{
+		if (newScore == 0)
+			Debug.LogWarning("ScoreSet 0");
+		string s = newScore.ToString();
+		if (s != PlayerMe.Data[ServerC.k_score].Value)
+		{
+			PlayerMe.Data[ServerC.k_score].Value = s;
+			playerChanged = true;
+		}
+	}
+	public void ReadySet(bool ready)
+	{
+		if (!MultiPlayerSelector.I.gameObject.activeSelf)
+			ReadySet(PlayerState.InRace);
+		else
+			ReadySet(ready ? PlayerState.InLobbyReady : PlayerState.InLobbyUnready);
+	}
+	public void ReadySet(PlayerState ready)
+	{
+		string r = ((int)ready).ToString();
+		if (r != PlayerMe.Data[ServerC.k_Ready].Value)
+		{
+			PlayerMe.Data[ServerC.k_Ready].Value = r;
+			playerChanged = true;
+		}
+	}
+	public void NameSet(string name)
+	{
+		if (name != PlayerMe.Data[ServerC.k_Name].Value)
+		{
+			PlayerMe.Data[ServerC.k_Name].Value = name;
+			playerChanged = true;
+		}
+	}
+	public void CarNameSet()
+	{
+		if (PlayerMe.Data[ServerC.k_carName].Value != F.I.s_playerCarName)
+		{
+			PlayerMe.Data[ServerC.k_carName].Value = F.I.s_playerCarName;
+			playerChanged = true;
+		}
 	}
 	/// <summary>
 	/// Connect to lobby Id or Quick Join
@@ -471,7 +659,7 @@ public class ServerC : MonoBehaviour
 		catch (RelayServiceException e)
 		{
 			Debug.LogError("failed to get join relay: " + e.Message);
-			throw new RelayServiceException (e);
+			throw new RelayServiceException(e);
 			//return default;
 		}
 	}
@@ -498,45 +686,6 @@ public class ServerC : MonoBehaviour
 			Debug.Log("Failed to heartbeat lobby " + e.Message);
 		}
 	}
-	public void ScoreSet(int newScore)
-	{
-		if (newScore == 0)
-			Debug.LogWarning("ScoreSet 0");
-		string s = newScore.ToString();
-		if(s != PlayerMe.Data[ServerC.k_score].Value)
-		{
-			PlayerMe.Data[ServerC.k_score].Value = s;
-			playerChanged = true;
-		}
-	}
-	public void ReadySet(bool ready)
-	{
-		string r = ready ? "1" : "0";
-		if(r != PlayerMe.Data[ServerC.k_Ready].Value)
-		{
-			PlayerMe.Data[ServerC.k_Ready].Value = r;
-			playerChanged = true;
-		}
-	}
-	public void NameSet(string name)
-	{
-		if(name != PlayerMe.Data[ServerC.k_Name].Value)
-		{
-			PlayerMe.Data[ServerC.k_Name].Value = name;
-			playerChanged = true;
-		}
-	}
-	public void CarNameSet()
-	{
-		if(PlayerMe.Data[ServerC.k_carName].Value != F.I.s_playerCarName)
-		{
-			PlayerMe.Data[ServerC.k_carName].Value = F.I.s_playerCarName;
-			playerChanged = true;
-		}
-	}
-	public void SponsorSet()
-	{
-		PlayerMe.Data[ServerC.k_carName].Value = ((int)F.I.s_PlayerCarSponsor).ToString();
-		playerChanged = true;
-	}
+
+
 }

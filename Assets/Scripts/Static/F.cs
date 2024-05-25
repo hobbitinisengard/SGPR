@@ -48,6 +48,15 @@ public static class F
 			File.Copy(newPath, newPath.Replace(sourcePath, targetPath), true);
 		}
 	}
+	public static string RandomString(int length)
+	{
+		var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+		var stringChars = new char[length];
+		for (int i = 0; i < stringChars.Length; i++)
+			stringChars[i] = chars[UnityEngine.Random.Range(0, chars.Length)];
+
+		return new string(stringChars);
+	}
 	public static string GetQuickMessage(int number)
 	{
 		number = Mathf.Clamp(number, 0, 9);
@@ -67,10 +76,13 @@ public static class F
 	{
 		return int.Parse(player.Data[ServerC.k_score].Value);
 	}
-	
 	public static bool ReadyGet(this Player player)
 	{
-		return player.Data[ServerC.k_Ready].Value == "1";
+		return int.Parse(player.Data[ServerC.k_Ready].Value) == (int)PlayerState.InLobbyReady;
+	}
+	public static PlayerState PlayerStateGet(this Player player)
+	{
+		return (PlayerState)int.Parse(player.Data[ServerC.k_Ready].Value);
 	}
 	
 	public static string NameGet(this Player player)
@@ -89,7 +101,7 @@ public static class F
 	}
 	public static Color ReadColor(Livery livery)
 	{
-		if (F.I.scoringType == ScoringType.Championship)
+		if (F.I.teams)
 		{
 			switch (livery)
 			{
@@ -111,19 +123,23 @@ public static class F
 					break;
 			}
 		}
-		return Color.yellow;
+		return Color.white;
 	}
 
 	public static float EasingOutQuint(float x)
 	{
 		return 1 - Mathf.Pow(1 - x, 5);
 	}
-	public static int Wraparound(int value, int min, int max)
+	public static int R(int min, int max)
 	{
-		if (value < min)
-			value = max;
-		else if (value > max)
-			value = min;
+		return UnityEngine.Random.Range(min, max);
+	}
+	public static int Wraparound(int value, int minInclusive, int maxInclusive)
+	{
+		if (value < minInclusive)
+			value = maxInclusive;
+		else if (value > maxInclusive)
+			value = minInclusive;
 		return value;
 	}
 	public static float Wraparound(float value, float min, float max)
@@ -342,13 +358,12 @@ public static class F
 	}
 	public static Livery RandomLivery()
 	{
-		return (Livery)(UnityEngine.Random.Range(0, F.I.Liveries) + 1);
+		return (Livery)UnityEngine.Random.Range(1, F.I.Liveries + 1);
 	}
-	internal static void Deselect()
+	public static PavementType RandomRoadType()
 	{
-		F.I.eventSystem.SetSelectedGameObject(null);
+		return (PavementType)UnityEngine.Random.Range(0, F.I.pavementTypes + 1);
 	}
-
 #if UNITY_EDITOR
 	// Returns whether the given object is part of a prefab (meant to be used with selected objects in the inspector)
 	public static bool IsPrefab(UnityEngine.Object componentOrGameObject)

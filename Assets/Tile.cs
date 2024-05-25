@@ -70,8 +70,11 @@ public class Tile : MonoBehaviour
 			}
 		}
 		mc.enabled = true;
-
-		if(F.I.s_roadType != PavementType.Arena)
+		if(F.I.s_roadType == PavementType.Random)
+		{
+			Debug.LogError("PavementType is random");
+		}
+		else if(F.I.s_roadType != PavementType.Arena)
 		{
 			var mr = mc.transform.GetComponent<MeshRenderer>();
 			string replacementStr = "0" + ((int)F.I.s_roadType).ToString();
@@ -86,6 +89,7 @@ public class Tile : MonoBehaviour
 			}
 			mr.materials = materials;
 		}
+
 		for (int i = 1; i < transform.childCount; ++i)
 		{
 			var connector = transform.GetChild(i).gameObject;

@@ -23,6 +23,11 @@ public class OnlineCommunication : NetworkBehaviour
 			MultiPlayerSelector.I.thisView.ToRaceScene();
 		}
 	}
+	public override void OnNetworkDespawn()
+	{
+		raceAlreadyStarted = new();
+		base.OnNetworkDespawn();
+	}
 	public void GibCar(Vector3 position, Quaternion rotation)
 	{
 		GibCarAtRpc(ServerC.I.PlayerMe.Id, position, rotation, RpcTarget.Server);
@@ -39,7 +44,7 @@ public class OnlineCommunication : NetworkBehaviour
 	[Rpc(SendTo.Everyone)]
 	void CountdownTillForceEveryoneToResultsRpc()
 	{
-		if (RaceManager.I.playerCar.raceBox.enabled)
+		if (RaceManager.I.playerCar && RaceManager.I.playerCar.raceBox.enabled)
 			RaceManager.I.hud.endraceTimer.gameObject.SetActive(true);
 	}
 }

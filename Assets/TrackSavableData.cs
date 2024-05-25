@@ -3,8 +3,6 @@ using Vector2Int = UnityEngine.Vector2Int;
 using Quaternion = UnityEngine.Quaternion;
 using System.Collections.Generic;
 using System;
-using Unity.Netcode;
-using Unity.Collections;
 
 [Serializable]
 internal class TrackSavableData
@@ -45,21 +43,21 @@ public class ConnectorSavable
 	public bool isStuntZone;
 }
 
-public class ByteWrapper : INetworkSerializable
-{
-	public byte data;
-	public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
-	{
-		if (serializer.IsWriter)
-		{
-			serializer.GetFastBufferWriter().WriteValueSafe(data);
-		}
-		else
-		{
-			serializer.GetFastBufferReader().ReadValueSafe(out data);
-		}
-	}
-}
+//public class ByteWrapper : INetworkSerializable
+//{
+//	public byte data;
+//	public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+//	{
+//		if (serializer.IsWriter)
+//		{
+//			serializer.GetFastBufferWriter().WriteValueSafe(data);
+//		}
+//		else
+//		{
+//			serializer.GetFastBufferReader().ReadValueSafe(out data);
+//		}
+//	}
+//}
 
 
 

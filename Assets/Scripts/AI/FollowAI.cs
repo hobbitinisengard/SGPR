@@ -13,31 +13,13 @@ namespace RVP
 	// Class for following AI
 	public class FollowAI : MonoBehaviour
 	{
+		[Serializable]
 		public class FollowTarget
 		{
+			[NonSerialized]
 			public Vector3 pos;
-			/// <summary>
-			/// distance
-			/// </summary>
 			public float dist;
 		}
-		//struct PointAtDistanceJob : IJobParallelFor
-		//{
-		//	public NativeArray<float> dists;
-		//	public NativeArray<Vector4> results;
-		//	public Action<float, EndOfPathInstruction, Vector4> processFunction;
-		//	public void Execute(int index)
-		//	{
-		//		// You can perform the same operations as an external method here
-		//		results[index] = processFunction(dists[index], EndOfPathInstruction.Loop);
-		//	}
-
-		//	private Vector3 PerformProcessing(Vector3 input)
-		//	{
-		//		// Your processing logic here
-		//		return input * 2;
-		//	}
-		//}
 		List<int> stuntPoints;
 		int racingLineLayerNumber;
 		public List<ReplayCam> replayCams { get; private set; }
@@ -74,12 +56,11 @@ namespace RVP
 		public float hardCornerDot = 0.7f;
 		public float slowingCoeff = 1;
 		float maxPhysicalSteerAngle = 5;
-		private int universalPathLayer;
 		const float reqDist = 10;
 		// CPU settings
 		//float tyreMult = 1;
 		//float lowSpeed = 30;
-		FollowTarget target = new();
+		public FollowTarget target = new();
 		public CpuLevel cpuLevel;
 		public bool SGPshifting;
 		[Tooltip("Time limit in seconds which the vehicle is stuck before attempting to reverse")]
@@ -113,26 +94,24 @@ namespace RVP
 		private bool revvingCo;
 		public float targetSteer;
 		public bool overRoad { get; private set; }
-		public float raceEndedLapProgressPercent;
 		public float maxSteerPerFrame = 5;
 
 		public bool Pitting { get { return pitsPathCreator != null; } }
 		public ReplayCam currentCam { get { return replayCams[curReplayPointIdx]; } }
+
+		float lapProgressPercent;
 		public float LapProgressPercent
 		{
 			get
 			{
-				//if (vp.raceBox.enabled)
-				//{
-				int universalPathProgress = GetDist(1 << universalPathLayer);
+				int universalPathProgress = GetDist(1 << F.I.racingLineLayer);
 				if (universalPathProgress > progress + 2 * radius || universalPathProgress < progress - 2 * radius)
 					universalPathProgress = progress;
 				if (progress == 1) // when driving directly past startline
-					return 0;
-				return universalPathProgress / F.I.universalPath.path.length;
-				//}
-				//else
-				//	return raceEndedLapProgressPercent;
+					lapProgressPercent = 0;
+				else
+					lapProgressPercent =  universalPathProgress / F.I.universalPath.path.length;
+				return lapProgressPercent;
 			}
 		}
 		private bool NextStuntpointIn(float distanceOffset)
@@ -142,6 +121,7 @@ namespace RVP
 		public void NextLap()
 		{
 			progress = 1;
+			dist = 1;
 			target.dist = progress;
 			target.pos = trackPathCreator.path.GetPointAtDistance(target.dist);
 			curWaypointIdx = 0;
@@ -209,7 +189,7 @@ namespace RVP
 			stuntPoints = F.I.stuntpointsContainer;
 			replayCams = F.I.replayCams;
 			trackPathCreator = F.I.universalPath;
-			universalPathLayer = F.I.racingLineLayer;
+			Debug.Log(trackPathCreator == null);
 			curReplayPointIdx = replayCams.Count - 1;
 			enabled = true;
 		}
@@ -344,9 +324,14 @@ namespace RVP
 			if (!pitsPathCreator)
 			{
 				if ((vp.reallyGroundedWheels == 4 && !overRoad) || // out of track
-					(overRoad && vp.velMag > 10 && vp.groundedWheels > 0 && Vector3.Dot(vp.forwardDir, trackPathCreator.path.GetDirectionAtDistance(dist)) < -0.5f)
+					(overRoad && vp.velMag > 10 && vp.groundedWheels > 2 && Vector3.Dot(vp.forwardDir, trackPathCreator.path.GetDirectionAtDistance(dist)) < -0.5f)
 					&& Vector3.Dot(vp.rb.velocity.normalized, trackPathCreator.path.GetDirectionAtDistance(dist)) < -0.5f) // wrong way drive
 					outOfTrackTime += Time.fixedDeltaTime;
+				else
+					outOfTrackTime -= Time.fixedDeltaTime;
+
+				if (outOfTrackTime < 0)
+					outOfTrackTime = 0;
 
 				if (outOfTrackTime > outOfTrackRequiredTime
 					|| vp.tr.position.y < -250) // out of bounds
@@ -407,7 +392,7 @@ namespace RVP
 					dist = progress;
 					outOfTrackTime += 0.1f * Time.fixedDeltaTime;
 				}
-				else
+				else 
 				{
 					outOfTrackTime += Time.fixedDeltaTime;
 				}
@@ -602,7 +587,7 @@ namespace RVP
 					if (vp.reallyGroundedWheels > 2)
 						vp.SetSteer(((reverseTime == 0) ? 1 : -1) * targetSteer);
 
-					vp.SetBoost(steerAngle < 2 && vp.BatteryPercent > 0.5f);
+					vp.SetBoost(steerAngle < 2 && vp.BatteryPercent > 0.5f && vp.reallyGroundedWheels > 2);
 				}
 			}
 		}
@@ -668,13 +653,16 @@ namespace RVP
 			outOfTrackTime = 0;
 			reverseTime = 0;
 			stoppedTime = 0;
+			
+			progress = Mathf.Clamp(progress + 5, 0, (int)(trackPathCreator.path.length-5));
 
 			Vector3 resetPos = trackPathCreator.path.GetPointAtDistance(progress);
 			RaycastHit h;
-			while (!Physics.Raycast(resetPos + 5 * Vector3.up, Vector3.down, out h, Mathf.Infinity, 1 << F.I.roadLayer)
+			while ( 
+				(!Physics.Raycast(resetPos + 5 * Vector3.up, Vector3.down, out h, Mathf.Infinity, 1 << F.I.roadLayer)
 				|| Vector3.Dot(h.normal, Vector3.up) < -0.5f // while not hit road or hit culled face (backface raycasts are on)
 				|| Mathf.Abs(Vector3.Dot(h.normal, Vector3.up)) < .64f  // slope too big
-				|| h.transform.parent.name == "loop")
+				|| h.transform.parent.name == "loop") && progress < 2 * trackPathCreator.path.length)
 			{
 				progress += 10;
 				resetPos = trackPathCreator.path.GetPointAtDistance(progress);

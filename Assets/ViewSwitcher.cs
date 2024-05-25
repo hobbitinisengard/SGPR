@@ -64,6 +64,7 @@ public class ViewSwitcher : MonoBehaviour
 		if (viewB.music && (!viewA.music || viewA.music != viewB.music))
 		{
 			menuMusic.clip = viewB.music;
+			menuMusic.loop = menuMusic.clip.length > 30;
 			menuMusic.Play();
 		}
 		
@@ -95,16 +96,18 @@ public class ViewSwitcher : MonoBehaviour
 		this.viewA = world;
 		this.viewB = menu;
 		
-		StartCoroutine(Transition(() => {
+		StartCoroutine(Transition(() => 
+		{
+			RaceManager.I.editorPanel.gameObject.SetActive(true);
+			RaceManager.I.RemoveCars();
+			RaceManager.I.editorPanel.RemoveTrackLeftovers();
+			Time.timeScale = 1;
+
 			if (applyScoring && F.I.gameMode == MultiMode.Multiplayer && ResultsView.Count > 1)
 			{
 				lobbyView.SetActive(false);
 				resultsView.SetActive(true);
 			}
-			RaceManager.I.editorPanel.gameObject.SetActive(true);
-			RaceManager.I.RemoveCars();
-			RaceManager.I.editorPanel.RemoveTrackLeftovers();
-			Time.timeScale = 1;
 		}));
 	}
 }
