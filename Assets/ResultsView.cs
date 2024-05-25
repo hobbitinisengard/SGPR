@@ -511,5 +511,4 @@ public class ResultsView : MainMenuView
 		int x = F.R(0, resultData.Count);
 		resultData[x].name = F.I.playerData.playerName;
 	}
-	
 }

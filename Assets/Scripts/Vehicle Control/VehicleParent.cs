@@ -88,6 +88,7 @@ namespace RVP
 	// Vehicle root class
 	public class VehicleParent : NetworkBehaviour
 	{
+		public Renderer antennaFlag;
 		public GameObject carReflectionPrefab;
 		public MeshRenderer[] springRenderers;
 		public AudioSource honkerAudio;
@@ -440,6 +441,8 @@ namespace RVP
 			Material newMat = Resources.Load<Material>("materials/" + matName);
 			newMat.name = matName;
 			mr.material = newMat;
+			if(antennaFlag != null)
+				antennaFlag.material = newMat;
 			RaceManager.I.hud.AddToProgressBar(this);
 			sampleText.textMesh.color = F.ReadColor(sponsor);
 			if (F.I.gameMode == MultiMode.Multiplayer)
@@ -569,6 +572,8 @@ namespace RVP
 			if (F.I.s_raceType == RaceType.TimeTrial)
 				ghost.SetGhostPermanently();
 
+			
+
 			if (!Owner)
 			{
 				//rb.isKinematic = true;
@@ -579,7 +584,10 @@ namespace RVP
 					RequestRaceboxValuesRpc(RpcTarget.Owner);
 				}
 			}
+			ResultsView.Add(this);
 		}
+
+
 		[Rpc(SendTo.SpecifiedInParams)]
 		public void SetCurLapRpc(int curLap, RpcParams ps)
 		{
@@ -952,7 +960,6 @@ namespace RVP
 		public override void OnDestroy()
 		{
 			F.I.s_cars.Remove(this);
-
 			SGP_HUD.I.RemoveFromProgressBar(this);
 			if (norm)
 			{

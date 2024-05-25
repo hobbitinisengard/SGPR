@@ -73,6 +73,7 @@ public enum StuntSeqStatus { None, Ongoing, Ended };
 
 public class RaceBox : MonoBehaviour
 {
+	
 	public VehicleParent vp { get; private set; }
 	public SGP_Evo evoModule { get; private set; }
 	public float distance { get; private set; }
@@ -97,6 +98,7 @@ public class RaceBox : MonoBehaviour
 	/// set only after the race
 	/// </summary>
 	public TimeSpan raceTime { get; private set; }
+	public static readonly TimeSpan initialRaceTime = TimeSpan.FromHours(12);
 
 	public int curLap;
 
@@ -169,7 +171,7 @@ public class RaceBox : MonoBehaviour
 	{
 		lapTimer = 3600 * 24; // 24 hours
 		bestLapTime = TimeSpan.FromHours(12);
-		raceTime = TimeSpan.Zero;
+		raceTime = initialRaceTime;
 		starLevel = 0;
 		stuntPai = new PtsAnimInfo(0, PtsAnimType.Evo, -1);
 	}
@@ -839,12 +841,17 @@ public class RaceBox : MonoBehaviour
 	}
 	/// <summary>
 	/// disabling raceBox means the race has ended for this car
-	/// Car has driven past finish or has been eliminated.
+	/// Car has driven past finish or has been eliminated by another car
 	/// </summary>
+
 	private void OnDisable()
 	{
+		// in case we are disconnecting early
+		if (F.I.s_raceType != RaceType.Knockout && curLap <= F.I.s_laps)
+			return;
+
 		vp.sampleText.gameObject.SetActive(false);
-		if (raceTime == TimeSpan.Zero)
+		if (raceTime == initialRaceTime)
 		{
 			raceTime = DateTime.UtcNow - F.I.raceStartDate;
 
@@ -859,7 +866,6 @@ public class RaceBox : MonoBehaviour
 			{
 				ResultsView.Add(vp);
 			}
-
 			vp.followAI.SetCPU(true);
 		}
 	}
