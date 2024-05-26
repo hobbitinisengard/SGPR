@@ -415,18 +415,16 @@ public class SGP_HUD : MonoBehaviour
 		//{
 		//    vp.raceBox.NextLap();
 		//}
-		if (RECDisplay.activeSelf)
+
+		TimeSpan? curLapTime = vp.raceBox.CurLaptime;
+		if (curLapTime.HasValue)
 		{
-			TimeSpan? curLapTime = vp.raceBox.CurLaptime;
-			if (curLapTime.HasValue)
-			{
-				SetRollers(curLapTime.Value, ref lapRollers, true);
-			}
-			else
-			{
-				foreach (var roller in lapRollers)
-					roller.SetActive(false);
-			}
+			SetRollers(curLapTime.Value, ref lapRollers, true);
+		}
+		else
+		{
+			foreach (var roller in lapRollers)
+				roller.SetActive(false);
 		}
 
 		if (LAPDisplay.activeSelf)
