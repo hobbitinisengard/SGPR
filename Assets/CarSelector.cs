@@ -163,7 +163,7 @@ public class CarSelector : Sfxable
 			if (posy >= 0 && posy <= 3 && posx >= 0)
 			{
 				Transform tempSelectedCar = null;
-				for (int i = posy; i < carContent.childCount && i >= 0;)
+				for (int i = posy; i < carContent.childCount && i >= 0;	i = (y > 0) ? (i + 1) : (i - 1))
 				{
 					Transform selectedClass = carContent.GetChild(i);
 
@@ -175,7 +175,6 @@ public class CarSelector : Sfxable
 						Debug.Log(tempSelectedCar);
 						break;
 					}
-					i = (y > 0) ? (i + 1) : (i - 1);
 				}
 				if (tempSelectedCar != null && tempSelectedCar != selectedCar)
 				{

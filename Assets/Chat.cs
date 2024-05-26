@@ -33,8 +33,6 @@ public class Chat : NetworkBehaviour
 	public override void OnNetworkDespawn()
 	{
 		SetVisibility(false);
-		//ServerC.I.activePlayers.Clear();
-
 		base.OnNetworkDespawn();
 		foreach(var i in inputFields)
 		{
