@@ -189,7 +189,7 @@ namespace RVP
 			{
 				airPitch = (vp.groundedWheels > 0 || actualAccel != 0) ? 1 : Mathf.Lerp(airPitch, 0, 0.5f * deltaTime);
 
-				targetPitch = Mathf.Abs((targetDrive.feedbackRPM * 0.001f) / limit2kRPM);
+				targetPitch = 1.1f * Mathf.Abs((targetDrive.feedbackRPM * 0.001f) / limit2kRPM);
 			}
 		}
 		
@@ -219,7 +219,8 @@ namespace RVP
 			idlingEngineAudio.clip = Resources.Load<AudioClip>("sfx/engine/engine" + engineNumber.ToString() + "i");
 			idlingEngineAudio.Play();
 			engineAudio.clip = Resources.Load<AudioClip>("sfx/engine/engine" + engineNumber.ToString());
-			engineAudio.Play();
+			if(engineAudio.enabled)
+				engineAudio.Play();
 		}
 	}
 }

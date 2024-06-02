@@ -345,15 +345,16 @@ namespace RVP
 		[Rpc(SendTo.SpecifiedInParams)]
 		void RequestRaceboxValuesRpc(RpcParams ps)
 		{
-			SynchRaceboxValuesRpc(ServerC.I.PlayerMe.ScoreGet(), raceBox.curLap, followAI.dist, followAI.progress, raceBox.Aero, raceBox.drift, 
-				(float)raceBox.bestLapTime.TotalSeconds, (float)raceBox.raceTime.TotalSeconds, 
+			SynchRaceboxValuesRpc(raceBox.enabled, ServerC.I.PlayerMe.ScoreGet(), raceBox.curLap, followAI.dist, followAI.progress, raceBox.Aero, raceBox.drift, 
+				(float)raceBox.bestLapTime.TotalSeconds, (float)raceBox.raceTime.TotalSeconds,
 				RpcTarget.Single(ps.Receive.SenderClientId, RpcTargetUse.Temp));
 		}
 		[Rpc(SendTo.SpecifiedInParams)]
-		public void SynchRaceboxValuesRpc(int lastRoundScore, int curLap, int dist, int progress, float aero, float drift, float bestLapSecs, float raceTimeSecs, RpcParams ps)
+		public void SynchRaceboxValuesRpc(bool enabled, int lastRoundScore, int curLap, int dist, int progress, float aero, float drift, 
+			float bestLapSecs, float raceTimeSecs, RpcParams ps)
 		{
 			this.lastRoundScore = lastRoundScore;
-			raceBox.UpdateValues(curLap, dist, progress, aero, drift, bestLapSecs, raceTimeSecs);
+			raceBox.UpdateValues(enabled, curLap, dist, progress, aero, drift, bestLapSecs, raceTimeSecs);
 			ResultsView.Add(this);
 		}
 		public FollowAI followAI { get; private set; }
@@ -445,11 +446,6 @@ namespace RVP
 				antennaFlag.material = newMat;
 			RaceManager.I.hud.AddToProgressBar(this);
 			sampleText.textMesh.color = F.ReadColor(sponsor);
-			if (F.I.gameMode == MultiMode.Multiplayer)
-			{
-				ServerC.I.ReadySet(PlayerState.InRace);
-				ServerC.I.UpdatePlayerData();
-			}
 		}
 		void OnNameChanged()
 		{
@@ -458,6 +454,7 @@ namespace RVP
 			if (name == F.I.playerData.playerName && Owner)
 			{
 				RaceManager.I.playerCar = this;
+				
 				RaceManager.I.cam.Connect(this);
 				RaceManager.I.hud.Connect(this);
 
@@ -466,6 +463,8 @@ namespace RVP
 
 				NetworkManager.OnTransportFailure += NetworkManager_OnTransportFailure;
 				//newCar.followAI.SetCPU(true); // CPU drives player's car
+
+				
 			}
 			sampleText.gameObject.SetActive(!F.I.s_spectator && F.I.gameMode == MultiMode.Multiplayer && RaceManager.I.playerCar != this);
 		}
@@ -572,8 +571,6 @@ namespace RVP
 			if (F.I.s_raceType == RaceType.TimeTrial)
 				ghost.SetGhostPermanently();
 
-			
-
 			if (!Owner)
 			{
 				//rb.isKinematic = true;
@@ -584,7 +581,13 @@ namespace RVP
 					RequestRaceboxValuesRpc(RpcTarget.Owner);
 				}
 			}
+			else if (F.I.gameMode == MultiMode.Multiplayer)
+			{
+				ServerC.I.ReadySet(PlayerState.InRace);
+				ServerC.I.UpdatePlayerData();
+			}
 			ResultsView.Add(this);
+			engine.ignition = true;
 		}
 
 
@@ -634,9 +637,8 @@ namespace RVP
 				roadSurfaceType = wheels[2].curSurfaceType;
 				roadNoiseSnd.clip = GroundSurfaceMaster.surfaceTypesStatic[roadSurfaceType].roadNoise;
 			}
-			float volume = Mathf.InverseLerp(0, 80, velMag);
-
-			roadNoiseSnd.volume = (F.I.gamePaused || reallyGroundedWheels == 0) ? 0 : volume;// (1 + 80 * 2 / 3f * Mathf.Log10(volume)); 
+			roadNoiseSnd.gameObject.SetActive((!F.I.gamePaused && reallyGroundedWheels > 0));
+			roadNoiseSnd.volume = Mathf.InverseLerp(0, 80, velMag);// (1 + 80 * 2 / 3f * Mathf.Log10(volume)); 
 
 			if (brakeInput > 0 && !reversing)
 			{

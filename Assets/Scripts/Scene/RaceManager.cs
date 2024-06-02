@@ -85,13 +85,6 @@ namespace RVP
 		{
 			TAKES_THE_LEAD, NO_ENERGY, SPLIT_TIME,
 		}
-		public int ActiveCarsInKnockout
-		{
-			get
-			{
-				return F.I.s_cars.Count(c => c.raceBox.enabled);
-			}
-		}
 
 		public void RemoveCars()
 		{
@@ -135,20 +128,23 @@ namespace RVP
 		}
 		public void VoteForEndButton()
 		{
-			if (Voting.I != null)
+			if (Voting.I != null && ResultsView.FinishedPlayers == 0)
 				Voting.I.VoteForEnd();
 		}
 
 		public void ExitButton()
 		{
-			if (F.I.s_laps == 0)
+			if (F.I.s_laps == 0) // when backing from editor
 				F.I.s_laps = 3;
 
 			if (resultsSeq.gameObject.activeSelf)
 				return;
 
 			if (F.I.gameMode == MultiMode.Multiplayer && ServerC.I.AmHost)
-				Voting.I.EndForEveryone(); // host's decision is immediate
+				if(ResultsView.FinishedPlayers == 0)
+					Voting.I.EndForEveryone(); // host's decision is immediate
+				else
+					return;
 
 			musicPlayer.Stop();
 			countDownSeq.gameObject.SetActive(false);
@@ -580,8 +576,7 @@ namespace RVP
 		{
 			for(int i=0; i< F.I.s_cars.Count; ++i)
 			{
-				if (F.I.s_cars[i].raceBox.enabled)
-					F.I.s_cars[i].raceBox.enabled = false;
+				F.I.s_cars[i].raceBox.enabled = false;
 			}
 		}
 	}

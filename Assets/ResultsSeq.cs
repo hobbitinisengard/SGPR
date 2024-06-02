@@ -1,5 +1,6 @@
 using RVP;
 using System.Collections;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -43,6 +44,22 @@ public class ResultsSeq : MonoBehaviour
 	}
 	private void OnEnable()
 	{
+		if (showResultCo != null)
+			StopCoroutine(showResultCo);
+		if (seq != null)
+			StopCoroutine(seq);
+		if (dimCo != null)
+			StopCoroutine(dimCo);
+		if (showTableCo != null)
+			StopCoroutine(showTableCo);
+		seq = StartCoroutine(EnableSeq());
+	}
+	private void OnEnterClicked(UnityEngine.InputSystem.InputAction.CallbackContext obj)
+	{
+		submitFlag = true;
+	}
+	IEnumerator EnableSeq()
+	{
 		lastRoundEndedTime = 0;
 		submitFlag = false;
 		F.I.enterRef.action.performed += OnEnterClicked;
@@ -58,31 +75,61 @@ public class ResultsSeq : MonoBehaviour
 			rightRow.GetChild(i).gameObject.SetActive(false);
 		}
 		cosArg = 0;
-		var playerResultPosition = RaceManager.I.Position(RaceManager.I.playerCar);
+
+		while (!ResultsView.Get(RaceManager.I.playerCar).Finished)
+		{
+			yield return new WaitForSeconds(.25f);
+		}
+
+		int playerResultPosition = ResultsView.SortedResultsByFinishPos.FindIndex(ri => ri.vp == RaceManager.I.playerCar);
+
 		imgResult.sprite = ResultPositionSprites[playerResultPosition];
 		imgResult.transform.GetChild(0).gameObject.SetActive(playerResultPosition > 2);
 		minImgResultPos = -Screen.height / 2f - imgResult.transform.GetComponent<RectTransform>().sizeDelta.y / 2f;
 		imgResult = transform.GetChild(0).GetComponent<Image>();
 		rightBoxLabel.text = rightBoxLabels[rightBoxLabelInt];
-		if (showResultCo != null)
-			StopCoroutine(showResultCo);
-		if (seq != null)
-			StopCoroutine(seq);
-		if (dimCo != null)
-			StopCoroutine(dimCo);
-		if (showTableCo != null)
-			StopCoroutine(showTableCo);
+
 		dimmer.color = new Color(0, 0, 0, 0);
 		dimCo = showResultCo = showTableCo = null;
-		seq = StartCoroutine(Seq());
 		audioSource.volume = 1;
 		audioSource.clip = F.I.audioClips[(playerResultPosition <= 2) ? "RacePodium" : "RaceNotPodium"];
 		audioSource.loop = false;
 		audioSource.Play();
-	}
-	private void OnEnterClicked(UnityEngine.InputSystem.InputAction.CallbackContext obj)
-	{
-		submitFlag = true;
+
+		float timer = 0;
+		while (true)
+		{
+			timer += Time.deltaTime;
+			if (timer < 8 && submitFlag)
+			{
+				submitFlag = false;
+				timer = 8;
+				if (audioSource != null)
+					audioSource.Stop();
+			}
+
+			if (timer > 8 && timer < 12)
+			{
+				if (submitFlag)
+				{
+					submitFlag = false;
+					timer = 12;
+				}
+				showResultCo ??= StartCoroutine(ShowResult());
+			}
+
+			if (timer > 12 && timer <= 13)
+			{ // boxes slide In
+				foreach (var b in boxes)
+				{
+					b.gameObject.SetActive(true);
+				}
+				if (showTableCo == null)
+					showTableCo = StartCoroutine(ShowTableCo());
+				yield break;
+			}
+			yield return null;
+		}
 	}
 	void ImgResultSetAlpha(in Color c)
 	{
@@ -122,48 +169,12 @@ public class ResultsSeq : MonoBehaviour
 		}
 		imgResult.gameObject.SetActive(false);
 	}
-	IEnumerator Seq()
-	{
-		float timer = 0;
-		while (true)
-		{
-			timer += Time.deltaTime;
-			if (timer < 8 && submitFlag)
-			{
-				submitFlag = false;
-				timer = 8;
-				if (audioSource != null)
-					audioSource.Stop();
-			}
-
-			if (timer > 8 && timer < 12)
-			{
-				if (submitFlag)
-				{
-					submitFlag = false;
-					timer = 12;
-				}
-				showResultCo ??= StartCoroutine(ShowResult());
-			}
-
-			if (timer > 12 && timer <= 13)
-			{ // boxes slide In
-				foreach (var b in boxes)
-				{
-					b.gameObject.SetActive(true);
-				}
-				if(showTableCo == null)
-					showTableCo = StartCoroutine(ShowTableCo());
-				yield break;
-			}
-			yield return null;
-		}
-	}
+	
 	IEnumerator BottomText()
 	{
 		while(true)
 		{
-			if (F.I.gameMode == MultiMode.Multiplayer && ResultsView.Count < ServerC.I.lobby.Players.Count)
+			if (F.I.gameMode == MultiMode.Multiplayer && ResultsView.FinishedPlayers < ServerC.I.lobby.Players.Count)
 			{
 				pressEnterText.text = "WAITING";
 			}
@@ -194,7 +205,7 @@ public class ResultsSeq : MonoBehaviour
 			if (submitFlag && dimCo == null) // CLOSING SEQUENCE
 			{
 				if (F.I.gameMode == MultiMode.Singleplayer 
-					|| (F.I.gameMode == MultiMode.Multiplayer && ResultsView.Count >= ServerC.I.lobby.Players.Count))
+					|| ResultsView.FinishedPlayers >= ServerC.I.lobby.Players.Count)
 				{
 					
 					foreach (var b in boxes)

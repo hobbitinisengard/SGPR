@@ -32,22 +32,29 @@ public class Chat : NetworkBehaviour
 	}
 	public override void OnNetworkDespawn()
 	{
+		F.I.chatButtonInput.action.performed -= buttonPressed;
+		F.I.quickMessageRef.action.performed -= QuickMessagePressed;
+		F.I.viewSwitcher.OnWorldMenuSwitch -= F.Deselect;
+
 		SetVisibility(false);
-		base.OnNetworkDespawn();
-		foreach(var i in inputFields)
+
+		foreach (var i in inputFields)
 		{
 			i.onSelect.RemoveAllListeners();
 			i.onDeselect.RemoveAllListeners();
 			i.onSubmit.RemoveAllListeners();
 		}
+
+		base.OnNetworkDespawn();
 	}
 	void Initialize()
 	{
+		F.I.chat = this;
 		F.I.chatButtonInput.action.performed += buttonPressed;
 		F.I.quickMessageRef.action.performed += QuickMessagePressed;
-	
+		F.I.viewSwitcher.OnWorldMenuSwitch += F.Deselect;
+
 		SetVisibility(false);
-	
 
 		foreach(var c in scrollRects)
 			F.DestroyAllChildren(c.content);
@@ -80,6 +87,7 @@ public class Chat : NetworkBehaviour
 			});
 		}
 	}
+
 	public void SetVisibility(bool enabled)
 	{
 		if (F.I.gameMode == MultiMode.Multiplayer)

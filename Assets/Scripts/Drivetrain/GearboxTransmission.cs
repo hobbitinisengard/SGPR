@@ -311,6 +311,7 @@ namespace RVP
 						gears[i].maxRPM = 0;
 					}
 					gears[i].minRPM *= 0.6f; // why? (it works though)
+					gears[i].maxRPM *= 0.9f; // change gear before red field
 				}
 			}
 		}

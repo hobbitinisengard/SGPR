@@ -23,8 +23,10 @@ public class ViewSwitcher : MonoBehaviour
 	float duration;
 	GameObject viewA;
 	GameObject viewB;
+	public event Action OnWorldMenuSwitch;
 	private void Awake()
 	{
+		F.I.viewSwitcher = this;
 		menuMusic = GetComponent<AudioSource>();
 		duration = dimCurve.keys[dimCurve.length - 1].time;
 	}
@@ -84,7 +86,8 @@ public class ViewSwitcher : MonoBehaviour
 	/// Dims to targetVisibility. 0 = menu fully visible, 1 = blackness
 	/// </summary>
 	public void PlayDimmerToWorld()
-	{ 
+	{
+		OnWorldMenuSwitch?.Invoke();
 		menuMusic.Stop();
 		this.viewA = menu;
 		this.viewB = world;
@@ -92,6 +95,7 @@ public class ViewSwitcher : MonoBehaviour
 	}
 	public void PlayDimmerToMenu(bool applyScoring)
 	{
+		OnWorldMenuSwitch?.Invoke();
 		menuMusic.Stop();
 		this.viewA = world;
 		this.viewB = menu;

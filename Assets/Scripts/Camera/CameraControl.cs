@@ -97,7 +97,6 @@ namespace RVP
 		public int maxPitch = 10;
 		public float cHeight = 2;
 		public float smoothRotCoeff = 0.01f;
-		public int curReplayCamIdx;
 		public float replayCamAgility = 1;
 		float forwardLookCoeff = 10;
 		float upLookCoeff = 1f;
@@ -158,6 +157,7 @@ namespace RVP
 			dampOffset = vp.tr.position;
 			if (this.mode == Mode.Replay && vp.followAI.replayCams?.Count == 0)
 				this.mode = Mode.Follow;
+			vp.followAI.ResetCurCameraIdx();
 			// Set the audio listener update mode to fixed, because the camera moves in FixedUpdate
 			// This is necessary for doppler effects to sound correct
 			GetComponent<AudioListener>().velocityUpdateMode = AudioVelocityUpdateMode.Fixed;
@@ -199,6 +199,7 @@ namespace RVP
 						Connect(F.I.s_cars[index], Mode.Replay);
 
 						RaceManager.I.hud.infoText.AddMessage(new Message(vp.transform.name, BottomInfoType.NEW_CAMERA_TARGET));
+
 					}
 					
 				}

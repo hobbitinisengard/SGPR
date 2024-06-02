@@ -93,15 +93,18 @@ namespace RVP
 				
 				if (asi >= holdCurveValue)
 				{
-					steerLimit = steerLimitCurve.Evaluate(vp.velMag);
+					var steerLimitVar = steerLimitCurve.Evaluate(vp.velMag);
+					//if (steerLimitVar > steerLimit)
+					steerLimit = steerLimitVar;
 					servoAudio.volume = 1f;
 					servoAudio.pitch = (Mathf.Abs(targetSteer) > asi) ? 1.5f : 1;
 
-					if(asi > holdCurveValue)
+					if(asi != holdCurveValue)
 						holdDuration = Mathf.Clamp01(holdDuration + (vp.SGPshiftbutton > 0 ? 1.5f : 1) * (F.I.controllerInUse ? 20 : 1 ) * steerAdd * Time.fixedDeltaTime);
 				}
 				else
 				{
+
 					steerLimit = steerLimitCurve.Evaluate(vp.localVelocity.z);
 					servoAudio.volume = 0;
 					holdDuration = Mathf.Lerp(holdDuration, asi, holdComebackSpeed * 10 * Time.fixedDeltaTime);

@@ -13222,6 +13222,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4a415684c3ba0c14a845f920df3882d3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  goal: {fileID: 0}
   targetHeight: 0.25
 --- !u!1 &5343642536240803875
 GameObject:
@@ -18397,7 +18398,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
 --- !u!114 &716355499041435491
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -18410,7 +18411,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 2052976062
+  GlobalObjectIdHash: 1175731238
   InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
@@ -18658,7 +18659,6 @@ MonoBehaviour:
   forwardTargetDot: 0
   tSpeed: 0
   lookAheadBase: 15
-  curWaypointIdx: 0
   stoppedTime: 0
   reverseTime: 0
   brakeTime: 0
@@ -20813,7 +20813,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7570a431340540f4e884ee115b563879, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ignition: 1
   inputCurve:
     serializedVersion: 2
     m_Curve:

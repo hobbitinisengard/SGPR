@@ -83,9 +83,10 @@ public class Ghost : NetworkBehaviour
 		
 		return material;
 	}
+
 	public void SetGhostPermanently()
 	{
-		if (F.I.gameMode == MultiMode.Multiplayer)
+		if (vp.Owner)
 			SetHittableRpc(false, true);
 		else
 			SetHittable(false, true);

@@ -242,7 +242,7 @@ public class Info : MonoBehaviour
 	public readonly string trackImagesPath = "trackImages/";
 	public readonly string editorTilesPath = "tiles/objects/";
 	public ResultsView resultsView;
-	[NonSerialized]
+	public ViewSwitcher viewSwitcher;
 	public Chat chat;
 	public PathCreator universalPath;
 
@@ -322,7 +322,7 @@ public class Info : MonoBehaviour
 	public int racingPathResolution = 10;
 	public readonly string version = "0.3";
 
-	public const float AfterMultiPlayerRaceWaitForPlayersSeconds = 30;
+	public const int AfterMultiPlayerRaceWaitForPlayersSeconds = 30;
 
 	public EventSystem eventSystem;
 	public DateTime raceStartDate;
@@ -365,27 +365,26 @@ public class Info : MonoBehaviour
 		{
 			cars = new Car[]
 			{
-			new (0,CarGroup.Speed, "MEAN STREAK","Fast, light and agile, this racer offers much for those who wish to modify their vehicle."),
-			new (45000,CarGroup.Wild, "THE HUSTLER","Sturdy 4x4 pick-up truck with an eye for the outrageous!"),
-			new (50000,CarGroup.Aero, "TWIN EAGLE","Take flight with this light and speedy stuntcar."),
-			new (0,CarGroup.Aero, "SKY HAWK","Get airborne with this very versatile stunt car."),
-			new (30000,CarGroup.Speed, "THE PHANTOM","Fast, sleek and tough to handle."),
-			new (30000,CarGroup.Wild, "ROAD HOG","Rock and Roll with the rough ridin' road hog."),
-			new (0,CarGroup.Wild, "DUNE RAT","Defy the laws of physics in this buggy."),
-			new (50000,CarGroup.Speed, "LIGHTNIN'","Supercharged super speed. Easy does it!"),
-			new (30000,CarGroup.Speed, "ALLEY KAT","Sleek and powerful, this cat is ready to roar."),
-			new (40000,CarGroup.Wild, "SAND SHARK","This beachcomber is at home on any stunt circuit."),
-			new (45000,CarGroup.Wild, "THE BRUTE","Unleash the Brute for no-nonsense on the road!"),
-			new (70000,CarGroup.Aero, "WILD DART","Fly fast and true with this stuntcar."),
-			new (65000,CarGroup.Wild, "RAGING BULL","Powerful and fast, this streetwise 4x4 is incredible."),
-			new (15000,CarGroup.Aero, "FLYING MANTIS","Super light and very fast."),
-			new (35000,CarGroup.Aero, "STUNT MONKEY","Monkey see, monkey do! Go bananas with this wild ride!"),
-			new (50000,CarGroup.Speed, "INFERNO","This speed demon is on fire!"),
-			new (35000,CarGroup.Team, "FORK","Despite its looks, it moves like fork lightning!"),
-			new (55000,CarGroup.Team, "WORM MOBILE","Super Speedy Buggy!"),
-			new (100000,CarGroup.Team, "FORMULA 17","Incredibly fast racing car."),
-			new (90000,CarGroup.Team, "TEAM MACHINE","The ultimate, hugely versatile stock car.")
-
+				new (0,CarGroup.Speed, "MEAN STREAK","Fast, light and agile, this racer offers much for those who wish to modify their vehicle."),
+				new (45000,CarGroup.Wild, "THE HUSTLER","Sturdy 4x4 pick-up truck with an eye for the outrageous!"),
+				new (50000,CarGroup.Aero, "TWIN EAGLE","Take flight with this light and speedy stuntcar."),
+				new (0,CarGroup.Aero, "SKY HAWK","Get airborne with this very versatile stunt car."),
+				new (30000,CarGroup.Speed, "THE PHANTOM","Fast, sleek and tough to handle."),
+				new (30000,CarGroup.Wild, "ROAD HOG","Rock and Roll with the rough ridin' road hog."),
+				new (0,CarGroup.Wild, "DUNE RAT","Defy the laws of physics in this buggy."),
+				new (50000,CarGroup.Speed, "LIGHTNIN'","Supercharged super speed. Easy does it!"),
+				new (30000,CarGroup.Speed, "ALLEY KAT","Sleek and powerful, this cat is ready to roar."),
+				new (40000,CarGroup.Wild, "SAND SHARK","This beachcomber is at home on any stunt circuit."),
+				new (45000,CarGroup.Wild, "THE BRUTE","Unleash the Brute for no-nonsense on the road!"),
+				new (70000,CarGroup.Aero, "WILD DART","Fly fast and true with this stuntcar."),
+				new (65000,CarGroup.Wild, "RAGING BULL","Powerful and fast, this streetwise 4x4 is incredible."),
+				new (15000,CarGroup.Aero, "FLYING MANTIS","Super light and very fast."),
+				new (35000,CarGroup.Aero, "STUNT MONKEY","Monkey see, monkey do! Go bananas with this wild ride!"),
+				new (50000,CarGroup.Speed, "INFERNO","This speed demon is on fire!"),
+				new (35000,CarGroup.Team, "FORK","Despite its looks, it moves like fork lightning!"),
+				new (55000,CarGroup.Team, "WORM MOBILE","Super Speedy Buggy!"),
+				new (100000,CarGroup.Team, "FORMULA 17","Incredibly fast racing car."),
+				new (90000,CarGroup.Team, "TEAM MACHINE","The ultimate, hugely versatile stock car.")
 			};
 		}
 		ReloadCarConfigs();

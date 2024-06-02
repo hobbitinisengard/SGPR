@@ -364,6 +364,10 @@ public static class F
 	{
 		return (PavementType)UnityEngine.Random.Range(0, F.I.pavementTypes + 1);
 	}
+	public static void Deselect()
+	{
+		F.I.eventSystem.SetSelectedGameObject(null);
+	}
 #if UNITY_EDITOR
 	// Returns whether the given object is part of a prefab (meant to be used with selected objects in the inspector)
 	public static bool IsPrefab(UnityEngine.Object componentOrGameObject)
