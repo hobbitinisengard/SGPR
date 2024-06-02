@@ -18,10 +18,20 @@ public class ResultInfo
 	public float aeromiles;
 	public int score { get; private set; }
 	public Livery sponsor;
+
 	public void SetPostRaceScore(int finalScore)
 	{
 		Debug.Log(name + " " + score.ToString() + " " + finalScore);
 		score = finalScore;
+	}
+	public bool Finished
+	{
+		get
+		{
+			if (vp == null)
+				return true;
+			return !vp.raceBox.enabled;
+		}
 	}
 	public void Update(VehicleParent vp)
 	{
@@ -105,7 +115,7 @@ public class ResultsView : MainMenuView
 	public static int CalculatePostraceReward(ResultInfo ri)
 	{
 		int finalScore = 0;
-		int finalPos = Pos(ri.id, ComparisonBasedOnRaceType())-1;
+		int finalPos = Pos(ri.id, ComparisonBasedOnRaceType()) - 1;
 		int lapPos = Pos(ri.id, lapComp);
 		int stuntPos = Pos(ri.id, stuntComp);
 		int driftPos = Pos(ri.id, driftComp);
@@ -191,20 +201,24 @@ public class ResultsView : MainMenuView
 	{
 		resultData.Clear();
 	}
+	public static int FinishedPlayers
+	{
+		get { return resultData.Count(r => r.Finished); }
+	}
 	public static int Count
 	{
 		get { return resultData.Count; }
 	}
-	public static void Remove(VehicleParent car)
+	public static void Remove(ulong id)
 	{
-		var entry = resultData.FirstOrDefault(RD => RD.vp == car);
+		var entry = resultData.FirstOrDefault(RD => RD.id == id);
 		if (entry != default)
 			resultData.Remove(entry);
 	}
 	public static void Add(VehicleParent car)
 	{
 		var entry = resultData.FirstOrDefault(RD => RD.vp == car);
-		if(entry == default)
+		if (entry == default)
 		{
 			resultData.Add(new ResultInfo(car));
 		}
@@ -236,12 +250,12 @@ public class ResultsView : MainMenuView
 	public static readonly Comparison<ResultInfo> driftComp = new((ResultInfo x, ResultInfo y) => y.drift.CompareTo(x.drift));
 	public static readonly Comparison<ResultInfo> lapComp = new((ResultInfo x, ResultInfo y) => x.lap.TotalSeconds.CompareTo(y.lap.TotalSeconds));
 	public static readonly Comparison<ResultInfo> ScoreComp = new((ResultInfo x, ResultInfo y) => y.score.CompareTo(x.score));
-	
+
 	public void OKButton()
 	{
 		if (F.I.Rounds > 0 && F.I.CurRound > F.I.Rounds)
 		{
-			for(int i=0; i<resultData.Count; ++i)
+			for (int i = 0; i < resultData.Count; ++i)
 			{
 				resultData[i].SetPostRaceScore(resultData[i].score + ResultsView.CalculatePostraceReward(resultData[i]));
 			}
@@ -266,7 +280,7 @@ public class ResultsView : MainMenuView
 		grandScore1.SetActive(false);
 		addingScore.SetActive(false);
 		medalsTable.gameObject.SetActive(false);
-		
+
 		base.OnDisable();
 	}
 	static Comparison<ResultInfo> ComparisonBasedOnRaceType()
@@ -281,7 +295,7 @@ public class ResultsView : MainMenuView
 			_ => raceComp,
 		};
 	}
-	
+
 	protected override void OnEnable()
 	{
 		gridTableTr = gridTable.GetComponent<RectTransform>();
@@ -307,11 +321,11 @@ public class ResultsView : MainMenuView
 			SetText(gridTableTr.GetChild(cols + cols * i + 3), visible ? resultData[i].aeromiles.ToString("N0") : null, highlight);
 			SetText(gridTableTr.GetChild(cols + cols * i + 4), visible ? resultData[i].drift.ToString("N0") : null, highlight);
 		}
-		
+
 		lapPos = Pos(ServerC.I.networkManager.LocalClientId, lapComp);
 		stuntPos = Pos(ServerC.I.networkManager.LocalClientId, stuntComp);
 		driftPos = Pos(ServerC.I.networkManager.LocalClientId, driftComp);
-		
+
 		positionPerc = (resultData.Count - finalPosition) / (float)resultData.Count;
 		positionBonus = 0;
 		lapBonus = (lapPos <= 2) ? (int)(5000f / lapPos) : 0;
@@ -344,7 +358,7 @@ public class ResultsView : MainMenuView
 		if (payoutCo != null)
 			StopCoroutine(payoutCo);
 		payoutCo = StartCoroutine(PayoutSeq());
-		
+
 		base.OnEnable();
 	}
 	string Pos(int i)
@@ -359,16 +373,16 @@ public class ResultsView : MainMenuView
 	}
 	void SetText(Transform tr, string content, bool highlight)
 	{
-		if(content!=null)
+		if (content != null)
 		{
 			var ugui = tr.GetComponent<TextMeshProUGUI>();
 			ugui.text = content;
 			ugui.color = highlight ? Color.white : Color.gray;
 		}
-		tr.gameObject.SetActive(content!=null);
+		tr.gameObject.SetActive(content != null);
 	}
-	
-	
+
+
 	IEnumerator PayoutSeq()
 	{
 		//Debug.Log($"Set points {p.ScoreGet()} + {grandScoreFinal}");
@@ -380,7 +394,7 @@ public class ResultsView : MainMenuView
 		yield return new WaitForSeconds(1);
 
 		Sprite medal;
-		
+
 		medal = finalPosition switch
 		{
 			0 => goldMedals[0],
@@ -458,7 +472,7 @@ public class ResultsView : MainMenuView
 		grandScoreFinal = 0;
 	}
 	IEnumerator AddingScoreSeq(string recordType, float bonus, Sprite medal)
-	{ 
+	{
 		isAddingScore = true;
 		addingScore.SetActive(true);
 		addingScoreText.text = recordType;
@@ -474,7 +488,7 @@ public class ResultsView : MainMenuView
 			grandScore0Text.text = "      " + grandScoreMoving.ToString();
 			tickSnd.pitch = Mathf.LerpUnclamped(1, 1.3f, timer);
 			tickSnd.Play();
-			timer += 2*Time.deltaTime;
+			timer += 2 * Time.deltaTime;
 			yield return null;
 		}
 		yield return new WaitForSeconds(1);
@@ -486,7 +500,7 @@ public class ResultsView : MainMenuView
 		newMedal.sprite = medal;
 		float timer = 0;
 		float timeRequired = 1;
-		while(timer < timeRequired)
+		while (timer < timeRequired)
 		{
 			var c = newMedal.color;
 			c.a = timer;
@@ -498,7 +512,7 @@ public class ResultsView : MainMenuView
 	void ResultRandomizer()
 	{
 		resultData.AddRange(new ResultInfo[F.R(2, 11)]);
-		for(int i=0; i<resultData.Count; ++i)
+		for (int i = 0; i < resultData.Count; ++i)
 		{
 			resultData[i] = new ResultInfo()
 			{
@@ -506,7 +520,7 @@ public class ResultsView : MainMenuView
 				lap = TimeSpan.FromMilliseconds(F.R(30 * 1000, 2 * 3600 * 1000)),
 				name = F.RandomString(F.R(3, 12)),
 				aeromiles = F.R(0, 100000),
-			};	
+			};
 		}
 		int x = F.R(0, resultData.Count);
 		resultData[x].name = F.I.playerData.playerName;

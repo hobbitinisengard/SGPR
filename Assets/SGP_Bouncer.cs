@@ -10,6 +10,7 @@ public class SGP_Bouncer : MonoBehaviour
 	public float lastVVBounceTime;
 	float debounceTime = .5f;
 	float mult = 5;
+
 	static AnimationCurve multCurve;
 	private void Awake()
 	{
@@ -19,9 +20,9 @@ public class SGP_Bouncer : MonoBehaviour
 		{
 			Keyframe[] kf = new Keyframe[]
 			{
-				new (0,0),
-				new (45,1),
-				new (90,0),
+				new (30,0,      0, 1/15f),
+				new (45,1, -1/15f, -1/15f),
+				new (60,0,  1/15f, 0),
 			};
 			multCurve = new AnimationCurve(kf);
 		}

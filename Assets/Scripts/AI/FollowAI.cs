@@ -44,7 +44,6 @@ namespace RVP
 		public float lookAheadBase = 15;
 		float radius = 30;
 		private Vector4 tPos0;
-		public int curWaypointIdx;
 		public float stoppedTime;
 		public float reverseTime;
 		public float brakeTime;
@@ -100,6 +99,8 @@ namespace RVP
 		public ReplayCam currentCam { get { return replayCams[curReplayPointIdx]; } }
 
 		float lapProgressPercent;
+		float pitsDist;
+
 		public float LapProgressPercent
 		{
 			get
@@ -107,10 +108,14 @@ namespace RVP
 				int universalPathProgress = GetDist(1 << F.I.racingLineLayer);
 				if (universalPathProgress > progress + 2 * radius || universalPathProgress < progress - 2 * radius)
 					universalPathProgress = progress;
-				if (progress == 1) // when driving directly past startline
-					lapProgressPercent = 0;
+
+				if (universalPathProgress == 1 && lapProgressPercent >= 0.9f) // when driving directly past startline
+				{
+					lapProgressPercent = 1;
+				}
 				else
 					lapProgressPercent =  universalPathProgress / F.I.universalPath.path.length;
+
 				return lapProgressPercent;
 			}
 		}
@@ -118,15 +123,19 @@ namespace RVP
 		{
 			return stuntPoints != null && stuntPoints.Count > 0 && stuntPoints[curStuntpointIdx] > progress && stuntPoints[curStuntpointIdx] - progress < distanceOffset;
 		}
+		public void ResetCurCameraIdx()
+		{
+			curReplayPointIdx = 0;
+		}
 		public void NextLap()
 		{
 			progress = 1;
 			dist = 1;
+			lapProgressPercent = 0;
 			target.dist = progress;
 			target.pos = trackPathCreator.path.GetPointAtDistance(target.dist);
-			curWaypointIdx = 0;
 			curStuntpointIdx = 0;
-			curReplayPointIdx = 0;
+			ResetCurCameraIdx();
 			speedLimitDist = -1;
 		}
 		public void SetCPU(bool val)
@@ -190,7 +199,7 @@ namespace RVP
 			replayCams = F.I.replayCams;
 			trackPathCreator = F.I.universalPath;
 			Debug.Log(trackPathCreator == null);
-			curReplayPointIdx = replayCams.Count - 1;
+			ResetCurCameraIdx();
 			enabled = true;
 		}
 		private void Start()
@@ -295,7 +304,23 @@ namespace RVP
 			vp.SetEbrake(0);
 			revvingCo = false;
 		}
+		public void PitsTrigger()
+		{
+			if (searchForPits)
+			{
+				Collider[] pitsPathHits;
+				pitsPathHits = Physics.OverlapSphere(transform.position, radius, 1 << F.I.pitsLineLayer);
 
+				if (pitsPathHits.Length > 0)
+				{
+					pitsPathCreator = pitsPathHits[0].transform.parent.GetComponent<PathCreator>();
+					pitsDist = 0;
+					pitsProgress = 0;
+					searchForPits = false;
+					inPitsTime = Time.time;
+				}
+			}
+		}
 		void FixedUpdate()
 		{
 			if (!trackPathCreator)
@@ -340,8 +365,8 @@ namespace RVP
 				}
 			}
 
-			Collider[] pitsPathHits;
-			float pitsDist = 0;
+			
+			pitsDist = 0;
 			if (pitsPathCreator)
 			{
 				if (Time.time - inPitsTime > 10)
@@ -363,19 +388,7 @@ namespace RVP
 			}
 			else
 			{
-				if (searchForPits)
-				{
-					pitsPathHits = Physics.OverlapSphere(transform.position, radius, 1 << F.I.pitsLineLayer);
-
-					if (pitsPathHits.Length > 0)
-					{
-						pitsPathCreator = pitsPathHits[0].transform.parent.GetComponent<PathCreator>();
-						pitsDist = 0;
-						pitsProgress = 0;
-						searchForPits = false;
-						inPitsTime = Time.time;
-					}
-				}
+				
 
 				dist = GetDist(1 << racingLineLayerNumber);
 
@@ -398,6 +411,14 @@ namespace RVP
 				}
 			}
 
+			if(trackPathCreator)
+			{
+				while (replayCams.Count > 0 && replayCams[curReplayPointIdx].dist < vp.followAI.progress && curReplayPointIdx < replayCams.Count - 1)
+				{
+					++curReplayPointIdx;
+				}
+			}
+
 			if (selfDriving && vp.Owner)
 			{
 				if (vp.BatteryPercent < 0.2f)
@@ -417,11 +438,7 @@ namespace RVP
 						if (curStuntpointIdx < stuntPoints.Count - 1)
 							++curStuntpointIdx;
 					}
-					if (replayCams.Count > 0 && replayCams[curReplayPointIdx].dist < vp.followAI.progress)
-					{
-						if (curReplayPointIdx < replayCams.Count - 1)
-							++curReplayPointIdx;
-					}
+					
 					tPos0 = trackPathCreator.path.GetPointAtDistance(dist);
 					tPos = trackPathCreator.path.GetPointAtDistance(dist + lookAheadBase * lookAheadSteerCurve.Evaluate(vp.velMag));
 					tPos2 = trackPathCreator.path.GetPointAtDistance(dist + lookAheadBase * lookAheadMultCurve.Evaluate(vp.velMag));
@@ -670,6 +687,7 @@ namespace RVP
 			dist = progress;
 
 			vp.ghost.StartGhostResetting();
+			rb.collisionDetectionMode = CollisionDetectionMode.Discrete;
 			rb.isKinematic = true;
 			tr.position = h.point + Vector3.up;
 			yield return new WaitForFixedUpdate();
@@ -682,6 +700,7 @@ namespace RVP
 
 			OutOfPits(resetProgress: false);
 			rb.isKinematic = false;
+			rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
 		}
 
 		public void DriveThruPits(in PathCreator pitsPathCreator)

@@ -19,6 +19,7 @@ public class TrackSelectorTemplate : Sfxable
 	public TextMeshProUGUI trackDescText;
 	public TextMeshProUGUI trackAuthorText;
 	public RadialOneVisible radial;
+	public TextMeshProUGUI wayButtonText;
 	/// <summary>
 	/// If true, populate menu only with valid tracks
 	/// </summary>
@@ -41,6 +42,27 @@ public class TrackSelectorTemplate : Sfxable
 		if (loadCo)
 			StopCoroutine(Load());
 		StartCoroutine(Load());
+
+		ResetButtons();
+	}
+	public void SwitchRoadType(bool init = false)
+	{
+		int dir = 0;
+		if (init)
+		{
+			if (F.I.randomPavement)
+				F.I.s_roadType = PavementType.Random;
+		}
+		else
+			dir = F.I.shiftInputRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
+
+		F.I.s_roadType = (PavementType)F.Wraparound((int)(F.I.s_roadType + dir), 0, F.I.pavementTypes + 1);
+		F.I.randomPavement = F.I.s_roadType == PavementType.Random;
+		wayButtonText.text = "Tex: " + F.I.s_roadType.ToString();
+	}
+	internal void ResetButtons()
+	{
+		SwitchRoadType(true);
 	}
 	bool ValidCheck(bool trackValid)
 	{
@@ -360,9 +382,4 @@ public class TrackSelectorTemplate : Sfxable
 			yield return null;
 		}
 	}
-}
-
-public class Selector : Sfxable
-{
-	
 }

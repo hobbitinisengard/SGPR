@@ -73,7 +73,7 @@ public class MultiPlayerSelector : TrackSelector
 		ServerC.I.callbacks.PlayerJoined += Callbacks_PlayerJoined;
 		ServerC.I.OnLobbyExit += OnLobbyExit;
 		networkManager.OnTransportFailure += NetworkManager_OnTransportFailure;
-		
+		networkManager.OnClientDisconnectCallback += NetworkManager_OnClientDisconnectCallback;
 		garageBtn.onClick.AddListener(() =>
 		{
 			if (F.I.scoringType == ScoringType.Championship)
@@ -86,6 +86,14 @@ public class MultiPlayerSelector : TrackSelector
 			}
 		});
 	}
+	private void NetworkManager_OnClientDisconnectCallback(ulong id)
+	{
+		if(id != networkManager.LocalClientId)
+		{
+			OnlineCommunication.I.ClientDisconnected(id);
+		}
+	}
+
 	public void OnLobbyExit()
 	{
 		thisView.GoBack(true);
@@ -138,7 +146,6 @@ public class MultiPlayerSelector : TrackSelector
 	}
 	IEnumerator EnableSeq()
 	{
-
 		if (ServerC.I.AmHost)
 		{
 			F.I.actionHappening = ActionHappening.InLobby;
@@ -153,13 +160,14 @@ public class MultiPlayerSelector : TrackSelector
 		{
 			F.I.actionHappening = ServerC.I.ActionHappening;
 			DecodeConfig(ServerC.I.lobby.Data[ServerC.k_raceConfig].Value);
+			F.I.s_trackName = ServerC.I.lobby.Data[ServerC.k_trackName].Value;
 		}
 
 		loadCo = true;
 		base.OnEnable();
 		while (loadCo) //wait for OnEnable to end
 			yield return null;
-		F.I.s_trackName = ServerC.I.lobby.Data[ServerC.k_trackName].Value;
+
 		ResetButtons();
 
 		dataTransferWnd.SetActive(false);
@@ -484,18 +492,22 @@ public class MultiPlayerSelector : TrackSelector
 
 					ServerC.I.SponsorSet();
 
+					
+
 					if (ServerC.I.AmHost)
 					{
+						if (ServerC.I.AnyClientsStillInRace)
+						{
+							F.I.chat.AddChatRowLocally("", "Some players haven't come back to lobby yet", Color.grey, Color.grey);
+							PlaySFX("fe-cardserror");
+							readyClicked = false;
+							return;
+						}
+
 						if (F.I.CurRound == 0 || F.I.Rounds != ServerC.I.GetRounds() || (F.I.Rounds > 0 && F.I.CurRound > F.I.Rounds) 
 							|| F.I.scoringType != ServerC.I.GetScoringType() || (F.I.teams && F.I.s_PlayerCarSponsor != ServerC.I.GetSponsor()))
 						{
-							if(ServerC.I.AnyClientsStillInRace)
-							{
-								F.I.chat.AddChatRowLocally("", "Some players haven't come back to lobby yet", Color.grey, Color.grey);
-								PlaySFX("fe-cardserror");
-								readyClicked = false;
-								return;
-							}
+							
 							ServerC.I.ScoreSet(0);
 							AvailableTracksForRandomSession.Clear();
 							F.I.CurRound = 1;

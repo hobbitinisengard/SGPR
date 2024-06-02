@@ -9,7 +9,7 @@ public class TrackSelector : TrackSelectorTemplate
 	public TextMeshProUGUI nightButtonText;
 	public TextMeshProUGUI CPULevelButtonText;
 	public TextMeshProUGUI rivalsButtonText;
-	public TextMeshProUGUI wayButtonText;
+	
 	public TextMeshProUGUI sponsorButtonText;
 
 	protected int maxCPURivals = 9;
@@ -18,7 +18,7 @@ public class TrackSelector : TrackSelectorTemplate
 		base.OnEnable();
 		ResetButtons();
 	}
-	public void ResetButtons()
+	public new void ResetButtons()
 	{
 		//SwitchCatchup(true);
 		SwitchCPULevel(true);
@@ -27,7 +27,7 @@ public class TrackSelector : TrackSelectorTemplate
 		SwitchRaceType(true);
 		SwitchRivals(true);
 		SwitchSponsor(true);
-		SwitchRoadType(true);
+		base.ResetButtons();
 	}
 	public void SwitchRaceType(bool init = false)
 	{
@@ -114,21 +114,7 @@ public class TrackSelector : TrackSelectorTemplate
 		rivalsButtonText.text = "Opponents: " + F.I.s_cpuRivals.ToString();
 	}
 	
-	public void SwitchRoadType(bool init = false)
-	{
-		int dir = 0;
-		if (init)
-		{
-			if (F.I.randomPavement)
-				F.I.s_roadType = PavementType.Random;
-		}
-		else
-			dir = F.I.shiftInputRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
-
-		F.I.s_roadType = (PavementType)F.Wraparound((int)(F.I.s_roadType + dir), 0, F.I.pavementTypes+1);
-		F.I.randomPavement = F.I.s_roadType == PavementType.Random;
-		wayButtonText.text = "Tex: " + F.I.s_roadType.ToString();
-	}
+	
 	public void SwitchCatchup(bool init = false)
 	{
 		if (!init)

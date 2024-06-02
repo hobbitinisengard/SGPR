@@ -1,4 +1,5 @@
 using RVP;
+using System;
 using System.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
@@ -37,14 +38,25 @@ public class OnlineCommunication : NetworkBehaviour
 	{
 		RaceManager.I.SpawnCarForPlayer(ps.Receive.SenderClientId, lobbyId, position, rotation);
 	}
-	public void CountdownTillForceEveryoneToResults()
+	public void ActivateEndraceTimer()
 	{
-		CountdownTillForceEveryoneToResultsRpc();
+		if(F.I.gameMode == MultiMode.Multiplayer)
+			CountdownTillForceEveryoneToResultsRpc();
 	}
 	[Rpc(SendTo.Everyone)]
 	void CountdownTillForceEveryoneToResultsRpc()
 	{
-		if (RaceManager.I.playerCar && RaceManager.I.playerCar.raceBox.enabled)
+		if (ResultsView.FinishedPlayers < ServerC.I.lobby.Players.Count)
 			RaceManager.I.hud.endraceTimer.gameObject.SetActive(true);
+	}
+
+	public void ClientDisconnected(ulong id)
+	{
+		ClientDisconnectedRpc(id);
+	}
+	[Rpc(SendTo.Everyone)]
+	void ClientDisconnectedRpc(ulong id)
+	{
+		ResultsView.Remove(id);
 	}
 }

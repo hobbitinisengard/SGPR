@@ -27,12 +27,17 @@ public class EndraceCountdownTimer : MonoBehaviour
 	IEnumerator EndraceCountdown()
    {
       float timer = Info.AfterMultiPlayerRaceWaitForPlayersSeconds;
-      int round = 30;
+      int round = Info.AfterMultiPlayerRaceWaitForPlayersSeconds;
       while(timer > 0)
       {
 			timer -= Time.deltaTime;
          if(round != Mathf.FloorToInt(timer))
          {
+            if(ResultsView.FinishedPlayers >= ServerC.I.lobby.Players.Count)
+            {
+					gameObject.SetActive(false);
+               yield break;
+				}
             round = Mathf.FloorToInt(timer);
 				text.text = round.ToString();
             if(round < 10)

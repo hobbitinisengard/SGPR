@@ -235,7 +235,7 @@ public class ServerC : MonoBehaviour
 		// only for host: networkManager.DisconnectClient(networkManager.LocalClientId);
 		networkManager.Shutdown();
 		callbacksLobbyId = "";
-		//DeleteEmptyLobbies();
+		DeleteEmptyLobbies();
 		Debug.Log("DISCONNECTED");
 		OnLobbyExit.Invoke();
 	}
@@ -541,7 +541,7 @@ public class ServerC : MonoBehaviour
 	}
 	public void ReadySet(bool ready)
 	{
-		if (!MultiPlayerSelector.I.gameObject.activeSelf)
+		if (!MultiPlayerSelector.I.gameObject.activeInHierarchy)
 			ReadySet(PlayerState.InRace);
 		else
 			ReadySet(ready ? PlayerState.InLobbyReady : PlayerState.InLobbyUnready);

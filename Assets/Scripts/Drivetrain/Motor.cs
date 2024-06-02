@@ -7,7 +7,8 @@ namespace RVP
 	public abstract class Motor : MonoBehaviour
 	{
 		protected VehicleParent vp;
-		public bool ignition;
+		[NonSerialized]
+		public bool ignition = false;
 
 		[Tooltip("Throttle curve, x-axis = input, y-axis = output")]
 		public AnimationCurve inputCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
@@ -142,7 +143,7 @@ namespace RVP
 				if (ignition && health > 0)
 				{
 					engineAudio.enabled = true;					
-					engineAudio.pitch = Mathf.LerpUnclamped(engineAudio.pitch, Mathf.Lerp(minPitch, maxPitch, targetPitch),
+					engineAudio.pitch = Mathf.LerpUnclamped(engineAudio.pitch, Mathf.LerpUnclamped(minPitch, maxPitch, targetPitch),
 						20 * Time.deltaTime) + Mathf.Sin(Time.time * 200 * (1 - health)) * (1 - health) * 0.1f * damagePitchWiggle;
 					idlingEngineAudio.pitch = engineAudio.pitch;
 					// blend idling engine audio with revving audio

@@ -429,16 +429,17 @@ public class CarConfig
 				else
 					return customParts[type];
 			}
+			float C01(float min, float max, float val)
+			{
+				return Mathf.Clamp(Mathf.InverseLerp(min, max, val), .15f, 1);
+			}
 
 			var chassis = (ChassisSavable)Part(PartType.Chassis);
 			var tyre = (TyreSavable)Part(PartType.Tyre);
 			var engine = (EngineSavable)Part(PartType.Engine);
-			float minVal = .15f;
-			float S = Mathf.Clamp(Mathf.InverseLerp(400, 1200, chassis.staticEvoMaxSpeed), minVal, 1);
-			float G = Mathf.Clamp(Mathf.InverseLerp(-0.2f, 0, chassis.longtitunalCOM), minVal, 1)
-				* Mathf.Clamp(1 - Mathf.InverseLerp(0, 4, tyre.forwardFriction - tyre.sideFriction), minVal, 1)
-				* Mathf.Clamp(tyre.offroadTread, minVal, 1);
-			float P = Mathf.Clamp(Mathf.InverseLerp(0.5f, 1.1f, engine.torque / chassis.mass), minVal, 1);
+			float S = C01(400, 1200, chassis.staticEvoMaxSpeed);
+			float G = C01(3, 0, tyre.sideFriction - tyre.shiftRearFriction);
+			float P = C01(0.1f, .5f, engine.torque / chassis.mass);
 			return new float[] { S, G, P };
 		}
 	}
@@ -658,6 +659,7 @@ public class DriveSavable : PartSavable
 		vp.steeringControl.steerAdd = steerAdd;
 		vp.steeringControl.holdComebackSpeed = holdComebackSpeed;
 
+		//vp.steeringControl.steerLimitCurve = AnimationCurve.Linear(0, steerLimitAt0, 83, steerLimitAt200);
 		vp.steeringControl.steerLimitCurve = new AnimationCurve(new Keyframe[] {
 			new (0, steerLimitAt0, 0, -0.03f),
 			new (56, steerLimitAt200, -0.0012f, 0)
@@ -994,7 +996,7 @@ public class EngineSavable : PartSavable
 		vp.engine.maxPitch = audioMaxPitch;
 		vp.engine.minPitch = audioMinPitch;
 		vp.engine.inertia = inertia;
-		vp.engine.maxTorque = (F.I.s_raceType == RaceType.Drift) ? Mathf.Max(torque, vp.originalMass+0.1f) : torque;
+		vp.engine.maxTorque = (F.I.s_raceType == RaceType.Drift) ? Mathf.Max(torque, vp.originalMass/2f) : torque;
 		vp.engine.limitkRPM = redlineKRPM;
 		vp.engine.limit2kRPM = cutoffKRPM;
 		vp.engine.torqueCurve = vp.engine.GenerateTorqueCurve((int)torqueCurveType);

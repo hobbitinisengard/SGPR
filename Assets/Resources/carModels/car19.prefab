@@ -17250,7 +17250,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
 --- !u!114 &-7121103677001843846
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17263,7 +17263,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 3244424424
+  GlobalObjectIdHash: 3347225592
   InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
@@ -17284,6 +17284,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1e173e117282a9d41a1c848fb0281a21, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  antennaFlag: {fileID: 0}
   carReflectionPrefab: {fileID: 5837710349746425412, guid: c4e15b053cf12b64ead8a82525a0d255,
     type: 3}
   springRenderers:
@@ -17507,7 +17508,6 @@ MonoBehaviour:
   forwardTargetDot: 0
   tSpeed: 0
   lookAheadBase: 15
-  curWaypointIdx: 0
   stoppedTime: 0
   reverseTime: 0
   brakeTime: 0
@@ -17518,6 +17518,8 @@ MonoBehaviour:
   speedLimitDist: 0
   hardCornerDot: 0.22
   slowingCoeff: 1
+  target:
+    dist: 0
   cpuLevel: 0
   SGPshifting: 0
   stopTimeReverse: 3
@@ -17621,7 +17623,6 @@ MonoBehaviour:
   cpuSmoothCoeff: 10
   cpuFastCoeff: 50
   targetSteer: 0
-  raceEndedLapProgressPercent: 0
   maxSteerPerFrame: 5
 --- !u!114 &8319369162350912230
 MonoBehaviour:
@@ -19659,7 +19660,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7570a431340540f4e884ee115b563879, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ignition: 1
   inputCurve:
     serializedVersion: 2
     m_Curve:

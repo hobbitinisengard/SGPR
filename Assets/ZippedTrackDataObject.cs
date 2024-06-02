@@ -36,11 +36,9 @@ struct SerializableByteArray : INetworkSerializable
 }
 public class ZippedTrackDataObject : NetworkBehaviour
 {
-	byte[] zippedTrack;
+	
 	List<byte> receivedTrack = new(1500000);
-	string trackName = "";
-	bool updatingCachedTrack = false;
-	private void OnApplicationQuit()
+	private void Awake()
 	{
 		var zipFiles = Directory.GetFiles(F.I.documentsSGPRpath, "*.zip");
 		foreach (var zipDir in zipFiles)
@@ -67,32 +65,21 @@ public class ZippedTrackDataObject : NetworkBehaviour
 	[Rpc(SendTo.Server, AllowTargetOverride = true)]
 	void UpdateTrackRpc(string trackNameRequestedByClient, RpcParams rpcParams)
 	{
-		StartCoroutine(UpdateTrack(rpcParams.Receive.SenderClientId, trackNameRequestedByClient));
+		UpdateTrack(rpcParams.Receive.SenderClientId, trackNameRequestedByClient);
 	}
-	IEnumerator UpdateTrack(ulong clientId, string newTrackName)
+	async void UpdateTrack(ulong clientId, string newTrackName)
 	{
 		Debug.Log("Server: Update track " + newTrackName);
-		while (updatingCachedTrack)
-			yield return null;
-
-		if (trackName != newTrackName)
+		string zipPath = F.I.documentsSGPRpath + newTrackName + ".zip";
+		if (!File.Exists(zipPath))
 		{
-			updatingCachedTrack = true;
-			Debug.Log("writing");
-			string zipPath = F.I.documentsSGPRpath + newTrackName + ".zip";
-			if (File.Exists(zipPath))
-				File.Delete(zipPath);
-			using (ZipArchive zip = ZipFile.Open(zipPath, ZipArchiveMode.Create))
-			{
-				zip.CreateEntryFromFile(F.I.tracksPath + newTrackName + ".track", newTrackName + ".track");
-				zip.CreateEntryFromFile(F.I.tracksPath + newTrackName + ".png", newTrackName + ".png");
-				zip.CreateEntryFromFile(F.I.tracksPath + newTrackName + ".data", newTrackName + ".data");
-			}
-			zippedTrack = File.ReadAllBytes(zipPath);
-			trackName = newTrackName;
-			updatingCachedTrack = false;
+			using ZipArchive zip = ZipFile.Open(zipPath, ZipArchiveMode.Create);
+			zip.CreateEntryFromFile(F.I.tracksPath + newTrackName + ".track", newTrackName + ".track");
+			zip.CreateEntryFromFile(F.I.tracksPath + newTrackName + ".png", newTrackName + ".png");
+			zip.CreateEntryFromFile(F.I.tracksPath + newTrackName + ".data", newTrackName + ".data");
 		}
-
+		
+		byte[] zippedTrack = await File.ReadAllBytesAsync(zipPath);
 		Debug.Assert(zippedTrack != null);
 
 		// max amount of data you can send at once is 1400 bytes
