@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections;
 using System.Text;
 using TMPro;
 using Unity.Netcode;
-using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -21,10 +18,6 @@ public class Chat : NetworkBehaviour
 	public bool texting { get; private set; }
 	Coroutine showChatCo;
 	// Chat is in-scene placed
-	private void Awake()
-	{
-		F.I.chat = this;
-	}
 	public override void OnNetworkSpawn()
 	{
 		base.OnNetworkSpawn();
@@ -49,7 +42,6 @@ public class Chat : NetworkBehaviour
 	}
 	void Initialize()
 	{
-		F.I.chat = this;
 		F.I.chatButtonInput.action.performed += buttonPressed;
 		F.I.quickMessageRef.action.performed += QuickMessagePressed;
 		F.I.viewSwitcher.OnWorldMenuSwitch += F.Deselect;

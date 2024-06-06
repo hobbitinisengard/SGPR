@@ -7,7 +7,6 @@ using System.IO;
 using System.Collections.Generic;
 using Unity.Services.Lobbies.Models;
 using Unity.Netcode;
-using System.Linq;
 
 namespace RVP
 {
@@ -20,10 +19,7 @@ namespace RVP
 		public GameObject Sun;
 		public ViewSwitcher viewSwitcher;
 		public PathCreator[] racingPaths;
-		//public GameObject Sun;
-		[Tooltip("Reload the scene with the 'Restart' button in the input manager")]
-		public bool quickRestart = true;
-
+		public PathCreator universalPath;
 		[Tooltip("Mask for what the wheels collide with")]
 		public LayerMask wheelCastMask;
 		public static LayerMask wheelCastMaskStatic;

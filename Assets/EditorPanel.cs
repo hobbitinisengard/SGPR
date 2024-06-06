@@ -967,6 +967,13 @@ public class EditorPanel : MonoBehaviour
 			loadingTrack = false;
 			yield break;
 		}
+
+
+		//Vector3[] middlesOfRoad = new Vector3[Lpath.Count];
+		//for (int i = 0; i < middlesOfRoad.Length; ++i)
+		//	middlesOfRoad[i] = (Lpath[i] + Rpath[i]) / 2f;
+		//RaceManager.I.universalPath.bezierPath = new BezierPath(middlesOfRoad, true, PathSpace.xyz);
+
 		for (int i = 0; i < pathCreators.Length; ++i)
 		{
 			K1999 k1999 = new(racingPathParams[i]);
@@ -987,8 +994,7 @@ public class EditorPanel : MonoBehaviour
 					}
 				}
 			}
-			BezierPath bezierPath = new BezierPath(racingLine.ToArray(), true, PathSpace.xyz);
-			pathCreators[i].bezierPath = bezierPath;
+			pathCreators[i].bezierPath = new BezierPath(racingLine.ToArray(), true, PathSpace.xyz);
 			SetPathClosed(true);
 			connectButtonImage.color = Color.green;
 			pathFollower.SetActive(true);
@@ -996,7 +1002,7 @@ public class EditorPanel : MonoBehaviour
 			// destroy old castable points
 			for (int j = 0; j < racingLineContainers[i].transform.childCount; ++j)
 			{
-				GameObject.Destroy(racingLineContainers[i].transform.GetChild(j).gameObject);
+				Destroy(racingLineContainers[i].transform.GetChild(j).gameObject);
 			}
 			// Create castable points
 			float progress = 0;

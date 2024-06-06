@@ -233,7 +233,7 @@ namespace RVP
 				foreach (var hit in racingPathHits)
 				{
 					dist = Vector3.Distance(transform.position, hit.transform.position);
-					if (dist < min)
+					if (dist < min && !Physics.Linecast(transform.position + 3 * Vector3.up, hit.transform.position + 3 * Vector3.up, 1 | 1 << F.I.roadLayer | 1 << F.I.terrainLayer))
 					{
 						min = dist;
 						closestLen = hit.transform.name;
