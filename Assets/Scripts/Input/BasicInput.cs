@@ -67,8 +67,7 @@ namespace RVP
 		{
 			if (vp.followAI.selfDriving)
 			{
-				if (!vp.followAI.Pitting)
-					vp.SetSteer(0);
+				vp.SetSteer(0);
 			}
 			else
 			{

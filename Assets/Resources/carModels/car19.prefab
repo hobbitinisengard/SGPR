@@ -17704,12 +17704,12 @@ MonoBehaviour:
   syncRotation: 0
   syncScale: 7
   syncVelocity: 0
-  syncAngularVelocity: 7
+  syncAngularVelocity: 0
   isPositionCompressed: 0
   isRotationCompressed: 1
   isScaleCompressed: 0
   isVelocityCompressed: 1
-  isAngularVelocityCompressed: 0
+  isAngularVelocityCompressed: 1
   automaticallyResetTime: 0
   isSmoothingAuthorityChanges: 0
   transformSource: 0
