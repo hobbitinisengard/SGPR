@@ -10,8 +10,8 @@ PhysicsManager:
   m_DefaultMaxDepenetrationVelocity: 10
   m_SleepThreshold: 0.005
   m_DefaultContactOffset: 1e-15
-  m_DefaultSolverIterations: 7
-  m_DefaultSolverVelocityIterations: 7
+  m_DefaultSolverIterations: 5
+  m_DefaultSolverVelocityIterations: 5
   m_QueriesHitBackfaces: 0
   m_QueriesHitTriggers: 1
   m_EnableAdaptiveForce: 0
