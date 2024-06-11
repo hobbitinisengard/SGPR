@@ -68,7 +68,8 @@ public class Tile : MonoBehaviour
 						Endings = endings.ToArray();
 				}
 			}
-			mc.gameObject.AddComponent<Rigidbody>().isKinematic = true;
+			var rb = mc.gameObject.AddComponent<Rigidbody>();
+			rb.isKinematic = true;
 		}
 		mc.enabled = true;
 		if(F.I.s_roadType == PavementType.Random)

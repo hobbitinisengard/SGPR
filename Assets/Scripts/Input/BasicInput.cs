@@ -27,7 +27,7 @@ namespace RVP
 
 		public InputActionReference lookBackInput;
 		public InputActionReference lookAxisInput;
-		float resetOnTrackTime = 0;
+		
 		private void Awake()
 		{
 			vp = transform.parent.GetComponent<VehicleParent>();
@@ -85,9 +85,8 @@ namespace RVP
 					vp.SetHonkerInput((int)honkInput.action.ReadValue<float>());
 					vp.SetSGPShift((int)evoInput.action.ReadValue<float>());
 					if (resetOnTrackInput.action.ReadValue<float>() == 1
-						&& Time.time - resetOnTrackTime > 5)
+						&& Time.time - vp.resetOnTrackTime > 5)
 					{
-						resetOnTrackTime = Time.time;
 						vp.ResetOnTrack();
 					}
 					vp.SetRoll(rollInput.action.ReadValue<float>());

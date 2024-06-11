@@ -213,7 +213,7 @@ public class Info : MonoBehaviour
 	public readonly Vector3[] invisibleLevelDimensions = new Vector3[]{
 		new (564, 1231,1), //ger
 		new (800, 800,1), //jap
-		new (1462, 1316,1),
+		new (1462, 2480,1),//spn
 		new (824, 817,1),
 		new (1170, 817,1),
 		new (739, 1060,1),

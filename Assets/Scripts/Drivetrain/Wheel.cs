@@ -328,7 +328,7 @@ namespace RVP
 						sphereColTr.parent = tr;
 						sphereColTr.localPosition = Vector3.zero;
 						sphereColTr.localRotation = Quaternion.identity;
-						sphereCol.radius = rimRadius;//Mathf.Min(rimWidth * 0.5f, rimRadius * 0.5f);
+						sphereCol.radius = .8f * tireRadius;//rimRadius;//Mathf.Min(rimWidth * 0.5f, rimRadius * 0.5f);//
 						sphereCol.sharedMaterial = RaceManager.frictionlessMatStatic;
 					}
 
@@ -405,7 +405,7 @@ namespace RVP
 
 					if (rimWidthPrev != setRimWidth || rimRadiusPrev != setRimRadius)
 					{
-						sphereCol.radius = Mathf.Min(rimWidth * 0.5f, rimRadius * 0.5f);
+						sphereCol.radius = .8f * tireRadius;
 						updatedSize = true;
 					}
 					else if (tireWidthPrev != setTireWidth || tireRadiusPrev != setTireRadius || tirePressurePrev != setTirePressure)

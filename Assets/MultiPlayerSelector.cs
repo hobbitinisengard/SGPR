@@ -137,6 +137,7 @@ public class MultiPlayerSelector : TrackSelector
 	}
 	protected override void OnEnable()
 	{
+		Debug.Log("OnEnable");
 		ResultsView.Clear();
 		F.I.chat.UpdateCanvases();
 
@@ -490,9 +491,12 @@ public class MultiPlayerSelector : TrackSelector
 						F.I.s_playerCarName = "car" + (randomNr + 1).ToString("D2");
 					}
 
-					ServerC.I.SponsorSet();
+					if(F.I.teams && F.I.s_PlayerCarSponsor != ServerC.I.GetSponsor())
+					{
+						ServerC.I.ScoreSet(0);
+					}
 
-					
+					ServerC.I.SponsorSet();
 
 					if (ServerC.I.AmHost)
 					{
@@ -504,10 +508,9 @@ public class MultiPlayerSelector : TrackSelector
 							return;
 						}
 
-						if (F.I.CurRound == 0 || F.I.Rounds != ServerC.I.GetRounds() || (F.I.Rounds > 0 && F.I.CurRound > F.I.Rounds) 
-							|| F.I.scoringType != ServerC.I.GetScoringType() || (F.I.teams && F.I.s_PlayerCarSponsor != ServerC.I.GetSponsor()))
+						if (F.I.CurRound == 0 || F.I.Rounds != ServerC.I.GetRounds() || (F.I.Rounds > 0 && F.I.CurRound > F.I.Rounds)
+							|| F.I.scoringType != ServerC.I.GetScoringType())
 						{
-							
 							ServerC.I.ScoreSet(0);
 							AvailableTracksForRandomSession.Clear();
 							F.I.CurRound = 1;

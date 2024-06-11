@@ -853,7 +853,7 @@ public class RaceBox : MonoBehaviour
 	private void OnDisable()
 	{
 		// in case we are disconnecting early, ownership is transferred to server
-		if (name != F.I.playerData.playerName)
+		if (F.I.gameMode == MultiMode.Multiplayer && name != F.I.playerData.playerName)
 			return;
 
 		// You can disable racebox only ONCE

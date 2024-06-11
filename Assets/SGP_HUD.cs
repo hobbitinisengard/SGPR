@@ -28,7 +28,7 @@ public class SGP_HUD : MonoBehaviour
 	//StuntDetect stunter;
 	GasMotor engine;
 	readonly int minRpmRotation = 122;
-	readonly int maxRpmRotation = -63;
+	readonly int maxRpmRotation = -85;
 	public ComponentPanel componentPanel;
 	public LapRecordSeq lapRecordSeq;
 	public PtsAnim ptsAnim;

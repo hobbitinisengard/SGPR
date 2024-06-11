@@ -20,6 +20,7 @@ namespace RVP
 			public Vector3 pos;
 			public float dist;
 		}
+		const int steepestAllowedAngleOnRespawnDegs = 75;
 		List<int> stuntPoints;
 		int racingLineLayerNumber;
 		public List<ReplayCam> replayCams { get; private set; }
@@ -271,9 +272,12 @@ namespace RVP
 				speedLimit = 1024;
 				speedLimitDist = -1;
 				if (resetProgress)
-					progress = GetDist(1 << racingLineLayerNumber) + 40;
-				if (pitsPathCreator)
-					pitsProgress = pitsPathCreator.path.length;
+				{
+					var newDist = GetDist(1 << racingLineLayerNumber) + 40;
+					if (newDist < progress + 300)
+						progress = newDist;
+				}
+				pitsProgress = 0;
 				pitsPathCreator = null;
 				searchForPits = false;
 				selfDriving = isCPU;
@@ -675,14 +679,17 @@ namespace RVP
 
 			Vector3 resetPos = trackPathCreator.path.GetPointAtDistance(progress);
 			RaycastHit h;
+			Vector3 resetDir = trackPathCreator.path.GetDirectionAtDistance(progress);
 			while ( 
 				(!Physics.Raycast(resetPos + 5 * Vector3.up, Vector3.down, out h, Mathf.Infinity, 1 << F.I.roadLayer)
 				|| Vector3.Dot(h.normal, Vector3.up) < -0.5f // while not hit road or hit culled face (backface raycasts are on)
 				|| Mathf.Abs(Vector3.Dot(h.normal, Vector3.up)) < .64f  // slope too big
+				|| Vector3.SignedAngle(resetDir, Vector3.up, Vector3.Cross(resetDir, Vector3.up)) < steepestAllowedAngleOnRespawnDegs 
 				|| h.transform.parent.name == "loop") && progress < 2 * trackPathCreator.path.length)
 			{
 				progress += 10;
 				resetPos = trackPathCreator.path.GetPointAtDistance(progress);
+				resetDir = trackPathCreator.path.GetDirectionAtDistance(progress);
 			}
 			dist = progress;
 
@@ -701,6 +708,7 @@ namespace RVP
 			OutOfPits(resetProgress: false);
 			rb.isKinematic = false;
 			rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+			vp.resetOnTrackTime = Time.time;
 		}
 
 		public void DriveThruPits(in PathCreator pitsPathCreator)

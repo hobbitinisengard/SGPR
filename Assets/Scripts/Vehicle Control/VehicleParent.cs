@@ -139,6 +139,8 @@ namespace RVP
 		public int SGPshiftbutton;
 		[System.NonSerialized]
 		public float rollInput;
+		[NonSerialized]
+		public float resetOnTrackTime = 0;
 
 		//NetworkVariable<float> _accelInput = new(writePerm: NetworkVariableWritePermission.Owner);
 		//public float accelInput { get { return _accelInput.Value; } set { _accelInput.Value = value; } }
@@ -163,7 +165,7 @@ namespace RVP
 		//[System.NonSerialized]
 		//NetworkVariable<int> _rollButton = new(writePerm: NetworkVariableWritePermission.Owner);
 		//public int rollInput { get { return _boostButton.Value; } set { _boostButton.Value = value; } }
-		
+
 		public Livery sponsor 
 		{ 
 			get 
@@ -598,6 +600,7 @@ namespace RVP
 		}
 		void Update()
 		{
+			rb.collisionDetectionMode = reallyGroundedWheels > 1 ? CollisionDetectionMode.Discrete : CollisionDetectionMode.Continuous;
 			if (Physics.OverlapBox(tr.position, Vector3.one, Quaternion.identity, 1 << F.I.aeroTunnel).Length > 0)
 			{ // aerodynamic tunnel
 				rb.drag = 0;

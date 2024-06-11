@@ -163,7 +163,7 @@ public class Connector : MonoBehaviour
 		{
 			if (!tile.placed)
 			{
-				tile.panel.SetPlacedAnchor(otherConnectorsCollider.transform.position); 
+				tile.panel.SetPlacedAnchor(otherConnectorsCollider.GetComponent<Connector>()); 
 				SwitchEndingCollision(false);
 			}
 			else
@@ -177,7 +177,7 @@ public class Connector : MonoBehaviour
 				}
 				else
 				{
-					tile.panel.SetFloatingConnector(otherConnectorsCollider.transform.position);
+					tile.panel.SetFloatingConnector(otherConnectorsCollider.GetComponent<Connector>());
 					SwitchEndingCollision(false);
 				}
 			}

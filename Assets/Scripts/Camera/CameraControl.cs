@@ -186,7 +186,8 @@ namespace RVP
 		}
 		private void SwitchTarget(InputAction.CallbackContext context)
 		{
-			if (vp && RaceManager.I.playerCar?.raceBox.enabled == false && !F.I.chat.texting && F.I.gameMode == MultiMode.Multiplayer)
+			if (F.I.gameMode == MultiMode.Multiplayer && vp && RaceManager.I.playerCar != null 
+				&& !RaceManager.I.playerCar.raceBox.enabled && !F.I.chat.texting)
 			{
 				Vector2 move = moveRef.action.ReadValue<Vector2>();
 				if(Mathf.Abs(move.x) > 0.5f)
@@ -199,7 +200,6 @@ namespace RVP
 						Connect(F.I.s_cars[index], Mode.Replay);
 
 						RaceManager.I.hud.infoText.AddMessage(new Message(vp.transform.name, BottomInfoType.NEW_CAMERA_TARGET));
-
 					}
 					
 				}

@@ -48,6 +48,8 @@ public class SGP_Bouncer : MonoBehaviour
 	}
 	private void OnCollisionEnter(Collision collision)
 	{
+		vp.raceBox.evoModule.stunting = false;
+
 		ContactPoint contact = collision.GetContact(0);
 		if (contact.otherCollider.gameObject.layer == F.I.carCarCollisionLayer)
 		{
