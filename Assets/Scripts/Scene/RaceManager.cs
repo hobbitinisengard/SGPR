@@ -198,7 +198,6 @@ namespace RVP
 				{
 					var eliminatedCar = F.I.s_cars[i];
 					eliminatedCar.KnockoutMe();
-					hud.infoText.AddMessage(new(eliminatedCar.tr.name + " IS ELIMINATED!", BottomInfoType.ELIMINATED));
 				}
 			}
 		}
@@ -289,7 +288,7 @@ namespace RVP
 		public void StartRace()
 		{
 			ResultsView.Clear();
-			F.I.raceStartDate = DateTime.UtcNow.AddSeconds((ServerC.I.AmHost) ? 5 : 4.5f);
+			F.I.raceStartDate = DateTime.UtcNow.AddSeconds((ServerC.I.AmHost) ? 5 : 4.8f);
 			StartCoroutine(StartRaceCoroutine());
 		}
 		IEnumerator StartRaceCoroutine()

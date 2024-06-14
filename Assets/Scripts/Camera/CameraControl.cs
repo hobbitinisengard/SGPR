@@ -201,7 +201,6 @@ namespace RVP
 
 						RaceManager.I.hud.infoText.AddMessage(new Message(vp.transform.name, BottomInfoType.NEW_CAMERA_TARGET));
 					}
-					
 				}
 			}
 		}

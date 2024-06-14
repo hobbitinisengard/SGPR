@@ -799,7 +799,7 @@ public class RaceBox : MonoBehaviour
 							}
 						}
 					}
-
+					
 					if (F.I.s_raceType == RaceType.Knockout && (curLap - 1) == (F.I.s_laps - RaceManager.I.Position(vp)))
 					{
 						RaceManager.I.KnockoutCarsBehind(vp);
@@ -810,7 +810,7 @@ public class RaceBox : MonoBehaviour
 						int curPos = RaceManager.I.Position(vp) + 1;
 						if (!F.I.s_inEditor && curPos == 1)
 						{
-							RaceManager.I.hud.infoText.AddMessage(new(vp.tr.name + " WINS THE RACE!", BottomInfoType.CAR_WINS));
+							RaceManager.I.hud.infoText.AddMessage(new(vp.tr.name + " WINS!", BottomInfoType.CAR_WINS));
 							OnlineCommunication.I.ActivateEndraceTimer();
 						}
 						// in racemode after the end of a race, cars still run around the track, ghosts overtake each other. Don't let it change results
@@ -837,6 +837,9 @@ public class RaceBox : MonoBehaviour
 						}
 						enabled = false;
 					}
+					// when triggered lap while on energyTunnel
+					if(vp.followAI.pitsProgress > 0)
+						StartCoroutine(vp.followAI.ResetOnTrack());
 				}
 				else
 					enabled = false;

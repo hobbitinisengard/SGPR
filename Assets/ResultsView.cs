@@ -268,6 +268,12 @@ public class ResultsView : MainMenuView
 			GoToView(MultiPlayerSelector.I.thisView);
 		}
 	}
+	new void Awake()
+	{
+		base.Awake();
+		gridTableTr = gridTable.GetComponent<RectTransform>();
+		tickSnd = GetComponent<AudioSource>();
+	}
 	protected override void OnDisable()
 	{
 		if (addingScoreCo != null)
@@ -298,8 +304,6 @@ public class ResultsView : MainMenuView
 
 	protected override void OnEnable()
 	{
-		gridTableTr = gridTable.GetComponent<RectTransform>();
-		tickSnd = GetComponent<AudioSource>();
 		F.I.CurRound++;
 		//ResultRandomizer(); // for testing 
 		grandScoreMoving = 0;

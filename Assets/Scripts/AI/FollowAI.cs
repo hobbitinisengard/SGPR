@@ -352,12 +352,10 @@ namespace RVP
 
 			if (!pitsPathCreator)
 			{
-				if ((vp.reallyGroundedWheels == 4 && !overRoad) || // out of track
-					(overRoad && vp.velMag > 10 && vp.groundedWheels > 2 && Vector3.Dot(vp.forwardDir, trackPathCreator.path.GetDirectionAtDistance(dist)) < -0.5f)
+				if ((vp.reallyGroundedWheels == 4 && !overRoad) // out of track
+					|| (overRoad && vp.velMag > 10 && vp.groundedWheels > 2 && Vector3.Dot(vp.forwardDir, trackPathCreator.path.GetDirectionAtDistance(dist)) < -0.5f)
 					&& Vector3.Dot(vp.rb.velocity.normalized, trackPathCreator.path.GetDirectionAtDistance(dist)) < -0.5f) // wrong way drive
 					outOfTrackTime += Time.fixedDeltaTime;
-				else
-					outOfTrackTime -= Time.fixedDeltaTime;
 
 				if (outOfTrackTime < 0)
 					outOfTrackTime = 0;
@@ -399,7 +397,7 @@ namespace RVP
 				if (dist < progress)
 					dist = progress;
 
-				if (dist < progress + 2 * radius || (pitsPathCreator && pitsProgress == pitsPathCreator.path.length))
+				if (dist < progress + 2 * radius || (pitsPathCreator && pitsProgress >= pitsPathCreator.path.length))
 				{
 					progress = dist;
 					pitsProgress = 0;
@@ -683,9 +681,8 @@ namespace RVP
 			while ( 
 				(!Physics.Raycast(resetPos + 5 * Vector3.up, Vector3.down, out h, Mathf.Infinity, 1 << F.I.roadLayer)
 				|| Vector3.Dot(h.normal, Vector3.up) < -0.5f // while not hit road or hit culled face (backface raycasts are on)
-				|| Mathf.Abs(Vector3.Dot(h.normal, Vector3.up)) < .64f  // slope too big
 				|| Vector3.SignedAngle(resetDir, Vector3.up, Vector3.Cross(resetDir, Vector3.up)) < steepestAllowedAngleOnRespawnDegs 
-				|| h.transform.parent.name == "loop") && progress < 2 * trackPathCreator.path.length)
+				|| h.transform.parent.name == "loop") && progress < (trackPathCreator.path.length - 15))
 			{
 				progress += 10;
 				resetPos = trackPathCreator.path.GetPointAtDistance(progress);

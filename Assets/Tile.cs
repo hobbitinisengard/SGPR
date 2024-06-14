@@ -180,9 +180,6 @@ public class Tile : MonoBehaviour
 					light.rotation = Quaternion.LookRotation(lookVector);
 				}
 			}
-		}
-		if(transform.childCount > 0)
-		{
 			var mainMeshTr = transform.GetChild(0);
 			if (mainMeshTr.childCount > 0)
 			{
@@ -205,9 +202,13 @@ public class Tile : MonoBehaviour
 			var p = connector.localPosition;
 			p.x = -p.x;
 			connector.localPosition = p;
+
+			// update path positions
+			Transform[] connectorChildren = new Transform[connector.childCount];
 			for (int j = 0; j < connector.childCount; ++j)
 			{
 				Transform path = connector.GetChild(j);
+				connectorChildren[j] = path;
 				for (int k = 0; k < path.childCount; ++k)
 				{
 					Vector3 a = connector.InverseTransformPoint(path.GetChild(k).position);
@@ -216,6 +217,18 @@ public class Tile : MonoBehaviour
 					path.GetChild(k).position = a;
 				}
 			}
+
+			// temporarily unlink connector children and update connector rotation
+			foreach (var c in connectorChildren)
+				c.parent = null;
+
+			var euler = connector.localEulerAngles;
+			euler.y *= -1;
+			euler.z *= -1;
+			connector.localRotation = Quaternion.Euler(euler);
+
+			foreach (var c in connectorChildren)
+				c.parent = connector;
 		}
 		return mirrored;
 	}

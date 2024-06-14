@@ -340,8 +340,16 @@ public class MultiPlayerSelector : TrackSelector
 		F.I.s_roadType = (PavementType)(data[9]-'0');
 		F.I.s_catchup = false;
 		F.I.teams = data[10] == '1';
-		F.I.CurRound = byte.Parse(data[11..13]);
-		F.I.Rounds = byte.Parse(data[13..15]);
+
+		if(!ServerC.I.AmHost)
+		{
+			F.I.CurRound = byte.Parse(data[11..13]);
+			var nRounds = byte.Parse(data[13..15]);
+
+			if (F.I.Rounds != nRounds)
+				ServerC.I.ScoreSet(0);
+			F.I.Rounds = nRounds;
+		}
 
 		if (!F.I.teams)
 			F.I.s_PlayerCarSponsor = Livery.Random;
@@ -475,9 +483,13 @@ public class MultiPlayerSelector : TrackSelector
 			{
 				readyTimeoutTime = Time.time;
 
-				if (!OnlineCommunication.I.IsSpawned)
+				if (!OnlineCommunication.I.IsSpawned || ServerC.I.AnyClientsStillInRace)
 				{
-					F.I.chat.AddChatRowLocally("", "No synchronization. Try again after 2 seconds or reconnect", Color.grey, Color.grey);
+					if(!OnlineCommunication.I.IsSpawned)
+						F.I.chat.AddChatRowLocally("", "No synchronization. Try again after 2 seconds or reconnect", Color.grey, Color.grey);
+					if(ServerC.I.AnyClientsStillInRace)
+						F.I.chat.AddChatRowLocally("", "Some players haven't come back to lobby yet", Color.grey, Color.grey);
+
 					PlaySFX("fe-cardserror");
 					readyClicked = false;
 					return;
@@ -494,20 +506,13 @@ public class MultiPlayerSelector : TrackSelector
 					if(F.I.teams && F.I.s_PlayerCarSponsor != ServerC.I.GetSponsor())
 					{
 						ServerC.I.ScoreSet(0);
+						F.I.CurRound = 0;
 					}
 
 					ServerC.I.SponsorSet();
 
 					if (ServerC.I.AmHost)
 					{
-						if (ServerC.I.AnyClientsStillInRace)
-						{
-							F.I.chat.AddChatRowLocally("", "Some players haven't come back to lobby yet", Color.grey, Color.grey);
-							PlaySFX("fe-cardserror");
-							readyClicked = false;
-							return;
-						}
-
 						if (F.I.CurRound == 0 || F.I.Rounds != ServerC.I.GetRounds() || (F.I.Rounds > 0 && F.I.CurRound > F.I.Rounds)
 							|| F.I.scoringType != ServerC.I.GetScoringType())
 						{
@@ -515,6 +520,7 @@ public class MultiPlayerSelector : TrackSelector
 							AvailableTracksForRandomSession.Clear();
 							F.I.CurRound = 1;
 						}
+
 						if (F.I.randomTracks)
 							PickRandomTrack();
 

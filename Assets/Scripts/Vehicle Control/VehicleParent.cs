@@ -4,6 +4,7 @@ using System;
 using Unity.Netcode;
 using Unity.Collections;
 using System.Linq;
+using UnityEngine.InputSystem.HID;
 
 namespace RVP
 {
@@ -366,9 +367,12 @@ namespace RVP
 		int roadSurfaceType;
 		[NonSerialized]
 		public float tyresOffroad;
+		private float timeWhenInAir;
 
 		public CatchupStatus catchupStatus { get; private set; }
 		public float AngularDrag { get { return rb.angularDrag; } }
+
+		bool collisionDetectionChangerActive;
 
 		public void SetBattery(float capacity, float chargingSpeed, float lowBatPercent, float evoBountyPercent)
 		{
@@ -598,9 +602,27 @@ namespace RVP
 		{
 			raceBox.curLap = curLap;
 		}
+		IEnumerator WaitAndChangeCCD()
+		{
+			collisionDetectionChangerActive = true;
+			yield return new WaitForSeconds(.5f);
+			rb.collisionDetectionMode = CollisionDetectionMode.Discrete;
+			collisionDetectionChangerActive = false;
+		}
 		void Update()
 		{
-			rb.collisionDetectionMode = reallyGroundedWheels > 1 ? CollisionDetectionMode.Discrete : CollisionDetectionMode.Continuous;
+			// we need continous collisions for fast flying cars
+			// but still we need discrete collisions for driving (car physics requirement)
+			//if (reallyGroundedWheels == 0)
+			//{
+			//	rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+			//}
+			//else
+			//{
+			//	if (rb.collisionDetectionMode == CollisionDetectionMode.Continuous && !collisionDetectionChangerActive)
+			//		StartCoroutine(WaitAndChangeCCD());
+			//}
+
 			if (Physics.OverlapBox(tr.position, Vector3.one, Quaternion.identity, 1 << F.I.aeroTunnel).Length > 0)
 			{ // aerodynamic tunnel
 				rb.drag = 0;
@@ -1043,6 +1065,7 @@ namespace RVP
 		void KnockoutMeRpc()
 		{
 			KnockoutMeInternal();
+			SGP_HUD.I.infoText.AddMessage(new(tr.name + " ELIMINATED!", BottomInfoType.ELIMINATED));
 		}
 
 		public void SetChassis(float mass, float drag, float angularDrag)
