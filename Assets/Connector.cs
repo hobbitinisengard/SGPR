@@ -114,8 +114,16 @@ public class Connector : MonoBehaviour
 		else
 			idxWithPaths = transform.GetSiblingIndex();
 
-		Lpath = ListPositions(transform.parent.GetChild(idxWithPaths).GetChild(0), reverse);
-		Rpath = ListPositions(transform.parent.GetChild(idxWithPaths).GetChild(1), reverse);
+		if(tile.mirrored ^ reverse)
+		{
+			Rpath = ListPositions(transform.parent.GetChild(idxWithPaths).GetChild(0), reverse);
+			Lpath = ListPositions(transform.parent.GetChild(idxWithPaths).GetChild(1), reverse);
+		}
+		else
+		{
+			Lpath = ListPositions(transform.parent.GetChild(idxWithPaths).GetChild(0), reverse);
+			Rpath = ListPositions(transform.parent.GetChild(idxWithPaths).GetChild(1), reverse);
+		}
 	}
 	public Vector3[] PathsExtra()
 	{

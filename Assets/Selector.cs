@@ -31,7 +31,7 @@ public class TrackSelectorTemplate : Sfxable
 	protected Coroutine containerCo;
 	protected string persistentSelectedTrack;
 
-	protected virtual void OnDisable()
+	protected void OnDisable()
 	{
 		F.I.move2Ref.action.performed -= CalculateTargetToSelect;
 		persistentSelectedTrack = selectedTrack.name;

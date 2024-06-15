@@ -52,7 +52,8 @@ public class Chat : NetworkBehaviour
 		foreach (var i in inputFields)
 		{
 			i.onSelect.AddListener(s => { texting = true;  MultiPlayerSelector.I.EnableSelectionOfTracks(false); });
-			i.onDeselect.AddListener(s => { texting = false; MultiPlayerSelector.I.EnableSelectionOfTracks(ServerC.I.AmHost && !ServerC.I.PlayerMe.ReadyGet()); });
+			i.onDeselect.AddListener(s => { texting = false; MultiPlayerSelector.I.EnableSelectionOfTracks(
+				F.I.actionHappening == ActionHappening.InLobby && ServerC.I.AmHost && !ServerC.I.PlayerMe.ReadyGet()); });
 			i.onSubmit.AddListener(s =>
 			{
 				readyButton.Select();

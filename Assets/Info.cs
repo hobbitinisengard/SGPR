@@ -50,6 +50,11 @@ public class RankingData
 
 public class Info : MonoBehaviour
 {
+	public bool minimized { get; private set;  }
+	void OnApplicationFocus(bool hasFocus)
+	{
+		minimized = !hasFocus;
+	}
 	private void Awake()
 	{
 		F.I = this;

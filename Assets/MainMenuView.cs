@@ -113,7 +113,11 @@ public class MainMenuView : Sfxable
 			PlaySFX("fe-cardserror");
 		else
 		{
-			if (F.I.s_roadType == PavementType.Random)
+			if(F.I.s_trackName.Length == 3)
+			{
+				F.I.s_roadType = PavementType.Arena;
+			}
+			else if (F.I.s_roadType == PavementType.Random)
 				F.I.s_roadType = F.RandomRoadType();
 			F.I.s_inEditor = true;
 			F.I.s_spectator = false;

@@ -12,29 +12,8 @@ using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
 using UnityEngine;
 using UnityEngine.UI;
-[Serializable]
-public class ChatInitializer
-{
-	[Header("Chat initialization references")]
-	public ScrollRect lobbyChat;
-	public ScrollRect raceChat;
-
-	public TMP_InputField lobbyChatInputField;
-	public TMP_InputField raceChatInputField;
-}
 public class MultiPlayerSelector : TrackSelector
 {
-	public class IpTime
-	{
-		public string Ip;
-		public float time;
-
-		public IpTime(string ipv4, float time)
-		{
-			this.Ip = ipv4;
-			this.time = time;
-		}
-	}
 	public static MultiPlayerSelector I;
 	public NetworkManager networkManager;
 	public MainMenuView thisView;
@@ -358,7 +337,16 @@ public class MultiPlayerSelector : TrackSelector
 	}
 	private void Callbacks_PlayerDataChanged(Dictionary<int, Dictionary<string, ChangedOrRemovedLobbyValue<PlayerDataObject>>> playerDatas)
 	{
-		leaderboard.Refresh();	
+		leaderboard.Refresh();
+		
+		if(F.I.minimized)
+		{
+			var hostRdy = ServerC.I.Host.ReadyGet();
+			if (hostRdy && !ServerC.I.PlayerMe.ReadyGet())
+			{
+				SwitchReady();
+			}
+		}
 	}
 
 	async void RequestTrackSequence()
