@@ -93,12 +93,13 @@ namespace RVP
 
 				float targetRPM;
 				if (rpmTooHigh || actualInput == 0 || (transmission.IsShifting() && transmission.selectedGear > 2))
+				{
 					targetRPM = Mathf.Max(minkRPM * 1000, targetDrive.feedbackRPM - 2000);
+				}
 				else
 					targetRPM = actualInput * limit2kRPM * 1000;
 
-				targetDrive.rpm = Mathf.Lerp(targetDrive.rpm, targetRPM, inertia * 20 * deltaTime);
-
+				targetDrive.rpm = Mathf.Lerp(targetDrive.rpm, targetRPM, inertia * 10 * deltaTime);
 				curr_engine_krpm = targetDrive.feedbackRPM / 1000f;
 
 				if (engineSmoke != null)
@@ -135,13 +136,12 @@ namespace RVP
 				}
 				else
 					actualInput = 0;
-				targetDrive.torque = (maxTorque + boostEval) * torqueCurve.Evaluate(curr_engine_krpm) *
-							Mathf.Lerp(targetDrive.torque,
-							Mathf.Abs(actualInput) * maxTorque,
-							inertia * Time.timeScale * health);
+				targetDrive.torque = torqueCurve.Evaluate(curr_engine_krpm) *
+							Mathf.Lerp(targetDrive.torque + boostEval,
+							Mathf.Abs(actualInput) * (maxTorque + boostEval),
+							inertia * Time.timeScale);
 
 				targetDrive.torque = Mathf.Clamp(targetDrive.torque, 0, float.MaxValue);
-
 				// Send RPM and torque through drivetrain
 				if (outputDrives.Length > 0)
 				{

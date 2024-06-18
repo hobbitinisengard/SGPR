@@ -602,13 +602,6 @@ namespace RVP
 		{
 			raceBox.curLap = curLap;
 		}
-		IEnumerator WaitAndChangeCCD()
-		{
-			collisionDetectionChangerActive = true;
-			yield return new WaitForSeconds(.5f);
-			rb.collisionDetectionMode = CollisionDetectionMode.Discrete;
-			collisionDetectionChangerActive = false;
-		}
 		void Update()
 		{
 			// we need continous collisions for fast flying cars
@@ -620,7 +613,7 @@ namespace RVP
 			//else
 			//{
 			//	if (rb.collisionDetectionMode == CollisionDetectionMode.Continuous && !collisionDetectionChangerActive)
-			//		StartCoroutine(WaitAndChangeCCD());
+			//		rb.collisionDetectionMode = CollisionDetectionMode.Discrete;
 			//}
 
 			if (Physics.OverlapBox(tr.position, Vector3.one, Quaternion.identity, 1 << F.I.aeroTunnel).Length > 0)

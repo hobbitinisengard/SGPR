@@ -693,7 +693,7 @@ namespace RVP
 			vp.ghost.StartGhostResetting();
 			rb.collisionDetectionMode = CollisionDetectionMode.Discrete;
 			rb.isKinematic = true;
-			tr.position = h.point + Vector3.up;
+			tr.position = h.point + Vector3.up + resetDir;
 			yield return new WaitForFixedUpdate();
 			//rb.angularVelocity = Vector3.zero;
 			//rb.velocity = Vector3.zero;

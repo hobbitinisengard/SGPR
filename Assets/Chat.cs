@@ -65,7 +65,7 @@ public class Chat : NetworkBehaviour
 					i.text = "";
 					if(F.I.actionHappening == ActionHappening.InRace)
 					{
-						//F.Deselect();
+						F.Deselect();
 						inputFields[1].gameObject.SetActive(false);
 					}
 				}
@@ -78,7 +78,6 @@ public class Chat : NetworkBehaviour
 			});
 		}
 	}
-
 	public void SetVisibility(bool enabled)
 	{
 		if (F.I.gameMode == MultiMode.Multiplayer)
@@ -121,6 +120,8 @@ public class Chat : NetworkBehaviour
 	{
 		SetVisibility(true);
 		yield return new WaitForSecondsRealtime(timer);
+		while (texting)
+			yield return null;
 		SetVisibility(false);
 	}
 	

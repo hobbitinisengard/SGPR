@@ -1539,19 +1539,9 @@ public class EditorPanel : MonoBehaviour
 
 		TRACK.heights = GetHeightsmap();
 
-		// save image
-		Texture2D tex = F.toTexture2D(renderTexture);
-		byte[] textureData = tex.EncodeToPNG();
-		string path = Path.Combine(F.I.tracksPath, trackName.text + ".png");
-		File.WriteAllBytes(path, textureData);
-
-		// save track editor data
-		string JsonContent = JsonConvert.SerializeObject(TRACK);
-		path = Path.Combine(F.I.tracksPath, trackName.text + ".data");
-		File.WriteAllText(path, JsonContent);
-
+		
 		// save track header
-		TrackHeader header = new()
+		TrackHeader tHeader = new()
 		{
 			unlocked = true,
 			preferredCarClass = (CarGroup)carGroupDropdown.value,
@@ -1562,24 +1552,37 @@ public class EditorPanel : MonoBehaviour
 			desc = trackDescInputField.text,
 			records = new(this.records),
 		};
-		header.valid = racingLine != null && racingLine.Length > 8 && header.records != null;
-		if (!header.valid)
+
+		tHeader.valid = racingLine != null && racingLine.Length > 8 && tHeader.records != null;
+		if (!tHeader.valid)
 		{
 			DisplayMessageFor("Drive at least once to validate track", 3);
 		}
-		JsonContent = JsonConvert.SerializeObject(header, Formatting.Indented);
-		path = Path.Combine(F.I.tracksPath, trackName.text + ".track");
+
+		string JsonContent = JsonConvert.SerializeObject(tHeader, Formatting.Indented);
+		string path = Path.Combine(F.I.tracksPath, trackName.text + ".track"); // .TRACK 
+		File.WriteAllText(path, JsonContent);
+
+		// save image
+		Texture2D tex = F.toTexture2D(renderTexture);
+		byte[] textureData = tex.EncodeToPNG();
+		path = Path.Combine(F.I.tracksPath, trackName.text + ".png"); // .PNG
+		File.WriteAllBytes(path, textureData);
+
+		// save track editor data
+		JsonContent = JsonConvert.SerializeObject(TRACK);
+		path = Path.Combine(F.I.tracksPath, trackName.text + ".data"); // .DATA
 		File.WriteAllText(path, JsonContent);
 
 		//serialize records aside from .track file
-		JsonContent = JsonConvert.SerializeObject(header.records, Formatting.Indented);
-		path = Path.Combine(F.I.tracksPath, trackName.text + ".rec");
+		JsonContent = JsonConvert.SerializeObject(tHeader.records, Formatting.Indented);
+		path = Path.Combine(F.I.tracksPath, trackName.text + ".rec");    // .REC
 		File.WriteAllText(path, JsonContent);
 
 		if (!F.I.tracks.ContainsKey(trackName.text))
-			F.I.tracks.Add(trackName.text, header);
+			F.I.tracks.Add(trackName.text, tHeader);
 		else
-			F.I.tracks[trackName.text] = header;
+			F.I.tracks[trackName.text] = tHeader;
 	}
 	public void SetPylonVisibility(bool isVisible)
 	{

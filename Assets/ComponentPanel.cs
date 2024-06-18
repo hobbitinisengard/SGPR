@@ -438,8 +438,8 @@ public class CarConfig
 			var tyre = (TyreSavable)Part(PartType.Tyre);
 			var engine = (EngineSavable)Part(PartType.Engine);
 			float S = C01(400, 1200, chassis.staticEvoMaxSpeed);
-			float G = C01(3, 0, tyre.sideFriction - tyre.shiftRearFriction);
-			float P = C01(0.1f, .5f, engine.torque / chassis.mass);
+			float G = C01(2, 0, (tyre.sideFriction - tyre.shiftRearFriction) / chassis.mass);
+			float P = (C01(0.05f, .25f, engine.torque / chassis.mass) + C01(6,12,tyre.forwardFriction / chassis.mass))/2f;
 			return new float[] { S, G, P };
 		}
 	}

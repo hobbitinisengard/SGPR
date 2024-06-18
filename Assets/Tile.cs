@@ -69,8 +69,6 @@ public class Tile : MonoBehaviour
 						Endings = endings.ToArray();
 				}
 			}
-			var rb = mc.gameObject.AddComponent<Rigidbody>();
-			rb.isKinematic = true;
 		}
 		mc.enabled = true;
 		if(F.I.s_roadType == PavementType.Random)
@@ -99,9 +97,6 @@ public class Tile : MonoBehaviour
 			var col = connector.AddComponent<SphereCollider>();
 			col.radius = 3;
 			col.isTrigger = true;
-			var rb = connector.AddComponent<Rigidbody>();
-			rb.useGravity = false;
-			rb.isKinematic = true;
 			connector.AddComponent<Connector>();
 			connector.layer = F.I.connectorLayer;
 			var mf = connector.AddComponent<MeshFilter>();

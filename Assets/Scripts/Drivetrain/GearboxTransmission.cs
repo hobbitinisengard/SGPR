@@ -192,9 +192,7 @@ namespace RVP
 				// Set RPMs and torque of output
 				newDrive.curve = targetDrive.curve;
 
-				newDrive.rpm = (automatic && skidSteerDrive ?
-						Mathf.Abs(targetDrive.rpm) * Mathf.Sign(vp.accelInput - (vp.brakeIsReverse ? vp.brakeInput * (1 - vp.burnout) : 0))
-						: targetDrive.rpm) / (curOutputRatio == 0 ? 1 : curOutputRatio);
+				newDrive.rpm = targetDrive.rpm / (curOutputRatio == 0 ? 1 : curOutputRatio);
 				newDrive.torque = Mathf.Abs(curOutputRatio) * targetDrive.torque;
 
 				SetOutputDrives(curOutputRatio);

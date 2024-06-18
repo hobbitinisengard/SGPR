@@ -547,14 +547,14 @@ public class MultiPlayerSelector : TrackSelector
 	}
 	bool IsCurrentTrackSyncedWithServerTrack(string ServerSideTrackSHA)
 	{
-		string trackPath = F.I.tracksPath + F.I.s_trackName + ".data";
+		string trackPath = F.I.tracksPath + F.I.s_trackName;
 		Debug.Log(trackPath);
-		if (!File.Exists(trackPath))
+		if (!File.Exists(trackPath + ".data"))
 		{
 			return false;
 		}
 			
-		if(F.I.SHA(F.I.tracksPath + F.I.s_trackName + ".data") == ServerSideTrackSHA)
+		if(F.I.SHA(trackPath + ".data") == ServerSideTrackSHA)
 		{
 			MoveToSelectedTrack();
 			return true;

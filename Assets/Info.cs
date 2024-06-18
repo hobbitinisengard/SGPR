@@ -13,6 +13,7 @@ using UnityEngine.EventSystems;
 using Unity.Multiplayer.Playmode;
 using UnityEngine.InputSystem;
 using Unity.Services.Lobbies.Models;
+using UnityEngine.UI;
 public enum PlayerState { InRace, InLobbyUnready, InLobbyReady};
 public enum Envir { GER, JAP, SPN, FRA, ENG, USA, ITA, MEX };
 public enum CarGroup { Wild, Aero, Speed, Team };
@@ -50,6 +51,10 @@ public class RankingData
 
 public class Info : MonoBehaviour
 {
+	public Shader transpShader;
+	public Shader opaqueShader;
+	public Text versionText;
+	public const string VERSION = "0.3.1";
 	public bool minimized { get; private set;  }
 	void OnApplicationFocus(bool hasFocus)
 	{
@@ -58,6 +63,7 @@ public class Info : MonoBehaviour
 	private void Awake()
 	{
 		F.I = this;
+		versionText.text = VERSION;
 		MPtags = CurrentPlayer.ReadOnlyTags().Count;
 		switch (MPtags)
 		{
@@ -467,16 +473,14 @@ public class Info : MonoBehaviour
 		//	new TrackHeader.Record("Via", 3500),
 		//};
 		//tracks["track02"].records = records;
-
 		string[] trackFiles = Directory.GetFiles(tracksPath, "*.track");
 		foreach (var path in trackFiles)
 		{
 			string trackJson = File.ReadAllText(path);
 			string name = Path.GetFileNameWithoutExtension(path);
-			string recordsPath = tracksPath + name + ".rec";
+			string recordsPath = path[..path.IndexOf('.')] + ".rec";
 			TrackHeader header = JsonConvert.DeserializeObject<TrackHeader>(trackJson);
 			tracks.Add(name, header);
-
 
 			if (File.Exists(recordsPath))
 			{
@@ -488,7 +492,7 @@ public class Info : MonoBehaviour
 			{
 				tracks[name].records = new();
 				string json = JsonConvert.SerializeObject(tracks[name].records);
-				File.WriteAllText(tracksPath + name + ".rec", json);
+				File.WriteAllText(recordsPath, json);
 			}
 		}
 	}
