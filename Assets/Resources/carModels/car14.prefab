@@ -17536,7 +17536,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 2179597751
+  GlobalObjectIdHash: 3627018738
   InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
@@ -17701,7 +17701,7 @@ MonoBehaviour:
   rollCheckDistance: 1
   rollOverForce: 2
   rollSpeedThreshold: 0
-  angularDragOnJump: 0
+  angularDragOnJump: 1
   fallSpeedLimit: Infinity
   applyFallLimitUpwards: 0
 --- !u!114 &4194641081301078446
@@ -17940,7 +17940,6 @@ MonoBehaviour:
   - {fileID: 5582764275981958382}
   - {fileID: 5228305639871473634}
   - {fileID: 3596460534430659167}
-  transpShader: {fileID: 4800000, guid: bbb29bc6f1f0b704d989cac34a3a1b7e, type: 3}
 --- !u!114 &-8732228694555806868
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17992,7 +17991,7 @@ MonoBehaviour:
   networkChannel: 
   childObjectToSync: {fileID: 0}
   setVelocityInsteadOfPositionOnNonOwners: 1
-  maxPositionDifferenceForVelocitySyncing: 10
+  maxPositionDifferenceForVelocitySyncing: 5
   useLocalTransformOnly: 0
   ownerChangeIndicator: 1
   receivedStatesCounter: 0

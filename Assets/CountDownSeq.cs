@@ -56,6 +56,6 @@ public class CountDownSeq : Sfxable
 		timer = 0;
 
 		if(ServerC.I.AmHost)
-			OnlineCommunication.I.raceAlreadyStarted.Value = true;
+			Online.I.raceAlreadyStarted.Value = true;
 	}
 }

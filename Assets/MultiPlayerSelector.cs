@@ -69,7 +69,7 @@ public class MultiPlayerSelector : TrackSelector
 	{
 		if(id != networkManager.LocalClientId)
 		{
-			OnlineCommunication.I.ClientDisconnected(id);
+			Online.I.ClientDisconnected(id);
 		}
 	}
 
@@ -471,9 +471,9 @@ public class MultiPlayerSelector : TrackSelector
 			{
 				readyTimeoutTime = Time.time;
 
-				if (!OnlineCommunication.I.IsSpawned || ServerC.I.AnyClientsStillInRace)
+				if (!Online.I.IsSpawned || ServerC.I.AnyClientsStillInRace)
 				{
-					if(!OnlineCommunication.I.IsSpawned)
+					if(!Online.I.IsSpawned)
 						F.I.chat.AddChatRowLocally("", "No synchronization. Try again after 2 seconds or reconnect", Color.grey, Color.grey);
 					if(ServerC.I.AnyClientsStillInRace)
 						F.I.chat.AddChatRowLocally("", "Some players haven't come back to lobby yet", Color.grey, Color.grey);

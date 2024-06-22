@@ -779,10 +779,13 @@ public class RaceBox : MonoBehaviour
 						{
 							if (RaceManager.I.hud.RECDisplay.activeSelf)
 							{
-								if (bestLapTime.TotalSeconds < F.I.tracks[F.I.s_trackName].records.lap.secondsOrPts)
+								if (curlaptime.Value.TotalSeconds < F.I.tracks[F.I.s_trackName].records.lap.secondsOrPts)
 								{
+									F.I.tracks[F.I.s_trackName].records.lap.playerName = F.I.playerData.playerName;
+									F.I.tracks[F.I.s_trackName].records.lap.secondsOrPts = (float)curlaptime.Value.TotalSeconds;
+
 									RaceManager.I.hud.lapRecordSeq.gameObject.SetActive(true);
-									RaceManager.I.hud.SetRec(bestLapTime);
+									RaceManager.I.hud.SetRec(curlaptime.Value);
 								}
 							}
 
@@ -811,7 +814,7 @@ public class RaceBox : MonoBehaviour
 						if (!F.I.s_inEditor && curPos == 1)
 						{
 							RaceManager.I.hud.infoText.AddMessage(new(vp.tr.name + " WINS!", BottomInfoType.CAR_WINS));
-							OnlineCommunication.I.ActivateEndraceTimer();
+							Online.I.ActivateEndraceTimer();
 						}
 						// in racemode after the end of a race, cars still run around the track, ghosts overtake each other. Don't let it change results
 						curLap += 100 * (F.I.maxCarsInRace - curPos);

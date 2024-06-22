@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 using Unity.Netcode;
 using UnityEngine;
 
-public class OnlineCommunication : NetworkBehaviour
+public class Online : NetworkBehaviour
 {
-	public static OnlineCommunication I;
+	public static Online I;
 	public NetworkVariable<bool> raceAlreadyStarted = new();
 	private void Awake()
 	{
@@ -58,5 +58,20 @@ public class OnlineCommunication : NetworkBehaviour
 	void ClientDisconnectedRpc(ulong id)
 	{
 		ResultsView.Remove(id);
+	}
+
+	public void AskHostForRacestartdate()
+	{
+		AskHostForRacestartdateRpc(RpcTarget.Server);
+	}
+	[Rpc(SendTo.SpecifiedInParams)]
+	private void AskHostForRacestartdateRpc(RpcParams ps)
+	{
+		TellRacestartdateRpc(F.I.raceStartDate, RpcTarget.Single(ps.Receive.SenderClientId, RpcTargetUse.Temp));
+	}
+	[Rpc(SendTo.SpecifiedInParams)]
+	private void TellRacestartdateRpc(DateTime raceStartDate, RpcParams ps)
+	{
+		F.I.raceStartDate = raceStartDate;
 	}
 }

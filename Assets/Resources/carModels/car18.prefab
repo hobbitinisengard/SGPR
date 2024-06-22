@@ -11223,7 +11223,7 @@ MonoBehaviour:
   rollCheckDistance: 1
   rollOverForce: 2
   rollSpeedThreshold: 0
-  angularDragOnJump: 0
+  angularDragOnJump: 1
   fallSpeedLimit: Infinity
   applyFallLimitUpwards: 0
 --- !u!114 &4194641081301078446
@@ -11457,7 +11457,6 @@ MonoBehaviour:
   - {fileID: 7939150304631603867}
   - {fileID: 2743996718150263175}
   - {fileID: 9092661774435326417}
-  transpShader: {fileID: 4800000, guid: bbb29bc6f1f0b704d989cac34a3a1b7e, type: 3}
 --- !u!114 &-2645720913164924938
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11509,7 +11508,7 @@ MonoBehaviour:
   networkChannel: 
   childObjectToSync: {fileID: 0}
   setVelocityInsteadOfPositionOnNonOwners: 1
-  maxPositionDifferenceForVelocitySyncing: 10
+  maxPositionDifferenceForVelocitySyncing: 5
   useLocalTransformOnly: 0
   ownerChangeIndicator: 1
   receivedStatesCounter: 0

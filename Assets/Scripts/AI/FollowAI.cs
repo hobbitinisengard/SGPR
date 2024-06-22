@@ -423,7 +423,7 @@ namespace RVP
 
 			if (selfDriving && vp.Owner)
 			{
-				if (vp.BatteryPercent < 0.2f)
+				if (vp.BatteryPercent < 0.2f && vp.raceBox.curLap < F.I.s_laps)
 				{
 					searchForPits = true;
 				}

@@ -14,6 +14,7 @@ using Unity.Multiplayer.Playmode;
 using UnityEngine.InputSystem;
 using Unity.Services.Lobbies.Models;
 using UnityEngine.UI;
+using Unity.Netcode;
 public enum PlayerState { InRace, InLobbyUnready, InLobbyReady};
 public enum Envir { GER, JAP, SPN, FRA, ENG, USA, ITA, MEX };
 public enum CarGroup { Wild, Aero, Speed, Team };
@@ -336,7 +337,7 @@ public class Info : MonoBehaviour
 	public const int AfterMultiPlayerRaceWaitForPlayersSeconds = 30;
 
 	public EventSystem eventSystem;
-	public DateTime raceStartDate;
+	public DateTime raceStartDate = DateTime.MinValue;
 	public byte Rounds = 0;
 	public byte CurRound;
 	

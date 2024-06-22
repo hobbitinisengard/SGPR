@@ -581,7 +581,7 @@ namespace RVP
 			{
 				//rb.isKinematic = true;
 				basicInput.enabled = false;
-				if (OnlineCommunication.I.raceAlreadyStarted.Value)
+				if (Online.I.raceAlreadyStarted.Value)
 				{// latecomer's request to synch progress
 				 //Debug.Log("RequestRaceboxValuesRpc");
 					RequestRaceboxValuesRpc(RpcTarget.Owner);
@@ -756,7 +756,7 @@ namespace RVP
 				RaceManager.I.hud.infoText.AddMessage(new Message(name + " IS OUT OF BATTERY!", BottomInfoType.NO_BATT));
 				lastNoBatteryMessage = Time.time;
 			}
-			f = Mathf.Clamp(f, -1, (BatteryPercent == 0) ? 0.75f : 1);
+			f = Mathf.Clamp(f, -1, (BatteryPercent == 0) ? 0.67f : 1);
 
 			if(Owner)
 				accelInput = f;

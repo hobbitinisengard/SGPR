@@ -66,7 +66,7 @@ public class SGP_Bouncer : MonoBehaviour
 			return;
 		vp.colliding = true;
 		Vector3 norm = contact.normal;
-		if (Mathf.Abs(Vector2.Dot(vp.tr.up, norm)) < .5f) // angle > 60d
+		if (Mathf.Abs(Vector2.Dot(vp.tr.up, norm)) < .3f) // angle > 72d
 		{
 			if (collision.relativeVelocity.magnitude < 40)
 				return;
@@ -76,7 +76,7 @@ public class SGP_Bouncer : MonoBehaviour
 			float mult = multCurve.Evaluate(Vector3.Dot(norm, vp.tr.forward));
 			//Debug.Log("B: " + Vector3.Dot(norm, vp.tr.forward));
 			Vector3 addForce = mult * collision.relativeVelocity;
-			Vector3 direction = (vp.tr.forward + norm + vp.tr.up).normalized;//Quaternion.AngleAxis(88, vp.tr.right) * norm;
+			Vector3 direction = (vp.tr.forward + norm + vp.tr.up).normalized;
 			lastSideBounceTime = Time.time;
 			rb.AddForceAtPosition(direction * addForce.magnitude,
 			collision.GetContact(0).point,//vp.transform.position
