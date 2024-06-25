@@ -17536,7 +17536,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 3627018738
+  GlobalObjectIdHash: 2179597751
   InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
@@ -21422,8 +21422,8 @@ Transform:
   m_GameObject: {fileID: 7465047913020823284}
   serializedVersion: 2
   m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 0.589, z: -0.034}
-  m_LocalScale: {x: 0.94, y: 0.83, z: 0.61}
+  m_LocalPosition: {x: 0, y: 0.589, z: -0.061}
+  m_LocalScale: {x: 0.94, y: 0.77, z: 0.61}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6457121441695959639}

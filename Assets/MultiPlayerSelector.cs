@@ -41,15 +41,12 @@ public class MultiPlayerSelector : TrackSelector
 
 	public bool Busy { get { return dataTransferWnd.activeSelf; } }
 
+	bool OnLobbyExitAndWaitingForThisToBecomeActive;
+
 	List<string> AvailableTracksForRandomSession = new();
 
 	protected override void Awake()
 	{
-		I = this;
-
-		ServerC.I.callbacks.PlayerDataChanged += Callbacks_PlayerDataChanged;
-		ServerC.I.callbacks.LobbyChanged += Callbacks_LobbyChanged;
-		ServerC.I.callbacks.PlayerJoined += Callbacks_PlayerJoined;
 		ServerC.I.OnLobbyExit += OnLobbyExit;
 		networkManager.OnTransportFailure += NetworkManager_OnTransportFailure;
 		networkManager.OnClientDisconnectCallback += NetworkManager_OnClientDisconnectCallback;
@@ -75,6 +72,11 @@ public class MultiPlayerSelector : TrackSelector
 
 	public void OnLobbyExit()
 	{
+		if(!gameObject.activeInHierarchy)
+		{
+			OnLobbyExitAndWaitingForThisToBecomeActive = true;
+			return;
+		}
 		thisView.GoBack(true);
 		F.I.Rounds = 0;
 		F.I.CurRound = 1;
@@ -83,7 +85,7 @@ public class MultiPlayerSelector : TrackSelector
 		F.I.actionHappening = ActionHappening.InLobby;
 		AvailableTracksForRandomSession.Clear();
 	}
-	private void Callbacks_PlayerJoined(List<LobbyPlayerJoined> newPlayers)
+	public void Callbacks_PlayerJoined(List<LobbyPlayerJoined> newPlayers)
 	{
 		maxCPURivals = F.I.maxCarsInRace - ServerC.I.lobby.Players.Count;
 
@@ -116,12 +118,19 @@ public class MultiPlayerSelector : TrackSelector
 	}
 	protected override void OnEnable()
 	{
-		Debug.Log("OnEnable");
 		ResultsView.Clear();
 		F.I.chat.UpdateCanvases();
 
 		if (afterEnabledCo != null)
 			StopCoroutine(afterEnabledCo);
+
+		if (OnLobbyExitAndWaitingForThisToBecomeActive)
+		{
+			OnLobbyExitAndWaitingForThisToBecomeActive = false;
+			OnLobbyExit();
+			return;
+		}
+
 		afterEnabledCo = StartCoroutine(EnableSeq());
 	}
 	IEnumerator EnableSeq()
@@ -182,7 +191,7 @@ public class MultiPlayerSelector : TrackSelector
 		}
 		dataTransferWnd.SetActive(false);
 	}
-	private async void Callbacks_LobbyChanged(ILobbyChanges changes)
+	public async void Callbacks_LobbyChanged(ILobbyChanges changes)
 	{
 		bool refreshLeaderboard = false;
 		bool trackChanged = false;
@@ -335,7 +344,7 @@ public class MultiPlayerSelector : TrackSelector
 		if (F.I.teams && F.I.s_PlayerCarSponsor == Livery.Random)
 			F.I.s_PlayerCarSponsor = Livery.TGR;
 	}
-	private void Callbacks_PlayerDataChanged(Dictionary<int, Dictionary<string, ChangedOrRemovedLobbyValue<PlayerDataObject>>> playerDatas)
+	public void Callbacks_PlayerDataChanged(Dictionary<int, Dictionary<string, ChangedOrRemovedLobbyValue<PlayerDataObject>>> playerDatas)
 	{
 		leaderboard.Refresh();
 		

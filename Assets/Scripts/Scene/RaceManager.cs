@@ -153,9 +153,10 @@ namespace RVP
 			}
 			else
 			{
+				BackToMenu(applyScoring: false);
 				if (F.I.gameMode == MultiMode.Multiplayer && !ServerC.I.AmHost)
 					ServerC.I.DisconnectFromLobby();
-				BackToMenu(applyScoring: false);
+				
 			}
 		}
 
@@ -324,8 +325,22 @@ namespace RVP
 
 			SetPitsLayer(0);
 
+			float timer = 0;
+			bool askedTwice = false;
 			while (F.I.raceStartDate == DateTime.MinValue)
 			{
+				timer += Time.deltaTime;
+				if(timer > 3 && !askedTwice)
+				{
+					Online.I.AskHostForRacestartdate();
+					askedTwice = true;
+				}
+				if(timer > 6)
+				{
+					Debug.LogWarning("raceStartDate is Min Value for more than 5 seconds. Joined lobby at wrong time");
+					ExitButton();
+					yield break;
+				}
 				yield return null;
 			}
 

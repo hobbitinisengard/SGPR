@@ -516,7 +516,6 @@ namespace RVP
 			rb = GetComponent<Rigidbody>();
 			originalDrag = rb.drag;
 			originalMass = rb.mass;
-
 			F.I.s_cars.Add(this);
 		}
 		public override void OnNetworkSpawn()
@@ -544,7 +543,7 @@ namespace RVP
 			GameObject normTemp = new GameObject(tr.name + "'s Normal Orientation");
 			norm = normTemp.transform;
 
-			followAI.SetCPU(transform.name.Contains("CP"));
+			followAI.SetCPU(F.I.gameMode == MultiMode.Singleplayer && char.IsDigit(name[2]));
 
 			if (F.I.s_spectator)
 			{

@@ -12,9 +12,7 @@ using PathCreation;
 using UnityEngine.EventSystems;
 using Unity.Multiplayer.Playmode;
 using UnityEngine.InputSystem;
-using Unity.Services.Lobbies.Models;
 using UnityEngine.UI;
-using Unity.Netcode;
 public enum PlayerState { InRace, InLobbyUnready, InLobbyReady};
 public enum Envir { GER, JAP, SPN, FRA, ENG, USA, ITA, MEX };
 public enum CarGroup { Wild, Aero, Speed, Team };
@@ -32,6 +30,8 @@ public class PlayerSettingsData
 {
 	public float musicVol = 1;
 	public float sfxVol = 1;
+	public int fpsLimit = 60;
+	public bool vSync = true;
 	public string playerName = "";
 	public float steerGamma = 0;
 	public string serverName = "";
@@ -52,10 +52,11 @@ public class RankingData
 
 public class Info : MonoBehaviour
 {
+	public MultiPlayerSelector mpSelectorInitializer;
 	public Shader transpShader;
 	public Shader opaqueShader;
 	public Text versionText;
-	public const string VERSION = "0.3.1";
+	public const string VERSION = "0.3.2";
 	public bool minimized { get; private set;  }
 	void OnApplicationFocus(bool hasFocus)
 	{
@@ -64,6 +65,7 @@ public class Info : MonoBehaviour
 	private void Awake()
 	{
 		F.I = this;
+		MultiPlayerSelector.I = mpSelectorInitializer;
 		versionText.text = VERSION;
 		MPtags = CurrentPlayer.ReadOnlyTags().Count;
 		switch (MPtags)
@@ -87,6 +89,8 @@ public class Info : MonoBehaviour
 			F.CopyFilesRecursively(Application.streamingAssetsPath, documentsSGPRpath);
 		}
 
+		Application.targetFrameRate = playerData.fpsLimit;
+		QualitySettings.vSyncCount = playerData.vSync ? 1 : 0;
 		PopulateSFXData();
 		ReloadCarsData();
 		PopulateTrackData();
@@ -94,7 +98,6 @@ public class Info : MonoBehaviour
 		LoadRanking();
 		icons = Resources.LoadAll<Sprite>(trackImagesPath + "tiles");
 	}
-
 	string _documentsSGPRpath;
 	public string documentsSGPRpath
 	{
