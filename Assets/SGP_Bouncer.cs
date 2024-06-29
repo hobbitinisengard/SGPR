@@ -74,7 +74,7 @@ public class SGP_Bouncer : MonoBehaviour
 			if (Time.time - lastSideBounceTime < debounceTime)
 				return;
 			float mult = multCurve.Evaluate(Vector3.Dot(norm, vp.tr.forward));
-			Debug.Log("B: " + Vector3.Dot(norm, vp.tr.forward));
+			//Debug.Log("B: " + Vector3.Dot(norm, vp.tr.forward));
 			Vector3 addForce = mult * collision.relativeVelocity;
 			Vector3 direction = (vp.tr.forward + norm + vp.tr.up).normalized;
 			lastSideBounceTime = Time.time;

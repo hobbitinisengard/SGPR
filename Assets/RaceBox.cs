@@ -859,7 +859,7 @@ public class RaceBox : MonoBehaviour
 	private void OnDisable()
 	{
 		// in case we are disconnecting early
-		if (!ServerC.I.networkManager.IsConnectedClient)
+		if (F.I.gameMode == MultiMode.Multiplayer && !ServerC.I.networkManager.IsConnectedClient)
 			return;
 
 		// You can disable racebox only ONCE
