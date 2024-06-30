@@ -28274,7 +28274,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 697670348
+  GlobalObjectIdHash: 1908595632
   InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
@@ -34274,6 +34274,16 @@ PrefabInstance:
         type: 3}
       propertyPath: m_ConstrainProportionsScale
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4105597997623369687, guid: f300b2b32f46e3e4c887eacc114d2e3a,
+        type: 3}
+      propertyPath: m_Size.x
+      value: 4.12
+      objectReference: {fileID: 0}
+    - target: {fileID: 4105597997623369687, guid: f300b2b32f46e3e4c887eacc114d2e3a,
+        type: 3}
+      propertyPath: m_Size.y
+      value: 4.64
       objectReference: {fileID: 0}
     - target: {fileID: 4376822998477129306, guid: f300b2b32f46e3e4c887eacc114d2e3a,
         type: 3}

@@ -3,7 +3,7 @@ guid: 6205c83abded04348bf99859e4f9eee9
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
-  serializedVersion: 12
+  serializedVersion: 13
   mipmaps:
     mipMapMode: 0
     enableMipMap: 0
@@ -20,11 +20,12 @@ TextureImporter:
     externalNormalMap: 0
     heightScale: 0.25
     normalMapFilter: 0
+    flipGreenChannel: 0
   isReadable: 0
   streamingMipmaps: 0
   streamingMipmapsPriority: 0
   vTOnly: 0
-  ignoreMasterTextureLimit: 0
+  ignoreMipmapLimit: 0
   grayScaleToAlpha: 0
   generateCubemap: 6
   cubemapConvolution: 0
@@ -63,6 +64,7 @@ TextureImporter:
   textureFormatSet: 0
   ignorePngGamma: 0
   applyGammaDecoding: 0
+  swizzle: 50462976
   cookieLightType: 0
   platformSettings:
   - serializedVersion: 3
@@ -75,6 +77,7 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 3
@@ -87,6 +90,7 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 3
@@ -99,6 +103,7 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 3
@@ -111,6 +116,7 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
@@ -121,9 +127,9 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 2071
-        width: 3208
-        height: 2022
+        y: 1041
+        width: 1600
+        height: 990
       alignment: 8
       pivot: {x: 1, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -143,8 +149,8 @@ TextureImporter:
         serializedVersion: 2
         x: 5
         y: 5
-        width: 406
-        height: 518
+        width: 198
+        height: 254
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -162,10 +168,10 @@ TextureImporter:
       name: 1
       rect:
         serializedVersion: 2
-        x: 501
-        y: 5
-        width: 310
-        height: 518
+        x: 252
+        y: 2
+        width: 144
+        height: 257
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -183,10 +189,10 @@ TextureImporter:
       name: 2
       rect:
         serializedVersion: 2
-        x: 805
-        y: 5
-        width: 406
-        height: 518
+        x: 404
+        y: 0
+        width: 195
+        height: 259
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -204,10 +210,10 @@ TextureImporter:
       name: 3
       rect:
         serializedVersion: 2
-        x: 1204
-        y: 5
-        width: 402
-        height: 518
+        x: 605
+        y: 0
+        width: 195
+        height: 259
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -225,10 +231,10 @@ TextureImporter:
       name: 7
       rect:
         serializedVersion: 2
-        x: 2805
-        y: 5
-        width: 406
-        height: 518
+        x: 1403
+        y: 0
+        width: 196
+        height: 259
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -246,10 +252,10 @@ TextureImporter:
       name: 8
       rect:
         serializedVersion: 2
-        x: 3205
-        y: 5
-        width: 406
-        height: 518
+        x: 1601
+        y: 0
+        width: 201
+        height: 259
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -267,10 +273,10 @@ TextureImporter:
       name: 9
       rect:
         serializedVersion: 2
-        x: 3605
-        y: 5
-        width: 406
-        height: 518
+        x: 1805
+        y: 1
+        width: 200
+        height: 258
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -288,10 +294,10 @@ TextureImporter:
       name: overlays_dial_57
       rect:
         serializedVersion: 2
-        x: 28
-        y: 1429
-        width: 1890
-        height: 623
+        x: 10
+        y: 722
+        width: 940
+        height: 304
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -310,9 +316,9 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 1120
-        width: 2093
-        height: 279
+        y: 560
+        width: 1046
+        height: 135
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -331,9 +337,9 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 682
-        width: 1314
-        height: 438
+        y: 336
+        width: 656
+        height: 224
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -351,10 +357,10 @@ TextureImporter:
       name: 4
       rect:
         serializedVersion: 2
-        x: 1605
+        x: 804
         y: 0
-        width: 399
-        height: 524
+        width: 200
+        height: 259
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -372,10 +378,10 @@ TextureImporter:
       name: 5
       rect:
         serializedVersion: 2
-        x: 2011
+        x: 1007
         y: 0
-        width: 392
-        height: 521
+        width: 194
+        height: 259
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -393,10 +399,10 @@ TextureImporter:
       name: 6
       rect:
         serializedVersion: 2
-        x: 2406
+        x: 1203
         y: 0
-        width: 396
-        height: 521
+        width: 198
+        height: 259
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -414,10 +420,10 @@ TextureImporter:
       name: overlays_dial_5
       rect:
         serializedVersion: 2
-        x: 1320
-        y: 530
-        width: 1003
-        height: 583
+        x: 661
+        y: 262
+        width: 498
+        height: 289
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -435,10 +441,10 @@ TextureImporter:
       name: overlays_dial_6
       rect:
         serializedVersion: 2
-        x: 2327
-        y: 532
-        width: 946
-        height: 579
+        x: 1166
+        y: 262
+        width: 464
+        height: 289
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -453,34 +459,13 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: overlays_dial_7
-      rect:
-        serializedVersion: 2
-        x: 3781
-        y: 616
-        width: 306
-        height: 300
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 694088fc152978148a4001bdce4b30db
-      internalID: 384292035
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
       name: overlays_dial_8
       rect:
         serializedVersion: 2
-        x: 3277
-        y: 556
-        width: 321
-        height: 1314
+        x: 1632
+        y: 279
+        width: 167
+        height: 638
       alignment: 9
       pivot: {x: 0.49999848, y: 0.15549919}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -498,10 +483,10 @@ TextureImporter:
       name: overlays_dial_9
       rect:
         serializedVersion: 2
-        x: 2099
-        y: 1120
-        width: 1160
-        height: 290
+        x: 1053
+        y: 566
+        width: 577
+        height: 134
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -519,13 +504,13 @@ TextureImporter:
       name: overlays_dial_10
       rect:
         serializedVersion: 2
-        x: 1950
-        y: 1844
-        width: 164
-        height: 154
+        x: 980
+        y: 925
+        width: 72
+        height: 74
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 81, y: 78, z: 83, w: 76}
+      border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
@@ -540,10 +525,10 @@ TextureImporter:
       name: overlays_dial_11
       rect:
         serializedVersion: 2
-        x: 2163
-        y: 1847
-        width: 174
-        height: 193
+        x: 1073
+        y: 907
+        width: 103
+        height: 116
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -561,10 +546,10 @@ TextureImporter:
       name: overlays_dial_12
       rect:
         serializedVersion: 2
-        x: 2366
-        y: 1847
-        width: 187
-        height: 193
+        x: 1178
+        y: 903
+        width: 103
+        height: 120
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -582,10 +567,10 @@ TextureImporter:
       name: overlays_dial_13
       rect:
         serializedVersion: 2
-        x: 2567
-        y: 1821
-        width: 196
-        height: 219
+        x: 1282
+        y: 906
+        width: 100
+        height: 117
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -603,10 +588,10 @@ TextureImporter:
       name: overlays_dial_14
       rect:
         serializedVersion: 2
-        x: 3687
-        y: 939
-        width: 177
-        height: 3157
+        x: 1842
+        y: 465
+        width: 94
+        height: 1583
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -624,10 +609,10 @@ TextureImporter:
       name: overlays_dial_15
       rect:
         serializedVersion: 2
-        x: 3898
-        y: 938
-        width: 178
-        height: 3158
+        x: 1948
+        y: 471
+        width: 86
+        height: 1577
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -645,10 +630,10 @@ TextureImporter:
       name: overlays_star
       rect:
         serializedVersion: 2
-        x: 2670
-        y: 1612
-        width: 143
-        height: 156
+        x: 1336
+        y: 803
+        width: 71
+        height: 71
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -666,10 +651,10 @@ TextureImporter:
       name: overlays_dial_1
       rect:
         serializedVersion: 2
-        x: 3477
-        y: 2091
-        width: 177
-        height: 2005
+        x: 1738
+        y: 1046
+        width: 94
+        height: 1002
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -679,6 +664,27 @@ TextureImporter:
       bones: []
       spriteID: e10801c5c9e345842b6d2144c0ebf71e
       internalID: -337139522
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlays_dial_2
+      rect:
+        serializedVersion: 2
+        x: 1898
+        y: 314
+        width: 140
+        height: 141
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d9a864541f2c7a742934b9b4c4d1d01a
+      internalID: -2104648066
       vertices: []
       indices: 
       edges: []
@@ -715,6 +721,7 @@ TextureImporter:
       overlays_dial_17: 504249341
       overlays_dial_18: -318097544
       overlays_dial_19: 271698477
+      overlays_dial_2: -2104648066
       overlays_dial_20: -187664629
       overlays_dial_21: 1021419499
       overlays_dial_22: 672655993
@@ -754,9 +761,8 @@ TextureImporter:
       overlays_dial_8: -1676461037
       overlays_dial_9: 286740814
       overlays_star: -1302267487
-  spritePackingTag: 
+  mipmapLimitGroupName: 
   pSDRemoveMatte: 0
-  pSDShowRemoveMatteOption: 0
   userData: 
   assetBundleName: 
   assetBundleVariant: 

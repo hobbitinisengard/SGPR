@@ -403,7 +403,7 @@ public class SGP_HUD : MonoBehaviour
 		{  // Update position (1st to 10th)
 			int racePosition = raceManager.Position(vp)+1;
 			positionImage.sprite = positionsSprites[racePosition];
-			positionImage.SetNativeSize();
+			//positionImage.SetNativeSize();
 			positionSuffixImage.SetActive(racePosition > 3);
 		}
 		// debug LAP rollers
