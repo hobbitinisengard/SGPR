@@ -28,7 +28,9 @@ public enum CpuLevel { Normal };
 [Serializable]
 public class PlayerSettingsData
 {
+	[JsonConverter(typeof(DecimalFormatJsonConverter), 1)]
 	public float musicVol = 1;
+	[JsonConverter(typeof(DecimalFormatJsonConverter), 1)]
 	public float sfxVol = 1;
 	public int fpsLimit = 60;
 	public bool vSync = true;
@@ -56,7 +58,7 @@ public class Info : MonoBehaviour
 	public Shader transpShader;
 	public Shader opaqueShader;
 	public Text versionText;
-	public const string VERSION = "0.3.2";
+	public const string VERSION = "0.3.3";
 	public bool minimized { get; private set;  }
 	void OnApplicationFocus(bool hasFocus)
 	{
@@ -82,12 +84,13 @@ public class Info : MonoBehaviour
 				_documentsSGPRpath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\STUNT GP REMASTERED\\";
 				break;
 		}
+
 		if (!Directory.Exists(documentsSGPRpath))
 		{
 			Debug.LogWarning(documentsSGPRpath + " doesnt exist");
 			Directory.CreateDirectory(documentsSGPRpath);
-			F.CopyFilesRecursively(Application.streamingAssetsPath, documentsSGPRpath);
 		}
+		F.CopyDocumentsData(Application.streamingAssetsPath, documentsSGPRpath);
 
 		Application.targetFrameRate = playerData.fpsLimit;
 		QualitySettings.vSyncCount = playerData.vSync ? 1 : 0;
@@ -229,9 +232,9 @@ public class Info : MonoBehaviour
 		new (564, 1231,1), //ger
 		new (800, 800,1), //jap
 		new (1462, 2480,1),//spn
-		new (824, 817,1),
-		new (1170, 817,1),
-		new (739, 1060,1),
+		new (2170, 1560,1),//fra
+		new (1170, 817,1),//eng
+		new (739, 1060,1),//usa
 		new (1406, 1337,1),// ita
 		new (564, 1231,1), //mex
 	};

@@ -289,7 +289,6 @@ namespace RVP
 			revvingCo = true;
 			float targetRev = 0;
 			bool revHigher = true;
-
 			while (CountDownSeq.Countdown > 0)
 			{
 				if (CountDownSeq.Countdown < 0.5f)
@@ -305,7 +304,6 @@ namespace RVP
 				}
 				yield return null;
 			}
-			vp.SetEbrake(0);
 			revvingCo = false;
 		}
 		public void PitsTrigger()
@@ -333,6 +331,7 @@ namespace RVP
 			if (CountDownSeq.Countdown > 0)
 			{
 				vp.ebrakeInput = 1;
+
 				if (isCPU)
 				{
 					if (!revvingCo)
@@ -340,6 +339,7 @@ namespace RVP
 				}
 				return;
 			}
+			vp.ebrakeInput = 0;
 
 			rolledOverTime = Mathf.Clamp((vp.reallyGroundedWheels < 3 && vp.crashing) ? rolledOverTime + Time.fixedDeltaTime
 				: rolledOverTime - Time.fixedDeltaTime, 0, rollResetTime);
@@ -353,8 +353,8 @@ namespace RVP
 			if (!pitsPathCreator)
 			{
 				if ((vp.reallyGroundedWheels == 4 && !overRoad) // out of track
-					|| (overRoad && vp.velMag > 10 && vp.groundedWheels > 2 && Vector3.Dot(vp.forwardDir, trackPathCreator.path.GetDirectionAtDistance(dist)) < -0.5f)
-					&& Vector3.Dot(vp.rb.velocity.normalized, trackPathCreator.path.GetDirectionAtDistance(dist)) < -0.5f) // wrong way drive
+					|| (overRoad && vp.velMag > 10 && vp.groundedWheels > 2 && Vector3.Dot(vp.forwardDir, trackPathCreator.path.GetDirectionAtDistance(dist)) < -0.5f
+					&& Vector3.Dot(vp.rb.velocity.normalized, trackPathCreator.path.GetDirectionAtDistance(dist)) < -0.5f)) // wrong way drive
 					outOfTrackTime += Time.fixedDeltaTime;
 
 				if (outOfTrackTime < 0)
@@ -678,11 +678,11 @@ namespace RVP
 			Vector3 resetPos = trackPathCreator.path.GetPointAtDistance(progress);
 			RaycastHit h;
 			Vector3 resetDir = trackPathCreator.path.GetDirectionAtDistance(progress);
-			while ( 
-				(!Physics.Raycast(resetPos + 5 * Vector3.up, Vector3.down, out h, Mathf.Infinity, 1 << F.I.roadLayer)
-				|| Vector3.Dot(h.normal, Vector3.up) < -0.5f // while not hit road or hit culled face (backface raycasts are on)
-				|| Vector3.SignedAngle(resetDir, Vector3.up, Vector3.Cross(resetDir, Vector3.up)) < steepestAllowedAngleOnRespawnDegs 
-				|| h.transform.parent.name == "loop") && progress < (trackPathCreator.path.length - 15))
+			while (
+			(!Physics.Raycast(resetPos + 5 * Vector3.up, Vector3.down, out h, 15, 1 << F.I.roadLayer)
+			|| Vector3.Dot(h.normal, Vector3.up) < -0.5f // while not hit road or hit culled face (backface raycasts are on)
+			|| Vector3.SignedAngle(resetDir, Vector3.up, Vector3.Cross(resetDir, Vector3.up)) < steepestAllowedAngleOnRespawnDegs
+			|| h.transform.parent.name == "loop") && progress < (trackPathCreator.path.length - 15))
 			{
 				progress += 10;
 				resetPos = trackPathCreator.path.GetPointAtDistance(progress);

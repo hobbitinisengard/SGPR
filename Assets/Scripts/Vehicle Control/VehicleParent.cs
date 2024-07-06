@@ -750,7 +750,7 @@ namespace RVP
 		{
 			if (InFreeroam || !raceBox.enabled || F.I.s_raceType == RaceType.TimeTrial)
 				energyRemaining = batteryCapacity;
-			else if (BatteryPercent == 0 && Time.time - lastNoBatteryMessage > 60)
+			else if (BatteryPercent <= 0 && Time.time - lastNoBatteryMessage > 60)
 			{
 				RaceManager.I.hud.infoText.AddMessage(new Message(name + " IS OUT OF BATTERY!", BottomInfoType.NO_BATT));
 				lastNoBatteryMessage = Time.time;
@@ -760,7 +760,7 @@ namespace RVP
 			if(Owner)
 				accelInput = f;
 
-			if (energyRemaining > 0)
+			if (energyRemaining >= 0)
 				energyRemaining -= accelInput * engine.fuelConsumption * Time.deltaTime;
 		}
 

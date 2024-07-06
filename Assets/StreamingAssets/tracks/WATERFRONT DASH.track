@@ -1,0 +1,14 @@
+{
+  "author": "Team17",
+  "desc": "This long and winding track takes you all over the waterfront!",
+  "valid": true,
+  "envir": "ITA",
+  "preferredCarClass": "Speed",
+  "difficulty": 5,
+  "unlocked": true,
+  "icons": [
+    3
+  ],
+  "TrackOrigin": 0,
+  "IsOriginal": true
+}

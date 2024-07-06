@@ -57,12 +57,12 @@ public class SGP_Bouncer : MonoBehaviour
 			return;
 		}
 		if (contact.otherCollider.gameObject.layer == F.I.ignoreWheelCastLayer)
-		{
 			return;
-		}
 		if (CountDownSeq.Countdown > 0)
 			return;
 		if (contact.otherCollider.gameObject.layer != F.I.roadLayer)
+			return;
+		if (contact.otherCollider.gameObject.name.Contains("slope"))
 			return;
 		vp.colliding = true;
 		Vector3 norm = contact.normal;

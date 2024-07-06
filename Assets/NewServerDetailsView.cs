@@ -58,6 +58,7 @@ public class NewServerDetailsView : MainMenuView
 	}
 	public async void CreateLobby()
 	{
+		prevViewForbidden = true;
 		OkbuttonText.text = "WAIT";
 		F.I.SaveSettingsDataToJson();
 		F.I.s_trackName = F.I.tracks.First(kv => kv.Value.valid).Key;
@@ -67,6 +68,7 @@ public class NewServerDetailsView : MainMenuView
 		{
 			if(await server.CreateLobby(F.I.s_trackName, sha))
 			{
+				prevViewForbidden = false;
 				GoToView(lobbyView);
 			}
 		}
@@ -74,5 +76,6 @@ public class NewServerDetailsView : MainMenuView
 		{
 			Debug.Log(e.Message);
 		}
+		prevViewForbidden = false;
 	}	
 }

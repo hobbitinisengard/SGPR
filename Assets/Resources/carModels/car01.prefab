@@ -18859,7 +18859,7 @@ MonoBehaviour:
   rollCheckDistance: 1
   rollOverForce: 2
   rollSpeedThreshold: 0
-  angularDragOnJump: 1
+  angularDragOnJump: 0
   fallSpeedLimit: Infinity
   applyFallLimitUpwards: 0
 --- !u!114 &5969412531493064938

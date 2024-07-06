@@ -1,0 +1,15 @@
+{
+  "author": "Team17",
+  "desc": "Only one ramp and no recharging tunnel. But your car has enough battery capacity, right? RIGHT? ",
+  "valid": true,
+  "envir": "JAP",
+  "preferredCarClass": "Team",
+  "difficulty": 5,
+  "unlocked": true,
+  "icons": [
+    3,
+    5
+  ],
+  "TrackOrigin": 0,
+  "IsOriginal": true
+}

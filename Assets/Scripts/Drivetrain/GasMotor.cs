@@ -47,7 +47,8 @@ namespace RVP
 		[Header("Transmission")]
 		public GearboxTransmission transmission;
 		bool rpmTooHigh = false;
-		float curr_engine_krpm = 0;
+		public float d_targetRpm;
+		float curEnginekRPM = 0;
 		public ParticleSystem engineSmoke;
 		public float boostEval;
 		internal float fuelConsumption;
@@ -94,17 +95,18 @@ namespace RVP
 				float targetRPM;
 				if (rpmTooHigh || actualInput == 0 || (transmission.IsShifting() && transmission.selectedGear > 2))
 				{
-					targetRPM = Mathf.Max(minkRPM * 1000, targetDrive.feedbackRPM - 2000);
+					targetRPM = Mathf.Max(minkRPM * 1000, targetDrive.feedbackRPM - 1000);
 				}
 				else
 					targetRPM = actualInput * limit2kRPM * 1000;
 
 				targetDrive.rpm = Mathf.Lerp(targetDrive.rpm, targetRPM, inertia * 10 * deltaTime);
-				curr_engine_krpm = targetDrive.feedbackRPM / 1000f;
+				d_targetRpm = targetDrive.rpm;
+				curEnginekRPM = targetDrive.feedbackRPM / 1000f;
 
 				if (engineSmoke != null)
 				{
-					if (curr_engine_krpm <= 0.3f * limit2kRPM)
+					if (curEnginekRPM <= 0.3f * limit2kRPM)
 					{
 						if (!engineSmoke.isPlaying)
 						{
@@ -118,25 +120,24 @@ namespace RVP
 						engineSmoke.Stop(true, ParticleSystemStopBehavior.StopEmitting);
 				}
 
-				if (curr_engine_krpm < limit2kRPM)
+				if (curEnginekRPM < limit2kRPM)
 				{
 					if (rpmTooHigh)
 					{
-						if (curr_engine_krpm < limitkRPM)
+						if (curEnginekRPM < limitkRPM)
 						{
 							rpmTooHigh = false;
 						}
 					}
-					else if (curr_engine_krpm >= 0.99f * limit2kRPM && transmission.currentGear != transmission.Gears.Length - 1)
+					else if (curEnginekRPM >= 0.99f * limit2kRPM && transmission.currentGear != transmission.Gears.Length - 1)
 					{
 						rpmTooHigh = true;
 						actualInput = 0;
 					}
-
 				}
 				else
 					actualInput = 0;
-				targetDrive.torque = torqueCurve.Evaluate(curr_engine_krpm) *
+				targetDrive.torque = torqueCurve.Evaluate(curEnginekRPM) *
 							Mathf.Lerp(targetDrive.torque + boostEval,
 							Mathf.Abs(actualInput) * (maxTorque + boostEval),
 							inertia * Time.timeScale);

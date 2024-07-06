@@ -73,7 +73,7 @@ public class PauseMenuButton : MonoBehaviour, ISelectHandler, IDeselectHandler
 	void SetBatteryGUI(float val01)
 	{
 		Vector3 pos = batteryMask.GetComponent<RectTransform>().anchoredPosition;
-		pos.x = Mathf.Lerp(0, 70, val01);
+		pos.x = Mathf.Lerp(0, 40, val01);
 		batteryMask.GetComponent<RectTransform>().anchoredPosition = pos;
 	}
 	public void OnSelect(BaseEventData eventData)

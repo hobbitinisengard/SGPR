@@ -65,7 +65,7 @@ namespace RVP
 					}
 
 					screechAmount = Mathf.Max(screechAmount, Mathf.Pow(Mathf.Clamp01(Mathf.Abs(F.MaxAbs(
-						wheels[i].sidewaysSlip, wheels[i].forwardSlip, alwaysScrape)) - wheels[i].slipThreshold), 2));
+						wheels[i].sidewaysSlip, wheels[i].forwardSlip/25f, alwaysScrape)) - wheels[i].slipThreshold), 2));
 				}
 			}
 

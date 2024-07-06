@@ -68,7 +68,7 @@ namespace RVP
 
 		float maxEffectiveRollTurnAngle = 30;
 		float rollCoeff = 8f;
-		float catchUpCamSpeed = 10f;
+		float catchUpCamSpeed = 20f;
 
 
 		// distance between target-camera-position and car

@@ -246,9 +246,9 @@ public class ServerC : MonoBehaviour
 		networkManager.Shutdown();
 		await LobbyService.Instance.RemovePlayerAsync(lobby.Id, AuthenticationService.Instance.PlayerId);
 		DeleteEmptyLobbies();
-		
-		Debug.Log("DISCONNECTED");
+
 		OnLobbyExit.Invoke();
+		Debug.Log("DISCONNECTED");
 	}
 	public async Task GetLobbyManually()
 	{

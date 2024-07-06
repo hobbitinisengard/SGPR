@@ -37,8 +37,8 @@ public class MultiPlayerSelector : TrackSelector
 	public ZippedTrackDataObject zippedTrackDataObject;
 	private Coroutine lobbyCntdwnCo;
 	private float readyTimeoutTime;
+	private float connectionTimeoutTime;
 	private Coroutine afterEnabledCo;
-
 	public bool Busy { get { return dataTransferWnd.activeSelf; } }
 
 	bool OnLobbyExitAndWaitingForThisToBecomeActive;
@@ -110,7 +110,8 @@ public class MultiPlayerSelector : TrackSelector
 	}
 	public void ExitLobby()
 	{
-		ServerC.I.DisconnectFromLobby();
+		if(!thisView.prevViewForbidden)
+			ServerC.I.DisconnectFromLobby();
 	}
 	void OnApplicationQuit()
 	{
@@ -118,6 +119,7 @@ public class MultiPlayerSelector : TrackSelector
 	}
 	protected override void OnEnable()
 	{
+		connectionTimeoutTime = Time.time;
 		ResultsView.Clear();
 		F.I.chat.UpdateCanvases();
 
@@ -135,6 +137,8 @@ public class MultiPlayerSelector : TrackSelector
 	}
 	IEnumerator EnableSeq()
 	{
+		thisView.prevViewForbidden = true; 
+
 		if (ServerC.I.AmHost)
 		{
 			F.I.actionHappening = ActionHappening.InLobby;
@@ -171,6 +175,13 @@ public class MultiPlayerSelector : TrackSelector
 
 		ServerC.I.ReadySet(false);
 		ServerC.I.UpdatePlayerData();
+
+
+		while(!Online.I.IsSpawned && Time.time - connectionTimeoutTime < 5)
+		{
+			yield return null;
+		}
+		thisView.prevViewForbidden = false;
 	}
 	public async void ZippedTrackDataObject_OnNewTrackArrived()
 	{
@@ -348,7 +359,7 @@ public class MultiPlayerSelector : TrackSelector
 	{
 		leaderboard.Refresh();
 		
-		if(F.I.minimized)
+		if(F.I.minimized && !dataTransferWnd.activeSelf)
 		{
 			var hostRdy = ServerC.I.Host.ReadyGet();
 			if (hostRdy && !ServerC.I.PlayerMe.ReadyGet())
