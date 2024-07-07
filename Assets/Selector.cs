@@ -31,7 +31,7 @@ public class TrackSelectorTemplate : Sfxable
 	protected Coroutine containerCo;
 	protected string persistentSelectedTrack;
 
-	protected virtual void OnDisable()
+	protected void OnDisable()
 	{
 		F.I.move2Ref.action.performed -= CalculateTargetToSelect;
 		persistentSelectedTrack = selectedTrack.name;
@@ -100,7 +100,7 @@ public class TrackSelectorTemplate : Sfxable
 				int trackOrigin = track.TrackOrigin;
 				var newtrack = Instantiate(trackImageTemplate, trackContent.GetChild(trackOrigin));
 				newtrack.name = trackName;
-				newtrack.GetComponent<Image>().sprite = IMG2Sprite.LoadNewSprite(Path.Combine(F.I.tracksPath, trackName + ".png"));
+				newtrack.GetComponent<Image>().sprite = IMG2Sprite.LoadNewSprite(F.I.tracksPath + trackName + ".png");
 				newtrack.SetActive(true);
 				existingTrackClasses[trackOrigin] = true;
 				if (persistentSelectedTrack != null && persistentSelectedTrack == trackName)

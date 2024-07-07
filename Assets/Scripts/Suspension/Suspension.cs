@@ -133,8 +133,8 @@ namespace RVP
 		public bool steerEnabled = true;
 		[System.NonSerialized]
 		public bool steerInverted;
-		[System.NonSerialized]
-		public bool driveEnabled = true;
+		//[System.NonSerialized]
+		//public bool driveEnabled = true;
 		[System.NonSerialized]
 		public bool driveInverted;
 		[System.NonSerialized]
@@ -264,7 +264,6 @@ namespace RVP
 			{
 				if (wheel.targetDrive)
 				{
-					targetDrive.active = driveEnabled;
 					targetDrive.feedbackRPM = wheel.targetDrive.feedbackRPM;
 					wheel.targetDrive.SetDrive(targetDrive);
 				}
@@ -391,7 +390,7 @@ namespace RVP
 							steerInverted = curProperty.toggled;
 							break;
 						case 2:
-							driveEnabled = curProperty.toggled;
+							//driveEnabled = curProperty.toggled;
 							break;
 						case 3:
 							driveInverted = curProperty.toggled;

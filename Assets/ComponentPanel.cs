@@ -438,8 +438,8 @@ public class CarConfig
 			var tyre = (TyreSavable)Part(PartType.Tyre);
 			var engine = (EngineSavable)Part(PartType.Engine);
 			float S = C01(400, 1200, chassis.staticEvoMaxSpeed);
-			float G = C01(3, 0, tyre.sideFriction - tyre.shiftRearFriction);
-			float P = C01(0.1f, .5f, engine.torque / chassis.mass);
+			float G = C01(2, 0, (tyre.sideFriction - tyre.shiftRearFriction) / chassis.mass);
+			float P = (C01(0.025f, .2f, engine.torque / chassis.mass) + C01(4,10,tyre.forwardFriction / chassis.mass))/2f;
 			return new float[] { S, G, P };
 		}
 	}
@@ -682,7 +682,7 @@ public class TyreSavable : PartSavable
 	public float offroadTread;
 	public float driftRearFriction;
 	public float driftRearFrictionInit;
-
+	public float torqueThreshold;
 	public TyreSavable()
 	{
 	}
@@ -703,6 +703,7 @@ public class TyreSavable : PartSavable
 		offroadTread = original.offroadTread;
 		driftRearFriction = original.driftRearFriction;
 		driftRearFrictionInit = original.driftRearFrictionInit;
+		torqueThreshold = original.torqueThreshold;
 	}
 	public override PartSavable Clone()
 	{
@@ -724,6 +725,7 @@ public class TyreSavable : PartSavable
 		squeakSlipThreshold = rear.slipThreshold;
 		slipDependence = 2;
 		axleFriction = rear.axleFriction;
+		torqueThreshold = vp.wheels[2].torqueThreshold;
 	}
 
 	public override void Apply(VehicleParent vp)
@@ -739,8 +741,10 @@ public class TyreSavable : PartSavable
 			w.SetInitFrictions(forwardFriction, (F.I.s_raceType == RaceType.Drift) ? driftRearFrictionInit : sideFriction, (i < 2) ? frontFrictionStretch : rearFrictionStretch);
 
 			w.slipThreshold = squeakSlipThreshold;
-			w.slipDependence = Wheel.SlipDependenceMode.independent;
+			w.slipDependence = (F.I.s_raceType == RaceType.Drift) ? 
+				Wheel.SlipDependenceMode.independent : Wheel.SlipDependenceMode.independent;
 			w.axleFriction = axleFriction;
+			w.torqueThreshold = torqueThreshold;
 			// update materials
 			//var mr = w.transform.GetChild(0).GetComponent<MeshRenderer>();
 			//// [..^1] = from beginning to last - 1. |         tier+1 cause tyres are named from 1

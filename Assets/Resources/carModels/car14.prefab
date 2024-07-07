@@ -17523,7 +17523,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
-  m_CollisionDetection: 1
+  m_CollisionDetection: 0
 --- !u!114 &1487207223582802376
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17940,7 +17940,6 @@ MonoBehaviour:
   - {fileID: 5582764275981958382}
   - {fileID: 5228305639871473634}
   - {fileID: 3596460534430659167}
-  transpShader: {fileID: 4800000, guid: bbb29bc6f1f0b704d989cac34a3a1b7e, type: 3}
 --- !u!114 &-8732228694555806868
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17992,7 +17991,7 @@ MonoBehaviour:
   networkChannel: 
   childObjectToSync: {fileID: 0}
   setVelocityInsteadOfPositionOnNonOwners: 1
-  maxPositionDifferenceForVelocitySyncing: 10
+  maxPositionDifferenceForVelocitySyncing: 5
   useLocalTransformOnly: 0
   ownerChangeIndicator: 1
   receivedStatesCounter: 0
@@ -21423,8 +21422,8 @@ Transform:
   m_GameObject: {fileID: 7465047913020823284}
   serializedVersion: 2
   m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 0.589, z: -0.137}
-  m_LocalScale: {x: 0.94, y: 0.83, z: 0.61}
+  m_LocalPosition: {x: 0, y: 0.589, z: -0.061}
+  m_LocalScale: {x: 0.94, y: 0.77, z: 0.61}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6457121441695959639}
@@ -23210,6 +23209,16 @@ PrefabInstance:
         type: 3}
       propertyPath: m_ConstrainProportionsScale
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4105597997623369687, guid: f300b2b32f46e3e4c887eacc114d2e3a,
+        type: 3}
+      propertyPath: m_Size.x
+      value: 4.12
+      objectReference: {fileID: 0}
+    - target: {fileID: 4105597997623369687, guid: f300b2b32f46e3e4c887eacc114d2e3a,
+        type: 3}
+      propertyPath: m_Size.y
+      value: 4.64
       objectReference: {fileID: 0}
     - target: {fileID: 4376822998477129306, guid: f300b2b32f46e3e4c887eacc114d2e3a,
         type: 3}

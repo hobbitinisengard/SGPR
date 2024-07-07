@@ -39,10 +39,10 @@ namespace RVP
 		public float feedbackRpmBias;
 
 		[Tooltip("Curve for setting final RPM of wheel based on driving torque/brake force, x-axis = torque/brake force, y-axis = lerp between raw RPM and target RPM")]
-		public AnimationCurve rpmBiasCurve = AnimationCurve.Linear(0, 0, 1, 1);
+		public AnimationCurve rpmBiasCurve;
 
 		[Tooltip("As the RPM of the wheel approaches this value, the RPM bias curve is interpolated with the default linear curve")]
-		public float rpmBiasCurveLimit = Mathf.Infinity;
+		float rpmBiasCurveLimit = 5000;
 
 		[Range(0, 10)]
 		public float axleFriction;
@@ -74,8 +74,8 @@ namespace RVP
 		public float sidewaysRimFriction = 0.5f;
 		public float forwardCurveStretch = 1;
 		public float sidewaysCurveStretch = 1;
-
-		public float initFrictionStretch  { get; private set; }
+		public float torqueThreshold;
+		public float initFrictionStretch { get; private set; }
 		Vector3 frictionForce = Vector3.zero;
 		//static double[] SGPFrictionData = {1.000000, 0.997070, 0.994141, 0.991211, 0.988281, 0.985645, 0.983008, 0.980371,0.977734, 0.975098, 0.972461, 0.969824, 0.967188, 0.957227, 0.947266, 0.937305,0.927344, 0.925488, 0.923633, 0.921777, 0.919922, 0.918067, 0.916211, 0.914356,0.912500, 0.907422, 0.902344, 0.897266, 0.892188, 0.887109, 0.882031, 0.876953,0.871875, 0.860513, 0.849152, 0.837790, 0.826428, 0.818370, 0.810312, 0.802254,0.794196, 0.786138, 0.778079, 0.770021, 0.761963, 0.750097, 0.738231, 0.726366,0.714500, 0.702634, 0.690768, 0.678902, 0.667036, 0.657031, 0.647025, 0.637020,0.627014, 0.617009, 0.607003, 0.596997, 0.586992, 0.580758, 0.574525, 0.568292,0.562058, 0.555825, 0.549591, 0.543358, 0.537125, 0.531591, 0.526058, 0.520525,0.514992, 0.509459, 0.503925, 0.498392, 0.492859, 0.489663, 0.486468, 0.483272,0.480077, 0.476881, 0.473685, 0.470490, 0.467294, 0.462449, 0.457604, 0.452759,0.447914, 0.443069, 0.438224, 0.433379, 0.428534, 0.427097, 0.425659, 0.424222,0.422784, 0.419936, 0.417088, 0.414240, 0.411392, 0.408544, 0.405696, 0.402848,0.400000, 0.396875, 0.393750, 0.390625, 0.387500, 0.384375, 0.381250, 0.378125,0.375000, 0.371524, 0.368048, 0.364572, 0.361096, 0.357620, 0.354144, 0.350668,0.347192, 0.347593, 0.347994, 0.348395, 0.348796, 0.349198, 0.349599, 0.350000};
 		// better
@@ -171,7 +171,7 @@ namespace RVP
 		public DriveForce targetDrive;
 		///<summary> RPM based purely on velocity</summary>
 		[System.NonSerialized]
-		public float rawRPM; 
+		public float rawRPM;
 		[System.NonSerialized]
 		public WheelContact contactPoint = new WheelContact();
 		[System.NonSerialized]
@@ -255,6 +255,7 @@ namespace RVP
 			tr = transform;
 			rb = tr.GetTopmostParentComponent<Rigidbody>();
 			vp = tr.GetTopmostParentComponent<VehicleParent>();
+			rpmBiasCurve = new(new Keyframe[] { new(0, .25f, 0, 1.6f), new(1, 1, 0, 1.6f) });
 			forwardFrictionCurve ??= new AnimationCurve(new Keyframe[] { new(0, .35f), new(1, 1) });
 			sidewaysFrictionCurve ??= new AnimationCurve(new Keyframe[] { new(0, 0f), new(0.1f, 1), new(1, 0.9f) });
 			suspensionParent = tr.parent.GetComponent<Suspension>();
@@ -319,7 +320,7 @@ namespace RVP
 					// Generate hard collider
 					if (generateHardCollider)
 					{
-						GameObject sphereColNew = new ("Rim Collider")
+						GameObject sphereColNew = new("Rim Collider")
 						{
 							layer = RaceManager.ignoreWheelCastLayer
 						};
@@ -328,7 +329,7 @@ namespace RVP
 						sphereColTr.parent = tr;
 						sphereColTr.localPosition = Vector3.zero;
 						sphereColTr.localRotation = Quaternion.identity;
-						sphereCol.radius = rimRadius;//Mathf.Min(rimWidth * 0.5f, rimRadius * 0.5f);
+						sphereCol.radius = .8f * tireRadius;//rimRadius;//Mathf.Min(rimWidth * 0.5f, rimRadius * 0.5f);//
 						sphereCol.sharedMaterial = RaceManager.frictionlessMatStatic;
 					}
 
@@ -360,7 +361,7 @@ namespace RVP
 			// Get proper inputs
 			actualEbrake = suspensionParent.ebrakeEnabled ? suspensionParent.ebrakeForce : 0;
 			actualTargetRPM = targetDrive.rpm * (suspensionParent.driveInverted ? -1 : 1);
-			actualTorque = suspensionParent.driveEnabled ? Mathf.Lerp(targetDrive.torque, Mathf.Abs(vp.accelInput), vp.burnout) : 0;
+			actualTorque = targetDrive.active ?  targetDrive.torque : 0;
 
 			if (getContact)
 			{
@@ -405,7 +406,7 @@ namespace RVP
 
 					if (rimWidthPrev != setRimWidth || rimRadiusPrev != setRimRadius)
 					{
-						sphereCol.radius = Mathf.Min(rimWidth * 0.5f, rimRadius * 0.5f);
+						sphereCol.radius = .8f * tireRadius;
 						updatedSize = true;
 					}
 					else if (tireWidthPrev != setTireWidth || tireRadiusPrev != setTireRadius || tirePressurePrev != setTirePressure)
@@ -683,8 +684,10 @@ namespace RVP
 		{
 			if (grounded)
 			{
-				float forwardSlipFactor = (int)slipDependence == 0 || (int)slipDependence == 1 ? forwardSlip - sidewaysSlip : forwardSlip;
-				float sidewaysSlipFactor = (int)slipDependence == 0 || (int)slipDependence == 2 ? sidewaysSlip - forwardSlip : sidewaysSlip;
+				float forwardSlipFactor = (slipDependence == SlipDependenceMode.dependent 
+					|| slipDependence == SlipDependenceMode.forward) ? forwardSlip - sidewaysSlip : forwardSlip;
+				float sidewaysSlipFactor = (slipDependence == SlipDependenceMode.dependent 
+					|| slipDependence == SlipDependenceMode.sideways) ? sidewaysSlip - forwardSlip : sidewaysSlip;
 				float forwardSlipDependenceFactor = Mathf.Clamp01(forwardSlipDependence - Mathf.Clamp01(Mathf.Abs(sidewaysSlip)));
 				float sidewaysSlipDependenceFactor = Mathf.Clamp01(sidewaysSlipDependence - Mathf.Clamp01(Mathf.Abs(forwardSlip)));
 
@@ -744,14 +747,8 @@ namespace RVP
 			// Set final RPM
 			if (!suspensionParent.jammed && connected)
 			{
-				bool validTorque = (!(Mathf.Approximately(actualTorque, 0) && Mathf.Abs(actualTargetRPM) < 0.01f)
-					&& !Mathf.Approximately(actualTargetRPM, 0)) || brakeForce + actualEbrake * vp.ebrakeInput > 0;
-
-				currentRPM = Mathf.Lerp(rawRPM,
-						Mathf.Lerp(Mathf.Lerp(rawRPM, actualTargetRPM, validTorque ? EvaluateTorque(actualTorque) : actualTorque),
-					 0, Mathf.Max(brakeForce, actualEbrake * vp.ebrakeInput)),
-				validTorque ? EvaluateTorque(actualTorque + brakeForce + actualEbrake * vp.ebrakeInput)
-				: actualTorque + brakeForce + actualEbrake * vp.ebrakeInput);
+				float toTargetRpm = Mathf.Lerp(rawRPM, actualTargetRPM, EvaluateTorque(actualTorque));
+				currentRPM = Mathf.Lerp(toTargetRpm, 0, Time.fixedDeltaTime * Mathf.Max(brakeForce, actualEbrake * vp.ebrakeInput));
 
 				targetDrive.feedbackRPM = Mathf.Lerp(currentRPM, rawRPM, feedbackRpmBias);
 			}
@@ -761,13 +758,22 @@ namespace RVP
 				targetDrive.feedbackRPM = 0;
 			}
 		}
-
-		// Extra method for evaluating torque to make the ApplyDrive method more readable
-		float EvaluateTorque(float t)
+		/// <summary>
+		/// 0 = rawRPM, full grip, wheel is sticked to the road
+		/// 1 = currentRPM, no grip, wheel is sliding
+		/// </summary>
+		float EvaluateTorque(float torque)
 		{
-			float torque = Mathf.Lerp(rpmBiasCurve.Evaluate(t), t, rawRPM / (rpmBiasCurveLimit * Mathf.Sign(actualTargetRPM)));
-			return torque;
+			float scaledTorque;
+			scaledTorque = Mathf.Clamp01(torque / torqueThreshold);//0.07f
+			return scaledTorque * Mathf.Lerp(1, .2f, rawRPM / (rpmBiasCurveLimit * Mathf.Sign(actualTargetRPM)));
 		}
+		// Extra method for evaluating torque to make the ApplyDrive method more readable
+		//float EvaluateTorque(float t)
+		//{
+		//	float torque = Mathf.Lerp(rpmBiasCurve.Evaluate(t), t, rawRPM / (rpmBiasCurveLimit * Mathf.Sign(actualTargetRPM)));
+		//	return torque;
+		//}
 
 		// Visual wheel positioning
 		void PositionWheel()
@@ -792,11 +798,11 @@ namespace RVP
 			if (tr && suspensionParent)
 			{
 				float ackermannVal = Mathf.Sign(suspensionParent.steerAngle) == suspensionParent.flippedSideFactor ? 1 + suspensionParent.ackermannFactor : 1 - suspensionParent.ackermannFactor;
-				
-					tr.localEulerAngles = new Vector3(
-				 suspensionParent.camberAngle + suspensionParent.casterAngle * suspensionParent.steerAngle * suspensionParent.flippedSideFactor,
-				 -suspensionParent.toeAngle * suspensionParent.flippedSideFactor + suspensionParent.steerDegrees * ackermannVal,
-				 0);
+
+				tr.localEulerAngles = new Vector3(
+			 suspensionParent.camberAngle + suspensionParent.casterAngle * suspensionParent.steerAngle * suspensionParent.flippedSideFactor,
+			 -suspensionParent.toeAngle * suspensionParent.flippedSideFactor + suspensionParent.steerDegrees * ackermannVal,
+			 0);
 			}
 
 			if (Application.isPlaying)

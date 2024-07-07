@@ -3,7 +3,7 @@ guid: 927fb2eb15fcb204ea55a8280affebb2
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
-  serializedVersion: 12
+  serializedVersion: 13
   mipmaps:
     mipMapMode: 0
     enableMipMap: 0
@@ -20,11 +20,12 @@ TextureImporter:
     externalNormalMap: 0
     heightScale: 0.25
     normalMapFilter: 0
+    flipGreenChannel: 0
   isReadable: 0
   streamingMipmaps: 0
   streamingMipmapsPriority: 0
   vTOnly: 0
-  ignoreMasterTextureLimit: 0
+  ignoreMipmapLimit: 0
   grayScaleToAlpha: 0
   generateCubemap: 6
   cubemapConvolution: 0
@@ -63,11 +64,12 @@ TextureImporter:
   textureFormatSet: 0
   ignorePngGamma: 0
   applyGammaDecoding: 0
+  swizzle: 50462976
   cookieLightType: 0
   platformSettings:
   - serializedVersion: 3
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 2048
+    maxTextureSize: 1024
     resizeAlgorithm: 0
     textureFormat: -1
     textureCompression: 1
@@ -75,18 +77,20 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 3
     buildTarget: Standalone
     maxTextureSize: 2048
     resizeAlgorithm: 0
-    textureFormat: -1
+    textureFormat: 4
     textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 3
@@ -99,6 +103,7 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 3
@@ -111,6 +116,7 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
@@ -121,9 +127,9 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 3083
-        width: 4096
-        height: 1013
+        y: 1538
+        width: 2048
+        height: 510
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 465, w: 0}
@@ -141,10 +147,10 @@ TextureImporter:
       name: overlays_boxback2_2
       rect:
         serializedVersion: 2
-        x: 4088
-        y: 3078
-        width: 8
-        height: 1018
+        x: 1801
+        y: 1380
+        width: 1
+        height: 1
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -162,13 +168,13 @@ TextureImporter:
       name: overlays_boxback2_4
       rect:
         serializedVersion: 2
-        x: 5
-        y: 2357
-        width: 2602
-        height: 710
+        x: 0
+        y: 1176
+        width: 1473
+        height: 353
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 344, y: 0, z: 0, w: 0}
+      border: {x: 344, y: 0, z: 325, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
@@ -184,12 +190,12 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 1797
-        width: 1755
-        height: 550
+        y: 894
+        width: 878
+        height: 277
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 292, y: 2, z: 254, w: 0}
+      border: {x: 253, y: 2, z: 260, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
@@ -204,10 +210,10 @@ TextureImporter:
       name: overlays_boxback2_19
       rect:
         serializedVersion: 2
-        x: 1285
-        y: 0
-        width: 2811
-        height: 731
+        x: 639
+        y: 6
+        width: 1409
+        height: 355
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 357, y: 0, z: 0, w: 0}
@@ -225,10 +231,10 @@ TextureImporter:
       name: overlays_boxback2_24
       rect:
         serializedVersion: 2
-        x: 1753
-        y: 1804
-        width: 1738
-        height: 546
+        x: 878
+        y: 892
+        width: 874
+        height: 279
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 291, y: 0, z: 252, w: 0}
@@ -238,6 +244,27 @@ TextureImporter:
       bones: []
       spriteID: 8e288edf36fdcc7479c73a3c3b128ac7
       internalID: -1204087317
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlays_boxback2_1
+      rect:
+        serializedVersion: 2
+        x: 1784
+        y: 1354
+        width: 45
+        height: 50
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7c044482a874cef4ab6340771ecfb9e0
+      internalID: 1579863444
       vertices: []
       indices: 
       edges: []
@@ -278,9 +305,8 @@ TextureImporter:
       overlays_boxback2_7: 1820311272
       overlays_boxback2_8: 1180326484
       overlays_boxback2_9: 940262401
-  spritePackingTag: 
+  mipmapLimitGroupName: 
   pSDRemoveMatte: 0
-  pSDShowRemoveMatteOption: 0
   userData: 
   assetBundleName: 
   assetBundleVariant: 

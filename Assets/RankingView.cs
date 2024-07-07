@@ -197,9 +197,9 @@ public class RankingView : MainMenuView
 				row.GetChild(3).GetComponent<TextMeshProUGUI>().text = "Round " + curNode.Value.rounds.ToString();
 				row.GetChild(4).GetComponent<TextMeshProUGUI>().text = F.I.scoringType switch
 				{
-					ScoringType.Championship => curNode.Value.moneyOrPerc.ToString("F1"),
-					ScoringType.Points => (100*curNode.Value.moneyOrPerc).ToString("F1"),
-					ScoringType.Victory => (100*curNode.Value.moneyOrPerc).ToString("F1"),
+					ScoringType.Championship => curNode.Value.moneyOrPerc.ToString("F0"),
+					ScoringType.Points => (100*curNode.Value.moneyOrPerc).ToString("F0"),
+					ScoringType.Victory => (100*curNode.Value.moneyOrPerc).ToString("F0"),
 					_ => null,
 				};
 			}

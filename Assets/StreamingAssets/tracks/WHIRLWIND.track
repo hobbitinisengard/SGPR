@@ -1,0 +1,16 @@
+{
+  "author": "luckygoose",
+  "desc": "This extremely long and twisting track featuring angled bridges, grass sections, jumps and many more surprises will keep you on your toes.",
+  "valid": true,
+  "envir": "JAP",
+  "preferredCarClass": "Wild",
+  "difficulty": 6,
+  "unlocked": true,
+  "icons": [
+    0,
+    3,
+    9
+  ],
+  "TrackOrigin": 1,
+  "IsOriginal": false
+}

@@ -1,4 +1,3 @@
-using RVP;
 using System;
 using System.Collections;
 using UnityEngine;
@@ -6,6 +5,7 @@ using UnityEngine.UI;
 
 public class CountDownSeq : Sfxable
 {
+	public static event Action RaceStarted;
 	public Sprite[] countdownSprites;
 	Image img;
 	Coroutine seq;
@@ -23,7 +23,7 @@ public class CountDownSeq : Sfxable
 	{
 		img = transform.GetChild(0).GetComponent<Image>();
 		img.color = new Color(1, 1, 1, 0);
-		Countdown = (float)(F.I.raceStartDate - DateTime.UtcNow).TotalMilliseconds / 1000f;
+		Countdown = (float)(F.I.raceStartDate - DateTime.UtcNow).TotalSeconds;
 		if (seq != null)
 			StopCoroutine(seq);
 		seq = StartCoroutine(CountdownSeq());
@@ -56,6 +56,8 @@ public class CountDownSeq : Sfxable
 		timer = 0;
 
 		if(ServerC.I.AmHost)
-			OnlineCommunication.I.raceAlreadyStarted.Value = true;
+			Online.I.raceAlreadyStarted.Value = true;
+
+		RaceStarted?.Invoke();
 	}
 }

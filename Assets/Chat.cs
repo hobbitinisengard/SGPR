@@ -18,6 +18,12 @@ public class Chat : NetworkBehaviour
 	public bool texting { get; private set; }
 	Coroutine showChatCo;
 	// Chat is in-scene placed
+	private void Awake()
+	{
+		F.I.chatButtonInput.action.performed += buttonPressed;
+		F.I.quickMessageRef.action.performed += QuickMessagePressed;
+		F.I.viewSwitcher.OnWorldMenuSwitch += F.Deselect;
+	}
 	public override void OnNetworkSpawn()
 	{
 		base.OnNetworkSpawn();
@@ -25,10 +31,6 @@ public class Chat : NetworkBehaviour
 	}
 	public override void OnNetworkDespawn()
 	{
-		F.I.chatButtonInput.action.performed -= buttonPressed;
-		F.I.quickMessageRef.action.performed -= QuickMessagePressed;
-		F.I.viewSwitcher.OnWorldMenuSwitch -= F.Deselect;
-
 		SetVisibility(false);
 
 		foreach (var i in inputFields)
@@ -42,10 +44,6 @@ public class Chat : NetworkBehaviour
 	}
 	void Initialize()
 	{
-		F.I.chatButtonInput.action.performed += buttonPressed;
-		F.I.quickMessageRef.action.performed += QuickMessagePressed;
-		F.I.viewSwitcher.OnWorldMenuSwitch += F.Deselect;
-
 		SetVisibility(false);
 
 		foreach(var c in scrollRects)
@@ -54,7 +52,8 @@ public class Chat : NetworkBehaviour
 		foreach (var i in inputFields)
 		{
 			i.onSelect.AddListener(s => { texting = true;  MultiPlayerSelector.I.EnableSelectionOfTracks(false); });
-			i.onDeselect.AddListener(s => { texting = false; MultiPlayerSelector.I.EnableSelectionOfTracks(ServerC.I.AmHost && !ServerC.I.PlayerMe.ReadyGet()); });
+			i.onDeselect.AddListener(s => { texting = false; MultiPlayerSelector.I.EnableSelectionOfTracks(
+				F.I.actionHappening == ActionHappening.InLobby && ServerC.I.AmHost && !ServerC.I.PlayerMe.ReadyGet()); });
 			i.onSubmit.AddListener(s =>
 			{
 				readyButton.Select();
@@ -66,7 +65,7 @@ public class Chat : NetworkBehaviour
 					i.text = "";
 					if(F.I.actionHappening == ActionHappening.InRace)
 					{
-						//F.Deselect();
+						F.Deselect();
 						inputFields[1].gameObject.SetActive(false);
 					}
 				}
@@ -79,7 +78,6 @@ public class Chat : NetworkBehaviour
 			});
 		}
 	}
-
 	public void SetVisibility(bool enabled)
 	{
 		if (F.I.gameMode == MultiMode.Multiplayer)
@@ -90,7 +88,8 @@ public class Chat : NetworkBehaviour
 	}
 	private void buttonPressed(InputAction.CallbackContext obj)
 	{
-		StartCoroutine(ButtonPressedSeq());
+		if(F.I.gameMode == MultiMode.Multiplayer && !texting)
+			StartCoroutine(ButtonPressedSeq());
 	}
 	private void QuickMessagePressed(InputAction.CallbackContext obj)
 	{
@@ -121,6 +120,8 @@ public class Chat : NetworkBehaviour
 	{
 		SetVisibility(true);
 		yield return new WaitForSecondsRealtime(timer);
+		while (texting)
+			yield return null;
 		SetVisibility(false);
 	}
 	

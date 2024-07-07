@@ -20,6 +20,7 @@ namespace RVP
 			public Vector3 pos;
 			public float dist;
 		}
+		const int steepestAllowedAngleOnRespawnDegs = 75;
 		List<int> stuntPoints;
 		int racingLineLayerNumber;
 		public List<ReplayCam> replayCams { get; private set; }
@@ -47,6 +48,7 @@ namespace RVP
 		public float stoppedTime;
 		public float reverseTime;
 		public float brakeTime;
+		
 		public int progress = 0;
 		public float pitsProgress = 0;
 		public int dist = 0;
@@ -100,7 +102,8 @@ namespace RVP
 
 		float lapProgressPercent;
 		float pitsDist;
-
+		Vector3 distPoint;
+		Vector3 progressPoint;
 		public float LapProgressPercent
 		{
 			get
@@ -221,44 +224,34 @@ namespace RVP
 			target.pos = trackPathCreator.path.GetPointAtDistance(dist);
 			SetCPU(isCPU);
 		}
-		int GetDist(int layer)
+		int GetDist(int layer) // odpalać rzadziej?
 		{
 			float dist = 0;
 			string closestLen = null;
 			float min = 3 * radius;
-			if (Physics.Raycast(transform.position + Vector3.up, Vector3.down, out RaycastHit h, Mathf.Infinity,
-				1 | 1 << F.I.roadLayer | 1 << F.I.terrainLayer))
+
+			var racingPathHits = Physics.CapsuleCastAll(transform.position + Vector3.up, 
+				transform.position + .5f * Vector3.up, radius, Vector3.down, Mathf.Infinity, layer);
+
+			foreach (var hit in racingPathHits)
 			{
-				var racingPathHits = Physics.OverlapSphere(h.point, radius, layer);
-				foreach (var hit in racingPathHits)
+				dist = Vector3.Distance(transform.position, hit.transform.position);
+				if (dist < min && !Physics.Linecast(transform.position + 3 * Vector3.up,
+					hit.transform.position + 3 * Vector3.up, 1 | 1 << F.I.roadLayer | 1 << F.I.terrainLayer))
 				{
-					dist = Vector3.Distance(transform.position, hit.transform.position);
-					if (dist < min && !Physics.Linecast(transform.position + 3 * Vector3.up, hit.transform.position + 3 * Vector3.up, 1 | 1 << F.I.roadLayer | 1 << F.I.terrainLayer))
-					{
-						min = dist;
-						closestLen = hit.transform.name;
-					}
-				}
-				if (closestLen != null)
-				{
-					try
-					{
-						dist = int.Parse(closestLen);
-					}
-					catch
-					{
-					}
+					min = dist;
+					distPoint = hit.point;
+					closestLen = hit.transform.name;
 				}
 			}
-			else
+			if (closestLen != null)
 			{
-				if (Physics.SphereCast(transform.position + Vector3.up, radius, Vector3.down, out h, Mathf.Infinity, layer))
+				try
 				{
-					dist = int.Parse(h.transform.name);
+					dist = int.Parse(closestLen);
 				}
-				else
+				catch
 				{
-					outOfTrackTime += Time.fixedDeltaTime;
 				}
 			}
 			return (int)dist;
@@ -271,9 +264,12 @@ namespace RVP
 				speedLimit = 1024;
 				speedLimitDist = -1;
 				if (resetProgress)
-					progress = GetDist(1 << racingLineLayerNumber) + 40;
-				if (pitsPathCreator)
-					pitsProgress = pitsPathCreator.path.length;
+				{
+					var newDist = GetDist(1 << racingLineLayerNumber) + 40;
+					if (newDist < progress + 300)
+						progress = newDist;
+				}
+				pitsProgress = 0;
 				pitsPathCreator = null;
 				searchForPits = false;
 				selfDriving = isCPU;
@@ -285,7 +281,6 @@ namespace RVP
 			revvingCo = true;
 			float targetRev = 0;
 			bool revHigher = true;
-
 			while (CountDownSeq.Countdown > 0)
 			{
 				if (CountDownSeq.Countdown < 0.5f)
@@ -301,7 +296,6 @@ namespace RVP
 				}
 				yield return null;
 			}
-			vp.SetEbrake(0);
 			revvingCo = false;
 		}
 		public void PitsTrigger()
@@ -329,6 +323,7 @@ namespace RVP
 			if (CountDownSeq.Countdown > 0)
 			{
 				vp.ebrakeInput = 1;
+
 				if (isCPU)
 				{
 					if (!revvingCo)
@@ -336,6 +331,7 @@ namespace RVP
 				}
 				return;
 			}
+			vp.ebrakeInput = 0;
 
 			rolledOverTime = Mathf.Clamp((vp.reallyGroundedWheels < 3 && vp.crashing) ? rolledOverTime + Time.fixedDeltaTime
 				: rolledOverTime - Time.fixedDeltaTime, 0, rollResetTime);
@@ -348,12 +344,10 @@ namespace RVP
 
 			if (!pitsPathCreator)
 			{
-				if ((vp.reallyGroundedWheels == 4 && !overRoad) || // out of track
-					(overRoad && vp.velMag > 10 && vp.groundedWheels > 2 && Vector3.Dot(vp.forwardDir, trackPathCreator.path.GetDirectionAtDistance(dist)) < -0.5f)
-					&& Vector3.Dot(vp.rb.velocity.normalized, trackPathCreator.path.GetDirectionAtDistance(dist)) < -0.5f) // wrong way drive
+				if ((vp.reallyGroundedWheels == 4 && !overRoad) // out of track
+					|| (vp.velMag > 10 && vp.groundedWheels > 2 && Vector3.Dot(vp.forwardDir, trackPathCreator.path.GetDirectionAtDistance(dist)) < -0.5f
+					&& Vector3.Dot(vp.rb.velocity.normalized, trackPathCreator.path.GetDirectionAtDistance(dist)) < -0.5f)) // wrong way drive
 					outOfTrackTime += Time.fixedDeltaTime;
-				else
-					outOfTrackTime -= Time.fixedDeltaTime;
 
 				if (outOfTrackTime < 0)
 					outOfTrackTime = 0;
@@ -388,15 +382,20 @@ namespace RVP
 			}
 			else
 			{
-				
-
 				dist = GetDist(1 << racingLineLayerNumber);
 
 				if (dist < progress)
-					dist = progress;
-
-				if (dist < progress + 2 * radius || (pitsPathCreator && pitsProgress == pitsPathCreator.path.length))
 				{
+					dist = progress;
+				}
+					
+
+				if (dist < progress + 2 * radius 
+					|| (pitsPathCreator && pitsProgress >= pitsPathCreator.path.length) 
+					|| (Mathf.Abs(progressPoint.y - distPoint.y) > 30 && Vector2.Distance(progressPoint.Flat(), distPoint.Flat()) < 2 * radius))
+				{
+					progressPoint = distPoint;
+
 					progress = dist;
 					pitsProgress = 0;
 				}
@@ -421,7 +420,7 @@ namespace RVP
 
 			if (selfDriving && vp.Owner)
 			{
-				if (vp.BatteryPercent < 0.2f)
+				if (vp.BatteryPercent < 0.2f && vp.raceBox.curLap < F.I.s_laps)
 				{
 					searchForPits = true;
 				}
@@ -675,21 +674,23 @@ namespace RVP
 
 			Vector3 resetPos = trackPathCreator.path.GetPointAtDistance(progress);
 			RaycastHit h;
-			while ( 
-				(!Physics.Raycast(resetPos + 5 * Vector3.up, Vector3.down, out h, Mathf.Infinity, 1 << F.I.roadLayer)
-				|| Vector3.Dot(h.normal, Vector3.up) < -0.5f // while not hit road or hit culled face (backface raycasts are on)
-				|| Mathf.Abs(Vector3.Dot(h.normal, Vector3.up)) < .64f  // slope too big
-				|| h.transform.parent.name == "loop") && progress < 2 * trackPathCreator.path.length)
+			Vector3 resetDir = trackPathCreator.path.GetDirectionAtDistance(progress);
+			while (
+			(!Physics.Raycast(resetPos + 5 * Vector3.up, Vector3.down, out h, 15, 1 << F.I.roadLayer)
+			|| Vector3.Dot(h.normal, Vector3.up) < -0.5f // while not hit road or hit culled face (backface raycasts are on)
+			|| Vector3.SignedAngle(resetDir, Vector3.up, Vector3.Cross(resetDir, Vector3.up)) < steepestAllowedAngleOnRespawnDegs
+			|| h.transform.parent.name == "loop") && progress < (trackPathCreator.path.length - 15))
 			{
 				progress += 10;
 				resetPos = trackPathCreator.path.GetPointAtDistance(progress);
+				resetDir = trackPathCreator.path.GetDirectionAtDistance(progress);
 			}
 			dist = progress;
 
 			vp.ghost.StartGhostResetting();
 			rb.collisionDetectionMode = CollisionDetectionMode.Discrete;
 			rb.isKinematic = true;
-			tr.position = h.point + Vector3.up;
+			tr.position = h.point + Vector3.up + resetDir;
 			yield return new WaitForFixedUpdate();
 			//rb.angularVelocity = Vector3.zero;
 			//rb.velocity = Vector3.zero;
@@ -701,6 +702,7 @@ namespace RVP
 			OutOfPits(resetProgress: false);
 			rb.isKinematic = false;
 			rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+			vp.resetOnTrackTime = Time.time;
 		}
 
 		public void DriveThruPits(in PathCreator pitsPathCreator)

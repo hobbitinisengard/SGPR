@@ -1,4 +1,3 @@
-using UnityEngine;
 using System.IO;
 
 public class LoadSelector : TrackSelectorTemplate
@@ -10,13 +9,15 @@ public class LoadSelector : TrackSelectorTemplate
 			PlaySFX("fe-cardserror");
 			return;
 		}
-		
+
+		string FolderNamePath = F.I.tracksPath + selectedTrack.name;
+		File.Delete(FolderNamePath + ".track");
+		File.Delete(FolderNamePath + ".data");
+		File.Delete(FolderNamePath + ".png");
+		if (File.Exists(FolderNamePath + ".rec"))
+			File.Delete(FolderNamePath + ".rec");
+
 		F.I.tracks.Remove(selectedTrack.name);
-		File.Delete(F.I.tracksPath + selectedTrack.name + ".track");
-		File.Delete(F.I.tracksPath + selectedTrack.name + ".data");
-		File.Delete(F.I.tracksPath + selectedTrack.name + ".png");
-		if (File.Exists(F.I.tracksPath + selectedTrack.name + ".rec"))
-			File.Delete(F.I.tracksPath + selectedTrack.name + ".rec");
 
 		int idx = selectedTrack.GetSiblingIndex();
 		Destroy(selectedTrack.gameObject);

@@ -779,10 +779,13 @@ public class RaceBox : MonoBehaviour
 						{
 							if (RaceManager.I.hud.RECDisplay.activeSelf)
 							{
-								if (bestLapTime.TotalSeconds < F.I.tracks[F.I.s_trackName].records.lap.secondsOrPts)
+								if (curlaptime.Value.TotalSeconds < F.I.tracks[F.I.s_trackName].records.lap.secondsOrPts)
 								{
+									F.I.tracks[F.I.s_trackName].records.lap.playerName = F.I.playerData.playerName;
+									F.I.tracks[F.I.s_trackName].records.lap.secondsOrPts = (float)curlaptime.Value.TotalSeconds;
+
 									RaceManager.I.hud.lapRecordSeq.gameObject.SetActive(true);
-									RaceManager.I.hud.SetRec(bestLapTime);
+									RaceManager.I.hud.SetRec(curlaptime.Value);
 								}
 							}
 
@@ -799,7 +802,7 @@ public class RaceBox : MonoBehaviour
 							}
 						}
 					}
-
+					
 					if (F.I.s_raceType == RaceType.Knockout && (curLap - 1) == (F.I.s_laps - RaceManager.I.Position(vp)))
 					{
 						RaceManager.I.KnockoutCarsBehind(vp);
@@ -810,8 +813,8 @@ public class RaceBox : MonoBehaviour
 						int curPos = RaceManager.I.Position(vp) + 1;
 						if (!F.I.s_inEditor && curPos == 1)
 						{
-							RaceManager.I.hud.infoText.AddMessage(new(vp.tr.name + " WINS THE RACE!", BottomInfoType.CAR_WINS));
-							OnlineCommunication.I.ActivateEndraceTimer();
+							RaceManager.I.hud.infoText.AddMessage(new(vp.tr.name + " WINS!", BottomInfoType.CAR_WINS));
+							Online.I.ActivateEndraceTimer();
 						}
 						// in racemode after the end of a race, cars still run around the track, ghosts overtake each other. Don't let it change results
 						curLap += 100 * (F.I.maxCarsInRace - curPos);
@@ -837,6 +840,9 @@ public class RaceBox : MonoBehaviour
 						}
 						enabled = false;
 					}
+					// when triggered lap while on energyTunnel
+					if(vp.followAI.pitsProgress > 0)
+						StartCoroutine(vp.followAI.ResetOnTrack());
 				}
 				else
 					enabled = false;
@@ -852,8 +858,8 @@ public class RaceBox : MonoBehaviour
 
 	private void OnDisable()
 	{
-		// in case we are disconnecting early, ownership is transferred to server
-		if (name != F.I.playerData.playerName)
+		// in case we are disconnecting early
+		if (F.I.gameMode == MultiMode.Multiplayer && !ServerC.I.networkManager.IsConnectedClient)
 			return;
 
 		// You can disable racebox only ONCE

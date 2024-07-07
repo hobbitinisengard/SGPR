@@ -195,7 +195,7 @@ public class ResultsSeq : MonoBehaviour
 	{
 		float TimeRequiredForUpdate = 5;
 		float timer = TimeRequiredForUpdate+1;
-
+		float tableAppearedTime = Time.time;
 		if (bottomTextCo != null)
 			StopCoroutine(bottomTextCo);
 		bottomTextCo = StartCoroutine(BottomText());
@@ -205,7 +205,8 @@ public class ResultsSeq : MonoBehaviour
 			if (submitFlag && dimCo == null) // CLOSING SEQUENCE
 			{
 				if (F.I.gameMode == MultiMode.Singleplayer 
-					|| ResultsView.FinishedPlayers >= ServerC.I.lobby.Players.Count)
+					|| ResultsView.FinishedPlayers >= ServerC.I.lobby.Players.Count
+					|| Time.time - SGP_HUD.I.endraceTimer.timerDisabledTime > 3) // failsafe
 				{
 					
 					foreach (var b in boxes)

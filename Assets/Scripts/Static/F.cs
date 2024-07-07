@@ -1,25 +1,44 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Unity.Services.Lobbies.Models;
 using UnityEngine;
 using UnityEngine.Networking;
-public class CircularBuffer<T>
+public class DecimalFormatJsonConverter : JsonConverter
 {
-	T[] buffer;
-	int bufferSize;
+	private readonly int _numberOfDecimals;
 
-	public CircularBuffer(int bufferSize)
+	public DecimalFormatJsonConverter(int numberOfDecimals)
 	{
-		this.bufferSize = bufferSize;
-		buffer = new T[bufferSize];
+		_numberOfDecimals = numberOfDecimals;
 	}
 
-	public void Add(T item, int index) => buffer[index % bufferSize] = item;
-	public T Get(int index) => buffer[index % bufferSize];
-	public void Clear() => buffer = new T[bufferSize];
+	public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+	{
+		var d = (float)value;
+		var rounded = Math.Round(d, _numberOfDecimals);
+		writer.WriteValue((float)rounded);
+	}
+
+	public override object ReadJson(JsonReader reader, Type objectType, object existingValue,
+		 JsonSerializer serializer)
+	{
+		throw new NotImplementedException("Unnecessary because CanRead is false. The type will skip the converter.");
+	}
+
+	public override bool CanRead
+	{
+		get { return false; }
+	}
+
+	public override bool CanConvert(Type objectType)
+	{
+		return objectType == typeof(float);
+	}
 }
+
 public static class F
 {
 	readonly public static int trackMask = 0;
@@ -34,9 +53,9 @@ public static class F
 	{
 		return new Vector3(x ?? vector.x, y ?? vector.y, z ?? vector.z);
 	}
-	public static void CopyFilesRecursively(string sourcePath, string targetPath)
+	public static void CopyDocumentsData(string sourcePath, string targetPath)
 	{
-		//Now Create all of the directories
+		//Create all of the directories
 		foreach (string dirPath in Directory.GetDirectories(sourcePath, "*", SearchOption.AllDirectories))
 		{
 			Directory.CreateDirectory(dirPath.Replace(sourcePath, targetPath));
@@ -45,7 +64,14 @@ public static class F
 		//Copy all the files & Replaces any files with the same name
 		foreach (string newPath in Directory.GetFiles(sourcePath, "*.*", SearchOption.AllDirectories))
 		{
-			File.Copy(newPath, newPath.Replace(sourcePath, targetPath), true);
+			if (Path.GetExtension(newPath) == ".meta" /*|| Path.GetExtension(newPath) == ".carcfg"*/)
+				continue;
+
+			string copyToPath = newPath.Replace(sourcePath, targetPath);
+
+			// don't overwrite userdata.json and ranking.json; original parts and tracks are overwritten
+			if (Path.GetExtension(newPath) != ".json" || !File.Exists(copyToPath))
+				File.Copy(newPath, copyToPath, overwrite: true);
 		}
 	}
 	public static string RandomString(int length)

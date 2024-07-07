@@ -3,7 +3,7 @@ guid: 0f531b3af58aabd47af3595a76dfd1b2
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
-  serializedVersion: 12
+  serializedVersion: 13
   mipmaps:
     mipMapMode: 0
     enableMipMap: 0
@@ -20,11 +20,12 @@ TextureImporter:
     externalNormalMap: 0
     heightScale: 0.25
     normalMapFilter: 0
+    flipGreenChannel: 0
   isReadable: 0
   streamingMipmaps: 0
   streamingMipmapsPriority: 0
   vTOnly: 0
-  ignoreMasterTextureLimit: 0
+  ignoreMipmapLimit: 0
   grayScaleToAlpha: 0
   generateCubemap: 6
   cubemapConvolution: 0
@@ -63,11 +64,12 @@ TextureImporter:
   textureFormatSet: 0
   ignorePngGamma: 0
   applyGammaDecoding: 0
+  swizzle: 50462976
   cookieLightType: 0
   platformSettings:
   - serializedVersion: 3
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 2048
+    maxTextureSize: 1024
     resizeAlgorithm: 0
     textureFormat: -1
     textureCompression: 1
@@ -75,18 +77,20 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 3
     buildTarget: Standalone
     maxTextureSize: 2048
     resizeAlgorithm: 0
-    textureFormat: -1
+    textureFormat: 4
     textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 3
@@ -99,6 +103,7 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 3
@@ -111,6 +116,7 @@ TextureImporter:
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
+    ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
@@ -120,10 +126,10 @@ TextureImporter:
       name: overlays_bonus1_0
       rect:
         serializedVersion: 2
-        x: 53
-        y: 3077
-        width: 678
-        height: 1014
+        x: 0
+        y: 1538
+        width: 371
+        height: 510
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -141,10 +147,10 @@ TextureImporter:
       name: overlays_bonus1_3
       rect:
         serializedVersion: 2
-        x: 901
-        y: 3077
-        width: 662
-        height: 1019
+        x: 376
+        y: 1533
+        width: 404
+        height: 515
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -162,10 +168,10 @@ TextureImporter:
       name: overlays_bonus1_6
       rect:
         serializedVersion: 2
-        x: 1589
-        y: 3077
-        width: 678
-        height: 1014
+        x: 780
+        y: 1531
+        width: 355
+        height: 517
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -183,10 +189,10 @@ TextureImporter:
       name: overlays_bonus1_9
       rect:
         serializedVersion: 2
-        x: 2312
-        y: 1695
-        width: 145
-        height: 2399
+        x: 1152
+        y: 852
+        width: 79
+        height: 1192
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -225,10 +231,10 @@ TextureImporter:
       name: overlays_bonus1_21
       rect:
         serializedVersion: 2
-        x: 2741
-        y: 3045
-        width: 950
-        height: 582
+        x: 1377
+        y: 1830
+        width: 664
+        height: 218
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -246,10 +252,10 @@ TextureImporter:
       name: overlays_bonus1_41
       rect:
         serializedVersion: 2
-        x: 261
-        y: 2053
-        width: 470
-        height: 1014
+        x: 0
+        y: 1034
+        width: 370
+        height: 495
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -267,10 +273,10 @@ TextureImporter:
       name: overlays_bonus1_42
       rect:
         serializedVersion: 2
-        x: 821
-        y: 2053
-        width: 726
-        height: 1014
+        x: 372
+        y: 1034
+        width: 405
+        height: 497
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -288,10 +294,10 @@ TextureImporter:
       name: overlays_bonus1_43
       rect:
         serializedVersion: 2
-        x: 1589
-        y: 2053
-        width: 662
-        height: 1014
+        x: 780
+        y: 1034
+        width: 355
+        height: 499
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -310,9 +316,9 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 1029
-        width: 731
-        height: 1014
+        y: 506
+        width: 370
+        height: 517
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -330,10 +336,10 @@ TextureImporter:
       name: overlays_bonus1_64
       rect:
         serializedVersion: 2
-        x: 789
-        y: 1029
-        width: 710
-        height: 1014
+        x: 376
+        y: 511
+        width: 376
+        height: 512
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -351,10 +357,10 @@ TextureImporter:
       name: overlays_bonus1_67
       rect:
         serializedVersion: 2
-        x: 1573
-        y: 1205
-        width: 694
-        height: 598
+        x: 773
+        y: 596
+        width: 368
+        height: 310
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -374,8 +380,8 @@ TextureImporter:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 731
-        height: 1019
+        width: 372
+        height: 507
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -393,10 +399,10 @@ TextureImporter:
       name: overlays_bonus1_82
       rect:
         serializedVersion: 2
-        x: 901
+        x: 376
         y: 0
-        width: 598
-        height: 1019
+        width: 381
+        height: 512
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -414,10 +420,10 @@ TextureImporter:
       name: overlays_bonus1_92
       rect:
         serializedVersion: 2
-        x: 1525
+        x: 763
         y: 0
-        width: 982
-        height: 603
+        width: 490
+        height: 299
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -435,10 +441,10 @@ TextureImporter:
       name: overlays_bonus1_105
       rect:
         serializedVersion: 2
-        x: 2465
-        y: 1695
-        width: 147
-        height: 2401
+        x: 1238
+        y: 853
+        width: 72
+        height: 1191
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -448,6 +454,27 @@ TextureImporter:
       bones: []
       spriteID: 8440d86998e814c408bdb51fa8bafc2c
       internalID: 1458711747
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: overlays_lap
+      rect:
+        serializedVersion: 2
+        x: 1372
+        y: 1529
+        width: 467
+        height: 285
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 11736cf8a12fba74bac09c4b58cfa10d
+      internalID: 1493983778
       vertices: []
       indices: 
       edges: []
@@ -464,7 +491,6 @@ TextureImporter:
     secondaryTextures: []
     nameFileIdTable:
       overlays_bonus1_0: 676967673
-      overlays_bonus1_1: 1493983778
       overlays_bonus1_10: -375069761
       overlays_bonus1_100: 1281316021
       overlays_bonus1_101: 1730401392
@@ -573,9 +599,9 @@ TextureImporter:
       overlays_bonus1_97: 393501410
       overlays_bonus1_98: 1785107940
       overlays_bonus1_99: 961683891
-  spritePackingTag: 
+      overlays_lap: 1493983778
+  mipmapLimitGroupName: 
   pSDRemoveMatte: 0
-  pSDShowRemoveMatteOption: 0
   userData: 
   assetBundleName: 
   assetBundleVariant: 

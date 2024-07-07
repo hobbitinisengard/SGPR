@@ -28,7 +28,7 @@ public class SGP_HUD : MonoBehaviour
 	//StuntDetect stunter;
 	GasMotor engine;
 	readonly int minRpmRotation = 122;
-	readonly int maxRpmRotation = -63;
+	readonly int maxRpmRotation = -85;
 	public ComponentPanel componentPanel;
 	public LapRecordSeq lapRecordSeq;
 	public PtsAnim ptsAnim;
@@ -347,7 +347,10 @@ public class SGP_HUD : MonoBehaviour
 		// HUD vibrates along with dampers
 		Vector3 hudPos = rt.anchoredPosition;
 		if (vp.wheels != null)
-			compression = vp.wheels[0].suspensionParent.compression;
+		{
+			compression = Mathf.Min(vp.wheels[0].suspensionParent.compression, vp.wheels[1].suspensionParent.compression);
+		}
+			
 		float target = Mathf.Lerp(hudPos0, hudHeight - hudPos0, compression);
 		damper_spring(ref spring_pos, ref spring_v, target, spring_maxV);
 		hudPos.y = spring_pos;
@@ -400,7 +403,7 @@ public class SGP_HUD : MonoBehaviour
 		{  // Update position (1st to 10th)
 			int racePosition = raceManager.Position(vp)+1;
 			positionImage.sprite = positionsSprites[racePosition];
-			positionImage.SetNativeSize();
+			//positionImage.SetNativeSize();
 			positionSuffixImage.SetActive(racePosition > 3);
 		}
 		// debug LAP rollers

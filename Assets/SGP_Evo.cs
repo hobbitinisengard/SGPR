@@ -192,6 +192,10 @@ public class SGP_Evo : MonoBehaviour
 			return stunting;
 		}
 	}
+	public void OnCollide()
+	{
+
+	}
 	public void FixedUpdateWorks(float deltaTime)
 	{
 		if (vp.SGPshiftbutton > 0)

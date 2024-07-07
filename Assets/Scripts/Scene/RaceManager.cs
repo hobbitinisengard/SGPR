@@ -153,9 +153,10 @@ namespace RVP
 			}
 			else
 			{
+				BackToMenu(applyScoring: false);
 				if (F.I.gameMode == MultiMode.Multiplayer && !ServerC.I.AmHost)
 					ServerC.I.DisconnectFromLobby();
-				BackToMenu(applyScoring: false);
+				
 			}
 		}
 
@@ -198,7 +199,6 @@ namespace RVP
 				{
 					var eliminatedCar = F.I.s_cars[i];
 					eliminatedCar.KnockoutMe();
-					hud.infoText.AddMessage(new(eliminatedCar.tr.name + " IS ELIMINATED!", BottomInfoType.ELIMINATED));
 				}
 			}
 		}
@@ -289,7 +289,15 @@ namespace RVP
 		public void StartRace()
 		{
 			ResultsView.Clear();
-			F.I.raceStartDate = DateTime.UtcNow.AddSeconds((ServerC.I.AmHost) ? 5 : 4.5f);
+			if(ServerC.I.AmHost)
+			{
+				F.I.raceStartDate = DateTime.UtcNow.AddSeconds(5);
+			}
+			else
+			{
+				Online.I.AskHostForRacestartdate();
+			}
+
 			StartCoroutine(StartRaceCoroutine());
 		}
 		IEnumerator StartRaceCoroutine()
@@ -315,9 +323,30 @@ namespace RVP
 			}
 			editorPanel.gameObject.SetActive(false);
 
-			if ((F.I.tracks[F.I.s_trackName].envir == Envir.SPN 
-				|| F.I.tracks[F.I.s_trackName].envir == Envir.ENG
-				|| F.I.tracks[F.I.s_trackName].envir == Envir.FRA) && F.I.s_isNight)
+			SetPitsLayer(0);
+
+			float timer = 0;
+			bool askedTwice = false;
+			while (F.I.raceStartDate == DateTime.MinValue)
+			{
+				timer += Time.deltaTime;
+				if(timer > 3 && !askedTwice)
+				{
+					Online.I.AskHostForRacestartdate();
+					askedTwice = true;
+				}
+				if(timer > 6)
+				{
+					Debug.LogWarning("raceStartDate is Min Value for more than 5 seconds. Joined lobby at wrong time");
+					ExitButton();
+					yield break;
+				}
+				yield return null;
+			}
+
+			if ((F.I.tracks[F.I.s_trackName].envir == Envir.SPN
+						|| F.I.tracks[F.I.s_trackName].envir == Envir.ENG
+						|| F.I.tracks[F.I.s_trackName].envir == Envir.FRA) && F.I.s_isNight)
 			{
 				musicPlayer.clip = Resources.Load<AudioClip>($"music/{F.I.tracks[F.I.s_trackName].envir}2");
 				musicPlayer.Play();
@@ -327,8 +356,6 @@ namespace RVP
 				musicPlayer.clip = Resources.Load<AudioClip>($"music/{F.I.tracks[F.I.s_trackName].envir}");
 				musicPlayer.PlayDelayed(5);
 			}
-
-			SetPitsLayer(0);
 
 			List<int> preferredCars = new();
 			for (int i = 0; i < F.I.cars.Length; ++i)
@@ -401,7 +428,7 @@ namespace RVP
 				var rotation = Quaternion.LookRotation(dirVec);
 
 				if (F.I.gameMode == MultiMode.Multiplayer && !ServerC.I.AmHost)
-					OnlineCommunication.I.GibCar(position, rotation);
+					Online.I.GibCar(position, rotation);
 				else
 				{
 					VehicleParent newCar;
@@ -470,6 +497,7 @@ namespace RVP
 				yield return null;
 			}
 		}
+
 		public void PlayFinishSeq()
 		{
 			StartCoroutine(FinishSeq());
@@ -477,7 +505,7 @@ namespace RVP
 		IEnumerator FinishSeq()
 		{
 			if(ServerC.I.AmHost)
-				OnlineCommunication.I.raceAlreadyStarted.Value = false;
+				Online.I.raceAlreadyStarted.Value = false;
 			
 			musicPlayer.Stop();
 			if(F.I.gameMode == MultiMode.Multiplayer)

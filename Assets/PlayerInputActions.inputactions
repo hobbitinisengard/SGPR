@@ -564,7 +564,7 @@
                 {
                     "name": "keyboard",
                     "id": "573bdb33-fe7f-4654-acaa-c7fa45f450f7",
-                    "path": "2DVector",
+                    "path": "2DVector(mode=1)",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -718,7 +718,7 @@
                 {
                     "name": "",
                     "id": "3c9b2625-7132-425e-a22f-355cd0577208",
-                    "path": "<Keyboard>/alt",
+                    "path": "<Keyboard>/tab",
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard",

@@ -1,0 +1,14 @@
+{
+  "author": "Team17",
+  "desc": "Two huge jumps and a mighty climb feature in this evening excursion.",
+  "valid": true,
+  "envir": "SPN",
+  "preferredCarClass": "Aero",
+  "difficulty": 3,
+  "unlocked": true,
+  "icons": [
+    3
+  ],
+  "TrackOrigin": 0,
+  "IsOriginal": true
+}

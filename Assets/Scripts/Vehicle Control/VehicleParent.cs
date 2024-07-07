@@ -4,6 +4,7 @@ using System;
 using Unity.Netcode;
 using Unity.Collections;
 using System.Linq;
+using UnityEngine.InputSystem.HID;
 
 namespace RVP
 {
@@ -139,6 +140,8 @@ namespace RVP
 		public int SGPshiftbutton;
 		[System.NonSerialized]
 		public float rollInput;
+		[NonSerialized]
+		public float resetOnTrackTime = 0;
 
 		//NetworkVariable<float> _accelInput = new(writePerm: NetworkVariableWritePermission.Owner);
 		//public float accelInput { get { return _accelInput.Value; } set { _accelInput.Value = value; } }
@@ -163,7 +166,7 @@ namespace RVP
 		//[System.NonSerialized]
 		//NetworkVariable<int> _rollButton = new(writePerm: NetworkVariableWritePermission.Owner);
 		//public int rollInput { get { return _boostButton.Value; } set { _boostButton.Value = value; } }
-		
+
 		public Livery sponsor 
 		{ 
 			get 
@@ -364,9 +367,12 @@ namespace RVP
 		int roadSurfaceType;
 		[NonSerialized]
 		public float tyresOffroad;
+		private float timeWhenInAir;
 
 		public CatchupStatus catchupStatus { get; private set; }
 		public float AngularDrag { get { return rb.angularDrag; } }
+
+		bool collisionDetectionChangerActive;
 
 		public void SetBattery(float capacity, float chargingSpeed, float lowBatPercent, float evoBountyPercent)
 		{
@@ -510,7 +516,6 @@ namespace RVP
 			rb = GetComponent<Rigidbody>();
 			originalDrag = rb.drag;
 			originalMass = rb.mass;
-
 			F.I.s_cars.Add(this);
 		}
 		public override void OnNetworkSpawn()
@@ -538,7 +543,7 @@ namespace RVP
 			GameObject normTemp = new GameObject(tr.name + "'s Normal Orientation");
 			norm = normTemp.transform;
 
-			followAI.SetCPU(transform.name.Contains("CP"));
+			followAI.SetCPU(F.I.gameMode == MultiMode.Singleplayer && char.IsDigit(name[2]));
 
 			if (F.I.s_spectator)
 			{
@@ -575,7 +580,7 @@ namespace RVP
 			{
 				//rb.isKinematic = true;
 				basicInput.enabled = false;
-				if (OnlineCommunication.I.raceAlreadyStarted.Value)
+				if (Online.I.raceAlreadyStarted.Value)
 				{// latecomer's request to synch progress
 				 //Debug.Log("RequestRaceboxValuesRpc");
 					RequestRaceboxValuesRpc(RpcTarget.Owner);
@@ -598,6 +603,18 @@ namespace RVP
 		}
 		void Update()
 		{
+			// we need continous collisions for fast flying cars
+			// but still we need discrete collisions for driving (car physics requirement)
+			//if (reallyGroundedWheels == 0)
+			//{
+			//	rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+			//}
+			//else
+			//{
+			//	if (rb.collisionDetectionMode == CollisionDetectionMode.Continuous && !collisionDetectionChangerActive)
+			//		rb.collisionDetectionMode = CollisionDetectionMode.Discrete;
+			//}
+
 			if (Physics.OverlapBox(tr.position, Vector3.one, Quaternion.identity, 1 << F.I.aeroTunnel).Length > 0)
 			{ // aerodynamic tunnel
 				rb.drag = 0;
@@ -733,12 +750,12 @@ namespace RVP
 		{
 			if (InFreeroam || !raceBox.enabled || F.I.s_raceType == RaceType.TimeTrial)
 				energyRemaining = batteryCapacity;
-			else if (BatteryPercent == 0 && Time.time - lastNoBatteryMessage > 60)
+			else if (BatteryPercent <= 0 && Time.time - lastNoBatteryMessage > 60)
 			{
 				RaceManager.I.hud.infoText.AddMessage(new Message(name + " IS OUT OF BATTERY!", BottomInfoType.NO_BATT));
 				lastNoBatteryMessage = Time.time;
 			}
-			f = Mathf.Clamp(f, -1, (BatteryPercent == 0) ? 0.75f : 1);
+			f = Mathf.Clamp(f, -1, (BatteryPercent <= 0) ? 0.67f : 1);
 
 			if(Owner)
 				accelInput = f;
@@ -1040,6 +1057,7 @@ namespace RVP
 		void KnockoutMeRpc()
 		{
 			KnockoutMeInternal();
+			SGP_HUD.I.infoText.AddMessage(new(tr.name + " ELIMINATED!", BottomInfoType.ELIMINATED));
 		}
 
 		public void SetChassis(float mass, float drag, float angularDrag)

@@ -67,10 +67,10 @@ namespace RVP
 
 		[Header("Air")]
 
-		[Tooltip("Increase angular drag immediately after jumping")]
-		public bool angularDragOnJump;
-		float initialAngularDrag;
-		float angDragTime = 0;
+		//[Tooltip("Increase angular drag immediately after jumping")]
+		//public bool angularDragOnJump;
+		//float initialAngularDrag;
+		//float angDragTime = 0;
 
 		public float fallSpeedLimit = Mathf.Infinity;
 		public bool applyFallLimitUpwards;
@@ -80,7 +80,7 @@ namespace RVP
 			tr = transform;
 			rb = GetComponent<Rigidbody>();
 			vp = GetComponent<VehicleParent>();
-			initialAngularDrag = rb.angularDrag;
+			//initialAngularDrag = rb.angularDrag;
 			if (!vp.Owner)
 				enabled = false;
 		}
@@ -95,8 +95,8 @@ namespace RVP
 			{
 				groundedFactor = basedOnWheelsGrounded ? vp.reallyGroundedWheels / vp.wheels.Length : 1;
 
-				angDragTime = 20;
-				rb.angularDrag = initialAngularDrag;
+				//angDragTime = 20;
+				//rb.angularDrag = initialAngularDrag;
 
 				if (driftSpinAssist > 0)
 				{
@@ -110,11 +110,11 @@ namespace RVP
 			}
 			else
 			{
-				if (angularDragOnJump)
-				{
-					angDragTime = Mathf.Max(0, angDragTime - deltaTime);
-					rb.angularDrag = angDragTime > 0 && vp.upDot > 0.5 ? 10 : initialAngularDrag;
-				}
+				//if (angularDragOnJump)
+				//{
+				//	angDragTime = Mathf.Max(0, angDragTime - deltaTime);
+				//	rb.angularDrag = angDragTime > 0 && vp.upDot > 0.5 ? 10 : initialAngularDrag;
+				//}
 			}
 
 			if (downforce > 0)

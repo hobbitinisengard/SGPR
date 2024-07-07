@@ -1,0 +1,14 @@
+{
+  "author": "Team17",
+  "desc": "This complex, winding track has a number of high curved bends.",
+  "valid": true,
+  "envir": "GER",
+  "preferredCarClass": "Speed",
+  "difficulty": 5,
+  "unlocked": true,
+  "icons": [
+    3
+  ],
+  "TrackOrigin": 0,
+  "IsOriginal": true
+}

@@ -44,7 +44,7 @@ public class ResultInfo
 		name = vp.transform.name;
 		score = vp.lastRoundScore;
 		sponsor = vp.sponsor;
-		Debug.Log(string.Format("{0}, progress:{1}, score:{2}, ", name, progress, aeromiles));
+		//Debug.Log(string.Format("{0}, progress:{1}, score:{2}, ", name, progress, aeromiles));
 	}
 	public ResultInfo(VehicleParent vp)
 	{
@@ -268,6 +268,12 @@ public class ResultsView : MainMenuView
 			GoToView(MultiPlayerSelector.I.thisView);
 		}
 	}
+	new void Awake()
+	{
+		base.Awake();
+		gridTableTr = gridTable.GetComponent<RectTransform>();
+		tickSnd = GetComponent<AudioSource>();
+	}
 	protected override void OnDisable()
 	{
 		if (addingScoreCo != null)
@@ -298,8 +304,6 @@ public class ResultsView : MainMenuView
 
 	protected override void OnEnable()
 	{
-		gridTableTr = gridTable.GetComponent<RectTransform>();
-		tickSnd = GetComponent<AudioSource>();
 		F.I.CurRound++;
 		//ResultRandomizer(); // for testing 
 		grandScoreMoving = 0;

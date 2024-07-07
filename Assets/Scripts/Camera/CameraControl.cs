@@ -68,7 +68,7 @@ namespace RVP
 
 		float maxEffectiveRollTurnAngle = 30;
 		float rollCoeff = 8f;
-		float catchUpCamSpeed = 10f;
+		const float catchUpCamSpeed = 15;
 
 
 		// distance between target-camera-position and car
@@ -102,6 +102,11 @@ namespace RVP
 		float upLookCoeff = 1f;
 		Vector3 forward;
 		public float xyInputCamSpeedCoeff = 5;
+		/// <summary>
+		/// used for smooth change between cam rotation by velocity to cam rotation by lookObj 
+		/// </summary>
+		private float lookObjVelCoeff = 1;
+
 		void Awake()
 		{
 			tr = transform;
@@ -186,7 +191,8 @@ namespace RVP
 		}
 		private void SwitchTarget(InputAction.CallbackContext context)
 		{
-			if (vp && RaceManager.I.playerCar?.raceBox.enabled == false && !F.I.chat.texting && F.I.gameMode == MultiMode.Multiplayer)
+			if (F.I.gameMode == MultiMode.Multiplayer && vp && RaceManager.I.playerCar != null 
+				&& !RaceManager.I.playerCar.raceBox.enabled && !F.I.chat.texting)
 			{
 				Vector2 move = moveRef.action.ReadValue<Vector2>();
 				if(Mathf.Abs(move.x) > 0.5f)
@@ -199,9 +205,7 @@ namespace RVP
 						Connect(F.I.s_cars[index], Mode.Replay);
 
 						RaceManager.I.hud.infoText.AddMessage(new Message(vp.transform.name, BottomInfoType.NEW_CAMERA_TARGET));
-
 					}
-					
 				}
 			}
 		}
@@ -349,6 +353,7 @@ namespace RVP
 			{
 				if (slowCamera)
 				{ // cam lets car go ahead
+					lookObjVelCoeff = 1;
 					Quaternion cameraStoppedRotation = Quaternion.LookRotation(vp.tr.position - tr.position, rollUp);
 					rotation = Quaternion.Lerp(tr.rotation, cameraStoppedRotation, 2 * Time.fixedDeltaTime);
 				}
@@ -356,13 +361,15 @@ namespace RVP
 				{
 					if (camOffsetDistance > carOffsetDistance)
 					{
-						Quaternion cameraStoppedRotation = Quaternion.LookRotation(vp.tr.position + 2*Vector3.up - tr.position, rollUp);
-						rotation = Quaternion.Lerp(tr.rotation, cameraStoppedRotation, 6 * Time.fixedDeltaTime);
+						lookObjVelCoeff = 1;
+						Quaternion cameraStoppedRotation = Quaternion.LookRotation(vp.tr.position - tr.position, rollUp);
+						rotation = Quaternion.Lerp(tr.rotation, cameraStoppedRotation, 2 * Time.fixedDeltaTime);
 					}
 					else
 					{// camera right behind car
+						lookObjVelCoeff = Mathf.Lerp(lookObjVelCoeff, 10, Time.fixedDeltaTime);
 						rotation = Quaternion.Lerp(tr.rotation, lookObj.rotation,
-						 (vp.reallyGroundedWheels > 1 ? 12f : 3f) * Time.fixedDeltaTime);
+						 (vp.reallyGroundedWheels > 1 ? 12f : 3f) * lookObjVelCoeff * Time.fixedDeltaTime);//TU
 					}
 				}
 			}

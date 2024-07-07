@@ -12,7 +12,7 @@ using PathCreation;
 using UnityEngine.EventSystems;
 using Unity.Multiplayer.Playmode;
 using UnityEngine.InputSystem;
-using Unity.Services.Lobbies.Models;
+using UnityEngine.UI;
 public enum PlayerState { InRace, InLobbyUnready, InLobbyReady};
 public enum Envir { GER, JAP, SPN, FRA, ENG, USA, ITA, MEX };
 public enum CarGroup { Wild, Aero, Speed, Team };
@@ -28,8 +28,12 @@ public enum CpuLevel { Normal };
 [Serializable]
 public class PlayerSettingsData
 {
+	[JsonConverter(typeof(DecimalFormatJsonConverter), 1)]
 	public float musicVol = 1;
+	[JsonConverter(typeof(DecimalFormatJsonConverter), 1)]
 	public float sfxVol = 1;
+	public int fpsLimit = 60;
+	public bool vSync = true;
 	public string playerName = "";
 	public float steerGamma = 0;
 	public string serverName = "";
@@ -50,9 +54,21 @@ public class RankingData
 
 public class Info : MonoBehaviour
 {
+	public MultiPlayerSelector mpSelectorInitializer;
+	public Shader transpShader;
+	public Shader opaqueShader;
+	public Text versionText;
+	public const string VERSION = "0.3.3";
+	public bool minimized { get; private set;  }
+	void OnApplicationFocus(bool hasFocus)
+	{
+		minimized = !hasFocus;
+	}
 	private void Awake()
 	{
 		F.I = this;
+		MultiPlayerSelector.I = mpSelectorInitializer;
+		versionText.text = VERSION;
 		MPtags = CurrentPlayer.ReadOnlyTags().Count;
 		switch (MPtags)
 		{
@@ -68,13 +84,16 @@ public class Info : MonoBehaviour
 				_documentsSGPRpath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\STUNT GP REMASTERED\\";
 				break;
 		}
+
 		if (!Directory.Exists(documentsSGPRpath))
 		{
 			Debug.LogWarning(documentsSGPRpath + " doesnt exist");
 			Directory.CreateDirectory(documentsSGPRpath);
-			F.CopyFilesRecursively(Application.streamingAssetsPath, documentsSGPRpath);
 		}
+		F.CopyDocumentsData(Application.streamingAssetsPath, documentsSGPRpath);
 
+		Application.targetFrameRate = playerData.fpsLimit;
+		QualitySettings.vSyncCount = playerData.vSync ? 1 : 0;
 		PopulateSFXData();
 		ReloadCarsData();
 		PopulateTrackData();
@@ -82,7 +101,6 @@ public class Info : MonoBehaviour
 		LoadRanking();
 		icons = Resources.LoadAll<Sprite>(trackImagesPath + "tiles");
 	}
-
 	string _documentsSGPRpath;
 	public string documentsSGPRpath
 	{
@@ -213,10 +231,10 @@ public class Info : MonoBehaviour
 	public readonly Vector3[] invisibleLevelDimensions = new Vector3[]{
 		new (564, 1231,1), //ger
 		new (800, 800,1), //jap
-		new (1462, 1316,1),
-		new (824, 817,1),
-		new (1170, 817,1),
-		new (739, 1060,1),
+		new (1462, 2480,1),//spn
+		new (2170, 1560,1),//fra
+		new (1170, 817,1),//eng
+		new (739, 1060,1),//usa
 		new (1406, 1337,1),// ita
 		new (564, 1231,1), //mex
 	};
@@ -325,7 +343,7 @@ public class Info : MonoBehaviour
 	public const int AfterMultiPlayerRaceWaitForPlayersSeconds = 30;
 
 	public EventSystem eventSystem;
-	public DateTime raceStartDate;
+	public DateTime raceStartDate = DateTime.MinValue;
 	public byte Rounds = 0;
 	public byte CurRound;
 	
@@ -462,16 +480,14 @@ public class Info : MonoBehaviour
 		//	new TrackHeader.Record("Via", 3500),
 		//};
 		//tracks["track02"].records = records;
-
 		string[] trackFiles = Directory.GetFiles(tracksPath, "*.track");
 		foreach (var path in trackFiles)
 		{
 			string trackJson = File.ReadAllText(path);
 			string name = Path.GetFileNameWithoutExtension(path);
-			string recordsPath = tracksPath + name + ".rec";
+			string recordsPath = path[..path.IndexOf('.')] + ".rec";
 			TrackHeader header = JsonConvert.DeserializeObject<TrackHeader>(trackJson);
 			tracks.Add(name, header);
-
 
 			if (File.Exists(recordsPath))
 			{
@@ -483,7 +499,7 @@ public class Info : MonoBehaviour
 			{
 				tracks[name].records = new();
 				string json = JsonConvert.SerializeObject(tracks[name].records);
-				File.WriteAllText(tracksPath + name + ".rec", json);
+				File.WriteAllText(recordsPath, json);
 			}
 		}
 	}

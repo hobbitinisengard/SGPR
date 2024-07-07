@@ -97,7 +97,7 @@ namespace RVP
 			}
 
 			// Create mark
-			if (w.grounded && (Mathf.Abs(F.MaxAbs(w.sidewaysSlip, w.forwardSlip)) > w.slipThreshold || alwaysScrape > 0) && w.connected)
+			if (w.grounded && (Mathf.Abs(F.MaxAbs(w.sidewaysSlip, w.forwardSlip / 25f)) > w.slipThreshold || alwaysScrape > 0) && w.connected)
 			{
 				w.sliding = true;
 				prevSurface = curSurface;
@@ -157,14 +157,14 @@ namespace RVP
 							{
 								em = sparks.emission;
 								em.rateOverTime = new ParticleSystem.MinMaxCurve(initialEmissionRates[debrisParticles.Length] *
-									Mathf.Clamp01(Mathf.Abs(F.MaxAbs(w.sidewaysSlip, w.forwardSlip, alwaysScrape)) - w.slipThreshold));
+									Mathf.Clamp01(Mathf.Abs(F.MaxAbs(w.sidewaysSlip, w.forwardSlip / 25f, alwaysScrape)) - w.slipThreshold));
 							}
 						}
 						else
 						{
 							em = debrisParticles[ps].emission;
 							var v = initialEmissionRates[ps] *
-								Mathf.Clamp01(Mathf.Abs(F.MaxAbs(w.sidewaysSlip, w.forwardSlip, alwaysScrape)) - w.slipThreshold);
+								Mathf.Clamp01(Mathf.Abs(F.MaxAbs(w.sidewaysSlip, w.forwardSlip/25f, alwaysScrape)) - w.slipThreshold);
 							em.rateOverTime = new ParticleSystem.MinMaxCurve(v);
 
 							if (sparks)

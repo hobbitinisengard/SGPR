@@ -1,0 +1,14 @@
+{
+  "author": "Team17",
+  "desc": "This long speed track offers opportunity for a number of jump stunts.",
+  "valid": true,
+  "envir": "FRA",
+  "preferredCarClass": "Speed",
+  "difficulty": 3,
+  "unlocked": true,
+  "icons": [
+    3
+  ],
+  "TrackOrigin": 0,
+  "IsOriginal": true
+}

@@ -15,6 +15,7 @@ using System;
 using Random = UnityEngine.Random;
 using System.Collections.Concurrent;
 using UnityEditor;
+using RVP;
 class SponsorScore
 {
 	public Livery sponsor;
@@ -191,11 +192,15 @@ public class ServerC : MonoBehaviour
 	{
 		DeleteEmptyLobbies();
 	}
+
 	public async void AddCallbacksToLobby()
 	{
 		if (callbacksLobbyId != lobby.Id)
 		{
 			callbacksLobbyId = lobby.Id;
+			callbacks.PlayerDataChanged += MultiPlayerSelector.I.Callbacks_PlayerDataChanged;
+			callbacks.LobbyChanged += MultiPlayerSelector.I.Callbacks_LobbyChanged;
+			callbacks.PlayerJoined += MultiPlayerSelector.I.Callbacks_PlayerJoined;
 			//Debug.Log("subscribe to lobby events");
 			await Lobbies.Instance.SubscribeToLobbyEventsAsync(lobby.Id, callbacks);
 		}
@@ -229,15 +234,21 @@ public class ServerC : MonoBehaviour
 	{
 		if (lobby == null)
 			return;
+		
 		heartbeatTimer.Pause();
 		pollForUpdatesTimer.Pause();
-		await LobbyService.Instance.RemovePlayerAsync(lobby.Id, AuthenticationService.Instance.PlayerId);
-		// only for host: networkManager.DisconnectClient(networkManager.LocalClientId);
-		networkManager.Shutdown();
+		callbacks.PlayerDataChanged -= MultiPlayerSelector.I.Callbacks_PlayerDataChanged;
+		callbacks.LobbyChanged -= MultiPlayerSelector.I.Callbacks_LobbyChanged;
+		callbacks.PlayerJoined -= MultiPlayerSelector.I.Callbacks_PlayerJoined;
 		callbacksLobbyId = "";
+
+		RaceManager.I.playerCar = null;
+		networkManager.Shutdown();
+		await LobbyService.Instance.RemovePlayerAsync(lobby.Id, AuthenticationService.Instance.PlayerId);
 		DeleteEmptyLobbies();
-		Debug.Log("DISCONNECTED");
+
 		OnLobbyExit.Invoke();
+		Debug.Log("DISCONNECTED");
 	}
 	public async Task GetLobbyManually()
 	{
@@ -278,6 +289,8 @@ public class ServerC : MonoBehaviour
 
 	void DeleteEmptyLobbies()
 	{
+		
+
 		while (createdLobbyIds.TryDequeue(out var lobbyId))
 		{
 			if (lobby.Players.Count == 1)

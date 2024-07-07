@@ -17563,7 +17563,7 @@ Rigidbody:
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
-  m_CollisionDetection: 1
+  m_CollisionDetection: 0
 --- !u!114 &411616821831239868
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17576,7 +17576,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 3094933994
+  GlobalObjectIdHash: 3197372878
   InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
@@ -17741,7 +17741,6 @@ MonoBehaviour:
   rollCheckDistance: 1
   rollOverForce: 2
   rollSpeedThreshold: 0
-  angularDragOnJump: 0
   fallSpeedLimit: Infinity
   applyFallLimitUpwards: 0
 --- !u!114 &4194641081301078446
@@ -17980,7 +17979,6 @@ MonoBehaviour:
   - {fileID: 5582764275981958382}
   - {fileID: 5228305639871473634}
   - {fileID: 3596460534430659167}
-  transpShader: {fileID: 4800000, guid: bbb29bc6f1f0b704d989cac34a3a1b7e, type: 3}
 --- !u!114 &-3823493550458597830
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -18032,7 +18030,7 @@ MonoBehaviour:
   networkChannel: 
   childObjectToSync: {fileID: 0}
   setVelocityInsteadOfPositionOnNonOwners: 1
-  maxPositionDifferenceForVelocitySyncing: 10
+  maxPositionDifferenceForVelocitySyncing: 5
   useLocalTransformOnly: 0
   ownerChangeIndicator: 1
   receivedStatesCounter: 0
@@ -18885,7 +18883,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  rpmBiasCurveLimit: Infinity
+  rpmBiasCurveLimit: 5000
   axleFriction: 0.001
   forwardFriction: 12
   sidewaysFriction: 12
@@ -18931,6 +18929,9 @@ MonoBehaviour:
   canPop: 0
   deformAmount: 0
   rimGlow: 0
+  toTargetRpm: 0
+  currentRPM: 0
+  actualTargetRPM: 0
   applyForceAtGroundContact: 0
   impactSnd: {fileID: 6779875396549254752}
   tireHitClips:
@@ -19302,7 +19303,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  rpmBiasCurveLimit: Infinity
+  rpmBiasCurveLimit: 5000
   axleFriction: 0.001
   forwardFriction: 12
   sidewaysFriction: 12
@@ -19348,6 +19349,9 @@ MonoBehaviour:
   canPop: 0
   deformAmount: 0
   rimGlow: 0
+  toTargetRpm: 0
+  currentRPM: 0
+  actualTargetRPM: 0
   applyForceAtGroundContact: 0
   impactSnd: {fileID: 0}
   tireHitClips: []
@@ -20233,6 +20237,7 @@ MonoBehaviour:
   driveDividePower: 3
   actualAccel: 0
   transmission: {fileID: 6779875395388755402}
+  d_targetRpm: 0
   engineSmoke: {fileID: 1642738044}
   boostEval: 0
 --- !u!82 &4634947501902952183
@@ -20425,7 +20430,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  rpmBiasCurveLimit: Infinity
+  rpmBiasCurveLimit: 5000
   axleFriction: 0.001
   forwardFriction: 12
   sidewaysFriction: 12
@@ -20471,6 +20476,9 @@ MonoBehaviour:
   canPop: 0
   deformAmount: 0
   rimGlow: 0
+  toTargetRpm: 0
+  currentRPM: 0
+  actualTargetRPM: 0
   applyForceAtGroundContact: 0
   impactSnd: {fileID: 0}
   tireHitClips: []
@@ -20710,7 +20718,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  rpmBiasCurveLimit: Infinity
+  rpmBiasCurveLimit: 5000
   axleFriction: 0.001
   forwardFriction: 12
   sidewaysFriction: 12
@@ -20756,6 +20764,9 @@ MonoBehaviour:
   canPop: 0
   deformAmount: 0
   rimGlow: 0
+  toTargetRpm: 0
+  currentRPM: 0
+  actualTargetRPM: 0
   applyForceAtGroundContact: 0
   impactSnd: {fileID: 6779875396549254752}
   tireHitClips: []
@@ -22180,13 +22191,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 9013835206299173347}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.6798255, y: 0, z: 0, w: 0.73337394}
-  m_LocalPosition: {x: 0, y: 0.594, z: 0.053}
-  m_LocalScale: {x: 0.85, y: 0.86, z: 0.74}
+  m_LocalRotation: {x: -0.7071068, y: 0, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: 0, y: 0.516, z: -0.013}
+  m_LocalScale: {x: 0.85, y: 0.63, z: 0.6}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6457121441695959639}
-  m_LocalEulerAnglesHint: {x: -85.66, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
 --- !u!33 &6422790546457577318
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -23407,6 +23418,16 @@ PrefabInstance:
         type: 3}
       propertyPath: m_ConstrainProportionsScale
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4105597997623369687, guid: f300b2b32f46e3e4c887eacc114d2e3a,
+        type: 3}
+      propertyPath: m_Size.x
+      value: 4.12
+      objectReference: {fileID: 0}
+    - target: {fileID: 4105597997623369687, guid: f300b2b32f46e3e4c887eacc114d2e3a,
+        type: 3}
+      propertyPath: m_Size.y
+      value: 4.64
       objectReference: {fileID: 0}
     - target: {fileID: 4376822998477129306, guid: f300b2b32f46e3e4c887eacc114d2e3a,
         type: 3}

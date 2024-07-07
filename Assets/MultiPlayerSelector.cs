@@ -12,29 +12,8 @@ using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
 using UnityEngine;
 using UnityEngine.UI;
-[Serializable]
-public class ChatInitializer
-{
-	[Header("Chat initialization references")]
-	public ScrollRect lobbyChat;
-	public ScrollRect raceChat;
-
-	public TMP_InputField lobbyChatInputField;
-	public TMP_InputField raceChatInputField;
-}
 public class MultiPlayerSelector : TrackSelector
 {
-	public class IpTime
-	{
-		public string Ip;
-		public float time;
-
-		public IpTime(string ipv4, float time)
-		{
-			this.Ip = ipv4;
-			this.time = time;
-		}
-	}
 	public static MultiPlayerSelector I;
 	public NetworkManager networkManager;
 	public MainMenuView thisView;
@@ -58,19 +37,16 @@ public class MultiPlayerSelector : TrackSelector
 	public ZippedTrackDataObject zippedTrackDataObject;
 	private Coroutine lobbyCntdwnCo;
 	private float readyTimeoutTime;
+	private float connectionTimeoutTime;
 	private Coroutine afterEnabledCo;
-
 	public bool Busy { get { return dataTransferWnd.activeSelf; } }
+
+	bool OnLobbyExitAndWaitingForThisToBecomeActive;
 
 	List<string> AvailableTracksForRandomSession = new();
 
 	protected override void Awake()
 	{
-		I = this;
-
-		ServerC.I.callbacks.PlayerDataChanged += Callbacks_PlayerDataChanged;
-		ServerC.I.callbacks.LobbyChanged += Callbacks_LobbyChanged;
-		ServerC.I.callbacks.PlayerJoined += Callbacks_PlayerJoined;
 		ServerC.I.OnLobbyExit += OnLobbyExit;
 		networkManager.OnTransportFailure += NetworkManager_OnTransportFailure;
 		networkManager.OnClientDisconnectCallback += NetworkManager_OnClientDisconnectCallback;
@@ -90,12 +66,17 @@ public class MultiPlayerSelector : TrackSelector
 	{
 		if(id != networkManager.LocalClientId)
 		{
-			OnlineCommunication.I.ClientDisconnected(id);
+			Online.I.ClientDisconnected(id);
 		}
 	}
 
 	public void OnLobbyExit()
 	{
+		if(!gameObject.activeInHierarchy)
+		{
+			OnLobbyExitAndWaitingForThisToBecomeActive = true;
+			return;
+		}
 		thisView.GoBack(true);
 		F.I.Rounds = 0;
 		F.I.CurRound = 1;
@@ -104,7 +85,7 @@ public class MultiPlayerSelector : TrackSelector
 		F.I.actionHappening = ActionHappening.InLobby;
 		AvailableTracksForRandomSession.Clear();
 	}
-	private void Callbacks_PlayerJoined(List<LobbyPlayerJoined> newPlayers)
+	public void Callbacks_PlayerJoined(List<LobbyPlayerJoined> newPlayers)
 	{
 		maxCPURivals = F.I.maxCarsInRace - ServerC.I.lobby.Players.Count;
 
@@ -129,7 +110,8 @@ public class MultiPlayerSelector : TrackSelector
 	}
 	public void ExitLobby()
 	{
-		ServerC.I.DisconnectFromLobby();
+		if(!thisView.prevViewForbidden)
+			ServerC.I.DisconnectFromLobby();
 	}
 	void OnApplicationQuit()
 	{
@@ -137,15 +119,26 @@ public class MultiPlayerSelector : TrackSelector
 	}
 	protected override void OnEnable()
 	{
+		connectionTimeoutTime = Time.time;
 		ResultsView.Clear();
 		F.I.chat.UpdateCanvases();
 
 		if (afterEnabledCo != null)
 			StopCoroutine(afterEnabledCo);
+
+		if (OnLobbyExitAndWaitingForThisToBecomeActive)
+		{
+			OnLobbyExitAndWaitingForThisToBecomeActive = false;
+			OnLobbyExit();
+			return;
+		}
+
 		afterEnabledCo = StartCoroutine(EnableSeq());
 	}
 	IEnumerator EnableSeq()
 	{
+		thisView.prevViewForbidden = true; 
+
 		if (ServerC.I.AmHost)
 		{
 			F.I.actionHappening = ActionHappening.InLobby;
@@ -182,6 +175,13 @@ public class MultiPlayerSelector : TrackSelector
 
 		ServerC.I.ReadySet(false);
 		ServerC.I.UpdatePlayerData();
+
+
+		while(!Online.I.IsSpawned && Time.time - connectionTimeoutTime < 5)
+		{
+			yield return null;
+		}
+		thisView.prevViewForbidden = false;
 	}
 	public async void ZippedTrackDataObject_OnNewTrackArrived()
 	{
@@ -202,7 +202,7 @@ public class MultiPlayerSelector : TrackSelector
 		}
 		dataTransferWnd.SetActive(false);
 	}
-	private async void Callbacks_LobbyChanged(ILobbyChanges changes)
+	public async void Callbacks_LobbyChanged(ILobbyChanges changes)
 	{
 		bool refreshLeaderboard = false;
 		bool trackChanged = false;
@@ -339,17 +339,34 @@ public class MultiPlayerSelector : TrackSelector
 		F.I.s_roadType = (PavementType)(data[9]-'0');
 		F.I.s_catchup = false;
 		F.I.teams = data[10] == '1';
-		F.I.CurRound = byte.Parse(data[11..13]);
-		F.I.Rounds = byte.Parse(data[13..15]);
+
+		if(!ServerC.I.AmHost)
+		{
+			F.I.CurRound = byte.Parse(data[11..13]);
+			var nRounds = byte.Parse(data[13..15]);
+
+			if (F.I.Rounds != nRounds)
+				ServerC.I.ScoreSet(0);
+			F.I.Rounds = nRounds;
+		}
 
 		if (!F.I.teams)
 			F.I.s_PlayerCarSponsor = Livery.Random;
 		if (F.I.teams && F.I.s_PlayerCarSponsor == Livery.Random)
 			F.I.s_PlayerCarSponsor = Livery.TGR;
 	}
-	private void Callbacks_PlayerDataChanged(Dictionary<int, Dictionary<string, ChangedOrRemovedLobbyValue<PlayerDataObject>>> playerDatas)
+	public void Callbacks_PlayerDataChanged(Dictionary<int, Dictionary<string, ChangedOrRemovedLobbyValue<PlayerDataObject>>> playerDatas)
 	{
-		leaderboard.Refresh();	
+		leaderboard.Refresh();
+		
+		if(F.I.minimized && !dataTransferWnd.activeSelf)
+		{
+			var hostRdy = ServerC.I.Host.ReadyGet();
+			if (hostRdy && !ServerC.I.PlayerMe.ReadyGet())
+			{
+				SwitchReady();
+			}
+		}
 	}
 
 	async void RequestTrackSequence()
@@ -474,9 +491,13 @@ public class MultiPlayerSelector : TrackSelector
 			{
 				readyTimeoutTime = Time.time;
 
-				if (!OnlineCommunication.I.IsSpawned)
+				if (!Online.I.IsSpawned || ServerC.I.AnyClientsStillInRace)
 				{
-					F.I.chat.AddChatRowLocally("", "No synchronization. Try again after 2 seconds or reconnect", Color.grey, Color.grey);
+					if(!Online.I.IsSpawned)
+						F.I.chat.AddChatRowLocally("", "No synchronization. Try again after 2 seconds or reconnect", Color.grey, Color.grey);
+					if(ServerC.I.AnyClientsStillInRace)
+						F.I.chat.AddChatRowLocally("", "Some players haven't come back to lobby yet", Color.grey, Color.grey);
+
 					PlaySFX("fe-cardserror");
 					readyClicked = false;
 					return;
@@ -490,28 +511,24 @@ public class MultiPlayerSelector : TrackSelector
 						F.I.s_playerCarName = "car" + (randomNr + 1).ToString("D2");
 					}
 
-					ServerC.I.SponsorSet();
+					if(F.I.teams && F.I.s_PlayerCarSponsor != ServerC.I.GetSponsor())
+					{
+						ServerC.I.ScoreSet(0);
+						F.I.CurRound = 0;
+					}
 
-					
+					ServerC.I.SponsorSet();
 
 					if (ServerC.I.AmHost)
 					{
-						if (ServerC.I.AnyClientsStillInRace)
+						if (F.I.CurRound == 0 || F.I.Rounds != ServerC.I.GetRounds() || (F.I.Rounds > 0 && F.I.CurRound > F.I.Rounds)
+							|| F.I.scoringType != ServerC.I.GetScoringType())
 						{
-							F.I.chat.AddChatRowLocally("", "Some players haven't come back to lobby yet", Color.grey, Color.grey);
-							PlaySFX("fe-cardserror");
-							readyClicked = false;
-							return;
-						}
-
-						if (F.I.CurRound == 0 || F.I.Rounds != ServerC.I.GetRounds() || (F.I.Rounds > 0 && F.I.CurRound > F.I.Rounds) 
-							|| F.I.scoringType != ServerC.I.GetScoringType() || (F.I.teams && F.I.s_PlayerCarSponsor != ServerC.I.GetSponsor()))
-						{
-							
 							ServerC.I.ScoreSet(0);
 							AvailableTracksForRandomSession.Clear();
 							F.I.CurRound = 1;
 						}
+
 						if (F.I.randomTracks)
 							PickRandomTrack();
 
@@ -550,14 +567,14 @@ public class MultiPlayerSelector : TrackSelector
 	}
 	bool IsCurrentTrackSyncedWithServerTrack(string ServerSideTrackSHA)
 	{
-		string trackPath = F.I.tracksPath + F.I.s_trackName + ".data";
+		string trackPath = F.I.tracksPath + F.I.s_trackName;
 		Debug.Log(trackPath);
-		if (!File.Exists(trackPath))
+		if (!File.Exists(trackPath + ".data"))
 		{
 			return false;
 		}
 			
-		if(F.I.SHA(F.I.tracksPath + F.I.s_trackName + ".data") == ServerSideTrackSHA)
+		if(F.I.SHA(trackPath + ".data") == ServerSideTrackSHA)
 		{
 			MoveToSelectedTrack();
 			return true;

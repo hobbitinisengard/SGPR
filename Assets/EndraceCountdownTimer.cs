@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class EndraceCountdownTimer : MonoBehaviour
 {
+   public float timerDisabledTime { get; private set; }
    public TextMeshProUGUI text;
    Coroutine cntdown;
    AudioSource snd;
@@ -22,6 +23,7 @@ public class EndraceCountdownTimer : MonoBehaviour
    }
 	public void OnDisable()
 	{
+      timerDisabledTime = Time.time;
 		gameObject.SetActive(false);
 	}
 	IEnumerator EndraceCountdown()

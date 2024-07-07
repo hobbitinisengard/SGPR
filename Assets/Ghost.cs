@@ -10,7 +10,6 @@ public class Ghost : NetworkBehaviour
 	public Collider[] colliders;
 	public Renderer[] ghostableParts;
 	VehicleParent vp;
-	public Shader transpShader;
 	Coroutine ghostCo;
 	private void Awake()
 	{
@@ -38,7 +37,7 @@ public class Ghost : NetworkBehaviour
 	{
 		float specularIntensity = material.GetFloat("_SpecularIntensity");
 		float smoothness = material.GetFloat("_Glossiness");
-		material.shader = transpShader;
+		material.shader = F.I.opaqueShader;
 		material.SetInt("_ZWrite", 1);
 		material.SetFloat("_IntensityTransparentMap", material.name.Contains("Roof") ? 0.2f : 0);
 
@@ -60,7 +59,7 @@ public class Ghost : NetworkBehaviour
 	{
 		float specularIntensity = material.GetFloat("_SpecularIntensity");
 		float smoothness = material.GetFloat("_Glossiness");
-		material.shader = transpShader;
+		material.shader = F.I.transpShader;
 		material.SetInt("_ZWrite", 1);
 		material.SetFloat("_IntensityTransparentMap", 0.7f);
 
@@ -86,7 +85,7 @@ public class Ghost : NetworkBehaviour
 
 	public void SetGhostPermanently()
 	{
-		if (vp.Owner)
+		if (F.I.gameMode == MultiMode.Multiplayer && vp.Owner)
 			SetHittableRpc(false, true);
 		else
 			SetHittable(false, true);

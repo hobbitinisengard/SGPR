@@ -102,6 +102,7 @@ public class ServerList : MonoBehaviour
 	}
 	public async void JoinLobby(string joinId)
 	{
+		thisView.prevViewForbidden = true;
 		try
 		{
 			if (await server.JoinLobby(joinId))
@@ -117,5 +118,6 @@ public class ServerList : MonoBehaviour
 				Destroy(buttonFromWhichWeJoinServer);
 			}
 		}
+		thisView.prevViewForbidden = false;
 	}
 }

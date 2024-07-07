@@ -68,7 +68,7 @@ public class EditorPanel : MonoBehaviour
 	}
 	public enum Mode
 	{
-		None, Terrain, Build, Connect, Arrow,
+		None, Terrain, Build, Connect, TestDriveArrow,
 		SetCamera,
 		Scalator,
 		FillTool,
@@ -107,17 +107,18 @@ public class EditorPanel : MonoBehaviour
 	/// <summary>
 	/// Connector of a placed tile
 	/// </summary>
-	Vector3? placedConnector;
+	Connector placedConnector;
 	/// <summary>
 	/// Connector of the currentTile (not placed yet)
 	/// </summary>
-	Vector3? floatingConnector;
+	Connector floatingConnector;
 	public GameObject cameraMenu;
 	public GameObject cameraPrefab;
 	public GameObject infoText;
 	public GameObject fillMenu;
 	public GameObject replayCamerasContainer;
 	public Image connectButtonImage;
+	public Image snappingButtonImage;
 	public Image scalatorButtonImage;
 	public Slider WindExtX;
 	public Slider WindExtZ;
@@ -137,9 +138,9 @@ public class EditorPanel : MonoBehaviour
 	AnimationCurve buttonAnimationCurve = new();
 	Tile currentTile;
 	Vector3? anchor;
-	int yRot = 0;
-	int xRot = 0;
-	int zRot = 0;
+	float yRot = 0;
+	float xRot = 0;
+	float zRot = 0;
 	CSelector selector;
 	bool curMirror;
 	public GameObject placedTilesContainer { get; private set; }
@@ -170,6 +171,17 @@ public class EditorPanel : MonoBehaviour
 	[NonSerialized]
 	public TrackRecords records = new();
 	GameObject unityRoadMesh;
+
+	bool _angleSnapping = true;
+	bool AngleSnapping
+	{
+		get { return _angleSnapping; }
+		set
+		{
+			_angleSnapping = value;
+			snappingButtonImage.color = _angleSnapping ? Color.green : Color.yellow;
+		}
+	}
 
 	public bool loadingTrack { get; private set; }
 	private void Awake()
@@ -216,17 +228,22 @@ public class EditorPanel : MonoBehaviour
 		}
 		initialized = true;
 	}
+
+	public void SwitchAngleSnapping()
+	{
+		AngleSnapping = !AngleSnapping;
+	}
 	public void SwitchXAxisRenderer(bool newState)
 	{
 		ShowXAxisLineRenderer.enabled = newState;
 	}
-	public void SetPlacedAnchor(Vector3? position)
+	public void SetPlacedAnchor(Connector c)
 	{
-		placedConnector = position;
+		placedConnector = c;
 	}
-	public void SetFloatingConnector(Vector3? position)
+	public void SetFloatingConnector(Connector c)
 	{
-		floatingConnector = position;
+		floatingConnector = c;
 	}
 	void DeselectIconAndRemoveCurrentTile()
 	{
@@ -332,7 +349,7 @@ public class EditorPanel : MonoBehaviour
 			QuickSave();
 		switch (mode)
 		{
-			case Mode.Arrow:
+			case Mode.TestDriveArrow:
 				{
 					Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 					if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity,
@@ -483,11 +500,11 @@ public class EditorPanel : MonoBehaviour
 								}
 							}
 							if (scroll != 0)
-							{ 
+							{
 								int dir = (scroll > 0 ? -1 : 1);
 								if (Input.GetKey(KeyCode.Tab))
 								{ // SCALATOR
-									float morePrecision = Input.GetKey(KeyCode.LeftShift) ? .25f : 1; 
+									float morePrecision = Input.GetKey(KeyCode.LeftShift) ? .25f : 1;
 									selector.Distance = Mathf.Clamp(selector.Distance + dir * 2.5f * morePrecision, 10, 200);
 									if (currentTile)
 									{
@@ -564,13 +581,29 @@ public class EditorPanel : MonoBehaviour
 								curPosition = hit.point;
 								if (anchor == null && placedConnector != null && floatingConnector != null)
 								{
-									currentTile.transform.position += placedConnector.Value - floatingConnector.Value;
+									if(AngleSnapping)
+									{
+										bool reverse = Vector3.Dot(placedConnector.transform.up, floatingConnector.transform.up) < 0;
+
+										Vector3 target = placedConnector.transform.up;
+
+										if (reverse)
+											target = -target;
+
+										Vector3 rotAxis = Vector3.Cross(floatingConnector.transform.up, target);
+										float angle = Vector3.Angle(floatingConnector.transform.up, target);
+										RotateCurrentTileAround(rotAxis, angle);
+
+										target = placedConnector.transform.forward;
+										rotAxis = Vector3.Cross(floatingConnector.transform.forward, target);
+										angle = Vector3.Angle(floatingConnector.transform.forward, target);
+										RotateCurrentTileAround(rotAxis, angle);
+									}
+
+									currentTile.transform.position += placedConnector.transform.position - floatingConnector.transform.position;
 									//Debug.DrawRay(currentTile.transform.position, placedConnector.Value - floatingConnector.Value, Color.red, 1);
 									//Debug.Break();
 									anchor = currentTile.transform.position;
-									//var p = invisibleLevel.position;
-									//p.y = placedConnector.Value.y;
-									//invisibleLevel.position = p;
 								}
 								else
 								{
@@ -1055,6 +1088,7 @@ public class EditorPanel : MonoBehaviour
 						}
 					}
 				}
+				replayCamsContainer.Sort((ReplayCam a, ReplayCam b) => { return a.dist.CompareTo(b.dist); });
 
 				//// generate waypoints for cars
 				//waypointsContainer.Clear();
@@ -1228,7 +1262,7 @@ public class EditorPanel : MonoBehaviour
 					ClearConnectors();
 					flyCamera.transform.GetComponent<Camera>().cullingMask &= ~(1 << F.I.connectorLayer);
 					break;
-				case Mode.Arrow:
+				case Mode.TestDriveArrow:
 					if (arrow)
 						Destroy(arrow);
 					break;
@@ -1273,7 +1307,7 @@ public class EditorPanel : MonoBehaviour
 				case Mode.Connect:
 					closingPathCo = StartCoroutine(ClosingPath());
 					break;
-				case Mode.Arrow:
+				case Mode.TestDriveArrow:
 					arrow = Instantiate(arrowModel);
 					break;
 				case Mode.Scalator:
@@ -1505,19 +1539,9 @@ public class EditorPanel : MonoBehaviour
 
 		TRACK.heights = GetHeightsmap();
 
-		// save image
-		Texture2D tex = F.toTexture2D(renderTexture);
-		byte[] textureData = tex.EncodeToPNG();
-		string path = Path.Combine(F.I.tracksPath, trackName.text + ".png");
-		File.WriteAllBytes(path, textureData);
-
-		// save track editor data
-		string JsonContent = JsonConvert.SerializeObject(TRACK);
-		path = Path.Combine(F.I.tracksPath, trackName.text + ".data");
-		File.WriteAllText(path, JsonContent);
-
+		
 		// save track header
-		TrackHeader header = new()
+		TrackHeader tHeader = new()
 		{
 			unlocked = true,
 			preferredCarClass = (CarGroup)carGroupDropdown.value,
@@ -1528,24 +1552,37 @@ public class EditorPanel : MonoBehaviour
 			desc = trackDescInputField.text,
 			records = new(this.records),
 		};
-		header.valid = racingLine != null && racingLine.Length > 8 && header.records != null;
-		if (!header.valid)
+
+		tHeader.valid = racingLine != null && racingLine.Length > 8 && tHeader.records != null;
+		if (!tHeader.valid)
 		{
 			DisplayMessageFor("Drive at least once to validate track", 3);
 		}
-		JsonContent = JsonConvert.SerializeObject(header, Formatting.Indented);
-		path = Path.Combine(F.I.tracksPath, trackName.text + ".track");
+
+		string JsonContent = JsonConvert.SerializeObject(tHeader, Formatting.Indented);
+		string path = Path.Combine(F.I.tracksPath, trackName.text + ".track"); // .TRACK 
+		File.WriteAllText(path, JsonContent);
+
+		// save image
+		Texture2D tex = F.toTexture2D(renderTexture);
+		byte[] textureData = tex.EncodeToPNG();
+		path = Path.Combine(F.I.tracksPath, trackName.text + ".png"); // .PNG
+		File.WriteAllBytes(path, textureData);
+
+		// save track editor data
+		JsonContent = JsonConvert.SerializeObject(TRACK);
+		path = Path.Combine(F.I.tracksPath, trackName.text + ".data"); // .DATA
 		File.WriteAllText(path, JsonContent);
 
 		//serialize records aside from .track file
-		JsonContent = JsonConvert.SerializeObject(header.records, Formatting.Indented);
-		path = Path.Combine(F.I.tracksPath, trackName.text + ".rec");
+		JsonContent = JsonConvert.SerializeObject(tHeader.records, Formatting.Indented);
+		path = Path.Combine(F.I.tracksPath, trackName.text + ".rec");    // .REC
 		File.WriteAllText(path, JsonContent);
 
 		if (!F.I.tracks.ContainsKey(trackName.text))
-			F.I.tracks.Add(trackName.text, header);
+			F.I.tracks.Add(trackName.text, tHeader);
 		else
-			F.I.tracks[trackName.text] = header;
+			F.I.tracks[trackName.text] = tHeader;
 	}
 	public void SetPylonVisibility(bool isVisible)
 	{
@@ -1813,9 +1850,10 @@ public class EditorPanel : MonoBehaviour
 			var tileTr = placedTilesContainer.transform.GetChild(i);
 			if (tileTr.gameObject.layer == F.I.roadLayer)
 			{
-				CIs.Add(new CombineInstance() { 
-					mesh = tileTr.GetComponent<Tile>().mc.sharedMesh, 
-					transform = tileTr.localToWorldMatrix 
+				CIs.Add(new CombineInstance()
+				{
+					mesh = tileTr.GetComponent<Tile>().mc.sharedMesh,
+					transform = tileTr.localToWorldMatrix
 				});
 				//tileTr.GetComponent<Tile>().mc.enabled = false;
 			}
@@ -1826,7 +1864,7 @@ public class EditorPanel : MonoBehaviour
 			unityRoadMesh.AddComponent<MeshCollider>();
 			unityRoadMesh.layer = F.I.roadLayer;
 		}
-	
+
 		Mesh mesh = new();
 		mesh.CombineMeshes(CIs.ToArray());
 		unityRoadMesh.GetComponent<MeshCollider>().sharedMesh = mesh;
@@ -1834,7 +1872,7 @@ public class EditorPanel : MonoBehaviour
 	}
 	public void ToFreeRoamButton()
 	{
-		SwitchTo(Mode.Arrow);
+		SwitchTo(Mode.TestDriveArrow);
 	}
 	public void ToValidate()
 	{

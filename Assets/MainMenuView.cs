@@ -42,9 +42,15 @@ public class MainMenuView : Sfxable
 	/// <param name="ignoreYouSure"></param>
 	public void GoBack(bool ignoreYouSure = false)
 	{
-		if (ignoreYouSure || youSureDialog == null)
+		if(prevViewForbidden)
 		{
-			if (gameObject.activeSelf && prevView && !prevViewForbidden)
+			PlaySFX("fe-warning");
+			return;
+		}
+
+		if (gameObject.activeSelf && (ignoreYouSure || youSureDialog == null))
+		{
+			if(prevView)
 			{
 				SwitchView(prevView);
 				PlaySFX("fe-dialogcancel");
@@ -60,7 +66,7 @@ public class MainMenuView : Sfxable
 	/// </summary>
 	public void GoToView(MainMenuView view)
 	{
-		if (view != prevView && !view.prevViewForbidden && !prevViewForbidden)
+		if (view.prevView == null || (view != prevView && !view.prevViewForbidden && !prevViewForbidden))
 			view.prevView = this;
 		
 		SwitchView(view);
@@ -113,7 +119,11 @@ public class MainMenuView : Sfxable
 			PlaySFX("fe-cardserror");
 		else
 		{
-			if (F.I.s_roadType == PavementType.Random)
+			if(F.I.s_trackName.Length == 3)
+			{
+				F.I.s_roadType = PavementType.Arena;
+			}
+			else if (F.I.s_roadType == PavementType.Random)
 				F.I.s_roadType = F.RandomRoadType();
 			F.I.s_inEditor = true;
 			F.I.s_spectator = false;

@@ -1,0 +1,14 @@
+{
+  "author": "Team17",
+  "desc": "A long, high track that is best navigated by hugging the racing line..",
+  "valid": true,
+  "envir": "FRA",
+  "preferredCarClass": "Speed",
+  "difficulty": 4,
+  "unlocked": true,
+  "icons": [
+    3
+  ],
+  "TrackOrigin": 0,
+  "IsOriginal": true
+}
