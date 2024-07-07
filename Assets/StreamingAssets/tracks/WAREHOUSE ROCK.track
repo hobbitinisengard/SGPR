@@ -1,0 +1,15 @@
+{
+  "author": "luckygoose",
+  "desc": "A medium-length track built inside a crowded warehouse with few twisting turns and technical jumps.",
+  "valid": true,
+  "envir": "FRA",
+  "preferredCarClass": "Speed",
+  "difficulty": 2,
+  "unlocked": true,
+  "icons": [
+    0,
+    3
+  ],
+  "TrackOrigin": 1,
+  "IsOriginal": false
+}

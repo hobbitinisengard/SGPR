@@ -755,12 +755,12 @@ namespace RVP
 				RaceManager.I.hud.infoText.AddMessage(new Message(name + " IS OUT OF BATTERY!", BottomInfoType.NO_BATT));
 				lastNoBatteryMessage = Time.time;
 			}
-			f = Mathf.Clamp(f, -1, (BatteryPercent == 0) ? 0.67f : 1);
+			f = Mathf.Clamp(f, -1, (BatteryPercent <= 0) ? 0.67f : 1);
 
 			if(Owner)
 				accelInput = f;
 
-			if (energyRemaining >= 0)
+			if (energyRemaining > 0)
 				energyRemaining -= accelInput * engine.fuelConsumption * Time.deltaTime;
 		}
 
