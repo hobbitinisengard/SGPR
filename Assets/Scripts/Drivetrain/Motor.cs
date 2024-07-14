@@ -49,7 +49,7 @@ namespace RVP
 		float baseJetScale = 0;
 		float boostVel;
 		float sinArg = 0;
-		float sinArgSpd = 22f;
+		const float sinArgSpd = 25f;
 		public float jetConsumption;
 		public float boostActivatedTime;
 		static AnimationCurve idlingEngineAudioCurve = AnimationCurve.Linear(0, .5f, 1, 0);

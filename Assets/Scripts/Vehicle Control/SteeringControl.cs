@@ -133,8 +133,6 @@ namespace RVP
 				vp.wheels[3].sidewaysFriction = vp.wheels[2].sidewaysFriction;
 			}
 
-			float sign = F.Sign(vp.steerInput);
-
 			foreach (Suspension curSus in steeredWheels)// Set steer angles in wheels
 			{
 				if (vp.followAI.selfDriving)
@@ -143,6 +141,7 @@ namespace RVP
 				}
 				else
 				{
+					float sign = F.Sign(vp.steerInput);
 					targetSteer = sign * Mathf.Min(holdCurveValue, asi) * steerLimit;
 					curSus.steerAngle = Mathf.Lerp(curSus.steerAngle, 
 						targetSteer,

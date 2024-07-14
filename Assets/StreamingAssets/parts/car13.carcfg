@@ -32,8 +32,8 @@
       "autoSteerDrift": 0.0,
       "driftPush": 0.0,
       "downforce": 6.0,
-      "frontBrakeForce": 0.1,
-      "rearBrakeForce": 0.1
+      "frontBrakeForce": 0.2,
+      "rearBrakeForce": 0.2
     },
     "battery": {
       "capacity": 2000.0,
@@ -68,7 +68,7 @@
     "chassis": {
       "mass": 1.5,
       "longtitunalCOM": 0.0,
-      "verticalCOM": 0.4,
+      "verticalCOM": 0.6,
       "drag": 0.1,
       "angularDrag": 0.9,
       "evoSmoothTime": 0.07,
@@ -81,11 +81,11 @@
       "batteryConsumption": 50.0
     },
     "tyre": {
-      "forwardFriction": 13.0,
-      "sideFriction": 23.0,
+      "forwardFriction": 8.0,
+      "sideFriction": 30.0,
       "frontFrictionStretch": 10.0,
       "rearFrictionStretch": 10.0,
-      "shiftRearFriction": 21.0,
+      "shiftRearFriction": 25.0,
       "squeakSlipThreshold": 1.0,
       "slipDependence": 0.0,
       "axleFriction": 0.0002,
@@ -97,7 +97,7 @@
     "drive": {
       "driveType": 0.0,
       "steerAdd": 0.03,
-      "holdComebackSpeed": 0.8,
+      "holdComebackSpeed": 0.9,
       "steerLimitAt0": 1.0,
       "steerLimitAt200": 0.2,
       "steerComebackAt0": 1.0,

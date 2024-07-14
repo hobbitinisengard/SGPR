@@ -15,12 +15,12 @@
     "sus": {
       "frontSteerRangeDegs": 35.0,
       "frontSpringDistance": 0.2,
-      "frontSpringForce": 3.0,
+      "frontSpringForce": 8.0,
       "frontSpringExponent": 2.0,
       "frontSpringDampening": 0.2,
       "RearSteerRangeDegs": 0.0,
       "RearSpringDistance": 0.2,
-      "RearSpringForce": 3.0,
+      "RearSpringForce": 8.0,
       "RearSpringExponent": 2.0,
       "RearSpringDampening": 0.2
     },
@@ -67,8 +67,8 @@
     },
     "chassis": {
       "mass": 1.0,
-      "longtitunalCOM": 0.05,
-      "verticalCOM": 0.4,
+      "longtitunalCOM": 0.0,
+      "verticalCOM": 0.5,
       "drag": 0.13,
       "angularDrag": 0.9,
       "evoSmoothTime": 0.07,
@@ -82,10 +82,10 @@
     },
     "tyre": {
       "forwardFriction": 9.0,
-      "sideFriction": 11.0,
+      "sideFriction": 13.0,
       "frontFrictionStretch": 10.0,
       "rearFrictionStretch": 10.0,
-      "shiftRearFriction": 9.0,
+      "shiftRearFriction": 10.0,
       "squeakSlipThreshold": 0.75,
       "slipDependence": 0.0,
       "axleFriction": 0.002,
@@ -96,7 +96,7 @@
     },
     "drive": {
       "driveType": 0.0,
-      "steerAdd": 0.06,
+      "steerAdd": 0.03,
       "holdComebackSpeed": 0.9,
       "steerLimitAt0": 1.0,
       "steerLimitAt200": 0.2,

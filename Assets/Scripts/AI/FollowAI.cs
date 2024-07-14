@@ -89,12 +89,9 @@ namespace RVP
 		int curStuntpointIdx;
 		int curReplayPointIdx = 0;
 		public bool aiStuntingProc;
-		public float cpuSmoothCoeff = 5;
-		public float cpuFastCoeff = 50;
 		private bool revvingCo;
 		public float targetSteer;
 		public bool overRoad { get; private set; }
-		public float maxSteerPerFrame = 5;
 
 		public bool Pitting { get { return pitsPathCreator != null; } }
 		public ReplayCam currentCam { get { return replayCams[curReplayPointIdx]; } }
@@ -517,17 +514,59 @@ namespace RVP
 				reverseTime = Mathf.Max(0, reverseTime - Time.fixedDeltaTime);
 
 
-				if (vp.reallyGroundedWheels > 0)
+				if (!vp.raceBox.evoModule.stunting)
 				{
-					if (vp.velMag < tSpeed && reverseTime == 0)
+					float dTargetCar = Vector3.Distance(target.pos, vp.tr.position);
+					if (Mathf.Abs(target.dist - dist) > 2 * reqDist || target.dist < dist)
+					{ // reset target
+						target.dist = dist + reqDist;
+						target.pos = trackPathCreator.path.GetPointAtDistance(target.dist);
+					}
+					Vector2 targetPosOrientation = trackPathCreator.path.GetDirectionAtDistance(target.dist).Flat().normalized;
+
+					if (dTargetCar < .75f * reqDist 
+						|| (vp.reallyGroundedWheels > 3 && Mathf.Abs(Vector2.Dot(targetPosOrientation, vp.tr.forward.Flat().normalized)) < .5f))
+					{ // car catching up OR angle between racing line and car exceedes 60 degs
+						target.dist += 8 * vp.velMag * Time.fixedDeltaTime;
+						target.pos = trackPathCreator.path.GetPointAtDistance(target.dist);
+					}
+					if (dTargetCar < reqDist) // go on
 					{
-						vp.SetAccel(1);
+						target.dist += vp.velMag * Time.fixedDeltaTime;
+						target.pos = trackPathCreator.path.GetPointAtDistance(target.dist);
+					}
+					
+					Debug.DrawRay(target.pos, Vector3.up * 3, Color.yellow);
+					Vector2 targetDir;
+					if (pitsPathCreator)
+						targetDir = ((Vector3)tPos - vp.tr.position).Flat();
+					else if((aiStuntingProc || NextStuntpointIn(30)) 
+						&& Physics.Raycast(vp.tr.position + 3 * Vector3.up, Vector3.down, out RaycastHit hit, Mathf.Infinity, 1 << F.I.roadLayer))
+					{
+						targetDir = ((Vector3)trackPathCreator.path.GetPointAtDistance(dist + 90) - vp.tr.position).Flat().normalized;
+						Debug.DrawRay(vp.tr.position+Vector3.up * 3, targetDir, Color.yellow);
 					}
 					else
 					{
-						vp.SetAccel(0f);
+						targetDir = F.Flat(target.pos - vp.tr.position);
 					}
-					// Set brake input
+
+					targetSteer = Vector2.SignedAngle(targetDir, tr.forward.Flat());
+
+					targetSteer = F.Sign(targetSteer) * Mathf.InverseLerp(0, maxPhysicalSteerAngle, Mathf.Abs(targetSteer));
+
+					targetSteer = Mathf.Lerp(vp.steerInput, targetSteer, Pitting ? 1 : (20 * Time.fixedDeltaTime));
+
+					if (vp.reallyGroundedWheels > 2)
+						vp.SetSteer(((reverseTime == 0) ? 1 : -1) * targetSteer);
+
+					vp.SetBoost(steerAngle < 2 && vp.BatteryPercent > 0.5f && vp.reallyGroundedWheels > 2 && vp.velMag < 30);
+				}
+
+				if (vp.reallyGroundedWheels > 0)
+				{
+					vp.SetAccel((vp.velMag < tSpeed && reverseTime == 0) ? 1 : 0);
+
 					if (reverseTime == 0 && brakeTime == 0)
 					{
 						if (vp.velMag > tSpeed)
@@ -564,59 +603,6 @@ namespace RVP
 					}
 				}
 
-				if (!vp.raceBox.evoModule.stunting)
-				{
-					float dTargetCar = Vector3.Distance(target.pos, vp.tr.position);
-					if (Mathf.Abs(target.dist - dist) > 2 * reqDist || target.dist < dist)
-					{ // reset target
-						target.dist = dist + reqDist;
-						target.pos = trackPathCreator.path.GetPointAtDistance(target.dist);
-					}
-					Vector2 targetPosOrientation = trackPathCreator.path.GetDirectionAtDistance(target.dist).Flat().normalized;
-
-					if (dTargetCar < .75f * reqDist 
-						|| (vp.reallyGroundedWheels > 3 && Mathf.Abs(Vector2.Dot(targetPosOrientation, vp.tr.forward.Flat().normalized)) < .5f))
-					{ // car catching up OR angle between racing line and car exceedes 60 degs
-						target.dist += 8 * vp.velMag * Time.fixedDeltaTime;
-						target.pos = trackPathCreator.path.GetPointAtDistance(target.dist);
-					}
-					if (dTargetCar < reqDist) // go on
-					{
-						target.dist += vp.velMag * Time.fixedDeltaTime;
-						target.pos = trackPathCreator.path.GetPointAtDistance(target.dist);
-					}
-					
-					Debug.DrawRay(target.pos, Vector3.up * 3, Color.yellow);
-					Vector2 targetDir;
-					if (pitsPathCreator)
-						targetDir = ((Vector3)tPos - vp.tr.position).Flat();
-					else if((aiStuntingProc || NextStuntpointIn(30)) && Physics.Raycast(vp.tr.position + 3 * Vector3.up, Vector3.down, out RaycastHit hit, Mathf.Infinity, 1 << F.I.roadLayer))
-					{
-						targetDir = ((Vector3)trackPathCreator.path.GetPointAtDistance(dist + 90) - vp.tr.position).Flat().normalized;
-						Debug.DrawRay(vp.tr.position+Vector3.up * 3, targetDir, Color.yellow);
-					}
-					else
-					{
-						
-						targetDir = F.Flat(target.pos - vp.tr.position);
-					}
-						
-
-					targetSteer = Vector2.SignedAngle(targetDir, tr.forward.Flat());
-
-					//if (Mathf.Abs(targetSteer) > maxSteerPerFrame) // max steer 
-					//	targetSteer = Mathf.Sign(targetSteer) * maxSteerPerFrame;
-					//Debug.DrawRay(vp.tr.position + 3*Vector3.up, targetDir, Color.red);
-
-					targetSteer = F.Sign(targetSteer) * Mathf.InverseLerp(0, maxPhysicalSteerAngle, Mathf.Abs(targetSteer));
-
-					targetSteer = Mathf.Lerp(vp.steerInput, targetSteer, Pitting ? 1 : cpuSmoothCoeff * Time.fixedDeltaTime);
-
-					if (vp.reallyGroundedWheels > 2)
-						vp.SetSteer(((reverseTime == 0) ? 1 : -1) * targetSteer);
-
-					vp.SetBoost(steerAngle < 2 && vp.BatteryPercent > 0.5f && vp.reallyGroundedWheels > 2 && vp.velMag < 30);
-				}
 			}
 		}
 		public IEnumerator AIStuntingProc()

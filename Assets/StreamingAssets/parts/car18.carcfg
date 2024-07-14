@@ -67,7 +67,7 @@
     },
     "chassis": {
       "mass": 1.0,
-      "longtitunalCOM": 0.07,
+      "longtitunalCOM": 0.05,
       "verticalCOM": 0.2,
       "drag": 0.1,
       "angularDrag": 0.9,
@@ -82,10 +82,10 @@
     },
     "tyre": {
       "forwardFriction": 9.0,
-      "sideFriction": 12.0,
+      "sideFriction": 14.0,
       "frontFrictionStretch": 10.0,
       "rearFrictionStretch": 10.0,
-      "shiftRearFriction": 11.0,
+      "shiftRearFriction": 12.0,
       "squeakSlipThreshold": 0.75,
       "slipDependence": 0.0,
       "axleFriction": 0.0,
@@ -95,8 +95,8 @@
       "torqueThreshold": 0.2
     },
     "drive": {
-      "driveType": 0.0,
-      "steerAdd": 0.05,
+      "driveType": 2.0,
+      "steerAdd": 0.03,
       "holdComebackSpeed": 0.9,
       "steerLimitAt0": 1.0,
       "steerLimitAt200": 0.2,

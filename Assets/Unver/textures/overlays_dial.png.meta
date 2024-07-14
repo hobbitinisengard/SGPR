@@ -462,9 +462,9 @@ TextureImporter:
       name: overlays_dial_8
       rect:
         serializedVersion: 2
-        x: 1632
+        x: 1637
         y: 279
-        width: 167
+        width: 162
         height: 638
       alignment: 9
       pivot: {x: 0.49999848, y: 0.15549919}

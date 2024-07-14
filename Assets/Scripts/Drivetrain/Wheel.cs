@@ -63,8 +63,8 @@ namespace RVP
 		{
 			initForwardFriction = forward;
 			forwardFriction = forward;
-			initSidewaysFriction = sideways;
-			sidewaysFriction = sideways;
+			initSidewaysFriction = (vp.followAI.isCPU ? 2 : 1) * sideways;
+			sidewaysFriction = (vp.followAI.isCPU ? 2 : 1) * sideways;
 			initFrictionStretch = initfrictionStretch;
 			forwardCurveStretch = initfrictionStretch;
 			sidewaysCurveStretch = initfrictionStretch;

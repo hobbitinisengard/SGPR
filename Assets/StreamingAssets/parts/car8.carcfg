@@ -67,7 +67,7 @@
     },
     "chassis": {
       "mass": 1.3,
-      "longtitunalCOM": 0.07,
+      "longtitunalCOM": 0.09,
       "verticalCOM": 0.41,
       "drag": 0.1,
       "angularDrag": 0.9,
@@ -82,10 +82,10 @@
     },
     "tyre": {
       "forwardFriction": 13.0,
-      "sideFriction": 17.0,
+      "sideFriction": 15.0,
       "frontFrictionStretch": 10.0,
       "rearFrictionStretch": 10.0,
-      "shiftRearFriction": 16.9,
+      "shiftRearFriction": 10.0,
       "squeakSlipThreshold": 0.75,
       "slipDependence": 0.0,
       "axleFriction": 0.0002,

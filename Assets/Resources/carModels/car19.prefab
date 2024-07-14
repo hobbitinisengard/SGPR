@@ -10942,7 +10942,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071068}
   m_LocalPosition: {x: 0, y: 0.58, z: -0.172}
-  m_LocalScale: {x: 0.96, y: 0.64, z: 0.82000005}
+  m_LocalScale: {x: 0.96, y: 1.07, z: 0.82000005}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6457121441695959639}
@@ -17618,10 +17618,7 @@ MonoBehaviour:
   outOfTrackTime: 0
   outOfTrackRequiredTime: 2
   aiStuntingProc: 0
-  cpuSmoothCoeff: 10
-  cpuFastCoeff: 50
   targetSteer: 0
-  maxSteerPerFrame: 5
 --- !u!114 &8319369162350912230
 MonoBehaviour:
   m_ObjectHideFlags: 0
