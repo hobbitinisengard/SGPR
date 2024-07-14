@@ -14,7 +14,6 @@ using System.Linq;
 using System;
 using Random = UnityEngine.Random;
 using System.Collections.Concurrent;
-using UnityEditor;
 using RVP;
 class SponsorScore
 {
@@ -48,6 +47,7 @@ public class ServerC : MonoBehaviour
 	public const string k_relayCode = "RelayJoinCode";
 	public const string k_actionHappening = "ah";
 	public const string k_lobbyCode = "lc";
+	public const string k_gameVer = "gv";
 	public NetworkManager networkManager;
 	public LobbyEventCallbacks callbacks = new();
 	string callbacksLobbyId = "";
@@ -467,6 +467,10 @@ public class ServerC : MonoBehaviour
 				Player = new Player(id: AuthenticationService.Instance.PlayerId, data: InitializePlayerData()),
 				Data = new()
 				{
+					{  k_gameVer, new DataObject(
+						visibility:DataObject.VisibilityOptions.Public,
+						value:Info.VERSION)
+					},
 					{  k_relayCode, new DataObject(
 						visibility:DataObject.VisibilityOptions.Public,
 						value:relayJoinCode)

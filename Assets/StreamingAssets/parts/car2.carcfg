@@ -81,7 +81,7 @@
       "batteryConsumption": 20.0
     },
     "tyre": {
-      "forwardFriction": 12.0,
+      "forwardFriction": 20.0,
       "sideFriction": 25.0,
       "frontFrictionStretch": 6.0,
       "rearFrictionStretch": 6.0,
@@ -92,7 +92,7 @@
       "offroadTread": 1.0,
       "driftRearFriction": 8.0,
       "driftRearFrictionInit": 25.0,
-      "torqueThreshold": 0.4
+      "torqueThreshold": 0.3
     },
     "drive": {
       "driveType": 0.0,

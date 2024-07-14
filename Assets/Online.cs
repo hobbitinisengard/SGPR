@@ -73,5 +73,9 @@ public class Online : NetworkBehaviour
 	private void TellRacestartdateRpc(DateTime raceStartDate, RpcParams ps)
 	{
 		F.I.raceStartDate = raceStartDate;
+		if(F.I.raceStartDate == DateTime.MinValue)
+		{
+			RaceManager.I.ExitButton();
+		}
 	}
 }

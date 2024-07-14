@@ -44,15 +44,15 @@
     "gearbox": {
       "shiftDelaySeconds": 0.4,
       "reverseGearRatio": -3.21,
-      "Gear1Ratio": 4.0,
-      "Gear2Ratio": 3.0,
-      "Gear3Ratio": 2.5,
-      "Gear4Ratio": 1.9,
-      "Gear5Ratio": 1.5,
-      "Gear6Ratio": 1.2,
-      "Gear7Ratio": 0.8,
+      "Gear1Ratio": 3.0,
+      "Gear2Ratio": 2.5,
+      "Gear3Ratio": 1.9,
+      "Gear4Ratio": 1.5,
+      "Gear5Ratio": 1.2,
+      "Gear6Ratio": 0.8,
+      "Gear7Ratio": 0.0,
       "Gear8Ratio": 0.0,
-      "NumberOfGears": 7
+      "NumberOfGears": 6
     },
     "engine": {
       "audioMaxPitch": 4.0,
@@ -77,18 +77,18 @@
       "dragsterEffect": 0.7
     },
     "boost": {
-      "maxBoost": 0.1,
+      "maxBoost": 0.2,
       "batteryConsumption": 40.0
     },
     "tyre": {
-      "forwardFriction": 8.0,
+      "forwardFriction": 13.0,
       "sideFriction": 17.0,
       "frontFrictionStretch": 10.0,
       "rearFrictionStretch": 10.0,
-      "shiftRearFriction": 15.0,
+      "shiftRearFriction": 16.9,
       "squeakSlipThreshold": 0.75,
       "slipDependence": 0.0,
-      "axleFriction": 0.0015,
+      "axleFriction": 0.0002,
       "offroadTread": 0.0,
       "driftRearFriction": 17.0,
       "driftRearFrictionInit": 17.0,
@@ -96,7 +96,7 @@
     },
     "drive": {
       "driveType": 0.0,
-      "steerAdd": 0.03,
+      "steerAdd": 0.02,
       "holdComebackSpeed": 0.9,
       "steerLimitAt0": 1.0,
       "steerLimitAt200": 0.2,

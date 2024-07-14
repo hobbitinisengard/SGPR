@@ -32,8 +32,8 @@
       "autoSteerDrift": 0.0,
       "driftPush": 0.0,
       "downforce": 5.0,
-      "frontBrakeForce": 0.01,
-      "rearBrakeForce": 0.01
+      "frontBrakeForce": 0.1,
+      "rearBrakeForce": 0.1
     },
     "battery": {
       "capacity": 3200.0,
@@ -92,7 +92,7 @@
       "offroadTread": 0.0,
       "driftRearFriction": 5.0,
       "driftRearFrictionInit": 7.0,
-	  "torqueThreshold": 0.2
+      "torqueThreshold": 0.2
     },
     "drive": {
       "driveType": 0.0,

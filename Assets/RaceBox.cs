@@ -579,7 +579,7 @@ public class RaceBox : MonoBehaviour
 				stableLandingTimer = .5f;
 			}
 
-			if (stableLandingTimer != -1 && vp.velMag < 14)
+			if (stableLandingTimer != -1 && vp.velMag < 5)
 				DeclineStunt();
 
 			if (stableLandingTimer != -1 && stableLandingTimer <= 0)

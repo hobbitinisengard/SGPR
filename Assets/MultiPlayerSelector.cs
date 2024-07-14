@@ -44,12 +44,14 @@ public class MultiPlayerSelector : TrackSelector
 	bool OnLobbyExitAndWaitingForThisToBecomeActive;
 
 	List<string> AvailableTracksForRandomSession = new();
+	float clientConnectedTime;
 
 	protected override void Awake()
 	{
 		ServerC.I.OnLobbyExit += OnLobbyExit;
 		networkManager.OnTransportFailure += NetworkManager_OnTransportFailure;
 		networkManager.OnClientDisconnectCallback += NetworkManager_OnClientDisconnectCallback;
+		networkManager.OnClientConnectedCallback += NetworkManager_OnClientConnectedCallback;
 		garageBtn.onClick.AddListener(() =>
 		{
 			if (F.I.scoringType == ScoringType.Championship)
@@ -62,6 +64,12 @@ public class MultiPlayerSelector : TrackSelector
 			}
 		});
 	}
+
+	private void NetworkManager_OnClientConnectedCallback(ulong id)
+	{
+		clientConnectedTime = Time.time;
+	}
+
 	private void NetworkManager_OnClientDisconnectCallback(ulong id)
 	{
 		if(id != networkManager.LocalClientId)
@@ -87,6 +95,7 @@ public class MultiPlayerSelector : TrackSelector
 	}
 	public void Callbacks_PlayerJoined(List<LobbyPlayerJoined> newPlayers)
 	{
+		clientConnectedTime = Time.time;
 		maxCPURivals = F.I.maxCarsInRace - ServerC.I.lobby.Players.Count;
 
 		if (F.I.s_raceType == RaceType.Knockout)
@@ -399,7 +408,7 @@ public class MultiPlayerSelector : TrackSelector
 		SwitchRound(true);
 		sortButton.gameObject.SetActive(isHost);
 		sortButton.buttonComponent.interactable = notRdy;
-		garageBtn.interactable = notRdy;
+		garageBtn.interactable = notRdy && !F.I.randomCars;
 		scoringText.text = F.I.scoringType.ToString();
 		scoringText.transform.parent.GetComponent<Button>().interactable = isHost && notRdy;
 		randomCarsText.transform.parent.GetComponent<Button>().interactable = isHost && notRdy;
@@ -491,11 +500,13 @@ public class MultiPlayerSelector : TrackSelector
 			{
 				readyTimeoutTime = Time.time;
 
-				if (!Online.I.IsSpawned || ServerC.I.AnyClientsStillInRace)
+				if (!Online.I.IsSpawned || ServerC.I.AnyClientsStillInRace || (amReady && Time.time - clientConnectedTime < 3))
 				{
-					if(!Online.I.IsSpawned)
-						F.I.chat.AddChatRowLocally("", "No synchronization. Try again after 2 seconds or reconnect", Color.grey, Color.grey);
-					if(ServerC.I.AnyClientsStillInRace)
+					if (Time.time - clientConnectedTime < 3)
+						F.I.chat.AddChatRowLocally("", "A new player is synching right now...", Color.grey, Color.grey);
+					if (!Online.I.IsSpawned)
+						F.I.chat.AddChatRowLocally("", "No synchronization. Try again or reconnect", Color.grey, Color.grey);
+					if (ServerC.I.AnyClientsStillInRace)
 						F.I.chat.AddChatRowLocally("", "Some players haven't come back to lobby yet", Color.grey, Color.grey);
 
 					PlaySFX("fe-cardserror");
@@ -505,7 +516,7 @@ public class MultiPlayerSelector : TrackSelector
 
 				if (amReady)
 				{
-					if(F.I.randomCars)
+					if (F.I.randomCars)
 					{
 						int randomNr = UnityEngine.Random.Range(0, F.I.cars.Length);
 						F.I.s_playerCarName = "car" + (randomNr + 1).ToString("D2");

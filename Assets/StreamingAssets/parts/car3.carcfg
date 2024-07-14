@@ -60,16 +60,16 @@
       "fuelConsumption": 10.0,
       "audioType": 2.0,
       "inertia": 0.5,
-      "torque": 0.1,
+      "torque": 0.05,
       "torqueCurveType": 3.0,
       "redlineKRPM": 10.499,
       "cutoffKRPM": 10.5
     },
     "chassis": {
       "mass": 1.0,
-      "longtitunalCOM": 0.0,
+      "longtitunalCOM": 0.05,
       "verticalCOM": 0.4,
-      "drag": 0.1,
+      "drag": 0.13,
       "angularDrag": 0.9,
       "evoSmoothTime": 0.07,
       "staticEvoMaxSpeed": 1200.0,
@@ -77,18 +77,18 @@
       "dragsterEffect": 1.2
     },
     "boost": {
-      "maxBoost": 0.05,
+      "maxBoost": 0.2,
       "batteryConsumption": 15.0
     },
     "tyre": {
-      "forwardFriction": 6.0,
-      "sideFriction": 10.0,
+      "forwardFriction": 9.0,
+      "sideFriction": 11.0,
       "frontFrictionStretch": 10.0,
       "rearFrictionStretch": 10.0,
       "shiftRearFriction": 9.0,
       "squeakSlipThreshold": 0.75,
       "slipDependence": 0.0,
-      "axleFriction": 0.0015,
+      "axleFriction": 0.002,
       "offroadTread": 0.0,
       "driftRearFriction": 3.0,
       "driftRearFrictionInit": 10.0,
@@ -96,7 +96,7 @@
     },
     "drive": {
       "driveType": 0.0,
-      "steerAdd": 0.03,
+      "steerAdd": 0.06,
       "holdComebackSpeed": 0.9,
       "steerLimitAt0": 1.0,
       "steerLimitAt200": 0.2,

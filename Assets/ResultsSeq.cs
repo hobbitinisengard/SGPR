@@ -205,10 +205,8 @@ public class ResultsSeq : MonoBehaviour
 			if (submitFlag && dimCo == null) // CLOSING SEQUENCE
 			{
 				if (F.I.gameMode == MultiMode.Singleplayer 
-					|| ResultsView.FinishedPlayers >= ServerC.I.lobby.Players.Count
-					|| Time.time - SGP_HUD.I.endraceTimer.timerDisabledTime > 3) // failsafe
+					|| ResultsView.FinishedPlayers >= ServerC.I.lobby.Players.Count)
 				{
-					
 					foreach (var b in boxes)
 						b.GetComponent<SlideInOut>().PlaySlideOut(true);
 

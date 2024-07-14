@@ -43,7 +43,7 @@ namespace RVP
 		public float forwardTargetDot;
 		public float tSpeed;
 		public float lookAheadBase = 15;
-		float radius = 30;
+		const float radius = 30;
 		private Vector4 tPos0;
 		public float stoppedTime;
 		public float reverseTime;
@@ -63,7 +63,6 @@ namespace RVP
 		//float lowSpeed = 30;
 		public FollowTarget target = new();
 		public CpuLevel cpuLevel;
-		public bool SGPshifting;
 		[Tooltip("Time limit in seconds which the vehicle is stuck before attempting to reverse")]
 		public float stopTimeReverse = 5;
 
@@ -71,7 +70,7 @@ namespace RVP
 		public float reverseAttemptTime = 6;
 
 		[Tooltip("How many times the vehicle will attempt reversing before resetting, -1 = no reset")]
-		int resetReverseCount = 0;
+		const int resetReverseCount = 0;
 		int reverseAttempts;
 
 		[Tooltip("Seconds a vehicle will be rolled over before resetting, -1 = no reset")]
@@ -104,20 +103,26 @@ namespace RVP
 		float pitsDist;
 		Vector3 distPoint;
 		Vector3 progressPoint;
+		float distLastTime;
+		float LapProgressPercentTime;
 		public float LapProgressPercent
 		{
 			get
 			{
-				int universalPathProgress = GetDist(1 << F.I.racingLineLayer);
-				if (universalPathProgress > progress + 2 * radius || universalPathProgress < progress - 2 * radius)
-					universalPathProgress = progress;
-
-				if (universalPathProgress == 1 && lapProgressPercent >= 0.9f) // when driving directly past startline
+				if (Time.time - LapProgressPercentTime > .2f) // for better performance
 				{
-					lapProgressPercent = 1;
+					LapProgressPercentTime = Time.time;
+					int universalPathProgress = GetDist(1 << F.I.racingLineLayer);
+					if (universalPathProgress > progress + 2 * radius || universalPathProgress < progress - 2 * radius)
+						universalPathProgress = progress;
+
+					if (universalPathProgress == 1 && lapProgressPercent >= 0.9f) // when driving directly pSast startline
+					{
+						lapProgressPercent = 1;
+					}
+					else
+						lapProgressPercent = universalPathProgress / F.I.universalPath.path.length;
 				}
-				else
-					lapProgressPercent =  universalPathProgress / F.I.universalPath.path.length;
 
 				return lapProgressPercent;
 			}
@@ -224,19 +229,19 @@ namespace RVP
 			target.pos = trackPathCreator.path.GetPointAtDistance(dist);
 			SetCPU(isCPU);
 		}
-		int GetDist(int layer) // odpalać rzadziej?
+		int GetDist(int layer)
 		{
 			float dist = 0;
 			string closestLen = null;
 			float min = 3 * radius;
-
+			
 			var racingPathHits = Physics.CapsuleCastAll(transform.position + Vector3.up, 
 				transform.position + .5f * Vector3.up, radius, Vector3.down, Mathf.Infinity, layer);
 
 			foreach (var hit in racingPathHits)
 			{
 				dist = Vector3.Distance(transform.position, hit.transform.position);
-				if (dist < min && !Physics.Linecast(transform.position + 3 * Vector3.up,
+				if (dist < min && !Physics.Linecast(transform.position + Vector3.up,
 					hit.transform.position + 3 * Vector3.up, 1 | 1 << F.I.roadLayer | 1 << F.I.terrainLayer))
 				{
 					min = dist;
@@ -369,7 +374,11 @@ namespace RVP
 					StartCoroutine(ResetOnTrack());
 					return;
 				}
-				pitsDist = GetDist(1 << F.I.pitsLineLayer); // pitsDist
+				if (Time.time - LapProgressPercentTime > .2f) // for better performance
+				{
+					LapProgressPercentTime = Time.time;
+					pitsDist = GetDist(1 << F.I.pitsLineLayer); // pitsDist
+				}
 
 				if (pitsDist < pitsProgress)
 					pitsDist = pitsProgress;
@@ -382,13 +391,16 @@ namespace RVP
 			}
 			else
 			{
-				dist = GetDist(1 << racingLineLayerNumber);
+				if (Time.time - distLastTime > .2f) // for better performance
+				{
+					dist = GetDist(1 << racingLineLayerNumber);
+					distLastTime = Time.time;
+				}
 
 				if (dist < progress)
 				{
 					dist = progress;
 				}
-					
 
 				if (dist < progress + 2 * radius 
 					|| (pitsPathCreator && pitsProgress >= pitsPathCreator.path.length) 
@@ -603,7 +615,7 @@ namespace RVP
 					if (vp.reallyGroundedWheels > 2)
 						vp.SetSteer(((reverseTime == 0) ? 1 : -1) * targetSteer);
 
-					vp.SetBoost(steerAngle < 2 && vp.BatteryPercent > 0.5f && vp.reallyGroundedWheels > 2);
+					vp.SetBoost(steerAngle < 2 && vp.BatteryPercent > 0.5f && vp.reallyGroundedWheels > 2 && vp.velMag < 30);
 				}
 			}
 		}

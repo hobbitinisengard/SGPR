@@ -60,7 +60,7 @@
       "fuelConsumption": 10.0,
       "audioType": 4.0,
       "inertia": 0.3,
-      "torque": 0.1,
+      "torque": 0.02,
       "torqueCurveType": 3.0,
       "redlineKRPM": 10.3,
       "cutoffKRPM": 10.4
@@ -81,14 +81,14 @@
       "batteryConsumption": 50.0
     },
     "tyre": {
-      "forwardFriction": 10.0,
+      "forwardFriction": 13.0,
       "sideFriction": 23.0,
       "frontFrictionStretch": 10.0,
       "rearFrictionStretch": 10.0,
       "shiftRearFriction": 21.0,
       "squeakSlipThreshold": 1.0,
       "slipDependence": 0.0,
-      "axleFriction": 0.001,
+      "axleFriction": 0.0002,
       "offroadTread": 1.0,
       "driftRearFriction": 8.0,
       "driftRearFrictionInit": 21.0,

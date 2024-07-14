@@ -76,17 +76,23 @@ public class ServerList : MonoBehaviour
 
 			QueryResponse lobbies = await Lobbies.Instance.QueryLobbiesAsync(options);
 
-			
-			foreach(var lobby in lobbies.Results)
+
+			foreach (var lobby in lobbies.Results)
 			{
 				var newRow = Instantiate(rowPrefab, content).transform;
 				newRow.name = lobby.Id;
-				newRow.GetComponent<ServerListRowLobbyJoiner>().Set(this, lobby.Id, lobby.HasPassword);
 				newRow.GetChild(0).GetChild(0).GetComponent<Image>().sprite = lobby.HasPassword ? padlock : knob;
 				newRow.GetChild(0).GetChild(0).GetComponent<Image>().color = (lobby.AvailableSlots == 0) ? Color.red : Color.green;
 				newRow.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>().text = lobby.Name;
 				newRow.GetChild(1).GetComponent<TextMeshProUGUI>().text = lobby.Data[ServerC.k_actionHappening].Value;
-				newRow.GetChild(2).GetComponent<TextMeshProUGUI>().text = (lobby.MaxPlayers - lobby.AvailableSlots).ToString() + "/" + lobby.MaxPlayers.ToString();
+
+				if (lobby.Data.ContainsKey(ServerC.k_gameVer))
+					newRow.GetChild(2).GetComponent<TextMeshProUGUI>().text = lobby.Data[ServerC.k_gameVer].Value;
+				newRow.GetChild(3).GetComponent<TextMeshProUGUI>().text = (lobby.MaxPlayers - lobby.AvailableSlots).ToString() + "/" + lobby.MaxPlayers.ToString();
+
+				bool joinable = lobby.Data.ContainsKey(ServerC.k_gameVer) && lobby.Data[ServerC.k_gameVer].Value == Info.VERSION;
+				newRow.GetComponent<ServerListRowLobbyJoiner>().Set(this, lobby.Id, lobby.HasPassword, joinable);
+				
 				playersOnlineRN += lobby.MaxPlayers - lobby.AvailableSlots;
 			}
 		}
@@ -95,7 +101,7 @@ public class ServerList : MonoBehaviour
 			ShowErrorMessage(e.Message);
 		}
 
-		if(playersOnlineRN < F.I.maxConcurrentUsers)
+		if (playersOnlineRN < F.I.maxConcurrentUsers)
 			startAServerButton.interactable = true;
 		else
 			ShowErrorMessage("Servers are overloaded. Try again later");
@@ -110,7 +116,7 @@ public class ServerList : MonoBehaviour
 				thisView.GoToView(lobbyView);
 			}
 		}
-		catch(Exception e)
+		catch (Exception e)
 		{
 			ShowErrorMessage(e.Message);
 			if (buttonFromWhichWeJoinServer)

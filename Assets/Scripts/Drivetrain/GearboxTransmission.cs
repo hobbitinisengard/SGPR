@@ -152,7 +152,7 @@ namespace RVP
 						CalculateRpmRanges();
 					}
 				}
-				if (automatic && CountDownSeq.Countdown <= shiftDelaySeconds && vp.reallyGroundedWheels >= 2)
+				if (automatic && vp.reallyGroundedWheels >= 2 && CountDownSeq.Countdown <= shiftDelaySeconds)
 				{
 					if (selectedGear == currentGear)
 					{
@@ -184,6 +184,25 @@ namespace RVP
 									downGearOffset++;
 								}
 								Shift(-downGearOffset);
+							}
+						}
+					}
+					else
+					{
+						// when the car decreases speed below initial lower gear during downshifting
+						if(currentGear > 1 && selectedGear < currentGear)
+						{
+							if ((vp.velMag < gears[currentGear].minSpeed)
+								|| (vp.localVelocity.z < 5 && vp.brakeIsReverse && vp.brakeInput > 0))
+							{
+								int downGearOffset = 1;
+								while (
+									((skipNeutral && currentGear - downGearOffset > 0) || currentGear - downGearOffset > 1)
+									&& (currentGear - downGearOffset < 2 || vp.velMag < gears[currentGear - downGearOffset].minSpeed))
+								{
+									downGearOffset++;
+								}
+								selectedGear -= downGearOffset;
 							}
 						}
 					}
@@ -302,7 +321,7 @@ namespace RVP
 						}
 						// I have no idea why cofficients '0.45f' and '3.6f' are working. 
 						gears[i].minSpeed = 0.45f * gears[i - 1].maxRPM / 60 * 2 * Mathf.PI * vp.wheels[2].tireRadius / 3.6f;
-						
+
 					}
 					else
 					{

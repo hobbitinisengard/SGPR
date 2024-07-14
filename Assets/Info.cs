@@ -58,7 +58,7 @@ public class Info : MonoBehaviour
 	public Shader transpShader;
 	public Shader opaqueShader;
 	public Text versionText;
-	public const string VERSION = "0.3.3";
+	public const string VERSION = "0.3.5";
 	public bool minimized { get; private set;  }
 	void OnApplicationFocus(bool hasFocus)
 	{

@@ -289,15 +289,7 @@ namespace RVP
 		public void StartRace()
 		{
 			ResultsView.Clear();
-			if(ServerC.I.AmHost)
-			{
-				F.I.raceStartDate = DateTime.UtcNow.AddSeconds(5);
-			}
-			else
-			{
-				Online.I.AskHostForRacestartdate();
-			}
-
+			F.I.raceStartDate = DateTime.UtcNow.AddSeconds(5);
 			StartCoroutine(StartRaceCoroutine());
 		}
 		IEnumerator StartRaceCoroutine()
@@ -324,25 +316,6 @@ namespace RVP
 			editorPanel.gameObject.SetActive(false);
 
 			SetPitsLayer(0);
-
-			float timer = 0;
-			bool askedTwice = false;
-			while (F.I.raceStartDate == DateTime.MinValue)
-			{
-				timer += Time.deltaTime;
-				if(timer > 3 && !askedTwice)
-				{
-					Online.I.AskHostForRacestartdate();
-					askedTwice = true;
-				}
-				if(timer > 6)
-				{
-					Debug.LogWarning("raceStartDate is Min Value for more than 5 seconds. Joined lobby at wrong time");
-					ExitButton();
-					yield break;
-				}
-				yield return null;
-			}
 
 			if ((F.I.tracks[F.I.s_trackName].envir == Envir.SPN
 						|| F.I.tracks[F.I.s_trackName].envir == Envir.ENG

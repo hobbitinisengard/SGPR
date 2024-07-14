@@ -81,11 +81,11 @@
       "batteryConsumption": 20.0
     },
     "tyre": {
-      "forwardFriction": 8.0,
+      "forwardFriction": 9.0,
       "sideFriction": 12.0,
       "frontFrictionStretch": 10.0,
       "rearFrictionStretch": 10.0,
-      "shiftRearFriction": 8.0,
+      "shiftRearFriction": 9.9,
       "squeakSlipThreshold": 0.75,
       "slipDependence": 0.0,
       "axleFriction": 0.0015,

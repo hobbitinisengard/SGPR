@@ -17834,7 +17834,6 @@ MonoBehaviour:
   target:
     dist: 0
   cpuLevel: 0
-  SGPshifting: 0
   stopTimeReverse: 3
   reverseAttemptTime: 3
   rollResetTime: 3
@@ -18864,9 +18863,9 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0
+      value: 0.25
       inSlope: 0
-      outSlope: 1
+      outSlope: 1.6
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
@@ -18874,8 +18873,8 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 1
       value: 1
-      inSlope: 1
-      outSlope: 0
+      inSlope: 0
+      outSlope: 1.6
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
@@ -18883,7 +18882,6 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  rpmBiasCurveLimit: 5000
   axleFriction: 0.001
   forwardFriction: 12
   sidewaysFriction: 12
@@ -18929,9 +18927,6 @@ MonoBehaviour:
   canPop: 0
   deformAmount: 0
   rimGlow: 0
-  toTargetRpm: 0
-  currentRPM: 0
-  actualTargetRPM: 0
   applyForceAtGroundContact: 0
   impactSnd: {fileID: 6779875396549254752}
   tireHitClips:
@@ -19284,9 +19279,9 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0
+      value: 0.25
       inSlope: 0
-      outSlope: 1
+      outSlope: 1.6
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
@@ -19294,8 +19289,8 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 1
       value: 1
-      inSlope: 1
-      outSlope: 0
+      inSlope: 0
+      outSlope: 1.6
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
@@ -19303,7 +19298,6 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  rpmBiasCurveLimit: 5000
   axleFriction: 0.001
   forwardFriction: 12
   sidewaysFriction: 12
@@ -19349,9 +19343,6 @@ MonoBehaviour:
   canPop: 0
   deformAmount: 0
   rimGlow: 0
-  toTargetRpm: 0
-  currentRPM: 0
-  actualTargetRPM: 0
   applyForceAtGroundContact: 0
   impactSnd: {fileID: 0}
   tireHitClips: []
@@ -20411,9 +20402,9 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0
+      value: 0.25
       inSlope: 0
-      outSlope: 1
+      outSlope: 1.6
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
@@ -20421,8 +20412,8 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 1
       value: 1
-      inSlope: 1
-      outSlope: 0
+      inSlope: 0
+      outSlope: 1.6
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
@@ -20430,7 +20421,6 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  rpmBiasCurveLimit: 5000
   axleFriction: 0.001
   forwardFriction: 12
   sidewaysFriction: 12
@@ -20476,9 +20466,6 @@ MonoBehaviour:
   canPop: 0
   deformAmount: 0
   rimGlow: 0
-  toTargetRpm: 0
-  currentRPM: 0
-  actualTargetRPM: 0
   applyForceAtGroundContact: 0
   impactSnd: {fileID: 0}
   tireHitClips: []
@@ -20699,9 +20686,9 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0
+      value: 0.25
       inSlope: 0
-      outSlope: 1
+      outSlope: 1.6
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
@@ -20709,8 +20696,8 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 1
       value: 1
-      inSlope: 1
-      outSlope: 0
+      inSlope: 0
+      outSlope: 1.6
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
@@ -20718,7 +20705,6 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  rpmBiasCurveLimit: 5000
   axleFriction: 0.001
   forwardFriction: 12
   sidewaysFriction: 12
@@ -20764,9 +20750,6 @@ MonoBehaviour:
   canPop: 0
   deformAmount: 0
   rimGlow: 0
-  toTargetRpm: 0
-  currentRPM: 0
-  actualTargetRPM: 0
   applyForceAtGroundContact: 0
   impactSnd: {fileID: 6779875396549254752}
   tireHitClips: []
@@ -22192,8 +22175,8 @@ Transform:
   m_GameObject: {fileID: 9013835206299173347}
   serializedVersion: 2
   m_LocalRotation: {x: -0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 0.516, z: -0.013}
-  m_LocalScale: {x: 0.85, y: 0.63, z: 0.6}
+  m_LocalPosition: {x: 0, y: 0.516, z: -0.022}
+  m_LocalScale: {x: 0.85, y: 0.9, z: 0.6}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6457121441695959639}

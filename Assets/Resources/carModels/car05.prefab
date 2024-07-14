@@ -12289,8 +12289,8 @@ Transform:
   m_GameObject: {fileID: 4992294579748239525}
   serializedVersion: 2
   m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 0.547, z: -0.101}
-  m_LocalScale: {x: 0.84999996, y: 0.7955, z: 0.7}
+  m_LocalPosition: {x: 0, y: 0.547, z: 0.065}
+  m_LocalScale: {x: 0.84999996, y: 1.13, z: 0.7}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6457121441695959639}
@@ -17681,7 +17681,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 1662223041
+  GlobalObjectIdHash: 946606320
   InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
@@ -17846,7 +17846,6 @@ MonoBehaviour:
   rollCheckDistance: 1
   rollOverForce: 2
   rollSpeedThreshold: 0
-  angularDragOnJump: 0
   fallSpeedLimit: Infinity
   applyFallLimitUpwards: 0
 --- !u!114 &4194641081301078446
@@ -17940,7 +17939,6 @@ MonoBehaviour:
   target:
     dist: 0
   cpuLevel: 0
-  SGPshifting: 0
   stopTimeReverse: 3
   reverseAttemptTime: 3
   rollResetTime: 3
@@ -18796,9 +18794,9 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0
+      value: 0.25
       inSlope: 0
-      outSlope: 1
+      outSlope: 1.6
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
@@ -18806,8 +18804,8 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 1
       value: 1
-      inSlope: 1
-      outSlope: 0
+      inSlope: 0
+      outSlope: 1.6
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
@@ -18815,7 +18813,6 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  rpmBiasCurveLimit: Infinity
   axleFriction: 0.001
   forwardFriction: 12
   sidewaysFriction: 12
@@ -19213,9 +19210,9 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0
+      value: 0.25
       inSlope: 0
-      outSlope: 1
+      outSlope: 1.6
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
@@ -19223,8 +19220,8 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 1
       value: 1
-      inSlope: 1
-      outSlope: 0
+      inSlope: 0
+      outSlope: 1.6
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
@@ -19232,7 +19229,6 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  rpmBiasCurveLimit: Infinity
   axleFriction: 0.001
   forwardFriction: 12
   sidewaysFriction: 12
@@ -20163,6 +20159,7 @@ MonoBehaviour:
   driveDividePower: 3
   actualAccel: 0
   transmission: {fileID: 6779875395388755402}
+  d_targetRpm: 0
   engineSmoke: {fileID: 1642738044}
   boostEval: 0
 --- !u!82 &4634947501902952183
@@ -20336,9 +20333,9 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0
+      value: 0.25
       inSlope: 0
-      outSlope: 1
+      outSlope: 1.6
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
@@ -20346,8 +20343,8 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 1
       value: 1
-      inSlope: 1
-      outSlope: 0
+      inSlope: 0
+      outSlope: 1.6
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
@@ -20355,7 +20352,6 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  rpmBiasCurveLimit: Infinity
   axleFriction: 0.001
   forwardFriction: 12
   sidewaysFriction: 12
@@ -20621,9 +20617,9 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0
+      value: 0.25
       inSlope: 0
-      outSlope: 1
+      outSlope: 1.6
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
@@ -20631,8 +20627,8 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 1
       value: 1
-      inSlope: 1
-      outSlope: 0
+      inSlope: 0
+      outSlope: 1.6
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
@@ -20640,7 +20636,6 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  rpmBiasCurveLimit: Infinity
   axleFriction: 0.001
   forwardFriction: 12
   sidewaysFriction: 12

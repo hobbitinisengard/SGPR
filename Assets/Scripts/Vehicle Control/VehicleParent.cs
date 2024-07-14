@@ -719,8 +719,6 @@ namespace RVP
 			norm.transform.position = tr.position;
 			norm.transform.rotation = Quaternion.LookRotation(reallyGroundedWheels == 0 ? upDir : wheelNormalAverage, forwardDir);
 
-			
-
 			if (brakeIsReverse && brakeInput > 0 && localVelocity.z < 1)
 				reversing = true;
 			else if (localVelocity.z >= 0 || burnout > 0)

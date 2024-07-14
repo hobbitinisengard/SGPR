@@ -5,7 +5,6 @@ using UnityEngine.UI;
 
 public class CountDownSeq : Sfxable
 {
-	public static event Action RaceStarted;
 	public Sprite[] countdownSprites;
 	Image img;
 	Coroutine seq;
@@ -57,7 +56,10 @@ public class CountDownSeq : Sfxable
 
 		if(ServerC.I.AmHost)
 			Online.I.raceAlreadyStarted.Value = true;
-
-		RaceStarted?.Invoke();
+		else
+		{
+			yield return new WaitForSeconds(5);
+			Online.I.AskHostForRacestartdate();
+		}
 	}
 }

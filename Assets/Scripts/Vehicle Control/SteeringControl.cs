@@ -81,7 +81,7 @@ namespace RVP
 		void FixedUpdate()
 		{
 			asi = Mathf.Abs(vp.steerInput);
-
+			steerLimit = 1;
 			if (!vp.followAI.selfDriving)
 			{
 				F.I.controllerInUse = (vp.basicInput.playerInput.currentControlScheme != "Keyboard");

@@ -236,7 +236,8 @@ public class SGP_Evo : MonoBehaviour
 			if (flippedWhenInitiated && !vp.crashing && !vp.colliding && vp.reallyGroundedWheels == 0)
 				flippedWhenInitiated = false;
 
-			if (vp.SGPshiftbutton > 0)
+			bool inputValid = (vp.brakeInput + vp.accelInput + Mathf.Abs(vp.steerInput) + Mathf.Abs(vp.rollInput)) <= 1;
+			if (vp.SGPshiftbutton > 0 && inputValid)
 			{
 				if (vp.accelInput > 0.5f)
 				{ // backflip

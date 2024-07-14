@@ -123,6 +123,7 @@ public class Chat : NetworkBehaviour
 		while (texting)
 			yield return null;
 		SetVisibility(false);
+		F.Deselect();
 	}
 	
 	public void PlayerLeft(Player p)
