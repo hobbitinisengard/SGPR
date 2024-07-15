@@ -346,7 +346,7 @@ public class Info : MonoBehaviour
 	public DateTime raceStartDate = DateTime.MinValue;
 	public byte Rounds = 0;
 	public byte CurRound;
-	
+	public const string usersManualURL = "https://docs.google.com/document/d/1PNb95xUi0pdOjPetwu-MNLeIwpVN6t8rxAmukKEpB2E/";
 	public readonly int maxConcurrentUsers = 30;
 
 	public Car Car(string name)

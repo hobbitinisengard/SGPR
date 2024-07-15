@@ -916,7 +916,10 @@ namespace RVP
 				}
 			}
 		}
-
+		void OnCollisionExit(Collision col)
+		{
+			crashing = false;
+		}
 		// Check for crashes and play collision sounds
 		void OnCollisionEnter(Collision col)
 		{
@@ -974,6 +977,7 @@ namespace RVP
 			if (!(colliding || crashing))
 				scrapeSnd.Stop();
 		}
+
 		public override void OnDestroy()
 		{
 			F.I.s_cars.Remove(this);

@@ -61,6 +61,10 @@ public class MainMenuView : Sfxable
 			youSureDialog.gameObject.SetActive(true);
 		}
 	}
+	public void OpenUsersManual()
+	{
+		Application.OpenURL(Info.usersManualURL);
+	}
 	/// <summary>
 	/// Go forward
 	/// </summary>

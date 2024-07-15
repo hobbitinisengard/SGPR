@@ -150,8 +150,7 @@ public class SGP_Evo : MonoBehaviour
 	VehicleParent vp;
 	float shiftPressTime;
 	int prevSGPShiftButton;
-	public bool stunting = false;
-	public bool flippedWhenInitiated = false;
+	public bool stunting { get; private set; }
 	float maxTimeToInit = 1f;
 	RotationDampStruct[] r;
 	public float rX_delta;
@@ -185,38 +184,21 @@ public class SGP_Evo : MonoBehaviour
 		staticEvoMaxSpeed = r[0].staticEvoMaxSpeed;
 		evoAcceleration = r[0].evoAcceleration;
 	}
-	public bool IsStunting
-	{
-		get
-		{
-			return stunting;
-		}
-	}
-	public void OnCollide()
-	{
 
-	}
-	public void FixedUpdateWorks(float deltaTime)
+	public void FixedUpdate()
 	{
 		if (vp.SGPshiftbutton > 0)
 		{
 			if (!stunting && prevSGPShiftButton == 0)
 			{ // shift press before jump
-				if (vp.reallyGroundedWheels > 0 && !vp.crashing)
-				{
-					shiftPressTime = Time.time;
-					flippedWhenInitiated = false;
-				}
-				else if (vp.reallyGroundedWheels == 0 && vp.crashing)
-				{
-					shiftPressTime = Time.time;
-					flippedWhenInitiated = true;
-				}
+				shiftPressTime = Time.time;
+				Debug.Log("shiftPressTime");
 			}
 		}
 
-		if (!stunting && Time.time - shiftPressTime < maxTimeToInit && !vp.colliding && !vp.crashing && vp.reallyGroundedWheels == 0)
+		if (!stunting && vp.reallyGroundedWheels == 0 && !vp.colliding && !vp.crashing && (Time.time - shiftPressTime) < maxTimeToInit)
 		{
+			Debug.Log("stunting");
 			evoBloorp.Play();
 			stunting = true;
 			euler = vp.tr.rotation.eulerAngles;
@@ -227,14 +209,12 @@ public class SGP_Evo : MonoBehaviour
 
 		if (stunting)
 		{
-			if (!flippedWhenInitiated && (vp.rb.isKinematic || vp.crashing || vp.colliding || vp.reallyGroundedWheels > 0))
+			if (vp.rb.isKinematic || vp.crashing || vp.colliding || vp.reallyGroundedWheels > 0)
 			{
+				Debug.Log("Crashed");
 				stunting = false;
 				return;
 			}
-
-			if (flippedWhenInitiated && !vp.crashing && !vp.colliding && vp.reallyGroundedWheels == 0)
-				flippedWhenInitiated = false;
 
 			bool inputValid = (vp.brakeInput + vp.accelInput + Mathf.Abs(vp.steerInput) + Mathf.Abs(vp.rollInput)) <= 1;
 			if (vp.SGPshiftbutton > 0 && inputValid)
@@ -286,7 +266,7 @@ public class SGP_Evo : MonoBehaviour
 			}
 
 			foreach (RotationDampStruct rds in r)
-				rds.SmoothDamp(deltaTime);
+				rds.SmoothDamp(Time.fixedDeltaTime);
 
 			if (r.Any(a => a.Active))
 			{
@@ -307,10 +287,6 @@ public class SGP_Evo : MonoBehaviour
 			//}
 		}
 		prevSGPShiftButton = vp.SGPshiftbutton;
-	}
-	void FixedUpdate()
-	{
-		FixedUpdateWorks(Time.fixedDeltaTime);
 	}
 
 	internal void Reset()

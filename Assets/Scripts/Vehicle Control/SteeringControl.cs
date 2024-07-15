@@ -35,7 +35,7 @@ namespace RVP
 		public float gamma = 2;
 		public float shiftRearFriction;
 		internal float driftRearFriction;
-		internal float driftRearFrictionInit;
+		//internal float driftRearFrictionInit;
 		[Range(0, 1)]
 		public float asi;
 

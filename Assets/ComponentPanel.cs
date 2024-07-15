@@ -720,7 +720,6 @@ public class TyreSavable : PartSavable
 		rearFrictionStretch = rear.sidewaysCurveStretch;
 		shiftRearFriction = vp.steeringControl.shiftRearFriction;
 		driftRearFriction = vp.steeringControl.driftRearFriction;
-		driftRearFrictionInit = vp.steeringControl.driftRearFrictionInit;
 		squeakSlipThreshold = rear.slipThreshold;
 		slipDependence = 2;
 		axleFriction = rear.axleFriction;
@@ -732,7 +731,6 @@ public class TyreSavable : PartSavable
 		vp.tyresOffroad = offroadTread;
 		vp.steeringControl.shiftRearFriction = shiftRearFriction;
 		vp.steeringControl.driftRearFriction = driftRearFriction;
-		vp.steeringControl.driftRearFrictionInit = driftRearFrictionInit;
 		for (int i = 0; i < 4; ++i)
 		{
 			var w = vp.wheels[i];

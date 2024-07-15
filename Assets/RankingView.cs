@@ -86,6 +86,7 @@ public class RankingRowData
 }
 public class RankingView : MainMenuView
 {
+	public MainMenuView recordsView;
    public TextMeshProUGUI upBarText;
    public GameObject rankingRowPrefab;
 	public Transform rankingContent;
@@ -103,7 +104,10 @@ public class RankingView : MainMenuView
 	public List<ResultInfo> sortedResults;
 	public void OKButton()
 	{
-		GoToView(MultiPlayerSelector.I.thisView);
+		if (sortedResults == null || sortedResults.Count == 0)
+			GoToView(recordsView);
+		else
+			GoToView(MultiPlayerSelector.I.thisView);
 	}
 	protected override void Awake()
 	{
@@ -133,12 +137,16 @@ public class RankingView : MainMenuView
 		F.I.SaveRanking();
 		ServerC.I.ScoreSet(0);
 		ServerC.I.UpdatePlayerData();
+		ResultsView.Clear();
 	}
 	protected override void OnEnable()
 	{
 		F.I.move2Ref.action.performed += Move;
 		List<ResultInfo> players = ResultsView.SortedResultsByFinishPos;
-		RankingRowData newEntry = new RankingRowData(players);
+		RankingRowData newEntry = null;
+
+		if(players.Count > 0)
+			newEntry = new RankingRowData(players);
 
 		string gameName;
 		LinkedList<RankingRowData> data;
@@ -162,9 +170,11 @@ public class RankingView : MainMenuView
 				break;
 		}
 
-		upBarText.text = "MULTIPLAYER RANKING - " + (F.I.teams ? "TEAM " : "") + gameName + " - Top 100"; 
+		upBarText.text = "MULTIPLAYER RANKING - " + (F.I.teams ? "TEAM " : "") + gameName + " - Top 100";
 
-		var newScore = newEntry.WinValue;		
+		float newScore = 0; 
+		if(newEntry != null)
+			newScore = newEntry.WinValue;		
 
 		while (rankingContent.childCount != 100)
 		{
@@ -277,6 +287,8 @@ public class RankingView : MainMenuView
 	
 	void SetColorOfRow(Transform row, Color c)
 	{
+		if (row == null)
+			return;
 		for (int i = 0; i < row.childCount; ++i)
 			row.GetChild(i).GetComponent<TextMeshProUGUI>().color = c;
 	}

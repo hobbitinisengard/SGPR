@@ -316,7 +316,7 @@ public class RaceBox : MonoBehaviour
 			}
 			
 			float addDriftPoints = 0;
-			if (vp.reallyGroundedWheels >= 3 && Mathf.Abs(smoothedDriftAngle) > 5 && vp.velMag > 30)
+			if (vp.followAI.overRoad && vp.reallyGroundedWheels >= 3 && Mathf.Abs(smoothedDriftAngle) > 5 && vp.velMag > 30)
 			{ // drifting
 				float comboMult = (int)(9 / 8f * Mathf.Clamp(driftingTimer, 0, 8));
 				addDriftPoints = deltaTime * vp.velMag * Mathf.InverseLerp(0, 60, Mathf.Abs(smoothedDriftAngle));
@@ -336,7 +336,7 @@ public class RaceBox : MonoBehaviour
 				deltaTime * aeroMeterResponsiveness);
 			drift += topMeterSpeed;
 
-			if (prevSmoothedDriftAngle * smoothedDriftAngle <= 0 && vp.reallyGroundedWheels == 4 && driftingTimer > 1)
+			if (vp.followAI.overRoad && prevSmoothedDriftAngle * smoothedDriftAngle <= 0 && vp.reallyGroundedWheels == 4 && driftingTimer > 1)
 			{ // switching directions
 				grantedComboTime = 3;
 				starLevel = Mathf.Clamp(++starLevel, 0, 10);
@@ -369,7 +369,7 @@ public class RaceBox : MonoBehaviour
 		}
 		else
 		{
-			if (Mathf.Abs(smoothedDriftAngle) > 5 && vp.velMag > 30 && !vp.colliding)
+			if (vp.followAI.overRoad && Mathf.Abs(smoothedDriftAngle) > 5 && vp.velMag > 30 && !vp.colliding)
 			{
 				driftingTime = Time.time;
 				driftingTimer += deltaTime;
@@ -548,7 +548,7 @@ public class RaceBox : MonoBehaviour
 
 						stunt.WriteHalfOverlayName();
 						stuntPai.level++;
-						stuntPai.score += (int)((starLevel + 1) * 1.5f * stunt.score * (stunt.isReverse ? 2 : 1) * (!evoModule.IsStunting ? 2 : 1));
+						stuntPai.score += (int)((starLevel + 1) * 1.5f * stunt.score * (stunt.isReverse ? 2 : 1) * (!evoModule.stunting ? 2 : 1));
 					}
 					else if ((stunt.positiveProgress * Mathf.Rad2Deg >= stunt.angleThreshold
 						|| stunt.negativeProgress * Mathf.Rad2Deg >= stunt.angleThreshold)
@@ -557,10 +557,10 @@ public class RaceBox : MonoBehaviour
 						stuntsData.availableForFrontend = true;
 						stunt.doneTimes++;
 						stunt.updateOverlay = true;
-						stunt.WriteOverlayName(!evoModule.IsStunting);
+						stunt.WriteOverlayName(!evoModule.stunting);
 						stunt.ResetProgress();
 						stuntPai.level++;
-						stuntPai.score += (int)((starLevel + 1) * stunt.score * (stunt.isReverse ? 2 : 1) * (!evoModule.IsStunting ? 2 : 1));
+						stuntPai.score += (int)((starLevel + 1) * stunt.score * (stunt.isReverse ? 2 : 1) * (!evoModule.stunting ? 2 : 1));
 					}
 				}
 			}

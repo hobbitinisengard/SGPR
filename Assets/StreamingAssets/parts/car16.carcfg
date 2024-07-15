@@ -91,7 +91,7 @@
       "axleFriction": 0.0001,
       "offroadTread": 0.0,
       "driftRearFriction": 6.0,
-      "driftRearFrictionInit": 10.0,
+      "driftRearFrictionInit": 12.0,
       "torqueThreshold": 0.1
     },
     "drive": {
