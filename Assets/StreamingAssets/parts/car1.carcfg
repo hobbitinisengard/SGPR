@@ -59,8 +59,8 @@
       "audioMinPitch": 1.0,
       "fuelConsumption": 5.0,
       "audioType": 3.0,
-      "inertia": 0.375,
-      "torque": 0.05,
+      "inertia": 0.775,
+      "torque": 0.015,
       "torqueCurveType": 3.0,
       "redlineKRPM": 10.499,
       "cutoffKRPM": 10.5
@@ -69,7 +69,7 @@
       "mass": 1.0,
       "longtitunalCOM": 0.0,
       "verticalCOM": 0.35,
-      "drag": 0.09,
+      "drag": 0.12,
       "angularDrag": 0.9,
       "evoSmoothTime": 0.07,
       "staticEvoMaxSpeed": 900.0,
@@ -82,7 +82,7 @@
     },
     "tyre": {
       "forwardFriction": 10.0,
-      "sideFriction": 14.0,
+      "sideFriction": 15.0,
       "frontFrictionStretch": 10.0,
       "rearFrictionStretch": 10.0,
       "shiftRearFriction": 12.0,
@@ -100,8 +100,9 @@
       "holdComebackSpeed": 0.8,
       "steerLimitAt0": 1.0,
       "steerLimitAt200": 0.2,
-      "steerComebackAt0": 1.0,
-      "steerComebackAt200": 10.0
+      "steerLimitAt300": 0.1,
+      "steerComebackAt0": 5.0,
+      "steerComebackAt200": 15.0
     },
     "honk": {
       "honkType": 1.0

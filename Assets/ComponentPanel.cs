@@ -615,6 +615,7 @@ public class DriveSavable : PartSavable
 	public float holdComebackSpeed;
 	public float steerLimitAt0;
 	public float steerLimitAt200;
+	public float steerLimitAt300;
 	public float steerComebackAt0;
 	public float steerComebackAt200;
 	public DriveSavable()
@@ -630,6 +631,7 @@ public class DriveSavable : PartSavable
 		holdComebackSpeed = original.holdComebackSpeed;
 		steerLimitAt0 = original.steerLimitAt0;
 		steerLimitAt200 = original.steerLimitAt200;
+		steerLimitAt300 = original.steerLimitAt300;
 		steerComebackAt0 = original.steerComebackAt0;
 		steerComebackAt200 = original.steerComebackAt200;
 	}
@@ -644,6 +646,7 @@ public class DriveSavable : PartSavable
 		holdComebackSpeed = vp.steeringControl.holdComebackSpeed;
 		steerLimitAt0 = vp.steeringControl.steerLimitCurve.keys[0].value;
 		steerLimitAt200 = vp.steeringControl.steerLimitCurve.keys[1].value;
+		steerLimitAt300 = vp.steeringControl.steerLimitCurve.keys[2].value;
 		
 		steerComebackAt0 = vp.steeringControl.steerComebackCurve.keys[0].value;
 		steerComebackAt200 = vp.steeringControl.steerComebackCurve.keys[1].value;
@@ -661,7 +664,8 @@ public class DriveSavable : PartSavable
 		//vp.steeringControl.steerLimitCurve = AnimationCurve.Linear(0, steerLimitAt0, 83, steerLimitAt200);
 		vp.steeringControl.steerLimitCurve = new AnimationCurve(new Keyframe[] {
 			new (0, steerLimitAt0, 0, -0.03f),
-			new (56, steerLimitAt200, -0.0012f, 0)
+			new (56, steerLimitAt200, -0.0012f, 0),
+			new (83, steerLimitAt300, 0, 0)
 		});
 
 		vp.steeringControl.steerComebackCurve = AnimationCurve.Linear(0, steerComebackAt0, 56, steerComebackAt200);

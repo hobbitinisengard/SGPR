@@ -20,6 +20,7 @@ namespace RVP
 			public Vector3 pos;
 			public float dist;
 		}
+		const float gainP = .2f;
 		const int steepestAllowedAngleOnRespawnDegs = 75;
 		List<int> stuntPoints;
 		int racingLineLayerNumber;
@@ -74,7 +75,7 @@ namespace RVP
 		int reverseAttempts;
 
 		[Tooltip("Seconds a vehicle will be rolled over before resetting, -1 = no reset")]
-		public float rollResetTime = 3;
+		public float rollResetTime = 1;
 		public float rolledOverTime;
 		private bool dumbBool;
 		public AnimationCurve lookAheadMultCurve = new();
@@ -91,6 +92,8 @@ namespace RVP
 		public bool aiStuntingProc;
 		private bool revvingCo;
 		public float targetSteer;
+		[Range(0,1)]
+		public float maxDiff = 0.01f;
 		public bool overRoad { get; private set; }
 
 		public bool Pitting { get { return pitsPathCreator != null; } }
@@ -235,6 +238,8 @@ namespace RVP
 			var racingPathHits = Physics.CapsuleCastAll(transform.position + Vector3.up, 
 				transform.position + .5f * Vector3.up, radius, Vector3.down, Mathf.Infinity, layer);
 
+			
+
 			foreach (var hit in racingPathHits)
 			{
 				dist = Vector3.Distance(transform.position, hit.transform.position);
@@ -335,19 +340,22 @@ namespace RVP
 			}
 			vp.ebrakeInput = 0;
 
-			rolledOverTime = Mathf.Clamp((vp.reallyGroundedWheels < 3 && vp.crashing) ? rolledOverTime + Time.fixedDeltaTime
+			overRoad = Physics.Raycast(tr.position + Vector3.up, Vector3.down, out var _, Mathf.Infinity, 1 << F.I.roadLayer);
+			bool surface = Physics.Raycast(tr.position + Vector3.up, Vector3.down, out var hit, 3, RaceManager.I.wheelCastMask);
+			if(surface)
+				rolledOverTime = Mathf.Clamp((Vector3.Dot(hit.normal,vp.tr.up) < 0.5f) ? rolledOverTime + Time.fixedDeltaTime
 				: rolledOverTime - Time.fixedDeltaTime, 0, rollResetTime);
 
 			if (rolledOverTime >= rollResetTime)
 			{
 				StartCoroutine(ResetOnTrack());
 			}
-			overRoad = Physics.Raycast(tr.position + Vector3.up, Vector3.down, out var _, Mathf.Infinity, 1 << F.I.roadLayer);
+			
 
 			if (!pitsPathCreator)
 			{
-				if ((vp.reallyGroundedWheels == 4 && !overRoad) // out of track
-					|| (vp.velMag > 10 && vp.groundedWheels > 2 && Vector3.Dot(vp.forwardDir, trackPathCreator.path.GetDirectionAtDistance(dist)) < -0.5f
+				if ((!overRoad) // out of track
+					 || (vp.velMag > 10 && vp.groundedWheels > 2 && Vector3.Dot(vp.forwardDir, trackPathCreator.path.GetDirectionAtDistance(dist)) < -0.5f
 					&& Vector3.Dot(vp.rb.velocity.normalized, trackPathCreator.path.GetDirectionAtDistance(dist)) < -0.5f)) // wrong way drive
 					outOfTrackTime += Time.fixedDeltaTime;
 
@@ -394,10 +402,11 @@ namespace RVP
 					distLastTime = Time.time;
 				}
 
+				if(dist != 1 && (dist < progress || dist > progress + 2 * radius))
+					outOfTrackTime += Time.fixedDeltaTime;
+
 				if (dist < progress)
-				{
 					dist = progress;
-				}
 
 				if (dist < progress + 2 * radius 
 					|| (pitsPathCreator && pitsProgress >= pitsPathCreator.path.length) 
@@ -412,10 +421,6 @@ namespace RVP
 				{
 					dist = progress;
 					outOfTrackTime += 0.1f * Time.fixedDeltaTime;
-				}
-				else 
-				{
-					outOfTrackTime += Time.fixedDeltaTime;
 				}
 			}
 
@@ -541,7 +546,7 @@ namespace RVP
 					if (pitsPathCreator)
 						targetDir = ((Vector3)tPos - vp.tr.position).Flat();
 					else if((aiStuntingProc || NextStuntpointIn(30)) 
-						&& Physics.Raycast(vp.tr.position + 3 * Vector3.up, Vector3.down, out RaycastHit hit, Mathf.Infinity, 1 << F.I.roadLayer))
+						&& overRoad)
 					{
 						targetDir = ((Vector3)trackPathCreator.path.GetPointAtDistance(dist + 90) - vp.tr.position).Flat().normalized;
 						Debug.DrawRay(vp.tr.position+Vector3.up * 3, targetDir, Color.yellow);
@@ -551,14 +556,12 @@ namespace RVP
 						targetDir = F.Flat(target.pos - vp.tr.position);
 					}
 
-					targetSteer = Vector2.SignedAngle(targetDir, tr.forward.Flat());
+					var newTargetSteer = Vector2.SignedAngle(targetDir, tr.forward.Flat());
 
-					targetSteer = F.Sign(targetSteer) * Mathf.InverseLerp(0, maxPhysicalSteerAngle, Mathf.Abs(targetSteer));
+					newTargetSteer = F.Sign(newTargetSteer) * Mathf.InverseLerp(0, maxPhysicalSteerAngle, Mathf.Abs(newTargetSteer));
 
-					targetSteer = Mathf.Lerp(vp.steerInput, targetSteer, Pitting ? 1 : (20 * Time.fixedDeltaTime));
-
-					if (vp.reallyGroundedWheels > 2)
-						vp.SetSteer(((reverseTime == 0) ? 1 : -1) * targetSteer);
+					newTargetSteer *= (reverseTime == 0) ? 1 : -1;
+					vp.SetSteer(newTargetSteer * gainP);
 
 					vp.SetBoost(steerAngle < 2 && vp.BatteryPercent > 0.5f && vp.reallyGroundedWheels > 2 && vp.velMag < 30);
 				}

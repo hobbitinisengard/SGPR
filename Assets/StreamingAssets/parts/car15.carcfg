@@ -60,7 +60,7 @@
       "fuelConsumption": 10.0,
       "audioType": 2.0,
       "inertia": 0.375,
-      "torque": 0.05,
+      "torque": 0.012,
       "torqueCurveType": 2.0,
       "redlineKRPM": 10.499,
       "cutoffKRPM": 10.5
@@ -77,7 +77,7 @@
       "dragsterEffect": 0.9
     },
     "boost": {
-      "maxBoost": 0.1,
+      "maxBoost": 0.05,
       "batteryConsumption": 20.0
     },
     "tyre": {
@@ -100,6 +100,7 @@
       "holdComebackSpeed": 0.9,
       "steerLimitAt0": 1.0,
       "steerLimitAt200": 0.2,
+	  "steerLimitAt300": 0.1,
       "steerComebackAt0": 1.0,
       "steerComebackAt200": 15.0
     },

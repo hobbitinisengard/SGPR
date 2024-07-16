@@ -135,8 +135,11 @@ public class RankingView : MainMenuView
 		F.I.move2Ref.action.performed -= Move;
 		SetColorOfRow(selectedRow, Color.white);
 		F.I.SaveRanking();
-		ServerC.I.ScoreSet(0);
-		ServerC.I.UpdatePlayerData();
+		if(sortedResults?.Count > 0)
+		{
+			ServerC.I.ScoreSet(0);
+			ServerC.I.UpdatePlayerData();
+		}
 		ResultsView.Clear();
 	}
 	protected override void OnEnable()

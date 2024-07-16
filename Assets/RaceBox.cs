@@ -865,6 +865,8 @@ public class RaceBox : MonoBehaviour
 		// You can disable racebox only ONCE
 		if (raceTime == initialRaceTime)
 		{
+			vp.basicInput.enabled = false;
+
 			vp.sampleText.gameObject.SetActive(false);
 
 			raceTime = DateTime.UtcNow - F.I.raceStartDate;

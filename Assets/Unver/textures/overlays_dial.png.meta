@@ -504,10 +504,10 @@ TextureImporter:
       name: overlays_dial_10
       rect:
         serializedVersion: 2
-        x: 980
-        y: 925
-        width: 72
-        height: 74
+        x: 973
+        y: 915
+        width: 87
+        height: 88
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}

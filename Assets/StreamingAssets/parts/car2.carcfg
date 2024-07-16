@@ -60,7 +60,7 @@
       "fuelConsumption": 10.0,
       "audioType": 3.0,
       "inertia": 0.5,
-      "torque": 0.125,
+      "torque": 0.01,
       "torqueCurveType": 3.0,
       "redlineKRPM": 10.54,
       "cutoffKRPM": 10.55
@@ -74,7 +74,7 @@
       "evoSmoothTime": 0.07,
       "staticEvoMaxSpeed": 300.0,
       "evoAcceleration": 30.0,
-      "dragsterEffect": 0.9
+      "dragsterEffect": 0.6
     },
     "boost": {
       "maxBoost": 0.05,
@@ -100,6 +100,7 @@
       "holdComebackSpeed": 0.9,
       "steerLimitAt0": 1.0,
       "steerLimitAt200": 0.1,
+      "steerLimitAt300": 0.1,
       "steerComebackAt0": 1.0,
       "steerComebackAt200": 10.0
     },

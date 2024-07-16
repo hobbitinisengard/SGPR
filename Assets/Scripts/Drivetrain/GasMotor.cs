@@ -95,7 +95,7 @@ namespace RVP
 				float targetRPM;
 				if (rpmTooHigh || actualInput == 0 || (transmission.IsShifting() && transmission.selectedGear > 2))
 				{
-					targetRPM = Mathf.Max(minkRPM * 1000, targetDrive.feedbackRPM - 1000);
+					targetRPM = Mathf.Max(minkRPM * 1000, targetDrive.feedbackRPM - 500);
 				}
 				else
 					targetRPM = actualInput * limit2kRPM * 1000;

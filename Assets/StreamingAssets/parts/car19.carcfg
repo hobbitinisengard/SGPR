@@ -100,6 +100,7 @@
       "holdComebackSpeed": 0.9,
       "steerLimitAt0": 1.0,
       "steerLimitAt200": 0.3,
+	  "steerLimitAt300": 0.1,
       "steerComebackAt0": 1.0,
       "steerComebackAt200": 15.0
     },

@@ -32,8 +32,8 @@
       "autoSteerDrift": 0.0,
       "driftPush": 0.0,
       "downforce": 0.0,
-      "frontBrakeForce": 0.01,
-      "rearBrakeForce": 0.01
+      "frontBrakeForce": 0.1,
+      "rearBrakeForce": 0.1
     },
     "battery": {
       "capacity": 900.0,
@@ -60,14 +60,14 @@
       "fuelConsumption": 10.0,
       "audioType": 4.0,
       "inertia": 0.375,
-      "torque": 0.1,
+      "torque": 0.03,
       "torqueCurveType": 3.0,
       "redlineKRPM": 10.499,
       "cutoffKRPM": 11.0
     },
     "chassis": {
       "mass": 1.1,
-      "longtitunalCOM": 0.02,
+      "longtitunalCOM": 0.0,
       "verticalCOM": 0.41,
       "drag": 0.1,
       "angularDrag": 0.9,
@@ -77,15 +77,15 @@
       "dragsterEffect": 0.9
     },
     "boost": {
-      "maxBoost": 0.2,
-      "batteryConsumption": 20.0
+      "maxBoost": 0.02,
+      "batteryConsumption": 5.0
     },
     "tyre": {
       "forwardFriction": 9.0,
       "sideFriction": 12.0,
       "frontFrictionStretch": 10.0,
       "rearFrictionStretch": 10.0,
-      "shiftRearFriction": 9.9,
+      "shiftRearFriction": 9.5,
       "squeakSlipThreshold": 0.75,
       "slipDependence": 0.0,
       "axleFriction": 0.0015,
@@ -96,12 +96,13 @@
     },
     "drive": {
       "driveType": 0.0,
-      "steerAdd": 0.04,
-      "holdComebackSpeed": 0.8,
+      "steerAdd": 0.02,
+      "holdComebackSpeed": 0.9,
       "steerLimitAt0": 1.0,
       "steerLimitAt200": 0.2,
+      "steerLimitAt300": 0.1,
       "steerComebackAt0": 1.0,
-      "steerComebackAt200": 10.0
+      "steerComebackAt200": 15.0
     },
     "honk": {
       "honkType": 1.0

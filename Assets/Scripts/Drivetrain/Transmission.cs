@@ -75,7 +75,7 @@ namespace RVP
 				if (clutch > 0)
 				{
 					float targetRpm = vp.velMag * 30 * 3.6f / (Mathf.PI * vp.wheels[2].tireRadius);
-					targetDrive.rpm = Mathf.Lerp(targetDrive.feedbackRPM, targetRpm, (1 - clutch));
+					targetDrive.rpm = Mathf.Lerp(targetRpm, targetDrive.feedbackRPM , clutch);
 				}
 
 				float wheelsRPM = (tempRPM / enabledDrives) * ratio;

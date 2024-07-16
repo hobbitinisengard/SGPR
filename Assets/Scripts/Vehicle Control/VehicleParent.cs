@@ -923,6 +923,8 @@ namespace RVP
 		// Check for crashes and play collision sounds
 		void OnCollisionEnter(Collision col)
 		{
+			raceBox.evoModule.Reset();
+
 			if (col.contacts.Length > 0)
 			{
 				foreach (ContactPoint curCol in col.contacts)

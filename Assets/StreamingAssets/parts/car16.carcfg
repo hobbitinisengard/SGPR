@@ -33,7 +33,7 @@
       "driftPush": 1.0,
       "downforce": 0.0,
       "frontBrakeForce": 0.1,
-      "rearBrakeForce": 0.01
+      "rearBrakeForce": 0.1
     },
     "battery": {
       "capacity": 1100.0,
@@ -60,7 +60,7 @@
       "fuelConsumption": 10.0,
       "audioType": 4.0,
       "inertia": 0.9,
-      "torque": 0.3,
+      "torque": 0.01,
       "torqueCurveType": 3.0,
       "redlineKRPM": 10.499,
       "cutoffKRPM": 10.5
@@ -81,7 +81,7 @@
       "batteryConsumption": 70.0
     },
     "tyre": {
-      "forwardFriction": 7.0,
+      "forwardFriction": 9.0,
       "sideFriction": 15.0,
       "frontFrictionStretch": 10.0,
       "rearFrictionStretch": 10.0,
@@ -100,8 +100,9 @@
       "holdComebackSpeed": 0.9,
       "steerLimitAt0": 1.0,
       "steerLimitAt200": 0.2,
+      "steerLimitAt300": 0.1,
       "steerComebackAt0": 1.0,
-      "steerComebackAt200": 10.0
+      "steerComebackAt200": 15.0
     },
     "honk": {
       "honkType": 2.0

@@ -330,7 +330,7 @@ namespace RVP
 					}
 					gears[i].minRPM *= 0.6f; // why? (it works though)
 					gears[i].maxRPM *= 0.9f; // change gear before red field
-					gears[i].maxSpeed = 0.6f * gears[i].maxRPM / 60 * 2 * Mathf.PI * vp.wheels[2].tireRadius / 3.6f;
+					gears[i].maxSpeed = 0.5f * gears[i].maxRPM / 60 * 2 * Mathf.PI * vp.wheels[2].tireRadius / 3.6f;
 				}
 			}
 		}

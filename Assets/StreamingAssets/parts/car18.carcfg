@@ -60,7 +60,7 @@
       "fuelConsumption": 10.0,
       "audioType": 1.0,
       "inertia": 0.1,
-      "torque": 0.03,
+      "torque": 0.01,
       "torqueCurveType": 3.0,
       "redlineKRPM": 10.499,
       "cutoffKRPM": 10.5
@@ -95,11 +95,12 @@
       "torqueThreshold": 0.2
     },
     "drive": {
-      "driveType": 2.0,
+      "driveType": 0.0,
       "steerAdd": 0.03,
       "holdComebackSpeed": 0.9,
       "steerLimitAt0": 1.0,
       "steerLimitAt200": 0.2,
+      "steerLimitAt300": 0.1,
       "steerComebackAt0": 1.0,
       "steerComebackAt200": 10.0
     },

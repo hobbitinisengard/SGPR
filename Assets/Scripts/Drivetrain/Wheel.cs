@@ -361,7 +361,7 @@ namespace RVP
 
 			// Get proper inputs
 			actualEbrake = suspensionParent.ebrakeEnabled ? suspensionParent.ebrakeForce : 0;
-			actualTargetRPM = targetDrive.rpm * (suspensionParent.driveInverted ? -1 : 1);
+			actualTargetRPM = targetDrive.active ? targetDrive.rpm * (suspensionParent.driveInverted ? -1 : 1) : rawRPM;
 			actualTorque = targetDrive.active ?  targetDrive.torque : 0;
 
 			if (getContact)

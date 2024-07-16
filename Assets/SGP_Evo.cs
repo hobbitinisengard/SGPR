@@ -192,13 +192,13 @@ public class SGP_Evo : MonoBehaviour
 			if (!stunting && prevSGPShiftButton == 0)
 			{ // shift press before jump
 				shiftPressTime = Time.time;
-				Debug.Log("shiftPressTime");
+				//Debug.Log("shiftPressTime");
 			}
 		}
 
 		if (!stunting && vp.reallyGroundedWheels == 0 && !vp.colliding && !vp.crashing && (Time.time - shiftPressTime) < maxTimeToInit)
 		{
-			Debug.Log("stunting");
+			//Debug.Log("stunting");
 			evoBloorp.Play();
 			stunting = true;
 			euler = vp.tr.rotation.eulerAngles;
@@ -211,7 +211,7 @@ public class SGP_Evo : MonoBehaviour
 		{
 			if (vp.rb.isKinematic || vp.crashing || vp.colliding || vp.reallyGroundedWheels > 0)
 			{
-				Debug.Log("Crashed");
+				//Debug.Log("Crashed");
 				stunting = false;
 				return;
 			}

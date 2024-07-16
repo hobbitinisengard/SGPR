@@ -1,0 +1,8 @@
+Sus, Itex: Basic, Compact, Absorber, Absorber Pro, Ultra shock
+Bms, Mysuko: Maxi-Control, Enhanced, Bypass, Mephisto, Diablo Extreme
+Bat, Titan: Quadra Cell, Duo Cell, Powercell, Powerforce, Lite Max
+Eng, Caltex: 6V Motor, 7V Motor, Max Lite, Max Pro, Nitro V
+Cha, TGR: Impact, Frame Star, Hollow Lite, Ultra C, Carbon Magna
+Brakes, Itex: Wheelforce, Wheelforce Ultra, Maxim, Brakesure Lite, Brakesure Pro
+Gears, Itex: Uno (1 bieg), Keanu (3 biegi), Caveman (4 biegi), Caveman Pro (4 biegi szybkie), Racer (5 biegów), Flex (6 biegów), PDK (7 biegów), PDK Plus (8 biegów)
+Jet, Mysuko: Poot, Poot Pro, Dunger, Skitter, Maxi Skitter (
