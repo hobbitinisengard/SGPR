@@ -31,7 +31,7 @@
       "maxDriftAngle": 70.0,
       "autoSteerDrift": 0.0,
       "driftPush": 1.0,
-      "downforce": 1.0,
+      "downforce": 2.0,
       "frontBrakeForce": 0.1,
       "rearBrakeForce": 0.1
     },
@@ -78,7 +78,7 @@
     },
     "boost": {
       "maxBoost": -0.4,
-      "batteryConsumption": -40.0
+      "batteryConsumption": -80.0
     },
     "tyre": {
       "forwardFriction": 9.0,

@@ -31,7 +31,7 @@
       "maxDriftAngle": 70.0,
       "autoSteerDrift": 0.0,
       "driftPush": 0.0,
-      "downforce": 2.0,
+      "downforce": 1.0,
       "frontBrakeForce": 0.2,
       "rearBrakeForce": 0.2
     },
@@ -81,14 +81,14 @@
       "batteryConsumption": 50.0
     },
     "tyre": {
-      "forwardFriction": 8.0,
+      "forwardFriction": 9.0,
       "sideFriction": 25.0,
       "frontFrictionStretch": 10.0,
       "rearFrictionStretch": 10.0,
       "shiftRearFriction": 23.0,
       "squeakSlipThreshold": 1.0,
       "slipDependence": 0.0,
-      "axleFriction": 0.0002,
+      "axleFriction": 2E-05,
       "offroadTread": 1.0,
       "driftRearFriction": 8.0,
       "driftRearFrictionInit": 21.0,

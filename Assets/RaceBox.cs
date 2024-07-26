@@ -92,6 +92,14 @@ public class RaceBox : MonoBehaviour
 			return TimeSpan.FromSeconds(lapTimer);
 		}
 	}
+	public float RaceProgressLaps
+	{
+		get { return curLap + vp.followAI.LapProgressPercent; }
+	}
+	public float RaceProgressDist
+	{
+		get { return RaceProgressLaps * vp.followAI.trackPathCreator.path.length; }
+	}
 	public TimeSpan bestLapTime { get; private set; }
 	/// <summary>
 	/// set only after the race

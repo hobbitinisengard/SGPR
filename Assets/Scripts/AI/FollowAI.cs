@@ -19,8 +19,8 @@ namespace RVP
 			[NonSerialized]
 			public Vector3 pos;
 			public float dist;
+			
 		}
-		const float gainP = .2f;
 		const int steepestAllowedAngleOnRespawnDegs = 75;
 		List<int> stuntPoints;
 		int racingLineLayerNumber;
@@ -58,7 +58,9 @@ namespace RVP
 		public float hardCornerDot = 0.7f;
 		public float slowingCoeff = 1;
 		float maxPhysicalSteerAngle = 5;
-		const float reqDist = 10;
+
+		float reqDist;
+		const float steerMinDist = 10;
 		// CPU settings
 		//float tyreMult = 1;
 		//float lowSpeed = 30;
@@ -521,6 +523,8 @@ namespace RVP
 
 				if (!vp.raceBox.evoModule.stunting)
 				{
+					reqDist = lookAheadSteerCurve.Evaluate(vp.velMag) * steerMinDist;
+
 					float dTargetCar = Vector3.Distance(target.pos, vp.tr.position);
 					if (Mathf.Abs(target.dist - dist) > 2 * reqDist || target.dist < dist)
 					{ // reset target
@@ -556,12 +560,12 @@ namespace RVP
 						targetDir = F.Flat(target.pos - vp.tr.position);
 					}
 
-					var newTargetSteer = Vector2.SignedAngle(targetDir, tr.forward.Flat());
+					var newTargetSteer = Vector2.SignedAngle(targetDir, (vp.rb.velocity.normalized.Flat()+tr.forward.Flat())/2f);
 
 					newTargetSteer = F.Sign(newTargetSteer) * Mathf.InverseLerp(0, maxPhysicalSteerAngle, Mathf.Abs(newTargetSteer));
 
 					newTargetSteer *= (reverseTime == 0) ? 1 : -1;
-					vp.SetSteer(newTargetSteer * gainP);
+					vp.SetSteer(newTargetSteer);
 
 					vp.SetBoost(steerAngle < 2 && vp.BatteryPercent > 0.5f && vp.reallyGroundedWheels > 2 && vp.velMag < 30);
 				}

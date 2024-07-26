@@ -31,7 +31,7 @@
       "maxDriftAngle": 70.0,
       "autoSteerDrift": 0.0,
       "driftPush": 0.0,
-      "downforce": 5.0,
+      "downforce": 1.0,
       "frontBrakeForce": 0.01,
       "rearBrakeForce": 0.01
     },
@@ -88,7 +88,7 @@
       "shiftRearFriction": 25.0,
       "squeakSlipThreshold": 0.75,
       "slipDependence": 0.0,
-      "axleFriction": 0.0015,
+      "axleFriction": 2E-05,
       "offroadTread": 1.0,
       "driftRearFriction": 11.0,
       "driftRearFrictionInit": 25.0,

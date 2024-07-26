@@ -35,8 +35,7 @@ namespace RVP
 		[Header("Rotation")]
 
 		[Tooltip("Bias for feedback RPM lerp between target RPM and raw RPM")]
-		[Range(0, 1)]
-		public float feedbackRpmBias;
+		float feedbackRpmBias = 0;
 
 		[Tooltip("Curve for setting final RPM of wheel based on driving torque/brake force, x-axis = torque/brake force, y-axis = lerp between raw RPM and target RPM")]
 		public AnimationCurve rpmBiasCurve;
@@ -258,7 +257,7 @@ namespace RVP
 			vp = tr.GetTopmostParentComponent<VehicleParent>();
 			rpmBiasCurve = new(new Keyframe[] { new(0, .25f, 0, 1.6f), new(1, 1, 0, 1.6f) });
 			forwardFrictionCurve ??= new AnimationCurve(new Keyframe[] { new(0, .35f), new(1, 1) });
-			sidewaysFrictionCurve ??= new AnimationCurve(new Keyframe[] { new(0, 0f), new(0.1f, 1), new(1, 0.9f) });
+			sidewaysFrictionCurve ??= new AnimationCurve(new Keyframe[] { new(0, 0), new(0.1f, 1), new(1, 0.9f) });
 			suspensionParent = tr.parent.GetComponent<Suspension>();
 			travelDist = suspensionParent.targetCompression;
 			canDetach = detachForce < Mathf.Infinity && Application.isPlaying;
@@ -348,11 +347,7 @@ namespace RVP
 				slipDependence = SlipDependenceMode.independent;
 		}
 
-		void FixedUpdate()
-		{
-			Work(Time.fixedDeltaTime);
-		}
-		public void Work(float deltaTime)
+		public void FixedUpdate()
 		{
 			upDir = tr.up;
 			actualRadius = popped ? rimRadius : Mathf.Lerp(rimRadius, tireRadius, tirePressure);
@@ -366,14 +361,14 @@ namespace RVP
 
 			if (getContact)
 			{
-				GetWheelContact(deltaTime);
+				GetWheelContact();
 			}
 			else if (grounded)
 			{
-				contactPoint.point += localVel * deltaTime;
+				contactPoint.point += localVel * Time.fixedDeltaTime;
 			}
 
-			airTime = grounded ? 0 : airTime + deltaTime;
+			airTime = grounded ? 0 : airTime + Time.fixedDeltaTime;
 			forceApplicationPoint = applyForceAtGroundContact ? contactPoint.point : tr.position;
 
 			if (connected)
@@ -390,7 +385,7 @@ namespace RVP
 
 			// Get travel distance
 			travelDist = (suspensionParent.compression < travelDist || grounded) ? suspensionParent.compression
-				: Mathf.Lerp(travelDist, suspensionParent.compression, suspensionParent.extendSpeed * deltaTime);
+				: Mathf.Lerp(travelDist, suspensionParent.compression, suspensionParent.extendSpeed * Time.fixedDeltaTime);
 
 			PositionWheel();
 
@@ -529,7 +524,7 @@ namespace RVP
 		}
 
 		// Use raycasting to find the current contact point for the wheel
-		void GetWheelContact(float deltaTime)
+		void GetWheelContact()
 		{
 			float castDist = Mathf.Max(suspensionParent.suspensionDistance * Mathf.Max(0.001f, suspensionParent.targetCompression) + actualRadius, 0.001f);
 			//RaycastHit[] wheelHits = Physics.RaycastAll(transform.position, suspensionParent.springDirection, castDist, RaceManager.wheelCastMaskStatic);
@@ -571,7 +566,7 @@ namespace RVP
 				grounded = true;
 				groundedReally = true;
 				contactPoint.distance = hit.distance - actualRadius;
-				contactPoint.point = hit.point + localVel * deltaTime;
+				contactPoint.point = hit.point + localVel * Time.fixedDeltaTime;
 				contactPoint.grounded = true;
 				contactPoint.normal = hit.normal;
 				contactPoint.relativeVelocity = tr.InverseTransformDirection(localVel);
@@ -697,8 +692,7 @@ namespace RVP
 					* forwardSlipDependenceFactor * -suspensionParent.flippedSideFactor;
 				float targetForceZ = sidewaysFrictionCurve.Evaluate(Mathf.Abs(sidewaysSlipFactor))
 					* -System.Math.Sign(sidewaysSlip) * (popped ? sidewaysRimFriction : sidewaysFriction)
-					* sidewaysSlipDependenceFactor * normalFrictionCurve.Evaluate(Mathf.Clamp01(Vector3.Dot(contactPoint.normal, RaceManager.worldUpDir))) *
-					 (vp.burnout > 0 && Mathf.Abs(targetDrive.rpm) != 0 && actualEbrake * vp.ebrakeInput == 0 && grounded ? (1 - vp.burnout) * (1 - Mathf.Abs(vp.accelInput)) : 1);
+					* sidewaysSlipDependenceFactor * normalFrictionCurve.Evaluate(Mathf.Clamp01(Vector3.Dot(contactPoint.normal, RaceManager.worldUpDir)));
 
 				Vector3 targetForce = tr.TransformDirection(targetForceX, 0, targetForceZ);
 				float wheelFriction = contactPoint.surfaceFriction;
@@ -739,7 +733,7 @@ namespace RVP
 				brakeForce = suspensionParent.brakeForce * vp.brakeInput;
 			}
 
-			brakeForce += axleFriction * 0.1f * (Mathf.Approximately(actualTorque, 0) ? 1 : 0);
+			brakeForce += axleFriction / 10;// * (Mathf.Approximately(actualTorque, 0) ? 1 : 0);
 			if (targetDrive.rpm != 0)
 			{
 				brakeForce *= (1 - vp.burnout);

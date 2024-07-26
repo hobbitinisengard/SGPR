@@ -12289,8 +12289,8 @@ Transform:
   m_GameObject: {fileID: 4992294579748239525}
   serializedVersion: 2
   m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 0.547, z: 0.065}
-  m_LocalScale: {x: 0.84999996, y: 1.13, z: 0.7}
+  m_LocalPosition: {x: 0, y: 0.547, z: -0.048}
+  m_LocalScale: {x: 0.84999996, y: 0.91, z: 0.7}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6457121441695959639}
@@ -17755,7 +17755,6 @@ MonoBehaviour:
   wheelForceMode: 0
   suspensionForceMode: 0
   towVehicle: {fileID: 0}
-  canCrash: 1
   roadNoiseSnd: {fileID: 1329346153}
   crashSnd: {fileID: 6779875394764497535}
   scrapeSnd: {fileID: 4914500726630618572}
@@ -17861,8 +17860,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   evoBloorp: {fileID: 515682680}
-  stunting: 0
-  flippedWhenInitiated: 0
   rX_delta: 0
   euler: {x: 0, y: 0, z: 0}
   posy: 0
@@ -18015,20 +18012,20 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 0.01241159
       value: 69.740166
-      inSlope: -1737.2126
-      outSlope: -1737.2126
+      inSlope: -1374.7512
+      outSlope: -1374.7512
       tangentMode: 136
       weightedMode: 0
       inWeight: 0.33333334
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 0.039236423
-      value: 42.560776
-      inSlope: -277.96957
-      outSlope: -277.96957
+      time: 0.038961764
+      value: 55
+      inSlope: -60.527523
+      outSlope: -60.527523
       tangentMode: 0
       weightedMode: 0
-      inWeight: 0.46953413
+      inWeight: 0.5421207
       outWeight: 0.33333334
     m_PreInfinity: 2
     m_PostInfinity: 2
@@ -18037,10 +18034,8 @@ MonoBehaviour:
   outOfTrackTime: 0
   outOfTrackRequiredTime: 2
   aiStuntingProc: 0
-  cpuSmoothCoeff: 10
-  cpuFastCoeff: 50
   targetSteer: 0
-  maxSteerPerFrame: 5
+  maxDiff: 0.01
 --- !u!114 &8319369162350912230
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -18788,7 +18783,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   generateHardCollider: 1
-  feedbackRpmBias: 0
   rpmBiasCurve:
     serializedVersion: 2
     m_Curve:
@@ -19204,7 +19198,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   generateHardCollider: 1
-  feedbackRpmBias: 0
   rpmBiasCurve:
     serializedVersion: 2
     m_Curve:
@@ -19875,7 +19868,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   gamma: 2
   shiftRearFriction: 0
-  asi: 0
+  absSteerInput: 0
 --- !u!1 &6779875396000727283
 GameObject:
   m_ObjectHideFlags: 0
@@ -20159,9 +20152,12 @@ MonoBehaviour:
   driveDividePower: 3
   actualAccel: 0
   transmission: {fileID: 6779875395388755402}
+  rpmTooHigh: 0
   d_targetRpm: 0
+  d_feedRpm: 0
   engineSmoke: {fileID: 1642738044}
   boostEval: 0
+  d_torqueCurve: 0
 --- !u!82 &4634947501902952183
 AudioSource:
   m_ObjectHideFlags: 0
@@ -20327,7 +20323,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   generateHardCollider: 1
-  feedbackRpmBias: 0
   rpmBiasCurve:
     serializedVersion: 2
     m_Curve:
@@ -20611,7 +20606,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   generateHardCollider: 1
-  feedbackRpmBias: 0
   rpmBiasCurve:
     serializedVersion: 2
     m_Curve:

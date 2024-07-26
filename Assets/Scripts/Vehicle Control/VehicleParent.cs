@@ -63,7 +63,7 @@ namespace RVP
 	//		roll = Mathf.FloatToHalf(vp.rollInput);
 	//		honkBoostShift = (byte)(vp.honkInput | vp.boostButton << 1 | vp.SGPshiftbutton << 2);
 	//		this.tick = tick;
-			
+
 	//	}
 	//	public void NetworkSerialize<T>(BufferSerializer<T> s) where T : IReaderWriter
 	//	{
@@ -74,18 +74,18 @@ namespace RVP
 	//			s.SerializeValue(ref steer);
 	//			s.SerializeValue(ref brake);
 	//			s.SerializeValue(ref roll);
-				
+
 	//			s.SerializeValue(ref tick);
 	//		}
 	//	}
 	//}
 
 	public enum CatchupStatus { NoCatchup, Speeding, Slowing };
-	
+
 	[RequireComponent(typeof(Rigidbody))]
 	[DisallowMultipleComponent]
 	[AddComponentMenu("RVP/Vehicle Controllers/Vehicle Parent", 0)]
-	
+
 	// Vehicle root class
 	public class VehicleParent : NetworkBehaviour
 	{
@@ -167,31 +167,31 @@ namespace RVP
 		//NetworkVariable<int> _rollButton = new(writePerm: NetworkVariableWritePermission.Owner);
 		//public int rollInput { get { return _boostButton.Value; } set { _boostButton.Value = value; } }
 
-		public Livery sponsor 
-		{ 
-			get 
+		public Livery sponsor
+		{
+			get
 			{
 				return _sponsor.Value;
-			} 
-			set 
-			{ 
-				if(ServerC.I.AmHost)
+			}
+			set
+			{
+				if (ServerC.I.AmHost)
 				{
 					if (value == Livery.Random)
 						value = F.RandomLivery();
 					_sponsor.Value = value;
 				}
-			} 
+			}
 		}
 
 		NetworkVariable<FixedString32Bytes> _name = new(); // SERVER
-		public new string name 
-		{ 
+		public new string name
+		{
 			get
-			{ 
-				return _name.Value.ToString(); 
-			} 
-			set 
+			{
+				return _name.Value.ToString();
+			}
+			set
 			{
 				if (ServerC.I.AmHost)
 				{
@@ -220,7 +220,7 @@ namespace RVP
 		public float pitchInput;
 		[System.NonSerialized]
 		public float yawInput;
-		
+
 
 		public GameObject[] frontLights;
 		public GameObject[] rearLights;
@@ -307,8 +307,6 @@ namespace RVP
 		public VehicleParent inputInherit; // Vehicle which to inherit input from
 
 		[Header("Crashing")]
-
-		public bool canCrash = true;
 		public AudioSource roadNoiseSnd;
 		public AudioSource crashSnd;
 		public AudioSource scrapeSnd;
@@ -332,6 +330,7 @@ namespace RVP
 		/// touching anything
 		/// </summary>
 		public bool colliding;
+		private Coroutine colCo;
 		public bool crashing; // serious impact
 		[NonSerialized]
 		public GameObject customCam;
@@ -348,12 +347,12 @@ namespace RVP
 		[Rpc(SendTo.SpecifiedInParams)]
 		void RequestRaceboxValuesRpc(RpcParams ps)
 		{
-			SynchRaceboxValuesRpc(raceBox.enabled, ServerC.I.PlayerMe.ScoreGet(), raceBox.curLap, followAI.dist, followAI.progress, raceBox.Aero, raceBox.drift, 
+			SynchRaceboxValuesRpc(raceBox.enabled, ServerC.I.PlayerMe.ScoreGet(), raceBox.curLap, followAI.dist, followAI.progress, raceBox.Aero, raceBox.drift,
 				(float)raceBox.bestLapTime.TotalSeconds, (float)raceBox.raceTime.TotalSeconds,
 				RpcTarget.Single(ps.Receive.SenderClientId, RpcTargetUse.Temp));
 		}
 		[Rpc(SendTo.SpecifiedInParams)]
-		public void SynchRaceboxValuesRpc(bool enabled, int lastRoundScore, int curLap, int dist, int progress, float aero, float drift, 
+		public void SynchRaceboxValuesRpc(bool enabled, int lastRoundScore, int curLap, int dist, int progress, float aero, float drift,
 			float bestLapSecs, float raceTimeSecs, RpcParams ps)
 		{
 			this.lastRoundScore = lastRoundScore;
@@ -373,6 +372,7 @@ namespace RVP
 		public float AngularDrag { get { return rb.angularDrag; } }
 
 		bool collisionDetectionChangerActive;
+		private float lastCrashingTime;
 
 		public void SetBattery(float capacity, float chargingSpeed, float lowBatPercent, float evoBountyPercent)
 		{
@@ -385,7 +385,7 @@ namespace RVP
 
 		public void SetCatchup(CatchupStatus newStatus)
 		{
-			if (F.I.s_catchup)
+			if (F.I.catchup)
 			{
 				switch (newStatus)
 				{
@@ -448,7 +448,7 @@ namespace RVP
 			Material newMat = Resources.Load<Material>("materials/" + matName);
 			newMat.name = matName;
 			mr.material = newMat;
-			if(antennaFlag != null)
+			if (antennaFlag != null)
 				antennaFlag.material = newMat;
 			RaceManager.I.hud.AddToProgressBar(this);
 			sampleText.textMesh.color = F.ReadColor(sponsor);
@@ -460,7 +460,7 @@ namespace RVP
 			if (name == F.I.playerData.playerName && Owner)
 			{
 				RaceManager.I.playerCar = this;
-				
+
 				RaceManager.I.cam.Connect(this);
 				RaceManager.I.hud.Connect(this);
 
@@ -470,13 +470,13 @@ namespace RVP
 				NetworkManager.OnTransportFailure += NetworkManager_OnTransportFailure;
 				//newCar.followAI.SetCPU(true); // CPU drives player's car
 
-				
+
 			}
 			sampleText.gameObject.SetActive(!F.I.s_spectator && F.I.gameMode == MultiMode.Multiplayer && RaceManager.I.playerCar != this);
 		}
 
 		private void NetworkManager_OnTransportFailure()
-		{ 
+		{
 			RaceManager.I.ExitButton();
 		}
 
@@ -523,18 +523,18 @@ namespace RVP
 			base.OnNetworkSpawn();
 			Initialize();
 		}
-		
+
 		private void Start()
 		{
-			if(F.I.gameMode == MultiMode.Singleplayer)
+			if (F.I.gameMode == MultiMode.Singleplayer)
 				Initialize();
 		}
-		
+
 		void Initialize()
 		{
-			
+
 			Color c = F.RandomColor();
-			foreach(var s in springRenderers)
+			foreach (var s in springRenderers)
 				s.material.color = c;
 
 			brakeCurve ??= GenerateBrakeCurve();
@@ -559,7 +559,7 @@ namespace RVP
 
 			StartCoroutine(ApplySetup());
 		}
-		
+
 		IEnumerator ApplySetup()
 		{
 			while (sponsor == Livery.Random)
@@ -568,11 +568,11 @@ namespace RVP
 			}
 			OnNameChanged();
 			OnSponsorChanged();
-			
+
 			yield return new WaitForSeconds(.5f); // wait for all the components to load
 			carConfig = new CarConfig(F.I.cars[carNumber - 1].config);
 			carConfig.Apply(this);
-			
+
 			if (F.I.s_raceType == RaceType.TimeTrial)
 				ghost.SetGhostPermanently();
 
@@ -704,10 +704,10 @@ namespace RVP
 			acceleration = localVelocity - prevVel;
 
 			localAngularVel = tr.InverseTransformDirection(rb.angularVelocity);
-			
+
 			velMag = rb.velocity.magnitude;
 
-			
+
 
 			sqrVelMag = rb.velocity.sqrMagnitude;
 			forwardDir = tr.forward;
@@ -755,7 +755,7 @@ namespace RVP
 			}
 			f = Mathf.Clamp(f, -1, (BatteryPercent <= 0) ? 0.67f : 1);
 
-			if(Owner)
+			if (Owner)
 				accelInput = f;
 
 			if (energyRemaining > 0)
@@ -916,10 +916,7 @@ namespace RVP
 				}
 			}
 		}
-		void OnCollisionExit(Collision col)
-		{
-			crashing = false;
-		}
+		
 		// Check for crashes and play collision sounds
 		void OnCollisionEnter(Collision col)
 		{
@@ -931,11 +928,14 @@ namespace RVP
 				{
 					if (curCol.thisCollider.gameObject.layer != RaceManager.ignoreWheelCastLayer)
 					{
-						if (Mathf.Abs(Vector3.Dot(curCol.normal, col.relativeVelocity.normalized)) > 0.1f && col.relativeVelocity.magnitude > 10)
+						if (Mathf.Abs(Vector3.Dot(curCol.normal, col.relativeVelocity.normalized)) > 0.1f 
+							&& col.relativeVelocity.magnitude > 10)
 						{
 							crashSnd.PlayOneShot(crashClips[UnityEngine.Random.Range(0, crashClips.Length)],
 								Mathf.Clamp01(col.relativeVelocity.magnitude * 0.1f));
-							crashing = canCrash;
+							crashing = true;
+							if (crashing)
+								lastCrashingTime = Time.time;
 						}
 
 						if (sparks && playCrashSparks)
@@ -960,26 +960,34 @@ namespace RVP
 					if (!curCol.thisCollider.CompareTag("Underside")
 						&& curCol.thisCollider.gameObject.layer != RaceManager.ignoreWheelCastLayer)
 					{
-						nowCrashing = canCrash;
+						nowCrashing = true;
 
-						//if (reallyGroundedWheels >= 2)
-						{
-							if (!scrapeSnd.isPlaying)
-								scrapeSnd.Play();
-							// play sparks
-							sparks.transform.position = curCol.point;
-							sparks.transform.rotation = Quaternion.LookRotation(col.relativeVelocity.normalized, curCol.normal);
-							if (!sparks.isPlaying)
-								sparks.Play();
-						}
+						if (!scrapeSnd.isPlaying)
+							scrapeSnd.Play();
+						//play sparks
+						sparks.transform.position = curCol.point;
+						sparks.transform.rotation = Quaternion.LookRotation(col.relativeVelocity.normalized, curCol.normal);
+						if (!sparks.isPlaying)
+							sparks.Play();
 					}
 				}
 			}
 			crashing = nowCrashing;
+			if (crashing)
+				lastCrashingTime = Time.time;
 			if (!(colliding || crashing))
 				scrapeSnd.Stop();
 		}
-
+		//IEnumerator Bla()
+		//{
+		//	yield return new WaitForSeconds(0.1f);
+		//}
+		void OnCollisionExit(Collision col)
+		{
+			//colCo = StartCoroutine(Bla());
+			crashing = false;
+			scrapeSnd.Stop();
+		}
 		public override void OnDestroy()
 		{
 			F.I.s_cars.Remove(this);

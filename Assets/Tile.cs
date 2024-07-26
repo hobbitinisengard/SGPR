@@ -246,17 +246,6 @@ public class Tile : MonoBehaviour
 			return;
 		var mf = mc.transform.GetComponent<MeshFilter>();
 
-		//if(scaled)
-		//{
-		//	if(!original)
-		//	{
-		//		Debug.LogError("No original UVs");
-		//		return;
-		//	}
-		//	mf.mesh.uv = original.transform.GetChild(0).GetComponent<MeshFilter>().mesh.uv;
-		//}
-		//scaled = true;
-
 		float scale = distance / mf.mesh.bounds.size.y;
 		transform.localScale = new Vector3(1, 1, scale);
 		{ // adjust UVs

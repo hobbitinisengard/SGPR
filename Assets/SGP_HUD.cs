@@ -499,10 +499,10 @@ public class SGP_HUD : MonoBehaviour
 			if (F.I.s_cars.Count > 1 && Time.time - progressBarUpdateTime > .5f)
 			{
 				progressBarUpdateTime = Time.time;
-				float playerDistance = vp.raceBox.curLap + vp.followAI.LapProgressPercent;
+				float playerDistance = vp.raceBox.RaceProgressLaps;
 				foreach (var car in F.I.s_cars)
 				{
-					float distance = car.raceBox.curLap + car.followAI.LapProgressPercent;
+					float distance = car.raceBox.RaceProgressLaps;
 					float diff = Mathf.Clamp(distance - playerDistance, -1, 1);
 					//if (F.I.s_catchup)
 					//{

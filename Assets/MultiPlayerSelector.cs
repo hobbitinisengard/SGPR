@@ -346,13 +346,14 @@ public class MultiPlayerSelector : TrackSelector
 		F.I.s_cpuLevel = (CpuLevel)(data[7] - '0');
 		F.I.s_cpuRivals = data[8] - '0';
 		F.I.s_roadType = (PavementType)(data[9]-'0');
-		F.I.s_catchup = false;
+		F.I.catchup = false;
 		F.I.teams = data[10] == '1';
+		F.I.catchup = data[11] == '1';
 
 		if(!ServerC.I.AmHost)
 		{
-			F.I.CurRound = byte.Parse(data[11..13]);
-			var nRounds = byte.Parse(data[13..15]);
+			F.I.CurRound = byte.Parse(data[12..14]);
+			var nRounds = byte.Parse(data[14..16]);
 
 			if (F.I.Rounds != nRounds)
 				ServerC.I.ScoreSet(0);
@@ -416,8 +417,8 @@ public class MultiPlayerSelector : TrackSelector
 		raceTypeButtonText.transform.parent.GetComponent<Button>().interactable = isHost && notRdy;
 		lapsButtonText.transform.parent.GetComponent<Button>().interactable = isHost && notRdy && F.I.s_raceType != RaceType.Knockout;
 		nightButtonText.transform.parent.GetComponent<Button>().interactable = isHost && notRdy;
-		CPULevelButtonText.transform.parent.GetComponent<Button>().interactable = isHost && notRdy;
-		rivalsButtonText.transform.parent.GetComponent<Button>().interactable = isHost && notRdy;
+		//CPULevelButtonText.transform.parent.GetComponent<Button>().interactable = isHost && notRdy;
+		catchupButtonText.transform.parent.GetComponent<Button>().interactable = isHost && notRdy;
 		wayButtonText.transform.parent.GetComponent<Button>().interactable = isHost && notRdy;
 		roundText.transform.parent.GetComponent<Button>().interactable = isHost && notRdy;
 		sponsorButtonText.transform.parent.gameObject.SetActive(isHost || F.I.teams);

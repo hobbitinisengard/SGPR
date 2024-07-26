@@ -12,7 +12,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using SimpleFileBrowser;
-using NUnit.Framework;
+using Unity.Mathematics;
 
 public class ReplayCam
 {
@@ -151,7 +151,7 @@ public class EditorPanel : MonoBehaviour
 
 	public bool initialized { get; private set; }
 	Vector3 curPosition;
-	List<Connector> connectors = new List<Connector>();
+	List<Connector> connectors = new();
 	bool selectingOtherConnector;
 	Coroutine closingPathCo;
 	Coroutine DisplayCo;
@@ -173,6 +173,9 @@ public class EditorPanel : MonoBehaviour
 	GameObject unityRoadMesh;
 
 	bool _angleSnapping = true;
+	float biggestPitPitDistance;
+	float avgDistBetweenRamps;
+
 	bool AngleSnapping
 	{
 		get { return _angleSnapping; }
@@ -489,14 +492,15 @@ public class EditorPanel : MonoBehaviour
 							if (Input.GetMouseButtonDown(1))
 							{ // Y ROTATION
 								int dir = Input.GetKey(KeyCode.LeftShift) ? -1 : 1;
+								int amount = Input.GetKey(KeyCode.LeftControl) ? 10 : 45;
 								if (Input.GetKey(KeyCode.Tab))
 								{
-									RotateCurrentTileAround(currentTile.transform.up, dir * 45);
+									RotateCurrentTileAround(currentTile.transform.up, dir * amount);
 								}
 								else
 								{
-									RotateCurrentTileAround(Vector3.up, dir * 45);
-									yRot = (yRot + dir * 45) % 360;
+									RotateCurrentTileAround(Vector3.up, dir * amount);
+									yRot = (yRot + dir * amount) % 360;
 								}
 							}
 							if (scroll != 0)
@@ -581,7 +585,7 @@ public class EditorPanel : MonoBehaviour
 								curPosition = hit.point;
 								if (anchor == null && placedConnector != null && floatingConnector != null)
 								{
-									if(AngleSnapping)
+									if (AngleSnapping)
 									{
 										bool reverse = Vector3.Dot(placedConnector.transform.up, floatingConnector.transform.up) < 0;
 
@@ -887,25 +891,28 @@ public class EditorPanel : MonoBehaviour
 	{
 		public int offset;
 		public Vector3[] points;
-
 	}
-
-	IEnumerator ClosingPath()
+	Transform FindTileByName(string name)
 	{
+		for (int i = 0; i < placedTilesContainer.transform.childCount; ++i)
+		{
+			if (placedTilesContainer.transform.GetChild(i).name == name)
+			{
+				return placedTilesContainer.transform.GetChild(i);
+			}
+		}
+		return null;
+	}
+	IEnumerator CreateRacingPath()
+	{
+
 		connectors.Clear();
 
 		List<Vector3> Lpath = new List<Vector3>(100);
 		List<Vector3> Rpath = new List<Vector3>(100);
 		List<LoopReplacement> replacements = new();
-		Transform startline = null;
-		for (int i = 0; i < placedTilesContainer.transform.childCount; ++i)
-		{
-			if (placedTilesContainer.transform.GetChild(i).name == "startline")
-			{
-				startline = placedTilesContainer.transform.GetChild(i);
-				break;
-			}
-		}
+
+		Transform startline = FindTileByName("startline");
 		if (startline == null)
 		{
 			Debug.Log("No startline");
@@ -1089,24 +1096,9 @@ public class EditorPanel : MonoBehaviour
 					}
 				}
 				replayCamsContainer.Sort((ReplayCam a, ReplayCam b) => { return a.dist.CompareTo(b.dist); });
-
-				//// generate waypoints for cars
-				//waypointsContainer.Clear();
-				//float maxDot = Mathf.Cos(10 * Mathf.Deg2Rad);
-				//Vector3 curWayDir = pathCreators[i].path.GetDirectionAtDistance(0);
-				//waypointsContainer.Add(0);
-				//for (int j = 5; j < pathCreators[i].path.length; j += 10)
-				//{
-				//	Vector3 newWayDir = pathCreator.path.GetDirectionAtDistance(j);
-				//	float dot = Vector3.Dot(F.Vec3Flatten(curWayDir), F.Vec3Flatten(newWayDir));
-				//	if (Mathf.Abs(dot) <= maxDot)
-				//	{
-				//		waypointsContainer.Add(j);
-				//		curWayDir = newWayDir;
-				//	}
-				//}
 			}
 		}
+		Debug.Log("racingpath length:" + F.I.universalPath.path.length);
 		loadingTrack = false;
 	}
 	void SetPathClosed(bool val)
@@ -1305,7 +1297,7 @@ public class EditorPanel : MonoBehaviour
 					currentTilesPanel.gameObject.SetActive(true);
 					break;
 				case Mode.Connect:
-					closingPathCo = StartCoroutine(ClosingPath());
+					closingPathCo = StartCoroutine(CreateRacingPath());
 					break;
 				case Mode.TestDriveArrow:
 					arrow = Instantiate(arrowModel);
@@ -1384,8 +1376,151 @@ public class EditorPanel : MonoBehaviour
 	public void ToggleSavePanel()
 	{
 		toolsPanel.SetActive(false);
-		savePanel.SetActive(!savePanel.activeSelf);
+		bool savePanelActive = !savePanel.activeSelf;
+		if (savePanelActive)
+		{
+			trackDifficultyDropdown.value = CalculateTrackDifficulty();
+			carGroupDropdown.value = (int)CalculatePreferredCarClass();
+
+		}
+		savePanel.SetActive(savePanelActive);
 		SwitchTo(Mode.None);
+	}
+	CarGroup CalculatePreferredCarClass()
+	{
+		if (connectors.Count == 0)
+			return CarGroup.Speed;
+		float roadDist = 0;
+		float gravelDist = 0;
+		Transform startline = FindTileByName("startline");
+		Connector begin = startline.GetChild(1).GetComponent<Connector>();
+		Connector cur = begin.Opposite().connection;
+		Vector3 lastPos = startline.transform.position;
+		for (int i = 0; i < 10000; i++)
+		{
+			if (cur.transform.parent.name.Contains("dirt") || cur.transform.parent.name.Contains("sand"))
+				gravelDist += Vector3.Distance(cur.transform.parent.position, lastPos);
+			else
+				roadDist += Vector3.Distance(cur.transform.parent.position, lastPos);
+			lastPos = cur.transform.parent.position;
+
+			if (cur == begin)
+			{
+				break;
+			}
+
+			if (i > 9000)
+				Debug.LogError("i>9000");
+			cur = cur.Opposite().connection;
+		}
+		float perc = avgDistBetweenRamps / (gravelDist + roadDist);
+		float gravelPerc = gravelDist / roadDist;
+		if (gravelPerc < .5f)
+		{
+			if (perc < .2f)
+				return CarGroup.Aero;
+			if (perc < .5f)
+				return CarGroup.Speed;
+			return CarGroup.Team;
+		}
+		else
+		{
+			if (perc < .5f)
+				return CarGroup.Wild;
+			else
+				return CarGroup.Team;
+		}
+	}
+	/// <summary> Returns track difficulty in range 0 to 17 </summary>
+	int CalculateTrackDifficulty()
+	{
+		if (connectors.Count == 0)
+			return 0;
+		Transform startline = FindTileByName("startline");
+
+
+		biggestPitPitDistance = 0;
+		Transform pits = FindTileByName("pits");
+		Connector begin, cur;
+		Vector3 lastPos;
+		float dist = 0;
+		if (pits == null)
+		{
+			biggestPitPitDistance = F.I.universalPath.path.length;
+		}
+		else
+		{
+			begin = pits.GetChild(1).GetComponent<Connector>();
+			cur = begin.Opposite().connection;
+			lastPos = pits.transform.position;
+			dist = 0;
+			for (int i = 0; i < 10000; i++)
+			{
+				dist += Vector3.Distance(cur.transform.parent.position, lastPos);
+				lastPos = cur.transform.parent.position;
+
+				if (cur.transform.parent.name == "pits" && dist > biggestPitPitDistance)
+				{
+					biggestPitPitDistance = dist;
+					dist = 0;
+				}
+
+				if (cur == begin)
+				{
+					if (dist > biggestPitPitDistance)
+						biggestPitPitDistance = dist;
+					break;
+				}
+
+				if (i > 9000)
+					Debug.LogError("i>9000");
+				cur = cur.Opposite().connection;
+			}
+		}
+
+		begin = startline.GetChild(1).GetComponent<Connector>();
+		cur = begin.Opposite().connection;
+		int stuntZonesNr = 0;
+		int maxSuccessiveHugeJumpTiles = 0;
+		int successiveJumpTiles = 0;
+		bool prevIsJump = false;
+		for (int i = 0; i < 10000; i++)
+		{
+			if (prevIsJump)
+			{
+				if(cur.transform.parent.name.Contains("mid_long"))
+					successiveJumpTiles++;
+				else
+				{
+					if (successiveJumpTiles > maxSuccessiveHugeJumpTiles)
+						maxSuccessiveHugeJumpTiles = successiveJumpTiles;
+					successiveJumpTiles = 0;
+				}
+			}
+			//Debug.DrawRay(cur.transform.parent.position, Vector3.up * 100, Color.green, 3);
+			if (cur.isStuntZone)
+			{
+				stuntZonesNr++;
+			}
+
+			if (cur == begin)
+			{
+				break;
+			}
+			if (i > 9000)
+				Debug.LogError("i>9000");
+
+			prevIsJump = cur.transform.parent.name.Contains("mid_long");
+			cur = cur.Opposite().connection;
+		}
+		avgDistBetweenRamps = biggestPitPitDistance / (1+stuntZonesNr);
+		Debug.Log(biggestPitPitDistance + " " + avgDistBetweenRamps);
+		return Mathf.RoundToInt(Mathf.Clamp(
+			(pits == null ? 1 : 0)
+			+ maxSuccessiveHugeJumpTiles
+			+ 8 * Mathf.InverseLerp(0, 7000, biggestPitPitDistance)
+			+ 8 * Mathf.InverseLerp(0, 3000, avgDistBetweenRamps),
+			1, 17));
 	}
 	public void ToggleToolsPanel()
 	{
@@ -1539,7 +1674,7 @@ public class EditorPanel : MonoBehaviour
 
 		TRACK.heights = GetHeightsmap();
 
-		
+
 		// save track header
 		TrackHeader tHeader = new()
 		{

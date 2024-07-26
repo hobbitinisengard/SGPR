@@ -38,7 +38,7 @@ public class ResultInfo
 		this.vp = vp;
 		drift = vp.raceBox.drift;
 		lap = vp.raceBox.bestLapTime;
-		progress = vp.raceBox.curLap + vp.followAI.LapProgressPercent;
+		progress = vp.raceBox.RaceProgressLaps;
 		aeromiles = vp.raceBox.Aero;
 		raceTime = vp.raceBox.raceTime;
 		name = vp.transform.name;

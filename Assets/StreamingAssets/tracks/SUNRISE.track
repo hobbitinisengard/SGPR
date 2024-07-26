@@ -1,1 +1,14 @@
-{"author":"viatrufka","desc":"Controlling your car on this bumpy track may be essential to win here","valid":true,"envir":"JAP","preferredCarClass":"Aero","difficulty":1,"unlocked":true,"icons":[5],"TrackOrigin":1,"IsOriginal":false}
+{
+  "author": "viatrufka",
+  "desc": "Controlling your car on this bumpy track may be essential to win here",
+  "valid": true,
+  "envir": "JAP",
+  "preferredCarClass": "Aero",
+  "difficulty": 3,
+  "unlocked": true,
+  "icons": [
+    5
+  ],
+  "TrackOrigin": 1,
+  "IsOriginal": false
+}

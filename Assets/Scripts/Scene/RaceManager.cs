@@ -167,7 +167,7 @@ namespace RVP
 				RaceType.Stunt => vp.raceBox.Aero,
 				RaceType.Drift => vp.raceBox.drift,
 				RaceType.TimeTrial => -(float)vp.raceBox.bestLapTime.TotalMilliseconds, // trick to compare in a descending order
-				_ => vp.raceBox.curLap + vp.followAI.LapProgressPercent,
+				_ => vp.raceBox.RaceProgressLaps,
 			};
 		}
 		public int Position(VehicleParent vp)
@@ -290,6 +290,8 @@ namespace RVP
 		{
 			ResultsView.Clear();
 			F.I.raceStartDate = DateTime.UtcNow.AddSeconds(5);
+			var euler = Sun.transform.rotation.eulerAngles;
+			Sun.transform.rotation = Quaternion.Euler(euler.x, UnityEngine.Random.Range(-180, 180), euler.z);
 			StartCoroutine(StartRaceCoroutine());
 		}
 		IEnumerator StartRaceCoroutine()

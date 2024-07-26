@@ -58,8 +58,8 @@ public class Info : MonoBehaviour
 	public Shader transpShader;
 	public Shader opaqueShader;
 	public Text versionText;
-	public const string VERSION = "0.3.5";
-	public bool minimized { get; private set;  }
+	public const string VERSION = "0.3.6";
+	public bool minimized { get; private set;}
 	void OnApplicationFocus(bool hasFocus)
 	{
 		minimized = !hasFocus;
@@ -69,7 +69,7 @@ public class Info : MonoBehaviour
 		F.I = this;
 		MultiPlayerSelector.I = mpSelectorInitializer;
 		versionText.text = VERSION;
-		MPtags = CurrentPlayer.ReadOnlyTags().Count;
+		int MPtags = CurrentPlayer.ReadOnlyTags().Count;
 		switch (MPtags)
 		{
 			case 1:
@@ -114,8 +114,6 @@ public class Info : MonoBehaviour
 	public string lastPath { get { return documentsSGPRpath + "path.txt"; } }
 
 	public Livery s_PlayerCarSponsor = Livery.Special;
-
-	int MPtags;
 
 	public readonly int maxCarsInRace = 10;
 
@@ -322,7 +320,7 @@ public class Info : MonoBehaviour
 	public int s_cpuRivals = 0; // 0-9
 	[NonSerialized]
 	public PavementType s_roadType = PavementType.Random;
-	public bool s_catchup = true;
+	public bool catchup = true;
 	public int s_resultPos = 3;
 	public bool teams = false;
 	public int ServerIdGenerator = 0;

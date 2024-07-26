@@ -1,8 +1,10 @@
-Sus, Itex: Basic, Compact, Absorber, Absorber Pro, Ultra shock
-Bms, Mysuko: Maxi-Control, Enhanced, Bypass, Mephisto, Diablo Extreme
+Sus, Itex: Basic (2), Compact (5), Absorber(8), Absorber Pro(10), Ultra shock(12)
+Bms, Mysuko: Dingo, Enhanced, Bypass, Mephisto, Diablo
 Bat, Titan: Quadra Cell, Duo Cell, Powercell, Powerforce, Lite Max
-Eng, Caltex: 6V Motor, 7V Motor, Max Lite, Max Pro, Nitro V
+Eng, Caltex: 6V Motor(0.015), 7V Motor(0.03), Max Lite(0.05), Max Pro(0.1), Nitro V (0.2)
 Cha, TGR: Impact, Frame Star, Hollow Lite, Ultra C, Carbon Magna
 Brakes, Itex: Wheelforce, Wheelforce Ultra, Maxim, Brakesure Lite, Brakesure Pro
 Gears, Itex: Uno (1 bieg), Keanu (3 biegi), Caveman (4 biegi), Caveman Pro (4 biegi szybkie), Racer (5 biegów), Flex (6 biegów), PDK (7 biegów), PDK Plus (8 biegów)
-Jet, Mysuko: Poot, Poot Pro, Dunger, Skitter, Maxi Skitter (
+Jet, Mysuko: Poot(0.01), Poot Pro(0.03), Dunger(0.05), Skitter(0.1), Maxi Skitter (0.2)
+Wheels, RLn: Dirtbuster(Rally), Maxi Grip (R), Aerostunt (I), Vortex (SM), Velocity (S)
+TGR, (FWD)

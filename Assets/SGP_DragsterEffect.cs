@@ -30,7 +30,7 @@ public class SGP_DragsterEffect : MonoBehaviour
 	{
 		if (gearbox)
 		{
-			if (vp.engine.boosting && vp.velMag > 0 && Mathf.Abs(vp.velMag) < 30 && !gearbox.IsShifting() && gearbox.selectedGear != 1)
+			if (vp.engine.boosting && vp.velMag > 0 && Mathf.Abs(vp.velMag) < 30 && !gearbox.IsShifting && gearbox.selectedGear != 1)
 			{
 				ChassisSavable chassis = (ChassisSavable)vp.carConfig.GetPartReadonly(PartType.Chassis);
 				var pos = vp.rb.centerOfMass;

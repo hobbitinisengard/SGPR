@@ -1,1 +1,15 @@
-{"author":"Team17","desc":"This fast, relatively flat track offers many ways to drive","valid":true,"envir":"JAP","preferredCarClass":"Wild","difficulty":1,"unlocked":true,"icons":[0,9],"TrackOrigin":0,"IsOriginal":true}
+{
+  "author": "Team17",
+  "desc": "This fast, relatively flat track offers many ways to drive",
+  "valid": true,
+  "envir": "JAP",
+  "preferredCarClass": "Speed",
+  "difficulty": 4,
+  "unlocked": true,
+  "icons": [
+    0,
+    9
+  ],
+  "TrackOrigin": 0,
+  "IsOriginal": true
+}

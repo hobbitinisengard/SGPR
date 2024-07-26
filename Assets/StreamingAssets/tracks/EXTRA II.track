@@ -1,1 +1,17 @@
-{"author":"Team17","desc":"Lots of jumps, bridges and sharp turns. Acceleration will play an important role on this track","valid":true,"envir":"ENG","preferredCarClass":"Aero","difficulty":1,"unlocked":true,"icons":[0,1,3,5],"TrackOrigin":0,"IsOriginal":true}
+{
+  "author": "Team17",
+  "desc": "Lots of jumps, bridges and sharp turns. Acceleration will play an important role on this track",
+  "valid": true,
+  "envir": "ENG",
+  "preferredCarClass": "Aero",
+  "difficulty": 5,
+  "unlocked": true,
+  "icons": [
+    0,
+    1,
+    3,
+    5
+  ],
+  "TrackOrigin": 0,
+  "IsOriginal": true
+}

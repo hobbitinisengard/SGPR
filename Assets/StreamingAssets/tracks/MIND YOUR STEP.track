@@ -1,0 +1,16 @@
+{
+  "author": "luckygoose",
+  "desc": "This long track will make you climb many stairs.",
+  "valid": true,
+  "envir": "ITA",
+  "preferredCarClass": "Speed",
+  "difficulty": 11,
+  "unlocked": true,
+  "icons": [
+    0,
+    3,
+    9
+  ],
+  "TrackOrigin": 1,
+  "IsOriginal": false
+}

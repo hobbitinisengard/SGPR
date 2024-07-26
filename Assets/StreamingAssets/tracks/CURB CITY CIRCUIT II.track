@@ -1,1 +1,15 @@
-{"author":"Team17","desc":"This unrelease offers more stunting opportunities compared to its final variant","valid":true,"envir":"USA","preferredCarClass":"Speed","difficulty":2,"unlocked":true,"icons":[3,5],"TrackOrigin":0,"IsOriginal":true}
+{
+  "author": "Team17",
+  "desc": "This unrelease offers more stunting opportunities compared to its final variant",
+  "valid": true,
+  "envir": "USA",
+  "preferredCarClass": "Speed",
+  "difficulty": 7,
+  "unlocked": true,
+  "icons": [
+    3,
+    5
+  ],
+  "TrackOrigin": 0,
+  "IsOriginal": true
+}

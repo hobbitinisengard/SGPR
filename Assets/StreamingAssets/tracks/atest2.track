@@ -1,1 +1,15 @@
-{"author":"viatrufka","desc":"","valid":true,"envir":"ENG","preferredCarClass":"Speed","difficulty":0,"unlocked":true,"icons":[3,6],"TrackOrigin":1,"IsOriginal":false}
+{
+  "author": "viatrufka",
+  "desc": "",
+  "valid": true,
+  "envir": "ENG",
+  "preferredCarClass": "Team",
+  "difficulty": 5,
+  "unlocked": true,
+  "icons": [
+    3,
+    6
+  ],
+  "TrackOrigin": 1,
+  "IsOriginal": false
+}

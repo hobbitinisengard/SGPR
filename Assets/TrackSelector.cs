@@ -7,9 +7,8 @@ public class TrackSelector : TrackSelectorTemplate
 	public TextMeshProUGUI raceTypeButtonText;
 	public TextMeshProUGUI lapsButtonText;
 	public TextMeshProUGUI nightButtonText;
-	public TextMeshProUGUI CPULevelButtonText;
 	public TextMeshProUGUI rivalsButtonText;
-	
+	public TextMeshProUGUI catchupButtonText;
 	public TextMeshProUGUI sponsorButtonText;
 
 	protected int maxCPURivals = 9;
@@ -20,7 +19,7 @@ public class TrackSelector : TrackSelectorTemplate
 	}
 	public new void ResetButtons()
 	{
-		//SwitchCatchup(true);
+		SwitchCatchup(true);
 		SwitchCPULevel(true);
 		SwitchDayNight(true);
 		SwitchLaps(true);
@@ -92,7 +91,7 @@ public class TrackSelector : TrackSelectorTemplate
 		{
 			_ => "Normal",
 		};
-		CPULevelButtonText.text = "CPU: " + cpuLevelStr;
+		//CPULevelButtonText.text = "CPU: " + cpuLevelStr;
 	}
 	public void SwitchRivals(bool init = false)
 	{
@@ -113,13 +112,11 @@ public class TrackSelector : TrackSelectorTemplate
 		}
 		rivalsButtonText.text = "Opponents: " + F.I.s_cpuRivals.ToString();
 	}
-	
-	
 	public void SwitchCatchup(bool init = false)
 	{
 		if (!init)
-			F.I.s_catchup = !F.I.s_catchup;
-		sponsorButtonText.text = "Catchup: " + (F.I.s_catchup ? "Yes" : "No");
+			F.I.catchup = !F.I.catchup;
+		catchupButtonText.text = "Catchup: " + (F.I.catchup ? "Yes" : "No");
 	}
 	public void SwitchSponsor(bool init = false)
 	{

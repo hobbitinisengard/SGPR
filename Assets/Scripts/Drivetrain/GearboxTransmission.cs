@@ -65,9 +65,9 @@ namespace RVP
 			}
 		}
 		public int selectedGear { get; private set; }
-		public bool IsShifting()
+		public bool IsShifting
 		{
-			return shiftTime > 0;
+			get { return shiftTime > 0; }
 		}
 		public override void Start()
 		{

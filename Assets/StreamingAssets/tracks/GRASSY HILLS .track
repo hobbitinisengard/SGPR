@@ -1,1 +1,16 @@
-{"author":"luckygoose","desc":"A medium length track with many off-road  sections and demanding corners.","valid":true,"envir":"ENG","preferredCarClass":"Wild","difficulty":2,"unlocked":true,"icons":[0,3,9],"TrackOrigin":1,"IsOriginal":false}
+{
+  "author": "luckygoose",
+  "desc": "A medium length track with many off-road  sections and demanding corners.",
+  "valid": true,
+  "envir": "ENG",
+  "preferredCarClass": "Team",
+  "difficulty": 11,
+  "unlocked": true,
+  "icons": [
+    0,
+    3,
+    9
+  ],
+  "TrackOrigin": 1,
+  "IsOriginal": false
+}

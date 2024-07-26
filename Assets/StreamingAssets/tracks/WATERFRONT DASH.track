@@ -3,8 +3,8 @@
   "desc": "This long and winding track takes you all over the waterfront!",
   "valid": true,
   "envir": "ITA",
-  "preferredCarClass": "Speed",
-  "difficulty": 5,
+  "preferredCarClass": "Aero",
+  "difficulty": 6,
   "unlocked": true,
   "icons": [
     3

@@ -3,8 +3,8 @@
   "desc": "This complex, winding track has a number of high curved bends.",
   "valid": true,
   "envir": "GER",
-  "preferredCarClass": "Speed",
-  "difficulty": 5,
+  "preferredCarClass": "Team",
+  "difficulty": 9,
   "unlocked": true,
   "icons": [
     3

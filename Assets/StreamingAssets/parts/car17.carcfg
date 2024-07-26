@@ -31,7 +31,7 @@
       "maxDriftAngle": 70.0,
       "autoSteerDrift": 0.0,
       "driftPush": 0.0,
-      "downforce": 5.0,
+      "downforce": 0.0,
       "frontBrakeForce": 0.1,
       "rearBrakeForce": 0.1
     },
@@ -74,7 +74,7 @@
       "evoSmoothTime": 0.07,
       "staticEvoMaxSpeed": 900.0,
       "evoAcceleration": 15.0,
-      "dragsterEffect": 0.0
+      "dragsterEffect": 0.6
     },
     "boost": {
       "maxBoost": 0.1,
@@ -88,7 +88,7 @@
       "shiftRearFriction": 16.0,
       "squeakSlipThreshold": 0.5,
       "slipDependence": 0.0,
-      "axleFriction": 0.0015,
+      "axleFriction": 2E-05,
       "offroadTread": 0.0,
       "driftRearFriction": 5.0,
       "driftRearFrictionInit": 7.0,
@@ -100,7 +100,7 @@
       "holdComebackSpeed": 0.7,
       "steerLimitAt0": 1.0,
       "steerLimitAt200": 0.2,
-	  "steerLimitAt300": 0.1,
+      "steerLimitAt300": 0.1,
       "steerComebackAt0": 1.0,
       "steerComebackAt200": 10.0
     },

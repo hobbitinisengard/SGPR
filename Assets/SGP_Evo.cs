@@ -187,26 +187,6 @@ public class SGP_Evo : MonoBehaviour
 
 	public void FixedUpdate()
 	{
-		if (vp.SGPshiftbutton > 0)
-		{
-			if (!stunting && prevSGPShiftButton == 0)
-			{ // shift press before jump
-				shiftPressTime = Time.time;
-				//Debug.Log("shiftPressTime");
-			}
-		}
-
-		if (!stunting && vp.reallyGroundedWheels == 0 && !vp.colliding && !vp.crashing && (Time.time - shiftPressTime) < maxTimeToInit)
-		{
-			//Debug.Log("stunting");
-			evoBloorp.Play();
-			stunting = true;
-			euler = vp.tr.rotation.eulerAngles;
-			r[0].Init(euler.x, Axis.X); //rX
-			r[1].Init(euler.y, Axis.Y); // rY
-			r[2].Init(euler.z, Axis.Z); // rZ
-		}
-
 		if (stunting)
 		{
 			if (vp.rb.isKinematic || vp.crashing || vp.colliding || vp.reallyGroundedWheels > 0)
@@ -285,6 +265,28 @@ public class SGP_Evo : MonoBehaviour
 			//    //Debug.Log(localEvoAngularVelocity.magnitude);
 
 			//}
+		}
+		else
+		{
+			if (vp.SGPshiftbutton > 0)
+			{
+				if (prevSGPShiftButton == 0 && (vp.reallyGroundedWheels == 4 || (vp.crashing && vp.reallyGroundedWheels == 0)))
+				{ // shift press before jump
+					shiftPressTime = Time.time;
+					//Debug.Log("shiftPressTime");
+				}
+			}
+
+			if (vp.reallyGroundedWheels == 0 && !vp.colliding && !vp.crashing && (Time.time - shiftPressTime) < maxTimeToInit)
+			{
+				//Debug.Log("stunting");
+				evoBloorp.Play();
+				stunting = true;
+				euler = vp.tr.rotation.eulerAngles;
+				r[0].Init(euler.x, Axis.X); //rX
+				r[1].Init(euler.y, Axis.Y); // rY
+				r[2].Init(euler.z, Axis.Z); // rZ
+			}
 		}
 		prevSGPShiftButton = vp.SGPshiftbutton;
 	}

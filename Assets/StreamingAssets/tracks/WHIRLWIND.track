@@ -3,8 +3,8 @@
   "desc": "This extremely long and twisting track featuring angled bridges, grass sections, jumps and many more surprises will keep you on your toes.",
   "valid": true,
   "envir": "JAP",
-  "preferredCarClass": "Wild",
-  "difficulty": 6,
+  "preferredCarClass": "Speed",
+  "difficulty": 11,
   "unlocked": true,
   "icons": [
     0,

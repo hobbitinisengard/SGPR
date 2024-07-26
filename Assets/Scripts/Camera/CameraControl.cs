@@ -101,7 +101,7 @@ namespace RVP
 		float forwardLookCoeff = 10;
 		float upLookCoeff = 1f;
 		Vector3 forward;
-		public float xyInputCamSpeedCoeff = 5;
+		const float xyInputCamSpeedCoeff = 5;
 		/// <summary>
 		/// used for smooth change between cam rotation by velocity to cam rotation by lookObj 
 		/// </summary>
@@ -341,10 +341,11 @@ namespace RVP
 			else
 				target = lookObj.position;
 
-			newTrPos = Vector3.SmoothDamp(tr.position, target, ref velocity, smoothTime, catchUpCamSpeed, 
-				(yInput == 0 && xInput == 0) ? (Time.fixedDeltaTime * smoothDampRspnvns) 
-					: (xyInputCamSpeedCoeff * Time.fixedDeltaTime * smoothDampRspnvns));
-			
+			if (yInput == 0 && xInput == 0)
+				newTrPos = Vector3.SmoothDamp(tr.position, target, ref velocity, smoothTime, catchUpCamSpeed, Time.fixedDeltaTime * smoothDampRspnvns);
+			else
+				newTrPos = target;
+
 			smoothTime = Mathf.Lerp(smoothTime, slowCamera ? camStoppedSmoothTime : camFollowSmoothTime
 				, (slowCamera ? 1 : 2) * Time.fixedDeltaTime * smoothTimeSpeed);
 

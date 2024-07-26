@@ -1,1 +1,22 @@
-{"lap":{"playerName":null,"secondsOrPts":35999.0,"requiredSecondsOrPts":35999.0},"race":{"playerName":null,"secondsOrPts":0.0,"requiredSecondsOrPts":0.0},"stunt":{"playerName":null,"secondsOrPts":0.0,"requiredSecondsOrPts":0.0},"drift":{"playerName":null,"secondsOrPts":0.0,"requiredSecondsOrPts":0.0}}
+{
+  "lap": {
+    "playerName": null,
+    "secondsOrPts": 35999.0,
+    "requiredSecondsOrPts": 35999.0
+  },
+  "race": {
+    "playerName": null,
+    "secondsOrPts": 0.0,
+    "requiredSecondsOrPts": 0.0
+  },
+  "stunt": {
+    "playerName": null,
+    "secondsOrPts": 0.0,
+    "requiredSecondsOrPts": 0.0
+  },
+  "drift": {
+    "playerName": null,
+    "secondsOrPts": 0.0,
+    "requiredSecondsOrPts": 0.0
+  }
+}

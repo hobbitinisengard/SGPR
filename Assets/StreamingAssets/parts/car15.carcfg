@@ -88,7 +88,7 @@
       "shiftRearFriction": 7.0,
       "squeakSlipThreshold": 0.5,
       "slipDependence": 0.0,
-      "axleFriction": 0.002,
+      "axleFriction": 2E-05,
       "offroadTread": 0.0,
       "driftRearFriction": 3.0,
       "driftRearFrictionInit": 9.0,
@@ -100,7 +100,7 @@
       "holdComebackSpeed": 0.9,
       "steerLimitAt0": 1.0,
       "steerLimitAt200": 0.2,
-	  "steerLimitAt300": 0.1,
+      "steerLimitAt300": 0.1,
       "steerComebackAt0": 1.0,
       "steerComebackAt200": 15.0
     },

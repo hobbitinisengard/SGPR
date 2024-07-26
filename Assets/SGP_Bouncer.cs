@@ -8,8 +8,7 @@ public class SGP_Bouncer : MonoBehaviour
 	public float lastCarCarBounceTime;
 	public float lastSideBounceTime;
 	public float lastVVBounceTime;
-	float debounceTime = .5f;
-	float mult = 5;
+	const float debounceTime = .5f;
 
 	static AnimationCurve multCurve;
 	private void Awake()
@@ -29,17 +28,15 @@ public class SGP_Bouncer : MonoBehaviour
 	}
 	void BounceCars(Collision collision)
 	{
+		var cPoint = collision.GetContact(0);
+		int dir = cPoint.thisCollider.attachedRigidbody.velocity.magnitude > cPoint.otherCollider.attachedRigidbody.velocity.magnitude ? -1 : 1;
 		lastCarCarBounceTime = Time.time;
-		// move body up
-		//int dir = vp.tr.InverseTransformPoint(contact.point).x > 0 ? 1 : -1;
-		//rb.AddRelativeTorque(dir * Vector3.forward * vp.rb.mass * carCarUpCoeff);
-
 		// bounce cars apart
-		if (Time.time - lastCarCarBounceTime > lastCarCarBounceTime)
-			rb.AddForce(mult * collision.GetContact(0).otherCollider.attachedRigidbody.mass * collision.relativeVelocity.magnitude * -(collision.relativeVelocity.normalized + Vector3.up).normalized);
+		if (Time.time - lastCarCarBounceTime > .2f)
+			rb.AddForce(collision.GetContact(0).otherCollider.attachedRigidbody.mass * collision.relativeVelocity.magnitude * dir * collision.relativeVelocity.normalized);
 
 		// tilt car
-		rb.AddForceAtPosition(0.5f * rb.mass * transform.up, collision.GetContact(0).point, ForceMode.Force);
+		rb.AddForceAtPosition(0.5f * rb.mass * transform.up, cPoint.point, ForceMode.Force);
 	}
 	private void OnCollisionStay(Collision collision)
 	{

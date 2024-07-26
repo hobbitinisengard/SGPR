@@ -327,7 +327,8 @@ public class ServerC : MonoBehaviour
 			+ ((int)F.I.s_cpuLevel).ToString()
 			+ "0" // "0" - cpuCars
 			+ ((int)F.I.s_roadType).ToString()
-			+ (F.I.teams ? "1" : "0");
+			+ (F.I.teams ? "1" : "0")
+			+ (F.I.catchup ? "1" : "0");
 
 		if (ServerC.I.AnyClientsStillInRace)
 			encodeConfig += GetCurRound().ToString("D2") + GetRounds().ToString("D2");

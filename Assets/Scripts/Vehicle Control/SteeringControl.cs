@@ -37,14 +37,14 @@ namespace RVP
 		internal float driftRearFriction;
 		//internal float driftRearFrictionInit;
 		[Range(0, 1)]
-		public float asi;
+		public float absSteerInput;
 
 		void GenerateGammaCurve()
 		{
 			if(analogInputCurve == null || gamma != F.I.playerData.steerGamma)
 			{
 				gamma = F.I.playerData.steerGamma;
-				Keyframe[] keys2 = new Keyframe[64];
+				Keyframe[] keys2 = new Keyframe[16];
 				for (int i = 0; i < keys2.Length; i++)
 				{
 					keys2[i].time = (float)i / keys2.Length;
@@ -80,9 +80,26 @@ namespace RVP
 		}
 		void FixedUpdate()
 		{
-			asi = Mathf.Abs(vp.steerInput);
-			steerLimit = 1;
-			if (!vp.followAI.selfDriving)
+			absSteerInput = Mathf.Abs(vp.steerInput);
+			if (vp.followAI.selfDriving)
+			{
+				if (Mathf.Abs(steeredWheels[0].steerAngle) >= steerLimit)
+				{
+					servoAudio.volume = 1f;
+					servoAudio.pitch = (Mathf.Abs(targetSteer) > absSteerInput) ? 1.5f : 1;
+
+					holdDuration = Mathf.Clamp01(holdDuration + Time.fixedDeltaTime);
+				}
+				else
+				{
+					servoAudio.volume = 0;
+					holdDuration = 0;
+				}
+
+				steerLimit = Mathf.Lerp(.2f,.5f,2*(holdDuration - .5f));
+				holdCurveValue = 1;
+			}
+			else
 			{
 				F.I.controllerInUse = (vp.basicInput.playerInput.currentControlScheme != "Keyboard");
 
@@ -90,31 +107,31 @@ namespace RVP
 				{
 					GenerateGammaCurve();
 				}
-				
-				if (asi >= holdCurveValue)
+
+				if (absSteerInput >= holdCurveValue)
 				{
 					var steerLimitVar = steerLimitCurve.Evaluate(vp.velMag);
 					//if (steerLimitVar > steerLimit)
 					steerLimit = steerLimitVar;
 					servoAudio.volume = 1f;
-					servoAudio.pitch = (Mathf.Abs(targetSteer) > asi) ? 1.5f : 1;
+					servoAudio.pitch = (Mathf.Abs(targetSteer) > absSteerInput) ? 1.5f : 1;
 
-					if(asi != holdCurveValue)
-						holdDuration = Mathf.Clamp01(holdDuration + (vp.SGPshiftbutton > 0 ? 4 : 1) * (F.I.controllerInUse ? 20 : 1 ) * steerAdd * Time.fixedDeltaTime);
+					if (absSteerInput != holdCurveValue)
+						holdDuration = Mathf.Clamp01(holdDuration + (vp.SGPshiftbutton > 0 ? 10 : 1) * (F.I.controllerInUse ? 20 : 1) * steerAdd * Time.fixedDeltaTime);
 				}
 				else
 				{
-
 					steerLimit = steerLimitCurve.Evaluate(vp.localVelocity.z);
 					servoAudio.volume = 0;
-					holdDuration = Mathf.Lerp(holdDuration, asi, holdComebackSpeed * 10 * Time.fixedDeltaTime);
+					holdDuration = Mathf.Lerp(holdDuration, absSteerInput, holdComebackSpeed * 10 * Time.fixedDeltaTime);
 				}
 
 				if (F.I.controllerInUse)
-					holdCurveValue = Mathf.Lerp(holdCurveValue, asi, 10 * Time.deltaTime);//analogInputCurve.Evaluate(holdDuration);
+					holdCurveValue = Mathf.Lerp(holdCurveValue, absSteerInput, 10 * Time.deltaTime);//analogInputCurve.Evaluate(holdDuration);
 				else
 					holdCurveValue = keyboardInputCurve.Evaluate(holdDuration);
 			}
+			
 			
 			if (steeringWheel != null)
 				steeringWheel.localRotation = Quaternion.Lerp(steeringWheel.localRotation, 
@@ -122,31 +139,35 @@ namespace RVP
 
 			if(F.I.s_raceType == RaceType.Drift)
 			{
-				//steerLimit *= 2;
 				float target = Mathf.Lerp(vp.wheels[2].initSidewaysFriction, driftRearFriction, 2*vp.accelInput-1);
 				foreach(var w in vp.wheels)
 					w.sidewaysFriction = Mathf.Lerp(w.sidewaysFriction, target, 10 * Time.fixedDeltaTime);
 			}
 			else
 			{
-				vp.wheels[2].sidewaysFriction = Mathf.Lerp(vp.wheels[2].initSidewaysFriction, shiftRearFriction, holdCurveValue);
-				vp.wheels[3].sidewaysFriction = vp.wheels[2].sidewaysFriction;
+				if(!vp.followAI.selfDriving)
+				{
+					vp.wheels[2].sidewaysFriction = Mathf.Lerp(vp.wheels[2].initSidewaysFriction, shiftRearFriction, holdCurveValue);
+					vp.wheels[3].sidewaysFriction = vp.wheels[2].sidewaysFriction;
+				}
+				
+
+				if(F.I.catchup)
+				{
+					float coeff = Mathf.InverseLerp(0, 400, F.I.s_cars[0].raceBox.RaceProgressDist - vp.raceBox.RaceProgressDist);
+					foreach (var w in vp.wheels)
+						w.forwardFriction = coeff * .4f * w.initForwardFriction + w.initForwardFriction;
+				}
 			}
 
 			foreach (Suspension curSus in steeredWheels)// Set steer angles in wheels
 			{
-				if (vp.followAI.selfDriving)
-				{
-					curSus.steerAngle = vp.steerInput;
-				}
-				else
-				{
-					float sign = F.Sign(vp.steerInput);
-					targetSteer = sign * Mathf.Min(holdCurveValue, asi) * steerLimit;
-					curSus.steerAngle = Mathf.Lerp(curSus.steerAngle, 
-						targetSteer,
-						((sign==0)?steerComebackCurve.Evaluate(vp.velMag) : 10) * Time.fixedDeltaTime);
-				}
+				
+				float sign = F.Sign(vp.steerInput);
+				targetSteer = sign * Mathf.Min(holdCurveValue, absSteerInput) * steerLimit;
+				curSus.steerAngle = Mathf.Lerp(curSus.steerAngle, 
+					targetSteer,
+					((sign==0)?steerComebackCurve.Evaluate(vp.velMag) : 10) * Time.fixedDeltaTime);
 			}
 		}
 		

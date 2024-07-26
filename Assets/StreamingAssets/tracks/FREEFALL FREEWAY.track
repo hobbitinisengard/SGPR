@@ -3,8 +3,8 @@
   "desc": "Two huge jumps and a mighty climb feature in this evening excursion.",
   "valid": true,
   "envir": "SPN",
-  "preferredCarClass": "Aero",
-  "difficulty": 3,
+  "preferredCarClass": "Speed",
+  "difficulty": 8,
   "unlocked": true,
   "icons": [
     3

@@ -322,7 +322,7 @@ public class TrackSelectorTemplate : Sfxable
 			{
 				AddTile(Enum.GetName(typeof(CarGroup), F.I.tracks[selectedTrack.name].preferredCarClass));
 				AddTile(Enum.GetName(typeof(Envir), F.I.tracks[selectedTrack.name].envir));
-				AddTile((F.I.tracks[selectedTrack.name].difficulty + 4).ToString());
+				AddTile((F.I.tracks[selectedTrack.name].difficulty).ToString());
 				foreach (var flag in F.I.tracks[selectedTrack.name].icons)
 					AddTile(F.I.IconNames[flag]);
 			}
