@@ -18685,7 +18685,6 @@ GameObject:
   - component: {fileID: 865657811856999447}
   - component: {fileID: 2697793955915627836}
   - component: {fileID: 4386687692173614105}
-  - component: {fileID: 8502932074123717880}
   m_Layer: 9
   m_Name: car01
   m_TagString: Untagged
@@ -18976,7 +18975,7 @@ MonoBehaviour:
   curLap: 0
   w_A_dot: 0
   starLevel: 0
-  drift: 0
+  Drift: 0
   grantedComboTime: 0
   topMeterSpeed: 0
   lastTimeInAir: 0
@@ -19229,23 +19228,6 @@ MonoBehaviour:
   lastCarCarBounceTime: 0
   lastSideBounceTime: 0
   lastVVBounceTime: 0
---- !u!114 &8502932074123717880
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5969412531493064941}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8b9a305e18de0c04dbd257a21cd47087, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  sharedProfile: {fileID: 11400000, guid: 6a1977f112fc7ad409f976515f89a7e1, type: 2}
-  isGlobal: 0
-  blendDistance: 0
-  weight: 1
-  priority: 0
 --- !u!1 &6192630529381075353
 GameObject:
   m_ObjectHideFlags: 0
