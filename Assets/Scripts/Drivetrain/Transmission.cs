@@ -79,7 +79,8 @@ namespace RVP
 				}
 
 				float wheelsRPM = (tempRPM / enabledDrives) * ratio;
-				targetDrive.feedbackRPM = Mathf.Lerp(wheelsRPM, targetDrive.rpm, clutch);
+				float targetRPM = Mathf.Lerp(wheelsRPM, targetDrive.rpm, clutch);
+				targetDrive.feedbackRPM = Mathf.Lerp(targetDrive.feedbackRPM, targetRPM, Time.fixedDeltaTime * 20);
 			}
 		}
 

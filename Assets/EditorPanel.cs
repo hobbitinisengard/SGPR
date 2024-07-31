@@ -168,8 +168,6 @@ public class EditorPanel : MonoBehaviour
 	Predicate<Connector> neverMark = delegate (Connector c) { return false; };
 	private Vector3 intersectionSnapLocation = -Vector3.one;
 	private bool isPathClosed;
-	[NonSerialized]
-	public TrackRecords records = new();
 	GameObject unityRoadMesh;
 
 	bool _angleSnapping = true;
@@ -1685,7 +1683,7 @@ public class EditorPanel : MonoBehaviour
 			author = trackAuthorInputField.text,
 			icons = icons.ToArray(),
 			desc = trackDescInputField.text,
-			records = new(this.records),
+			records = new(),
 		};
 
 		tHeader.valid = racingLine != null && racingLine.Length > 8 && tHeader.records != null;
@@ -1700,9 +1698,8 @@ public class EditorPanel : MonoBehaviour
 
 		// save image
 		Texture2D tex = F.toTexture2D(renderTexture);
-		byte[] textureData = tex.EncodeToPNG();
-		path = Path.Combine(F.I.tracksPath, trackName.text + ".png"); // .PNG
-		File.WriteAllBytes(path, textureData);
+		path = Path.Combine(F.I.tracksPath, trackName.text + ".jpg"); // .JPG
+		File.WriteAllBytes(path, tex.EncodeToJPG(50));
 
 		// save track editor data
 		JsonContent = JsonConvert.SerializeObject(TRACK);
@@ -1817,7 +1814,6 @@ public class EditorPanel : MonoBehaviour
 			Initialize();
 		gameObject.SetActive(true);
 		loadingTrack = true;
-		records = new();
 
 		int skyboxNumber = F.I.skys[(int)F.I.tracks[F.I.s_trackName].envir];
 		string envirName = F.I.tracks[F.I.s_trackName].envir.ToString();

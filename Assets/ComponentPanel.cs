@@ -946,7 +946,7 @@ public class ChassisSavable : PartSavable
 		vp.rb.centerOfMass = new Vector3(0, verticalCOM, (F.I.s_raceType == RaceType.Drift) ? 0 : longtitunalCOM);
 		vp.SetChassis(mass, drag, angularDrag);
 		vp.raceBox.evoModule.SetStuntCoeffs(evoSmoothTime, staticEvoMaxSpeed, evoAcceleration);
-		vp.GetComponent<SGP_DragsterEffect>().COM_Movement = vp.followAI.isCPU ? 0 : -dragsterEffect;
+		vp.GetComponent<SGP_DragsterEffect>().COM_Movement = vp.followAI.IsCPU ? 0 : -dragsterEffect;
 	}
 	public override void InitializeFromCar(VehicleParent vp)
 	{

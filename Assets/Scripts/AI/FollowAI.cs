@@ -31,7 +31,7 @@ namespace RVP
 		/// <summary>
 		/// CPU takes control in pits
 		/// </summary>
-		public bool isCPU = false;
+		public bool IsCPU { get; private set; }
 		/// <summary>
 		/// CPU drives
 		/// </summary>
@@ -65,7 +65,6 @@ namespace RVP
 		//float tyreMult = 1;
 		//float lowSpeed = 30;
 		public FollowTarget target = new();
-		public CpuLevel cpuLevel;
 		[Tooltip("Time limit in seconds which the vehicle is stuck before attempting to reverse")]
 		public float stopTimeReverse = 5;
 
@@ -107,6 +106,8 @@ namespace RVP
 		Vector3 progressPoint;
 		float distLastTime;
 		float LapProgressPercentTime;
+		private float lastOutOfTrackTime;
+
 		public float LapProgressPercent
 		{
 			get
@@ -148,56 +149,12 @@ namespace RVP
 			ResetCurCameraIdx();
 			speedLimitDist = -1;
 		}
-		public void SetCPU(bool val)
+		public void SetCPU(bool enabled)
 		{
 			if (!vp.Owner)
 				return;
-			if (val == isCPU)
-				return;
-			cpuLevel = F.I.s_cpuLevel;
-			isCPU = val;
-			selfDriving = val;
-
-			//if (isCPU)
-			//{
-			//	vp.basicInput.enabled = false;
-			//	switch (cpuLevel)
-			//	{
-			//		case CpuLevel.Easy:
-			//			lowSpeed = UnityEngine.Random.value * 2 + 28; // 30-32
-			//			tyreMult = .9f;
-			//			break;
-			//		case CpuLevel.Medium:
-			//			lowSpeed = UnityEngine.Random.value * 2 + 30; // 30-32
-			//			tyreMult = 1.2f;
-			//			break;
-			//		case CpuLevel.Hard:
-			//			lowSpeed = UnityEngine.Random.value * 2 + 36; // 36-38
-			//			tyreMult = 1.2f;
-			//			break;
-			//		case CpuLevel.Elite:
-			//			lowSpeed = UnityEngine.Random.value * 2 + 38; // 38-40
-			//			tyreMult = 1.2f;
-			//			break;
-			//	}
-			//	for (int i = 0; i < 4; ++i)
-			//	{
-			//		vp.wheels[i].sidewaysFriction = tyreMult * vp.wheels[i].initSidewaysFriction;
-			//		vp.wheels[i].forwardFriction = tyreMult * vp.wheels[i].initForwardFriction;
-			//	}
-			//	var keys = tSpeedExpCurve.keys;
-			//	keys[keys.Count() - 1].value = lowSpeed;
-			//	tSpeedExpCurve.keys = keys;
-			//}
-			//else
-			//{
-			//	vp.basicInput.enabled = true;
-			//	for (int i = 0; i < 4; ++i)
-			//	{
-			//		vp.wheels[i].sidewaysFriction = vp.wheels[i].initSidewaysFriction;
-			//		vp.wheels[i].forwardFriction = vp.wheels[i].initForwardFriction;
-			//	}
-			//}
+			selfDriving = enabled;
+			IsCPU = enabled;
 		}
 		private void Awake()
 		{
@@ -229,7 +186,6 @@ namespace RVP
 			}
 			target.dist = dist;
 			target.pos = trackPathCreator.path.GetPointAtDistance(dist);
-			SetCPU(isCPU);
 		}
 		int GetDist(int layer)
 		{
@@ -281,7 +237,7 @@ namespace RVP
 				pitsProgress = 0;
 				pitsPathCreator = null;
 				searchForPits = false;
-				selfDriving = isCPU;
+				selfDriving = IsCPU;
 				vp.basicInput.enabled = vp.Owner;
 			}
 		}
@@ -333,7 +289,7 @@ namespace RVP
 			{
 				vp.ebrakeInput = 1;
 
-				if (isCPU)
+				if (IsCPU)
 				{
 					if (!revvingCo)
 						StartCoroutine(RevvingCoroutine());
@@ -359,10 +315,15 @@ namespace RVP
 				if ((!overRoad) // out of track
 					 || (vp.velMag > 10 && vp.groundedWheels > 2 && Vector3.Dot(vp.forwardDir, trackPathCreator.path.GetDirectionAtDistance(dist)) < -0.5f
 					&& Vector3.Dot(vp.rb.velocity.normalized, trackPathCreator.path.GetDirectionAtDistance(dist)) < -0.5f)) // wrong way drive
+				{
 					outOfTrackTime += Time.fixedDeltaTime;
-
-				if (outOfTrackTime < 0)
+					lastOutOfTrackTime = Time.time;
+				}
+					
+				if (Time.time - lastOutOfTrackTime > 1)
+				{
 					outOfTrackTime = 0;
+				}
 
 				if (outOfTrackTime > outOfTrackRequiredTime
 					|| vp.tr.position.y < -250) // out of bounds

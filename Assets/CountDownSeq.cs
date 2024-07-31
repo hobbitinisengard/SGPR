@@ -9,7 +9,7 @@ public class CountDownSeq : Sfxable
 	Image img;
 	Coroutine seq;
 	public const float startRaceCountdownSecs = 5;
-
+	public static event Action OnRaceStarted;
 	static float timer;
 	/// <summary>
 	/// raceStart countdown
@@ -45,7 +45,16 @@ public class CountDownSeq : Sfxable
 				{
 					lastTime = Mathf.FloorToInt(timer);
 					img.sprite = countdownSprites[lastTime];
-					PlaySFX((Mathf.FloorToInt(timer) == 0) ? "start2" : "start1");
+					if (Mathf.FloorToInt(timer) == 0)
+					{
+						PlaySFX("start2");
+						OnRaceStarted?.Invoke();
+					}
+						
+					else
+					{
+						PlaySFX("start1");
+					}
 				}
 			}
 			timer -= Time.deltaTime;

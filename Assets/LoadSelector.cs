@@ -13,7 +13,7 @@ public class LoadSelector : TrackSelectorTemplate
 		string FolderNamePath = F.I.tracksPath + selectedTrack.name;
 		File.Delete(FolderNamePath + ".track");
 		File.Delete(FolderNamePath + ".data");
-		File.Delete(FolderNamePath + ".png");
+		File.Delete(FolderNamePath + ".jpg");
 		if (File.Exists(FolderNamePath + ".rec"))
 			File.Delete(FolderNamePath + ".rec");
 

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public enum BottomInfoType { NEW_LEADER, NO_BATT, PIT_OUT, PIT_IN, STUNT, CAR_WINS, ELIMINATED, NEW_CAMERA_TARGET };
+public enum BottomInfoType { NEW_LEADER, NO_BATT, PIT_OUT, PIT_IN, STUNT, CAR_WINS, ELIMINATED, NEW_CAMERA_TARGET, NEW_LAPRECORD };
 
 
 public class SGP_HUD : MonoBehaviour
@@ -462,7 +462,7 @@ public class SGP_HUD : MonoBehaviour
 			carStarLevel = vp.raceBox.starLevel;
 
 			// Original AERO movement
-			float score = (F.I.s_raceType == RaceType.Drift) ? vp.raceBox.drift : vp.raceBox.Aero;
+			float score = (F.I.s_raceType == RaceType.Drift) ? vp.raceBox.Drift : vp.raceBox.Aero;
 			for (int i = 6; i >= 0; --i)
 			{
 				mainRollers[i].SetFrac(score % 10f / 10f);

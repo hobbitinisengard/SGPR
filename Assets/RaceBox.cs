@@ -4,6 +4,8 @@ using UnityEngine;
 using static PtsAnim;
 using System.Collections.Generic;
 using System.Collections;
+using Newtonsoft.Json;
+using System.IO;
 
 public class StuntRotInfo
 {
@@ -112,7 +114,7 @@ public class RaceBox : MonoBehaviour
 	public float w_A_dot;
 
 	public int starLevel;
-	public float drift;
+	public float Drift;
 	public float grantedComboTime;
 
 	public float topMeterSpeed = 0;
@@ -342,7 +344,7 @@ public class RaceBox : MonoBehaviour
 			topMeterSpeed = Mathf.Lerp(topMeterSpeed,
 				(vp.reallyGroundedWheels >= 3) ? addDriftPoints : 0,
 				deltaTime * aeroMeterResponsiveness);
-			drift += topMeterSpeed;
+			Drift += topMeterSpeed;
 
 			if (vp.followAI.overRoad && prevSmoothedDriftAngle * smoothedDriftAngle <= 0 && vp.reallyGroundedWheels == 4 && driftingTimer > 1)
 			{ // switching directions
@@ -387,12 +389,12 @@ public class RaceBox : MonoBehaviour
 				if (driftingTimer > 3)
 				{
 					StartCoroutine(AddExtraStuntCo(StuntsData.ExtraName.Powerslide));
-					drift += stuntsData.extraData[(int)StuntsData.ExtraName.Powerslide].score;
+					Drift += stuntsData.extraData[(int)StuntsData.ExtraName.Powerslide].score;
 				}
 				else if (driftingTimer > 2)
 				{
 					StartCoroutine(AddExtraStuntCo(StuntsData.ExtraName.Slide));
-					drift += stuntsData.extraData[(int)StuntsData.ExtraName.Slide].score;
+					Drift += stuntsData.extraData[(int)StuntsData.ExtraName.Slide].score;
 				}
 				driftingTime = 0;
 				driftingTimer = 0;
@@ -628,7 +630,7 @@ public class RaceBox : MonoBehaviour
 		{
 			vp.ChargeBatteryByStunt();
 			if (F.I.s_raceType == RaceType.Drift)
-				drift += stuntPai.score;
+				Drift += stuntPai.score;
 			else
 			{
 				grantedComboTime = 5 + 0.5f * starLevel;
@@ -782,35 +784,35 @@ public class RaceBox : MonoBehaviour
 						{
 							bestLapTime = curlaptime.Value;
 						}
+					}
 
-						if (!vp.followAI.isCPU && RaceManager.I.playerCar == vp)
+					if (!vp.followAI.IsCPU)
+					{
+						if (RaceManager.I.hud.RECDisplay.activeSelf)
 						{
-							if (RaceManager.I.hud.RECDisplay.activeSelf)
+							if (curlaptime.Value.TotalSeconds < F.I.tracks[F.I.s_trackName].records.lap.secondsOrPts)
 							{
-								if (curlaptime.Value.TotalSeconds < F.I.tracks[F.I.s_trackName].records.lap.secondsOrPts)
-								{
-									F.I.tracks[F.I.s_trackName].records.lap.playerName = F.I.playerData.playerName;
-									F.I.tracks[F.I.s_trackName].records.lap.secondsOrPts = (float)curlaptime.Value.TotalSeconds;
+								F.I.tracks[F.I.s_trackName].records.lap.playerName = vp.name;
+								F.I.tracks[F.I.s_trackName].records.lap.secondsOrPts = (float)curlaptime.Value.TotalSeconds;
 
+								if(vp == RaceManager.I.playerCar)
 									RaceManager.I.hud.lapRecordSeq.gameObject.SetActive(true);
-									RaceManager.I.hud.SetRec(curlaptime.Value);
-								}
+								else
+									RaceManager.I.hud.infoText.AddMessage(
+										new(vp.tr.name + " SETS NEW LAP RECORD: " + curlaptime.Value.ToLaptimeStr(), BottomInfoType.NEW_LAPRECORD));
 							}
+							RaceManager.I.hud.SetRec(TimeSpan.FromSeconds(F.I.tracks[F.I.s_trackName].records.lap.secondsOrPts));
+						}
 
-							if (RaceManager.I.hud.RECScoreDisplay.activeSelf)
-							{
-								if (drift > F.I.tracks[F.I.s_trackName].records.drift.secondsOrPts)
-								{
-									RaceManager.I.hud.SetScore((int)drift);
-								}
-								if (aero > F.I.tracks[F.I.s_trackName].records.stunt.secondsOrPts)
-								{
-									RaceManager.I.hud.SetScore((int)aero);
-								}
-							}
+						if (RaceManager.I.hud.RECScoreDisplay.activeSelf)
+						{
+							if(F.I.s_raceType == RaceType.Drift)
+								RaceManager.I.hud.SetScore((int)F.I.tracks[F.I.s_trackName].records.drift.secondsOrPts);
+							else
+								RaceManager.I.hud.SetScore((int)F.I.tracks[F.I.s_trackName].records.stunt.secondsOrPts);
 						}
 					}
-					
+
 					if (F.I.s_raceType == RaceType.Knockout && (curLap - 1) == (F.I.s_laps - RaceManager.I.Position(vp)))
 					{
 						RaceManager.I.KnockoutCarsBehind(vp);
@@ -818,6 +820,7 @@ public class RaceBox : MonoBehaviour
 
 					if (curLap == (F.I.s_laps + 1)) // race finished
 					{
+						enabled = false;
 						int curPos = RaceManager.I.Position(vp) + 1;
 						if (!F.I.s_inEditor && curPos == 1)
 						{
@@ -846,7 +849,7 @@ public class RaceBox : MonoBehaviour
 						{
 							RaceManager.I.hud.endraceTimer.gameObject.SetActive(false);
 						}
-						enabled = false;
+						
 					}
 					// when triggered lap while on energyTunnel
 					if(vp.followAI.pitsProgress > 0)
@@ -870,6 +873,8 @@ public class RaceBox : MonoBehaviour
 		if (F.I.gameMode == MultiMode.Multiplayer && !ServerC.I.networkManager.IsConnectedClient)
 			return;
 
+		UpdateTrackRecords();
+
 		// You can disable racebox only ONCE
 		if (raceTime == initialRaceTime)
 		{
@@ -887,7 +892,7 @@ public class RaceBox : MonoBehaviour
 			{
 				if (vp.Owner)
 				{
-					vp.SynchRaceboxValuesRpc(false, ServerC.I.PlayerMe.ScoreGet(), curLap, vp.followAI.dist, vp.followAI.progress, aero, drift, (float)bestLapTime.TotalSeconds,
+					vp.SynchRaceboxValuesRpc(false, ServerC.I.PlayerMe.ScoreGet(), curLap, vp.followAI.dist, vp.followAI.progress, aero, Drift, (float)bestLapTime.TotalSeconds,
 					(float)raceTime.TotalSeconds, vp.RpcTarget.Everyone);
 				}
 			}
@@ -895,15 +900,14 @@ public class RaceBox : MonoBehaviour
 			{
 				ResultsView.Add(vp);
 			}
-
-			vp.followAI.SetCPU(true);
+			vp.followAI.selfDriving = true;
 		}
 	}
 
 	public void UpdateValues(bool enabled, int curLap, int dist, int progress, float aero, float drift, float bestLapSecs, float raceTimeSecs)
 	{
 		this.aero = aero;
-		this.drift = drift;
+		this.Drift = drift;
 		this.curLap = curLap;
 		vp.followAI.dist = dist;
 		vp.followAI.progress = progress;
@@ -911,5 +915,32 @@ public class RaceBox : MonoBehaviour
 		raceTime = TimeSpan.FromSeconds(raceTimeSecs);
 		this.enabled = enabled;
 		//Debug.Log($"{vp.name}: {raceTime}");
+	}
+	void UpdateTrackRecords()
+	{
+		if (!vp.followAI.IsCPU)
+		{ // Save records, if this car beat any
+			if ((float)vp.raceBox.bestLapTime.TotalSeconds < F.I.tracks[F.I.s_trackName].records.lap.secondsOrPts)
+			{
+				F.I.tracks[F.I.s_trackName].records.lap.playerName = vp.name;
+				F.I.tracks[F.I.s_trackName].records.lap.secondsOrPts = (float)vp.raceBox.bestLapTime.TotalSeconds;
+			}
+			if ((float)vp.raceBox.raceTime.TotalSeconds < 36000
+				&& (float)vp.raceBox.raceTime.TotalSeconds > F.I.tracks[F.I.s_trackName].records.race.secondsOrPts)
+			{
+				F.I.tracks[F.I.s_trackName].records.race.playerName = vp.name;
+				F.I.tracks[F.I.s_trackName].records.race.secondsOrPts = (float)vp.raceBox.raceTime.TotalSeconds;
+			}
+			if (vp.raceBox.Aero > F.I.tracks[F.I.s_trackName].records.stunt.secondsOrPts)
+			{
+				F.I.tracks[F.I.s_trackName].records.stunt.secondsOrPts = vp.raceBox.Aero;
+				F.I.tracks[F.I.s_trackName].records.stunt.playerName = vp.name;
+			}
+			if (vp.raceBox.Drift > F.I.tracks[F.I.s_trackName].records.drift.secondsOrPts)
+			{
+				F.I.tracks[F.I.s_trackName].records.drift.playerName = vp.name;
+				F.I.tracks[F.I.s_trackName].records.drift.secondsOrPts = vp.raceBox.Drift;
+			}
+		}
 	}
 }

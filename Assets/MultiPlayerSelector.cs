@@ -1,5 +1,4 @@
-﻿using RVP;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -67,9 +66,13 @@ public class MultiPlayerSelector : TrackSelector
 
 	private void NetworkManager_OnClientConnectedCallback(ulong id)
 	{
+		if(F.I.minimized)
+		{
+			PlaySFX("fe-cardssuccess");
+		}
 		clientConnectedTime = Time.time;
 	}
-
+	// this event is called only on disconnecting client and the server
 	private void NetworkManager_OnClientDisconnectCallback(ulong id)
 	{
 		if(id != networkManager.LocalClientId)
@@ -161,7 +164,7 @@ public class MultiPlayerSelector : TrackSelector
 		else
 		{
 			F.I.actionHappening = ServerC.I.ActionHappening;
-			DecodeConfig(ServerC.I.lobby.Data[ServerC.k_raceConfig].Value);
+			ServerC.I.DecodeConfig(ServerC.I.lobby.Data[ServerC.k_raceConfig].Value);
 			F.I.s_trackName = ServerC.I.lobby.Data[ServerC.k_trackName].Value;
 		}
 
@@ -233,7 +236,7 @@ public class MultiPlayerSelector : TrackSelector
 		{
 			if (changes.Data.Value.ContainsKey(ServerC.k_raceConfig))
 			{ // SCORING TYPE CHANGED
-				DecodeConfig(changes.Data.Value[ServerC.k_raceConfig].Value.Value);
+				ServerC.I.DecodeConfig(changes.Data.Value[ServerC.k_raceConfig].Value.Value);
 				ResetButtons();
 				refreshLeaderboard = true;
 			}
@@ -330,41 +333,7 @@ public class MultiPlayerSelector : TrackSelector
 			leaderboard.Refresh();
 
 	}
-	public void DecodeConfig(string data)
-	{
-		if(F.I.scoringType != (ScoringType)(data[0] - '0')) // char to int
-		{
-			F.I.scoringType = (ScoringType)(data[0] - '0');
-			ServerC.I.ScoreSet(0);
-		}
-		
-		F.I.randomCars = data[1] == '1';
-		F.I.randomTracks = data[2] == '1';
-		F.I.s_raceType = (RaceType)(data[3] - '0');
-		F.I.s_laps = int.Parse(data[4..6]);
-		F.I.s_isNight = data[6] == '1';
-		F.I.s_cpuLevel = (CpuLevel)(data[7] - '0');
-		F.I.s_cpuRivals = data[8] - '0';
-		F.I.s_roadType = (PavementType)(data[9]-'0');
-		F.I.catchup = false;
-		F.I.teams = data[10] == '1';
-		F.I.catchup = data[11] == '1';
-
-		if(!ServerC.I.AmHost)
-		{
-			F.I.CurRound = byte.Parse(data[12..14]);
-			var nRounds = byte.Parse(data[14..16]);
-
-			if (F.I.Rounds != nRounds)
-				ServerC.I.ScoreSet(0);
-			F.I.Rounds = nRounds;
-		}
-
-		if (!F.I.teams)
-			F.I.s_PlayerCarSponsor = Livery.Random;
-		if (F.I.teams && F.I.s_PlayerCarSponsor == Livery.Random)
-			F.I.s_PlayerCarSponsor = Livery.TGR;
-	}
+	
 	public void Callbacks_PlayerDataChanged(Dictionary<int, Dictionary<string, ChangedOrRemovedLobbyValue<PlayerDataObject>>> playerDatas)
 	{
 		leaderboard.Refresh();

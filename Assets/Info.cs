@@ -58,7 +58,7 @@ public class Info : MonoBehaviour
 	public Shader transpShader;
 	public Shader opaqueShader;
 	public Text versionText;
-	public const string VERSION = "0.3.6";
+	public const string VERSION = "0.3.7";
 	public bool minimized { get; private set;}
 	void OnApplicationFocus(bool hasFocus)
 	{
@@ -67,6 +67,7 @@ public class Info : MonoBehaviour
 	private void Awake()
 	{
 		F.I = this;
+		UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
 		MultiPlayerSelector.I = mpSelectorInitializer;
 		versionText.text = VERSION;
 		int MPtags = CurrentPlayer.ReadOnlyTags().Count;
@@ -496,8 +497,6 @@ public class Info : MonoBehaviour
 			else
 			{
 				tracks[name].records = new();
-				string json = JsonConvert.SerializeObject(tracks[name].records);
-				File.WriteAllText(recordsPath, json);
 			}
 		}
 	}

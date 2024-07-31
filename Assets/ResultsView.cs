@@ -36,7 +36,7 @@ public class ResultInfo
 	public void Update(VehicleParent vp)
 	{
 		this.vp = vp;
-		drift = vp.raceBox.drift;
+		drift = vp.raceBox.Drift;
 		lap = vp.raceBox.bestLapTime;
 		progress = vp.raceBox.RaceProgressLaps;
 		aeromiles = vp.raceBox.Aero;
@@ -44,6 +44,8 @@ public class ResultInfo
 		name = vp.transform.name;
 		score = vp.lastRoundScore;
 		sponsor = vp.sponsor;
+
+		
 		//Debug.Log(string.Format("{0}, progress:{1}, score:{2}, ", name, progress, aeromiles));
 	}
 	public ResultInfo(VehicleParent vp)
@@ -245,7 +247,13 @@ public class ResultsView : MainMenuView
 	private int driftBonus;
 	private int aeroMeter;
 	public static readonly Comparison<ResultInfo> raceComp = new((ResultInfo x, ResultInfo y) => x.raceTime.TotalSeconds.CompareTo(y.raceTime.TotalSeconds));
-	public static readonly Comparison<ResultInfo> knockoutComp = new((ResultInfo x, ResultInfo y) => y.progress.CompareTo(x.progress));
+	public static readonly Comparison<ResultInfo> knockoutComp = new((ResultInfo x, ResultInfo y) => 
+	{ 
+		if (x.vp.raceBox.enabled == y.vp.raceBox.enabled) 
+			return y.progress.CompareTo(x.progress); 
+		else
+			return x.vp.raceBox.enabled.CompareTo(y.vp.raceBox.enabled);
+	});
 	public static readonly Comparison<ResultInfo> stuntComp = new((ResultInfo x, ResultInfo y) => y.aeromiles.CompareTo(x.aeromiles));
 	public static readonly Comparison<ResultInfo> driftComp = new((ResultInfo x, ResultInfo y) => y.drift.CompareTo(x.drift));
 	public static readonly Comparison<ResultInfo> lapComp = new((ResultInfo x, ResultInfo y) => x.lap.TotalSeconds.CompareTo(y.lap.TotalSeconds));

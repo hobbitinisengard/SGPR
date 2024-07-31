@@ -31,7 +31,6 @@ public class ServerList : MonoBehaviour
 	private void OnEnable()
 	{
 		startAServerButton.interactable = false;
-		dialogTextObj.gameObject.SetActive(false);
 		content.DestroyAllChildren();
 		Refresh();
 	}
@@ -47,6 +46,7 @@ public class ServerList : MonoBehaviour
 		if (Time.time - lastRefreshTime < MinimumRefreshInterval)
 			return;
 
+		dialogTextObj.gameObject.SetActive(false);
 		lastRefreshTime = Time.time;
 		content.DestroyAllChildren();
 

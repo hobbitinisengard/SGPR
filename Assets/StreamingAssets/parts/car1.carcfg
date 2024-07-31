@@ -77,8 +77,8 @@
       "dragsterEffect": 0.9
     },
     "boost": {
-      "maxBoost": 0.05,
-      "batteryConsumption": 20.0
+      "maxBoost": 0.005,
+      "batteryConsumption": 10.0
     },
     "tyre": {
       "forwardFriction": 10.0,

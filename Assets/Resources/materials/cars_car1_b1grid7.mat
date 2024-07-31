@@ -25,7 +25,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _BumpMap:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 3e1dd44e9dc28574dbe7f38b65ef08a9, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _DetailAlbedoMap:
@@ -61,7 +61,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _SpecGlossMap:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: d4c01b199e4c0e34b9344961aff8e2d1, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _texcoord:
@@ -84,7 +84,7 @@ Material:
     - _EmissionIntensity: 1
     - _EnableDetailMask: 0
     - _GlossMapScale: 0
-    - _Glossiness: 1
+    - _Glossiness: 0.937
     - _GlossyReflections: 1
     - _IntensityMask: 1
     - _InvertABaseColor: 0
@@ -98,7 +98,7 @@ Material:
     - _Source: 0
     - _SourceMask: 0
     - _SpecularHighlights: 1
-    - _SpecularIntensity: 0.2
+    - _SpecularIntensity: 0.589
     - _SpreadDetailMap: 0
     - _SrcBlend: 1
     - _UVSec: 0

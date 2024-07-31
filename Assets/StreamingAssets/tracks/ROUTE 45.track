@@ -1,0 +1,15 @@
+{
+  "author": "luckygoose",
+  "desc": "This quick, medium-short track features few narrow turns, a technical chicane, and high speed sections up in the clouds.",
+  "valid": true,
+  "envir": "USA",
+  "preferredCarClass": "Speed",
+  "difficulty": 2,
+  "unlocked": true,
+  "icons": [
+    0,
+    3
+  ],
+  "TrackOrigin": 1,
+  "IsOriginal": false
+}

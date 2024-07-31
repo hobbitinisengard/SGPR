@@ -65,7 +65,7 @@ namespace RVP
 
 		void FixedUpdate()
 		{
-			if (!(vp.followAI.selfDriving && vp.followAI.isCPU))
+			if (!(vp.followAI.selfDriving && vp.followAI.IsCPU))
 			{
 				if (vp.Owner)
 				{

@@ -165,7 +165,7 @@ namespace RVP
 			return F.I.s_raceType switch
 			{
 				RaceType.Stunt => vp.raceBox.Aero,
-				RaceType.Drift => vp.raceBox.drift,
+				RaceType.Drift => vp.raceBox.Drift,
 				RaceType.TimeTrial => -(float)vp.raceBox.bestLapTime.TotalMilliseconds, // trick to compare in a descending order
 				_ => vp.raceBox.RaceProgressLaps,
 			};
@@ -177,8 +177,34 @@ namespace RVP
 				F.I.s_cars.Sort((carA, carB) => LiveProgress(carB).CompareTo(LiveProgress(carA)));
 				if (leader != F.I.s_cars[0])
 				{
-					leader = F.I.s_cars[0];
-					hud.infoText.AddMessage(new(F.I.s_cars[0].name + " TAKES THE LEAD!", BottomInfoType.NEW_LEADER));
+					if (leader == null)
+					{
+						leader = F.I.s_cars[0];
+					}
+					else
+					{
+						leader = F.I.s_cars[0];
+						switch (F.I.s_raceType)
+						{
+							case RaceType.Race:
+								hud.infoText.AddMessage(new(leader.name + " TAKES THE LEAD!", BottomInfoType.NEW_LEADER));
+								break;
+							case RaceType.Knockout:
+								hud.infoText.AddMessage(new(leader.name + " TAKES THE LEAD!", BottomInfoType.NEW_LEADER));
+								break;
+							case RaceType.Stunt:
+								hud.infoText.AddMessage(new(leader.name + " TAKES THE LEAD! AEROMILES:" + leader.raceBox.Aero, BottomInfoType.NEW_LEADER));
+								break;
+							case RaceType.Drift:
+								hud.infoText.AddMessage(new(leader.name + " TAKES THE LEAD! DRIFTSCORE:" + leader.raceBox.Drift, BottomInfoType.NEW_LEADER));
+								break;
+							case RaceType.TimeTrial:
+								hud.infoText.AddMessage(new(leader.name + " TAKES THE LEAD! LAP:" + leader.raceBox.bestLapTime.ToLaptimeStr(), BottomInfoType.NEW_LEADER));
+								break;
+							default:
+								break;
+						}
+					}
 				}
 				for (int i = 0; i < F.I.s_cars.Count; ++i)
 				{
@@ -292,6 +318,7 @@ namespace RVP
 			F.I.raceStartDate = DateTime.UtcNow.AddSeconds(5);
 			var euler = Sun.transform.rotation.eulerAngles;
 			Sun.transform.rotation = Quaternion.Euler(euler.x, UnityEngine.Random.Range(-180, 180), euler.z);
+			
 			StartCoroutine(StartRaceCoroutine());
 		}
 		IEnumerator StartRaceCoroutine()
@@ -428,7 +455,6 @@ namespace RVP
 		}
 		public void SpawnCarForPlayer(ulong relayId, string lobbyId, Vector3? position, Quaternion? rotation)
 		{
-			
 			int index = ServerC.I.lobby.Players.FindIndex(p => p.Id == lobbyId);
 			Player p = ServerC.I.lobby.Players[index];
 			var carModel = Resources.Load<GameObject>(F.I.carPrefabsPath + p.carNameGet());
@@ -441,7 +467,7 @@ namespace RVP
 			{
 				for (int i = F.I.s_cars.Count - 1; i >= 0; i--)
 				{
-					if (F.I.s_cars[i].followAI.isCPU)
+					if (F.I.s_cars[i].followAI.IsCPU)
 					{
 						Debug.Log("Removed CPU car: " + F.I.s_cars[i].name);
 						Destroy(F.I.s_cars[i].gameObject);
@@ -489,73 +515,18 @@ namespace RVP
 			cam.mode = CameraControl.Mode.Replay;
 			foreach (var c in F.I.s_cars)
 				c.sampleText.gameObject.SetActive(false);
-			
-			if (playerCar != null)
-			{
-				if (F.I.s_inEditor)
-				{ // lap, race, stunt, drift
-					if (editorPanel.records == null)
-						editorPanel.records = new();
-					if ((float)playerCar.raceBox.bestLapTime.TotalSeconds < editorPanel.records.lap.secondsOrPts)
-					{
-						F.I.tracks[F.I.s_trackName].records.lap.playerName = F.I.playerData.playerName;
-						F.I.tracks[F.I.s_trackName].records.lap.requiredSecondsOrPts = (float)playerCar.raceBox.bestLapTime.TotalSeconds;
-					}
-					if ((float)playerCar.raceBox.raceTime.TotalSeconds > editorPanel.records.race.secondsOrPts)
-					{
-						F.I.tracks[F.I.s_trackName].records.race.playerName = F.I.playerData.playerName;
-						F.I.tracks[F.I.s_trackName].records.race.requiredSecondsOrPts = (float)playerCar.raceBox.raceTime.TotalSeconds;
-					}
-					if (playerCar.raceBox.Aero > editorPanel.records.stunt.secondsOrPts)
-					{
-						F.I.tracks[F.I.s_trackName].records.stunt.playerName = F.I.playerData.playerName;
-						F.I.tracks[F.I.s_trackName].records.stunt.requiredSecondsOrPts = playerCar.raceBox.Aero;
-					}
-					if (playerCar.raceBox.drift > editorPanel.records.drift.secondsOrPts)
-					{
-						F.I.tracks[F.I.s_trackName].records.drift.playerName = F.I.playerData.playerName;
-						F.I.tracks[F.I.s_trackName].records.drift.requiredSecondsOrPts = playerCar.raceBox.drift;
-					}
-				}
-				else
-				{
-					if ((float)playerCar.raceBox.bestLapTime.TotalSeconds < F.I.tracks[F.I.s_trackName].records.lap.secondsOrPts)
-					{
-						F.I.tracks[F.I.s_trackName].records.lap.playerName = F.I.playerData.playerName;
-						F.I.tracks[F.I.s_trackName].records.lap.secondsOrPts = (float)playerCar.raceBox.bestLapTime.TotalSeconds;
-					}
-					if ((float)playerCar.raceBox.raceTime.TotalSeconds < 36000 
-						&& (float)playerCar.raceBox.raceTime.TotalSeconds > F.I.tracks[F.I.s_trackName].records.race.secondsOrPts)
-					{
-						F.I.tracks[F.I.s_trackName].records.race.playerName = F.I.playerData.playerName;
-						F.I.tracks[F.I.s_trackName].records.race.secondsOrPts = (float)playerCar.raceBox.raceTime.TotalSeconds;
-					}
-					if (playerCar.raceBox.Aero > F.I.tracks[F.I.s_trackName].records.stunt.secondsOrPts)
-					{
-						F.I.tracks[F.I.s_trackName].records.stunt.secondsOrPts = playerCar.raceBox.Aero;
-						F.I.tracks[F.I.s_trackName].records.stunt.playerName = F.I.playerData.playerName;
-					}
-					if (playerCar.raceBox.drift > F.I.tracks[F.I.s_trackName].records.drift.secondsOrPts)
-					{
-						F.I.tracks[F.I.s_trackName].records.drift.playerName = F.I.playerData.playerName;
-						F.I.tracks[F.I.s_trackName].records.drift.secondsOrPts = playerCar.raceBox.drift;
-					}
-					if (F.I.tracks.ContainsKey(F.I.s_trackName))
-					{
-						var json = JsonConvert.SerializeObject(F.I.tracks[F.I.s_trackName]);
-						var path = Path.Combine(F.I.tracksPath, F.I.s_trackName + ".track");
-						File.WriteAllTextAsync(path, json);
-
-						json = JsonConvert.SerializeObject(F.I.tracks[F.I.s_trackName].records);
-						path = Path.Combine(F.I.tracksPath, F.I.s_trackName + ".rec");
-						File.WriteAllTextAsync(path, json);
-					}
-				}
-			}
 
 			while (resultsSeq.gameObject.activeSelf)
 			{
 				yield return null;
+			}
+
+			if (F.I.tracks.ContainsKey(F.I.s_trackName))
+			{ 
+
+				var json = JsonConvert.SerializeObject(F.I.tracks[F.I.s_trackName].records);
+				var path = Path.Combine(F.I.tracksPath, F.I.s_trackName + ".rec");
+				File.WriteAllTextAsync(path, json);
 			}
 
 			countDownSeq.gameObject.SetActive(false);

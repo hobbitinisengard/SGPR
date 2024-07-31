@@ -15,12 +15,12 @@
     "sus": {
       "frontSteerRangeDegs": 35.0,
       "frontSpringDistance": 0.2,
-      "frontSpringForce": 7.0,
+      "frontSpringForce": 8.0,
       "frontSpringExponent": 1.0,
       "frontSpringDampening": 0.2,
       "RearSteerRangeDegs": 0.0,
       "RearSpringDistance": 0.2,
-      "RearSpringForce": 7.0,
+      "RearSpringForce": 8.0,
       "RearSpringExponent": 1.0,
       "RearSpringDampening": 0.2
     },
@@ -57,10 +57,10 @@
     "engine": {
       "audioMaxPitch": 4.0,
       "audioMinPitch": 1.0,
-      "fuelConsumption": 10.0,
+      "fuelConsumption": 5.0,
       "audioType": 1.0,
       "inertia": 0.775,
-      "torque": 0.008,
+      "torque": 0.01,
       "torqueCurveType": 3.0,
       "redlineKRPM": 10.499,
       "cutoffKRPM": 10.5
@@ -69,7 +69,7 @@
       "mass": 1.0,
       "longtitunalCOM": 0.0,
       "verticalCOM": 0.3,
-      "drag": 0.32,
+      "drag": 0.16,
       "angularDrag": 0.9,
       "evoSmoothTime": 0.07,
       "staticEvoMaxSpeed": 1000.0,
@@ -78,7 +78,7 @@
     },
     "boost": {
       "maxBoost": 0.005,
-      "batteryConsumption": 20.0
+      "batteryConsumption": 10.0
     },
     "tyre": {
       "forwardFriction": 10.0,

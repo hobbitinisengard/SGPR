@@ -100,7 +100,7 @@ public class TrackSelectorTemplate : Sfxable
 				int trackOrigin = track.TrackOrigin;
 				var newtrack = Instantiate(trackImageTemplate, trackContent.GetChild(trackOrigin));
 				newtrack.name = trackName;
-				newtrack.GetComponent<Image>().sprite = IMG2Sprite.LoadNewSprite(F.I.tracksPath + trackName + ".png");
+				newtrack.GetComponent<Image>().sprite = IMG2Sprite.LoadNewSprite(F.I.tracksPath + trackName + ".jpg");
 				newtrack.SetActive(true);
 				existingTrackClasses[trackOrigin] = true;
 				if (persistentSelectedTrack != null && persistentSelectedTrack == trackName)

@@ -18685,6 +18685,7 @@ GameObject:
   - component: {fileID: 865657811856999447}
   - component: {fileID: 2697793955915627836}
   - component: {fileID: 4386687692173614105}
+  - component: {fileID: 8502932074123717880}
   m_Layer: 9
   m_Name: car01
   m_TagString: Untagged
@@ -18874,8 +18875,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   antennaFlag: {fileID: 6779875395068024194}
-  carReflectionPrefab: {fileID: 5837710349746425412, guid: c4e15b053cf12b64ead8a82525a0d255,
-    type: 3}
   springRenderers:
   - {fileID: 2552980461200333122}
   - {fileID: 8791339637341501370}
@@ -19014,7 +19013,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b9e79fd276225c249ba662e7605e2068, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isCPU: 0
   selfDriving: 0
   forwardTargetDot: 0
   tSpeed: 0
@@ -19031,7 +19029,6 @@ MonoBehaviour:
   slowingCoeff: 1
   target:
     dist: 0
-  cpuLevel: 0
   stopTimeReverse: 3
   reverseAttemptTime: 3
   rollResetTime: 3
@@ -19232,6 +19229,23 @@ MonoBehaviour:
   lastCarCarBounceTime: 0
   lastSideBounceTime: 0
   lastVVBounceTime: 0
+--- !u!114 &8502932074123717880
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5969412531493064941}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8b9a305e18de0c04dbd257a21cd47087, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sharedProfile: {fileID: 11400000, guid: 6a1977f112fc7ad409f976515f89a7e1, type: 2}
+  isGlobal: 0
+  blendDistance: 0
+  weight: 1
+  priority: 0
 --- !u!1 &6192630529381075353
 GameObject:
   m_ObjectHideFlags: 0

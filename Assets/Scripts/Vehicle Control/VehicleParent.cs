@@ -90,7 +90,6 @@ namespace RVP
 	public class VehicleParent : NetworkBehaviour
 	{
 		public Renderer antennaFlag;
-		public GameObject carReflectionPrefab;
 		public MeshRenderer[] springRenderers;
 		public AudioSource honkerAudio;
 		public SampleText sampleText;
@@ -347,7 +346,7 @@ namespace RVP
 		[Rpc(SendTo.SpecifiedInParams)]
 		void RequestRaceboxValuesRpc(RpcParams ps)
 		{
-			SynchRaceboxValuesRpc(raceBox.enabled, ServerC.I.PlayerMe.ScoreGet(), raceBox.curLap, followAI.dist, followAI.progress, raceBox.Aero, raceBox.drift,
+			SynchRaceboxValuesRpc(raceBox.enabled, ServerC.I.PlayerMe.ScoreGet(), raceBox.curLap, followAI.dist, followAI.progress, raceBox.Aero, raceBox.Drift,
 				(float)raceBox.bestLapTime.TotalSeconds, (float)raceBox.raceTime.TotalSeconds,
 				RpcTarget.Single(ps.Receive.SenderClientId, RpcTargetUse.Temp));
 		}
@@ -464,13 +463,8 @@ namespace RVP
 				RaceManager.I.cam.Connect(this);
 				RaceManager.I.hud.Connect(this);
 
-				var reflectionProbe = Instantiate(carReflectionPrefab, transform);
-				reflectionProbe.transform.localPosition = Vector3.up;
-
 				NetworkManager.OnTransportFailure += NetworkManager_OnTransportFailure;
 				//newCar.followAI.SetCPU(true); // CPU drives player's car
-
-
 			}
 			sampleText.gameObject.SetActive(!F.I.s_spectator && F.I.gameMode == MultiMode.Multiplayer && RaceManager.I.playerCar != this);
 		}
@@ -540,10 +534,9 @@ namespace RVP
 			brakeCurve ??= GenerateBrakeCurve();
 
 			// Create normal orientation object
-			GameObject normTemp = new GameObject(tr.name + "'s Normal Orientation");
+			GameObject normTemp = new (tr.name + "'s Normal");
 			norm = normTemp.transform;
 
-			followAI.SetCPU(F.I.gameMode == MultiMode.Singleplayer && char.IsDigit(name[2]));
 
 			if (F.I.s_spectator)
 			{
@@ -566,10 +559,14 @@ namespace RVP
 			{ // sending sponsor info may come from the server after a while
 				yield return null;
 			}
+			
 			OnNameChanged();
 			OnSponsorChanged();
 
+			followAI.SetCPU(char.IsDigit(name[2]));
+
 			yield return new WaitForSeconds(.5f); // wait for all the components to load
+
 			carConfig = new CarConfig(F.I.cars[carNumber - 1].config);
 			carConfig.Apply(this);
 
@@ -1058,7 +1055,6 @@ namespace RVP
 		}
 		void KnockoutMeInternal()
 		{
-			followAI.SetCPU(false);
 			followAI.selfDriving = false;
 			SetAccel(0);
 			SetBrake(0);

@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System;
+using System.Collections;
 
 namespace RVP
 {
@@ -54,6 +55,7 @@ namespace RVP
 		public float boostEval;
 		internal float fuelConsumption;
 		public float d_torqueCurve;
+		Coroutine boostOnStartCo;
 
 		public AnimationCurve GenerateTorqueCurve(int curve_number)
 		{
@@ -69,12 +71,36 @@ namespace RVP
 		public override void Start()
 		{
 			base.Start();
+			CountDownSeq.OnRaceStarted += CountDownSeq_OnRaceStarted; ;
 			targetDrive = GetComponent<DriveForce>();
 			torqueCurve = GenerateTorqueCurve(1);
 			GetMaxRPM();
 		}
 
-
+		private void CountDownSeq_OnRaceStarted()
+		{
+			float curRPM = (targetDrive.feedbackRPM/1000) / limit2kRPM;
+			Debug.Log(curRPM);
+			if (curRPM > .75f && curRPM < .9f)
+			{
+				Debug.Log("Boost!");
+				if (boostOnStartCo != null)
+					StopCoroutine(boostOnStartCo);
+				boostOnStartCo = StartCoroutine(AddPowerBoostRewardOnStart());
+			}
+		}
+		IEnumerator AddPowerBoostRewardOnStart()
+		{
+			float timer = 2;
+			float initMaxTorque = maxTorque;
+			while(timer > 0)
+			{
+				maxTorque = Mathf.Lerp(initMaxTorque, vp.wheels[0].torqueThreshold, timer / 2f);
+				timer -= Time.fixedDeltaTime;
+				yield return null;
+			}
+			maxTorque = initMaxTorque;
+		}
 		protected override void FixedUpdate()
 		{
 			base.FixedUpdate();
