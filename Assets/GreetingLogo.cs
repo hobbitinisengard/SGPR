@@ -86,7 +86,7 @@ public class GreetingLogo : Sfxable
 								F.I.s_inEditor = false;
 								F.I.s_cpuLevel = CpuLevel.Normal;
 								F.I.s_trackName = track.Key;
-								F.I.s_isNight = UnityEngine.Random.value > 0.5f;
+								F.I.s_isNight = false;// UnityEngine.Random.value > 0.5f;
 								F.I.s_laps = 9;
 								break;
 							}

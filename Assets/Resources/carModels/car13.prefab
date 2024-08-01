@@ -6456,7 +6456,7 @@ ParticleSystemRenderer:
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 2100000, guid: b27881189ee1f7c42b18ffea691f3440, type: 2}
-  - {fileID: 2100000, guid: 049be55e936e72a4dbe5dafa47a4a9be, type: 2}
+  - {fileID: 2100000, guid: b27881189ee1f7c42b18ffea691f3440, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -17452,8 +17452,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   antennaFlag: {fileID: 8288299408690964299}
-  carReflectionPrefab: {fileID: 5837710349746425412, guid: c4e15b053cf12b64ead8a82525a0d255,
-    type: 3}
   springRenderers:
   - {fileID: 2552980461200333122}
   - {fileID: 8791339637341501370}
@@ -17632,7 +17630,7 @@ MonoBehaviour:
   curLap: 0
   w_A_dot: 0
   starLevel: 0
-  drift: 0
+  Drift: 0
   grantedComboTime: 0
   topMeterSpeed: 0
   lastTimeInAir: 0
@@ -17669,7 +17667,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b9e79fd276225c249ba662e7605e2068, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isCPU: 0
   selfDriving: 0
   forwardTargetDot: 0
   tSpeed: 0
@@ -17686,7 +17683,6 @@ MonoBehaviour:
   slowingCoeff: 1
   target:
     dist: 0
-  cpuLevel: 0
   stopTimeReverse: 3
   reverseAttemptTime: 3
   rollResetTime: 3

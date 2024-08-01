@@ -4,7 +4,6 @@ using UnityEngine;
 public class SkyboxController : MonoBehaviour
 {
 	GameObject nightTimeLights;
-	public GameObject nightSkybox;
 	public GameObject extraToTurnOffInNight;
 	private void Awake()
 	{
@@ -17,8 +16,6 @@ public class SkyboxController : MonoBehaviour
 	}
 	public void SetNightTimeLights()
 	{
-		nightSkybox.SetActive(F.I.s_isNight);
-
 		if (nightTimeLights)
 			nightTimeLights.SetActive(F.I.s_isNight);
 
