@@ -56,7 +56,6 @@ public class Info : MonoBehaviour
 {
 	public MultiPlayerSelector mpSelectorInitializer;
 	public Shader transpShader;
-	public Shader opaqueShader;
 	public Text versionText;
 	public const string VERSION = "0.3.7";
 	public bool minimized { get; private set;}

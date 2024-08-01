@@ -17,7 +17,7 @@ MonoBehaviour:
     supportSSR: 1
     supportSSRTransparent: 1
     supportSSAO: 0
-    supportSSGI: 0
+    supportSSGI: 1
     supportSubsurfaceScattering: 1
     sssSampleBudget:
       m_Values: 140000002800000050000000
@@ -182,6 +182,7 @@ MonoBehaviour:
       forcedPercentage: 100
       lowResTransparencyMinimumThreshold: 0
       rayTracingHalfResThreshold: 50
+      lowResSSGIMinimumThreshold: 0
     lowresTransparentSettings:
       enabled: 1
       checkerboardDepthBuffer: 1

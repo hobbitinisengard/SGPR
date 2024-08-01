@@ -11,9 +11,12 @@ public class Ghost : NetworkBehaviour
 	public Renderer[] ghostableParts;
 	VehicleParent vp;
 	Coroutine ghostCo;
+	static Shader opaqueShader;
 	private void Awake()
 	{
 		vp = GetComponent<VehicleParent>();
+		if (opaqueShader == null)
+			opaqueShader = Shader.Find("HDRP/Lit");
 	}
 	public void SetHittable(bool isHittable, bool updateColliders = true)
 	{
@@ -35,51 +38,17 @@ public class Ghost : NetworkBehaviour
 	}
 	public Material ToOpaqueMode(Material material)
 	{
-		float specularIntensity = material.GetFloat("_SpecularIntensity");
-		float smoothness = material.GetFloat("_Glossiness");
-		material.shader = F.I.opaqueShader;
-		material.SetInt("_ZWrite", 1);
-		material.SetFloat("_IntensityTransparentMap", material.name.Contains("Roof") ? 0.2f : 0);
-
-		material.SetFloat("_Glossiness", smoothness);
-		material.SetFloat("_SpecularIntensity", specularIntensity);
-		material.SetFloat("_Parallax", 0);
-		material.SetFloat("_Brightness", 1);
-		//material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
-		//material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.Zero);
-		//material.SetInt("_ZWrite", 1);
-		//material.DisableKeyword("_ALPHATEST_ON");
-		//material.DisableKeyword("_ALPHABLEND_ON");
-		//material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
-		//material.renderQueue = -1; // Set it back to the default opaque render queue
+		//float specularIntensity = material.GetFloat("_SpecularIntensity");
+		//float smoothness = material.GetFloat("_Glossiness");
+		material.shader = opaqueShader;
+		material.SetFloat("_Metallic", 1);
+		material.SetFloat("Smoothness", .5f);
 		return material;
 	}
 
 	public Material ToFadeMode(Material material)
 	{
-		float specularIntensity = material.GetFloat("_SpecularIntensity");
-		float smoothness = material.GetFloat("_Glossiness");
-		material.shader = F.I.transpShader;
-		material.SetInt("_ZWrite", 1);
-		material.SetFloat("_IntensityTransparentMap", 0.7f);
-
-		material.SetFloat("_Glossiness", smoothness);
-		material.SetFloat("_SpecularIntensity", specularIntensity);
-		material.SetFloat("_Parallax", 0);
-		material.SetFloat("_Brightness", 4);
-		//var c = material.color;
-		//c.a = 0.5f;
-		//material.color = c;
-
-		// Set the rendering mode to transparent
-		//material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-		//material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-		//material.SetInt("_ZWrite", 0);
-		//material.DisableKeyword("_ALPHATEST_ON");
-		//material.EnableKeyword("_ALPHABLEND_ON");
-		//material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
-		//material.renderQueue = 3500;
-		
+		material.shader = F.I.transpShader;		
 		return material;
 	}
 
