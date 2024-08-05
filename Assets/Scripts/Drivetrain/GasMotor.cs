@@ -51,7 +51,7 @@ namespace RVP
 		public float d_targetRpm;
 		public float d_feedRpm;
 		float curEnginekRPM = 0;
-		public ParticleSystem engineSmoke;
+		ParticleSystem engineSmoke;
 		public float boostEval;
 		internal float fuelConsumption;
 		public float d_torqueCurve;
@@ -67,6 +67,10 @@ namespace RVP
 				keys[i].value = (float)torqueCurveData[curve_number][i];
 			}
 			return new AnimationCurve(keys);
+		}
+		private void Awake()
+		{
+			engineSmoke = transform.GetChild(0).GetComponent<ParticleSystem>();
 		}
 		public override void Start()
 		{

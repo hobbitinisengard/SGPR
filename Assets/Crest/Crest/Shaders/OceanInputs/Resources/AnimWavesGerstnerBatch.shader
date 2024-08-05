@@ -1,6 +1,6 @@
 // Crest Ocean System
 
-// This file is subject to the MIT License as seen in the root of this folder structure (LICENSE)
+// Copyright 2020 Wave Harmonic Ltd
 
 // Adds Gerstner waves everywhere. Must be given batch prepared by ShapeGerstnerBatched.cs.
 Shader "Hidden/Crest/Inputs/Animated Waves/Gerstner Batch Global"
@@ -21,10 +21,11 @@ Shader "Hidden/Crest/Inputs/Animated Waves/Gerstner Batch Global"
 
 			#include "UnityCG.cginc"
 
-			#include "../../OceanConstants.hlsl"
-			#include "../../OceanGlobals.hlsl"
 			#include "../../OceanInputsDriven.hlsl"
+			#include "../../OceanGlobals.hlsl"
 			#include "../../OceanHelpersNew.hlsl"
+
+			sampler2D _LD_Sampler_SeaFloorDepth_0;
 
 			#include "../GerstnerShared.hlsl"
 
@@ -60,7 +61,8 @@ Shader "Hidden/Crest/Inputs/Animated Waves/Gerstner Batch Global"
 
 			half4 Frag(Varyings input) : SV_Target
 			{
-				return half4(ComputeGerstner(input.worldPosXZ, input.uv_slice), 0.0);
+				return ComputeGerstner(input.worldPosXZ, input.uv_slice);
+//#endif
 			}
 			ENDCG
 		}

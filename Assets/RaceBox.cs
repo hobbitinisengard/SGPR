@@ -788,6 +788,21 @@ public class RaceBox : MonoBehaviour
 
 					if (!vp.followAI.IsCPU)
 					{
+						if (curLap == F.I.s_laps && vp == RaceManager.I.playerCar)
+						{
+							RaceManager.I.hud.infoText.AddMessage(
+										new("FINAL LAP", BottomInfoType.FINAL_LAP));
+						}
+						if(vp != RaceManager.I.playerCar)
+						{
+							if (starLevel == 10)
+							{
+								RaceManager.I.hud.infoText.AddMessage(
+											new(vp.tr.name + " COMPLETES LAP WITH 10 AERO STARS!", BottomInfoType.HIGHEST_AEROMILES_COMBO));
+							}
+						}
+						
+
 						if (RaceManager.I.hud.RECDisplay.activeSelf)
 						{
 							if (curlaptime.Value.TotalSeconds < F.I.tracks[F.I.s_trackName].records.lap.secondsOrPts)
@@ -873,11 +888,11 @@ public class RaceBox : MonoBehaviour
 		if (F.I.gameMode == MultiMode.Multiplayer && !ServerC.I.networkManager.IsConnectedClient)
 			return;
 
-		UpdateTrackRecords();
-
 		// You can disable racebox only ONCE
 		if (raceTime == initialRaceTime)
 		{
+			UpdateTrackRecords();
+
 			vp.basicInput.enabled = false;
 
 			vp.sampleText.gameObject.SetActive(false);
@@ -904,7 +919,8 @@ public class RaceBox : MonoBehaviour
 		}
 	}
 
-	public void UpdateValues(bool enabled, int curLap, int dist, int progress, float aero, float drift, float bestLapSecs, float raceTimeSecs)
+	public void UpdateValues(bool enabled, int curLap, int dist, int progress, float aero, float drift, 
+		float bestLapSecs, float raceTimeSecs)
 	{
 		this.aero = aero;
 		this.Drift = drift;

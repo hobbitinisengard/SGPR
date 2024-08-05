@@ -1,6 +1,6 @@
 // Crest Ocean System
 
-// This file is subject to the MIT License as seen in the root of this folder structure (LICENSE)
+// Copyright 2020 Wave Harmonic Ltd
 
 // Helpers that use 'driven' data - i.e. has backing C# to set shader parameters like the slice index and etc. An
 // example of this setup code can be found in OceanChunkRenderer.OnWillRenderObject().
@@ -14,7 +14,8 @@ half4 SampleOceanDataAtWorldPosition(in Texture2DArray i_oceanData, in const flo
 	// Sample ocean data textures - always lerp between 2 scales, so sample two textures
 
 	const float meshScaleLerp = _CrestPerCascadeInstanceData[_LD_SliceIndex]._meshScaleLerp;
-	float lodAlpha = ComputeLodAlpha(i_positionWS, meshScaleLerp, _CrestCascadeData[0]);
+	const float3 posScaleBase = float3( _CrestCascadeData[0]._posSnapped, _CrestCascadeData[0]._scale);
+	float lodAlpha = ComputeLodAlpha(i_positionWS, meshScaleLerp, posScaleBase);
 
 	// Sample weights. params.z allows shape to be faded out (used on last lod to support pop-less scale transitions)
 	float wt_smallerLod = (1.0 - lodAlpha) * _CrestCascadeData[_LD_SliceIndex]._weight;

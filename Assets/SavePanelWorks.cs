@@ -14,6 +14,10 @@ public class SavePanelWorks : MonoBehaviour
 	private void OnDisable()
 	{
 		editorPanel.SetPylonVisibility(true);
+		SetFlyCamera(true);
 	}
-
+	public void SetFlyCamera(bool enabled)
+	{
+		editorPanel.flyCamera.enabled = enabled;
+	}
 }

@@ -1,39 +1,35 @@
 ﻿// Crest Ocean System
 
-// This file is subject to the MIT License as seen in the root of this folder structure (LICENSE)
+// Copyright 2020 Wave Harmonic Ltd
 
-// Adaptor layer for XR module. Could be replaced with the following one day:
-// com.unity.render-pipelines.core/Runtime/Common/XRGraphics.cs
-
-// Currently, only the horizon line uses it.
+// An adaptor layer for both VR/XR modules.
 
 // ENABLE_VR is defined if platform support XR.
-// ENABLE_VR_MODULE is defined if VR module is installed.
-// VR module depends on XR module so we only need to check the VR module.
+#if ENABLE_VR && (ENABLE_VR_MODULE || ENABLE_XR_MODULE)
+    #define _XR_ENABLED
+#endif
+
 #if ENABLE_VR && ENABLE_VR_MODULE
-#define _XR_ENABLED
+    #define _VR_MODULE_ENABLED
+#endif
+
+#if ENABLE_VR && ENABLE_XR_MODULE
+    #define _XR_MODULE_ENABLED
+#endif
+
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Rendering;
+
+#if _XR_ENABLED
+using UnityEngine.XR;
 #endif
 
 namespace Crest
 {
-    using System.Collections.Generic;
-    using UnityEngine;
-
-#if _XR_ENABLED
-    using UnityEngine.XR;
-#endif
-
     public static class XRHelpers
     {
-        // NOTE: This is the same value as Unity, but in the future it could be higher.
-        const int k_MaximumViews = 2;
-
-#if _XR_ENABLED
-        readonly static List<XRDisplaySubsystem> _displayList = new List<XRDisplaySubsystem>();
-
-        // Unity only supports one display right now.
-        public static XRDisplaySubsystem Display => IsRunning ? _displayList[0] : null;
-#endif
+        static List<XRDisplaySubsystem> _displayList = new List<XRDisplaySubsystem>();
 
         public static Matrix4x4 LeftEyeProjectionMatrix { get; private set; }
         public static Matrix4x4 RightEyeProjectionMatrix { get; private set; }
@@ -44,11 +40,37 @@ namespace Crest
         {
             get
             {
-#if _XR_ENABLED
-                return XRSettings.enabled;
-#else
-                return false;
-#endif
+                #if !_XR_ENABLED
+                    return false;
+                #endif
+
+                return IsNewSDKRunning || IsOldSDKRunning;
+            }
+        }
+
+        public static bool IsNewSDKRunning
+        {
+            get
+            {
+                // XRGeneralSettings.Instance.Manager.activeLoader.GetLoadedSubsystem is another way to access the XR
+                // device. But that requires a dependency on com.unity.xr.management.
+                #if _XR_MODULE_ENABLED
+                    return _displayList.Count > 0 && _displayList[0].running;
+                #else
+                    return false;
+                #endif
+            }
+        }
+
+        public static bool IsOldSDKRunning
+        {
+            get
+            {
+                #if _VR_MODULE_ENABLED
+                    return XRSettings.enabled;
+                #else
+                    return false;
+                #endif
             }
         }
 
@@ -56,106 +78,112 @@ namespace Crest
         {
             get
             {
-#if _XR_ENABLED
-                // TODO: What about multiview?
-                return IsRunning && XRSettings.stereoRenderingMode == XRSettings.StereoRenderingMode.SinglePassInstanced;
-#else
-                return false;
-#endif
-            }
-        }
+                #if !_XR_ENABLED
+                    return false;
+                #endif
 
-        static Texture2DArray s_WhiteTexture = null;
-        public static Texture2DArray WhiteTexture
-        {
-            get
-            {
-                if (s_WhiteTexture == null)
+                if (IsNewSDKRunning)
                 {
-                    s_WhiteTexture = TextureArrayHelpers.CreateTexture2DArray(Texture2D.whiteTexture, k_MaximumViews);
-                    s_WhiteTexture.name = "Crest White Texture XR";
+                    return Display?.GetRenderPassCount() == 1;
                 }
-                return s_WhiteTexture;
+
+                if (IsOldSDKRunning)
+                {
+                    return XRSettings.stereoRenderingMode != XRSettings.StereoRenderingMode.MultiPass;
+                }
+
+                return false;
             }
         }
 
-        public static RenderTextureDescriptor GetRenderTextureDescriptor(Camera camera)
+        // This is according to HDRP
+        public static int MaximumViews => IsSinglePass ? 2 : 1;
+
+        // Unity only supports one display right now.
+        public static XRDisplaySubsystem Display => IsNewSDKRunning ? _displayList[0] : null;
+
+        public static void SetViewProjectionMatrices(Camera camera, int viewIndex, int passIndex, CommandBuffer commandBuffer)
         {
-#if _XR_ENABLED
-            if (camera.stereoEnabled)
+            if (IsNewSDKRunning)
             {
-                return XRSettings.eyeTextureDesc;
+                if (Display.GetRenderPassCount() > 0)
+                {
+                    Display.GetRenderPass(passIndex, out var xrPass);
+                    xrPass.GetRenderParameter(camera, viewIndex, out var xrEye);
+                    commandBuffer.SetViewProjectionMatrices(xrEye.view, xrEye.projection);
+                }
             }
             else
-#endif
             {
-                // As recommended by Unity, in 2021.2 using SystemInfo.GetGraphicsFormat with DefaultFormat.LDR is
-                // necessary or gamma color space texture is returned:
-                // https://docs.unity3d.com/ScriptReference/Experimental.Rendering.DefaultFormat.html
-                return new RenderTextureDescriptor(camera.pixelWidth, camera.pixelHeight, SystemInfo.GetGraphicsFormat(UnityEngine.Experimental.Rendering.DefaultFormat.LDR), 0);
+                var eye = (Camera.StereoscopicEye) (IsSinglePass ? viewIndex : passIndex);
+                commandBuffer.SetViewProjectionMatrices(camera.GetStereoViewMatrix(eye), camera.GetStereoProjectionMatrix(eye));
             }
         }
 
-        public static void SetViewProjectionMatrices(Camera camera, int passIndex)
+        public static void SetViewProjectionMatrices(Camera camera)
         {
-#if _XR_ENABLED
-            if (!XRSettings.enabled || IsSinglePass)
+            if (IsSinglePass)
             {
-                return;
+                if (IsNewSDKRunning)
+                {
+                    camera.SetStereoViewMatrix(Camera.StereoscopicEye.Left, LeftEyeViewMatrix);
+                    camera.SetStereoViewMatrix(Camera.StereoscopicEye.Right, RightEyeViewMatrix);
+                }
             }
-            // Not going to use cached values here just in case.
-            Display.GetRenderPass(passIndex, out var xrPass);
-            xrPass.GetRenderParameter(camera, renderParameterIndex: 0, out var xrEye);
-            camera.projectionMatrix = xrEye.projection;
-#endif
+            else if (IsNewSDKRunning && Display.GetRenderPassCount() > 0)
+            {
+                // Not going to use cached values here just in case.
+                Display.GetRenderPass(0, out var xrPass);
+                xrPass.GetRenderParameter(camera, renderParameterIndex: 0, out var xrEye);
+                camera.projectionMatrix = xrEye.projection;
+            }
         }
 
         public static void UpdatePassIndex(ref int passIndex)
         {
-            if (IsRunning)
+            if (IsSinglePass)
             {
-#if _XR_ENABLED
-                if (XRSettings.stereoRenderingMode == XRSettings.StereoRenderingMode.MultiPass)
-                {
-                    // Alternate between left and right eye.
-                    passIndex += 1;
-                    passIndex %= 2;
-                }
-                else
-                {
-                    passIndex = 0;
-                }
-#endif
+                passIndex = 0;
             }
             else
             {
-                passIndex = -1;
+                passIndex += 1;
+                passIndex %= 2;
             }
         }
 
         public static void Update(Camera camera)
         {
-#if _XR_ENABLED
-            SubsystemManager.GetSubsystems(_displayList);
-#endif
+            #if _XR_MODULE_ENABLED
+                SubsystemManager.GetInstances(_displayList);
+            #endif
 
-            if (!camera.stereoEnabled || !IsSinglePass)
+            if (!IsRunning)
             {
                 return;
             }
 
-#if _XR_ENABLED
-            // XR SPI only has one pass by definition.
-            Display.GetRenderPass(renderPassIndex: 0, out var xrPass);
-            // Grab left and right eye.
-            xrPass.GetRenderParameter(camera, renderParameterIndex: 0, out var xrLeftEye);
-            xrPass.GetRenderParameter(camera, renderParameterIndex: 1, out var xrRightEye);
-            // Store all the matrices.
-            LeftEyeViewMatrix = xrLeftEye.view;
-            RightEyeViewMatrix = xrRightEye.view;
-            LeftEyeProjectionMatrix = xrLeftEye.projection;
-            RightEyeProjectionMatrix = xrRightEye.projection;
-#endif
+            // Let's cache these values for SPI.
+            if (IsSinglePass)
+            {
+                if (IsNewSDKRunning && Display.GetRenderPassCount() > 0)
+                {
+                    Display.GetRenderPass(0, out XRDisplaySubsystem.XRRenderPass xrPass);
+                    xrPass.GetRenderParameter(camera, 0, out XRDisplaySubsystem.XRRenderParameter xrLeftEye);
+                    xrPass.GetRenderParameter(camera, 1, out XRDisplaySubsystem.XRRenderParameter xrRightEye);
+                    LeftEyeViewMatrix = xrLeftEye.view;
+                    RightEyeViewMatrix = xrRightEye.view;
+                    LeftEyeProjectionMatrix = xrLeftEye.projection;
+                    RightEyeProjectionMatrix = xrRightEye.projection;
+                }
+                else
+                {
+                    LeftEyeViewMatrix = camera.GetStereoViewMatrix(Camera.StereoscopicEye.Left);
+                    RightEyeViewMatrix = camera.GetStereoViewMatrix(Camera.StereoscopicEye.Right);
+                    LeftEyeProjectionMatrix = camera.GetStereoProjectionMatrix(Camera.StereoscopicEye.Left);
+                    RightEyeProjectionMatrix = camera.GetStereoProjectionMatrix(Camera.StereoscopicEye.Right);
+                }
+            }
         }
     }
 }

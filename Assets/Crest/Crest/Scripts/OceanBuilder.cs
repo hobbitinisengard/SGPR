@@ -1,6 +1,6 @@
-﻿// Crest Ocean System
+﻿// Crest Ocean System for HDRP
 
-// This file is subject to the MIT License as seen in the root of this folder structure (LICENSE)
+// Copyright 2020 Wave Harmonic Ltd
 
 //#define PROFILE_CONSTRUCTION
 
@@ -127,95 +127,104 @@ namespace Crest
             Count,
         }
 
-        // Keep references to meshes so they can be cleaned up later.
-        static Mesh[] s_Meshes;
-
-        /// <summary>
-        /// Destroy tiles and any resources.
-        /// </summary>
-        public static void CleanUp(OceanRenderer ocean)
-        {
-            // Not every mesh is assigned to a chunk thus we should destroy all of them here.
-            for (int i = 0; i < s_Meshes.Length; i++)
-            {
-                Helpers.Destroy(s_Meshes[i]);
-            }
-
-            ocean.Tiles.Clear();
-
-            // May not be present when entering play mode.
-            if (ocean.Root)
-            {
-                Helpers.Destroy(ocean.Root.gameObject);
-            }
-        }
-
         public static Transform GenerateMesh(OceanRenderer ocean, List<OceanChunkRenderer> tiles, int lodDataResolution, int geoDownSampleFactor, int lodCount)
         {
             if (lodCount < 1)
             {
-                Debug.LogError("Crest: Invalid LOD count: " + lodCount.ToString(), ocean);
+                Debug.LogError("Invalid LOD count: " + lodCount.ToString(), ocean);
                 return null;
             }
 
-            int oceanLayer = ocean.Layer;
-
-#pragma warning disable 0618
-            if (ocean.LayerName != "")
+            int oceanLayer = LayerMask.NameToLayer(ocean.LayerName);
+            if (oceanLayer == -1)
             {
-                oceanLayer = LayerMask.NameToLayer(ocean.LayerName);
-                if (oceanLayer == -1)
-                {
-                    Debug.LogError("Crest: Invalid ocean layer: " + ocean.LayerName + " please add this layer.", ocean);
-                    oceanLayer = 0;
-                }
+                Debug.LogError("Invalid ocean layer: " + ocean.LayerName + " please add this layer.", ocean);
+                oceanLayer = 0;
             }
-#pragma warning restore 0618
 
 #if PROFILE_CONSTRUCTION
             System.Diagnostics.Stopwatch sw = new System.Diagnostics.Stopwatch();
             sw.Start();
 #endif
 
-            var root = new GameObject("Root");
-            Debug.Assert(root != null, "Crest: The ocean Root transform could not be immediately constructed. Please report this issue to the Crest developers via our support email or GitHub at https://github.com/wave-harmonic/crest/issues .");
+            // create mesh data
+            Mesh[] meshInsts = new Mesh[(int)PatchType.Count];
+            Bounds[] meshBounds = new Bounds[(int)PatchType.Count];
+            // 4 tiles across a LOD, and support lowering density by a factor
+            var tileResolution = Mathf.Round(0.25f * lodDataResolution / geoDownSampleFactor);
+            for (int i = 0; i < (int)PatchType.Count; i++)
+            {
+                meshInsts[i] = BuildOceanPatch((PatchType)i, tileResolution, out meshBounds[i]);
+            }
 
-            root.hideFlags = ocean._debug._showOceanTileGameObjects ? HideFlags.DontSave : HideFlags.HideAndDontSave;
+            ClearOutTiles(ocean, tiles);
+
+            var root = new GameObject("Root");
+            root.hideFlags = ocean._hideOceanTileGameObjects ? HideFlags.HideAndDontSave : HideFlags.DontSave;
             root.transform.parent = ocean.transform;
             root.transform.localPosition = Vector3.zero;
             root.transform.localRotation = Quaternion.identity;
             root.transform.localScale = Vector3.one;
 
-            if (!OceanRenderer.RunningHeadless && !OceanRenderer.RunningWithoutGPU)
+            for (int i = 0; i < lodCount; i++)
             {
-                // create mesh data
-                s_Meshes = new Mesh[(int)PatchType.Count];
-                Bounds[] meshBounds = new Bounds[(int)PatchType.Count];
-                // 4 tiles across a LOD, and support lowering density by a factor
-                var tileResolution = Mathf.Round(0.25f * lodDataResolution / geoDownSampleFactor);
-                for (int i = 0; i < (int)PatchType.Count; i++)
-                {
-                    s_Meshes[i] = BuildOceanPatch(ocean, (PatchType)i, tileResolution, out meshBounds[i]);
-                }
-
-                for (int i = 0; i < lodCount; i++)
-                {
-                    CreateLOD(ocean, tiles, root.transform, i, lodCount, s_Meshes, meshBounds, lodDataResolution, geoDownSampleFactor, oceanLayer);
-                }
+                CreateLOD(ocean, tiles, root.transform, i, lodCount, meshInsts, meshBounds, lodDataResolution, geoDownSampleFactor, oceanLayer);
             }
 
 #if PROFILE_CONSTRUCTION
             sw.Stop();
-            Debug.Log( "Crest: Finished generating " + lodCount.ToString() + " LODs, time: " + (1000.0*sw.Elapsed.TotalSeconds).ToString(".000") + "ms" );
+            Debug.Log( "Finished generating " + lodCount.ToString() + " LODs, time: " + (1000.0*sw.Elapsed.TotalSeconds).ToString(".000") + "ms" );
 #endif
 
             return root.transform;
         }
 
-        static Mesh BuildOceanPatch(OceanRenderer ocean, PatchType pt, float vertDensity, out Bounds bounds)
+        public static void ClearOutTiles(OceanRenderer ocean, List<OceanChunkRenderer> tiles)
         {
-            var verts = new List<Vector3>();
-            var indices = new List<int>();
+            tiles.Clear();
+
+            if (ocean.Root == null)
+            {
+                return;
+            }
+
+            // Remove existing LODs
+            for (int i = 0; i < ocean.Root.childCount; i++)
+            {
+                var child = ocean.Root.GetChild(i);
+                if (child.name.StartsWith("Tile_L"))
+                {
+                    DestroyGO(child);
+
+                    i--;
+                }
+            }
+
+            DestroyGO(ocean.Root);
+        }
+
+        static void DestroyGO(Transform go)
+        {
+            go.parent = null;
+
+#if UNITY_EDITOR
+            if (UnityEditor.EditorApplication.isPlaying)
+            {
+                Object.Destroy(go.gameObject);
+            }
+            else
+            {
+                Object.DestroyImmediate(go.gameObject);
+            }
+#else
+            Object.Destroy(go.gameObject);
+#endif
+        }
+
+        static Mesh BuildOceanPatch(PatchType pt, float vertDensity, out Bounds bounds)
+        {
+            ArrayList verts = new ArrayList();
+            ArrayList indices = new ArrayList();
 
             // stick a bunch of verts into a 1m x 1m patch (scaling happens later)
             float dx = 1f / vertDensity;
@@ -253,7 +262,7 @@ namespace Crest
 
                 // push outermost edge out to horizon
                 if (pt == PatchType.FatXZOuter && j == sideLength_verts_z - 1f)
-                    z *= ocean._extentsSizeMultiplier;
+                    z *= 100f;
 
                 for (float i = 0; i < sideLength_verts_x; i++)
                 {
@@ -262,7 +271,7 @@ namespace Crest
 
                     // push outermost edge out to horizon
                     if (i == sideLength_verts_x - 1f && (pt == PatchType.FatXOuter || pt == PatchType.FatXZOuter))
-                        x *= ocean._extentsSizeMultiplier;
+                        x *= 100f;
 
                     // could store something in y, although keep in mind this is a shared mesh that is shared across multiple lods
                     verts.Add(new Vector3(x, 0f, z));
@@ -322,24 +331,32 @@ namespace Crest
             // create mesh
 
             Mesh mesh = new Mesh();
+            mesh.hideFlags = HideFlags.DontSave;
             if (verts != null && verts.Count > 0)
             {
                 Vector3[] arrV = new Vector3[verts.Count];
                 verts.CopyTo(arrV);
+
+                var norms = new Vector3[verts.Count];
+                for (int i = 0; i < norms.Length; i++) norms[i] = Vector3.up;
+                var tans = new Vector4[verts.Count];
+                for (int i = 0; i < tans.Length; i++) tans[i] = new Vector4(1, 0, 0, 1);
 
                 int[] arrI = new int[indices.Count];
                 indices.CopyTo(arrI);
 
                 mesh.SetIndices(null, MeshTopology.Triangles, 0);
                 mesh.vertices = arrV;
-                mesh.normals = null;
+                mesh.normals = norms;
+                mesh.tangents = tans;
+
                 mesh.SetIndices(arrI, MeshTopology.Triangles, 0);
 
                 // recalculate bounds. add a little allowance for snapping. in the chunk renderer script, the bounds will be expanded further
                 // to allow for horizontal displacement
                 mesh.RecalculateBounds();
                 bounds = mesh.bounds;
-                bounds.extents = new Vector3(bounds.extents.x + dx, bounds.extents.y, bounds.extents.z + dx);
+                bounds.extents = new Vector3(bounds.extents.x + dx, 100f, bounds.extents.z + dx);
                 mesh.bounds = bounds;
                 mesh.name = pt.ToString();
             }
@@ -356,11 +373,7 @@ namespace Crest
             float horizScale = Mathf.Pow(2f, lodIndex);
 
             bool isBiggestLOD = lodIndex == lodCount - 1;
-            bool generateSkirt = isBiggestLOD;
-
-#if CREST_DEBUG
-            generateSkirt = generateSkirt && !ocean._debug._disableSkirt;
-#endif
+            bool generateSkirt = isBiggestLOD && !ocean._disableSkirt;
 
             Vector2[] offsets;
             PatchType[] patchTypes;
@@ -420,28 +433,22 @@ namespace Crest
                 };
             }
 
-#if CREST_DEBUG
             // debug toggle to force all patches to be the same. they'll be made with a surrounding skirt to make sure patches
             // overlap
-            if (ocean._debug._uniformTiles)
+            if (ocean._uniformTiles)
             {
                 for (int i = 0; i < patchTypes.Length; i++)
                 {
                     patchTypes[i] = PatchType.Fat;
                 }
             }
-#endif
 
             // create the ocean patches
             for (int i = 0; i < offsets.Length; i++)
             {
                 // instantiate and place patch
-                var patch = ocean._waterTilePrefab
-                    ? Helpers.InstantiatePrefab(OceanRenderer.Instance._waterTilePrefab)
-                    : new GameObject();
-                patch.name = $"Tile_L{lodIndex}_{patchTypes[i]}";
-                // Also applying the hide flags to the chunk will prevent it from being pickable in the editor.
-                patch.hideFlags = ocean._debug._showOceanTileGameObjects ? HideFlags.DontSave : HideFlags.HideAndDontSave;
+                var patch = new GameObject($"Tile_L{lodIndex}_{patchTypes[i]}");
+                patch.hideFlags = HideFlags.DontSave;
                 patch.layer = oceanLayer;
                 patch.transform.parent = parent;
                 Vector2 pos = offsets[i];
@@ -452,24 +459,12 @@ namespace Crest
                 {
                     var oceanChunkRenderer = patch.AddComponent<OceanChunkRenderer>();
                     oceanChunkRenderer._boundsLocal = meshBounds[(int)patchTypes[i]];
-
-                    var mesh = Object.Instantiate(meshData[(int)patchTypes[i]]);
-                    mesh.name = meshData[(int)patchTypes[i]].name;
-                    patch.AddComponent<MeshFilter>().sharedMesh = mesh;
-
-                    oceanChunkRenderer.SetInstanceData(lodIndex);
+                    patch.AddComponent<MeshFilter>().sharedMesh = meshData[(int)patchTypes[i]];
+                    oceanChunkRenderer.SetInstanceData(lodIndex, lodCount, lodDataResolution, geoDownSampleFactor);
                     tiles.Add(oceanChunkRenderer);
                 }
 
-                if (!patch.TryGetComponent<MeshRenderer>(out var mr))
-                {
-                    mr = patch.AddComponent<MeshRenderer>();
-                    // I don't think one would use light probes for a purely specular water surface? (although diffuse
-                    // foam shading would benefit).
-                    mr.lightProbeUsage = UnityEngine.Rendering.LightProbeUsage.Off;
-                    // Arbitrary - could be turned on if desired.
-                    mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-                }
+                var mr = patch.AddComponent<MeshRenderer>();
 
                 // Sorting order to stop unity drawing it back to front. make the innermost 4 tiles draw first, followed by
                 // the rest of the tiles by LOD index. all this happens before layer 0 - the sorting layer takes priority over the
@@ -477,18 +472,21 @@ namespace Crest
                 // ocean rendering way early, so transparent objects will by default render afterwards, which is typical for water rendering.
                 mr.sortingOrder = -lodCount + (patchTypes[i] == PatchType.Interior ? -1 : lodIndex);
 
-                // This setting is ignored by Unity for the transparent ocean shader.
-                mr.receiveShadows = false;
-                // Currently not supported in built-in renderer ocean shader.
-                mr.motionVectorGenerationMode = MotionVectorGenerationMode.ForceNoMotion;
+                // I don't think one would use light probes for a purely specular water surface? (although diffuse foam shading would benefit)
+                mr.lightProbeUsage = UnityEngine.Rendering.LightProbeUsage.Off;
+                mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; // arbitrary - could be turned on if desired
+                mr.receiveShadows = false; // this setting is ignored by unity for the transparent ocean shader
+                mr.motionVectorGenerationMode = MotionVectorGenerationMode.Camera;
                 mr.material = ocean.OceanMaterial;
+                // The rendering layer mask has different purposes per pipeline.
+                mr.renderingLayerMask = OceanRenderer.Instance.RenderingLayerMask;
 
                 // rotate side patches to point the +x side outwards
                 bool rotateXOutwards = patchTypes[i] == PatchType.FatX || patchTypes[i] == PatchType.FatXOuter || patchTypes[i] == PatchType.SlimX || patchTypes[i] == PatchType.SlimXFatZ;
                 if (rotateXOutwards)
                 {
                     if (Mathf.Abs(pos.y) >= Mathf.Abs(pos.x))
-                        patch.transform.localEulerAngles = 90f * Mathf.Sign(pos.y) * -Vector3.up;
+                        patch.transform.localEulerAngles = -Vector3.up * 90f * Mathf.Sign(pos.y);
                     else
                         patch.transform.localEulerAngles = pos.x < 0f ? Vector3.up * 180f : Vector3.zero;
                 }
@@ -503,7 +501,7 @@ namespace Crest
                     Vector3 to = patch.transform.localPosition.normalized;
                     if (Mathf.Abs(patch.transform.localPosition.x) < 0.0001f || Mathf.Abs(Mathf.Abs(patch.transform.localPosition.x) - Mathf.Abs(patch.transform.localPosition.z)) > 0.001f)
                     {
-                        Debug.LogWarning("Crest: Skipped rotating a patch because it isn't a corner, click here to highlight.", patch);
+                        Debug.LogWarning("Skipped rotating a patch because it isn't a corner, click here to highlight.", patch);
                         continue;
                     }
 

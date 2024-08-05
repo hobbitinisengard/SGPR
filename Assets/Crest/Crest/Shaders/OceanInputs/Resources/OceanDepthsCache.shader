@@ -1,9 +1,17 @@
 ﻿// Crest Ocean System
 
-// This file is subject to the MIT License as seen in the root of this folder structure (LICENSE)
+// Copyright 2020 Wave Harmonic Ltd
 
-// Draw cached world-space heights into current frame data. If heights are coming from an ODC, then they are in
-// object-space and are converted to world-space as the LOD data stores world-space height.
+// Draw cached depths into current frame ocean depth data.
+
+// This is CG because its a PITA to render from my own camera transform in HDRP because:
+// - Theres a whole bunch of per-view uniforms which have to be manually managed. buf.SetViewProjectionMatrices does NOT set them.
+// - The shader param IDs are now internal to HDRP so they have to be redefined
+// - I tried setting the values myself by copying some of the code out of UpdateViewConstants(). It almost worked, but fails due
+//   to RWS in some way
+// - I think the next step would be to look at how model matrices are set for each renderer which is probably in the HDRP layer? (for now?)
+
+// Or simply retreat back to CG where SetViewProjectionMatrices() handles everything automatically.
 
 Shader "Crest/Inputs/Depth/Cached Depths"
 {
@@ -16,8 +24,10 @@ Shader "Crest/Inputs/Depth/Cached Depths"
 	{
 		Pass
 		{
-			// When blending, take highest terrain height
-			BlendOp Max
+			// Min blending to take the min of all depths. Similar in spirit to zbuffer'd visibility when viewing from top down.
+			// To confuse matters further, ocean depth is now more like 'sea floor altitude' - a height above a deep water value,
+			// so values are increasing in Y and we need to take the MAX of all depths.
+			BlendOp Min
 			ColorMask R
 
 			CGPROGRAM
@@ -27,7 +37,6 @@ Shader "Crest/Inputs/Depth/Cached Depths"
 			#include "UnityCG.cginc"
 
 			sampler2D _MainTex;
-			float _HeightOffset;
 
 			CBUFFER_START(CrestPerOceanInput)
 			float4 _MainTex_ST;
@@ -53,9 +62,9 @@ Shader "Crest/Inputs/Depth/Cached Depths"
 				return output;
 			}
 
-			float2 Frag(Varyings input) : SV_Target
+			half4 Frag(Varyings input) : SV_Target
 			{
-				return float2(tex2D(_MainTex, input.uv).x + _HeightOffset, 0.0);
+				return half4(tex2D(_MainTex, input.uv).x, 0.0, 0.0, 0.0);
 			}
 			ENDCG
 		}

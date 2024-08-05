@@ -1386,7 +1386,7 @@ public class EditorPanel : MonoBehaviour
 	}
 	CarGroup CalculatePreferredCarClass()
 	{
-		if (connectors.Count == 0)
+		if (!PathValid())
 			return CarGroup.Speed;
 		float roadDist = 0;
 		float gravelDist = 0;
@@ -1432,7 +1432,7 @@ public class EditorPanel : MonoBehaviour
 	/// <summary> Returns track difficulty in range 0 to 17 </summary>
 	int CalculateTrackDifficulty()
 	{
-		if (connectors.Count == 0)
+		if (!PathValid())
 			return 0;
 		Transform startline = FindTileByName("startline");
 
@@ -1686,7 +1686,7 @@ public class EditorPanel : MonoBehaviour
 			records = new(),
 		};
 
-		tHeader.valid = racingLine != null && racingLine.Length > 8 && tHeader.records != null;
+		tHeader.valid = PathValid();
 		if (!tHeader.valid)
 		{
 			DisplayMessageFor("Drive at least once to validate track", 3);
@@ -1715,6 +1715,10 @@ public class EditorPanel : MonoBehaviour
 			F.I.tracks.Add(trackName.text, tHeader);
 		else
 			F.I.tracks[trackName.text] = tHeader;
+	}
+	bool PathValid()
+	{
+		return racingLine != null && racingLine.Length > 8;
 	}
 	public void SetPylonVisibility(bool isVisible)
 	{

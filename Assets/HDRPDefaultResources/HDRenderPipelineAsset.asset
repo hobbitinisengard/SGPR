@@ -16,7 +16,7 @@ MonoBehaviour:
     supportShadowMask: 1
     supportSSR: 1
     supportSSRTransparent: 1
-    supportSSAO: 0
+    supportSSAO: 1
     supportSSGI: 1
     supportSubsurfaceScattering: 1
     sssSampleBudget:
@@ -28,17 +28,17 @@ MonoBehaviour:
       m_SchemaId:
         m_Id: With3Levels
     supportVolumetrics: 0
-    supportVolumetricClouds: 0
-    supportLightLayers: 0
-    renderingLayerMaskBuffer: 0
-    supportWater: 0
-    waterSimulationResolution: 128
+    supportVolumetricClouds: 1
+    supportLightLayers: 1
+    renderingLayerMaskBuffer: 1
+    supportWater: 1
+    waterSimulationResolution: 64
     supportWaterExclusion: 1
     supportWaterDeformation: 1
-    deformationAtlasSize: 512
+    deformationAtlasSize: 64
     maximumDeformerCount: 64
     supportWaterFoam: 1
-    foamAtlasSize: 512
+    foamAtlasSize: 1024
     waterScriptInteractionsMode: 0
     waterFullCPUSimulation: 0
     supportComputeThickness: 0
@@ -63,7 +63,7 @@ MonoBehaviour:
       m_SchemaId:
         m_Id: With3Levels
     supportDecals: 1
-    supportDecalLayers: 0
+    supportDecalLayers: 1
     supportSurfaceGradient: 1
     decalNormalBufferHP: 0
     supportHighQualityLineRendering: 0
@@ -73,7 +73,7 @@ MonoBehaviour:
     supportScreenSpaceLensFlare: 1
     supportDataDrivenLensFlare: 1
     supportDitheringCrossFade: 0
-    supportRuntimeAOVAPI: 0
+    supportRuntimeAOVAPI: 1
     supportTerrainHole: 0
     lightProbeSystem: 1
     oldLightProbeSystem: 0
@@ -329,7 +329,7 @@ MonoBehaviour:
   availableMaterialQualityLevels: -1
   m_DefaultMaterialQualityLevel: 4
   diffusionProfileSettings: {fileID: 0}
-  m_VolumeProfile: {fileID: 0}
+  m_VolumeProfile: {fileID: 11400000, guid: 304c4e905ac92944e830057a5b52d61c, type: 2}
   virtualTexturingSettings:
     streamingCpuCacheSizeInMegaBytes: 256
     streamingMipPreloadTexturesPerFrame: 0

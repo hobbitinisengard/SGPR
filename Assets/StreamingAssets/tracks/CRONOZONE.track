@@ -3,8 +3,8 @@
   "desc": "A very fast track with burns and a very sharp turn",
   "valid": true,
   "envir": "FRA",
-  "preferredCarClass": "Team",
-  "difficulty": 9,
+  "preferredCarClass": "Speed",
+  "difficulty": 5,
   "unlocked": true,
   "icons": [
     0

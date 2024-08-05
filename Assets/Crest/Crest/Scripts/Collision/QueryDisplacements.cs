@@ -1,6 +1,6 @@
 ﻿// Crest Ocean System
 
-// This file is subject to the MIT License as seen in the root of this folder structure (LICENSE)
+// Copyright 2020 Wave Harmonic Ltd
 
 using UnityEngine;
 
@@ -20,8 +20,6 @@ namespace Crest
         protected override void BindInputsAndOutputs(PropertyWrapperComputeStandalone wrapper, ComputeBuffer resultsBuffer)
         {
             LodDataMgrAnimWaves.Bind(wrapper);
-            LodDataMgrSeaFloorDepth.Bind(wrapper);
-
             ShaderProcessQueries.SetTexture(_kernelHandle, sp_LD_TexArray_AnimatedWaves, OceanRenderer.Instance._lodDataAnimWaves.DataTexture);
             ShaderProcessQueries.SetBuffer(_kernelHandle, sp_ResultDisplacements, resultsBuffer);
 

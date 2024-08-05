@@ -8184,9 +8184,9 @@ Material:
   - _DISABLE_SSR_TRANSPARENT
   - _NORMALMAP_TANGENT_SPACE
   m_LightmapFlags: 4
-  m_EnableInstancingVariants: 0
+  m_EnableInstancingVariants: 1
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: 2450
+  m_CustomRenderQueue: 2510
   stringTagMap:
     MotionVector: User
     RenderType: TransparentCutout
@@ -8449,7 +8449,7 @@ Material:
     - _ReceivesSSRTransparent: 0
     - _Reflectivity: 5
     - _RefractionModel: 0
-    - _RenderQueueType: 1
+    - _RenderQueueType: 2
     - _RequireSplitLighting: 0
     - _ScaleRatioA: 0.76555026
     - _ScaleRatioB: 0.7386364
@@ -8503,7 +8503,7 @@ Material:
     - _UnderlayDilate: 0
     - _UnderlayOffsetX: 1
     - _UnderlayOffsetY: -1
-    - _UnderlaySoftness: 0
+    - _UnderlaySoftness: 0.523
     - _UseEmissiveIntensity: 0
     - _UseShadowThreshold: 0
     - _UseUIAlphaClip: 0
@@ -8511,7 +8511,7 @@ Material:
     - _VertexOffsetY: 0
     - _WeightBold: 0.75
     - _WeightNormal: 0
-    - _ZTestDepthEqualForOpaque: 3
+    - _ZTestDepthEqualForOpaque: 4
     - _ZTestGBuffer: 4
     - _ZTestModeDistortion: 4
     - _ZTestTransparent: 4
@@ -8554,7 +8554,7 @@ Material:
     - _UVMappingMask: {r: 1, g: 0, b: 0, a: 0}
     - _UVMappingMaskEmissive: {r: 1, g: 0, b: 0, a: 0}
     - _UnderlayColor: {r: 0, g: 0, b: 0, a: 1}
-    - _UnderlayOffset: {r: 0.431, g: -0.494, b: 0, a: 0}
+    - _UnderlayOffset: {r: 0.58, g: -0.505, b: 0, a: 0}
     - _UnlitColor: {r: 1, g: 1, b: 1, a: 1}
     - _UnlitColorMap_MipInfo: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []
@@ -8590,7 +8590,7 @@ Texture2D:
   m_TextureSettings:
     serializedVersion: 2
     m_FilterMode: 1
-    m_Aniso: 1
+    m_Aniso: 7
     m_MipBias: 0
     m_WrapU: 0
     m_WrapV: 0

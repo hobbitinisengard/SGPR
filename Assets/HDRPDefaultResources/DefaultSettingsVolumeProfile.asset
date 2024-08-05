@@ -31,7 +31,7 @@ MonoBehaviour:
   active: 1
   normalBias:
     m_OverrideState: 1
-    m_Value: 0.33
+    m_Value: 0.21
   viewBias:
     m_OverrideState: 1
     m_Value: 0
@@ -344,7 +344,7 @@ MonoBehaviour:
     m_Value: 0
   type:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 0
   renderingMode:
     m_OverrideState: 1
     m_Value: 0
@@ -381,7 +381,7 @@ MonoBehaviour:
     m_Value: 55261.973
   aerosolDensity:
     m_OverrideState: 1
-    m_Value: 0.01192826
+    m_Value: 0
   aerosolTint:
     m_OverrideState: 1
     m_Value: {r: 0.9, g: 0.9, b: 0.9, a: 1}
@@ -393,7 +393,7 @@ MonoBehaviour:
     m_Value: 0
   groundTint:
     m_OverrideState: 1
-    m_Value: {r: 0.4, g: 0.25, b: 0.15, a: 1}
+    m_Value: {r: 1, g: 1, b: 1, a: 1}
   groundColorTexture:
     m_OverrideState: 1
     m_Value: {fileID: 0}
@@ -534,7 +534,7 @@ MonoBehaviour:
   active: 1
   quality:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 0
   enabled:
     m_OverrideState: 1
     m_Value: 1
@@ -588,7 +588,7 @@ MonoBehaviour:
     m_Value: 0
   m_RayMaxIterations:
     m_OverrideState: 1
-    m_Value: 32
+    m_Value: 16
   rayMiss:
     m_OverrideState: 1
     m_Value: 3
@@ -799,6 +799,40 @@ MonoBehaviour:
     castShadows:
       m_OverrideState: 1
       m_Value: 0
+--- !u!114 &-4002682928256452397
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 85a93fc1619b1174a9e2ee1094fe1496, type: 3}
+  m_Name: UnderwaterPostProcessHDRP
+  m_EditorClassIdentifier: 
+  active: 1
+  _enable:
+    m_OverrideState: 1
+    m_Value: 1
+  _copyOceanMaterialParamsEachFrame:
+    m_OverrideState: 1
+    m_Value: 0
+  _filterOceanData:
+    m_OverrideState: 1
+    m_Value: 13
+  _viewOceanMask:
+    m_OverrideState: 1
+    m_Value: 0
+  _disableOceanMask:
+    m_OverrideState: 1
+    m_Value: 0
+  _horizonSafetyMarginMultiplier:
+    m_OverrideState: 1
+    m_Value: 0.01
+  _scaleSafetyMarginWithDynamicResolution:
+    m_OverrideState: 1
+    m_Value: 1
 --- !u!114 &-3161645848346579812
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -1032,7 +1066,7 @@ MonoBehaviour:
     m_Value: 1
   enable:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 0
   length:
     m_OverrideState: 1
     m_Value: 0.15
@@ -1146,6 +1180,7 @@ MonoBehaviour:
   - {fileID: -2903134336919975980}
   - {fileID: -5014315156079053877}
   - {fileID: -7632824519148210283}
+  - {fileID: -4002682928256452397}
 --- !u!114 &448115243408767295
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -2622,7 +2657,7 @@ MonoBehaviour:
   active: 1
   enable:
     m_OverrideState: 1
-    m_Value: 0
+    m_Value: 1
   triangleSize:
     m_OverrideState: 1
     m_Value: 30

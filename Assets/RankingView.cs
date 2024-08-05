@@ -28,7 +28,7 @@ public class RankingRowData
 	public RankingRowData(IEnumerable<ResultInfo> sortedPlayers)
 	{
 		ResultInfo me = sortedPlayers.First(p => p.id == ServerC.I.networkManager.LocalClientId);
-		
+
 		dateStr = DateTime.Now.ToString();
 		rounds = F.I.Rounds;
 		float absoluteScore = 0;
@@ -41,7 +41,7 @@ public class RankingRowData
 				if (p.sponsor == me.sponsor)
 				{
 					absoluteScore += p.score;
-					if(p != me)
+					if (p != me)
 						name += " " + p.name;
 				}
 			}
@@ -51,7 +51,7 @@ public class RankingRowData
 			name = me.name;
 			absoluteScore = me.score;
 		}
-			
+
 
 		switch (F.I.scoringType)
 		{
@@ -87,8 +87,8 @@ public class RankingRowData
 public class RankingView : MainMenuView
 {
 	public MainMenuView recordsView;
-   public TextMeshProUGUI upBarText;
-   public GameObject rankingRowPrefab;
+	public TextMeshProUGUI upBarText;
+	public GameObject rankingRowPrefab;
 	public Transform rankingContent;
 	public Scrollbar scrollbar;
 	Coroutine sinCo;
@@ -135,7 +135,7 @@ public class RankingView : MainMenuView
 		F.I.move2Ref.action.performed -= Move;
 		SetColorOfRow(selectedRow, Color.white);
 		F.I.SaveRanking();
-		if(sortedResults?.Count > 0)
+		if (sortedResults?.Count > 0)
 		{
 			ServerC.I.ScoreSet(0);
 			ServerC.I.UpdatePlayerData();
@@ -148,7 +148,7 @@ public class RankingView : MainMenuView
 		List<ResultInfo> players = ResultsView.SortedResultsByFinishPos;
 		RankingRowData newEntry = null;
 
-		if(players.Count > 0)
+		if (players.Count > 0)
 			newEntry = new RankingRowData(players);
 
 		string gameName;
@@ -175,9 +175,9 @@ public class RankingView : MainMenuView
 
 		upBarText.text = "MULTIPLAYER RANKING - " + (F.I.teams ? "TEAM " : "") + gameName + " - Top 100";
 
-		float newScore = 0; 
-		if(newEntry != null)
-			newScore = newEntry.WinValue;		
+		float newScore = 0;
+		if (newEntry != null)
+			newScore = newEntry.WinValue;
 
 		while (rankingContent.childCount != 100)
 		{
@@ -185,7 +185,7 @@ public class RankingView : MainMenuView
 		}
 
 		LinkedListNode<RankingRowData> curNode = data.First;
-		for (int i=0; i<rankingContent.childCount; ++i)
+		for (int i = 0; i < rankingContent.childCount; ++i)
 		{
 			var row = rankingContent.GetChild(i);
 			row.GetChild(0).GetComponent<TextMeshProUGUI>().text = (i + 1).ToString("D3");
@@ -211,8 +211,8 @@ public class RankingView : MainMenuView
 				row.GetChild(4).GetComponent<TextMeshProUGUI>().text = F.I.scoringType switch
 				{
 					ScoringType.Championship => curNode.Value.moneyOrPerc.ToString("F0"),
-					ScoringType.Points => (100*curNode.Value.moneyOrPerc).ToString("F0"),
-					ScoringType.Victory => (100*curNode.Value.moneyOrPerc).ToString("F0"),
+					ScoringType.Points => (100 * curNode.Value.moneyOrPerc).ToString("F0"),
+					ScoringType.Victory => (100 * curNode.Value.moneyOrPerc).ToString("F0"),
 					_ => null,
 				};
 			}
@@ -232,7 +232,7 @@ public class RankingView : MainMenuView
 			StopCoroutine(sinCo);
 		sinCo = StartCoroutine(SinAnim());
 
-		while(data.Count > 100)
+		while (data.Count > 100)
 			data.RemoveLast();
 
 		base.OnEnable();
@@ -241,7 +241,7 @@ public class RankingView : MainMenuView
 	private void Move(UnityEngine.InputSystem.InputAction.CallbackContext input)
 	{
 		int dir = -(int)input.ReadValue<Vector2>().y;
-		if(dir != 0)
+		if (dir != 0)
 		{
 			scrollTarget = Mathf.Clamp01(scrollTarget - dir * 0.1f);
 			if (moveTableCo != null)
@@ -272,13 +272,13 @@ public class RankingView : MainMenuView
 		float sinSpeed = 10;
 		yield return null;
 
-		while(power > 0)
+		while (power > 0)
 		{
 			for (int i = 0; i < rankingContent.childCount; ++i)
 			{
 				var childRt = rankingContent.GetChild(i).GetComponent<RectTransform>();
 				var pos = childRt.anchoredPosition;
-				pos.x = 350 * power * Mathf.Sin((((i % 2) == 0) ? Mathf.PI/2f : 0) + sinArg);
+				pos.x = 350 * power * Mathf.Sin((((i % 2) == 0) ? Mathf.PI / 2f : 0) + sinArg);
 				childRt.anchoredPosition = pos;
 			}
 			power = Mathf.Clamp01(power - Time.deltaTime / animDurationSecs);
@@ -287,7 +287,7 @@ public class RankingView : MainMenuView
 			yield return null;
 		}
 	}
-	
+
 	void SetColorOfRow(Transform row, Color c)
 	{
 		if (row == null)

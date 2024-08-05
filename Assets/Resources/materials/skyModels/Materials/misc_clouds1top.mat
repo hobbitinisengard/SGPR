@@ -24,8 +24,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: misc_clouds1top
-  m_Shader: {fileID: -6465566751694194690, guid: bc9396a02bec49148973ab59e0b22236,
-    type: 3}
+  m_Shader: {fileID: 4800000, guid: c4edd00ff2db5b24391a4fcb1762e459, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -40,9 +39,7 @@ Material:
     MotionVector: User
   disabledShaderPasses:
   - MOTIONVECTORS
-  - TransparentDepthPrepass
-  - TransparentDepthPostpass
-  - TransparentBackface
+  - DistortionVectors
   m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
@@ -290,6 +287,7 @@ Material:
     - _PPDPrimitiveWidth: 1
     - _Parallax: 0.02
     - _PerPixelSorting: 0
+    - _Proportion: 0.95
     - _RayTracing: 0
     - _ReceivesSSR: 1
     - _ReceivesSSRTransparent: 0

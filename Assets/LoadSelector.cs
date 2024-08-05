@@ -19,9 +19,10 @@ public class LoadSelector : TrackSelectorTemplate
 
 		F.I.tracks.Remove(selectedTrack.name);
 
-		int idx = selectedTrack.GetSiblingIndex();
+		int i = selectedTrack.GetSiblingIndex();
+		var tr = selectedTrack.parent;
 		Destroy(selectedTrack.gameObject);
-		selectedTrack = selectedTrack.parent.GetChild(idx-1);
+		selectedTrack = tr.GetChild(i-1);
 
 		StartCoroutine(Load(selectedTrack.name));
 		//containerCo = StartCoroutine(MoveToTrack());

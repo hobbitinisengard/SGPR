@@ -5,7 +5,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public enum BottomInfoType { NEW_LEADER, NO_BATT, PIT_OUT, PIT_IN, STUNT, CAR_WINS, ELIMINATED, NEW_CAMERA_TARGET, NEW_LAPRECORD };
+public enum BottomInfoType { 
+	NEW_LEADER, NO_BATT, PIT_OUT, PIT_IN, STUNT, CAR_WINS, ELIMINATED, NEW_CAMERA_TARGET, NEW_LAPRECORD,
+	FINAL_LAP, HIGHEST_AEROMILES_COMBO
+};
 
 
 public class SGP_HUD : MonoBehaviour

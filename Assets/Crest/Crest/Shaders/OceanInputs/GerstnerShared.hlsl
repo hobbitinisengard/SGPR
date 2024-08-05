@@ -1,6 +1,6 @@
 // Crest Ocean System
 
-// This file is subject to the MIT License as seen in the root of this folder structure (LICENSE)
+// Copyright 2020 Wave Harmonic Ltd
 
 // IMPORTANT - this mirrors the constant with the same name in ShapeGerstnerBatched.cs, both must be updated together!
 #define BATCH_SIZE 32
@@ -23,11 +23,12 @@ half4 _ChopAmps[BATCH_SIZE / 4];
 float4 _TargetPointData;
 CBUFFER_END
 
-half3 ComputeGerstner(float2 worldPosXZ, float3 uv_slice)
+half4 ComputeGerstner(float2 worldPosXZ, float3 uv_slice)
 {
+	float2 displacementNormalized = 0.0;
+
 	// sample ocean depth (this render target should 1:1 match depth texture, so UVs are trivial)
-	const half2 terrainHeight_seaLevelOffset = _LD_TexArray_SeaFloorDepth.SampleLevel(LODData_linear_clamp_sampler, uv_slice, 0.0).xy;
-	const half depth = _OceanCenterPosWorld.y - terrainHeight_seaLevelOffset.x + terrainHeight_seaLevelOffset.y;
+	const half depth = _LD_TexArray_SeaFloorDepth.Sample(LODData_linear_clamp_sampler, uv_slice).x;
 
 	// Preferred wave directions
 #if CREST_DIRECT_TOWARDS_POINT_INTERNAL
@@ -80,6 +81,13 @@ half3 ComputeGerstner(float2 worldPosXZ, float3 uv_slice)
 		result.x += dot(resultx, wt);
 		result.y += dot(resulty, wt);
 		result.z += dot(resultz, wt);
+
+		half4 sssFactor = min(1.0, _TwoPiOverWavelengths[vi]);
+		displacementNormalized.x += dot(resultx * sssFactor, wt);
+		displacementNormalized.y += dot(resultz * sssFactor, wt);
 	}
-	return _Weight * result;
+
+	half sss = length(displacementNormalized);
+
+	return _Weight * half4(result, sss);
 }

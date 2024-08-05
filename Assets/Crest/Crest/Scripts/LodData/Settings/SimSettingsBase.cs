@@ -1,6 +1,6 @@
-﻿// Crest Ocean System
+﻿// Crest Ocean System for HDRP
 
-// This file is subject to the MIT License as seen in the root of this folder structure (LICENSE)
+// Copyright 2020 Wave Harmonic Ltd
 
 using UnityEngine;
 
@@ -15,13 +15,6 @@ namespace Crest
     /// </summary>
     public partial class SimSettingsBase : ScriptableObject
     {
-        /// <summary>
-        /// Adds anything that requires a rebuild to the provided settings hash.
-        /// </summary>
-        public virtual void AddToSettingsHash(ref int settingsHash)
-        {
-            // Intentionally left empty.
-        }
     }
 
 #if UNITY_EDITOR
@@ -30,7 +23,7 @@ namespace Crest
         public virtual bool Validate(OceanRenderer ocean, ValidatedHelper.ShowMessage showMessage) => true;
     }
 
-    [CustomEditor(typeof(SimSettingsBase), true), CanEditMultipleObjects]
+    [CustomEditor(typeof(SimSettingsAnimatedWaves), true), CanEditMultipleObjects]
     class SimSettingsBaseEditor : ValidatedEditor { }
 #endif
 }

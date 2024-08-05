@@ -1,6 +1,6 @@
 ﻿// Crest Ocean System
 
-// This file is subject to the MIT License as seen in the root of this folder structure (LICENSE)
+// Copyright 2020 Wave Harmonic Ltd
 
 using System.Collections;
 using System.Collections.Generic;
@@ -21,20 +21,28 @@ namespace Crest
         public int Count => _backingList.Count;
 
         private List<KeyValuePair<TKey, TValue>> _backingList = new List<KeyValuePair<TKey, TValue>>();
-        System.Comparison<TKey> _comparison;
+        private IComparer<KeyValuePair<TKey, TValue>> _comparer;
         private bool _needsSorting = false;
 
-        int Comparison(KeyValuePair<TKey, TValue> x, KeyValuePair<TKey, TValue> y)
+        private class InternalComparer : IComparer<KeyValuePair<TKey, TValue>>
         {
-            return _comparison(x.Key, y.Key);
+            private IComparer<TKey> _comparer;
+            public InternalComparer(IComparer<TKey> comparer)
+            {
+                _comparer = comparer;
+            }
+            public int Compare(KeyValuePair<TKey, TValue> x, KeyValuePair<TKey, TValue> y)
+            {
+                return _comparer.Compare(x.Key, y.Key);
+            }
         }
 
-        public CrestSortedList(System.Comparison<TKey> comparison)
+        public CrestSortedList(IComparer<TKey> comparer)
         {
             // We provide the only constructors that SortedList provides that
             // we need. We wrap the input IComparer to ensure that our backing list
             // is sorted in the same way a SortedList would be with the same one.
-            _comparison = comparison;
+            _comparer = new InternalComparer(comparer);
         }
 
         public void Add(TKey key, TValue value)
@@ -52,31 +60,22 @@ namespace Crest
             // expand where we use this list. At that point we might need to take a
             // different approach.
 
-            var removeIndex = -1;
-            var index = 0;
+            KeyValuePair<TKey, TValue> itemToRemove = default;
+            bool removed = false;
             foreach (KeyValuePair<TKey, TValue> item in _backingList)
             {
                 if (item.Value.Equals(value))
                 {
-                    removeIndex = index;
+                    itemToRemove = item;
+                    removed = true;
                 }
-
-                index++;
             }
 
-            if (removeIndex > -1)
+            if (removed)
             {
-                // Remove method produces garbage.
-                _backingList.RemoveAt(removeIndex);
+                _backingList.Remove(itemToRemove);
             }
-
-            return removeIndex > -1;
-        }
-
-        public void Clear()
-        {
-            _backingList.Clear();
-            _needsSorting = false;
+            return removed;
         }
 
         #region GetEnumerator
@@ -101,8 +100,7 @@ namespace Crest
         {
             if (_needsSorting)
             {
-                // @GC: Allocates 112B.
-                _backingList.Sort(Comparison);
+                _backingList.Sort(_comparer);
             }
             _needsSorting = false;
         }

@@ -1,6 +1,6 @@
 ﻿// Crest Ocean System
 
-// This file is subject to the MIT License as seen in the root of this folder structure (LICENSE)
+// Copyright 2020 Wave Harmonic Ltd
 
 // Renders a specific slice of a 2D Texture Array
 // https://docs.unity3d.com/Manual/SL-TextureArrays.html
@@ -35,8 +35,6 @@ Shader "Hidden/Crest/Debug/TextureArray"
 
 			UNITY_DECLARE_TEX2DARRAY(_MainTex);
 			uint _Depth;
-			float _Scale;
-			float _Bias;
 
 			Varyings Vert(Attributes input)
 			{
@@ -48,7 +46,7 @@ Shader "Hidden/Crest/Debug/TextureArray"
 
 			half4 Frag(Varyings input) : SV_TARGET
 			{
-				return _Scale * UNITY_SAMPLE_TEX2DARRAY(_MainTex, input.uv) + _Bias;
+				return UNITY_SAMPLE_TEX2DARRAY(_MainTex, input.uv);
 			}
 			ENDCG
 		}

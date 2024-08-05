@@ -441,7 +441,7 @@ namespace RVP
 		{
 			var mr = bodyObj.GetComponent<MeshRenderer>();
 			string matName = mr.sharedMaterial.name;
-			if (matName.Contains("Instance"))
+			if (matName.Contains("Variant"))
 				matName = matName[..matName.IndexOf(' ')];
 			matName = matName[..^1] + ((int)sponsor).ToString();
 			Material newMat = Resources.Load<Material>("materials/" + matName);

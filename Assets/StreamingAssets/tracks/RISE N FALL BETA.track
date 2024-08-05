@@ -1,0 +1,15 @@
+{
+  "author": "Team17",
+  "desc": "This prototype track resembles a rollercoaster. Slow and steady drive followed by a sudden decline straight into a loop",
+  "valid": true,
+  "envir": "SPN",
+  "preferredCarClass": "Speed",
+  "difficulty": 4,
+  "unlocked": true,
+  "icons": [
+    0,
+    1
+  ],
+  "TrackOrigin": 0,
+  "IsOriginal": true
+}

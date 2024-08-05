@@ -1,11 +1,8 @@
 {
     "name": "Crest",
-    "rootNamespace": "",
     "references": [
-        "Unity.Postprocessing.Runtime",
-        "Unity.InputSystem",
-        "Unity.Mathematics",
-        "Unity.Burst"
+        "Unity.RenderPipelines.Core.Runtime",
+        "Unity.RenderPipelines.HighDefinition.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -16,11 +13,6 @@
     "defineConstraints": [],
     "versionDefines": [
         {
-            "name": "com.unity.postprocessing",
-            "expression": "",
-            "define": "UNITY_POSTPROCESSING_ENABLED"
-        },
-        {
             "name": "com.unity.modules.vr",
             "expression": "1.0.0",
             "define": "ENABLE_VR_MODULE"
@@ -29,21 +21,6 @@
             "name": "com.unity.modules.xr",
             "expression": "1.0.0",
             "define": "ENABLE_XR_MODULE"
-        },
-        {
-            "name": "com.unity.burst",
-            "expression": "1.0.0",
-            "define": "CREST_UNITY_BURST"
-        },
-        {
-            "name": "com.unity.mathematics",
-            "expression": "1.0.0",
-            "define": "CREST_UNITY_MATHEMATICS"
-        },
-        {
-            "name": "com.unity.inputsystem",
-            "expression": "",
-            "define": "CREST_UNITY_INPUT"
         }
     ],
     "noEngineReferences": false

@@ -1,6 +1,6 @@
 // Crest Ocean System
 
-// This file is subject to the MIT License as seen in the root of this folder structure (LICENSE)
+// Copyright 2020 Wave Harmonic Ltd
 
 // Renders gerstner waves from geometry. Allows localised wave areas. Can fade waves based on UVs - fades to 0
 // as U or V approach 0 or 1, with configurable feather width. Can also take weight from vertex colour (red channel).
@@ -39,6 +39,7 @@ Shader "Crest/Inputs/Animated Waves/Gerstner Batch Geometry"
 
 			CBUFFER_START(GerstnerPerMaterial)
 			half _FeatherWidth;
+			float3 _DisplacementAtInputPosition;
 			CBUFFER_END
 
 			struct Attributes
@@ -63,8 +64,11 @@ Shader "Crest/Inputs/Animated Waves/Gerstner Batch Geometry"
 			Varyings Vert(Attributes input)
 			{
 				Varyings o;
+				
 
 				float3 worldPos = mul(unity_ObjectToWorld, float4(input.positionOS, 1.0)).xyz;
+				// Correct for displacement
+				worldPos.xz -= _DisplacementAtInputPosition.xz;
 
 				o.positionCS = mul(UNITY_MATRIX_VP, float4(worldPos, 1.0));
 
@@ -95,7 +99,7 @@ Shader "Crest/Inputs/Animated Waves/Gerstner Batch Geometry"
 				wt *= saturate(1.0 - (r_l1 - (0.5 - _FeatherWidth)) / _FeatherWidth);
 #endif
 
-				return half4(wt * ComputeGerstner(input.worldPosXZ_uv.xy, input.uv_slice_wt.xyz), 0.0);
+				return wt * ComputeGerstner(input.worldPosXZ_uv.xy, input.uv_slice_wt.xyz);
 			}
 			ENDCG
 		}

@@ -1,8 +1,7 @@
-﻿// Crest Ocean System
+﻿// Crest Ocean System for HDRP
 
-// This file is subject to the MIT License as seen in the root of this folder structure (LICENSE)
+// Copyright 2020 Wave Harmonic Ltd
 
-using UnityEditor;
 using UnityEngine;
 
 namespace Crest
@@ -19,9 +18,7 @@ namespace Crest
         float DeltaTimeDynamics { get; }
     }
 
-    [ExecuteDuringEditMode]
-    [HelpURL(Internal.Constants.HELP_URL_BASE_USER + "time-providers.html" + Internal.Constants.HELP_URL_RP)]
-    public abstract class TimeProviderBase : CustomMonoBehaviour, ITimeProvider
+    public abstract class TimeProviderBase : MonoBehaviour, ITimeProvider
     {
         public abstract float CurrentTime { get; }
         public abstract float DeltaTime { get; }

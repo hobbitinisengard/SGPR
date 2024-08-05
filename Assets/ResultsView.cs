@@ -29,7 +29,7 @@ public class ResultInfo
 		get
 		{
 			if (vp == null)
-				return true;
+				return false;
 			return !vp.raceBox.enabled;
 		}
 	}
@@ -44,7 +44,6 @@ public class ResultInfo
 		name = vp.transform.name;
 		score = vp.lastRoundScore;
 		sponsor = vp.sponsor;
-
 		
 		//Debug.Log(string.Format("{0}, progress:{1}, score:{2}, ", name, progress, aeromiles));
 	}
@@ -247,13 +246,7 @@ public class ResultsView : MainMenuView
 	private int driftBonus;
 	private int aeroMeter;
 	public static readonly Comparison<ResultInfo> raceComp = new((ResultInfo x, ResultInfo y) => x.raceTime.TotalSeconds.CompareTo(y.raceTime.TotalSeconds));
-	public static readonly Comparison<ResultInfo> knockoutComp = new((ResultInfo x, ResultInfo y) => 
-	{ 
-		if (x.vp.raceBox.enabled == y.vp.raceBox.enabled) 
-			return y.progress.CompareTo(x.progress); 
-		else
-			return x.vp.raceBox.enabled.CompareTo(y.vp.raceBox.enabled);
-	});
+	public static readonly Comparison<ResultInfo> knockoutComp = new((ResultInfo x, ResultInfo y) => { return y.progress.CompareTo(x.progress); });
 	public static readonly Comparison<ResultInfo> stuntComp = new((ResultInfo x, ResultInfo y) => y.aeromiles.CompareTo(x.aeromiles));
 	public static readonly Comparison<ResultInfo> driftComp = new((ResultInfo x, ResultInfo y) => y.drift.CompareTo(x.drift));
 	public static readonly Comparison<ResultInfo> lapComp = new((ResultInfo x, ResultInfo y) => x.lap.TotalSeconds.CompareTo(y.lap.TotalSeconds));
@@ -265,7 +258,7 @@ public class ResultsView : MainMenuView
 		{
 			for (int i = 0; i < resultData.Count; ++i)
 			{
-				resultData[i].SetPostRaceScore(resultData[i].score + ResultsView.CalculatePostraceReward(resultData[i]));
+				resultData[i].SetPostRaceScore(resultData[i].score + CalculatePostraceReward(resultData[i]));
 			}
 			winnersView.PrepareView();
 			GoToView(winnersView);

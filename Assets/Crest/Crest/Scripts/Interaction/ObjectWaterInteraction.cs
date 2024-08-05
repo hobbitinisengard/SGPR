@@ -1,6 +1,6 @@
 ﻿// Crest Ocean System
 
-// This file is subject to the MIT License as seen in the root of this folder structure (LICENSE)
+// Copyright 2020 Wave Harmonic Ltd
 
 using UnityEngine;
 
@@ -13,18 +13,8 @@ namespace Crest
     /// <summary>
     /// Drives object/water interaction - sets parameters each frame on material that renders into the dynamic wave sim.
     /// </summary>
-    [AddComponentMenu(Internal.Constants.MENU_PREFIX_SCRIPTS + "Object Water Interaction")]
-    public partial class ObjectWaterInteraction : CustomMonoBehaviour
+    public partial class ObjectWaterInteraction : MonoBehaviour
     {
-        /// <summary>
-        /// The version of this asset. Can be used to migrate across versions. This value should
-        /// only be changed when the editor upgrades the version.
-        /// </summary>
-        [SerializeField, HideInInspector]
-#pragma warning disable 414
-        int _version = 0;
-#pragma warning restore 414
-
         [Range(0f, 2f), SerializeField]
         float _weightUpDownMul = 0.5f;
 
@@ -49,11 +39,6 @@ namespace Crest
         Renderer _renderer;
         MaterialPropertyBlock _mpb;
 
-        public static class ShaderIDs
-        {
-            public static readonly int s_Velocity = Shader.PropertyToID("_Velocity");
-        }
-
         private void Start()
         {
             if (OceanRenderer.Instance == null)
@@ -69,13 +54,6 @@ namespace Crest
                 return;
             }
 #endif
-
-            if (OceanRenderer.Instance._lodDataDynWaves == null)
-            {
-                // Don't run without a dyn wave sim
-                enabled = false;
-                return;
-            }
 
             _localOffset = transform.localPosition;
             _renderer = GetComponent<Renderer>();
@@ -106,7 +84,8 @@ namespace Crest
 
             // how many active wave sims currently apply to this object - ideally this would eliminate sims that are too
             // low res, by providing a max grid size param
-            LodDataMgrDynWaves.CountWaveSims(minLod, out var simsPresent, out var simsActive);
+            int simsPresent, simsActive;
+            LodDataMgrDynWaves.CountWaveSims(minLod, out simsPresent, out simsActive);
 
             // counting non-existent sims is expensive - stop updating if none found
             if (simsPresent == 0)
@@ -145,7 +124,7 @@ namespace Crest
 
                 if (_warnOnTeleport)
                 {
-                    Debug.LogWarning("Crest: Teleport detected (speed = " + speedKmh.ToString() + "), velocity discarded.", this);
+                    Debug.LogWarning("Teleport detected (speed = " + speedKmh.ToString() + "), velocity discarded.", this);
                 }
             }
             else if (speedKmh > _maxSpeed)
@@ -155,21 +134,19 @@ namespace Crest
 
                 if (_warnOnSpeedClamp)
                 {
-                    Debug.LogWarning("Crest: Speed (" + speedKmh.ToString() + ") exceeded max limited, clamped.", this);
+                    Debug.LogWarning("Speed (" + speedKmh.ToString() + ") exceeded max limited, clamped.", this);
                 }
             }
 
-            var dt = 1f / ocean._lodDataDynWaves.Settings._simulationFrequency;
-            var weight = _boat.InWater ? 1f / simsActive : 0f;
+            float dt;
+            ocean._lodDataDynWaves.GetSimSubstepData(ocean.DeltaTimeDynamics, out _, out dt);
+            float weight = _boat.InWater ? 1f / simsActive : 0f;
 
             _renderer.GetPropertyBlock(_mpb);
 
-            _mpb.SetVector(ShaderIDs.s_Velocity, vel);
-            _mpb.SetFloat(LodDataMgrPersistent.sp_SimDeltaTime, dt);
-
-            // Weighting with this value helps keep ripples consistent for different gravity values
-            var gravityMul = Mathf.Sqrt(ocean._lodDataDynWaves.Settings._gravityMultiplier / 25f);
-            _mpb.SetFloat(RegisterLodDataInputBase.sp_Weight, weight * gravityMul);
+            _mpb.SetVector("_Velocity", vel);
+            _mpb.SetFloat("_Weight", weight);
+            _mpb.SetFloat("_SimDeltaTime", dt);
 
             _renderer.SetPropertyBlock(_mpb);
 
@@ -184,21 +161,12 @@ namespace Crest
         {
             var isValid = true;
 
-            showMessage
-            (
-                "The <i>ObjectWaterInteraction</i> component is obsolete and is replaced by the simpler and more robust <i>SphereWaterInteraction</i> component.",
-                "Add one or more <i>SphereWaterInteraction</i>'s to match the shape of this object.",
-                ValidatedHelper.MessageType.Warning, this
-            );
-
-            if (ocean != null && !ocean.CreateDynamicWaveSim && showMessage == ValidatedHelper.HelpBox)
+            if (!ocean.CreateDynamicWaveSim)
             {
                 showMessage
                 (
-                    "<i>ObjectWaterInteraction</i> requires dynamic wave simulation to be enabled.",
-                    $"Enable the <i>{LodDataMgrDynWaves.FEATURE_TOGGLE_LABEL}</i> option on the <i>OceanRenderer</i> component.",
-                    ValidatedHelper.MessageType.Warning, ocean,
-                    (so) => OceanRenderer.FixSetFeatureEnabled(so, LodDataMgrDynWaves.FEATURE_TOGGLE_NAME, true)
+                    "<i>ObjectWaterInteraction</i> requires dynamic wave simulation to be enabled on <i>OceanRenderer</i>.",
+                    ValidatedHelper.MessageType.Error, ocean
                 );
 
                 isValid = false;
@@ -208,35 +176,30 @@ namespace Crest
             {
                 showMessage
                 (
-                    "<i>ObjectWaterInteraction</i> script requires a parent GameObject.",
-                    "Create a primary GameObject for the object, and parent this underneath it.",
+                    "<i>ObjectWaterInteraction</i> script requires a parent <i>GameObject</i>.",
                     ValidatedHelper.MessageType.Error, this
                 );
 
                 isValid = false;
             }
 
-            if (!TryGetComponent<RegisterDynWavesInput>(out _))
+            if (GetComponent<RegisterDynWavesInput>() == null)
             {
                 showMessage
                 (
-                    "<i>ObjectWaterInteraction</i> script requires <i>RegisterDynWavesInput</i> component to be present.",
-                    "Attach a <i>RegisterDynWavesInput</i> component.",
-                    ValidatedHelper.MessageType.Error, this,
-                    ValidatedHelper.FixAttachComponent<RegisterDynWavesInput>
+                    "<i>ObjectWaterInteraction</i> script requires <i>RegisterDynWavesInput</i> script to be present.",
+                    ValidatedHelper.MessageType.Error, this
                 );
 
                 isValid = false;
             }
 
-            if (!TryGetComponent<Renderer>(out _))
+            if (GetComponent<Renderer>() == null)
             {
                 showMessage
                 (
-                    "<i>ObjectWaterInteraction</i> component requires <i>MeshRenderer</i> component.",
-                    "Attach a <i>MeshRenderer</i> component.",
-                    ValidatedHelper.MessageType.Error, this,
-                    ValidatedHelper.FixAttachComponent<MeshRenderer>
+                    "<i>ObjectWaterInteraction</i> script requires <i>Renderer</i> component.",
+                    ValidatedHelper.MessageType.Error, this
                 );
 
                 isValid = false;
@@ -244,6 +207,9 @@ namespace Crest
 
             return isValid;
         }
+
+        [CustomEditor(typeof(ObjectWaterInteraction), true), CanEditMultipleObjects]
+        class ObjectWaterInteractionEditor : ValidatedEditor { }
     }
 #endif
 }

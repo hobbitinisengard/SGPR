@@ -57,7 +57,7 @@ public class Info : MonoBehaviour
 	public MultiPlayerSelector mpSelectorInitializer;
 	public Shader transpShader;
 	public Text versionText;
-	public const string VERSION = "0.3.7";
+	public const string VERSION = "0.4";
 	public bool minimized { get; private set;}
 	void OnApplicationFocus(bool hasFocus)
 	{

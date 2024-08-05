@@ -53,9 +53,9 @@ public class ViewSwitcher : MonoBehaviour
 	}
 	void SetBlacknessColor(float a)
 	{
-		var c = blackness.color;
+		var c = blackness.material.color;
 		c.a = a;
-		blackness.color = c;
+		blackness.material.color = c;
 	}
 	public void PlayDimmer(MainMenuView viewA, MainMenuView viewB)
 	{

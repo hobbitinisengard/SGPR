@@ -24,26 +24,29 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: cars_car1_b1grid2 Variant
-  m_Shader: {fileID: 4800000, guid: 6e4ae4064600d784cac1e41a9e6f2e59, type: 3}
+  m_Shader: {fileID: 211, guid: 0000000000000000f000000000000000, type: 0}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
+  - _ALPHABLEND_ON
+  m_InvalidKeywords:
   - _DISABLE_SSR_TRANSPARENT
   - _DOUBLESIDED_ON
   - _NORMALMAP_TANGENT_SPACE
-  m_InvalidKeywords: []
-  m_LightmapFlags: 4
+  m_LightmapFlags: 0
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 1
-  m_CustomRenderQueue: 2225
+  m_CustomRenderQueue: 3000
   stringTagMap:
     MotionVector: User
+    RenderType: Transparent
   disabledShaderPasses:
   - TransparentDepthPrepass
   - TransparentDepthPostpass
   - TransparentBackface
   - RayTracingPrepass
   - MOTIONVECTORS
+  - GRABPASS
   m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
@@ -234,14 +237,19 @@ Material:
     - _AoIntensity: 0
     - _BlendMainNormal: 0
     - _BlendMode: 0
+    - _BlendOp: 0
     - _Brightness: 1
     - _BumpScale: 1
+    - _CameraFadingEnabled: 0
+    - _CameraFarFadeDistance: 2
+    - _CameraNearFadeDistance: 1
     - _CoatMask: 0
+    - _ColorMode: 0
     - _ConservativeDepthOffsetEnable: 0
     - _Contrast: 1
     - _ContrastDetailMap: 0
     - _ContrastTransparentMap: 0
-    - _Cull: 0
+    - _Cull: 2
     - _CullMode: 0
     - _CullModeForward: 0
     - _Cutoff: 0.5
@@ -257,11 +265,16 @@ Material:
     - _DisplacementLockObjectScale: 1
     - _DisplacementLockTilingScale: 1
     - _DisplacementMode: 0
+    - _DistortionBlend: 0.5
+    - _DistortionEnabled: 0
+    - _DistortionStrength: 1
+    - _DistortionStrengthScaled: 0
     - _DoubleSidedEnable: 1
     - _DoubleSidedGIMode: 0
     - _DoubleSidedNormalMode: 1
-    - _DstBlend: 0
+    - _DstBlend: 10
     - _DstBlend2: 0
+    - _EmissionEnabled: 0
     - _EmissionIntensity: 0
     - _EmissiveColorMode: 1
     - _EmissiveExposureWeight: 1
@@ -274,6 +287,7 @@ Material:
     - _EnableGeometricSpecularAA: 0
     - _EnergyConservingSpecularColor: 1
     - _ExcludeFromTUAndAA: 0
+    - _FlipbookMode: 0
     - _GlossMapScale: 0
     - _Glossiness: 1
     - _GlossyReflections: 1
@@ -295,13 +309,14 @@ Material:
     - _Ior: 1.5
     - _IridescenceMask: 1
     - _IridescenceThickness: 1
+    - _LightingEnabled: 0
     - _LinkDetailsWithBase: 1
     - _MaterialID: 1
     - _MaterialTypeMask: 2
     - _Metallic: 1
     - _MetallicRemapMax: 0
     - _MetallicRemapMin: 0
-    - _Mode: 0
+    - _Mode: 2
     - _NormalMapSpace: 0
     - _NormalScale: 1
     - _ObjectSpaceUVMapping: 0
@@ -326,6 +341,9 @@ Material:
     - _SmoothnessRemapMax: 1
     - _SmoothnessRemapMin: 0
     - _SmoothnessTextureChannel: 0
+    - _SoftParticlesEnabled: 0
+    - _SoftParticlesFarFadeDistance: 1
+    - _SoftParticlesNearFadeDistance: 0
     - _Source: 0
     - _SourceMask: 0
     - _SpecularAAScreenSpaceVariance: 0.1
@@ -335,7 +353,7 @@ Material:
     - _SpecularOcclusionMode: 1
     - _SpreadDetailMap: 0
     - _SpreadTransparentMap: 0
-    - _SrcBlend: 1
+    - _SrcBlend: 5
     - _StencilRef: 0
     - _StencilRefDepth: 8
     - _StencilRefDistortionVec: 4
@@ -373,12 +391,14 @@ Material:
     - _ZTestDepthEqualForOpaque: 3
     - _ZTestGBuffer: 4
     - _ZTestTransparent: 4
-    - _ZWrite: 1
+    - _ZWrite: 0
     - __dirty: 1
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _BaseColorMap_MipInfo: {r: 0, g: 0, b: 0, a: 0}
-    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _CameraFadeParams: {r: 0, g: Infinity, b: 0, a: 0}
+    - _Color: {r: 1, g: 1, b: 1, a: 0.28235295}
+    - _ColorAddSubDiff: {r: 0, g: 0, b: 0, a: 0}
     - _DeformNormal: {r: 0, g: 0, b: 0, a: 0}
     - _DetailColor: {r: 1, g: 1, b: 1, a: 0}
     - _DiffusionProfileAsset: {r: 0, g: 0, b: 0, a: 0}
@@ -391,6 +411,7 @@ Material:
     - _InvPrimScale: {r: 1, g: 1, b: 0, a: 0}
     - _IridescenceThicknessRemap: {r: 0, g: 1, b: 0, a: 0}
     - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
+    - _SoftParticleFadeParams: {r: 0, g: 0, b: 0, a: 0}
     - _SpecularColor: {r: 1, g: 1, b: 1, a: 0}
     - _ThicknessRemap: {r: 0, g: 1, b: 0, a: 0}
     - _TransmittanceColor: {r: 1, g: 1, b: 1, a: 1}

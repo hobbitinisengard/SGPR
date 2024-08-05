@@ -1,6 +1,6 @@
 // Crest Ocean System
 
-// This file is subject to the MIT License as seen in the root of this folder structure (LICENSE)
+// Copyright 2020 Wave Harmonic Ltd
 
 Shader "Crest/Inputs/Flow/Add Flow Map"
 {
@@ -8,10 +8,6 @@ Shader "Crest/Inputs/Flow/Add Flow Map"
 	{
 		_FlowMap("Flow Map", 2D) = "white" {}
 		_Strength( "Strength", float ) = 1
-		[Toggle] _FlipX("Flip X", Float) = 0
-		[Toggle] _FlipZ("Flip Z", Float) = 0
-		[Toggle] _FeatherAtUVExtents("Feather At UV Extents", Float) = 0
-		_FeatherWidth("Feather Width", Range(0.001, 0.5)) = 0.1
 	}
 
 	SubShader
@@ -25,15 +21,7 @@ Shader "Crest/Inputs/Flow/Add Flow Map"
 			#pragma vertex Vert
 			#pragma fragment Frag
 
-			#pragma shader_feature_local _FLIPX_ON
-			#pragma shader_feature_local _FLIPZ_ON
-			#pragma shader_feature_local _FEATHERATUVEXTENTS_ON
-
 			#include "UnityCG.cginc"
-
-			#include "../OceanGlobals.hlsl"
-			#include "../OceanInputsDriven.hlsl"
-			#include "../OceanHelpersNew.hlsl"
 
 			sampler2D _FlowMap;
 
@@ -41,7 +29,6 @@ Shader "Crest/Inputs/Flow/Add Flow Map"
 			float4 _FlowMap_ST;
 			float _Strength;
 			float3 _DisplacementAtInputPosition;
-			half _FeatherWidth;
 			CBUFFER_END
 
 			struct Attributes
@@ -64,27 +51,14 @@ Shader "Crest/Inputs/Flow/Add Flow Map"
 				// Correct for displacement
 				worldPos.xz -= _DisplacementAtInputPosition.xz;
 				o.positionCS = mul(UNITY_MATRIX_VP, float4(worldPos, 1.0));
-
+				
 				o.uv = TRANSFORM_TEX(input.uv, _FlowMap);
 				return o;
 			}
 
 			float4 Frag(Varyings input) : SV_Target
 			{
-				float2 flow = tex2D(_FlowMap, input.uv).xy - 0.5;
-
-#if _FEATHERATUVEXTENTS_ON
-				flow *= FeatherWeightFromUV(input.uv, _FeatherWidth);
-#endif
-
-#if _FLIPX_ON
-				flow.x *= -1.0;
-#endif
-#if _FLIPZ_ON
-				flow.y *= -1.0;
-#endif
-
-				return float4(flow * _Strength, 0.0, 0.0);
+				return float4((tex2D(_FlowMap, input.uv).xy - 0.5) * _Strength, 0.0, 0.0);
 			}
 
 			ENDCG
