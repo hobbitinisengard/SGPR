@@ -486,7 +486,7 @@ namespace RVP
 				{
 					reqDist = lookAheadSteerCurve.Evaluate(vp.velMag) * steerMinDist;
 
-					float dTargetCar = Vector3.Distance(target.pos, vp.tr.position);
+					float dTargetCar = F.FlatDistance(target.pos, vp.tr.position);
 					if (Mathf.Abs(target.dist - dist) > 2 * reqDist || target.dist < dist)
 					{ // reset target
 						target.dist = dist + reqDist;
@@ -494,10 +494,10 @@ namespace RVP
 					}
 					Vector2 targetPosOrientation = trackPathCreator.path.GetDirectionAtDistance(target.dist).Flat().normalized;
 
-					if (dTargetCar < .75f * reqDist 
+					if (dTargetCar < .75f * reqDist
 						|| (vp.reallyGroundedWheels > 3 && Mathf.Abs(Vector2.Dot(targetPosOrientation, vp.tr.forward.Flat().normalized)) < .5f))
 					{ // car catching up OR angle between racing line and car exceedes 60 degs
-						target.dist += 8 * vp.velMag * Time.fixedDeltaTime;
+						target.dist += 2 * vp.velMag * Time.fixedDeltaTime;
 						target.pos = trackPathCreator.path.GetPointAtDistance(target.dist);
 					}
 					if (dTargetCar < reqDist) // go on

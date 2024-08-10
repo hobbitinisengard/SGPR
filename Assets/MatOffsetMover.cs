@@ -5,9 +5,9 @@ namespace RVP
 	{
 		MeshRenderer mr;
 		public float speed = 0.5f;
-		public float val = 0;
+		float val = 0;
 		public Axis axisXY = Axis.Y;
-		void Start()
+		void Awake()
 		{
 			mr = GetComponent<MeshRenderer>();
 		}
@@ -18,18 +18,23 @@ namespace RVP
 			val %= 2f;
 			for (int i = 0; i < mr.materials.Length; ++i)
 			{
+				Vector2 offset;
 				switch (axisXY)
 				{
 					case Axis.X:
-						mr.materials[i].mainTextureOffset = new Vector4(val - 1, 0);
+						offset = new Vector2(val - 1, 0);
 						break;
 					case Axis.Y:
-						mr.materials[i].mainTextureOffset = new Vector4(0, val - 1);
+						offset = new Vector2(0, val - 1);
 						break;
 					case Axis.Z:
-						mr.materials[i].mainTextureOffset = new Vector4(val - 1, val - 1);
+						offset = new Vector2(val - 1, val - 1);
+						break;
+					default:
+						offset = new Vector2(val - 1, 0);
 						break;
 				}
+				mr.materials[i].SetTextureOffset("_BaseColorMap", offset);
 			}
 		}
 	}

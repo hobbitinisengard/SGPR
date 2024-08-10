@@ -75,12 +75,15 @@ namespace RVP
 		public override void Start()
 		{
 			base.Start();
-			CountDownSeq.OnRaceStarted += CountDownSeq_OnRaceStarted; ;
+			CountDownSeq.OnRaceStarted += CountDownSeq_OnRaceStarted;
 			targetDrive = GetComponent<DriveForce>();
 			torqueCurve = GenerateTorqueCurve(1);
 			GetMaxRPM();
 		}
-
+		private void OnDestroy()
+		{
+			CountDownSeq.OnRaceStarted -= CountDownSeq_OnRaceStarted;
+		}
 		private void CountDownSeq_OnRaceStarted()
 		{
 			float curRPM = (targetDrive.feedbackRPM/1000) / limit2kRPM;

@@ -9,6 +9,7 @@ using UnityEngine.UI;
 public class ResultInfo
 {
 	public VehicleParent vp;
+	public bool finished;
 	public ulong id;
 	public string name;
 	public TimeSpan lap;
@@ -24,15 +25,6 @@ public class ResultInfo
 		Debug.Log(name + " " + score.ToString() + " " + finalScore);
 		score = finalScore;
 	}
-	public bool Finished
-	{
-		get
-		{
-			if (vp == null)
-				return false;
-			return !vp.raceBox.enabled;
-		}
-	}
 	public void Update(VehicleParent vp)
 	{
 		this.vp = vp;
@@ -44,8 +36,8 @@ public class ResultInfo
 		name = vp.transform.name;
 		score = vp.lastRoundScore;
 		sponsor = vp.sponsor;
-		
-		//Debug.Log(string.Format("{0}, progress:{1}, score:{2}, ", name, progress, aeromiles));
+		finished = !vp.raceBox.enabled;
+		Debug.Log(string.Format("{0}, progress:{1}, score:{2}, ", name, progress, aeromiles));
 	}
 	public ResultInfo(VehicleParent vp)
 	{
@@ -204,7 +196,7 @@ public class ResultsView : MainMenuView
 	}
 	public static int FinishedPlayers
 	{
-		get { return resultData.Count(r => r.Finished); }
+		get { return resultData.Count(r => r.finished); }
 	}
 	public static int Count
 	{

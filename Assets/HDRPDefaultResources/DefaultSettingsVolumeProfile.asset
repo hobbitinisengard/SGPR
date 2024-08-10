@@ -1180,7 +1180,6 @@ MonoBehaviour:
   - {fileID: -2903134336919975980}
   - {fileID: -5014315156079053877}
   - {fileID: -7632824519148210283}
-  - {fileID: -4002682928256452397}
 --- !u!114 &448115243408767295
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -1783,7 +1782,7 @@ MonoBehaviour:
     m_Value: 0
   meteringMode:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 2
   luminanceSource:
     m_OverrideState: 1
     m_Value: 1

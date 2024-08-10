@@ -1,0 +1,12 @@
+{
+  "author": "Team17",
+  "desc": "An ancient, hidden and forgotten track",
+  "valid": true,
+  "envir": "MEX",
+  "preferredCarClass": "Wild",
+  "difficulty": 15,
+  "unlocked": true,
+  "icons": [],
+  "TrackOrigin": 0,
+  "IsOriginal": true
+}

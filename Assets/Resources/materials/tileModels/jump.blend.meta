@@ -38,7 +38,7 @@ ModelImporter:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: trackset00_trk_tubemetal
-    second: {fileID: 2100000, guid: 9a13d4ff8f9775b468bbb4ed11a4458c, type: 2}
+    second: {fileID: 2100000, guid: 5ecd18596078da147a89364573da8d97, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -51,8 +51,6 @@ ModelImporter:
     optimizeGameObjects: 0
     removeConstantScaleCurves: 1
     motionNodeName: 
-    rigImportErrors: 
-    rigImportWarnings: 
     animationImportErrors: 
     animationImportWarnings: 
     animationRetargetingWarnings: 

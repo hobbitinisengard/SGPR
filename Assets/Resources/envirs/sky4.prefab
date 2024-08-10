@@ -183,8 +183,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1803864aabf84cf41b3fecf56d966720, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  nightSkybox: {fileID: 474188887695435537}
   extraToTurnOffInNight: {fileID: 8211516926864921455}
+  nightSky: {fileID: 474188887695435537}
 --- !u!33 &7472200502309404151
 MeshFilter:
   m_ObjectHideFlags: 0

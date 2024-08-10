@@ -1,6 +1,7 @@
 using System;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PropertySetter : MonoBehaviour
 {
@@ -12,7 +13,7 @@ public class PropertySetter : MonoBehaviour
 	{
 		initializing = true;
 		transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = propName;
-		transform.GetChild(1).GetComponent<TMP_InputField>().text = value.ToString();
+		transform.GetChild(1).GetComponent<InputField>().text = value.ToString();
 		applyValuesMethod = applyValuesToCarMethod;
 		this.value = value;
 		initializing = false;

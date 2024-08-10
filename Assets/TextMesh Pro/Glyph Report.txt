@@ -1,0 +1,12 @@
+Font: Fixture Italic  Style: Condensed Bold
+Point Size: 137   Padding: 16   SP/PD Ratio: 11,7%
+
+Characters included: 313/313
+Missing characters: 0
+Excluded characters: 0
+
+Characters missing from font file:
+----------------------------------------
+
+Characters excluded from packing:
+----------------------------------------

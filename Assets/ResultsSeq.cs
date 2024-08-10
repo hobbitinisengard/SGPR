@@ -76,7 +76,7 @@ public class ResultsSeq : MonoBehaviour
 		}
 		cosArg = 0;
 
-		while (!ResultsView.Get(RaceManager.I.playerCar).Finished)
+		while (!ResultsView.Get(RaceManager.I.playerCar).finished)
 		{
 			yield return new WaitForSeconds(.25f);
 		}

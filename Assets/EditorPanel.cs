@@ -86,7 +86,7 @@ public class EditorPanel : MonoBehaviour
 	public GameObject pathFollower;
 	public RenderTexture renderTexture;
 	public YouSureDialog YouSurePanel;
-	public TextMeshProUGUI trackName;
+	public Text trackName;
 	public Sprite elementSprite;
 	public Sprite selectedElSprite;
 	public GameObject TilesMain;
@@ -894,7 +894,7 @@ public class EditorPanel : MonoBehaviour
 	{
 		for (int i = 0; i < placedTilesContainer.transform.childCount; ++i)
 		{
-			if (placedTilesContainer.transform.GetChild(i).name == name)
+			if (placedTilesContainer.transform.GetChild(i).name.Contains(name))
 			{
 				return placedTilesContainer.transform.GetChild(i);
 			}
@@ -1457,7 +1457,7 @@ public class EditorPanel : MonoBehaviour
 				dist += Vector3.Distance(cur.transform.parent.position, lastPos);
 				lastPos = cur.transform.parent.position;
 
-				if (cur.transform.parent.name == "pits" && dist > biggestPitPitDistance)
+				if (cur.transform == pits && dist > biggestPitPitDistance)
 				{
 					biggestPitPitDistance = dist;
 					dist = 0;
@@ -1593,7 +1593,7 @@ public class EditorPanel : MonoBehaviour
 					++stuntyCount;
 				if (loopCount == 0 && tile.transform.name == "loop")
 					++loopCount;
-				if (jumpyCount < 5 && tile.transform.name == "jump")
+				if (jumpyCount < 5 && tile.transform.name.Contains("jump"))
 					++jumpyCount;
 				if (windyCount < 6
 					&& (tile.transform.name.Contains("45") || tile.transform.name.Contains("90"))
@@ -1601,7 +1601,7 @@ public class EditorPanel : MonoBehaviour
 					++windyCount;
 				if (crossCount < 4 && tile.transform.name == "crossing")
 					++crossCount;
-				if (pitsCount == 0 && tile.transform.name == "pits")
+				if (pitsCount == 0 && tile.transform.name.Contains("pits"))
 					++pitsCount;
 				if (jumpCount == 0 && tile.transform.name.Contains("jump"))
 					++jumpCount;
@@ -1718,7 +1718,7 @@ public class EditorPanel : MonoBehaviour
 	}
 	bool PathValid()
 	{
-		return racingLine != null && racingLine.Length > 8;
+		return racingLine != null && racingLine.Length > 2;
 	}
 	public void SetPylonVisibility(bool isVisible)
 	{
@@ -1811,6 +1811,14 @@ public class EditorPanel : MonoBehaviour
 			DestroyImmediate(envir);
 		if (terrain != null)
 			DestroyImmediate(terrain.gameObject);
+		for (int i = 0; i < placedTilesContainer.transform.childCount; ++i)
+		{ // remove leftover tiles in container
+			Destroy(placedTilesContainer.transform.GetChild(i).gameObject);
+		}
+		for (int i = 0; i < replayCamerasContainer.transform.childCount; ++i)
+		{ // remove leftover replay cams in container
+			Destroy(replayCamerasContainer.transform.GetChild(i).gameObject);
+		}
 	}
 	public IEnumerator LoadTrack()
 	{
@@ -1841,14 +1849,7 @@ public class EditorPanel : MonoBehaviour
 		invisibleLevel.localScale = F.I.invisibleLevelDimensions[(int)F.I.tracks[F.I.s_trackName].envir];
 
 
-		for (int i = 0; i < placedTilesContainer.transform.childCount; ++i)
-		{ // remove leftover tiles in container
-			Destroy(placedTilesContainer.transform.GetChild(i).gameObject);
-		}
-		for (int i = 0; i < replayCamerasContainer.transform.childCount; ++i)
-		{ // remove leftover replay cams in container
-			Destroy(replayCamerasContainer.transform.GetChild(i).gameObject);
-		}
+		
 
 		trackNameInputField.text = trackName.text;
 

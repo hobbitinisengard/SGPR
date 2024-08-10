@@ -334,7 +334,7 @@ namespace RVP
 			editorPanel.pathFollower.SetActive(false);
 			for (int i = 0; i < editorPanel.placedTilesContainer.transform.childCount; ++i)
 			{
-				if (editorPanel.placedTilesContainer.transform.GetChild(i).name == "startline")
+				if (editorPanel.placedTilesContainer.transform.GetChild(i).name.Contains("startline"))
 					startlines++;
 			}
 			if (startlines != 1)

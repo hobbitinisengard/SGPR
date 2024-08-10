@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections;
-using System.IO;
 using System.Linq;
 using TMPro;
 using UnityEngine;
@@ -17,7 +16,7 @@ public class TrackSelectorTemplate : Sfxable
 	public Transform recordsContainer;
 	public MainMenuButton sortButton;
 	public TextMeshProUGUI trackDescText;
-	public TextMeshProUGUI trackAuthorText;
+	public Text trackAuthorText;
 	public RadialOneVisible radial;
 	public TextMeshProUGUI wayButtonText;
 	/// <summary>

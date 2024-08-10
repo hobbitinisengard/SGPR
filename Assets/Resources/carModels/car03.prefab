@@ -13186,7 +13186,7 @@ Light:
   m_Type: 0
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_Intensity: 600
-  m_Range: 15
+  m_Range: 100
   m_SpotAngle: 41.200005
   m_InnerSpotAngle: 19.8
   m_CookieSize: 10
@@ -13390,7 +13390,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_LensFlareData: {fileID: 11400000, guid: 25c14a125c47ca84d91092e582f0adef, type: 2}
   intensity: 1
-  maxAttenuationDistance: 50
+  maxAttenuationDistance: 250
   maxAttenuationScale: 50
   distanceAttenuationCurve:
     serializedVersion: 2
@@ -13398,20 +13398,20 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 0
       value: 1
-      inSlope: 0
-      outSlope: 0
+      inSlope: -1
+      outSlope: -1
       tangentMode: 34
       weightedMode: 0
       inWeight: 0
-      outWeight: 0
+      outWeight: 0.33333334
     - serializedVersion: 3
       time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
+      value: 0
+      inSlope: -1
+      outSlope: -1
       tangentMode: 34
       weightedMode: 0
-      inWeight: 0
+      inWeight: 0.33333334
       outWeight: 0
     m_PreInfinity: 2
     m_PostInfinity: 2

@@ -236,7 +236,7 @@ public class Info : MonoBehaviour
 		new (1406, 1337,1),// ita
 		new (564, 1231,1), //mex
 	};
-	public readonly int[] skys = new int[] { 8, 2, 5, 1, 4, 3, 7, 9 };
+	public readonly int[] skys = new int[] { 8, 2, 5, 1, 4, 3, 7, 8 };
 
 	public int Environments = 8;
 	public int Liveries = 7;

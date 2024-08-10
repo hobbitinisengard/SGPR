@@ -79,8 +79,6 @@ public class TrackSelector : TrackSelectorTemplate
 		if (!init)
 			F.I.s_isNight = !F.I.s_isNight;
 
-		F.I.s_isNight = false;
-
 		nightButtonText.text = F.I.s_isNight ? "Night" : "Day";
 	}
 	public void SwitchCPULevel(bool init = false)

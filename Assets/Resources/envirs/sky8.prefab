@@ -5,6 +5,7 @@ PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
+    serializedVersion: 3
     m_TransformParent: {fileID: 5171804057797286721}
     m_Modifications:
     - target: {fileID: 8380012069285264844, guid: 35f38d37442a2a54f9e37513e810de92,
@@ -88,10 +89,19 @@ PrefabInstance:
       value: 90.3
       objectReference: {fileID: 0}
     m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 35f38d37442a2a54f9e37513e810de92, type: 3}
 --- !u!1 &8130640887029717267 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 8380012069285264844, guid: 35f38d37442a2a54f9e37513e810de92,
+    type: 3}
+  m_PrefabInstance: {fileID: 332736806725854431}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &8907564137691481001 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 9151341103583831926, guid: 35f38d37442a2a54f9e37513e810de92,
     type: 3}
   m_PrefabInstance: {fileID: 332736806725854431}
   m_PrefabAsset: {fileID: 0}
@@ -100,6 +110,7 @@ PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
+    serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: d57883f0427c160409f58adf743b5541,
@@ -168,6 +179,17 @@ PrefabInstance:
       value: 26
       objectReference: {fileID: 0}
     m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: d57883f0427c160409f58adf743b5541,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8907564137691481001}
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: d57883f0427c160409f58adf743b5541,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -746404785879090543}
   m_SourcePrefab: {fileID: 100100000, guid: d57883f0427c160409f58adf743b5541, type: 3}
 --- !u!4 &5171804057797286721 stripped
 Transform:
@@ -193,5 +215,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1803864aabf84cf41b3fecf56d966720, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _Sun: {fileID: 0}
-  nightSkybox: {fileID: 8130640887029717267}
+  extraToTurnOffInNight: {fileID: 0}
+  nightSky: {fileID: 8130640887029717267}

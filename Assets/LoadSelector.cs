@@ -21,7 +21,7 @@ public class LoadSelector : TrackSelectorTemplate
 
 		int i = selectedTrack.GetSiblingIndex();
 		var tr = selectedTrack.parent;
-		Destroy(selectedTrack.gameObject);
+		DestroyImmediate(selectedTrack.gameObject);
 		selectedTrack = tr.GetChild(i-1);
 
 		StartCoroutine(Load(selectedTrack.name));

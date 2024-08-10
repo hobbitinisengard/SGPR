@@ -191,7 +191,7 @@ namespace RVP
 		}
 		private void SwitchTarget(InputAction.CallbackContext context)
 		{
-			if (F.I.gameMode == MultiMode.Multiplayer && vp && RaceManager.I.playerCar != null 
+			if (F.I.gameMode == MultiMode.Multiplayer && RaceManager.I.playerCar != null 
 				&& !RaceManager.I.playerCar.raceBox.enabled && !F.I.chat.texting)
 			{
 				Vector2 move = moveRef.action.ReadValue<Vector2>();
