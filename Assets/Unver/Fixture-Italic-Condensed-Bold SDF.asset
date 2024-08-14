@@ -8189,29 +8189,26 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Fixture-Italic-Condensed-Bold SDF Material
-  m_Shader: {fileID: -6465566751694194690, guid: f63d574838ccfb44f84acc05fed0af48,
-    type: 3}
+  m_Shader: {fileID: 4800000, guid: 68e6db2ebdc24f95958faec2be5558d6, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
-  - _ALPHATEST_ON
-  m_InvalidKeywords:
   - UNDERLAY_ON
+  m_InvalidKeywords:
+  - _ALPHATEST_ON
   - _DISABLE_SSR_TRANSPARENT
   - _NORMALMAP_TANGENT_SPACE
-  m_LightmapFlags: 4
-  m_EnableInstancingVariants: 1
+  m_LightmapFlags: 0
+  m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: 2510
+  m_CustomRenderQueue: -1
   stringTagMap:
     MotionVector: User
-    RenderType: TransparentCutout
   disabledShaderPasses:
   - MOTIONVECTORS
   - TransparentDepthPrepass
   - TransparentDepthPostpass
   - TransparentBackface
-  - RayTracingPrepass
   m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
@@ -8349,7 +8346,7 @@ Material:
     - _AlphaCutoffPrepass: 0.5
     - _AlphaCutoffShadow: 0.5
     - _AlphaDstBlend: 0
-    - _AlphaRemapMax: 1
+    - _AlphaRemapMax: 0.99999994
     - _AlphaRemapMin: 0
     - _AlphaSrcBlend: 1
     - _Ambient: 0
@@ -8465,11 +8462,11 @@ Material:
     - _ReceivesSSRTransparent: 0
     - _Reflectivity: 5
     - _RefractionModel: 0
-    - _RenderQueueType: 2
+    - _RenderQueueType: 1
     - _RequireSplitLighting: 0
     - _ScaleRatioA: 0.76555026
     - _ScaleRatioB: 0.7386364
-    - _ScaleRatioC: 0.7386364
+    - _ScaleRatioC: 0.48498777
     - _ScaleX: 1
     - _ScaleY: 1
     - _ShaderFlags: 0
@@ -8527,8 +8524,8 @@ Material:
     - _VertexOffsetY: 0
     - _WeightBold: 0.75
     - _WeightNormal: 0
-    - _ZTestDepthEqualForOpaque: 4
-    - _ZTestGBuffer: 4
+    - _ZTestDepthEqualForOpaque: 3
+    - _ZTestGBuffer: 3
     - _ZTestModeDistortion: 4
     - _ZTestTransparent: 4
     - _ZWrite: 1
@@ -8552,9 +8549,9 @@ Material:
     - _IsoPerimeter: {r: 0, g: 0, b: 0, a: 0}
     - _MaskCoord: {r: 0, g: 0, b: 32767, a: 32767}
     - _OutlineColor: {r: 0, g: 0, b: 0, a: 0}
-    - _OutlineColor1: {r: 1, g: 1, b: 1, a: 1}
-    - _OutlineColor2: {r: 1, g: 1, b: 1, a: 1}
-    - _OutlineColor3: {r: 0, g: 0, b: 0, a: 1}
+    - _OutlineColor1: {r: 1, g: 1, b: 1, a: 0}
+    - _OutlineColor2: {r: 1, g: 1, b: 1, a: 0}
+    - _OutlineColor3: {r: 0, g: 0, b: 0, a: 0}
     - _OutlineOffset1: {r: 0, g: 0, b: 0, a: 0}
     - _OutlineOffset2: {r: 0, g: 0, b: 0, a: 0}
     - _OutlineOffset3: {r: 0, g: 0, b: 0, a: 0}

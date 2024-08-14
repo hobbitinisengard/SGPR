@@ -45,3 +45,6 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: NewSL
+    uniqueID: 888351357
+    locked: 0

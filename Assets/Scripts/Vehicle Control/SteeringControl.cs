@@ -156,7 +156,7 @@ namespace RVP
 				{
 					float coeff = Mathf.InverseLerp(0, 400, F.I.s_cars[0].raceBox.RaceProgressDist - vp.raceBox.RaceProgressDist);
 					foreach (var w in vp.wheels)
-						w.forwardFriction = coeff * .4f * w.initForwardFriction + w.initForwardFriction;
+						w.forwardFriction = (1+coeff * .4f) * w.initForwardFriction;
 				}
 			}
 

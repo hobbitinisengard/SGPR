@@ -39,9 +39,9 @@ public class SGP_HUD : MonoBehaviour
 	public Sprite[] gearsSprites;
 	public Image currentGear;
 	public Transform rpmIndicator;
-	public Transform batteryLack;
-	readonly int minBatteryLack = 198;
-	readonly int maxBatteryLack = 46;
+	public RectTransform batteryLack;
+	readonly int minBatteryLack = 192;
+	readonly int maxBatteryLack = 35;
 	// 0,1,2,3,4,5,6,7,8,9
 	public Sprite[] speedoSprites;
 	// Hundreds, Tens, Ones
@@ -386,7 +386,7 @@ public class SGP_HUD : MonoBehaviour
 			speed /= 10;
 		}
 		// Update battery level
-		Vector3 batteryLackPosition = batteryLack.GetComponent<RectTransform>().anchoredPosition;
+		Vector3 batteryLackPosition = batteryLack.anchoredPosition;
 		if (vp.BatteryPercent < vp.lowBatteryLevel)
 		{  // low battery level blink
 			if (batteryCutOffTimer == 0 || Time.time - batteryCutOffTimer > 1)
@@ -399,7 +399,7 @@ public class SGP_HUD : MonoBehaviour
 		}
 		else
 			batteryLackPosition.x = Mathf.Lerp(maxBatteryLack, minBatteryLack, vp.BatteryPercent);
-		batteryLack.GetComponent<RectTransform>().anchoredPosition = batteryLackPosition;
+		batteryLack.anchoredPosition = batteryLackPosition;
 
 
 		if (positionDisplay.activeSelf)

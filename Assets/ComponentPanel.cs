@@ -793,7 +793,6 @@ public class BoostSavable : PartSavable
 [Serializable]
 public class GearboxSavable : PartSavable
 {
-	// tier >=2 -> quick gear reducing
 	public float shiftDelaySeconds;
 	public float reverseGearRatio;
 	public float Gear1Ratio;
@@ -804,6 +803,7 @@ public class GearboxSavable : PartSavable
 	public float Gear6Ratio;
 	public float Gear7Ratio;
 	public float Gear8Ratio;
+	public float FinalRatio;
 	public GearboxSavable()
 	{
 	}
@@ -823,11 +823,13 @@ public class GearboxSavable : PartSavable
 		Gear6Ratio = original.Gear6Ratio;
 		Gear7Ratio = original.Gear7Ratio;
 		Gear8Ratio = original.Gear8Ratio;
+		FinalRatio = original.FinalRatio;
 	}
 	public override PartSavable Clone()
 	{
 		return new GearboxSavable(this);
 	}
+	[JsonIgnore]
 	public int NumberOfGears
 	{
 		get
@@ -858,6 +860,7 @@ public class GearboxSavable : PartSavable
 		shiftDelaySeconds = vp.engine.transmission.shiftDelaySeconds;
 		var gearStructs = vp.engine.transmission.Gears;
 		int gears = vp.engine.transmission.Gears.Length - 2; // without R and N
+		FinalRatio = vp.engine.transmission.finalRatio;
 		reverseGearRatio = gearStructs[0].ratio;
 		Gear1Ratio = gearStructs[2].ratio;
 		if (gears >= 2)
@@ -878,6 +881,7 @@ public class GearboxSavable : PartSavable
 	public override void Apply(VehicleParent vp)
 	{
 		vp.engine.transmission.shiftDelaySeconds = shiftDelaySeconds;
+		vp.engine.transmission.finalRatio = FinalRatio;
 		int gears = NumberOfGears;
 		Gear[] gearStructs = new Gear[gears + 2];
 		for (int i = 0; i < gears + 2; ++i)

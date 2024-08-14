@@ -891,8 +891,6 @@ public class RaceBox : MonoBehaviour
 		// You can disable racebox only ONCE
 		if (raceTime == initialRaceTime)
 		{
-			UpdateTrackRecords();
-
 			vp.basicInput.enabled = false;
 
 			vp.sampleText.gameObject.SetActive(false);
@@ -916,6 +914,8 @@ public class RaceBox : MonoBehaviour
 				ResultsView.Add(vp);
 			}
 			vp.followAI.selfDriving = true;
+
+			UpdateTrackRecords();
 		}
 	}
 

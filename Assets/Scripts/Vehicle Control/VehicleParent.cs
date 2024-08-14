@@ -544,11 +544,7 @@ namespace RVP
 					RaceManager.I.cam.Connect(this, CameraControl.Mode.Replay);
 			}
 
-			lightsInput = F.I.s_isNight;
-			foreach (var l in frontLights)
-				l.SetActive(lightsInput);
-			foreach (var l in rearLights)
-				l.SetActive(lightsInput);
+			
 
 			StartCoroutine(ApplySetup());
 		}
@@ -590,6 +586,11 @@ namespace RVP
 			}
 			ResultsView.Add(this);
 			engine.ignition = true;
+			lightsInput = F.I.s_isNight;
+			foreach (var l in frontLights)
+				l.SetActive(lightsInput);
+			foreach (var l in rearLights)
+				l.SetActive(lightsInput);
 		}
 
 

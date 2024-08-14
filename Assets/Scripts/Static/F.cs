@@ -64,13 +64,14 @@ public static class F
 		//Copy all the files & Replaces any files with the same name
 		foreach (string newPath in Directory.GetFiles(sourcePath, "*.*", SearchOption.AllDirectories))
 		{
-			if (Path.GetExtension(newPath) == ".meta" /*|| Path.GetExtension(newPath) == ".carcfg"*/)
+			string ext = Path.GetExtension(newPath);
+			if (ext == ".meta" || ext == ".rec")
 				continue;
 
 			string copyToPath = newPath.Replace(sourcePath, targetPath);
 
 			// don't overwrite userdata.json and ranking.json; original parts and tracks are overwritten
-			if (Path.GetExtension(newPath) != ".json" || !File.Exists(copyToPath))
+			if (ext != ".json" || !File.Exists(copyToPath))
 				File.Copy(newPath, copyToPath, overwrite: true);
 		}
 	}

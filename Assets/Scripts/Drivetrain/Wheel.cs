@@ -34,9 +34,6 @@ namespace RVP
 
 		[Header("Rotation")]
 
-		[Tooltip("Bias for feedback RPM lerp between target RPM and raw RPM")]
-		float feedbackRpmBias = 0;
-
 		[Tooltip("Curve for setting final RPM of wheel based on driving torque/brake force, x-axis = torque/brake force, y-axis = lerp between raw RPM and target RPM")]
 		public AnimationCurve rpmBiasCurve;
 
@@ -93,11 +90,11 @@ namespace RVP
 		//[System.NonSerialized]
 		public float sidewaysSlip;
 		public enum SlipDependenceMode { dependent, forward, sideways, independent };
-		public SlipDependenceMode slipDependence = SlipDependenceMode.sideways;
+		public SlipDependenceMode slipDependence = SlipDependenceMode.independent;
 		[Range(0, 2)]
-		public float forwardSlipDependence = 2;
+		float forwardSlipDependence = 2;
 		[Range(0, 2)]
-		public float sidewaysSlipDependence = 2;
+		float sidewaysSlipDependence = 2;
 
 		[Tooltip("Adjusts how much friction the wheel has based on the normal of the ground surface. X-axis = normal dot product, y-axis = friction multiplier")]
 		public AnimationCurve normalFrictionCurve = AnimationCurve.Linear(0, 1, 1, 1);
@@ -183,7 +180,7 @@ namespace RVP
 		[System.NonSerialized]
 		public float travelDist;
 		Vector3 upDir; // Up direction
-		float circumference;
+		public float circumference { get; private set; }
 
 		[System.NonSerialized]
 		public Vector3 contactVelocity; // Velocity of contact point
@@ -227,8 +224,8 @@ namespace RVP
 		public PhysicMaterial detachedTireMaterial;
 		public PhysicMaterial detachedRimMaterial;
 		public ParticleSystem airGreenParticleSystem;
-
-
+		public float d_brakeForce;
+		public float d_relVel;
 
 		//AnimationCurve GenerateFrictionCurve(bool moreGrip = false)
 		//{
@@ -256,8 +253,8 @@ namespace RVP
 			rb = tr.GetTopmostParentComponent<Rigidbody>();
 			vp = tr.GetTopmostParentComponent<VehicleParent>();
 			rpmBiasCurve = new(new Keyframe[] { new(0, .25f, 0, 1.6f), new(1, 1, 0, 1.6f) });
-			forwardFrictionCurve ??= new AnimationCurve(new Keyframe[] { new(0, .35f), new(1, 1) });
-			sidewaysFrictionCurve ??= new AnimationCurve(new Keyframe[] { new(0, 0), new(0.1f, 1), new(1, 0.9f) });
+			forwardFrictionCurve ??= new AnimationCurve(new Keyframe[] { new(0, 0f), new(.2f, 1, 0, 0), new(1, .8f, 0, 0) });
+			sidewaysFrictionCurve ??= new AnimationCurve(new Keyframe[] { new(0, 0f), new(.2f, 1, 0, 0), new(1, .8f, 0, 0) });
 			suspensionParent = tr.parent.GetComponent<Suspension>();
 			travelDist = suspensionParent.targetCompression;
 			canDetach = detachForce < Mathf.Infinity && Application.isPlaying;
@@ -351,13 +348,13 @@ namespace RVP
 		{
 			upDir = tr.up;
 			actualRadius = popped ? rimRadius : Mathf.Lerp(rimRadius, tireRadius, tirePressure);
-			circumference = Mathf.PI * actualRadius * 2;
+			circumference = 2 * Mathf.PI * actualRadius;
 			localVel = rb.GetPointVelocity(forceApplicationPoint);
 
 			// Get proper inputs
 			actualEbrake = suspensionParent.ebrakeEnabled ? suspensionParent.ebrakeForce : 0;
 			actualTargetRPM = targetDrive.active ? targetDrive.rpm * (suspensionParent.driveInverted ? -1 : 1) : rawRPM;
-			actualTorque = targetDrive.active ?  targetDrive.torque : 0;
+			actualTorque = targetDrive.active ? targetDrive.torque : 0;
 
 			if (getContact)
 			{
@@ -423,59 +420,6 @@ namespace RVP
 
 				GetSlip();
 				ApplyFriction();
-				/*
-			// Burnout spinning
-			//if (vp.burnout > 0 && targetDrive.rpm != 0 && actualEbrake * vp.ebrakeInput == 0 && connected && grounded)
-			//{
-			//	rb.AddForceAtPosition(suspensionParent.forwardDir * -suspensionParent.flippedSideFactor *
-			//		 (vp.steerInput * vp.burnoutSpin * currentRPM * Mathf.Min(0.1f, targetDrive.torque) * 0.001f)
-			//		 * vp.burnout * (popped ? 0.5f : 1) * contactPoint.surfaceFriction, suspensionParent.tr.position
-			//		 , vp.wheelForceMode);
-			//}
-
-			// Popping logic
-			//setPopped = popped;
-
-			//if (poppedPrev != setPopped)
-			//{
-			//	if (tire)
-			//	{
-			//		tire.gameObject.SetActive(!popped);
-			//	}
-
-			//	updatedPopped = true;
-			//}
-			//else
-			//{
-			//	updatedPopped = false;
-			//}
-
-			//poppedPrev = setPopped;
-
-			// Air leak logic
-			//if (airLeakTime >= 0)
-			//{
-			//	tirePressure = Mathf.Clamp01(tirePressure - Time.fixedDeltaTime * 0.5f);
-
-			//	if (grounded)
-			//	{
-			//		airLeakTime += Mathf.Max(Mathf.Abs(currentRPM) * 0.001f, localVel.magnitude * 0.1f) * Time.timeScale * TimeMaster.inverseFixedTimeFactor;
-
-			//		if (airLeakTime > 1000 && tirePressure == 0)
-			//		{
-			//			popped = true;
-			//			airLeakTime = -1;
-
-			//			if (impactSnd && tirePopClip)
-			//			{
-			//				impactSnd.PlayOneShot(tirePopClip);
-			//				impactSnd.pitch = 1;
-			//			}
-			//		}
-			//	}
-			//}
-			*/
-
 			}
 		}
 		void LateUpdate()
@@ -611,35 +555,19 @@ namespace RVP
 			}
 			else
 			{
-				//if (vp.followAI.isCPU && !vp.raceBox.evoModule.stunting && !vp.crashing 
-				//	&& Vector3.Dot(vp.tr.up,Vector3.up) > 0)
-				//{ // steering in air
-				//	grounded = true;
-				//	groundedReally = false;
-				//	contactPoint.distance = suspensionParent.suspensionDistance;
-				//	contactPoint.point = suspensionParent.transform.position - suspensionParent.upDir * suspensionParent.suspensionDistance;
-				//	contactPoint.grounded = true;
-				//	contactPoint.normal = Vector3.up;
-				//	contactPoint.relativeVelocity = tr.InverseTransformDirection(localVel);
-				//	contactPoint.col = null;
-				//	contactVelocity = Vector3.zero;
-				//	contactPoint.surfaceFriction = GroundSurfaceMaster.AirSteeringFriction;
-				//	contactPoint.surfaceType = GroundSurfaceMaster.AirSteeringSurfaceType;
-				//}
-				//else
-				{
-					grounded = false;
-					groundedReally = false;
-					contactPoint.distance = suspensionParent.suspensionDistance;
-					contactPoint.point = Vector3.zero;
-					contactPoint.grounded = false;
-					contactPoint.normal = upDir;
-					contactPoint.relativeVelocity = Vector3.zero;
-					contactPoint.col = null;
-					contactVelocity = Vector3.zero;
-					contactPoint.surfaceFriction = 0;
-					contactPoint.surfaceType = 0;
-				}
+
+				grounded = false;
+				groundedReally = false;
+				contactPoint.distance = suspensionParent.suspensionDistance;
+				contactPoint.point = Vector3.zero;
+				contactPoint.grounded = false;
+				contactPoint.normal = upDir;
+				contactPoint.relativeVelocity = Vector3.zero;
+				contactPoint.col = null;
+				contactVelocity = Vector3.zero;
+				contactPoint.surfaceFriction = 0;
+				contactPoint.surfaceType = 0;
+
 			}
 			curSurfaceType = contactPoint.surfaceType;
 		}
@@ -649,7 +577,7 @@ namespace RVP
 		{
 			if (grounded)
 			{
-				rawRPM = (contactPoint.relativeVelocity.x / circumference) * (Mathf.PI * 100) * -suspensionParent.flippedSideFactor;
+				rawRPM = contactPoint.relativeVelocity.magnitude * 60 / circumference * -suspensionParent.flippedSideFactor;// (contactPoint.relativeVelocity.magnitude / circumference) * (Mathf.PI * 100) ;
 			}
 			else
 			{
@@ -657,41 +585,25 @@ namespace RVP
 			}
 		}
 
-		// Calculate the current slip amount
-		void GetSlip()
-		{
-			if (grounded)
-			{
-				sidewaysSlip = (contactPoint.relativeVelocity.z) / sidewaysCurveStretch;
-				if (groundedReally)
-					forwardSlip = (rawRPM - currentRPM) / forwardCurveStretch;
-				else
-					forwardSlip = 0;
-			}
-			else
-			{
-				sidewaysSlip = 0;
-				forwardSlip = 0;
-			}
-		}
+
 
 		// Apply actual forces to rigidbody based on wheel simulation
 		void ApplyFriction()
 		{
 			if (grounded)
 			{
-				float forwardSlipFactor = (slipDependence == SlipDependenceMode.dependent 
+				float forwardSlipFactor = (slipDependence == SlipDependenceMode.dependent
 					|| slipDependence == SlipDependenceMode.forward) ? forwardSlip - sidewaysSlip : forwardSlip;
-				float sidewaysSlipFactor = (slipDependence == SlipDependenceMode.dependent 
+				float sidewaysSlipFactor = (slipDependence == SlipDependenceMode.dependent
 					|| slipDependence == SlipDependenceMode.sideways) ? sidewaysSlip - forwardSlip : sidewaysSlip;
 				float forwardSlipDependenceFactor = Mathf.Clamp01(forwardSlipDependence - Mathf.Clamp01(Mathf.Abs(sidewaysSlip)));
 				float sidewaysSlipDependenceFactor = Mathf.Clamp01(sidewaysSlipDependence - Mathf.Clamp01(Mathf.Abs(forwardSlip)));
 
 				float targetForceX = forwardFrictionCurve.Evaluate(Mathf.Abs(forwardSlipFactor))
-					* -System.Math.Sign(forwardSlip) * (popped ? forwardRimFriction : forwardFriction)
+					* -Math.Sign(forwardSlip) * (popped ? forwardRimFriction : forwardFriction)
 					* forwardSlipDependenceFactor * -suspensionParent.flippedSideFactor;
 				float targetForceZ = sidewaysFrictionCurve.Evaluate(Mathf.Abs(sidewaysSlipFactor))
-					* -System.Math.Sign(sidewaysSlip) * (popped ? sidewaysRimFriction : sidewaysFriction)
+					* -Math.Sign(sidewaysSlip) * (popped ? sidewaysRimFriction : sidewaysFriction)
 					* sidewaysSlipDependenceFactor * normalFrictionCurve.Evaluate(Mathf.Clamp01(Vector3.Dot(contactPoint.normal, RaceManager.worldUpDir)));
 
 				Vector3 targetForce = tr.TransformDirection(targetForceX, 0, targetForceZ);
@@ -714,7 +626,7 @@ namespace RVP
 		void ApplyDrive()
 		{
 			float brakeForce = 0;
-			float brakeCheckValue = suspensionParent.skidSteerBrake ? vp.localAngularVel.y : vp.localVelocity.z;
+			float brakeCheckValue = vp.localVelocity.z;
 
 			// Set brake force
 			if (vp.brakeIsReverse)
@@ -733,7 +645,7 @@ namespace RVP
 				brakeForce = suspensionParent.brakeForce * vp.brakeInput;
 			}
 
-			brakeForce += axleFriction / 10;// * (Mathf.Approximately(actualTorque, 0) ? 1 : 0);
+			brakeForce += axleFriction / 10;
 			if (targetDrive.rpm != 0)
 			{
 				brakeForce *= (1 - vp.burnout);
@@ -742,16 +654,21 @@ namespace RVP
 			// Set final RPM
 			if (!suspensionParent.jammed && connected)
 			{
-				float toTargetRpm = Mathf.Lerp(rawRPM, actualTargetRPM, EvaluateTorque(actualTorque));
-				currentRPM = Mathf.Lerp(toTargetRpm, 0, Time.fixedDeltaTime * Mathf.Max(brakeForce, actualEbrake * vp.ebrakeInput));
-
-				targetDrive.feedbackRPM = Mathf.Lerp(currentRPM, rawRPM, feedbackRpmBias);
+				float angularAcc = actualTorque - Mathf.Max(brakeForce, actualEbrake * vp.ebrakeInput);
+				float angularVelocity = currentRPM / 60 / circumference;
+				angularVelocity += angularAcc * Time.fixedDeltaTime;
+				currentRPM = angularVelocity * 60 * circumference;
+				//float toTargetRpm = Mathf.Lerp(rawRPM, actualTargetRPM, EvaluateTorque(actualTorque));
+				//braking
+				//currentRPM = Mathf.Lerp(toTargetRpm, 0, Time.fixedDeltaTime * Mathf.Max(brakeForce, actualEbrake * vp.ebrakeInput));
 			}
 			else
 			{
 				currentRPM = 0;
-				targetDrive.feedbackRPM = 0;
 			}
+			targetDrive.feedbackRPM = currentRPM;
+			d_brakeForce = brakeForce;
+			d_relVel = actualEbrake * vp.ebrakeInput;
 		}
 		/// <summary>
 		/// 0 = rawRPM, full grip, wheel is sticked to the road
@@ -761,7 +678,24 @@ namespace RVP
 		{
 			float scaledTorque;
 			scaledTorque = Mathf.Clamp01(torque / torqueThreshold);//0.07f
-			return scaledTorque * Mathf.Lerp(1, .2f, rawRPM / (rpmBiasCurveLimit * Mathf.Sign(actualTargetRPM)));
+			return scaledTorque;
+		}
+		// Calculate the current slip amount
+		void GetSlip()
+		{
+			if (grounded)
+			{
+				sidewaysSlip = (contactPoint.relativeVelocity.z) / sidewaysCurveStretch;
+				if (groundedReally)
+					forwardSlip = (rawRPM - currentRPM) / forwardCurveStretch;
+				else
+					forwardSlip = 0;
+			}
+			else
+			{
+				sidewaysSlip = 0;
+				forwardSlip = 0;
+			}
 		}
 		// Extra method for evaluating torque to make the ApplyDrive method more readable
 		//float EvaluateTorque(float t)

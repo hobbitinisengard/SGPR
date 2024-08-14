@@ -50,7 +50,6 @@ namespace RVP
 				}
 				int enabledDrives = 0;
 
-				// Check for which outputs are enabled
 				foreach (DriveForce curOutput in outputDrives)
 				{
 					//if (curOutput.active)
@@ -66,7 +65,7 @@ namespace RVP
 				{
 					//if (curOutput.active)
 					//{
-						tempRPM += skidSteerDrive ? Mathf.Abs(curOutput.feedbackRPM) : curOutput.feedbackRPM;
+						tempRPM += Mathf.Abs(curOutput.feedbackRPM);
 						// curOutput represent wheels's forces
 						curOutput.SetDrive(newDrive, torqueFactor);
 					//}
@@ -74,13 +73,13 @@ namespace RVP
 
 				if (clutch > 0)
 				{
-					float targetRpm = vp.velMag * 30 * 3.6f / (Mathf.PI * vp.wheels[2].tireRadius);
-					targetDrive.rpm = Mathf.Lerp(targetRpm, targetDrive.feedbackRPM , clutch);
+					targetDrive.rpm = Mathf.Lerp(vp.wheels[2].rawRPM, targetDrive.feedbackRPM, clutch);
+					targetDrive.torque *= (1-clutch);
 				}
 
 				float wheelsRPM = (tempRPM / enabledDrives) * ratio;
-				float targetRPM = Mathf.Lerp(wheelsRPM, targetDrive.rpm, clutch);
-				targetDrive.feedbackRPM = Mathf.Lerp(targetDrive.feedbackRPM, targetRPM, Time.fixedDeltaTime * 20);
+				float toRPM = Mathf.Lerp(wheelsRPM, targetDrive.rpm, clutch);
+				targetDrive.feedbackRPM = Mathf.Lerp(targetDrive.feedbackRPM, toRPM, Time.fixedDeltaTime * 100);
 			}
 		}
 

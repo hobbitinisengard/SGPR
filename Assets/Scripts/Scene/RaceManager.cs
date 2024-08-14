@@ -16,7 +16,7 @@ namespace RVP
 	public class RaceManager : MonoBehaviour
 	{ 
 		AudioSource musicPlayer;
-		public GameObject Sun;
+		public Light Sun;
 		public ViewSwitcher viewSwitcher;
 		public PathCreator[] racingPaths;
 		public PathCreator universalPath;
@@ -241,12 +241,12 @@ namespace RVP
 		{
 			if (pod == PartOfDay.Day)
 			{
-				Sun.SetActive(true);
+				Sun.intensity = 130000;
 				RenderSettings.ambientLight = new Color32(208, 208, 208, 1);
 			}
 			else if (pod == PartOfDay.Night)
 			{
-				Sun.SetActive(false);
+				Sun.intensity = 1200;
 				RenderSettings.ambientLight = new Color32(52, 52, 52, 1);
 			}
 		}
@@ -515,15 +515,13 @@ namespace RVP
 			cam.mode = CameraControl.Mode.Replay;
 			foreach (var c in F.I.s_cars)
 				c.sampleText.gameObject.SetActive(false);
-
-			while (resultsSeq.gameObject.activeSelf)
+			do
 			{
 				yield return null;
-			}
+			} while (resultsSeq.gameObject.activeSelf);
 
 			if (F.I.tracks.ContainsKey(F.I.s_trackName))
 			{ 
-
 				var json = JsonConvert.SerializeObject(F.I.tracks[F.I.s_trackName].records);
 				var path = Path.Combine(F.I.tracksPath, F.I.s_trackName + ".rec");
 				File.WriteAllTextAsync(path, json);

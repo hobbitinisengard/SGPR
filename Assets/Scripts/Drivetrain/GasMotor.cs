@@ -24,7 +24,7 @@ namespace RVP
 		};
 		[Header("Performance")]
 
-		[Tooltip("X-axis = RPM in thousands, y-axis = torque.  The rightmost key represents the maximum RPM")]
+		[Tooltip("X-axis = kRPM, y-axis = torque.  The rightmost key represents the maximum RPM")]
 		public AnimationCurve torqueCurve;
 
 		[Range(0, 0.99f)]
@@ -50,7 +50,7 @@ namespace RVP
 		public bool rpmTooHigh = false;
 		public float d_targetRpm;
 		public float d_feedRpm;
-		float curEnginekRPM = 0;
+		float currentkRPM = 0;
 		ParticleSystem engineSmoke;
 		public float boostEval;
 		internal float fuelConsumption;
@@ -77,7 +77,6 @@ namespace RVP
 			base.Start();
 			CountDownSeq.OnRaceStarted += CountDownSeq_OnRaceStarted;
 			targetDrive = GetComponent<DriveForce>();
-			torqueCurve = GenerateTorqueCurve(1);
 			GetMaxRPM();
 		}
 		private void OnDestroy()
@@ -86,7 +85,7 @@ namespace RVP
 		}
 		private void CountDownSeq_OnRaceStarted()
 		{
-			float curRPM = (targetDrive.feedbackRPM/1000) / limit2kRPM;
+			float curRPM = currentkRPM / limit2kRPM;
 			Debug.Log(curRPM);
 			if (curRPM > .75f && curRPM < .9f)
 			{
@@ -128,27 +127,21 @@ namespace RVP
 				float targetRPM;
 				if (rpmTooHigh || actualInput == 0 || (transmission.IsShifting && transmission.selectedGear > 2))
 				{
-					targetRPM = Mathf.Max(minkRPM * 1000, targetDrive.feedbackRPM - 500);
+					targetRPM = targetDrive.feedbackRPM;
 				}
 				else
 				{
-					if (targetDrive.rpm < targetDrive.feedbackRPM)
-						targetDrive.rpm = targetDrive.feedbackRPM;
-
 					targetRPM = actualInput * limit2kRPM * 1000;
 				}
-				//float diff = targetRPM - targetDrive.rpm;
-				
-
-				targetDrive.rpm = Mathf.Lerp(targetDrive.rpm, targetRPM, inertia * 25 * Time.fixedDeltaTime); // RPM
+				targetDrive.rpm = Mathf.Lerp(targetDrive.rpm, targetRPM, inertia * 25 * Time.fixedDeltaTime);
 
 				d_targetRpm = targetDrive.rpm;
 				d_feedRpm = targetDrive.feedbackRPM;
-				curEnginekRPM = targetDrive.feedbackRPM / 1000f;
+				currentkRPM = targetDrive.feedbackRPM / 1000f;
 
 				if (engineSmoke != null)
 				{
-					if (curEnginekRPM <= 0.3f * limit2kRPM)
+					if (currentkRPM <= 0.3f * limit2kRPM)
 					{
 						if (!engineSmoke.isPlaying)
 						{
@@ -162,16 +155,16 @@ namespace RVP
 						engineSmoke.Stop(true, ParticleSystemStopBehavior.StopEmitting);
 				}
 
-				if (curEnginekRPM < limit2kRPM)
+				if (currentkRPM < limit2kRPM)
 				{
 					if (rpmTooHigh)
 					{
-						if (curEnginekRPM < limitkRPM)
+						if (currentkRPM < limitkRPM)
 						{
 							rpmTooHigh = false;
 						}
 					}
-					else if (curEnginekRPM >= 0.99f * limit2kRPM && transmission.currentGear != transmission.Gears.Length - 1)
+					else if (currentkRPM >= 0.99f * limit2kRPM && transmission.currentGear != transmission.Gears.Length - 1)
 					{
 						rpmTooHigh = true;
 						actualInput = 0;
@@ -180,13 +173,11 @@ namespace RVP
 				else
 					actualInput = 0;
 
-				d_torqueCurve = torqueCurve.Evaluate(curEnginekRPM);
-				targetDrive.torque = torqueCurve.Evaluate(curEnginekRPM) * // TORQUE
-							Mathf.Lerp(targetDrive.torque + boostEval,
-							Mathf.Abs(actualInput) * (maxTorque + boostEval),
-							inertia * 25 * Time.fixedDeltaTime);
+				targetDrive.torque = vp.accelInput * (1 + boostEval) * torqueCurve.Evaluate(currentkRPM); // TORQUE
+				
+				targetDrive.torque = Mathf.Clamp(targetDrive.torque,0,float.MaxValue);
+				d_torqueCurve = targetDrive.torque;
 
-				targetDrive.torque = Mathf.Clamp01(targetDrive.torque);
 				// Send RPM and torque through drivetrain
 				if (outputDrives.Length > 0)
 				{
@@ -220,21 +211,12 @@ namespace RVP
 		}
 		protected override void Update()
 		{
-			UpdatePitch(Time.deltaTime);
 			base.Update();
-		}
-		public void UpdateWorks(float deltaTime)
-		{
-			UpdatePitch(deltaTime);
-			base.Update();
-		}
-		void UpdatePitch(float deltaTime)
-		{
 			if (engineAudio && ignition)
 			{
-				airPitch = (vp.groundedWheels > 0 || actualAccel != 0) ? 1 : Mathf.Lerp(airPitch, 0, 0.5f * deltaTime);
+				airPitch = (vp.groundedWheels > 0 || actualAccel != 0) ? 1 : Mathf.Lerp(airPitch, 0, 0.5f * Time.deltaTime);
 
-				targetPitch = Mathf.Abs((targetDrive.feedbackRPM * 0.001f) / limit2kRPM);
+				targetPitch = Mathf.Abs(currentkRPM / limit2kRPM);
 			}
 		}
 

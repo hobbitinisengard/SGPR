@@ -119,9 +119,9 @@ public class MainMenuView : Sfxable
 	}
 	public void ToEditorScene()
 	{
-		//if (F.I.s_trackName == "MEX")
-		//	PlaySFX("fe-cardserror");
-		//else
+		if (F.I.s_trackName == "MEX")
+			PlaySFX("fe-cardserror");
+		else
 		{
 			if(F.I.s_trackName.Length == 3)
 			{

@@ -9,6 +9,7 @@
     }
   ],
   "dependencies": {
+	"com.coffee.unmask": "https://github.com/mob-sakai/UnmaskForUGUI.git", 
     "com.thammin.unity-spring": "https://github.com/thammin/unity-spring.git",
     "com.unity.2d.sprite": "1.0.0",
     "com.unity.ai.navigation": "2.0.0",

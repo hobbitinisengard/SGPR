@@ -315,9 +315,9 @@ TextureImporter:
       name: overlays_dial_58
       rect:
         serializedVersion: 2
-        x: 0
+        x: 3
         y: 560
-        width: 1046
+        width: 1039
         height: 135
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
