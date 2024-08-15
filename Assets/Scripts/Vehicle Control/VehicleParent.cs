@@ -613,7 +613,7 @@ namespace RVP
 			//		rb.collisionDetectionMode = CollisionDetectionMode.Discrete;
 			//}
 
-			if (Physics.OverlapBox(tr.position, Vector3.one, Quaternion.identity, 1 << F.I.aeroTunnel).Length > 0)
+			if (Physics.OverlapBox(tr.position, Vector3.one, Quaternion.identity, 1 << F.I.aeroTunnel).Length > 1)
 			{ // aerodynamic tunnel
 				rb.drag = 0;
 			}
@@ -717,10 +717,13 @@ namespace RVP
 			norm.transform.position = tr.position;
 			norm.transform.rotation = Quaternion.LookRotation(reallyGroundedWheels == 0 ? upDir : wheelNormalAverage, forwardDir);
 
-			if (brakeIsReverse && brakeInput > 0 && localVelocity.z < 1)
-				reversing = true;
-			else if (localVelocity.z >= 0 || burnout > 0)
-				reversing = false;
+			if(brakeIsReverse)
+			{
+				if (brakeInput > 0 && localVelocity.z < 3)
+					reversing = true;
+				if (accelInput > 0 && localVelocity.z > -3)
+					reversing = false;
+			}
 		}
 		public void SetHonkerInput(int f)
 		{

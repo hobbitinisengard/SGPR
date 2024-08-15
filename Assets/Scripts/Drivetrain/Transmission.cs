@@ -65,7 +65,7 @@ namespace RVP
 				{
 					//if (curOutput.active)
 					//{
-						tempRPM += Mathf.Abs(curOutput.feedbackRPM);
+						tempRPM += curOutput.feedbackRPM;
 						// curOutput represent wheels's forces
 						curOutput.SetDrive(newDrive, torqueFactor);
 					//}

@@ -56,6 +56,7 @@ namespace RVP
 		internal float fuelConsumption;
 		public float d_torqueCurve;
 		Coroutine boostOnStartCo;
+		public float d_actInput;
 
 		public AnimationCurve GenerateTorqueCurve(int curve_number)
 		{
@@ -110,11 +111,10 @@ namespace RVP
 		protected override void FixedUpdate()
 		{
 			base.FixedUpdate();
-			// Calculate proper input
-			actualAccel = vp.brakeIsReverse && vp.reversing ? vp.brakeInput : vp.accelInput;
-			float accelGet = canReverse ? actualAccel : Mathf.Clamp01(actualAccel);
-			actualInput = inputCurve.Evaluate(Mathf.Abs(accelGet)) * Mathf.Sign(accelGet);
 
+			actualAccel = (vp.brakeIsReverse && vp.reversing) ? vp.brakeInput : vp.accelInput;
+			actualInput = inputCurve.Evaluate(Mathf.Abs(actualAccel));
+			d_actInput = actualInput;
 			targetDrive.curve = torqueCurve;
 
 			if (ignition)
@@ -125,13 +125,13 @@ namespace RVP
 					boostEval = 0;
 
 				float targetRPM;
-				if (rpmTooHigh || actualInput == 0 || (transmission.IsShifting && transmission.selectedGear > 2))
+				if (rpmTooHigh || actualAccel == 0 || (transmission.IsShifting && transmission.selectedGear > 2))
 				{
-					targetRPM = targetDrive.feedbackRPM;
+					targetRPM = minkRPM * 1000;
 				}
 				else
 				{
-					targetRPM = actualInput * limit2kRPM * 1000;
+					targetRPM = actualAccel * limit2kRPM * 1000;
 				}
 				targetDrive.rpm = Mathf.Lerp(targetDrive.rpm, targetRPM, inertia * 25 * Time.fixedDeltaTime);
 
@@ -149,7 +149,6 @@ namespace RVP
 							var main = engineSmoke.main;
 							main.loop = true;
 						}
-
 					}
 					else
 						engineSmoke.Stop(true, ParticleSystemStopBehavior.StopEmitting);
@@ -173,9 +172,8 @@ namespace RVP
 				else
 					actualInput = 0;
 
-				targetDrive.torque = vp.accelInput * (1 + boostEval) * torqueCurve.Evaluate(currentkRPM); // TORQUE
-				
-				targetDrive.torque = Mathf.Clamp(targetDrive.torque,0,float.MaxValue);
+				targetDrive.torque = actualInput * (1 + boostEval) * torqueCurve.Evaluate(currentkRPM); // TORQUE
+				targetDrive.torque = Mathf.Clamp(targetDrive.torque,float.MinValue,float.MaxValue);
 				d_torqueCurve = targetDrive.torque;
 
 				// Send RPM and torque through drivetrain

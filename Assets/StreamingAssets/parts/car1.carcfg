@@ -32,8 +32,8 @@
       "autoSteerDrift": 0.0,
       "driftPush": 1.0,
       "downforce": 1.0,
-      "frontBrakeForce": 0.1,
-      "rearBrakeForce": 0.1
+      "frontBrakeForce": 0.5,
+      "rearBrakeForce": 0.5
     },
     "battery": {
       "capacity": 1000.0,
@@ -52,7 +52,7 @@
       "Gear6Ratio": 0.0,
       "Gear7Ratio": 0.0,
       "Gear8Ratio": 0.0,
-      "NumberOfGears": 5
+      "FinalRatio": 5.0
     },
     "engine": {
       "audioMaxPitch": 4.0,

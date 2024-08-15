@@ -152,9 +152,10 @@ namespace RVP
 				{
 					if (selectedGear == currentGear)
 					{
+						
 						if (currentGear < gears.Length - 1)
 						{
-							if (!(vp.brakeInput > 0 && vp.brakeIsReverse && upperGear.ratio == 0)
+							if (!(vp.localVelocity.z < 5 && vp.brakeIsReverse && vp.brakeInput > 0)
 							&& !(vp.localVelocity.z < 0 && vp.accelInput == 0))
 							{
 								if ((targetDrive.feedbackRPM > 0.9f * gears[currentGear].maxRPM && vp.velMag > gears[currentGear].maxSpeed)
@@ -207,7 +208,7 @@ namespace RVP
 				// Set RPMs and torque of output
 				newDrive.curve = targetDrive.curve;
 				newDrive.rpm = targetDrive.rpm / (curOutputRatio == 0 ? 1 : curOutputRatio);
-				newDrive.torque = Mathf.Abs(curOutputRatio) * targetDrive.torque;
+				newDrive.torque = curOutputRatio * targetDrive.torque;
 
 				SetOutputDrives(curOutputRatio);
 			}
@@ -230,6 +231,7 @@ namespace RVP
 		// Shift gears by the number entered
 		public void Shift(int dir)
 		{
+			Debug.Log("Shift" + dir);
 			shiftTime = shiftDelaySeconds;
 			selectedGear += dir;
 			if (audioShift)
@@ -313,8 +315,8 @@ namespace RVP
 					}
 					gears[i].minRPM *= 0.6f; // why? (it works though)
 					gears[i].maxRPM *= 0.9f; // change gear before red field
-					if(i>1)
-						gears[i].minSpeed = gears[i - 1].maxRPM / 60 * vp.wheels[2].circumference;
+					if(gears[i].ratio > 0)
+						gears[i].minSpeed = .7f * gears[i - 1].maxRPM / 60 * vp.wheels[2].circumference;
 					gears[i].maxSpeed = gears[i].maxRPM / 60 * vp.wheels[2].circumference;
 				}
 			}
