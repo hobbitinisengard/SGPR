@@ -14,12 +14,12 @@
   "customParts": {
     "sus": {
       "frontSteerRangeDegs": 35.0,
-      "frontSpringDistance": 0.2,
+      "frontSpringDistance": 0.3,
       "frontSpringForce": 8.0,
       "frontSpringExponent": 1.0,
       "frontSpringDampening": 0.2,
       "RearSteerRangeDegs": 0.0,
-      "RearSpringDistance": 0.2,
+      "RearSpringDistance": 0.3,
       "RearSpringForce": 8.0,
       "RearSpringExponent": 1.0,
       "RearSpringDampening": 0.2
@@ -59,7 +59,7 @@
       "audioMinPitch": 1.0,
       "fuelConsumption": 5.0,
       "audioType": 3.0,
-      "inertia": 0.5,
+      "inertia": 100.0,
       "torque": 0.01,
       "torqueCurveType": 3.0,
       "redlineKRPM": 10.499,
@@ -68,7 +68,7 @@
     "chassis": {
       "mass": 1.0,
       "longtitunalCOM": 0.0,
-      "verticalCOM": 0.35,
+      "verticalCOM": 0.4,
       "drag": 0.3,
       "angularDrag": 0.9,
       "evoSmoothTime": 0.07,
@@ -77,18 +77,18 @@
       "dragsterEffect": 0.9
     },
     "boost": {
-      "maxBoost": 0.005,
+      "maxBoost": 1.0,
       "batteryConsumption": 10.0
     },
     "tyre": {
       "forwardFriction": 10.0,
-      "sideFriction": 15.0,
+      "sideFriction": 13.0,
       "frontFrictionStretch": 10.0,
       "rearFrictionStretch": 10.0,
-      "shiftRearFriction": 12.0,
+      "shiftRearFriction": 10.0,
       "squeakSlipThreshold": 0.5,
       "slipDependence": 0.0,
-      "axleFriction": 1E-05,
+      "axleFriction": 0.0,
       "offroadTread": 0.0,
       "driftRearFriction": 3.0,
       "driftRearFrictionInit": 10.0,

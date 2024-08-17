@@ -231,7 +231,6 @@ namespace RVP
 		// Shift gears by the number entered
 		public void Shift(int dir)
 		{
-			Debug.Log("Shift" + dir);
 			shiftTime = shiftDelaySeconds;
 			selectedGear += dir;
 			if (audioShift)

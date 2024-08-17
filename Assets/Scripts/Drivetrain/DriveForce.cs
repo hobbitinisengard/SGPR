@@ -7,9 +7,13 @@ namespace RVP
 	// The class for RPMs and torque sent through the drivetrain
 	public class DriveForce : MonoBehaviour
 	{
+		[System.NonSerialized]
 		public float rpm;
+		[System.NonSerialized]
 		public float feedbackRPM;
+		[System.NonSerialized]
 		public float torque;
+		[System.NonSerialized]
 		public bool active = true;
 		[System.NonSerialized]
 		public AnimationCurve curve; // Torque curve

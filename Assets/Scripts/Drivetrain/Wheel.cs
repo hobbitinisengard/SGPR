@@ -257,7 +257,7 @@ namespace RVP
 			rpmBiasCurve = new(new Keyframe[] { new(0, .25f, 0, 1.6f), new(1, 1, 0, 1.6f) });
 
 			forwardFrictionCurve ??= new AnimationCurve(new Keyframe[] { new(0, 0f), new(.2f, 1, 0, 0), new(1, .8f, 0, 0) });
-			sidewaysFrictionCurve ??= new AnimationCurve(new Keyframe[] { new(0, 0f), new(.2f, 1, 0, 0), new(1, .8f, 0, 0) });
+			sidewaysFrictionCurve ??= new AnimationCurve(new Keyframe[] { new(0, 0f), new(.1f, 1f)});
 
 			suspensionParent = tr.parent.GetComponent<Suspension>();
 			travelDist = suspensionParent.targetCompression;
@@ -668,8 +668,7 @@ namespace RVP
 				//currentRPM = angularVelocity * 60 * circumference;
 
 				float acc = actualTorque / vp.rb.mass;
-				float baselineRPM = rawRPM;// Mathf.Lerp(rawRPM, currentRPM, forwardFrictionCurve.Evaluate(acc / torqueThreshold));
-				float angularVelocity = baselineRPM / 60 / circumference;
+				float angularVelocity = rawRPM / 60 / circumference;
 				angularVelocity += acc * Time.fixedDeltaTime;
 				currentRPM = angularVelocity * 60 * circumference;
 				//braking
@@ -700,16 +699,16 @@ namespace RVP
 				forwardSlip = 0;
 			}
 		}
-		/// <summary>
-		/// 0 = rawRPM, full grip, wheel is sticked to the road
-		/// 1 = currentRPM, no grip, wheel is sliding
-		/// </summary>
-		float EvaluateTorque(float torque)
-		{
-			float scaledTorque;
-			scaledTorque = Mathf.Clamp01(torque / torqueThreshold);//0.07f
-			return scaledTorque * Mathf.Lerp(1, .2f, rawRPM / (rpmBiasCurveLimit * Mathf.Sign(actualTargetRPM)));
-		}
+		///// <summary>
+		///// 0 = rawRPM, full grip, wheel is sticked to the road
+		///// 1 = currentRPM, no grip, wheel is sliding
+		///// </summary>
+		//float EvaluateTorque(float torque)
+		//{
+		//	float scaledTorque;
+		//	scaledTorque = Mathf.Clamp01(torque / torqueThreshold);//0.07f
+		//	return scaledTorque * Mathf.Lerp(1, .2f, rawRPM / (rpmBiasCurveLimit * Mathf.Sign(actualTargetRPM)));
+		//}
 
 		// Visual wheel positioning
 		void PositionWheel()

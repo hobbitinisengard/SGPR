@@ -4,10 +4,9 @@ public class SGP_Bouncer : MonoBehaviour
 {
 	Rigidbody rb;
 	VehicleParent vp;
-	public float lastBounceTime;
-	public float lastCarCarBounceTime;
-	public float lastSideBounceTime;
-	public float lastVVBounceTime;
+	float lastCarCarBounceTime;
+	float lastRampBounceTime;
+	float lastSideBounceTime;
 	const float debounceTime = .5f;
 
 	static AnimationCurve multCurve;
@@ -59,19 +58,36 @@ public class SGP_Bouncer : MonoBehaviour
 			return;
 		if (contact.otherCollider.gameObject.name.Contains("slope"))
 			return;
-		vp.colliding = true;
-		Vector3 norm = contact.normal;
-		float upNormDot = Vector3.Dot(vp.tr.up, norm);
-		if (upNormDot < .1f && upNormDot > -.5f) // angle between 84d and 135d
+		
+
+		// accelerate when landing on road 
+		Vector3 addForce = .5f * Vector3.Project(collision.relativeVelocity, collision.GetContact(0).normal);
+		if(addForce.magnitude > 10 && Time.time - lastRampBounceTime > debounceTime)
+		{
+			lastRampBounceTime = Time.time;
+			vp.colliding = true;
+			Vector3 velRight = Vector3.Cross(-vp.rb.velocity.normalized, collision.GetContact(0).normal);
+			Vector3 direction = Vector3.Cross(velRight, collision.GetContact(0).normal);
+			//Vector3 direction = Quaternion.AngleAxis(90, velRight) * collision.GetContact(0).normal;
+
+			rb.AddForceAtPosition(direction * addForce.magnitude,//addForce.magnitude,
+				rb.worldCenterOfMass,//collision.GetContact(0).point,
+				ForceMode.VelocityChange);
+		}
+		
+
+		// Bouncing from walls
+		float upNormDot = Vector3.Dot(vp.tr.up, contact.normal);
+		if (upNormDot < .18f && upNormDot > -.7f) // angle between 80d and 135d
 		{
 			if (collision.relativeVelocity.magnitude < 40)
 				return;
 			if (Time.time - lastSideBounceTime < debounceTime)
 				return;
-			float mult = multCurve.Evaluate(Vector3.Dot(norm, vp.tr.forward));
+			float mult = multCurve.Evaluate(Vector3.Dot(contact.normal, vp.tr.forward));
 			//Debug.Log("B: " + Vector3.Dot(norm, vp.tr.forward));
-			Vector3 addForce = mult * collision.relativeVelocity;
-			Vector3 direction = (vp.tr.forward + norm + vp.tr.up).normalized;
+			addForce = mult * collision.relativeVelocity;
+			Vector3 direction = (vp.tr.forward + contact.normal + vp.tr.up).normalized;
 			lastSideBounceTime = Time.time;
 			rb.AddForceAtPosition(direction * addForce.magnitude,
 			collision.GetContact(0).point,//vp.transform.position

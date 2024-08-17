@@ -14531,10 +14531,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4004a853526701343b191aaf6c4b56c8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  lastBounceTime: 0
-  lastCarCarBounceTime: 0
-  lastSideBounceTime: 0
-  lastVVBounceTime: 0
 --- !u!1 &6192630529381075353
 GameObject:
   m_ObjectHideFlags: 0
@@ -15027,10 +15023,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cb3a871e618e5234583959237a27a203, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rpm: 0
-  feedbackRPM: 0
-  torque: 0
-  active: 1
 --- !u!114 &6779875394792814007
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15176,10 +15168,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cb3a871e618e5234583959237a27a203, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rpm: 0
-  feedbackRPM: 0
-  torque: 0
-  active: 1
 --- !u!114 &6779875394929326516
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15224,7 +15212,7 @@ MonoBehaviour:
   sidewaysRimFriction: 1
   forwardCurveStretch: 1
   sidewaysCurveStretch: 1
-  sidewaysSlip: 0
+  forwardSlip: 0
   slipDependence: 3
   normalFrictionCurve:
     serializedVersion: 2
@@ -15276,7 +15264,7 @@ MonoBehaviour:
   detachedRimMaterial: {fileID: 0}
   airGreenParticleSystem: {fileID: 0}
   d_brakeForce: 0
-  d_relVel: 0
+  d_targetForce: 0
 --- !u!114 &1004512902
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15595,10 +15583,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cb3a871e618e5234583959237a27a203, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rpm: 0
-  feedbackRPM: 0
-  torque: 0
-  active: 1
 --- !u!114 &6779875395201521068
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15643,7 +15627,7 @@ MonoBehaviour:
   sidewaysRimFriction: 1
   forwardCurveStretch: 1
   sidewaysCurveStretch: 1
-  sidewaysSlip: 0
+  forwardSlip: 0
   slipDependence: 3
   normalFrictionCurve:
     serializedVersion: 2
@@ -15693,7 +15677,7 @@ MonoBehaviour:
   detachedRimMaterial: {fileID: 0}
   airGreenParticleSystem: {fileID: 0}
   d_brakeForce: 0
-  d_relVel: 0
+  d_targetForce: 0
 --- !u!114 &1968379668835498802
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15873,10 +15857,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cb3a871e618e5234583959237a27a203, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rpm: 0
-  feedbackRPM: 0
-  torque: 0
-  active: 1
 --- !u!114 &6779875395388755402
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15951,10 +15931,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cb3a871e618e5234583959237a27a203, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rpm: 0
-  feedbackRPM: 0
-  torque: 0
-  active: 1
 --- !u!114 &6779875395547520792
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16094,10 +16070,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cb3a871e618e5234583959237a27a203, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rpm: 0
-  feedbackRPM: 0
-  torque: 0
-  active: 1
 --- !u!114 &6779875395759827803
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16342,10 +16314,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cb3a871e618e5234583959237a27a203, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rpm: 0
-  feedbackRPM: 0
-  torque: 0
-  active: 1
 --- !u!114 &6779875396000727281
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16484,10 +16452,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cb3a871e618e5234583959237a27a203, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rpm: 0
-  feedbackRPM: 0
-  torque: 0
-  active: 1
 --- !u!114 &6779875396040730803
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16591,6 +16555,9 @@ MonoBehaviour:
   d_feedRpm: 0
   boostEval: 0
   d_torqueCurve: 0
+  d_actInput: 0
+  accMult: 1
+  inertiaAcc: 4
 --- !u!82 &4634947501902952183
 AudioSource:
   m_ObjectHideFlags: 0
@@ -16743,10 +16710,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cb3a871e618e5234583959237a27a203, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rpm: 0
-  feedbackRPM: 0
-  torque: 0
-  active: 1
 --- !u!114 &6779875396142811108
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16791,7 +16754,7 @@ MonoBehaviour:
   sidewaysRimFriction: 1
   forwardCurveStretch: 1
   sidewaysCurveStretch: 1
-  sidewaysSlip: 0
+  forwardSlip: 0
   slipDependence: 3
   normalFrictionCurve:
     serializedVersion: 2
@@ -16841,7 +16804,7 @@ MonoBehaviour:
   detachedRimMaterial: {fileID: 0}
   airGreenParticleSystem: {fileID: 0}
   d_brakeForce: 0
-  d_relVel: 0
+  d_targetForce: 0
 --- !u!114 &7348575612494076749
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17030,10 +16993,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cb3a871e618e5234583959237a27a203, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rpm: 0
-  feedbackRPM: 0
-  torque: 0
-  active: 1
 --- !u!114 &6779875396295812404
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17078,7 +17037,7 @@ MonoBehaviour:
   sidewaysRimFriction: 1
   forwardCurveStretch: 1
   sidewaysCurveStretch: 1
-  sidewaysSlip: 0
+  forwardSlip: 0
   slipDependence: 3
   normalFrictionCurve:
     serializedVersion: 2
@@ -17128,7 +17087,7 @@ MonoBehaviour:
   detachedRimMaterial: {fileID: 0}
   airGreenParticleSystem: {fileID: 314632221679098781}
   d_brakeForce: 0
-  d_relVel: 0
+  d_targetForce: 0
 --- !u!114 &3417992997382013542
 MonoBehaviour:
   m_ObjectHideFlags: 0

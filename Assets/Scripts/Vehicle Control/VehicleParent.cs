@@ -601,21 +601,9 @@ namespace RVP
 		}
 		void Update()
 		{
-			// we need continous collisions for fast flying cars
-			// but still we need discrete collisions for driving (car physics requirement)
-			//if (reallyGroundedWheels == 0)
-			//{
-			//	rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
-			//}
-			//else
-			//{
-			//	if (rb.collisionDetectionMode == CollisionDetectionMode.Continuous && !collisionDetectionChangerActive)
-			//		rb.collisionDetectionMode = CollisionDetectionMode.Discrete;
-			//}
-
 			if (Physics.OverlapBox(tr.position, Vector3.one, Quaternion.identity, 1 << F.I.aeroTunnel).Length > 1)
 			{ // aerodynamic tunnel
-				rb.drag = 0;
+				rb.drag = 0.3f * originalDrag;
 			}
 			else
 				rb.drag = originalDrag;

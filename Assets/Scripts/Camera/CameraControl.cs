@@ -247,7 +247,7 @@ namespace RVP
 			{
 				Vector2 forward = Vector2.up;
 				Vector2 vel = vp.localVelocity.Flat();
-				effectiveTurnAngle = Vector2.SignedAngle(forward, vel);
+				effectiveTurnAngle = 2*Vector2.SignedAngle(forward, vel);
 
 				effectiveTurnAngle = Mathf.Clamp(effectiveTurnAngle, -maxEffectiveRollTurnAngle, maxEffectiveRollTurnAngle);
 				scaledTurnAngle = effectiveTurnAngle / maxEffectiveRollTurnAngle;

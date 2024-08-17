@@ -26,7 +26,6 @@ namespace RVP
 
 		[Tooltip("X-axis = kRPM, y-axis = torque.  The rightmost key represents the maximum RPM")]
 		public AnimationCurve torqueCurve;
-
 		[Range(0, 0.99f)]
 		[Tooltip("How quickly the engine adjusts its RPMs")]
 		public float inertia = 0.3f;
@@ -57,6 +56,10 @@ namespace RVP
 		public float d_torqueCurve;
 		Coroutine boostOnStartCo;
 		public float d_actInput;
+		public float accMult = 1;
+		int accSign;
+		float prevAccel;
+		public float inertiaAcc = 4;
 
 		public AnimationCurve GenerateTorqueCurve(int curve_number)
 		{
@@ -87,7 +90,6 @@ namespace RVP
 		private void CountDownSeq_OnRaceStarted()
 		{
 			float curRPM = currentkRPM / limit2kRPM;
-			Debug.Log(curRPM);
 			if (curRPM > .75f && curRPM < .9f)
 			{
 				Debug.Log("Boost!");
@@ -120,7 +122,7 @@ namespace RVP
 			if (ignition)
 			{
 				if (boosting && vp.accelInput > 0)
-					boostEval = maxBoost * boostPowerCurve.Evaluate(Time.time - boostActivatedTime);
+					boostEval = 100 * maxBoost * boostPowerCurve.Evaluate(Time.time - boostActivatedTime);
 				else
 					boostEval = 0;
 
@@ -131,13 +133,27 @@ namespace RVP
 				}
 				else
 				{
-					targetRPM = actualAccel * limit2kRPM * 1000;
+					targetRPM = actualAccel * (limit2kRPM) * 1000;
 				}
-				targetDrive.rpm = Mathf.Lerp(targetDrive.rpm, targetRPM, inertia * 25 * Time.fixedDeltaTime);
+
+				
+
+				currentkRPM = targetDrive.feedbackRPM / 1000f;
+
+				accSign = ((targetRPM > targetDrive.rpm) ? 1 : -1);
+				accMult = Mathf.Clamp(accMult + inertiaAcc * Time.fixedDeltaTime,1,10);
+				if (Mathf.Sign(actualInput) != accSign)
+					accMult = 1;
+				targetDrive.rpm = Mathf.Clamp(targetDrive.rpm + accSign * accMult * inertia * 100 * Time.fixedDeltaTime,
+					0,limit2kRPM*1000);
+
+				//if (currentkRPM > limitkRPM)
+				//	targetRPM = limitkRPM * 1000;
+
+				//targetDrive.rpm = Mathf.Lerp(targetDrive.rpm, targetRPM, inertia * 25 * Time.fixedDeltaTime);
 
 				d_targetRpm = targetDrive.rpm;
 				d_feedRpm = targetDrive.feedbackRPM;
-				currentkRPM = targetDrive.feedbackRPM / 1000f;
 
 				if (engineSmoke != null)
 				{
@@ -172,7 +188,10 @@ namespace RVP
 				else
 					actualInput = 0;
 
-				targetDrive.torque = actualInput * (1 + boostEval) * torqueCurve.Evaluate(currentkRPM); // TORQUE
+				if (vp.reallyGroundedWheels == 4)
+					vp.rb.AddForce(Time.fixedDeltaTime * boostEval * vp.rb.velocity.normalized);
+
+				targetDrive.torque = actualInput * torqueCurve.Evaluate(currentkRPM); // TORQUE
 				targetDrive.torque = Mathf.Clamp(targetDrive.torque,float.MinValue,float.MaxValue);
 				d_torqueCurve = targetDrive.torque;
 

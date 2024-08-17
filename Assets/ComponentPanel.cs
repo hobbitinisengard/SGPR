@@ -972,6 +972,7 @@ public class EngineSavable : PartSavable
 	public float fuelConsumption;
 	public float audioType;
 	public float inertia;
+	public float inertiaAcc;
 	public float torque;
 	public float torqueCurveType;
 	public float redlineKRPM;
@@ -994,6 +995,7 @@ public class EngineSavable : PartSavable
 		torqueCurveType = original.torqueCurveType;
 		redlineKRPM = original.redlineKRPM;
 		cutoffKRPM = original.cutoffKRPM;
+		inertiaAcc = original.inertiaAcc;
 	}
 	public override PartSavable Clone()
 	{
@@ -1008,6 +1010,7 @@ public class EngineSavable : PartSavable
 		vp.engine.maxTorque = (F.I.s_raceType == RaceType.Drift) ? Mathf.Max(torque, vp.originalMass/2f) : torque;
 		vp.engine.limitkRPM = redlineKRPM;
 		vp.engine.limit2kRPM = cutoffKRPM;
+		vp.engine.inertiaAcc = inertiaAcc;
 		vp.engine.torqueCurve = vp.engine.GenerateTorqueCurve((int)torqueCurveType);
 		vp.engine.SetEngineAudioClip((int)audioType);
 		vp.engine.GetMaxRPM();
@@ -1023,6 +1026,7 @@ public class EngineSavable : PartSavable
 		redlineKRPM = vp.engine.limitkRPM;
 		cutoffKRPM = vp.engine.limit2kRPM;
 		vp.engine.torqueCurve = vp.engine.GenerateTorqueCurve((int)torqueCurveType);
+		inertiaAcc = vp.engine.inertiaAcc;
 		vp.engine.GetMaxRPM();
 		vp.engine.SetEngineAudioClip((int)audioType);
 	}
