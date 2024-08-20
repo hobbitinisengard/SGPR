@@ -36,13 +36,13 @@
       "rearBrakeForce": 0.1
     },
     "battery": {
-      "capacity": 600.0,
+      "capacity": 800.0,
       "chargingSpeed": 200.0,
       "lowBatPercent": 0.1,
       "evoBountyPercent": 0.4
     },
     "gearbox": {
-      "shiftDelaySeconds": 0.7,
+      "shiftDelaySeconds": 1.0,
       "reverseGearRatio": -3.21,
       "Gear1Ratio": 2.0,
       "Gear2Ratio": 1.1,
@@ -52,15 +52,16 @@
       "Gear6Ratio": 0.0,
       "Gear7Ratio": 0.0,
       "Gear8Ratio": 0.0,
-      "NumberOfGears": 3
+      "FinalRatio": 6.0
     },
     "engine": {
       "audioMaxPitch": 4.5,
       "audioMinPitch": 1.0,
       "fuelConsumption": 5.0,
       "audioType": 2.0,
-      "inertia": 0.375,
-      "torque": 0.004,
+      "inertia": 100.0,
+      "inertiaAcc": 10.0,
+      "torque": 0.1,
       "torqueCurveType": 3.0,
       "redlineKRPM": 10.499,
       "cutoffKRPM": 10.5
@@ -69,15 +70,15 @@
       "mass": 1.0,
       "longtitunalCOM": 0.0,
       "verticalCOM": 0.5,
-      "drag": 0.05,
+      "drag": 0.25,
       "angularDrag": 0.9,
       "evoSmoothTime": 0.07,
       "staticEvoMaxSpeed": 900.0,
       "evoAcceleration": 30.0,
-      "dragsterEffect": 0.9
+      "dragsterEffect": 0.7
     },
     "boost": {
-      "maxBoost": 0.01,
+      "maxBoost": 4.0,
       "batteryConsumption": 20.0
     },
     "tyre": {
@@ -88,7 +89,7 @@
       "shiftRearFriction": 8.0,
       "squeakSlipThreshold": 1.0,
       "slipDependence": 0.0,
-      "axleFriction": 2E-05,
+      "axleFriction": 0.0,
       "offroadTread": 0.75,
       "driftRearFriction": 1.5,
       "driftRearFrictionInit": 6.0,
@@ -96,13 +97,13 @@
     },
     "drive": {
       "driveType": 0.0,
-      "steerAdd": 0.02,
-      "holdComebackSpeed": 0.9,
+      "steerAdd": 10.0,
+      "holdComebackSpeed": 0.99,
       "steerLimitAt0": 0.8,
-      "steerLimitAt200": 0.2,
+      "steerLimitAt200": 0.15,
       "steerLimitAt300": 0.1,
       "steerComebackAt0": 1.0,
-      "steerComebackAt200": 15.0
+      "steerComebackAt200": 5.0
     },
     "honk": {
       "honkType": 1.0

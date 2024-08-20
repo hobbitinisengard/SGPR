@@ -603,7 +603,7 @@ namespace RVP
 		{
 			if (Physics.OverlapBox(tr.position, Vector3.one, Quaternion.identity, 1 << F.I.aeroTunnel).Length > 1)
 			{ // aerodynamic tunnel
-				rb.drag = 0.3f * originalDrag;
+				rb.drag = 0.8f * originalDrag;
 			}
 			else
 				rb.drag = originalDrag;

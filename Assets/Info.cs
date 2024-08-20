@@ -181,10 +181,9 @@ public class Info : MonoBehaviour
 		}
 		else
 		{
-			Debug.Log(userdataPath);
+			//Debug.Log(userdataPath);
 			string playerSettings = File.ReadAllText(userdataPath);
 			playerData = JsonConvert.DeserializeObject<PlayerSettingsData>(playerSettings);
-			Debug.Log(playerData == null);
 		}
 	}
 	public void SaveSettingsDataToJson()
@@ -509,7 +508,7 @@ public class Info : MonoBehaviour
 		float toLogLevel = 80 * 2 / 3f * Mathf.Log10(val01);
 		if (toLogLevel < -80)
 			toLogLevel = -80;
-		Debug.Log("set" + exposedParameter + " to level:" + toLogLevel.ToString());
+		//Debug.Log("set" + exposedParameter + " to level:" + toLogLevel.ToString());
 		mixer.SetFloat(exposedParameter, toLogLevel);
 	}
 	public float InGroupPos(Transform child)

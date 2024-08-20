@@ -150,7 +150,7 @@ public class TrackSelectorTemplate : Sfxable
 
 		if (selectedTrack == null)
 		{
-			Debug.LogWarning("selectedTrack is null");
+			//Debug.LogWarning("selectedTrack is null");
 			selectedTrack = trackContent.GetChild(0).GetChild(0);
 		}
 		F.I.s_trackName = selectedTrack.name;

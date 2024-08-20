@@ -37,9 +37,6 @@ namespace RVP
 		[Tooltip("Curve for setting final RPM of wheel based on driving torque/brake force, x-axis = torque/brake force, y-axis = lerp between raw RPM and target RPM")]
 		public AnimationCurve rpmBiasCurve;
 
-		[Tooltip("As the RPM of the wheel approaches this value, the RPM bias curve is interpolated with the default linear curve")]
-		float rpmBiasCurveLimit = 5000;
-
 		[Range(0, 10)]
 		public float axleFriction;
 
@@ -87,6 +84,7 @@ namespace RVP
 		public float slipThreshold = 0.5f;
 		//[System.NonSerialized
 		public float forwardSlip;
+		private float forwardSlipVel;
 		[System.NonSerialized]
 		public float sidewaysSlip;
 		public enum SlipDependenceMode { dependent, forward, sideways, independent };
@@ -170,7 +168,7 @@ namespace RVP
 		[System.NonSerialized]
 		public float rawRPM;
 		[System.NonSerialized]
-		public WheelContact contactPoint = new WheelContact();
+		public WheelContact contactPoint = new ();
 		[System.NonSerialized]
 		public bool getContact = true; // Should the wheel try to get contact info?
 		[System.NonSerialized]
@@ -257,7 +255,7 @@ namespace RVP
 			rpmBiasCurve = new(new Keyframe[] { new(0, .25f, 0, 1.6f), new(1, 1, 0, 1.6f) });
 
 			forwardFrictionCurve ??= new AnimationCurve(new Keyframe[] { new(0, 0f), new(.2f, 1, 0, 0), new(1, .8f, 0, 0) });
-			sidewaysFrictionCurve ??= new AnimationCurve(new Keyframe[] { new(0, 0f), new(.1f, 1f)});
+			sidewaysFrictionCurve ??= AnimationCurve.Linear(0, 0, .1f, 1);//new AnimationCurve(new Keyframe[] { new(0, 0f), new(.1f, 1f)});
 
 			suspensionParent = tr.parent.GetComponent<Suspension>();
 			travelDist = suspensionParent.targetCompression;
@@ -598,9 +596,9 @@ namespace RVP
 			if (groundedReally)
 			{
 				float forwardSlipFactor = (slipDependence == SlipDependenceMode.dependent
-					|| slipDependence == SlipDependenceMode.forward) ? forwardSlip - sidewaysSlip : forwardSlip;
+					|| slipDependence == SlipDependenceMode.forward) ? (forwardSlip - sidewaysSlip) : forwardSlip;
 				float sidewaysSlipFactor = (slipDependence == SlipDependenceMode.dependent
-					|| slipDependence == SlipDependenceMode.sideways) ? sidewaysSlip - forwardSlip : sidewaysSlip;
+					|| slipDependence == SlipDependenceMode.sideways) ? (sidewaysSlip - forwardSlipVel) : sidewaysSlip;
 				float forwardSlipDependenceFactor = Mathf.Clamp01(forwardSlipDependence - Mathf.Clamp01(Mathf.Abs(sidewaysSlip)));
 				float sidewaysSlipDependenceFactor = Mathf.Clamp01(sidewaysSlipDependence - Mathf.Clamp01(Mathf.Abs(forwardSlip)));
 
@@ -689,14 +687,17 @@ namespace RVP
 				if (groundedReally)
 				{
 					forwardSlip = (rawRPM - currentRPM) / forwardCurveStretch;
+					forwardSlipVel = (contactPoint.relativeVelocity.x) / sidewaysCurveStretch;
 				}
 				else
 					forwardSlip = 0;
+					forwardSlipVel = 0;
 			}
 			else
 			{
 				sidewaysSlip = 0;
 				forwardSlip = 0;
+				forwardSlipVel = 0;
 			}
 		}
 		///// <summary>

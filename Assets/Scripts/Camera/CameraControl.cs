@@ -17,7 +17,7 @@ namespace RVP
 		public InputActionReference moveRef;
 		public InputActionReference changeCamRef;
 
-		readonly Vector2[] camerasLH = new Vector2[] { new(8.5f, 3.5f), new(4.5f, 2), new(11, 4) };
+		readonly Vector2[] camerasLH = new Vector2[] { new(8.5f, 3f), new(4.5f, 2), new(11, 3) };
 		int curCameraLH = 0;
 		public enum Mode { Follow, Replay };
 		Mode _mode;
@@ -102,6 +102,7 @@ namespace RVP
 		float upLookCoeff = 1f;
 		Vector3 forward;
 		const float xyInputCamSpeedCoeff = 5;
+		readonly AnimationCurve fovAtSpeed = AnimationCurve.Linear(50, 54, 111, 70);
 		/// <summary>
 		/// used for smooth change between cam rotation by velocity to cam rotation by lookObj 
 		/// </summary>
@@ -218,6 +219,7 @@ namespace RVP
 		}
 		void FollowCam()
 		{
+			cam.fieldOfView = fovAtSpeed.Evaluate(vp.velMag);
 			pitchAngle = WrapAround180Degs(vp.tr.localEulerAngles.x);
 			
 			bool pitchLocked = false;

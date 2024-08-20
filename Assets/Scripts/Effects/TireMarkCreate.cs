@@ -312,19 +312,22 @@ namespace RVP
 		}
 
 		// Stop making mark
-		void EndMark()
+		public void EndMark()
 		{
-			creatingMark = false;
-			leftPointPrev = verts[Mathf.RoundToInt(verts.Length * 0.5f)];
-			rightPointPrev = verts[Mathf.RoundToInt(verts.Length * 0.5f + 1)];
-			continueMark = w.grounded;
+			if(curMark != null)
+			{
+				creatingMark = false;
+				leftPointPrev = verts[Mathf.RoundToInt(verts.Length * 0.5f)];
+				rightPointPrev = verts[Mathf.RoundToInt(verts.Length * 0.5f + 1)];
+				continueMark = w.grounded;
 
-			curMark.GetComponent<TireMark>().fadeTime = RaceManager.tireFadeTimeStatic;
-			curMark.GetComponent<TireMark>().mesh = mesh;
-			curMark.GetComponent<TireMark>().colors = colors;
-			curMark = null;
-			curMarkTr = null;
-			mesh = null;
+				curMark.GetComponent<TireMark>().fadeTime = RaceManager.tireFadeTimeStatic;
+				curMark.GetComponent<TireMark>().mesh = mesh;
+				curMark.GetComponent<TireMark>().colors = colors;
+				curMark = null;
+				curMarkTr = null;
+				mesh = null;
+			}
 		}
 
 		// Clean up mark if destroyed while creating

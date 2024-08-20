@@ -108,7 +108,7 @@ public class CarSelector : Sfxable
 						selectedCar = newcar.transform;
 				}
 			}
-			Debug.Log(menuButtons[0] + " " + menuButtons[1] + " " + menuButtons[2] + " " + menuButtons[3]);
+			//Debug.Log(menuButtons[0] + " " + menuButtons[1] + " " + menuButtons[2] + " " + menuButtons[3]);
 
 			yield return null; // wait for one frame for active objects to refresh
 
@@ -142,7 +142,7 @@ public class CarSelector : Sfxable
 		if (barsAndRadialCo != null)
 			StopCoroutine(barsAndRadialCo);
 		barsAndRadialCo = StartCoroutine(SetPerformanceBarsAndRadial());
-		Debug.Log(selectedCar);
+		//Debug.Log(selectedCar);
 		loadCo = false;
 	}
 

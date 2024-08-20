@@ -743,7 +743,7 @@ public class TyreSavable : PartSavable
 
 			w.slipThreshold = squeakSlipThreshold;
 			w.slipDependence = (F.I.s_raceType == RaceType.Drift) ? 
-				Wheel.SlipDependenceMode.independent : Wheel.SlipDependenceMode.independent;
+				Wheel.SlipDependenceMode.independent : Wheel.SlipDependenceMode.sideways;
 			w.axleFriction = axleFriction;
 			w.torqueThreshold = torqueThreshold;
 			// update materials
@@ -948,7 +948,7 @@ public class ChassisSavable : PartSavable
 	public override void Apply(VehicleParent vp)
 	{
 		vp.rb.centerOfMass = new Vector3(0, verticalCOM, (F.I.s_raceType == RaceType.Drift) ? 0 : longtitunalCOM);
-		vp.SetChassis(mass, drag, angularDrag);
+		vp.SetChassis(mass, drag, angularDrag:1);
 		vp.raceBox.evoModule.SetStuntCoeffs(evoSmoothTime, staticEvoMaxSpeed, evoAcceleration);
 		vp.GetComponent<SGP_DragsterEffect>().COM_Movement = vp.followAI.IsCPU ? 0 : -dragsterEffect;
 	}

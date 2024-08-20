@@ -165,7 +165,6 @@ namespace RVP
 			stuntPoints = F.I.stuntpointsContainer;
 			replayCams = F.I.replayCams;
 			trackPathCreator = F.I.universalPath;
-			Debug.Log(trackPathCreator == null);
 			ResetCurCameraIdx();
 			enabled = true;
 		}
@@ -625,6 +624,9 @@ namespace RVP
 				yield break;
 
 			vp.customCam = null;
+
+			foreach (var w in vp.wheels)
+				w.gameObject.GetComponent<TireMarkCreate>().EndMark();
 
 			vp.raceBox.ResetOnTrack();
 			vp.engine.transmission.ShiftToGear(2);

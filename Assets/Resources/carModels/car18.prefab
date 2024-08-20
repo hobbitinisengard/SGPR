@@ -966,7 +966,7 @@ Light:
   serializedVersion: 11
   m_Type: 0
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Intensity: 600
+  m_Intensity: 134217730
   m_Range: 100
   m_SpotAngle: 41.200005
   m_InnerSpotAngle: 19.8
@@ -1031,14 +1031,14 @@ MonoBehaviour:
   m_PointlightHDType: 0
   m_SpotLightShape: 0
   m_AreaLightShape: 0
-  m_Intensity: 600
+  m_Intensity: 30
   m_EnableSpotReflector: 1
   m_LuxAtDistance: 1
   m_InnerSpotPercent: 2.427184
   m_SpotIESCutoffPercent: 100
   m_LightDimmer: 1
   m_VolumetricDimmer: 1
-  m_LightUnit: 2
+  m_LightUnit: 4
   m_FadeDistance: 10000
   m_VolumetricFadeDistance: 10000
   m_AffectDiffuse: 1
@@ -6855,10 +6855,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4004a853526701343b191aaf6c4b56c8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  lastBounceTime: 0
-  lastCarCarBounceTime: 0
-  lastSideBounceTime: 0
-  lastVVBounceTime: 0
 --- !u!114 &865657811856999447
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7143,7 +7139,7 @@ Light:
   serializedVersion: 11
   m_Type: 0
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Intensity: 600
+  m_Intensity: 134217730
   m_Range: 100
   m_SpotAngle: 41.200005
   m_InnerSpotAngle: 19.8
@@ -7208,14 +7204,14 @@ MonoBehaviour:
   m_PointlightHDType: 0
   m_SpotLightShape: 0
   m_AreaLightShape: 0
-  m_Intensity: 600
+  m_Intensity: 30
   m_EnableSpotReflector: 1
   m_LuxAtDistance: 1
   m_InnerSpotPercent: 2.427184
   m_SpotIESCutoffPercent: 100
   m_LightDimmer: 1
   m_VolumetricDimmer: 1
-  m_LightUnit: 2
+  m_LightUnit: 4
   m_FadeDistance: 10000
   m_VolumetricFadeDistance: 10000
   m_AffectDiffuse: 1
@@ -7955,10 +7951,8 @@ MonoBehaviour:
   sidewaysRimFriction: 1
   forwardCurveStretch: 1
   sidewaysCurveStretch: 1
-  sidewaysSlip: 0
+  forwardSlip: 0
   slipDependence: 1
-  forwardSlipDependence: 2
-  sidewaysSlipDependence: 2
   normalFrictionCurve:
     serializedVersion: 2
     m_Curve:
@@ -8008,6 +8002,8 @@ MonoBehaviour:
   detachedTireMaterial: {fileID: 0}
   detachedRimMaterial: {fileID: 0}
   airGreenParticleSystem: {fileID: 0}
+  d_brakeForce: 0
+  d_targetForce: 0
 --- !u!114 &1004512902
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8370,10 +8366,8 @@ MonoBehaviour:
   sidewaysRimFriction: 1
   forwardCurveStretch: 1
   sidewaysCurveStretch: 1
-  sidewaysSlip: 0
+  forwardSlip: 0
   slipDependence: 1
-  forwardSlipDependence: 2
-  sidewaysSlipDependence: 2
   normalFrictionCurve:
     serializedVersion: 2
     m_Curve:
@@ -8421,6 +8415,8 @@ MonoBehaviour:
   detachedTireMaterial: {fileID: 0}
   detachedRimMaterial: {fileID: 0}
   airGreenParticleSystem: {fileID: 0}
+  d_brakeForce: 0
+  d_targetForce: 0
 --- !u!114 &1968379668835498802
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8626,7 +8622,6 @@ MonoBehaviour:
   shiftDelaySeconds: 0.4
   d_feedback: 0
   d_rpm: 0
-  actualFeedbackRPM: 0
 --- !u!1 &6779875395547520796
 GameObject:
   m_ObjectHideFlags: 0
@@ -9293,6 +9288,9 @@ MonoBehaviour:
   d_feedRpm: 0
   boostEval: 0
   d_torqueCurve: 0
+  d_actInput: 0
+  accMult: 1
+  inertiaAcc: 4
 --- !u!82 &4634947501902952183
 AudioSource:
   m_ObjectHideFlags: 0
@@ -9489,10 +9487,8 @@ MonoBehaviour:
   sidewaysRimFriction: 1
   forwardCurveStretch: 1
   sidewaysCurveStretch: 1
-  sidewaysSlip: 0
+  forwardSlip: 0
   slipDependence: 1
-  forwardSlipDependence: 2
-  sidewaysSlipDependence: 2
   normalFrictionCurve:
     serializedVersion: 2
     m_Curve:
@@ -9540,6 +9536,8 @@ MonoBehaviour:
   detachedTireMaterial: {fileID: 0}
   detachedRimMaterial: {fileID: 0}
   airGreenParticleSystem: {fileID: 0}
+  d_brakeForce: 0
+  d_targetForce: 0
 --- !u!114 &7348575612494076749
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9772,10 +9770,8 @@ MonoBehaviour:
   sidewaysRimFriction: 1
   forwardCurveStretch: 1
   sidewaysCurveStretch: 1
-  sidewaysSlip: 0
+  forwardSlip: 0
   slipDependence: 1
-  forwardSlipDependence: 2
-  sidewaysSlipDependence: 2
   normalFrictionCurve:
     serializedVersion: 2
     m_Curve:
@@ -9823,6 +9819,8 @@ MonoBehaviour:
   detachedTireMaterial: {fileID: 0}
   detachedRimMaterial: {fileID: 0}
   airGreenParticleSystem: {fileID: 0}
+  d_brakeForce: 0
+  d_targetForce: 0
 --- !u!114 &3417992997382013542
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -20252,7 +20252,7 @@ PrefabInstance:
     - target: {fileID: 80419317557176114, guid: 670332eaa556ccd41a40392800f4f28a,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.15000015
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 80419317557176114, guid: 670332eaa556ccd41a40392800f4f28a,
         type: 3}
@@ -20262,22 +20262,22 @@ PrefabInstance:
     - target: {fileID: 80419317557176114, guid: 670332eaa556ccd41a40392800f4f28a,
         type: 3}
       propertyPath: m_LocalRotation.w
-      value: 1
+      value: -0.6115225
       objectReference: {fileID: 0}
     - target: {fileID: 80419317557176114, guid: 670332eaa556ccd41a40392800f4f28a,
         type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 80419317557176114, guid: 670332eaa556ccd41a40392800f4f28a,
         type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0
+      value: 0.7912271
       objectReference: {fileID: 0}
     - target: {fileID: 80419317557176114, guid: 670332eaa556ccd41a40392800f4f28a,
         type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 80419317557176114, guid: 670332eaa556ccd41a40392800f4f28a,
         type: 3}
@@ -20287,12 +20287,27 @@ PrefabInstance:
     - target: {fileID: 80419317557176114, guid: 670332eaa556ccd41a40392800f4f28a,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
+      value: 255.399
       objectReference: {fileID: 0}
     - target: {fileID: 80419317557176114, guid: 670332eaa556ccd41a40392800f4f28a,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4317492802450844251, guid: 670332eaa556ccd41a40392800f4f28a,
+        type: 3}
+      propertyPath: InitialModule.startColor.minColor.b
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4317492802450844251, guid: 670332eaa556ccd41a40392800f4f28a,
+        type: 3}
+      propertyPath: InitialModule.startColor.minColor.g
+      value: 0.12556055
+      objectReference: {fileID: 0}
+    - target: {fileID: 4317492802450844251, guid: 670332eaa556ccd41a40392800f4f28a,
+        type: 3}
+      propertyPath: InitialModule.startColor.minColor.r
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7871914556327771782, guid: 670332eaa556ccd41a40392800f4f28a,
         type: 3}

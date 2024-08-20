@@ -1096,7 +1096,7 @@ public class EditorPanel : MonoBehaviour
 				replayCamsContainer.Sort((ReplayCam a, ReplayCam b) => { return a.dist.CompareTo(b.dist); });
 			}
 		}
-		Debug.Log("racingpath length:" + F.I.universalPath.path.length);
+		//Debug.Log("racingpath length:" + F.I.universalPath.path.length);
 		loadingTrack = false;
 	}
 	void SetPathClosed(bool val)

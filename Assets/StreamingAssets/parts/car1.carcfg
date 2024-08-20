@@ -25,7 +25,7 @@
       "RearSpringDampening": 0.2
     },
     "bms": {
-      "driftSpinAssist": 10.0,
+      "driftSpinAssist": 12.0,
       "driftSpinSpeed": 1.0,
       "driftSpinExponent": 1.0,
       "maxDriftAngle": 70.0,
@@ -60,6 +60,7 @@
       "fuelConsumption": 5.0,
       "audioType": 3.0,
       "inertia": 100.0,
+      "inertiaAcc": 10.0,
       "torque": 0.01,
       "torqueCurveType": 3.0,
       "redlineKRPM": 10.499,
@@ -82,10 +83,10 @@
     },
     "tyre": {
       "forwardFriction": 10.0,
-      "sideFriction": 13.0,
+      "sideFriction": 14.0,
       "frontFrictionStretch": 10.0,
       "rearFrictionStretch": 10.0,
-      "shiftRearFriction": 10.0,
+      "shiftRearFriction": 12.0,
       "squeakSlipThreshold": 0.5,
       "slipDependence": 0.0,
       "axleFriction": 0.0,
@@ -96,13 +97,13 @@
     },
     "drive": {
       "driveType": 0.0,
-      "steerAdd": 0.02,
-      "holdComebackSpeed": 0.8,
+      "steerAdd": 10.0,
+      "holdComebackSpeed": 0.95,
       "steerLimitAt0": 1.0,
-      "steerLimitAt200": 0.2,
+      "steerLimitAt200": 0.13,
       "steerLimitAt300": 0.1,
       "steerComebackAt0": 5.0,
-      "steerComebackAt200": 15.0
+      "steerComebackAt200": 5.0
     },
     "honk": {
       "honkType": 1.0

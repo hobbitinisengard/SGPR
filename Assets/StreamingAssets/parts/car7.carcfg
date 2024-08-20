@@ -36,13 +36,13 @@
       "rearBrakeForce": 0.01
     },
     "battery": {
-      "capacity": 1200.0,
+      "capacity": 1400.0,
       "chargingSpeed": 350.0,
       "lowBatPercent": 0.2,
       "evoBountyPercent": 0.15
     },
     "gearbox": {
-      "shiftDelaySeconds": 0.7,
+      "shiftDelaySeconds": 0.5,
       "reverseGearRatio": -3.21,
       "Gear1Ratio": 3.21,
       "Gear2Ratio": 2.52,
@@ -52,15 +52,16 @@
       "Gear6Ratio": 0.0,
       "Gear7Ratio": 0.0,
       "Gear8Ratio": 0.0,
-      "NumberOfGears": 4
+      "FinalRatio": 5.0
     },
     "engine": {
       "audioMaxPitch": 4.5,
       "audioMinPitch": 1.0,
       "fuelConsumption": 10.0,
       "audioType": 3.0,
-      "inertia": 0.5,
-      "torque": 0.004,
+      "inertia": 100.0,
+      "inertiaAcc": 5.0,
+      "torque": 0.05,
       "torqueCurveType": 2.0,
       "redlineKRPM": 10.499,
       "cutoffKRPM": 10.5
@@ -69,7 +70,7 @@
       "mass": 0.8,
       "longtitunalCOM": 0.05,
       "verticalCOM": 0.6,
-      "drag": 0.1,
+      "drag": 0.3,
       "angularDrag": 0.9,
       "evoSmoothTime": 0.07,
       "staticEvoMaxSpeed": 600.0,
@@ -77,7 +78,7 @@
       "dragsterEffect": 0.5
     },
     "boost": {
-      "maxBoost": 0.003,
+      "maxBoost": 1.0,
       "batteryConsumption": 10.0
     },
     "tyre": {
@@ -85,10 +86,10 @@
       "sideFriction": 12.0,
       "frontFrictionStretch": 8.0,
       "rearFrictionStretch": 8.0,
-      "shiftRearFriction": 10.0,
-      "squeakSlipThreshold": 0.75,
+      "shiftRearFriction": 11.0,
+      "squeakSlipThreshold": 0.5,
       "slipDependence": 0.0,
-      "axleFriction": 2E-05,
+      "axleFriction": 0.0,
       "offroadTread": 1.0,
       "driftRearFriction": 5.0,
       "driftRearFrictionInit": 7.0,
@@ -96,13 +97,13 @@
     },
     "drive": {
       "driveType": 0.0,
-      "steerAdd": 0.04,
-      "holdComebackSpeed": 0.9,
+      "steerAdd": 10.0,
+      "holdComebackSpeed": 0.99,
       "steerLimitAt0": 1.0,
       "steerLimitAt200": 0.15,
       "steerLimitAt300": 0.1,
       "steerComebackAt0": 1.0,
-      "steerComebackAt200": 15.0
+      "steerComebackAt200": 5.0
     },
     "honk": {
       "honkType": 1.0

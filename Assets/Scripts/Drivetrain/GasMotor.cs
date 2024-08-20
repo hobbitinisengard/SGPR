@@ -92,7 +92,7 @@ namespace RVP
 			float curRPM = currentkRPM / limit2kRPM;
 			if (curRPM > .75f && curRPM < .9f)
 			{
-				Debug.Log("Boost!");
+				//Debug.Log("Boost!");
 				if (boostOnStartCo != null)
 					StopCoroutine(boostOnStartCo);
 				boostOnStartCo = StartCoroutine(AddPowerBoostRewardOnStart());
