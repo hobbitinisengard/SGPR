@@ -270,7 +270,7 @@ public class SGP_Evo : MonoBehaviour
 		{
 			if (vp.SGPshiftbutton > 0)
 			{
-				if (prevSGPShiftButton == 0 && (vp.reallyGroundedWheels == 4 || (vp.crashing && vp.reallyGroundedWheels == 0)))
+				if (prevSGPShiftButton == 0 && (vp.reallyGroundedWheels == 4 || ((vp.crashing || vp.colliding) && vp.reallyGroundedWheels == 0)))
 				{ // shift press before jump
 					shiftPressTime = Time.time;
 					//Debug.Log("shiftPressTime");

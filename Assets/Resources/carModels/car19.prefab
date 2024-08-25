@@ -6096,7 +6096,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1114986274323386852
 Transform:
   m_ObjectHideFlags: 0
@@ -6339,6 +6339,61 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &1890179496631388927
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4382089923969121422}
+  - component: {fileID: 5414966575433699264}
+  m_Layer: 9
+  m_Name: Capsule
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4382089923969121422
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1890179496631388927}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.506, y: 0.099, z: -0.017}
+  m_LocalScale: {x: 1, y: 1.39, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7242168569435907113}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!136 &5414966575433699264
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1890179496631388927}
+  m_Material: {fileID: 13400000, guid: 54a777298baef2c4f9c84ebdc5c57029, type: 2}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.6
+  m_Height: 2
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &2226377184569121310
 GameObject:
   m_ObjectHideFlags: 0
@@ -6402,6 +6457,61 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &2397225056195290326
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3815845213381159568}
+  - component: {fileID: 1841498380449832950}
+  m_Layer: 9
+  m_Name: Capsule (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3815845213381159568
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2397225056195290326}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.5, y: 0.099, z: -0.017}
+  m_LocalScale: {x: 1, y: 1.39, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7242168569435907113}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!136 &1841498380449832950
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2397225056195290326}
+  m_Material: {fileID: 13400000, guid: 54a777298baef2c4f9c84ebdc5c57029, type: 2}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.6
+  m_Height: 2
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &2657873385695298593
 GameObject:
   m_ObjectHideFlags: 0
@@ -6791,6 +6901,39 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &3736342054443638410
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7242168569435907113}
+  m_Layer: 9
+  m_Name: roadCol (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7242168569435907113
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3736342054443638410}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071068}
+  m_LocalPosition: {x: 0, y: 0.69, z: 0.07}
+  m_LocalScale: {x: 1.02, y: 0.97999996, z: 0.82000005}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 4382089923969121422}
+  - {fileID: 3815845213381159568}
+  m_Father: {fileID: 6457121441695959639}
+  m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
 --- !u!1 &3917643179782311503
 GameObject:
   m_ObjectHideFlags: 0
@@ -12359,6 +12502,7 @@ Transform:
   m_Children:
   - {fileID: 5205882847834107082}
   - {fileID: 1114986274323386852}
+  - {fileID: 7242168569435907113}
   - {fileID: 8843980826253541465}
   - {fileID: 3886569244610584580}
   - {fileID: 7297398075007942963}
@@ -12559,7 +12703,6 @@ MonoBehaviour:
   straightenAssist: 0
   downforce: 6
   invertDownforceInReverse: 0
-  applyDownforceInAir: 1
   downforceCurve:
     serializedVersion: 2
     m_Curve:
@@ -12790,10 +12933,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4004a853526701343b191aaf6c4b56c8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  lastBounceTime: 0
-  lastCarCarBounceTime: 0
-  lastSideBounceTime: 0
-  lastVVBounceTime: 0
 --- !u!114 &865657811856999447
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13554,12 +13693,10 @@ MonoBehaviour:
   sidewaysFriction: 12
   forwardRimFriction: 1
   sidewaysRimFriction: 1
-  forwardCurveStretch: 1
+  forwardStretch: 1
   sidewaysCurveStretch: 1
-  sidewaysSlip: 0
+  forwardSlip: 0
   slipDependence: 1
-  forwardSlipDependence: 2
-  sidewaysSlipDependence: 2
   normalFrictionCurve:
     serializedVersion: 2
     m_Curve:
@@ -13594,6 +13731,9 @@ MonoBehaviour:
   canPop: 0
   deformAmount: 0
   rimGlow: 0
+  currentRPM: 0
+  rawRPM: 0
+  actualTorque: 0
   applyForceAtGroundContact: 0
   impactSnd: {fileID: 6779875396549254752}
   tireHitClips:
@@ -13609,6 +13749,11 @@ MonoBehaviour:
   detachedTireMaterial: {fileID: 0}
   detachedRimMaterial: {fileID: 0}
   airGreenParticleSystem: {fileID: 0}
+  d_brakeForce: 0
+  d_targetForce: 0
+  rpmBiasCurveLimit: 4000
+  eval: 0
+  slipMult: 0
 --- !u!114 &1004512902
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13969,12 +14114,10 @@ MonoBehaviour:
   sidewaysFriction: 12
   forwardRimFriction: 1
   sidewaysRimFriction: 1
-  forwardCurveStretch: 1
+  forwardStretch: 1
   sidewaysCurveStretch: 1
-  sidewaysSlip: 0
+  forwardSlip: 0
   slipDependence: 1
-  forwardSlipDependence: 2
-  sidewaysSlipDependence: 2
   normalFrictionCurve:
     serializedVersion: 2
     m_Curve:
@@ -14009,6 +14152,9 @@ MonoBehaviour:
   canPop: 0
   deformAmount: 0
   rimGlow: 0
+  currentRPM: 0
+  rawRPM: 0
+  actualTorque: 0
   applyForceAtGroundContact: 0
   impactSnd: {fileID: 0}
   tireHitClips: []
@@ -14022,6 +14168,11 @@ MonoBehaviour:
   detachedTireMaterial: {fileID: 0}
   detachedRimMaterial: {fileID: 0}
   airGreenParticleSystem: {fileID: 0}
+  d_brakeForce: 0
+  d_targetForce: 0
+  rpmBiasCurveLimit: 4000
+  eval: 0
+  slipMult: 0
 --- !u!114 &1968379668835498802
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14227,7 +14378,6 @@ MonoBehaviour:
   shiftDelaySeconds: 0.4
   d_feedback: 0
   d_rpm: 0
-  actualFeedbackRPM: 0
 --- !u!1 &6779875395547520796
 GameObject:
   m_ObjectHideFlags: 0
@@ -14900,6 +15050,9 @@ MonoBehaviour:
   d_feedRpm: 0
   boostEval: 0
   d_torqueCurve: 0
+  d_actInput: 0
+  accMult: 1
+  inertiaAcc: 4
 --- !u!82 &4634947501902952183
 AudioSource:
   m_ObjectHideFlags: 0
@@ -15094,12 +15247,10 @@ MonoBehaviour:
   sidewaysFriction: 12
   forwardRimFriction: 1
   sidewaysRimFriction: 1
-  forwardCurveStretch: 1
+  forwardStretch: 1
   sidewaysCurveStretch: 1
-  sidewaysSlip: 0
+  forwardSlip: 0
   slipDependence: 1
-  forwardSlipDependence: 2
-  sidewaysSlipDependence: 2
   normalFrictionCurve:
     serializedVersion: 2
     m_Curve:
@@ -15134,6 +15285,9 @@ MonoBehaviour:
   canPop: 0
   deformAmount: 0
   rimGlow: 0
+  currentRPM: 0
+  rawRPM: 0
+  actualTorque: 0
   applyForceAtGroundContact: 0
   impactSnd: {fileID: 0}
   tireHitClips: []
@@ -15147,6 +15301,11 @@ MonoBehaviour:
   detachedTireMaterial: {fileID: 0}
   detachedRimMaterial: {fileID: 0}
   airGreenParticleSystem: {fileID: 0}
+  d_brakeForce: 0
+  d_targetForce: 0
+  rpmBiasCurveLimit: 4000
+  eval: 0
+  slipMult: 0
 --- !u!114 &7348575612494076749
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15377,12 +15536,10 @@ MonoBehaviour:
   sidewaysFriction: 12
   forwardRimFriction: 1
   sidewaysRimFriction: 1
-  forwardCurveStretch: 1
+  forwardStretch: 1
   sidewaysCurveStretch: 1
-  sidewaysSlip: 0
+  forwardSlip: 0
   slipDependence: 1
-  forwardSlipDependence: 2
-  sidewaysSlipDependence: 2
   normalFrictionCurve:
     serializedVersion: 2
     m_Curve:
@@ -15417,6 +15574,9 @@ MonoBehaviour:
   canPop: 0
   deformAmount: 0
   rimGlow: 0
+  currentRPM: 0
+  rawRPM: 0
+  actualTorque: 0
   applyForceAtGroundContact: 0
   impactSnd: {fileID: 6779875396549254752}
   tireHitClips: []
@@ -15430,6 +15590,11 @@ MonoBehaviour:
   detachedTireMaterial: {fileID: 0}
   detachedRimMaterial: {fileID: 0}
   airGreenParticleSystem: {fileID: 0}
+  d_brakeForce: 0
+  d_targetForce: 0
+  rpmBiasCurveLimit: 4000
+  eval: 0
+  slipMult: 0
 --- !u!114 &3417992997382013542
 MonoBehaviour:
   m_ObjectHideFlags: 0

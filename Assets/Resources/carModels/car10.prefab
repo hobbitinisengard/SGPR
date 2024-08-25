@@ -1641,6 +1641,61 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &601895901589695474
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1326931062640736245}
+  - component: {fileID: 4379756539735352014}
+  m_Layer: 9
+  m_Name: Capsule
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1326931062640736245
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 601895901589695474}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.506, y: 0.099, z: -0.073}
+  m_LocalScale: {x: 1, y: 1.39, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1429313435489527427}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!136 &4379756539735352014
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 601895901589695474}
+  m_Material: {fileID: 13400000, guid: 54a777298baef2c4f9c84ebdc5c57029, type: 2}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.45
+  m_Height: 2
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &811222819001924069
 GameObject:
   m_ObjectHideFlags: 0
@@ -6681,6 +6736,39 @@ ParticleSystem:
         m_PostInfinity: 2
         m_RotationOrder: 4
     vectorLabel1_3: W
+--- !u!1 &1339306921697541892
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1429313435489527427}
+  m_Layer: 9
+  m_Name: roadCol (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1429313435489527427
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1339306921697541892}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071068}
+  m_LocalPosition: {x: 0, y: 0.69, z: 0.07}
+  m_LocalScale: {x: 1.02, y: 0.97999996, z: 0.82000005}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1326931062640736245}
+  - {fileID: 7455901716348991976}
+  m_Father: {fileID: 6457121441695959639}
+  m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
 --- !u!1 &1502785390758348995
 GameObject:
   m_ObjectHideFlags: 0
@@ -7089,7 +7177,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &3935023955495481916
 Transform:
   m_ObjectHideFlags: 0
@@ -13509,6 +13597,7 @@ Transform:
   m_Children:
   - {fileID: 3639653214767189722}
   - {fileID: 3836158974698175412}
+  - {fileID: 1429313435489527427}
   - {fileID: 2682248572133597948}
   - {fileID: 7441174155293013883}
   - {fileID: 8124181089221298307}
@@ -13710,7 +13799,6 @@ MonoBehaviour:
   straightenAssist: 0
   downforce: 6
   invertDownforceInReverse: 0
-  applyDownforceInAir: 1
   downforceCurve:
     serializedVersion: 2
     m_Curve:
@@ -15065,7 +15153,7 @@ MonoBehaviour:
   sidewaysFriction: 12
   forwardRimFriction: 1
   sidewaysRimFriction: 1
-  forwardCurveStretch: 1
+  forwardStretch: 1
   sidewaysCurveStretch: 1
   forwardSlip: 0
   slipDependence: 1
@@ -15103,6 +15191,9 @@ MonoBehaviour:
   canPop: 0
   deformAmount: 0
   rimGlow: 0
+  currentRPM: 0
+  rawRPM: 0
+  actualTorque: 0
   applyForceAtGroundContact: 0
   impactSnd: {fileID: 6779875396549254752}
   tireHitClips:
@@ -15120,6 +15211,9 @@ MonoBehaviour:
   airGreenParticleSystem: {fileID: 0}
   d_brakeForce: 0
   d_targetForce: 0
+  rpmBiasCurveLimit: 4000
+  eval: 0
+  slipMult: 0
 --- !u!114 &1004512902
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15480,7 +15574,7 @@ MonoBehaviour:
   sidewaysFriction: 12
   forwardRimFriction: 1
   sidewaysRimFriction: 1
-  forwardCurveStretch: 1
+  forwardStretch: 1
   sidewaysCurveStretch: 1
   forwardSlip: 0
   slipDependence: 1
@@ -15518,6 +15612,9 @@ MonoBehaviour:
   canPop: 0
   deformAmount: 0
   rimGlow: 0
+  currentRPM: 0
+  rawRPM: 0
+  actualTorque: 0
   applyForceAtGroundContact: 0
   impactSnd: {fileID: 0}
   tireHitClips: []
@@ -15533,6 +15630,9 @@ MonoBehaviour:
   airGreenParticleSystem: {fileID: 0}
   d_brakeForce: 0
   d_targetForce: 0
+  rpmBiasCurveLimit: 4000
+  eval: 0
+  slipMult: 0
 --- !u!114 &1968379668835498802
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16607,7 +16707,7 @@ MonoBehaviour:
   sidewaysFriction: 12
   forwardRimFriction: 1
   sidewaysRimFriction: 1
-  forwardCurveStretch: 1
+  forwardStretch: 1
   sidewaysCurveStretch: 1
   forwardSlip: 0
   slipDependence: 1
@@ -16645,6 +16745,9 @@ MonoBehaviour:
   canPop: 0
   deformAmount: 0
   rimGlow: 0
+  currentRPM: 0
+  rawRPM: 0
+  actualTorque: 0
   applyForceAtGroundContact: 0
   impactSnd: {fileID: 0}
   tireHitClips: []
@@ -16660,6 +16763,9 @@ MonoBehaviour:
   airGreenParticleSystem: {fileID: 0}
   d_brakeForce: 0
   d_targetForce: 0
+  rpmBiasCurveLimit: 4000
+  eval: 0
+  slipMult: 0
 --- !u!114 &7348575612494076749
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16890,7 +16996,7 @@ MonoBehaviour:
   sidewaysFriction: 12
   forwardRimFriction: 1
   sidewaysRimFriction: 1
-  forwardCurveStretch: 1
+  forwardStretch: 1
   sidewaysCurveStretch: 1
   forwardSlip: 0
   slipDependence: 1
@@ -16928,6 +17034,9 @@ MonoBehaviour:
   canPop: 0
   deformAmount: 0
   rimGlow: 0
+  currentRPM: 0
+  rawRPM: 0
+  actualTorque: 0
   applyForceAtGroundContact: 0
   impactSnd: {fileID: 6779875396549254752}
   tireHitClips: []
@@ -16943,6 +17052,9 @@ MonoBehaviour:
   airGreenParticleSystem: {fileID: 0}
   d_brakeForce: 0
   d_targetForce: 0
+  rpmBiasCurveLimit: 4000
+  eval: 0
+  slipMult: 0
 --- !u!114 &3417992997382013542
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17619,7 +17731,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &3836158974698175412
 Transform:
   m_ObjectHideFlags: 0
@@ -18145,6 +18257,61 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &8219478493363616716
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7455901716348991976}
+  - component: {fileID: 6520378823981916582}
+  m_Layer: 9
+  m_Name: Capsule (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7455901716348991976
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8219478493363616716}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.5, y: 0.099, z: -0.073}
+  m_LocalScale: {x: 1, y: 1.39, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1429313435489527427}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!136 &6520378823981916582
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8219478493363616716}
+  m_Material: {fileID: 13400000, guid: 54a777298baef2c4f9c84ebdc5c57029, type: 2}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.45
+  m_Height: 2
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &8253767713071665807
 GameObject:
   m_ObjectHideFlags: 0

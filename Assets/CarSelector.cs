@@ -172,7 +172,7 @@ public class CarSelector : Sfxable
 						if (posx >= selectedClass.childCount)
 							posx = selectedClass.childCount - 1;
 						tempSelectedCar = selectedClass.GetChild(posx);
-						Debug.Log(tempSelectedCar);
+						//Debug.Log(tempSelectedCar);
 						break;
 					}
 				}

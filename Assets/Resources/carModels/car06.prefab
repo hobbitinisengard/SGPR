@@ -12183,7 +12183,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &652513157500081619
 Transform:
   m_ObjectHideFlags: 0
@@ -22754,6 +22754,39 @@ MonoBehaviour:
   solidAxleConnector: 0
   wheel1: {fileID: 0}
   wheel2: {fileID: 0}
+--- !u!1 &4003182613103999870
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8078293091195728964}
+  m_Layer: 9
+  m_Name: roadCol (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8078293091195728964
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4003182613103999870}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.7071068, y: -0, z: -0, w: 0.7071068}
+  m_LocalPosition: {x: 0, y: 1.231, z: 0.07}
+  m_LocalScale: {x: 1.02, y: 0.97999996, z: 0.82000005}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 3925457743520403738}
+  - {fileID: 8523053306372990133}
+  m_Father: {fileID: 6457121441695959639}
+  m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
 --- !u!1 &4040925010013384783
 GameObject:
   m_ObjectHideFlags: 0
@@ -22965,7 +22998,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &937525260498526736
 Transform:
   m_ObjectHideFlags: 0
@@ -23380,6 +23413,61 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5343642536240803875}
   m_Mesh: {fileID: 6281482725548412166, guid: 80b1fe4546af10d459573d7b13b90604, type: 3}
+--- !u!1 &5347278586512999736
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3925457743520403738}
+  - component: {fileID: 8056632395163377790}
+  m_Layer: 9
+  m_Name: Capsule
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3925457743520403738
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5347278586512999736}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.506, y: 0.099, z: -0.01}
+  m_LocalScale: {x: 1, y: 1.96, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8078293091195728964}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!136 &8056632395163377790
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5347278586512999736}
+  m_Material: {fileID: 13400000, guid: 54a777298baef2c4f9c84ebdc5c57029, type: 2}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.87
+  m_Height: 2
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &5619744350303385898
 GameObject:
   m_ObjectHideFlags: 0
@@ -23641,6 +23729,7 @@ Transform:
   - {fileID: 3412550317115451242}
   - {fileID: 5900054333923574224}
   - {fileID: 937525260498526736}
+  - {fileID: 8078293091195728964}
   - {fileID: 7961367866868028943}
   - {fileID: 8124181089221298307}
   - {fileID: 6779875394792814009}
@@ -23843,7 +23932,6 @@ MonoBehaviour:
   straightenAssist: 0
   downforce: 6
   invertDownforceInReverse: 0
-  applyDownforceInAir: 1
   downforceCurve:
     serializedVersion: 2
     m_Curve:
@@ -24233,6 +24321,61 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1931d7a5c70ded943a8caa9359661f84, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!1 &6465562300170526539
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8523053306372990133}
+  - component: {fileID: 3706531087428880192}
+  m_Layer: 9
+  m_Name: Capsule (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8523053306372990133
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6465562300170526539}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.5, y: 0.099, z: -0.01}
+  m_LocalScale: {x: 1, y: 1.96, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8078293091195728964}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!136 &3706531087428880192
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6465562300170526539}
+  m_Material: {fileID: 13400000, guid: 54a777298baef2c4f9c84ebdc5c57029, type: 2}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.87
+  m_Height: 2
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &6673981008940942048
 GameObject:
   m_ObjectHideFlags: 0
@@ -24922,7 +25065,7 @@ MonoBehaviour:
   sidewaysFriction: 12
   forwardRimFriction: 1
   sidewaysRimFriction: 1
-  forwardCurveStretch: 1
+  forwardStretch: 1
   sidewaysCurveStretch: 1
   forwardSlip: 0
   slipDependence: 1
@@ -24960,6 +25103,9 @@ MonoBehaviour:
   canPop: 0
   deformAmount: 0
   rimGlow: 0
+  currentRPM: 0
+  rawRPM: 0
+  actualTorque: 0
   applyForceAtGroundContact: 0
   impactSnd: {fileID: 6779875396549254752}
   tireHitClips:
@@ -24977,6 +25123,9 @@ MonoBehaviour:
   airGreenParticleSystem: {fileID: 0}
   d_brakeForce: 0
   d_targetForce: 0
+  rpmBiasCurveLimit: 4000
+  eval: 0
+  slipMult: 0
 --- !u!114 &1004512902
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -25337,7 +25486,7 @@ MonoBehaviour:
   sidewaysFriction: 12
   forwardRimFriction: 1
   sidewaysRimFriction: 1
-  forwardCurveStretch: 1
+  forwardStretch: 1
   sidewaysCurveStretch: 1
   forwardSlip: 0
   slipDependence: 1
@@ -25375,6 +25524,9 @@ MonoBehaviour:
   canPop: 0
   deformAmount: 0
   rimGlow: 0
+  currentRPM: 0
+  rawRPM: 0
+  actualTorque: 0
   applyForceAtGroundContact: 0
   impactSnd: {fileID: 0}
   tireHitClips: []
@@ -25390,6 +25542,9 @@ MonoBehaviour:
   airGreenParticleSystem: {fileID: 0}
   d_brakeForce: 0
   d_targetForce: 0
+  rpmBiasCurveLimit: 4000
+  eval: 0
+  slipMult: 0
 --- !u!114 &1968379668835498802
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -26464,7 +26619,7 @@ MonoBehaviour:
   sidewaysFriction: 12
   forwardRimFriction: 1
   sidewaysRimFriction: 1
-  forwardCurveStretch: 1
+  forwardStretch: 1
   sidewaysCurveStretch: 1
   forwardSlip: 0
   slipDependence: 1
@@ -26502,6 +26657,9 @@ MonoBehaviour:
   canPop: 0
   deformAmount: 0
   rimGlow: 0
+  currentRPM: 0
+  rawRPM: 0
+  actualTorque: 0
   applyForceAtGroundContact: 0
   impactSnd: {fileID: 0}
   tireHitClips: []
@@ -26517,6 +26675,9 @@ MonoBehaviour:
   airGreenParticleSystem: {fileID: 0}
   d_brakeForce: 0
   d_targetForce: 0
+  rpmBiasCurveLimit: 4000
+  eval: 0
+  slipMult: 0
 --- !u!114 &7348575612494076749
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -26747,7 +26908,7 @@ MonoBehaviour:
   sidewaysFriction: 12
   forwardRimFriction: 1
   sidewaysRimFriction: 1
-  forwardCurveStretch: 1
+  forwardStretch: 1
   sidewaysCurveStretch: 1
   forwardSlip: 0
   slipDependence: 1
@@ -26785,6 +26946,9 @@ MonoBehaviour:
   canPop: 0
   deformAmount: 0
   rimGlow: 0
+  currentRPM: 0
+  rawRPM: 0
+  actualTorque: 0
   applyForceAtGroundContact: 0
   impactSnd: {fileID: 6779875396549254752}
   tireHitClips: []
@@ -26800,6 +26964,9 @@ MonoBehaviour:
   airGreenParticleSystem: {fileID: 0}
   d_brakeForce: 0
   d_targetForce: 0
+  rpmBiasCurveLimit: 4000
+  eval: 0
+  slipMult: 0
 --- !u!114 &3417992997382013542
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -27294,9 +27461,9 @@ Transform:
   - {fileID: 5691781776089650816}
   - {fileID: 1374488712736143289}
   - {fileID: 3935023955495481916}
+  - {fileID: 652513157500081619}
   - {fileID: 1500989572602449976}
   - {fileID: 8185140812151057371}
-  - {fileID: 652513157500081619}
   m_Father: {fileID: 6457121441695959639}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &7337640856822141018

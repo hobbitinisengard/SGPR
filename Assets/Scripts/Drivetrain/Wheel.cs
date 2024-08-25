@@ -1,6 +1,6 @@
 using System;
 using UnityEngine;
-
+using UnityEngine.UIElements.Experimental;
 namespace RVP
 {
 	[RequireComponent(typeof(DriveForce))]
@@ -50,26 +50,17 @@ namespace RVP
 		/// To set basic frictions use SetInitFrictions()
 		/// </summary>
 		public float sidewaysFriction = 1;
-		public float initForwardFriction { get; private set; }
-		public float initSidewaysFriction { get; private set; }
-		public void SetInitFrictions(float forward, float sideways, float initfrictionStretch)
-		{
-			initForwardFriction = forward;
-			forwardFriction = forward;
-			initSidewaysFriction = (vp.followAI.IsCPU ? 2 : 1) * sideways;
-			sidewaysFriction = (vp.followAI.IsCPU ? 2 : 1) * sideways;
-			initFrictionStretch = initfrictionStretch;
-			forwardCurveStretch = initfrictionStretch;
-			sidewaysCurveStretch = initfrictionStretch;
-		}
+		[NonSerialized]
+		public float initForwardFriction;
+		[NonSerialized]
+		public float initSidewaysFriction;
 
 		public float forwardRimFriction = 0.5f;
 		public float sidewaysRimFriction = 0.5f;
-		public float forwardCurveStretch = 1;
+		public float forwardStretch = 1;
 		public float sidewaysCurveStretch = 1;
 		[NonSerialized]
-		public float torqueThreshold = 1000;
-		public float initFrictionStretch { get; private set; }
+		public float tyreMaxAcc = 1;//in m/s2
 		Vector3 frictionForce = Vector3.zero;
 		//static double[] SGPFrictionData = {1.000000, 0.997070, 0.994141, 0.991211, 0.988281, 0.985645, 0.983008, 0.980371,0.977734, 0.975098, 0.972461, 0.969824, 0.967188, 0.957227, 0.947266, 0.937305,0.927344, 0.925488, 0.923633, 0.921777, 0.919922, 0.918067, 0.916211, 0.914356,0.912500, 0.907422, 0.902344, 0.897266, 0.892188, 0.887109, 0.882031, 0.876953,0.871875, 0.860513, 0.849152, 0.837790, 0.826428, 0.818370, 0.810312, 0.802254,0.794196, 0.786138, 0.778079, 0.770021, 0.761963, 0.750097, 0.738231, 0.726366,0.714500, 0.702634, 0.690768, 0.678902, 0.667036, 0.657031, 0.647025, 0.637020,0.627014, 0.617009, 0.607003, 0.596997, 0.586992, 0.580758, 0.574525, 0.568292,0.562058, 0.555825, 0.549591, 0.543358, 0.537125, 0.531591, 0.526058, 0.520525,0.514992, 0.509459, 0.503925, 0.498392, 0.492859, 0.489663, 0.486468, 0.483272,0.480077, 0.476881, 0.473685, 0.470490, 0.467294, 0.462449, 0.457604, 0.452759,0.447914, 0.443069, 0.438224, 0.433379, 0.428534, 0.427097, 0.425659, 0.424222,0.422784, 0.419936, 0.417088, 0.414240, 0.411392, 0.408544, 0.405696, 0.402848,0.400000, 0.396875, 0.393750, 0.390625, 0.387500, 0.384375, 0.381250, 0.378125,0.375000, 0.371524, 0.368048, 0.364572, 0.361096, 0.357620, 0.354144, 0.350668,0.347192, 0.347593, 0.347994, 0.348395, 0.348796, 0.349198, 0.349599, 0.350000};
 		// better
@@ -81,7 +72,7 @@ namespace RVP
 		static AnimationCurve sidewaysFrictionCurve;
 		[Tooltip("How much the tire must slip before marks are created")]
 		[NonSerialized]
-		public float slipThreshold = 0.5f;
+		public float slipThres = 0.5f;
 		//[System.NonSerialized
 		public float forwardSlip;
 		private float forwardSlipVel;
@@ -160,12 +151,11 @@ namespace RVP
 		public bool updatedSize;
 		[System.NonSerialized]
 		public bool updatedPopped;
-
-		float currentRPM;
+		private float toTargetLerp;
+		public float currentRPM;
 		[System.NonSerialized]
 		public DriveForce targetDrive;
 		///<summary> RPM based purely on velocity</summary>
-		[System.NonSerialized]
 		public float rawRPM;
 		[System.NonSerialized]
 		public WheelContact contactPoint = new ();
@@ -184,7 +174,7 @@ namespace RVP
 		public Vector3 contactVelocity; // Velocity of contact point
 		float actualEbrake;
 		float actualTargetRPM;
-		float actualTorque;
+		public float actualTorque;
 
 		[System.NonSerialized]
 		public Vector3 forceApplicationPoint; // Point at which friction forces are applied
@@ -226,6 +216,10 @@ namespace RVP
 		public ParticleSystem airGreenParticleSystem;
 		public float d_brakeForce;
 		public float d_targetForce;
+		public float rpmBiasCurveLimit = 4000;
+		public float eval;
+		float forceThreshold;
+		public float slipMult;
 
 		//AnimationCurve GenerateFrictionCurve(bool moreGrip = false)
 		//{
@@ -330,7 +324,7 @@ namespace RVP
 						sphereColTr.localPosition = Vector3.zero;
 						sphereColTr.localRotation = Quaternion.identity;
 						sphereCol.radius = .8f * tireRadius;//rimRadius;//Mathf.Min(rimWidth * 0.5f, rimRadius * 0.5f);//
-						sphereCol.sharedMaterial = RaceManager.frictionlessMatStatic;
+						sphereCol.sharedMaterial = RaceManager.I.frictionlessMat;
 					}
 
 					if (canDetach)
@@ -474,10 +468,10 @@ namespace RVP
 		void GetWheelContact()
 		{
 			float castDist = Mathf.Max(suspensionParent.suspensionDistance * Mathf.Max(0.001f, suspensionParent.targetCompression) + actualRadius, 0.001f);
-			//RaycastHit[] wheelHits = Physics.RaycastAll(transform.position, suspensionParent.springDirection, castDist, RaceManager.wheelCastMaskStatic);
-			bool validHit = Physics.Raycast(transform.position, suspensionParent.springDirection, out RaycastHit hit, castDist, RaceManager.wheelCastMaskStatic);
+			//RaycastHit[] wheelHits = Physics.RaycastAll(transform.position, suspensionParent.springDirection, castDist, RaceManager.I.wheelCastMask);
+			bool validHit = Physics.Raycast(transform.position, suspensionParent.springDirection, out RaycastHit hit, castDist, RaceManager.I.wheelCastMask);
 			//bool validHit = Physics.BoxCast(transform.position, new Vector3(.05f,.1f,.05f), suspensionParent.springDirection, out RaycastHit hit, 
-			//	 vp.tr.rotation, castDist, RaceManager.wheelCastMaskStatic);
+			//	 vp.tr.rotation, castDist, RaceManager.I.wheelCastMask);
 			//bool validHit = false;
 			//float hitDist = Mathf.Infinity;
 
@@ -653,24 +647,35 @@ namespace RVP
 			// Set final RPM
 			if (!suspensionParent.jammed && connected)
 			{
-				// original code
-				//float toTargetRpm = Mathf.Lerp(rawRPM, actualTargetRPM, Mathf.Clamp01(actualTorque / torqueThreshold));
-				//currentRPM = Mathf.Lerp(toTargetRpm, 0, Time.fixedDeltaTime * Mathf.Max(brakeForce, actualEbrake * vp.ebrakeInput));
+				/// 0 = rawRPM, full grip, wheel is sticked to the road
+				/// 1 = maxRPM, no grip, wheel is sliding
+				
+				float angularVelocity;
+				
+				slipMult = 1; 
+				if (groundedReally)
+				{
+					/// When force equals to slipThres, we accelerate much faster (slipping)
+					slipMult = Mathf.Abs(forwardSlip) > slipThres ? 100 : 1;
+					/// the faster u go, the more grip you have
+					slipMult = Mathf.Lerp(slipMult, 1, Easing.OutCubic(2*(rawRPM-.5f*rpmBiasCurveLimit) / (rpmBiasCurveLimit * Mathf.Sign(actualTargetRPM))));
+					angularVelocity = rawRPM / 60 / circumference;
+				}
+				else
+				{
+					slipMult = 1;
+					angularVelocity = currentRPM / 60 / circumference;
+				}
+				float d = actualTorque / vp.rb.mass * slipMult;
+				eval = d;
+				angularVelocity += d * Time.fixedDeltaTime;
+				float toTargetRpm = angularVelocity * 60 * circumference;
 
-				//float acc = actualTorque / vp.rb.mass;
-				//float brk = Mathf.Max(brakeForce, actualEbrake * vp.ebrakeInput) / vp.rb.mass;
-				//float delta = acc - brk;
-
-				//float angularVelocity = Mathf.Lerp(rawRPM, currentRPM, forwardFrictionCurve.Evaluate(acc / torqueThreshold)) / 60 / circumference;
-				//angularVelocity += acc * Time.fixedDeltaTime;
-				//currentRPM = angularVelocity * 60 * circumference;
-
-				float acc = actualTorque / vp.rb.mass;
-				float angularVelocity = rawRPM / 60 / circumference;
-				angularVelocity += acc * Time.fixedDeltaTime;
-				currentRPM = angularVelocity * 60 * circumference;
 				//braking
-				currentRPM = Mathf.Lerp(currentRPM, 0, Time.fixedDeltaTime * Mathf.Max(brakeForce, actualEbrake * vp.ebrakeInput));
+				float brakeacc = Mathf.Max(brakeForce, actualEbrake * vp.ebrakeInput) / vp.rb.mass;
+				float brakeRPM = brakeacc * 60 * circumference;
+				toTargetRpm = Mathf.Sign(toTargetRpm) * (Mathf.Abs(toTargetRpm) - brakeRPM * Time.fixedDeltaTime);
+				currentRPM = toTargetRpm;
 			}
 			else
 			{
@@ -686,7 +691,8 @@ namespace RVP
 				sidewaysSlip = (contactPoint.relativeVelocity.z) / sidewaysCurveStretch;
 				if (groundedReally)
 				{
-					forwardSlip = (rawRPM - currentRPM) / forwardCurveStretch;
+					
+					forwardSlip = (rawRPM - currentRPM) / forwardStretch;
 					forwardSlipVel = (contactPoint.relativeVelocity.x) / sidewaysCurveStretch;
 				}
 				else

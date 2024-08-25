@@ -4,10 +4,11 @@
   "valid": true,
   "envir": "JAP",
   "preferredCarClass": "Speed",
-  "difficulty": 11,
+  "difficulty": 12,
   "unlocked": true,
   "icons": [
     0,
+    2,
     3,
     9
   ],

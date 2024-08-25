@@ -84,8 +84,8 @@
     "tyre": {
       "forwardFriction": 10.0,
       "sideFriction": 15.0,
-      "frontFrictionStretch": 10.0,
-      "rearFrictionStretch": 10.0,
+      "forwardFrictionStretch": 10.0,
+      "sideFrictionStretch": 10.0,
       "shiftRearFriction": 14.0,
       "squeakSlipThreshold": 0.5,
       "slipDependence": 0.0,
@@ -93,7 +93,7 @@
       "offroadTread": 0.0,
       "driftRearFriction": 5.0,
       "driftRearFrictionInit": 14.0,
-      "torqueThreshold": 0.6
+      "rpmBiasCurveLimit": 0.6
     },
     "drive": {
       "driveType": 0.0,

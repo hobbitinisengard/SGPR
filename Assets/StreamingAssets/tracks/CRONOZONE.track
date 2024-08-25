@@ -7,7 +7,8 @@
   "difficulty": 5,
   "unlocked": true,
   "icons": [
-    0
+    0,
+    2
   ],
   "TrackOrigin": 0,
   "IsOriginal": true

@@ -1,4 +1,5 @@
 using RVP;
+using System.Collections;
 using UnityEngine;
 public class SGP_Bouncer : MonoBehaviour
 {
@@ -10,6 +11,8 @@ public class SGP_Bouncer : MonoBehaviour
 	const float debounceTime = .5f;
 
 	static AnimationCurve multCurve;
+	Coroutine deCo;
+
 	private void Awake()
 	{
 		rb = GetComponent<Rigidbody>();
@@ -42,12 +45,13 @@ public class SGP_Bouncer : MonoBehaviour
 		if (collision.GetContact(0).otherCollider.gameObject.layer == F.I.carCarCollisionLayer)
 			BounceCars(collision);
 	}
-	private void OnCollisionEnter(Collision collision)
+	private void OnCollisionEnter(Collision col)
 	{
-		ContactPoint contact = collision.GetContact(0);
+		
+		ContactPoint contact = col.GetContact(0);
 		if (contact.otherCollider.gameObject.layer == F.I.carCarCollisionLayer)
 		{
-			BounceCars(collision);
+			BounceCars(col);
 			return;
 		}
 		if (contact.otherCollider.gameObject.layer == F.I.ignoreWheelCastLayer)
@@ -56,47 +60,69 @@ public class SGP_Bouncer : MonoBehaviour
 			return;
 		if (contact.otherCollider.gameObject.layer != F.I.roadLayer)
 			return;
-		if (contact.otherCollider.gameObject.name.Contains("slope"))
+		if (contact.otherCollider.transform.parent.name.Contains("slope"))
 			return;
-		
+		if (deCo != null)
+			StopCoroutine(deCo);
 
 		// accelerate when landing on road 
-		Vector3 addForce = .5f * Vector3.Project(collision.relativeVelocity, collision.GetContact(0).normal);
+		Vector3 addForce = Project(col.relativeVelocity, col.GetContact(0).normal);
 		if(addForce.magnitude > 10 && Time.time - lastRampBounceTime > debounceTime)
 		{
+			Debug.Log("rampBounce");
 			lastRampBounceTime = Time.time;
 			vp.colliding = true;
-			Vector3 velRight = Vector3.Cross(-vp.rb.velocity.normalized, collision.GetContact(0).normal);
-			Vector3 direction = Vector3.Cross(velRight, collision.GetContact(0).normal);
+			Vector3 velRight = Vector3.Cross(-vp.rb.velocity.normalized, col.GetContact(0).normal);
+			Vector3 direction = Vector3.Cross(velRight, col.GetContact(0).normal);
 			//Vector3 direction = Quaternion.AngleAxis(90, velRight) * collision.GetContact(0).normal;
 
 			rb.AddForceAtPosition(direction * addForce.magnitude,//addForce.magnitude,
 				rb.worldCenterOfMass,//collision.GetContact(0).point,
 				ForceMode.VelocityChange);
-		}
-		
 
-		// Bouncing from walls
-		float upNormDot = Vector3.Dot(vp.tr.up, contact.normal);
+			vp.PlaySparks(col);
+		}
+
+
+		// Bouncing from walls (you should be able to perform this just with the code above. 
+		float upNormDot = Vector3.Dot(Vector3.up, contact.normal);
 		if (upNormDot < .18f && upNormDot > -.7f) // angle between 80d and 135d
 		{
-			if (collision.relativeVelocity.magnitude < 40)
+			if (col.relativeVelocity.magnitude < 40)
 				return;
 			if (Time.time - lastSideBounceTime < debounceTime)
 				return;
 			float mult = multCurve.Evaluate(Vector3.Dot(contact.normal, vp.tr.forward));
 			//Debug.Log("B: " + Vector3.Dot(norm, vp.tr.forward));
-			addForce = mult * collision.relativeVelocity;
+			addForce = mult * col.relativeVelocity;
 			Vector3 direction = (vp.tr.forward + contact.normal + vp.tr.up).normalized;
 			lastSideBounceTime = Time.time;
 			rb.AddForceAtPosition(direction * addForce.magnitude,
-			collision.GetContact(0).point,//vp.transform.position
+			col.GetContact(0).point,//vp.transform.position
 			ForceMode.VelocityChange);
+			vp.PlaySparks(col);
 		}
 	}
 
 	private void OnCollisionExit(Collision collision)
 	{
+		if (deCo != null)
+			StopCoroutine(deCo);
+		deCo = StartCoroutine(DebouncingColliding());
+	}
+	IEnumerator DebouncingColliding()
+	{
+		yield return new WaitForSeconds(.5f);
 		vp.colliding = false;
+	}
+	static Vector3 Project(Vector3 force, Vector3 direction)
+	{
+		// Calculate the dot product of force and direction
+		float dotProduct = Vector3.Dot(force, direction);
+
+		// Calculate the projection
+		Vector3 projection = direction * (dotProduct / direction.sqrMagnitude);
+
+		return projection;
 	}
 }

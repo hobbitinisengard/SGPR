@@ -106,7 +106,7 @@ namespace RVP
             if (groundCheckDistance > 0) {
                 RaycastHit groundHit;
 
-                if (Physics.Raycast(tr.position, (-RaceManager.worldUpDir + rb.velocity).normalized, out groundHit, groundCheckDistance, RaceManager.groundMaskStatic)) {
+                if (Physics.Raycast(tr.position, (-RaceManager.worldUpDir + rb.velocity).normalized, out groundHit, groundCheckDistance, RaceManager.I.groundMask)) {
                     if (Vector3.Dot(groundHit.normal, RaceManager.worldUpDir) >= groundSteepnessLimit) {
                         actualForwardDot = Vector3.Dot(vp.forwardDir, groundHit.normal);
                         actualRightDot = Vector3.Dot(vp.rightDir, groundHit.normal);

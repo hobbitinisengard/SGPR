@@ -42,7 +42,7 @@ namespace RVP
 		[Header("Downforce")]
 		public float downforce = 1;
 		public bool invertDownforceInReverse;
-		public bool applyDownforceInAir;
+		bool applyDownforceInAir = true;
 
 		[Tooltip("X-axis = speed, y-axis = force")]
 		public AnimationCurve downforceCurve = AnimationCurve.Linear(0, 0, 20, 1);
@@ -177,17 +177,20 @@ namespace RVP
 		{
 			if (vp.reallyGroundedWheels > 0 || applyDownforceInAir)
 			{
-				rb.AddRelativeForce(
-					 new Vector3(0, downforceCurve.Evaluate(Mathf.Abs(vp.localVelocity.z)) * -downforce * (applyDownforceInAir ? 1 : groundedFactor) * (invertDownforceInReverse ? Mathf.Sign(vp.localVelocity.z) : 1), 0),
-					 ForceMode.Acceleration);
+				//rb.AddRelativeForce(
+				//	 new Vector3(0, downforceCurve.Evaluate(Mathf.Abs(vp.localVelocity.z)) * -downforce * (applyDownforceInAir ? 1 : groundedFactor) * (invertDownforceInReverse ? Mathf.Sign(vp.localVelocity.z) : 1), 0),
+				//	 ForceMode.Acceleration);
+				float downforceCurveVal = .001f * downforce * vp.localVelocity.z * vp.localVelocity.z;
+				Vector3 force = new(0, -downforceCurveVal, 0);
+				rb.AddForceAtPosition(vp.tr.TransformVector(force), vp.tr.TransformPoint(rb.centerOfMass), ForceMode.Acceleration);
 
 				// Reverse downforce
-				if (invertDownforceInReverse && vp.localVelocity.z < 0)
-				{
-					rb.AddRelativeTorque(
-						 new Vector3(downforceCurve.Evaluate(Mathf.Abs(vp.localVelocity.z)) * downforce * (applyDownforceInAir ? 1 : groundedFactor), 0, 0),
-						 ForceMode.Acceleration);
-				}
+				//if (invertDownforceInReverse && vp.localVelocity.z < 0)
+				//{
+				//	rb.AddRelativeTorque(
+				//		 new Vector3(downforceCurve.Evaluate(Mathf.Abs(vp.localVelocity.z)) * downforce * (applyDownforceInAir ? 1 : groundedFactor), 0, 0),
+				//		 ForceMode.Acceleration);
+				//}
 			}
 		}
 
@@ -199,9 +202,9 @@ namespace RVP
 			// Check if rolled over
 			rolledOver = vp.reallyGroundedWheels == 0 && vp.colliding;
 			//if (vp.reallyGroundedWheels == 0 && vp.velMag < rollSpeedThreshold && vp.upDot < 0.8 && rollCheckDistance > 0) {
-			//    if (Physics.Raycast(tr.position, vp.upDir, out rollHit, rollCheckDistance, RaceManager.groundMaskStatic)
-			//        || Physics.Raycast(tr.position, vp.rightDir, out rollHit, rollCheckDistance, RaceManager.groundMaskStatic)
-			//        || Physics.Raycast(tr.position, -vp.rightDir, out rollHit, rollCheckDistance, RaceManager.groundMaskStatic)) {
+			//    if (Physics.Raycast(tr.position, vp.upDir, out rollHit, rollCheckDistance, RaceManager.I.groundMask)
+			//        || Physics.Raycast(tr.position, vp.rightDir, out rollHit, rollCheckDistance, RaceManager.I.groundMask)
+			//        || Physics.Raycast(tr.position, -vp.rightDir, out rollHit, rollCheckDistance, RaceManager.I.groundMask)) {
 			//        rolledOver = true;
 			//    }
 			//    else {

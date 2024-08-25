@@ -27,8 +27,8 @@ namespace RVP
 				wheels[i] = vp.wheels[i];
 				if (vp.wheels[i].GetComponent<TireMarkCreate>())
 				{
-					float newThreshold = vp.wheels[i].slipThreshold;
-					wheels[i].slipThreshold = i == 0 ? newThreshold : (wheels[i].slipThreshold + newThreshold) * 0.5f;
+					float newThreshold = vp.wheels[i].slipThres;
+					wheels[i].slipThres = i == 0 ? newThreshold : (wheels[i].slipThres + newThreshold) * 0.5f;
 				}
 			}
 		}
@@ -60,12 +60,12 @@ namespace RVP
 
 						if (surfaceType.alwaysScrape)
 						{
-							alwaysScrape = wheels[i].slipThreshold + Mathf.Min(0.5f, Mathf.Abs(wheels[i].rawRPM * 0.001f));
+							alwaysScrape = wheels[i].slipThres + Mathf.Min(0.5f, Mathf.Abs(wheels[i].rawRPM * 0.001f));
 						}
 					}
 
 					screechAmount = Mathf.Max(screechAmount, Mathf.Pow(Mathf.Clamp01(Mathf.Abs(F.MaxAbs(
-						wheels[i].sidewaysSlip, wheels[i].forwardSlip, alwaysScrape)) - wheels[i].slipThreshold), 2));
+						wheels[i].sidewaysSlip, wheels[i].forwardSlip, alwaysScrape)) - wheels[i].slipThres), 2));
 				}
 			}
 

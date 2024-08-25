@@ -1,4 +1,5 @@
 using System.IO;
+using UnityEngine;
 
 public class LoadSelector : TrackSelectorTemplate
 {
@@ -22,7 +23,8 @@ public class LoadSelector : TrackSelectorTemplate
 		int i = selectedTrack.GetSiblingIndex();
 		var tr = selectedTrack.parent;
 		DestroyImmediate(selectedTrack.gameObject);
-		selectedTrack = tr.GetChild(i-1);
+		i = Mathf.Max(0, i - 1);
+		selectedTrack = tr.GetChild(i);
 
 		StartCoroutine(Load(selectedTrack.name));
 		//containerCo = StartCoroutine(MoveToTrack());

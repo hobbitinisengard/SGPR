@@ -676,8 +676,8 @@ public class TyreSavable : PartSavable
 {
 	public float forwardFriction;
 	public float sideFriction;
-	public float frontFrictionStretch;
-	public float rearFrictionStretch;
+	public float forwardFrictionStretch;
+	public float sideFrictionStretch;
 	public float shiftRearFriction;
 	public float squeakSlipThreshold;
 	public float slipDependence;
@@ -685,7 +685,7 @@ public class TyreSavable : PartSavable
 	public float offroadTread;
 	public float driftRearFriction;
 	public float driftRearFrictionInit;
-	public float torqueThreshold;
+	public float rpmBiasCurveLimit;
 	public TyreSavable()
 	{
 	}
@@ -697,8 +697,8 @@ public class TyreSavable : PartSavable
 	{
 		forwardFriction = original.forwardFriction;
 		sideFriction = original.sideFriction;
-		frontFrictionStretch = original.frontFrictionStretch;
-		rearFrictionStretch = original.rearFrictionStretch;
+		forwardFrictionStretch = original.forwardFrictionStretch;
+		sideFrictionStretch = original.sideFrictionStretch;
 		shiftRearFriction = original.shiftRearFriction;
 		squeakSlipThreshold = original.squeakSlipThreshold;
 		slipDependence = original.slipDependence;
@@ -706,7 +706,7 @@ public class TyreSavable : PartSavable
 		offroadTread = original.offroadTread;
 		driftRearFriction = original.driftRearFriction;
 		driftRearFrictionInit = original.driftRearFrictionInit;
-		torqueThreshold = original.torqueThreshold;
+		rpmBiasCurveLimit = original.rpmBiasCurveLimit;
 	}
 	public override PartSavable Clone()
 	{
@@ -720,14 +720,14 @@ public class TyreSavable : PartSavable
 		offroadTread = vp.tyresOffroad;
 		forwardFriction = front.sidewaysFriction;
 		sideFriction = rear.sidewaysFriction;
-		frontFrictionStretch = front.sidewaysCurveStretch;
-		rearFrictionStretch = rear.sidewaysCurveStretch;
+		forwardFrictionStretch = front.sidewaysCurveStretch;
+		sideFrictionStretch = rear.sidewaysCurveStretch;
 		shiftRearFriction = vp.steeringControl.shiftRearFriction;
 		driftRearFriction = vp.steeringControl.driftRearFriction;
-		squeakSlipThreshold = rear.slipThreshold;
+		squeakSlipThreshold = rear.slipThres;
 		slipDependence = 2;
 		axleFriction = rear.axleFriction;
-		torqueThreshold = vp.wheels[2].torqueThreshold;
+		rpmBiasCurveLimit = vp.wheels[2].rpmBiasCurveLimit;
 	}
 
 	public override void Apply(VehicleParent vp)
@@ -739,13 +739,18 @@ public class TyreSavable : PartSavable
 		{
 			var w = vp.wheels[i];
 
-			w.SetInitFrictions(forwardFriction, (F.I.s_raceType == RaceType.Drift) ? driftRearFrictionInit : sideFriction, (i < 2) ? frontFrictionStretch : rearFrictionStretch);
-
-			w.slipThreshold = squeakSlipThreshold;
+			float rearFriction = (F.I.s_raceType == RaceType.Drift) ? driftRearFrictionInit : sideFriction;
+			w.initForwardFriction = forwardFriction;
+			w.forwardFriction = w.initForwardFriction;
+			w.initSidewaysFriction = (vp.followAI.IsCPU ? 2 : 1) * sideFriction;
+			w.sidewaysFriction = (vp.followAI.IsCPU ? 2 : 1) * sideFriction;
+			w.forwardStretch = forwardFrictionStretch;
+			w.sidewaysCurveStretch = sideFrictionStretch;
+			w.slipThres = squeakSlipThreshold;
 			w.slipDependence = (F.I.s_raceType == RaceType.Drift) ? 
 				Wheel.SlipDependenceMode.independent : Wheel.SlipDependenceMode.sideways;
 			w.axleFriction = axleFriction;
-			w.torqueThreshold = torqueThreshold;
+			w.rpmBiasCurveLimit = rpmBiasCurveLimit;
 			// update materials
 			//var mr = w.transform.GetChild(0).GetComponent<MeshRenderer>();
 			//// [..^1] = from beginning to last - 1. |         tier+1 cause tyres are named from 1

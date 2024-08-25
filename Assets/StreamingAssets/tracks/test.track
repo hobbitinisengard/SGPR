@@ -1,0 +1,15 @@
+{
+  "author": "Team17",
+  "desc": "This unreleased test track contains unique trackpieces",
+  "valid": false,
+  "envir": "JAP",
+  "preferredCarClass": "Speed",
+  "difficulty": 0,
+  "unlocked": true,
+  "icons": [
+    5,
+    6
+  ],
+  "TrackOrigin": 0,
+  "IsOriginal": true
+}

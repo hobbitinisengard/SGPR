@@ -104,7 +104,7 @@ namespace RVP
 			float initMaxTorque = maxTorque;
 			while(timer > 0)
 			{
-				maxTorque = Mathf.Lerp(initMaxTorque, vp.wheels[0].torqueThreshold, timer / 2f);
+				maxTorque = Mathf.Lerp(initMaxTorque, vp.wheels[0].tyreMaxAcc, timer / 2f);
 				timer -= Time.fixedDeltaTime;
 				yield return null;
 			}
@@ -191,7 +191,7 @@ namespace RVP
 				if (vp.reallyGroundedWheels == 4)
 					vp.rb.AddForce(Time.fixedDeltaTime * boostEval * vp.rb.velocity.normalized);
 
-				targetDrive.torque = actualInput * torqueCurve.Evaluate(currentkRPM); // TORQUE
+				targetDrive.torque = actualInput * maxTorque * torqueCurve.Evaluate(currentkRPM); // TORQUE
 				targetDrive.torque = Mathf.Clamp(targetDrive.torque,float.MinValue,float.MaxValue);
 				d_torqueCurve = targetDrive.torque;
 

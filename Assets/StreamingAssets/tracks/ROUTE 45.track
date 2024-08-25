@@ -4,10 +4,11 @@
   "valid": true,
   "envir": "USA",
   "preferredCarClass": "Speed",
-  "difficulty": 2,
+  "difficulty": 6,
   "unlocked": true,
   "icons": [
     0,
+    2,
     3
   ],
   "TrackOrigin": 1,

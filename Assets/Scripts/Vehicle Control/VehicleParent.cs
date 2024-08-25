@@ -89,6 +89,7 @@ namespace RVP
 	// Vehicle root class
 	public class VehicleParent : NetworkBehaviour
 	{
+		public VehicleAssist va { get; private set; }
 		public Renderer antennaFlag;
 		public MeshRenderer[] springRenderers;
 		public AudioSource honkerAudio;
@@ -496,7 +497,7 @@ namespace RVP
 			Keyframe[] keys = new Keyframe[digitalBrakeInputEnv.Length];
 			for (int i = 0; i < keys.Length; i++)
 			{
-				keys[i].time = (float)i / keys.Length;
+				keys[i].time = .5f * (float)i / keys.Length;
 				keys[i].value = (float)digitalBrakeInputEnv[i];
 			}
 			return new AnimationCurve(keys);
@@ -506,6 +507,7 @@ namespace RVP
 			ghost = GetComponent<Ghost>();
 			followAI = GetComponent<FollowAI>();
 			raceBox = GetComponent<RaceBox>();
+			va = GetComponent<VehicleAssist>();
 			tr = transform;
 			rb = GetComponent<Rigidbody>();
 			originalDrag = rb.drag;
@@ -906,6 +908,12 @@ namespace RVP
 			}
 		}
 		
+		public void PlaySparks(Collision c)
+		{
+			sparks.transform.position = c.GetContact(0).point;
+			sparks.transform.rotation = Quaternion.LookRotation(c.relativeVelocity.normalized, c.GetContact(0).normal);
+			sparks.Play();
+		}
 		// Check for crashes and play collision sounds
 		void OnCollisionEnter(Collision col)
 		{
@@ -929,10 +937,7 @@ namespace RVP
 
 						if (sparks && playCrashSparks)
 						{
-							// play sparks
-							sparks.transform.position = curCol.point;
-							sparks.transform.rotation = Quaternion.LookRotation(col.relativeVelocity.normalized, curCol.normal);
-							sparks.Play();
+							PlaySparks(col);
 						}
 					}
 				}

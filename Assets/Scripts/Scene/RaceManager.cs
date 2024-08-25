@@ -22,7 +22,6 @@ namespace RVP
 		public PathCreator universalPath;
 		[Tooltip("Mask for what the wheels collide with")]
 		public LayerMask wheelCastMask;
-		public static LayerMask wheelCastMaskStatic;
 
 		//[Tooltip("Mask for what the wheels get surface info from")]
 		//public LayerMask surfaceWheelCastMask;
@@ -31,35 +30,28 @@ namespace RVP
 
 		[Tooltip("Mask for objects which vehicles check against if they are rolled over")]
 		public LayerMask groundMask;
-		public static LayerMask groundMaskStatic;
 
 		[Tooltip("Mask for objects that cause damage to vehicles")]
 		public LayerMask damageMask;
-		public static LayerMask damageMaskStatic;
 
 		public static int ignoreWheelCastLayer;
 
 		[Tooltip("Frictionless physic material")]
 		public PhysicMaterial frictionlessMat;
-		public static PhysicMaterial frictionlessMatStatic;
 
 		public static Vector3 worldUpDir; // Global up direction, opposite of normalized gravity direction
 
 		[Tooltip("Maximum segments per tire mark")]
 		public int tireMarkLength;
-		public static int tireMarkLengthStatic;
 
 		[Tooltip("Gap between tire mark segments")]
 		public float tireMarkGap;
-		public static float tireMarkGapStatic;
 
 		[Tooltip("Tire mark height above ground")]
 		public float tireMarkHeight;
-		public static float tireMarkHeightStatic;
 
 		[Tooltip("Lifetime of tire marks")]
 		public float tireFadeTime;
-		public static float tireFadeTimeStatic;
 
 		public PartOfDay pod = PartOfDay.Day;
 		public NetworkManager networkManager;
@@ -254,16 +246,7 @@ namespace RVP
 		{
 			I = this;
 			worldUpDir = Physics.gravity.sqrMagnitude == 0 ? Vector3.up : -Physics.gravity.normalized;
-			wheelCastMaskStatic = wheelCastMask;
-			//surfaceWheelCastMaskStatic = surfaceWheelCastMask;
-			groundMaskStatic = groundMask;
-			damageMaskStatic = damageMask;
 			ignoreWheelCastLayer = LayerMask.NameToLayer("Ignore Wheel Cast");
-			frictionlessMatStatic = frictionlessMat;
-			tireMarkLengthStatic = Mathf.Max(tireMarkLength, 2);
-			tireMarkGapStatic = tireMarkGap;
-			tireMarkHeightStatic = tireMarkHeight;
-			tireFadeTimeStatic = tireFadeTime;
 
 			musicPlayer = GetComponent<AudioSource>();
 		}

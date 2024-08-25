@@ -31,7 +31,7 @@
       "maxDriftAngle": 70.0,
       "autoSteerDrift": 0.0,
       "driftPush": 0.0,
-      "downforce": 2.0,
+      "downforce": 0.001,
       "frontBrakeForce": 1.0,
       "rearBrakeForce": 1.0
     },
@@ -61,7 +61,7 @@
       "audioType": 4.0,
       "inertia": 50.0,
       "inertiaAcc": 10.0,
-      "torque": 0.1,
+      "torque": 1.0,
       "torqueCurveType": 3.0,
       "redlineKRPM": 10.3,
       "cutoffKRPM": 10.4
@@ -82,18 +82,18 @@
       "batteryConsumption": 8.0
     },
     "tyre": {
-      "forwardFriction": 9.0,
+      "forwardFriction": 10.0,
       "sideFriction": 25.0,
-      "frontFrictionStretch": 10.0,
-      "rearFrictionStretch": 10.0,
-      "shiftRearFriction": 23.0,
-      "squeakSlipThreshold": 0.25,
+      "forwardFrictionStretch": 10.0,
+      "sideFrictionStretch": 10.0,
+      "shiftRearFriction": 20.0,
+      "squeakSlipThreshold": 0.5,
       "slipDependence": 0.0,
       "axleFriction": 0.0,
       "offroadTread": 1.0,
       "driftRearFriction": 8.0,
       "driftRearFrictionInit": 21.0,
-      "torqueThreshold": 0.2
+      "rpmBiasCurveLimit": 1000.0
     },
     "drive": {
       "driveType": 0.0,

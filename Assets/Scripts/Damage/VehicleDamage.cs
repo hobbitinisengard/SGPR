@@ -120,7 +120,7 @@ namespace RVP
                 hitTime = collisionTimeGap;
 
                 foreach (ContactPoint curCol in col.contacts) {
-                    if (tr.InverseTransformPoint(curCol.point).y > collisionIgnoreHeight && RaceManager.damageMaskStatic == (RaceManager.damageMaskStatic | (1 << curCol.otherCollider.gameObject.layer))) {
+                    if (tr.InverseTransformPoint(curCol.point).y > collisionIgnoreHeight && RaceManager.I.damageMask == (RaceManager.I.damageMask | (1 << curCol.otherCollider.gameObject.layer))) {
                         colsChecked++;
 
                         // Play crash sound
