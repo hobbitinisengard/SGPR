@@ -394,7 +394,8 @@ public static class F
 	}
 	public static void Deselect()
 	{
-		F.I.eventSystem.SetSelectedGameObject(null);
+		if(!I.eventSystem.alreadySelecting)
+			F.I.eventSystem.SetSelectedGameObject(null);
 	}
 #if UNITY_EDITOR
 	// Returns whether the given object is part of a prefab (meant to be used with selected objects in the inspector)

@@ -1,0 +1,16 @@
+{
+  "author": "Arkhnen & Viatrufka",
+  "desc": "Fast chicanes and tunnel transitions are the highlights of this speedy racetrack!",
+  "valid": true,
+  "envir": "GER",
+  "preferredCarClass": "Team",
+  "difficulty": 8,
+  "unlocked": true,
+  "icons": [
+    1,
+    2,
+    3
+  ],
+  "TrackOrigin": 1,
+  "IsOriginal": false
+}

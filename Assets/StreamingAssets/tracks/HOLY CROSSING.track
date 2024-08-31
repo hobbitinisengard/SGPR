@@ -1,0 +1,15 @@
+{
+  "author": "Arkhnen & Viatrufka",
+  "desc": "One of the dangers of this two-level track is a double crossing. ",
+  "valid": true,
+  "envir": "JAP",
+  "preferredCarClass": "Speed",
+  "difficulty": 6,
+  "unlocked": true,
+  "icons": [
+    0,
+    2
+  ],
+  "TrackOrigin": 1,
+  "IsOriginal": false
+}

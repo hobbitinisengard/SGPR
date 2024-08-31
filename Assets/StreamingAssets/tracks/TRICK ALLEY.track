@@ -1,0 +1,15 @@
+{
+  "author": "Arkhnen & Viatrufka",
+  "desc": "This packed track is full of ramps and deceitful turns - tight enough to lose control.",
+  "valid": true,
+  "envir": "ENG",
+  "preferredCarClass": "Team",
+  "difficulty": 8,
+  "unlocked": true,
+  "icons": [
+    2,
+    3
+  ],
+  "TrackOrigin": 1,
+  "IsOriginal": false
+}

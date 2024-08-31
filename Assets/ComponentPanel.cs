@@ -964,7 +964,7 @@ public class ChassisSavable : PartSavable
 		var com = vp.rb.centerOfMass;
 		longtitunalCOM = com.z;
 		verticalCOM = com.y;
-		angularDrag = vp.AngularDrag;
+		angularDrag = vp.initAngularDrag;
 		vp.raceBox.evoModule.GetStuntCoeffs(ref evoSmoothTime, ref staticEvoMaxSpeed, ref evoAcceleration);
 		dragsterEffect = -vp.GetComponent<SGP_DragsterEffect>().COM_Movement;
 	}

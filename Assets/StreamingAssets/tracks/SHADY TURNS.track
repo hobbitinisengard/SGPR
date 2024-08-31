@@ -1,0 +1,15 @@
+{
+  "author": "Arkhnen & Viatrufka",
+  "desc": "Keep your eyes on the road as the multitude of turns can make you dizzy!",
+  "valid": true,
+  "envir": "GER",
+  "preferredCarClass": "Speed",
+  "difficulty": 8,
+  "unlocked": true,
+  "icons": [
+    2,
+    3
+  ],
+  "TrackOrigin": 1,
+  "IsOriginal": false
+}

@@ -71,7 +71,9 @@ public class Tile : MonoBehaviour
 			}
 		}
 		mc.enabled = true;
-		if(F.I.s_roadType == PavementType.Random)
+		mc.hasModifiableContacts = true;
+
+		if (F.I.s_roadType == PavementType.Random)
 		{
 			Debug.LogError("PavementType is random");
 		}

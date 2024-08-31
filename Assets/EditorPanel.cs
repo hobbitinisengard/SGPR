@@ -12,7 +12,6 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using SimpleFileBrowser;
-using Unity.Mathematics;
 
 public class ReplayCam
 {
@@ -1773,13 +1772,13 @@ public class EditorPanel : MonoBehaviour
 		Debug.Log("Getting flat (null) hmap ");
 		return null;
 	}
-	public void SetHeightsmap(float[,] hmap)
+	public void SetHeightsmap(ref float[,] hmap)
 	{
 		if (terrain != null)
 		{
 			if (hmap == null)
 			{
-				Debug.Log("Setting flat (null) hmap");
+				//Debug.Log("Setting flat (null) hmap");
 				var resXY = terrain.terrainData.heightmapResolution;
 				hmap = new float[resXY, resXY];
 
@@ -1858,7 +1857,8 @@ public class EditorPanel : MonoBehaviour
 		if (!File.Exists(path))
 		{
 			Debug.LogWarning("No data file found, path:" + path);
-			SetHeightsmap(null);
+			float[,] heights = null;
+			SetHeightsmap(ref heights);
 			loadingTrack = false;
 			yield break;
 		}
@@ -1934,7 +1934,7 @@ public class EditorPanel : MonoBehaviour
 		WindRanX.value = windRandom.x / maxWind;
 		WindRanZ.value = windRandom.z / maxWind;
 		ApplyWindToCloths();
-		SetHeightsmap(TRACK.heights);
+		SetHeightsmap(ref TRACK.heights);
 		SwitchToConnect();
 	}
 	public void OpenLoadTrackFileBrowser()

@@ -1,0 +1,15 @@
+{
+  "author": "Arkhnen & Viatrufka",
+  "desc": "Try to stay off the barriers on this short fast track sponsored by TITAN",
+  "valid": true,
+  "envir": "SPN",
+  "preferredCarClass": "Team",
+  "difficulty": 9,
+  "unlocked": true,
+  "icons": [
+    2,
+    3
+  ],
+  "TrackOrigin": 1,
+  "IsOriginal": false
+}

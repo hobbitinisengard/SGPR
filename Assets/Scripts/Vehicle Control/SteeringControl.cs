@@ -38,7 +38,7 @@ namespace RVP
 		//internal float driftRearFrictionInit;
 		[Range(0, 1)]
 		public float absSteerInput;
-
+		public float collisionWheelMult;
 		void GenerateGammaCurve()
 		{
 			if (analogInputCurve == null || gamma != F.I.playerData.steerGamma)
@@ -80,6 +80,7 @@ namespace RVP
 		}
 		void FixedUpdate()
 		{
+			collisionWheelMult = Mathf.Clamp01(collisionWheelMult + Time.fixedDeltaTime);
 			absSteerInput = Mathf.Abs(vp.steerInput);
 			if (vp.followAI.selfDriving)
 			{
@@ -147,7 +148,9 @@ namespace RVP
 			{
 				if (!vp.followAI.selfDriving)
 				{
-					vp.wheels[2].sidewaysFriction = Mathf.Lerp(vp.wheels[2].initSidewaysFriction, shiftRearFriction, holdCurveValue);
+					vp.wheels[0].sidewaysFriction = collisionWheelMult * Mathf.Lerp(vp.wheels[2].initSidewaysFriction, shiftRearFriction, 4 * (holdDuration-.75f));
+					vp.wheels[1].sidewaysFriction = vp.wheels[0].sidewaysFriction;
+					vp.wheels[2].sidewaysFriction = collisionWheelMult * Mathf.Lerp(vp.wheels[2].initSidewaysFriction, shiftRearFriction, holdDuration);
 					vp.wheels[3].sidewaysFriction = vp.wheels[2].sidewaysFriction;
 				}
 

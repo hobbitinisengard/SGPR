@@ -1,0 +1,16 @@
+{
+  "author": "Arkhnen",
+  "desc": "Exceptionally long track with huge elevation changes. Lots of places for stunting. You won't be bored here.",
+  "valid": true,
+  "envir": "SPN",
+  "preferredCarClass": "Aero",
+  "difficulty": 9,
+  "unlocked": true,
+  "icons": [
+    0,
+    2,
+    3
+  ],
+  "TrackOrigin": 1,
+  "IsOriginal": false
+}

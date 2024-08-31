@@ -1,0 +1,16 @@
+{
+  "author": "Arkhnen & Viatrufka",
+  "desc": "Long straights, ramps, tubes, bridges - everything is here and waiting for some rubber-burning!",
+  "valid": true,
+  "envir": "ENG",
+  "preferredCarClass": "Aero",
+  "difficulty": 7,
+  "unlocked": true,
+  "icons": [
+    0,
+    2,
+    3
+  ],
+  "TrackOrigin": 1,
+  "IsOriginal": false
+}

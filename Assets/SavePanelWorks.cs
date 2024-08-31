@@ -20,4 +20,8 @@ public class SavePanelWorks : MonoBehaviour
 	{
 		editorPanel.flyCamera.enabled = enabled;
 	}
+	public void Deselect()
+	{
+		F.Deselect();
+	}
 }

@@ -3,8 +3,6 @@ using System.Collections;
 using System;
 using Unity.Netcode;
 using Unity.Collections;
-using System.Linq;
-using UnityEngine.InputSystem.HID;
 
 namespace RVP
 {
@@ -89,6 +87,7 @@ namespace RVP
 	// Vehicle root class
 	public class VehicleParent : NetworkBehaviour
 	{
+		//public Transform roadColParent;
 		public VehicleAssist va { get; private set; }
 		public Renderer antennaFlag;
 		public MeshRenderer[] springRenderers;
@@ -369,10 +368,10 @@ namespace RVP
 		private float timeWhenInAir;
 
 		public CatchupStatus catchupStatus { get; private set; }
-		public float AngularDrag { get { return rb.angularDrag; } }
 
 		bool collisionDetectionChangerActive;
 		private float lastCrashingTime;
+		public float initAngularDrag;
 
 		public void SetBattery(float capacity, float chargingSpeed, float lowBatPercent, float evoBountyPercent)
 		{
@@ -512,6 +511,10 @@ namespace RVP
 			rb = GetComponent<Rigidbody>();
 			originalDrag = rb.drag;
 			originalMass = rb.mass;
+
+			//for (int i = 0; i < roadColParent.childCount; i++)
+			//	roadColParent.GetChild(i).GetComponent<CapsuleCollider>().hasModifiableContacts = true;
+
 			F.I.s_cars.Add(this);
 		}
 		public override void OnNetworkSpawn()
@@ -603,7 +606,9 @@ namespace RVP
 		}
 		void Update()
 		{
-			if (Physics.OverlapBox(tr.position, Vector3.one, Quaternion.identity, 1 << F.I.aeroTunnel).Length > 1)
+			if (reallyGroundedWheels == 0 && !colliding && !crashing)
+				rb.drag = 0;
+			else if (Physics.OverlapBox(tr.position, Vector3.one, Quaternion.identity, 1 << F.I.aeroTunnel).Length > 1)
 			{ // aerodynamic tunnel
 				rb.drag = 0.8f * originalDrag;
 			}
@@ -914,6 +919,10 @@ namespace RVP
 			sparks.transform.rotation = Quaternion.LookRotation(c.relativeVelocity.normalized, c.GetContact(0).normal);
 			sparks.Play();
 		}
+		public void StopSparks()
+		{
+			sparks.Stop();
+		}
 		// Check for crashes and play collision sounds
 		void OnCollisionEnter(Collision col)
 		{
@@ -935,10 +944,10 @@ namespace RVP
 								lastCrashingTime = Time.time;
 						}
 
-						if (sparks && playCrashSparks)
-						{
-							PlaySparks(col);
-						}
+						//if (sparks && playCrashSparks)
+						//{
+						//	PlaySparks(col);
+						//}
 					}
 				}
 			}
@@ -1072,6 +1081,7 @@ namespace RVP
 			originalDrag = drag;
 			rb.drag = drag;
 			rb.angularDrag = angularDrag;
+			initAngularDrag = angularDrag;
 		}
 	}
 

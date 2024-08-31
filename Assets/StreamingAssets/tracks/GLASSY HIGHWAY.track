@@ -1,0 +1,15 @@
+{
+  "author": "Arkhnen & Viatrufka",
+  "desc": "The highlight of this demanding track are slippy glassy surfaces.",
+  "valid": true,
+  "envir": "JAP",
+  "preferredCarClass": "Speed",
+  "difficulty": 9,
+  "unlocked": true,
+  "icons": [
+    2,
+    3
+  ],
+  "TrackOrigin": 1,
+  "IsOriginal": false
+}

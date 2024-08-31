@@ -1,0 +1,14 @@
+{
+  "author": "Arkhnen & Viatrufka",
+  "desc": "Do you like jumping like a kangaroo? Better pick up your momentum!",
+  "valid": true,
+  "envir": "SPN",
+  "preferredCarClass": "Speed",
+  "difficulty": 6,
+  "unlocked": true,
+  "icons": [
+    2
+  ],
+  "TrackOrigin": 1,
+  "IsOriginal": false
+}

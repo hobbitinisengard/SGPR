@@ -182,7 +182,7 @@ namespace RVP
 				//	 ForceMode.Acceleration);
 				float downforceCurveVal = .001f * downforce * vp.localVelocity.z * vp.localVelocity.z;
 				Vector3 force = new(0, -downforceCurveVal, 0);
-				rb.AddForceAtPosition(vp.tr.TransformVector(force), vp.tr.TransformPoint(rb.centerOfMass), ForceMode.Acceleration);
+				rb.AddForceAtPosition(vp.tr.TransformVector(force), rb.worldCenterOfMass, ForceMode.Acceleration);
 
 				// Reverse downforce
 				//if (invertDownforceInReverse && vp.localVelocity.z < 0)

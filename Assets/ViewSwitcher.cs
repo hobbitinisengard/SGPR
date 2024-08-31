@@ -38,14 +38,18 @@ public class ViewSwitcher : MonoBehaviour
 		float delta = Mathf.Max(0.01f, Time.unscaledDeltaTime);
 		while (timer < duration)
 		{
+			timer += delta;
 			if (timer >= 0.5f * duration && viewA.activeSelf)
 			{
 				method?.Invoke();
 				viewA.SetActive(false);
 				viewB.SetActive(true);
+				SetBlacknessColor(1);
 			}
-			timer += delta;
-			SetBlacknessColor(dimCurve.Evaluate(timer));
+			else
+			{
+				SetBlacknessColor(dimCurve.Evaluate(timer));
+			}
 			blackness.gameObject.SetActive(true);
 			yield return null;
 		}

@@ -42,13 +42,7 @@ namespace RVP
 
 		[Header("Friction")]
 		float frictionSmoothness = 0.5f;
-		/// <summary>
-		/// To set basic frictions use SetInitFrictions()
-		/// </summary>
 		public float forwardFriction = 1;
-		/// <summary>
-		/// To set basic frictions use SetInitFrictions()
-		/// </summary>
 		public float sidewaysFriction = 1;
 		[NonSerialized]
 		public float initForwardFriction;

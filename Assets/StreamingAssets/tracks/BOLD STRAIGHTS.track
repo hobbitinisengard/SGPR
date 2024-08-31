@@ -1,0 +1,15 @@
+{
+  "author": "Arkhnen & Viatrufka",
+  "desc": "This track will make you go to the limit, even outside the warehouse. Friendly reminder: RC cars don't like water! ",
+  "valid": true,
+  "envir": "FRA",
+  "preferredCarClass": "Speed",
+  "difficulty": 6,
+  "unlocked": true,
+  "icons": [
+    2,
+    3
+  ],
+  "TrackOrigin": 1,
+  "IsOriginal": false
+}

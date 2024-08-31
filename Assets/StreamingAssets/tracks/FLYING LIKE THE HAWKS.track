@@ -1,0 +1,16 @@
+{
+  "author": "Arkhnen & Viatrufka",
+  "desc": "To fly high as a kite, land on skyscrapers and then nosedive back to the ground. Turns out RC cars do that as well!",
+  "valid": true,
+  "envir": "USA",
+  "preferredCarClass": "Speed",
+  "difficulty": 7,
+  "unlocked": true,
+  "icons": [
+    0,
+    2,
+    3
+  ],
+  "TrackOrigin": 1,
+  "IsOriginal": false
+}
