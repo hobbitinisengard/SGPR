@@ -6,9 +6,6 @@ public class SGP_Bouncer : MonoBehaviour
 	public Transform roadColliderParent;
 	Rigidbody rb;
 	VehicleParent vp;
-	float lastCarCarBounceTime;
-	float lastRampBounceTime;
-	float lastSideBounceTime;
 	const float debounceTime = .1f;
 
 	//static AnimationCurve multCurve;
@@ -101,6 +98,7 @@ public class SGP_Bouncer : MonoBehaviour
 	//}
 	private void OnCollisionExit(Collision collision)
 	{
+		//rb.angularDrag = vp.initAngularDrag;
 		if (deCo != null)
 			StopCoroutine(deCo);
 		deCo = StartCoroutine(DebouncingColliding());
@@ -127,23 +125,21 @@ public class SGP_Bouncer : MonoBehaviour
 		var otherRb = col.rigidbody;
 		if(otherRb == null || vp.velMag < otherRb.velocity.magnitude)
 		{
-			//if(col.relativeVelocity.magnitude > 5 /*&& Time.time - lastSideBounceTime > debounceTime*/)
+			for (int i = 0; i < col.contactCount; ++i)
 			{
-				//lastSideBounceTime = Time.time;
-				for (int i = 0; i < col.contactCount; ++i)
-				{
-					Vector3 velRight = Vector3.Cross(-vp.rb.velocity.normalized, Vector3.up/*contact.normal*/);
-					Vector3 dir = Vector3.Cross(velRight, Vector3.up/*contact.normal*/);
-					//Vector3 dir = col.GetContact(i).impulse;
-					//dir.Set(dir.x, 0, dir.z);
-					float magn = col.GetContact(i).impulse.magnitude;
-					//dir = dir.normalized;
-					rb.AddForceAtPosition(dir * magn, col.GetContact(i).point, ForceMode.VelocityChange);
-				}
-				vp.steeringControl.collisionWheelMult = 0.5f;
+				var c = col.GetContact(i);
+				//Debug.DrawRay(c.point, c.normal, Color.red, 3);
+				Vector3 impulse = c.impulse;
+				impulse.y = 0;
+				//Vector3 velRight = Vector3.Cross(-vp.rb.velocity.normalized, Vector3.up/*contact.normal*/);
+				//Vector3 Up = Vector3.Cross(velRight, Vector3.up/*contact.normal*/);
+				float mult = 1;// - Mathf.Abs(Vector3.Dot(Vector3.up, impulse.normalized));
+				var dir = c.impulse.normalized;
+				rb.AddForceAtPosition(c.impulse.magnitude * mult * dir, c.point, ForceMode.VelocityChange);
+				//rb.angularDrag = 1 - mult;
 			}
+			vp.steeringControl.collisionWheelMult = 0.5f;
 		}
-
 
 		//if (contact.otherCollider.gameObject.layer == F.I.carCarCollisionLayer)
 		//{
