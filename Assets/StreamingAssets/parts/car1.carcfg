@@ -86,7 +86,7 @@
       "sideFriction": 14.0,
       "forwardFrictionStretch": 10.0,
       "sideFrictionStretch": 10.0,
-      "shiftRearFriction": 7.0,
+      "shiftRearFriction": 5.0,
       "squeakSlipThreshold": 0.5,
       "slipDependence": 0.0,
       "axleFriction": 0.0,

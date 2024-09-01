@@ -214,7 +214,7 @@ namespace RVP
 		public float eval;
 		float forceThreshold;
 		public float slipMult;
-
+		bool isFront;
 		//AnimationCurve GenerateFrictionCurve(bool moreGrip = false)
 		//{
 		//    Keyframe[] keys = new Keyframe[SGPFrictionData.Length];
@@ -237,6 +237,7 @@ namespace RVP
 		}
 		void Start()
 		{
+			isFront = name[5] == 'F';
 			tr = transform;
 			rb = tr.GetTopmostParentComponent<Rigidbody>();
 			vp = tr.GetTopmostParentComponent<VehicleParent>();
@@ -463,7 +464,19 @@ namespace RVP
 		{
 			float castDist = Mathf.Max(suspensionParent.suspensionDistance * Mathf.Max(0.001f, suspensionParent.targetCompression) + actualRadius, 0.001f);
 			//RaycastHit[] wheelHits = Physics.RaycastAll(transform.position, suspensionParent.springDirection, castDist, RaceManager.I.wheelCastMask);
-			bool validHit = Physics.Raycast(transform.position, suspensionParent.springDirection, out RaycastHit hit, castDist, RaceManager.I.wheelCastMask);
+			RaycastHit hit;
+			bool validHit = false;
+			//if(isFront)
+			//{
+			//	validHit = Physics.Raycast(transform.position, tr.right * suspensionParent.flippedSideFactor, out hit, castDist, RaceManager.I.wheelCastMask);
+			//	if (!validHit)
+			//		validHit = Physics.Raycast(transform.position, suspensionParent.springDirection, out hit, castDist, RaceManager.I.wheelCastMask);
+			//}
+			//else
+			{
+				validHit = Physics.Raycast(transform.position, suspensionParent.springDirection, out hit, castDist, RaceManager.I.wheelCastMask);
+			}
+
 			//bool validHit = Physics.BoxCast(transform.position, new Vector3(.05f,.1f,.05f), suspensionParent.springDirection, out RaycastHit hit, 
 			//	 vp.tr.rotation, castDist, RaceManager.I.wheelCastMask);
 			//bool validHit = false;
