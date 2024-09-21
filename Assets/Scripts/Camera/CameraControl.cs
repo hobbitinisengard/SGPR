@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Linq;
+﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -17,7 +15,7 @@ namespace RVP
 		public InputActionReference moveRef;
 		public InputActionReference changeCamRef;
 
-		readonly Vector2[] camerasLH = new Vector2[] { new(8.5f, 3), new(4.5f, 2.3f), new(11, 3) };
+		readonly Vector2[] camerasLH = new Vector2[] { new(11, 4.5f), new(8.5f, 3), new(4.5f, 2.3f)};
 		int curCameraLH = 0;
 		public enum Mode { Follow, Replay };
 		Mode _mode;

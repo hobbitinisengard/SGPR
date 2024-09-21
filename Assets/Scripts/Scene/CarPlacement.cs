@@ -18,7 +18,7 @@ public class CarPlacement
 	public static CarPlacement CPU(int pos, in List<int> preferredCars)
 	{
 		return new CarPlacement() {
-			carName = "car01",//"car" + preferredCars.GetRandom().ToString("D2"),
+			carName = "car" + preferredCars.GetRandom().ToString("D2"),
 			position = pos,
 			name = "CP" + (pos + 1).ToString(),
 			sponsor = F.RandomLivery(),

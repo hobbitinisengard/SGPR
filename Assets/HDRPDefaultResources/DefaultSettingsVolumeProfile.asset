@@ -286,7 +286,7 @@ MonoBehaviour:
   active: 1
   postExposure:
     m_OverrideState: 1
-    m_Value: 0
+    m_Value: 1
   contrast:
     m_OverrideState: 1
     m_Value: 0
@@ -1419,7 +1419,7 @@ MonoBehaviour:
     m_Value: 0
   anamorphic:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 0
   m_Resolution:
     m_OverrideState: 1
     m_Value: 4
@@ -1481,7 +1481,7 @@ MonoBehaviour:
     m_Value: {x: 1, y: 1, z: 1, w: 0}
   gain:
     m_OverrideState: 1
-    m_Value: {x: 1, y: 1, z: 1, w: 0}
+    m_Value: {x: 1, y: 0.99, z: 0.99, w: 0}
 --- !u!114 &3974157655499735071
 MonoBehaviour:
   m_ObjectHideFlags: 3

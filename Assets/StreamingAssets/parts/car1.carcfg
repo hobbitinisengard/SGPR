@@ -71,7 +71,7 @@
       "longtitunalCOM": 0.0,
       "verticalCOM": 0.4,
       "drag": 0.3,
-      "angularDrag": 0.9,
+      "angularDrag": 1.0,
       "evoSmoothTime": 0.07,
       "staticEvoMaxSpeed": 900.0,
       "evoAcceleration": 15.0,
@@ -83,7 +83,7 @@
     },
     "tyre": {
       "forwardFriction": 10.0,
-      "sideFriction": 14.0,
+      "sideFriction": 13.0,
       "forwardFrictionStretch": 10.0,
       "sideFrictionStretch": 10.0,
       "shiftRearFriction": 5.0,

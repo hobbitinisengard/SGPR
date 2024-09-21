@@ -61,7 +61,7 @@
       "audioType": 2.0,
       "inertia": 100.0,
       "inertiaAcc": 10.0,
-      "torque": 0.03,
+      "torque": 1.0,
       "torqueCurveType": 3.0,
       "redlineKRPM": 10.499,
       "cutoffKRPM": 10.5
@@ -71,11 +71,11 @@
       "longtitunalCOM": 0.0,
       "verticalCOM": 0.4,
       "drag": 0.28,
-      "angularDrag": 0.9,
+      "angularDrag": 1.0,
       "evoSmoothTime": 0.07,
       "staticEvoMaxSpeed": 1200.0,
       "evoAcceleration": 30.0,
-      "dragsterEffect": 1.2
+      "dragsterEffect": 0.9
     },
     "boost": {
       "maxBoost": 1.0,

@@ -227,15 +227,24 @@ public class Info : MonoBehaviour
 
 	public readonly Vector3[] invisibleLevelDimensions = new Vector3[]{
 		new (564, 1231,1), //ger
-		new (800, 800,1), //jap
+		new (800, 800,1),  //jap
 		new (1462, 2480,1),//spn
 		new (2170, 1560,1),//fra
-		new (1170, 817,1),//eng
-		new (739, 1060,1),//usa
+		new (1170, 817,1), //eng
+		new (739, 1060,1), //usa
 		new (1406, 1337,1),// ita
 		new (564, 1231,1), //mex
 	};
-	public readonly int[] skys = new int[] { 8, 2, 5, 1, 4, 3, 7, 8 };
+	public readonly int[] skys = new int[] { 
+		8, //ger
+		2, //jap
+		5, //spn
+		1, //fra
+		4, //eng
+		3, //usa
+		7, // ita
+		8  //mex
+	};
 
 	public int Environments = 8;
 	public int Liveries = 7;

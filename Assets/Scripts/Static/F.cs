@@ -397,6 +397,10 @@ public static class F
 		if(!I.eventSystem.alreadySelecting)
 			F.I.eventSystem.SetSelectedGameObject(null);
 	}
+	public static float FlatDistance(Vector3 a, Vector3 b)
+	{
+		return Mathf.Sqrt((a.x - b.x) * (a.x - b.x) + (a.z - b.z) * (a.z - b.z));
+	}
 #if UNITY_EDITOR
 	// Returns whether the given object is part of a prefab (meant to be used with selected objects in the inspector)
 	public static bool IsPrefab(UnityEngine.Object componentOrGameObject)
@@ -404,11 +408,6 @@ public static class F
 		return UnityEditor.Selection.assetGUIDs.Length > 0
 			 && UnityEditor.PrefabUtility.GetPrefabAssetType(componentOrGameObject) != UnityEditor.PrefabAssetType.NotAPrefab
 			 && UnityEditor.PrefabUtility.GetPrefabAssetType(componentOrGameObject) != UnityEditor.PrefabAssetType.MissingAsset;
-	}
-
-	internal static float FlatDistance(Vector3 a, Vector3 b)
-	{
-		return Mathf.Sqrt((a.x - b.x) * (a.x - b.x) + (a.z - b.z) * (a.z - b.z));
 	}
 #endif
 }

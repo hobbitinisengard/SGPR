@@ -3,7 +3,7 @@
   "desc": "A very fast track where you can use the burns for overtaking",
   "valid": true,
   "envir": "SPN",
-  "preferredCarClass": "Speed",
+  "preferredCarClass": "Aero",
   "difficulty": 3,
   "unlocked": true,
   "icons": [

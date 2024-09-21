@@ -14,13 +14,13 @@
   "customParts": {
     "sus": {
       "frontSteerRangeDegs": 35.0,
-      "frontSpringDistance": 0.2,
-      "frontSpringForce": 6.0,
+      "frontSpringDistance": 0.3,
+      "frontSpringForce": 7.0,
       "frontSpringExponent": 1.0,
       "frontSpringDampening": 0.2,
       "RearSteerRangeDegs": 0.0,
-      "RearSpringDistance": 0.2,
-      "RearSpringForce": 6.0,
+      "RearSpringDistance": 0.3,
+      "RearSpringForce": 7.0,
       "RearSpringExponent": 1.0,
       "RearSpringDampening": 0.2
     },
@@ -61,7 +61,7 @@
       "audioType": 3.0,
       "inertia": 100.0,
       "inertiaAcc": 5.0,
-      "torque": 0.01,
+      "torque": 1.0,
       "torqueCurveType": 3.0,
       "redlineKRPM": 10.499,
       "cutoffKRPM": 10.5
@@ -71,7 +71,7 @@
       "longtitunalCOM": 0.0,
       "verticalCOM": 0.4,
       "drag": 0.3,
-      "angularDrag": 0.9,
+      "angularDrag": 1.0,
       "evoSmoothTime": 0.07,
       "staticEvoMaxSpeed": 700.0,
       "evoAcceleration": 15.0,
@@ -79,7 +79,7 @@
     },
     "boost": {
       "maxBoost": 1.0,
-      "batteryConsumption": 20.0
+      "batteryConsumption": 10.0
     },
     "tyre": {
       "forwardFriction": 8.0,

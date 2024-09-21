@@ -15,12 +15,12 @@
     "sus": {
       "frontSteerRangeDegs": 35.0,
       "frontSpringDistance": 0.3,
-      "frontSpringForce": 8.0,
+      "frontSpringForce": 10.0,
       "frontSpringExponent": 1.0,
       "frontSpringDampening": 0.1,
       "RearSteerRangeDegs": 0.0,
       "RearSpringDistance": 0.3,
-      "RearSpringForce": 8.0,
+      "RearSpringForce": 10.0,
       "RearSpringExponent": 1.0,
       "RearSpringDampening": 0.1
     },
@@ -61,7 +61,7 @@
       "audioType": 0.0,
       "inertia": 100.0,
       "inertiaAcc": 10.0,
-      "torque": 0.01,
+      "torque": 1.0,
       "torqueCurveType": 3.0,
       "redlineKRPM": 10.499,
       "cutoffKRPM": 10.5
@@ -69,9 +69,9 @@
     "chassis": {
       "mass": 1.0,
       "longtitunalCOM": -0.07,
-      "verticalCOM": 0.35,
-      "drag": 0.27,
-      "angularDrag": 0.9,
+      "verticalCOM": 0.4,
+      "drag": 0.3,
+      "angularDrag": 1.0,
       "evoSmoothTime": 0.07,
       "staticEvoMaxSpeed": 1200.0,
       "evoAcceleration": 30.0,

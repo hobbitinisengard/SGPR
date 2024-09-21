@@ -2,7 +2,6 @@ using RVP;
 using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
-using static UnityEditor.Rendering.BuiltIn.ShaderGraph.BuiltInBaseShaderGUI;
 
 public class Ghost : NetworkBehaviour
 {
@@ -47,7 +46,7 @@ public class Ghost : NetworkBehaviour
 			material.SetFloat("_Metallic", 1);
 			material.SetFloat("Smoothness", .5f);
 		}
-		material.SetFloat("_SurfaceType", (float)SurfaceType.Opaque);
+		material.SetFloat("_SurfaceType", 0);//SurfaceType.Opaque
 		
 		return material;
 	}

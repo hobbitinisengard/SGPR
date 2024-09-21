@@ -1877,7 +1877,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7919820308475951221}
-  - component: {fileID: 5567891282441757450}
   m_Layer: 26
   m_Name: specialCol
   m_TagString: Untagged
@@ -1902,14 +1901,6 @@ Transform:
   - {fileID: 9040903003165812340}
   m_Father: {fileID: 6457121441695959639}
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
---- !u!33 &5567891282441757450
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 925858167769749434}
-  m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!1 &1235074252864835299
 GameObject:
   m_ObjectHideFlags: 0
@@ -8089,7 +8080,7 @@ Transform:
   m_GameObject: {fileID: 3901301147301382424}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.484, y: 0.099, z: 0.11}
+  m_LocalPosition: {x: 0.484, y: 0.083, z: 0.2}
   m_LocalScale: {x: 1.16, y: 1.39, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -8115,7 +8106,7 @@ CapsuleCollider:
   m_Enabled: 1
   serializedVersion: 2
   m_Radius: 0.54
-  m_Height: 2
+  m_Height: 2.14
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &3917643179782311503
@@ -8511,7 +8502,7 @@ Transform:
   m_GameObject: {fileID: 4236253070238597062}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.522, y: 0.099, z: 0.11}
+  m_LocalPosition: {x: -0.522, y: 0.083, z: 0.2}
   m_LocalScale: {x: 1.16, y: 1.39, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -8537,7 +8528,7 @@ CapsuleCollider:
   m_Enabled: 1
   serializedVersion: 2
   m_Radius: 0.54
-  m_Height: 2
+  m_Height: 2.14
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &4328256267402655016
@@ -14676,8 +14667,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4004a853526701343b191aaf6c4b56c8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  roadColliderParent: {fileID: 0}
-  mult: 1
+  roadColliderParent: {fileID: 5252687357071755601}
 --- !u!1 &6192630529381075353
 GameObject:
   m_ObjectHideFlags: 0

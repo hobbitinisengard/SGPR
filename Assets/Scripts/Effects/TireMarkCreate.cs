@@ -84,7 +84,6 @@ namespace RVP
 		}
 		void Update()
 		{
-
 			// Check for continuous marking
 			if (w.groundedReally)
 			{
@@ -120,8 +119,8 @@ namespace RVP
 				if (curMark)
 				{
 					Vector3 pointDir = Quaternion.AngleAxis(90, w.contactPoint.normal) * tr.right * (w.popped ? w.rimWidth : w.tireWidth);
-					leftPoint = curMarkTr.InverseTransformPoint(w.contactPoint.point + pointDir * w.suspensionParent.flippedSideFactor * Mathf.Sign(w.rawRPM) + w.contactPoint.normal * RaceManager.I.tireMarkHeight);
-					rightPoint = curMarkTr.InverseTransformPoint(w.contactPoint.point - pointDir * w.suspensionParent.flippedSideFactor * Mathf.Sign(w.rawRPM) + w.contactPoint.normal * RaceManager.I.tireMarkHeight);
+					leftPoint = curMarkTr.InverseTransformPoint(w.contactPoint.point + Mathf.Sign(w.rawRPM) * w.suspensionParent.flippedSideFactor * pointDir + w.contactPoint.normal * RaceManager.I.tireMarkHeight);
+					rightPoint = curMarkTr.InverseTransformPoint(w.contactPoint.point - Mathf.Sign(w.rawRPM) * w.suspensionParent.flippedSideFactor * pointDir + w.contactPoint.normal * RaceManager.I.tireMarkHeight);
 				}
 			}
 			else if (creatingMark)
@@ -131,14 +130,14 @@ namespace RVP
 			}
 
 			// Update mark if it's short enough, otherwise end it
-			if (curEdge < RaceManager.I.tireMarkLength && creatingMark)
+			if(creatingMark)
 			{
-				UpdateMark();
+				if (curEdge < RaceManager.I.tireMarkLength)
+					UpdateMark();
+				else
+					EndMark();
 			}
-			else if (creatingMark)
-			{
-				EndMark();
-			}
+			
 
 			// Set particle emission rates
 			ParticleSystem.EmissionModule em;
@@ -319,11 +318,12 @@ namespace RVP
 				creatingMark = false;
 				leftPointPrev = verts[Mathf.RoundToInt(verts.Length * 0.5f)];
 				rightPointPrev = verts[Mathf.RoundToInt(verts.Length * 0.5f + 1)];
-				continueMark = w.groundedReally;
+				continueMark = false;//w.groundedReally;
 
-				curMark.GetComponent<TireMark>().fadeTime = RaceManager.I.tireFadeTime;
-				curMark.GetComponent<TireMark>().mesh = mesh;
-				curMark.GetComponent<TireMark>().colors = colors;
+				var tm = curMark.GetComponent<TireMark>();
+				tm.fadeTime = RaceManager.I.tireFadeTime;
+				tm.mesh = mesh;
+				tm.colors = colors;
 				curMark = null;
 				curMarkTr = null;
 				mesh = null;

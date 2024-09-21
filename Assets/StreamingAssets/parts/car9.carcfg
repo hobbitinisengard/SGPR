@@ -47,8 +47,8 @@
       "Gear1Ratio": 3.21,
       "Gear2Ratio": 2.52,
       "Gear3Ratio": 1.7,
-      "Gear4Ratio": 1.0,
-      "Gear5Ratio": 0.0,
+      "Gear4Ratio": 1.3,
+      "Gear5Ratio": 1.0,
       "Gear6Ratio": 0.0,
       "Gear7Ratio": 0.0,
       "Gear8Ratio": 0.0,
@@ -61,7 +61,7 @@
       "audioType": 4.0,
       "inertia": 100.0,
       "inertiaAcc": 10.0,
-      "torque": 0.12,
+      "torque": 1.0,
       "torqueCurveType": 3.0,
       "redlineKRPM": 10.499,
       "cutoffKRPM": 11.0
@@ -70,15 +70,15 @@
       "mass": 1.1,
       "longtitunalCOM": 0.0,
       "verticalCOM": 0.41,
-      "drag": 0.23,
-      "angularDrag": 0.9,
+      "drag": 0.26,
+      "angularDrag": 1.0,
       "evoSmoothTime": 0.07,
       "staticEvoMaxSpeed": 700.0,
       "evoAcceleration": 15.0,
       "dragsterEffect": 0.9
     },
     "boost": {
-      "maxBoost": 5.0,
+      "maxBoost": 2.0,
       "batteryConsumption": 5.0
     },
     "tyre": {
