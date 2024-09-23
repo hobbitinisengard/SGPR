@@ -1,3 +1,4 @@
+
 using RVP;
 using UnityEngine;
 public class SGP_Bouncer : MonoBehaviour
@@ -27,7 +28,7 @@ public class SGP_Bouncer : MonoBehaviour
 			multCurve = new AnimationCurve(kf);
 		}
 	}
-	void BounceCars(Collision collision)
+	void BounceCars(Collision col)
 	{
 		lastCarCarBounceTime = Time.time;
 		// move body up
@@ -36,10 +37,10 @@ public class SGP_Bouncer : MonoBehaviour
 
 		// bounce cars apart
 		if (Time.time - lastCarCarBounceTime > lastCarCarBounceTime)
-			rb.AddForce(mult * collision.GetContact(0).otherCollider.attachedRigidbody.mass * collision.relativeVelocity.magnitude * -(collision.relativeVelocity.normalized + Vector3.up).normalized);
-
+		rb.AddForce(mult * col.GetContact(0).otherCollider.attachedRigidbody.mass * col.relativeVelocity.magnitude 
+			* -col.relativeVelocity.normalized);
 		// tilt car
-		rb.AddForceAtPosition(0.5f * rb.mass * transform.up, collision.GetContact(0).point, ForceMode.Force);
+		rb.AddForceAtPosition(rb.mass * Vector3.up, col.GetContact(0).point, ForceMode.Force);
 	}
 	private void OnCollisionStay(Collision collision)
 	{

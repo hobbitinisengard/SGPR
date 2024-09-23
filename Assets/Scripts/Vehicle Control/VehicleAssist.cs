@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
 
 namespace RVP
 {
@@ -75,6 +74,9 @@ namespace RVP
 		public float fallSpeedLimit = Mathf.Infinity;
 		public bool applyFallLimitUpwards;
 
+		public float X = .1f;
+		public float Z = .1f;
+
 		void Start()
 		{
 			tr = transform;
@@ -86,10 +88,6 @@ namespace RVP
 		}
 
 		void FixedUpdate()
-		{
-			FixedUpdateWorks(Time.fixedDeltaTime);
-		}
-		public void FixedUpdateWorks(float deltaTime)
 		{
 			if (vp.reallyGroundedWheels > 0)
 			{
@@ -110,11 +108,15 @@ namespace RVP
 			}
 			else
 			{
-				//if (angularDragOnJump)
-				//{
-				//	angDragTime = Mathf.Max(0, angDragTime - deltaTime);
-				//	rb.angularDrag = angDragTime > 0 && vp.upDot > 0.5 ? 10 : initialAngularDrag;
-				//}
+				if (!vp.crashing && !vp.raceBox.evoModule.stunting && vp.raceBox.curLap > 0)
+				{
+					// aircontrol
+					vp.rb.AddForce(vp.steerInput * 5 * vp.tr.right, ForceMode.Acceleration);
+					Vector3 targetForce = vp.tr.TransformDirection(vp.steerInput, 0, 0);
+					targetForce = Vector3.ProjectOnPlane(targetForce, Vector3.up);
+					var targetAnchor = (vp.wheels[0].tr.position + vp.wheels[1].tr.position)/2f;
+					vp.rb.AddForceAtPosition(targetForce,targetAnchor, ForceMode.Acceleration);
+				}
 			}
 
 			if (downforce > 0)

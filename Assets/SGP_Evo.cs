@@ -251,7 +251,7 @@ public class SGP_Evo : MonoBehaviour
 			if (r.Any(a => a.Active))
 			{
 				rb.rotation = Quaternion.Euler(r[0].Pos, r[1].Pos, r[2].Pos);
-				rb.angularVelocity = vp.transform.TransformDirection(Mathf.Deg2Rad * new Vector3(r[0].speed, r[1].speed, r[2].speed));
+				rb.angularVelocity = vp.tr.TransformDirection(Mathf.Deg2Rad * new Vector3(r[0].speed, r[1].speed, r[2].speed));
 			}
 
 			//rb.AddRelativeTorque(Mathf.Deg2Rad * new Vector3(r[0].Delta, r[1].Delta, r[2].Delta), ForceMode.VelocityChange);

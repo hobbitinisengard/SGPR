@@ -32,8 +32,8 @@
       "autoSteerDrift": 0.0,
       "driftPush": 1.0,
       "downforce": 2.0,
-      "frontBrakeForce": 0.1,
-      "rearBrakeForce": 0.1
+      "frontBrakeForce": 1.0,
+      "rearBrakeForce": 1.0
     },
     "battery": {
       "capacity": 3200.0,

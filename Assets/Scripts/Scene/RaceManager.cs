@@ -472,7 +472,7 @@ namespace RVP
 		{
 			while (F.I.s_spectator)
 			{
-				if ((DateTime.UtcNow - F.I.raceStartDate).TotalSeconds > 60
+				if ((DateTime.UtcNow - F.I.raceStartDate).TotalSeconds > 120
 					|| (F.I.enterRef.action.ReadValue<float>() == 1) || (F.I.escRef.action.ReadValue<float>() == 1))
 				{
 					BackToMenu(applyScoring: false);

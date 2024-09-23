@@ -17,12 +17,12 @@
       "frontSpringDistance": 0.3,
       "frontSpringForce": 20.0,
       "frontSpringExponent": 1.0,
-      "frontSpringDampening": 0.1,
+      "frontSpringDampening": 0.2,
       "RearSteerRangeDegs": 0.0,
       "RearSpringDistance": 0.3,
       "RearSpringForce": 20.0,
       "RearSpringExponent": 1.0,
-      "RearSpringDampening": 0.1
+      "RearSpringDampening": 0.2
     },
     "bms": {
       "driftSpinAssist": 20.0,
@@ -32,8 +32,8 @@
       "autoSteerDrift": 0.0,
       "driftPush": 0.0,
       "downforce": 1.0,
-      "frontBrakeForce": 0.1,
-      "rearBrakeForce": 0.1
+      "frontBrakeForce": 1.0,
+      "rearBrakeForce": 1.0
     },
     "battery": {
       "capacity": 2000.0,
@@ -58,7 +58,7 @@
       "audioMaxPitch": 2.4,
       "audioMinPitch": 1.0,
       "fuelConsumption": 10.0,
-      "audioType": 3.0,
+      "audioType": 4.0,
       "inertia": 100.0,
       "inertiaAcc": 5.0,
       "torque": 2.0,
@@ -69,8 +69,8 @@
     "chassis": {
       "mass": 2.0,
       "longtitunalCOM": 0.01,
-      "verticalCOM": 0.6,
-      "drag": 0.3,
+      "verticalCOM": 0.55,
+      "drag": 0.25,
       "angularDrag": 1.0,
       "evoSmoothTime": 0.07,
       "staticEvoMaxSpeed": 300.0,
@@ -83,10 +83,10 @@
     },
     "tyre": {
       "forwardFriction": 16.0,
-      "sideFriction": 20.0,
+      "sideFriction": 25.0,
       "forwardFrictionStretch": 10.0,
       "sideFrictionStretch": 10.0,
-      "shiftRearFriction": 15.0,
+      "shiftRearFriction": 18.0,
       "squeakSlipThreshold": 0.5,
       "slipDependence": 0.0,
       "axleFriction": 0.0,

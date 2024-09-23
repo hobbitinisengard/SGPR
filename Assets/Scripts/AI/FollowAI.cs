@@ -107,6 +107,7 @@ namespace RVP
 		float distLastTime;
 		float LapProgressPercentTime;
 		private float lastOutOfTrackTime;
+		internal bool looping;
 
 		public float LapProgressPercent
 		{
@@ -298,7 +299,7 @@ namespace RVP
 			vp.ebrakeInput = 0;
 
 			overRoad = Physics.Raycast(tr.position + Vector3.up, Vector3.down, out var _, Mathf.Infinity, 1 << F.I.roadLayer);
-			bool surface = Physics.Raycast(tr.position + Vector3.up, Vector3.down, out var hit, 3, RaceManager.I.wheelCastMask);
+			bool surface = Physics.Raycast(tr.position + Vector3.up, Vector3.down, out var hit, 4, RaceManager.I.wheelCastMask);
 			if(surface)
 				rolledOverTime = Mathf.Clamp((Vector3.Dot(hit.normal,vp.tr.up) < 0.5f) ? rolledOverTime + Time.fixedDeltaTime
 				: rolledOverTime - Time.fixedDeltaTime, 0, rollResetTime);
@@ -520,12 +521,15 @@ namespace RVP
 						targetDir = F.Flat(target.pos - vp.tr.position);
 					}
 
-					var newTargetSteer = Vector2.SignedAngle(targetDir, (vp.rb.velocity.normalized.Flat()+tr.forward.Flat())/2f);
-
-					newTargetSteer = F.Sign(newTargetSteer) * Mathf.InverseLerp(0, maxPhysicalSteerAngle, Mathf.Abs(newTargetSteer));
-
-					newTargetSteer *= (reverseTime == 0) ? 1 : -1;
-					vp.SetSteer(newTargetSteer);
+					if(looping)
+						vp.SetSteer(0);
+					else
+					{
+						var newTargetSteer = Vector2.SignedAngle(targetDir, (vp.rb.velocity.normalized.Flat() + tr.forward.Flat()) / 2f);
+						newTargetSteer = F.Sign(newTargetSteer) * Mathf.InverseLerp(0, maxPhysicalSteerAngle, Mathf.Abs(newTargetSteer));
+						newTargetSteer *= (reverseTime == 0) ? 1 : -1;
+						vp.SetSteer(newTargetSteer);
+					}
 
 					vp.SetBoost(steerAngle < 2 && vp.BatteryPercent > 0.5f && vp.reallyGroundedWheels > 2 && vp.velMag < 30);
 				}

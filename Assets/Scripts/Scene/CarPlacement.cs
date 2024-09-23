@@ -1,6 +1,4 @@
-﻿
-using NUnit.Framework;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Unity.Services.Lobbies.Models;
 
 public class CarPlacement
@@ -17,11 +15,14 @@ public class CarPlacement
 	public Livery sponsor;
 	public static CarPlacement CPU(int pos, in List<int> preferredCars)
 	{
+		bool pickPreferred = UnityEngine.Random.value <= .7f;
+		string carStr = "car" + (pickPreferred ? preferredCars.GetRandom().ToString("D2") : 
+			UnityEngine.Random.Range(1,20).ToString("D2"));
 		return new CarPlacement() {
-			carName = "car" + preferredCars.GetRandom().ToString("D2"),
+			carName = carStr,
 			position = pos,
 			name = "CP" + (pos + 1).ToString(),
-			sponsor = F.RandomLivery(),
+			sponsor = (Livery)(((int)F.I.s_PlayerCarSponsor + pos) % F.I.Liveries),
 		};
 	}
 	public static CarPlacement LocalPlayer()

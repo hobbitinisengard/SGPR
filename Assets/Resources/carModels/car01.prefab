@@ -14237,6 +14237,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 950cf8b6abec9974792705495dd652de, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  X: 0.3
+  Z: 0.3
   basedOnWheelsGrounded: 1
   driftSpinAssist: 10
   driftSpinSpeed: 1
@@ -14667,7 +14669,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4004a853526701343b191aaf6c4b56c8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  roadColliderParent: {fileID: 5252687357071755601}
+  lastBounceTime: 0
+  lastCarCarBounceTime: 0
+  lastSideBounceTime: 0
+  lastVVBounceTime: 0
 --- !u!1 &6192630529381075353
 GameObject:
   m_ObjectHideFlags: 0

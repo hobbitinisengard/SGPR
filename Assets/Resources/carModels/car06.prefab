@@ -23439,7 +23439,7 @@ Transform:
   m_GameObject: {fileID: 5347278586512999736}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.506, y: 0.099, z: -0.01}
+  m_LocalPosition: {x: -0.506, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1.96, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -23886,6 +23886,7 @@ MonoBehaviour:
   steeringControl: {fileID: 6779875395873480448}
   colliding: 0
   crashing: 0
+  initAngularDrag: 0
 --- !u!114 &5969412531493064935
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -23963,6 +23964,8 @@ MonoBehaviour:
   rollSpeedThreshold: 0
   fallSpeedLimit: Infinity
   applyFallLimitUpwards: 0
+  X: 0.1
+  Z: 0.1
 --- !u!114 &4194641081301078446
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -24162,6 +24165,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4004a853526701343b191aaf6c4b56c8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  lastBounceTime: 0
+  lastCarCarBounceTime: 0
+  lastSideBounceTime: 0
+  lastVVBounceTime: 0
 --- !u!114 &865657811856999447
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -24347,7 +24354,7 @@ Transform:
   m_GameObject: {fileID: 6465562300170526539}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.5, y: 0.099, z: -0.01}
+  m_LocalPosition: {x: 0.5, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1.96, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -26133,6 +26140,7 @@ MonoBehaviour:
   gamma: 2
   shiftRearFriction: 0
   absSteerInput: 0
+  collisionWheelMult: 0
 --- !u!1 &6779875396000727283
 GameObject:
   m_ObjectHideFlags: 0

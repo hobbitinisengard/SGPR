@@ -26,7 +26,7 @@ public class SGP_DragsterEffect : MonoBehaviour
 			enabled = false;
 		}
 	}
-	public void UpdateWorks()
+	public void Update()
 	{
 		if (gearbox)
 		{
@@ -48,9 +48,5 @@ public class SGP_DragsterEffect : MonoBehaviour
 				modified_COM = false;
 			}
 		}
-	}
-	void Update()
-	{
-		UpdateWorks();
 	}
 }

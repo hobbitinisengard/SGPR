@@ -82,7 +82,7 @@
       "batteryConsumption": 10.0
     },
     "tyre": {
-      "forwardFriction": 18.0,
+      "forwardFriction": 20.0,
       "sideFriction": 20.0,
       "forwardFrictionStretch": 10.0,
       "sideFrictionStretch": 10.0,
