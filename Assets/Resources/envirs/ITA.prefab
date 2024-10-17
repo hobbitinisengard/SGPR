@@ -2857,7 +2857,7 @@ MonoBehaviour:
   occlusionRadius: 0.5
   sampleCount: 32
   occlusionOffset: 0.05
-  scale: 2
+  scale: 0.5
   allowOffScreen: 0
   volumetricCloudOcclusion: 0
   occlusionRemapCurve:
@@ -3565,7 +3565,7 @@ MonoBehaviour:
   occlusionRadius: 0.5
   sampleCount: 32
   occlusionOffset: 0.05
-  scale: 2
+  scale: 0.5
   allowOffScreen: 0
   volumetricCloudOcclusion: 0
   occlusionRemapCurve:
@@ -5379,7 +5379,7 @@ MonoBehaviour:
   occlusionRadius: 0.5
   sampleCount: 32
   occlusionOffset: 0.05
-  scale: 2
+  scale: 0.5
   allowOffScreen: 0
   volumetricCloudOcclusion: 0
   occlusionRemapCurve:
@@ -6114,7 +6114,7 @@ MonoBehaviour:
   occlusionRadius: 0.5
   sampleCount: 32
   occlusionOffset: 0.05
-  scale: 2
+  scale: 0.5
   allowOffScreen: 0
   volumetricCloudOcclusion: 0
   occlusionRemapCurve:
@@ -8027,7 +8027,7 @@ MonoBehaviour:
   occlusionRadius: 0.5
   sampleCount: 32
   occlusionOffset: 0.05
-  scale: 2
+  scale: 0.5
   allowOffScreen: 0
   volumetricCloudOcclusion: 0
   occlusionRemapCurve:
@@ -9433,7 +9433,7 @@ MonoBehaviour:
   occlusionRadius: 0.5
   sampleCount: 32
   occlusionOffset: 0.05
-  scale: 2
+  scale: 0.5
   allowOffScreen: 0
   volumetricCloudOcclusion: 0
   occlusionRemapCurve:
@@ -10056,7 +10056,7 @@ MonoBehaviour:
   occlusionRadius: 0.5
   sampleCount: 32
   occlusionOffset: 0.05
-  scale: 2
+  scale: 0.5
   allowOffScreen: 0
   volumetricCloudOcclusion: 0
   occlusionRemapCurve:
@@ -10592,7 +10592,7 @@ MonoBehaviour:
   occlusionRadius: 0.5
   sampleCount: 32
   occlusionOffset: 0.05
-  scale: 2
+  scale: 0.5
   allowOffScreen: 0
   volumetricCloudOcclusion: 0
   occlusionRemapCurve:
@@ -11302,7 +11302,7 @@ MonoBehaviour:
   occlusionRadius: 0.5
   sampleCount: 32
   occlusionOffset: 0.05
-  scale: 2
+  scale: 0.5
   allowOffScreen: 0
   volumetricCloudOcclusion: 0
   occlusionRemapCurve:
@@ -11869,7 +11869,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 1
-  val: 0
   axisXY: 1
 --- !u!1 &2084978929
 GameObject:
@@ -13793,7 +13792,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 2
-  val: 0
   axisXY: 1
 --- !u!1 &3287657895311355750 stripped
 GameObject:
@@ -14017,7 +14015,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 1
-  val: 0
   axisXY: 1
 --- !u!4 &5387298414456111787 stripped
 Transform:

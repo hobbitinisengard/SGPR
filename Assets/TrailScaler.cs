@@ -1,20 +1,32 @@
 using RVP;
+using System.Collections;
 using UnityEngine;
 
 public class TrailScaler : MonoBehaviour
 {
 	VehicleParent vp;
 	Transform trailMaterial;
-	void Awake()
+	Vector3 initScale;
+	int children;
+	private void Start()
 	{
 		vp = transform.GetTopmostParentComponent<VehicleParent>();
-		//trailMaterial = transform.GetChild(transform.childCount - 1);
+		children = transform.childCount;
+		if (children>0)
+		{
+			initScale = transform.GetChild(0).localScale;
+			StartCoroutine(Works());
+		}
 	}
-
-	// Update is called once per frame
-	void Update()
+	private void OnDestroy()
 	{
-		transform.localScale = Vector3.one * (0.5f * Mathf.Clamp(vp.velMag, 0, 110) / 110);
-		//trailMaterial.localScale = 1 / transform.localScale.x * Vector3.one;
+		StopCoroutine(Works());
+	}
+	IEnumerator Works()
+	{
+		transform.GetChild(0).localScale = initScale * (Mathf.Clamp(vp.velMag, 0, 110) / 110);
+		for (int i = 1; i < 3; ++i)
+			transform.GetChild(i).localScale = Vector3.one * (0.5f * Mathf.Clamp(vp.velMag, 0, 110) / 110);
+		yield return null;
 	}
 }

@@ -11852,7 +11852,7 @@ MonoBehaviour:
   occlusionRadius: 0.5
   sampleCount: 32
   occlusionOffset: 0.05
-  scale: 2
+  scale: 0.5
   allowOffScreen: 0
   volumetricCloudOcclusion: 0
   occlusionRemapCurve:
@@ -29041,7 +29041,7 @@ MonoBehaviour:
   occlusionRadius: 0.5
   sampleCount: 32
   occlusionOffset: 0.05
-  scale: 2
+  scale: 0.5
   allowOffScreen: 0
   volumetricCloudOcclusion: 0
   occlusionRemapCurve:

@@ -6776,13 +6776,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2496484949827461572}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.23174791, y: -0, z: -0, w: 0.9727759}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -0.333, y: 1.525, z: 0.356}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 3935023955495481916}
-  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!108 &3939734895610645011
 Light:
   m_ObjectHideFlags: 0
@@ -6796,7 +6796,7 @@ Light:
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_Intensity: 134217730
   m_Range: 100
-  m_SpotAngle: 41.200005
+  m_SpotAngle: 53.367477
   m_InnerSpotAngle: 19.8
   m_CookieSize: 10
   m_Shadows:
@@ -6862,7 +6862,7 @@ MonoBehaviour:
   m_Intensity: 30
   m_EnableSpotReflector: 1
   m_LuxAtDistance: 1
-  m_InnerSpotPercent: 2.427184
+  m_InnerSpotPercent: 1.8738004
   m_SpotIESCutoffPercent: 100
   m_LightDimmer: 1
   m_VolumetricDimmer: 1
@@ -7079,7 +7079,7 @@ MonoBehaviour:
   occlusionRadius: 0.5
   sampleCount: 32
   occlusionOffset: 0.05
-  scale: 2
+  scale: 0.5
   allowOffScreen: 0
   volumetricCloudOcclusion: 0
   occlusionRemapCurve:
@@ -13995,6 +13995,7 @@ MonoBehaviour:
   steeringControl: {fileID: 6779875395873480448}
   colliding: 0
   crashing: 0
+  initAngularDrag: 0
 --- !u!114 &5969412531493064935
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14072,6 +14073,8 @@ MonoBehaviour:
   rollSpeedThreshold: 0
   fallSpeedLimit: Infinity
   applyFallLimitUpwards: 0
+  X: 0.1
+  Z: 0.1
 --- !u!114 &4194641081301078446
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14271,6 +14274,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4004a853526701343b191aaf6c4b56c8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  lastBounceTime: 0
+  lastCarCarBounceTime: 0
+  lastSideBounceTime: 0
+  lastVVBounceTime: 0
 --- !u!114 &865657811856999447
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16102,6 +16109,7 @@ MonoBehaviour:
   gamma: 2
   shiftRearFriction: 0
   absSteerInput: 0
+  collisionWheelMult: 0
 --- !u!1 &6779875396000727283
 GameObject:
   m_ObjectHideFlags: 0
@@ -17312,13 +17320,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6834059447784423080}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.23174791, y: -0, z: -0, w: 0.9727759}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0.335, y: 1.525, z: 0.356}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 3935023955495481916}
-  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!108 &3001868673511644868
 Light:
   m_ObjectHideFlags: 0
@@ -17332,7 +17340,7 @@ Light:
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_Intensity: 134217730
   m_Range: 100
-  m_SpotAngle: 41.200005
+  m_SpotAngle: 53.367477
   m_InnerSpotAngle: 19.8
   m_CookieSize: 10
   m_Shadows:
@@ -17398,7 +17406,7 @@ MonoBehaviour:
   m_Intensity: 30
   m_EnableSpotReflector: 1
   m_LuxAtDistance: 1
-  m_InnerSpotPercent: 2.427184
+  m_InnerSpotPercent: 1.8738004
   m_SpotIESCutoffPercent: 100
   m_LightDimmer: 1
   m_VolumetricDimmer: 1
@@ -17615,7 +17623,7 @@ MonoBehaviour:
   occlusionRadius: 0.5
   sampleCount: 32
   occlusionOffset: 0.05
-  scale: 2
+  scale: 0.5
   allowOffScreen: 0
   volumetricCloudOcclusion: 0
   occlusionRemapCurve:
