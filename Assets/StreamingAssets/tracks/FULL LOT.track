@@ -3,8 +3,8 @@
   "desc": "It seems that the parking lot wasn't put out of order for this race.",
   "valid": true,
   "envir": "USA",
-  "preferredCarClass": "Speed",
-  "difficulty": 9,
+  "preferredCarClass": "Team",
+  "difficulty": 12,
   "unlocked": true,
   "icons": [
     0,

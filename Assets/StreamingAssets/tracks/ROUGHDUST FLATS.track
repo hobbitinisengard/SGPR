@@ -1,0 +1,15 @@
+{
+  "author": "Team17",
+  "desc": "The only flat track in the original Stunt GP collection, this is far from a gentle experience!",
+  "valid": true,
+  "envir": "SPN",
+  "preferredCarClass": "Team",
+  "difficulty": 11,
+  "unlocked": true,
+  "icons": [
+    6,
+    8
+  ],
+  "TrackOrigin": 0,
+  "IsOriginal": true
+}

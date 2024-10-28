@@ -1688,7 +1688,7 @@ public class EditorPanel : MonoBehaviour
 		tHeader.valid = PathValid();
 		if (!tHeader.valid)
 		{
-			DisplayMessageFor("Drive at least once to validate track", 3);
+			DisplayMessageFor("Create raceline to validate track", 3);
 		}
 
 		string JsonContent = JsonConvert.SerializeObject(tHeader, Formatting.Indented);

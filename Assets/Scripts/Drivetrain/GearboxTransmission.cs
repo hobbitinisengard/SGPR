@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using UnityEngine;
 
 namespace RVP
@@ -42,6 +43,7 @@ namespace RVP
 		Gear upperGear; // Next gear above current
 		public enum DriveType { RWD, FWD, AWD }
 		DriveType drive;
+		private Coroutine trickstartCheckCo;
 
 		public DriveType Drive
 		{
@@ -231,8 +233,22 @@ namespace RVP
 		// Shift gears by the number entered
 		public void Shift(int dir)
 		{
-			shiftTime = shiftDelaySeconds;
+			
 			selectedGear += dir;
+			if(dir < 0 && selectedGear > 1)
+			{
+				shiftTime = 0;
+			}
+			else
+				shiftTime = shiftDelaySeconds;
+
+			if (dir == 1 && selectedGear == 2)
+			{
+				if (trickstartCheckCo != null)
+					StopCoroutine(trickstartCheckCo);
+				trickstartCheckCo = StartCoroutine(TrickstartInitCheck());
+			}
+				
 			if (audioShift)
 				audioShift.Play();
 			//while ((skipNeutral || automatic) && gears[Mathf.Clamp(currentGear, 0, gears.Length - 1)].ratio == 0
@@ -242,7 +258,14 @@ namespace RVP
 
 			selectedGear = Mathf.Clamp(selectedGear, 0, gears.Length - 1);
 		}
-
+		IEnumerator TrickstartInitCheck()
+		{
+			while (selectedGear != currentGear)
+			{
+				yield return null;
+			}
+			vp.engine.CheckTrickstart();
+		}
 		// Shift straight to the gear specified
 		public void ShiftToGear(int gear)
 		{

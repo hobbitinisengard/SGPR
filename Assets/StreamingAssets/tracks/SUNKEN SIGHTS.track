@@ -1,0 +1,15 @@
+{
+  "author": "Team17",
+  "desc": "A three level sunken area and a high banked climb are the highlights of this dusty track.",
+  "valid": true,
+  "envir": "SPN",
+  "preferredCarClass": "Wild",
+  "difficulty": 7,
+  "unlocked": true,
+  "icons": [
+    2,
+    8
+  ],
+  "TrackOrigin": 0,
+  "IsOriginal": true
+}

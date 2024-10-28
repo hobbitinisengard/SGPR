@@ -657,6 +657,10 @@ namespace RVP
 				resetPos = trackPathCreator.path.GetPointAtDistance(progress);
 				resetDir = trackPathCreator.path.GetDirectionAtDistance(progress);
 			}
+
+			if (progress >= trackPathCreator.path.length)
+				progress = (int)(trackPathCreator.path.length - 5);
+
 			dist = progress;
 
 			vp.ghost.StartGhostResetting();

@@ -927,6 +927,7 @@ public class ChassisSavable : PartSavable
 	public float staticEvoMaxSpeed;
 	public float evoAcceleration;
 	public float dragsterEffect;
+	//public float cameraHeight;
 	public ChassisSavable()
 	{
 	}
@@ -945,6 +946,7 @@ public class ChassisSavable : PartSavable
 		staticEvoMaxSpeed = original.staticEvoMaxSpeed;
 		evoAcceleration = original.evoAcceleration;
 		dragsterEffect = original.dragsterEffect;
+		//cameraHeight = original.cameraHeight;
 	}
 	public override PartSavable Clone()
 	{
@@ -952,13 +954,15 @@ public class ChassisSavable : PartSavable
 	}
 	public override void Apply(VehicleParent vp)
 	{
+		//vp.cameraheightOffset = cameraHeight;
 		vp.rb.centerOfMass = new Vector3(0, verticalCOM, (F.I.s_raceType == RaceType.Drift) ? 0 : longtitunalCOM);
 		vp.SetChassis(mass, drag, angularDrag:1);
 		vp.raceBox.evoModule.SetStuntCoeffs(evoSmoothTime, staticEvoMaxSpeed, evoAcceleration);
-		vp.GetComponent<SGP_DragsterEffect>().COM_Movement = vp.followAI.IsCPU ? 0 : -dragsterEffect;
+		RaceManager.I.cam.UpdateLH();
 	}
 	public override void InitializeFromCar(VehicleParent vp)
 	{
+		//cameraHeight = vp.cameraheightOffset;
 		mass = vp.originalMass;
 		drag = vp.originalDrag;
 		var com = vp.rb.centerOfMass;
@@ -966,7 +970,6 @@ public class ChassisSavable : PartSavable
 		verticalCOM = com.y;
 		angularDrag = vp.initAngularDrag;
 		vp.raceBox.evoModule.GetStuntCoeffs(ref evoSmoothTime, ref staticEvoMaxSpeed, ref evoAcceleration);
-		dragsterEffect = -vp.GetComponent<SGP_DragsterEffect>().COM_Movement;
 	}
 }
 [Serializable]

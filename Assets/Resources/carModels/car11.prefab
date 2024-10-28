@@ -7742,7 +7742,7 @@ CapsuleCollider:
   m_Enabled: 1
   serializedVersion: 2
   m_Radius: 0.67
-  m_Height: 2
+  m_Height: 1.64
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &3917643179782311503
@@ -8555,7 +8555,7 @@ CapsuleCollider:
   m_Enabled: 1
   serializedVersion: 2
   m_Radius: 0.67
-  m_Height: 2
+  m_Height: 1.64
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &5263168820003063950
@@ -14075,7 +14075,6 @@ GameObject:
   - component: {fileID: 5969412531493064935}
   - component: {fileID: 4194641081301078446}
   - component: {fileID: 6779875395068024192}
-  - component: {fileID: 1803491810}
   - component: {fileID: 8045125721435560817}
   - component: {fileID: 8319369162350912230}
   - component: {fileID: 865657811856999447}
@@ -14350,6 +14349,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e45c5ede14091ac489343ac18aa547dd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  angleThres: 15
   evoBloorp: {fileID: 515682680}
   rX_delta: 0
   euler: {x: 0, y: 0, z: 0}
@@ -14384,19 +14384,6 @@ MonoBehaviour:
   d_effectiveTurnAngle: 0
   driftingTime: 0
   driftingTimer: 0
---- !u!114 &1803491810
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5969412531493064941}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ed9d126e716020b4493830d2a5d1e810, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  COM_Movement: -1
 --- !u!114 &8045125721435560817
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15132,7 +15119,6 @@ MonoBehaviour:
   generateHardCollider: 1
   hardColliderRadiusFactor: 1
   brakeForce: 0.01
-  ebrakeForce: 0
   steerRangeMin: -35
   steerRangeMax: 35
   steerFactor: 1
@@ -16052,7 +16038,6 @@ MonoBehaviour:
   generateHardCollider: 1
   hardColliderRadiusFactor: 1
   brakeForce: 0
-  ebrakeForce: 0
   steerRangeMin: 0
   steerRangeMax: 0
   steerFactor: 0
@@ -16191,7 +16176,6 @@ MonoBehaviour:
   generateHardCollider: 1
   hardColliderRadiusFactor: 1
   brakeForce: 0
-  ebrakeForce: 0
   steerRangeMin: 0
   steerRangeMax: 0
   steerFactor: 0
@@ -16436,7 +16420,6 @@ MonoBehaviour:
   generateHardCollider: 1
   hardColliderRadiusFactor: 1
   brakeForce: 0.01
-  ebrakeForce: 0
   steerRangeMin: -35
   steerRangeMax: 35
   steerFactor: 1

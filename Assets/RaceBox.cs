@@ -423,16 +423,8 @@ public class RaceBox : MonoBehaviour
 
 			if (wheelieTimer > .6f)
 			{
-				if (Time.time - carStoppedTime < 2)
-				{
-					StartCoroutine(AddExtraStuntCo(StuntsData.ExtraName.Trikstart));
-					wheelieTimer = -99;
-				}
-				else
-				{
-					StartCoroutine(AddExtraStuntCo(StuntsData.ExtraName.Wheelie));
-					wheelieTimer = -99;
-				}
+				StartCoroutine(AddExtraStuntCo(StuntsData.ExtraName.Wheelie));
+				wheelieTimer = -99;
 			}
 			else if (handstandTimer > 1)
 			{
@@ -457,6 +449,10 @@ public class RaceBox : MonoBehaviour
 			sidewinderRightTimer = 0;
 			sidewinderLeftTimer = 0;
 		}
+	}
+	public void DoTrickstart()
+	{
+		StartCoroutine(AddExtraStuntCo(StuntsData.ExtraName.Trikstart));
 	}
 	void FlipDetector(float deltaTime)
 	{

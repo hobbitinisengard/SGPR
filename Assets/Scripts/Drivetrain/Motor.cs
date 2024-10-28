@@ -74,7 +74,7 @@ namespace RVP
 		protected virtual void FixedUpdate()
 		{
 			health = Mathf.Clamp01(health);
-			if (canBoost && ignition && vp.accelInput > 0)
+			if (canBoost && ignition && vp.ebrakeInput == 0)
 			{
 				if (((boostReleased && !boosting) || boosting) && vp.boostButton == 1)
 				{

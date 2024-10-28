@@ -40,17 +40,17 @@ public class Tile : MonoBehaviour
 		if (transform.childCount == 0) // tile isn't a road
 			mc = gameObject.AddComponent<MeshCollider>();
 		else
-		{ // tile is a road
+		{ 
 			var childObj = transform.GetChild(0);
 			if (childObj.name == "lights")
-			{
+			{// tile is an decoration with lights
 				mc = gameObject.AddComponent<MeshCollider>();
 
 				lightObj = childObj.gameObject;
 				UpdateLights();
 			}
 			else
-			{
+			{// tile is a road
 				mc = childObj.gameObject.AddComponent<MeshCollider>();
 
 				if(childObj.childCount > 0)
@@ -170,34 +170,34 @@ public class Tile : MonoBehaviour
 
 		if(transform.childCount>0)
 		{
-			if(transform.GetChild(0).name == "lights")
-			{
-				var lightsObj = transform.GetChild(0);
-				for (int i=0; i< lightsObj.childCount; ++i)
-				{
-					var light = lightsObj.GetChild(i);
-					Vector3 a = transform.InverseTransformPoint(light.position);
-					a.x = -a.x;
-					light.position = transform.TransformPoint(a);
+			//if(transform.GetChild(0).name == "lights")
+			//{
+			//	var lightsObj = transform.GetChild(0);
+			//	for (int i=0; i< lightsObj.childCount; ++i)
+			//	{
+			//		var light = lightsObj.GetChild(i);
+			//		Vector3 a = transform.InverseTransformPoint(light.position);
+			//		a.x = -a.x;
+			//		light.position = transform.TransformPoint(a);
 
-					var lookVector = light.forward;
-					lookVector.x = -lookVector.x;
-					light.rotation = Quaternion.LookRotation(lookVector);
-				}
-			}
+			//		var lookVector = light.forward;
+			//		lookVector = transform.InverseTransformVector(lookVector);
+			//		lookVector.x = -lookVector.x;
+			//		lookVector = transform.TransformVector(lookVector);
+			//		light.rotation = Quaternion.LookRotation(lookVector);
+			//	}
+			//}
+
 			var mainMeshTr = transform.GetChild(0);
-			if (mainMeshTr.childCount > 0)
+			for (int i = 0; i < mainMeshTr.childCount; ++i)
 			{
-				for (int i = 0; i < mainMeshTr.childCount; ++i)
-				{
-					var pos = mainMeshTr.GetChild(i).transform.localPosition;
-					pos.x = -pos.x;
-					mainMeshTr.GetChild(i).transform.localPosition = pos;
-					var euler = mainMeshTr.GetChild(i).transform.localEulerAngles;
-					euler.y = -euler.y;
-					euler.z = -euler.z;
-					mainMeshTr.GetChild(i).transform.localRotation = Quaternion.Euler(euler);
-				}
+				var pos = mainMeshTr.GetChild(i).transform.localPosition;
+				pos.x = -pos.x;
+				mainMeshTr.GetChild(i).transform.localPosition = pos;
+				var euler = mainMeshTr.GetChild(i).transform.localEulerAngles;
+				euler.y = -euler.y;
+				euler.z = -euler.z;
+				mainMeshTr.GetChild(i).transform.localRotation = Quaternion.Euler(euler);
 			}
 		}
 		
@@ -249,6 +249,8 @@ public class Tile : MonoBehaviour
 		var mf = mc.transform.GetComponent<MeshFilter>();
 
 		float scale = distance / mf.mesh.bounds.size.y;
+		if (scale == 1)
+			return;
 		transform.localScale = new Vector3(1, 1, scale);
 		{ // adjust UVs
 			Vector2[] uvs = mf.mesh.uv;
@@ -265,10 +267,12 @@ public class Tile : MonoBehaviour
 					if (uvs[triangles[j]].y < minUVY)
 						minUVY = uvs[triangles[j]].y;
 				}
+				float newMaxUVY = Mathf.LerpUnclamped(minUVY, maxUVY, scale);
+				newMaxUVY += 0.5f - newMaxUVY % 0.5f;
 				for (int j = 0; j < triangles.Length; ++j)
 				{
 					if (uvs[triangles[j]].y == maxUVY)
-						uvs[triangles[j]].y = Mathf.LerpUnclamped(minUVY, maxUVY, scale);
+						uvs[triangles[j]].y = newMaxUVY;
 				}
 			}
 			mf.mesh.uv = uvs;

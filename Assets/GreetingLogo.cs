@@ -46,6 +46,7 @@ public class GreetingLogo : Sfxable
 	}
 	private void OnDisable()
 	{
+		bottomText.color = Color.white;
 		submitRef.action.performed -= SubmitPressed;
 	}
 	private void OnEnable()
@@ -155,7 +156,7 @@ public class GreetingLogo : Sfxable
 
 			timer += Time.deltaTime;
 			rt.localPosition = pos;
-			if (jumps == 8)//80 or 8
+			if (jumps == 24)//80 or 8
 			{ // up move
 				goingUpSeq = true;
 				toDemo = true;

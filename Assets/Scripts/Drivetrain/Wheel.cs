@@ -344,7 +344,7 @@ namespace RVP
 			localVel = rb.GetPointVelocity(forceApplicationPoint);
 
 			// Get proper inputs
-			actualEbrake = suspensionParent.ebrakeEnabled ? suspensionParent.ebrakeForce : 0;
+			actualEbrake = suspensionParent.ebrakeEnabled ? suspensionParent.brakeForce : 0;
 			actualTargetRPM = targetDrive.active ? targetDrive.rpm * (suspensionParent.driveInverted ? -1 : 1) : rawRPM;
 			actualTorque = targetDrive.active ? targetDrive.torque : 0;
 

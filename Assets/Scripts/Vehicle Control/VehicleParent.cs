@@ -318,9 +318,7 @@ namespace RVP
 		public bool playCrashSparks = true;
 
 		[Header("Camera")]
-
-		public float cameraDistanceChange;
-		public float cameraHeightChange;
+		public float cameraheightOffset;
 
 		[Header("Steering wheel")]
 		public SteeringControl steeringControl;
@@ -749,8 +747,10 @@ namespace RVP
 				RaceManager.I.hud.infoText.AddMessage(new Message(name + " IS OUT OF BATTERY!", BottomInfoType.NO_BATT));
 				lastNoBatteryMessage = Time.time;
 			}
-			f = Mathf.Clamp(f, -1, (BatteryPercent <= 0) ? 0.67f : 1);
+			f = Mathf.Clamp(f, -1, 1);
 
+			if (BatteryPercent <= 0 && velMag > 30)
+				f = 0;
 			if (Owner)
 				accelInput = f;
 

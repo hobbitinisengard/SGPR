@@ -6,6 +6,7 @@ using UnityEngine;
 public enum Direction { ANTICLOCK = -1, CLOCK = 1 };
 public class RotationDampStruct
 {
+	
 	public float evoSmoothTime = 0.07f;
 	public float staticEvoMaxSpeed = 1100; // 400 = hustler max speed. 1500 = dart max speed
 	public float evoAcceleration = 15; // 15 = hustler max acc.  57 = dart max acc
@@ -145,6 +146,7 @@ public class RotationDampStruct
 }
 public class SGP_Evo : MonoBehaviour
 {
+	public float angleThres = 15;
 	public AudioSource evoBloorp;
 	Rigidbody rb;
 	VehicleParent vp;
@@ -199,7 +201,7 @@ public class SGP_Evo : MonoBehaviour
 			bool inputValid = (vp.brakeInput + vp.accelInput + Mathf.Abs(vp.steerInput) + Mathf.Abs(vp.rollInput)) <= 1;
 			if (vp.SGPshiftbutton > 0 && inputValid)
 			{
-				if (vp.accelInput > 0.5f)
+				if (vp.accelInput > .2f)
 				{ // backflip
 					r[0].UpdateTarget(Direction.ANTICLOCK);
 					r[0].IncreaseEvoSpeed();
@@ -212,11 +214,11 @@ public class SGP_Evo : MonoBehaviour
 				}
 				if (vp.rollInput != 0)
 				{
-					if (vp.rollInput > 0.5f)
+					if (vp.rollInput > .2f)
 					{ // right barrel roll
 						r[2].UpdateTarget(Direction.CLOCK);
 					}
-					else if (vp.rollInput < -0.5f)
+					else if (vp.rollInput < -.2f)
 					{ // left barrel roll
 						r[2].UpdateTarget(Direction.ANTICLOCK);
 					}
@@ -224,14 +226,14 @@ public class SGP_Evo : MonoBehaviour
 				}
 				if (vp.steerInput != 0)
 				{ // rotation left/right 
-					if (vp.steerInput > 0.5f)
+					if (vp.steerInput > .2f)
 						r[1].UpdateTarget(Direction.CLOCK);
-					else if (vp.steerInput < -0.5f)
+					else if (vp.steerInput < -.2f)
 						r[1].UpdateTarget(Direction.ANTICLOCK);
 					r[1].IncreaseEvoSpeed();
 
 					int rest = (int)r[0].Pos % 90;
-					r[0].UpdateTargetToValue(90 * ((int)r[0].Pos / 90) + ((rest < 45) ? 0 : 90));
+					r[0].UpdateTargetToValue(90 * ((int)r[0].Pos / 90) + ((rest < angleThres) ? 0 : 90));
 				}
 			}
 			else

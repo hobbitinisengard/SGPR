@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -15,7 +16,7 @@ namespace RVP
 		public InputActionReference moveRef;
 		public InputActionReference changeCamRef;
 
-		readonly Vector2[] camerasLH = new Vector2[] { new(11, 4.5f), new(8.5f, 3), new(4.5f, 2.3f)};
+		readonly Vector2[] camerasLH = new Vector2[] {   new(4.5f, 2.3f), new(8.5f, 3), new(11, 4.5f)};
 		int curCameraLH = 0;
 		public enum Mode { Follow, Replay };
 		Mode _mode;
@@ -47,8 +48,8 @@ namespace RVP
 		VehicleParent vp;
 		Rigidbody targetBody;
 
-		public float height;
-		public float targetCamCarDistance;
+		float height = 4.5f;
+		float targetCamCarDistance = 2.3f;
 
 		public float xInput;
 		public float yInput;
@@ -60,7 +61,7 @@ namespace RVP
 		Vector3 upLook;
 		Vector3 targetForward;
 		Vector3 targetUp;
-
+		Quaternion rotation;
 		[Tooltip("Mask for which objects will be checked in between the camera and target vehicle")]
 		public LayerMask castMask;
 
@@ -113,18 +114,20 @@ namespace RVP
 			cam.depthTextureMode |= DepthTextureMode.Depth;
 			changeCamRef.action.performed += ChangeFollowCamera;
 		}
-
 		private void ChangeFollowCamera(InputAction.CallbackContext obj)
+		{
+			curCameraLH++;
+			curCameraLH %= camerasLH.Length;
+			UpdateLH();
+		}
+		public void UpdateLH()
 		{
 			if (enabled && mode == Mode.Follow && !F.I.chat.texting)
 			{
-				curCameraLH++;
-				curCameraLH %= camerasLH.Length;
-				height = camerasLH[curCameraLH].y + vp.cameraHeightChange;
-				targetCamCarDistance = camerasLH[curCameraLH].x + vp.cameraDistanceChange;
+				height = camerasLH[curCameraLH].y + vp.cameraheightOffset;
+				targetCamCarDistance = camerasLH[curCameraLH].x;
 			}
 		}
-
 		private void OnEnable()
 		{
 			StartCoroutine(AllowChangingTarget());
@@ -144,7 +147,7 @@ namespace RVP
 			vp = null;
 			enabled = false;
 		}
-		public void Connect(VehicleParent car, Mode mode = Mode.Follow)
+		public void Connect(VehicleParent car=null, Mode mode = Mode.Follow)
 		{
 			if (!lookObj)
 			{// lookObj is an object used to help position and rotate the camera
@@ -152,8 +155,7 @@ namespace RVP
 				lookObj = lookTemp.transform;
 			}
 			vp = car;
-			targetCamCarDistance += vp.cameraDistanceChange;
-			height += vp.cameraHeightChange;
+			height = camerasLH[curCameraLH].y + vp.cameraheightOffset;
 			forwardLook = -vp.tr.up;
 			upLook = vp.tr.forward;
 			targetBody = vp.tr.GetComponent<Rigidbody>();
@@ -280,11 +282,12 @@ namespace RVP
 			forward = Quaternion.AngleAxis(xInput * 90 + yInput * 180, vp.tr.up) * forward;
 			forward = Quaternion.AngleAxis(Time.fixedDeltaTime * smoothYRot * Mathf.Rad2Deg, vp.tr.up) * forward;
 			lookObj.position = vp.tr.position - forward * targetCamCarDistance + Vector3.up * height;
+			lookObj.position += vp.rb.velocity * Time.fixedDeltaTime;
 			//--------------
-
 			targetForward = vp.tr.position + cHeight * Vector3.up - lookObj.position;
 			forwardLook = Vector3.Lerp(forwardLook, targetForward, forwardLookCoeff * Time.fixedDeltaTime);
-			if (vp.reallyGroundedWheels > 0 && Physics.Raycast(vp.tr.position + vp.tr.up, -targetUp, out RaycastHit hit, Mathf.Infinity, castMask))
+			if (vp.reallyGroundedWheels > 0 
+				&& Physics.Raycast(vp.tr.position + vp.tr.up, -targetUp, out RaycastHit hit, Mathf.Infinity, castMask))
 			{
 				float dot = Vector3.Dot(targetUp, hit.normal);
 				// 0.9848 = cos(15d)
@@ -292,7 +295,6 @@ namespace RVP
 					 upLook, (dot < 0.9848077 && pitchLocked) ? targetUp : hit.normal, upLookCoeff * Time.fixedDeltaTime);
 				//Debug.DrawRay(vp.tr.position + Vector3.up * 3, targetUp, Color.red);
 				//Debug.DrawRay(vp.tr.position + Vector3.up * 3, hit.normal, Color.blue);
-
 			}
 			lookObj.rotation = Quaternion.LookRotation(forwardLook, upLook + rollUp);
 			//-------------
@@ -336,6 +338,7 @@ namespace RVP
 			Vector3 target;
 			if (badpos && !vp.customCam)
 			{ //Check if there is an object between the camera and target vehicle and move the camera in front of it
+
 				target = hit.point + (vp.tr.position + cHeight * Vector3.up - newTrPos).normalized * (cam.nearClipPlane + 1);
 			}
 			else
@@ -349,29 +352,36 @@ namespace RVP
 			smoothTime = Mathf.Lerp(smoothTime, slowCamera ? camStoppedSmoothTime : camFollowSmoothTime
 				, (slowCamera ? 1 : 2) * Time.fixedDeltaTime * smoothTimeSpeed);
 
-			Quaternion rotation;
+			
 			if (!vp.customCam)
 			{
-				if (slowCamera)
-				{ // cam lets car go ahead
-					lookObjVelCoeff = 1;
-					Quaternion cameraStoppedRotation = Quaternion.LookRotation(vp.tr.position - tr.position, rollUp);
-					rotation = Quaternion.Lerp(tr.rotation, cameraStoppedRotation, 2 * Time.fixedDeltaTime);
-				}
-				else
+				if(xInput == 0 && yInput == 0)
 				{
-					if (camOffsetDistance > carOffsetDistance)
-					{
+					if (slowCamera)
+					{ // cam lets car go ahead
 						lookObjVelCoeff = 1;
 						Quaternion cameraStoppedRotation = Quaternion.LookRotation(vp.tr.position - tr.position, rollUp);
 						rotation = Quaternion.Lerp(tr.rotation, cameraStoppedRotation, 2 * Time.fixedDeltaTime);
 					}
 					else
-					{// camera right behind car
-						lookObjVelCoeff = Mathf.Lerp(lookObjVelCoeff, 10, Time.fixedDeltaTime);
-						rotation = Quaternion.Lerp(tr.rotation, lookObj.rotation,
-						 (vp.reallyGroundedWheels > 1 ? 12f : 3f) * lookObjVelCoeff * Time.fixedDeltaTime);//TU
+					{
+						if (camOffsetDistance > carOffsetDistance)
+						{
+							lookObjVelCoeff = 1;
+							Quaternion cameraStoppedRotation = Quaternion.LookRotation(vp.tr.position - tr.position, rollUp);
+							rotation = Quaternion.Lerp(tr.rotation, cameraStoppedRotation, 2 * Time.fixedDeltaTime);
+						}
+						else
+						{// camera right behind car
+							lookObjVelCoeff = Mathf.Lerp(lookObjVelCoeff, 10, Time.fixedDeltaTime);
+							rotation = Quaternion.Lerp(tr.rotation, lookObj.rotation,
+							 (vp.reallyGroundedWheels > 1 ? 12f : 3f) * lookObjVelCoeff * Time.fixedDeltaTime);//TU
+						}
 					}
+				}
+				else
+				{
+					rotation = lookObj.rotation;
 				}
 			}
 			else

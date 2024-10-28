@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using System;
 using System.Collections;
+using UnityEngine.UIElements.Experimental;
+using System.Net.Http.Headers;
 
 namespace RVP
 {
@@ -54,7 +56,7 @@ namespace RVP
 		public float boostEval;
 		internal float fuelConsumption;
 		public float d_torqueCurve;
-		Coroutine boostOnStartCo;
+		Coroutine trickstartCo;
 		public float d_actInput;
 		public float accMult = 1;
 		int accSign;
@@ -79,35 +81,54 @@ namespace RVP
 		public override void Start()
 		{
 			base.Start();
-			CountDownSeq.OnRaceStarted += CountDownSeq_OnRaceStarted;
 			targetDrive = GetComponent<DriveForce>();
 			GetMaxRPM();
 		}
-		private void OnDestroy()
-		{
-			CountDownSeq.OnRaceStarted -= CountDownSeq_OnRaceStarted;
-		}
-		private void CountDownSeq_OnRaceStarted()
+		public void CheckTrickstart()
 		{
 			float curRPM = currentkRPM / limit2kRPM;
 			if (curRPM > .75f && curRPM < .9f)
 			{
-				//Debug.Log("Boost!");
-				if (boostOnStartCo != null)
-					StopCoroutine(boostOnStartCo);
-				boostOnStartCo = StartCoroutine(AddPowerBoostRewardOnStart());
+				Debug.Log("trkstart");
+				if (trickstartCo != null)
+					StopCoroutine(trickstartCo);
+				trickstartCo = StartCoroutine(DoTrickstart());
 			}
 		}
-		IEnumerator AddPowerBoostRewardOnStart()
+		IEnumerator DoTrickstart()
 		{
+			vp.raceBox.DoTrickstart();
 			float timer = 2;
 			float initMaxTorque = maxTorque;
+			float initShiftDelaySeconds = vp.engine.transmission.shiftDelaySeconds;
+			vp.engine.transmission.shiftDelaySeconds *= .25f;
 			while(timer > 0)
 			{
-				maxTorque = Mathf.Lerp(initMaxTorque, vp.wheels[0].tyreMaxAcc, timer / 2f);
+				maxTorque = initMaxTorque * Mathf.Lerp(1, 2, timer / 2f);
+
+				if (Vector3.Dot(Vector3.up, vp.wheels[2].contactPoint.normal) > 0.95f) // don't activate on steeps
+				{
+					SuspensionSavable sus = (SuspensionSavable)vp.carConfig.GetPartReadonly(PartType.Suspension);
+					float step = Easing.OutCubic(timer);
+					if(vp.accelInput > 0)
+					{
+						vp.wheels[0].suspensionParent.springForce = sus.frontSpringForce * Mathf.Lerp(1, 2, step);
+						vp.wheels[1].suspensionParent.springForce = vp.wheels[0].suspensionParent.springForce;
+						vp.wheels[2].suspensionParent.springForce = sus.RearSpringForce * Mathf.Lerp(1, .25f, step);
+						vp.wheels[3].suspensionParent.springForce = vp.wheels[2].suspensionParent.springForce;
+					}
+					else
+					{
+						vp.wheels[0].suspensionParent.springForce = sus.frontSpringForce;
+						vp.wheels[1].suspensionParent.springForce = vp.wheels[0].suspensionParent.springForce;
+						vp.wheels[2].suspensionParent.springForce = sus.RearSpringForce;
+						vp.wheels[3].suspensionParent.springForce = vp.wheels[2].suspensionParent.springForce;
+					}
+				}
 				timer -= Time.fixedDeltaTime;
 				yield return null;
 			}
+			vp.engine.transmission.shiftDelaySeconds = initShiftDelaySeconds;
 			maxTorque = initMaxTorque;
 		}
 		protected override void FixedUpdate()

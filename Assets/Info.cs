@@ -57,7 +57,7 @@ public class Info : MonoBehaviour
 	public MultiPlayerSelector mpSelectorInitializer;
 	public Shader transpShader;
 	public Text versionText;
-	public const string VERSION = "0.4";
+	public const string VERSION = "0.4.2";
 	public bool minimized { get; private set;}
 	void OnApplicationFocus(bool hasFocus)
 	{
@@ -227,7 +227,7 @@ public class Info : MonoBehaviour
 
 	public readonly Vector3[] invisibleLevelDimensions = new Vector3[]{
 		new (564, 1231,1), //ger
-		new (800, 800,1),  //jap
+		new (800, 900,1),  //jap
 		new (1462, 2480,1),//spn
 		new (2170, 1560,1),//fra
 		new (1170, 817,1), //eng

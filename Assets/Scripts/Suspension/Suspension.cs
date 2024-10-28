@@ -40,7 +40,6 @@ namespace RVP
 
 		[Header("Brakes and Steering")]
 		public float brakeForce;
-		public float ebrakeForce;
 
 		[Range(-180, 180)]
 		public float steerRangeMin;
