@@ -462,20 +462,11 @@ namespace RVP
 		// Use raycasting to find the current contact point for the wheel
 		void GetWheelContact()
 		{
-			float castDist = Mathf.Max(suspensionParent.suspensionDistance * Mathf.Max(0.001f, suspensionParent.targetCompression) + actualRadius, 0.001f);
+			float castDist = Mathf.Max(suspensionParent.suspensionDistance * 
+				Mathf.Max(0.001f, suspensionParent.targetCompression) + actualRadius, 0.001f);
 			//RaycastHit[] wheelHits = Physics.RaycastAll(transform.position, suspensionParent.springDirection, castDist, RaceManager.I.wheelCastMask);
-			RaycastHit hit;
-			bool validHit = false;
-			//if(isFront)
-			//{
-			//	validHit = Physics.Raycast(transform.position, tr.right * suspensionParent.flippedSideFactor, out hit, castDist, RaceManager.I.wheelCastMask);
-			//	if (!validHit)
-			//		validHit = Physics.Raycast(transform.position, suspensionParent.springDirection, out hit, castDist, RaceManager.I.wheelCastMask);
-			//}
-			//else
-			{
-				validHit = Physics.Raycast(transform.position, suspensionParent.springDirection, out hit, castDist, RaceManager.I.wheelCastMask);
-			}
+			//bool validHit = Physics.SphereCast(transform.position, actualRadius, suspensionParent.springDirection, out RaycastHit hit, castDist, RaceManager.I.wheelCastMask);
+			bool validHit = Physics.Raycast(transform.position, suspensionParent.springDirection, out RaycastHit hit, castDist, RaceManager.I.wheelCastMask);
 
 			//bool validHit = Physics.BoxCast(transform.position, new Vector3(.05f,.1f,.05f), suspensionParent.springDirection, out RaycastHit hit, 
 			//	 vp.tr.rotation, castDist, RaceManager.I.wheelCastMask);
@@ -504,7 +495,7 @@ namespace RVP
 			if (validHit)
 			{
 				//hit = wheelHits[hitIndex];
-
+				Debug.DrawLine(transform.position, hit.point);
 				if (!grounded && impactSnd && ((tireHitClips.Length > 0 && !popped) || (rimHitClip && popped)))
 				{
 					impactSnd.PlayOneShot(popped ? rimHitClip : tireHitClips[Mathf.RoundToInt(UnityEngine.Random.Range(0, tireHitClips.Length - 1))], Mathf.Clamp01(airTime * airTime));

@@ -1046,7 +1046,8 @@ namespace RVP
 
 		public void ChargeBatteryByStunt()
 		{
-			energyRemaining = Mathf.Clamp(energyRemaining + batteryCapacity * batteryStuntIncreasePercent, 0, batteryCapacity);
+			float addBatt = (followAI.IsCPU ? 3 : 1) * batteryStuntIncreasePercent;
+			energyRemaining = Mathf.Clamp(energyRemaining + batteryCapacity * addBatt, 0, batteryCapacity);
 		}
 		public void ResetOnTrackBatteryPenalty()
 		{

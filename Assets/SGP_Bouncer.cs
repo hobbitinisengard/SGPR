@@ -14,7 +14,7 @@ public class SGP_Bouncer : MonoBehaviour
 	float debounceTime = .5f;
 	float mult = 5;
 	float heightOffset = 1;
-	static int[] rbIds = new int[2];
+	int rbId;
 	static AnimationCurve multCurve;
 
 	void Awake()
@@ -34,26 +34,32 @@ public class SGP_Bouncer : MonoBehaviour
 		for (int i = 0; i < vp.ghost.colliders.Length; i++)
 		{
 			vp.ghost.colliders[i].hasModifiableContacts = true;
-			rbIds[i] = vp.ghost.colliders[i].GetInstanceID();
 		}
+		rbId = vp.rb.GetInstanceID();
 		Physics.ContactModifyEvent += OnContactModify;
+	}
+	private void OnDestroy()
+	{
+		Physics.ContactModifyEvent -= OnContactModify;
 	}
 	void OnContactModify(PhysicsScene scene, NativeArray<ModifiableContactPair> pairs)
 	{
 		foreach (var pair in pairs)
 		{
 			// if the contact point is not on our object skip it
-			if (rbIds.Any(id => id == pair.bodyInstanceID) || rbIds.Any(id => id == pair.otherBodyInstanceID))
+			if (rbId == pair.bodyInstanceID || rbId == pair.otherBodyInstanceID)
 			{
 				if(vp.velMag < pair.otherBodyVelocity.magnitude)
 				{
 					for(int i=0; i<pair.contactCount; ++i)
 					{
-						Vector3 normal = pair.GetNormal(i);
-						float angle = Vector3.SignedAngle(normal, 
-							(vp.rb.worldCenterOfMass - pair.GetPoint(i)).normalized, vp.upDir);
-						normal = Quaternion.AngleAxis(angle, vp.upDir) * normal;
+						//Vector3 normal = pair.GetNormal(i);
+						//float angle = Vector3.SignedAngle(normal, 
+						//	(vp.rb.worldCenterOfMass - pair.GetPoint(i)).normalized, vp.upDir);
+						//normal = Quaternion.AngleAxis(angle, vp.upDir) * normal;
+						Vector3 normal = Vector3.ProjectOnPlane(pair.GetNormal(i), Vector3.up);
 						pair.SetNormal(i, normal);
+						pair.SetBounciness(i, 1);
 					}
 				}
 			}
@@ -62,20 +68,20 @@ public class SGP_Bouncer : MonoBehaviour
 	void BounceCars(Collision col)
 	{
 		// bounce cars apart
-		if (Time.time - lastCarCarBounceTime > lastCarCarBounceTime)
-		{
-			lastCarCarBounceTime = Time.time;
-			var c = col.GetContact(0);
-			//Vector3 dir = (c.otherCollider.attachedRigidbody.worldCenterOfMass
-			//	- c.thisCollider.attachedRigidbody.worldCenterOfMass).normalized;
-			//if (vp.velMag < c.otherCollider.attachedRigidbody.velocity.magnitude)
-			//	dir *= -1;
+		//if (Time.time - lastCarCarBounceTime > lastCarCarBounceTime)
+		//{
+		//	lastCarCarBounceTime = Time.time;
+		//	var c = col.GetContact(0);
+		//	//Vector3 dir = (c.otherCollider.attachedRigidbody.worldCenterOfMass
+		//	//	- c.thisCollider.attachedRigidbody.worldCenterOfMass).normalized;
+		//	//if (vp.velMag < c.otherCollider.attachedRigidbody.velocity.magnitude)
+		//	//	dir *= -1;
 
-			Vector3 collisionForce = Vector3.ProjectOnPlane(-col.impulse, Vector3.up);
-			// Apply this collision force to the center of mass
-			rb.AddForceAtPosition(collisionForce, c.point, 
-				ForceMode.VelocityChange);
-		}
+		//	//Vector3 collisionForce = Vector3.ProjectOnPlane(-col.impulse, Vector3.up);
+		//	// Apply this collision force to the center of mass
+		//	//rb.AddForceAtPosition(collisionForce, c.point, 
+		//		//ForceMode.VelocityChange);
+		//}
 
 		//rb.AddForce(mult * col.GetContact(0).otherCollider.attachedRigidbody.mass * col.relativeVelocity.magnitude
 		//	* -col.relativeVelocity.normalized);

@@ -188,7 +188,7 @@ namespace RVP
 
 					compressCol = cap.AddComponent<CapsuleCollider>();
 					compressCol.direction = 1;
-					compressCol.radius = 0;// wheel.rimWidth * hardColliderRadiusFactor;
+					compressCol.radius = wheel.rimWidth;// * hardColliderRadiusFactor;
 					compressCol.height = (wheel.popped ? wheel.rimRadius : Mathf.Lerp(wheel.rimRadius, wheel.tireRadius, wheel.tirePressure)) * 2;
 
 					compressCol.sharedMaterial = RaceManager.I.frictionlessMat;
