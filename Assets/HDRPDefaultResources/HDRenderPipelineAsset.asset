@@ -30,7 +30,7 @@ MonoBehaviour:
     supportVolumetrics: 0
     supportVolumetricClouds: 1
     supportLightLayers: 1
-    renderingLayerMaskBuffer: 1
+    renderingLayerMaskBuffer: 0
     supportWater: 1
     waterSimulationResolution: 64
     supportWaterExclusion: 1
@@ -50,8 +50,8 @@ MonoBehaviour:
     supportTransparentBackface: 1
     supportTransparentDepthPrepass: 1
     supportTransparentDepthPostpass: 1
-    colorBufferFormat: 48
-    supportCustomPass: 1
+    colorBufferFormat: 74
+    supportCustomPass: 0
     customBufferFormat: 48
     supportedLitShaderMode: 2
     planarReflectionResolution:

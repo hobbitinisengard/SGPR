@@ -955,8 +955,8 @@ public class ChassisSavable : PartSavable
 	public override void Apply(VehicleParent vp)
 	{
 		//vp.cameraheightOffset = cameraHeight;
-		vp.rb.centerOfMass = new Vector3(0, verticalCOM, (F.I.s_raceType == RaceType.Drift) ? 0 : longtitunalCOM);
-		vp.SetChassis(mass, drag, angularDrag:1);
+		Vector3 COM = new Vector3(0, verticalCOM, (F.I.s_raceType == RaceType.Drift) ? 0 : longtitunalCOM);
+		vp.SetChassis(mass, drag, angularDrag:1, COM);
 		vp.raceBox.evoModule.SetStuntCoeffs(evoSmoothTime, staticEvoMaxSpeed, evoAcceleration);
 		RaceManager.I.cam.UpdateLH();
 	}

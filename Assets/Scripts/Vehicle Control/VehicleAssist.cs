@@ -116,6 +116,15 @@ namespace RVP
 					targetForce = Vector3.ProjectOnPlane(targetForce, Vector3.up);
 					var targetAnchor = (vp.wheels[0].tr.position + vp.wheels[1].tr.position)/2f;
 					vp.rb.AddForceAtPosition(targetForce,targetAnchor, ForceMode.Acceleration);
+
+					// max front alignment to road below
+					var detected = Physics.Raycast(tr.position, Vector3.down, out var hit);
+					if(detected && hit.collider.gameObject.layer == F.I.roadLayer)
+					{
+						//vp.upDir hit.normal;
+						//Vector3 torque = Vector3.right * torqueSpeed;
+						//rb.AddRelativeTorque(torque, ForceMode.Acceleration);
+					}
 				}
 			}
 

@@ -370,6 +370,8 @@ namespace RVP
 		bool collisionDetectionChangerActive;
 		private float lastCrashingTime;
 		public float initAngularDrag;
+		private Vector3 originalCOM;
+		private Vector3 zeroCOM;
 
 		public void SetBattery(float capacity, float chargingSpeed, float lowBatPercent, float evoBountyPercent)
 		{
@@ -604,6 +606,18 @@ namespace RVP
 		}
 		void Update()
 		{
+			if(reallyGroundedWheels > 0 && reallyGroundedWheels < 3)
+			{
+				if(rb.centerOfMass.y != 0)
+				{
+					rb.centerOfMass = zeroCOM;
+				}
+			}
+			else
+			{
+				rb.centerOfMass = originalCOM;
+			}
+
 			if (reallyGroundedWheels == 0 && !colliding && !crashing)
 				rb.drag = 0;
 			else if (Physics.OverlapBox(tr.position, Vector3.one, Quaternion.identity, 1 << F.I.aeroTunnel).Length > 1)
@@ -670,6 +684,7 @@ namespace RVP
 					l.transform.GetChild(0).GetComponent<Light>().range = 2;
 				}
 			}
+			
 			// Norm orientation visualizing
 			// Debug.DrawRay(norm.position, norm.forward, Color.blue);
 			// Debug.DrawRay(norm.position, norm.up, Color.green);
@@ -754,7 +769,7 @@ namespace RVP
 			if (Owner)
 				accelInput = f;
 
-			if (energyRemaining > 0)
+			if (energyRemaining > 0 && !followAI.IsCPU)
 				energyRemaining -= accelInput * engine.fuelConsumption * Time.deltaTime;
 		}
 
@@ -1046,12 +1061,13 @@ namespace RVP
 
 		public void ChargeBatteryByStunt()
 		{
-			float addBatt = (followAI.IsCPU ? 3 : 1) * batteryStuntIncreasePercent;
-			energyRemaining = Mathf.Clamp(energyRemaining + batteryCapacity * addBatt, 0, batteryCapacity);
+			energyRemaining = Mathf.Clamp(energyRemaining + batteryCapacity * batteryStuntIncreasePercent, 0, batteryCapacity);
 		}
 		public void ResetOnTrackBatteryPenalty()
 		{
-			energyRemaining = Mathf.Clamp(energyRemaining - batteryCapacity * 0.5f * batteryStuntIncreasePercent, 0, batteryCapacity);
+			float penalty = (followAI.IsCPU ? 0 : 1) * 0.5f * batteryStuntIncreasePercent;
+
+			energyRemaining = Mathf.Clamp(energyRemaining - batteryCapacity * penalty, 0, batteryCapacity);
 		}
 		public void KnockoutMe()
 		{
@@ -1075,8 +1091,12 @@ namespace RVP
 			SGP_HUD.I.infoText.AddMessage(new(tr.name + " ELIMINATED!", BottomInfoType.ELIMINATED));
 		}
 
-		public void SetChassis(float mass, float drag, float angularDrag)
+		public void SetChassis(float mass, float drag, float angularDrag, Vector3 com)
 		{
+			originalCOM = com;
+			zeroCOM = com;
+			zeroCOM.y = 0;
+			rb.centerOfMass = com;
 			originalMass = mass;
 			rb.mass = mass;
 			originalDrag = drag;

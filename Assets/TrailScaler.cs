@@ -14,6 +14,11 @@ public class TrailScaler : MonoBehaviour
 		children = transform.childCount;
 		if (children>0)
 		{
+			if(vp == RaceManager.I.playerCar)
+			{
+				gameObject.SetActive(false);
+				return;
+			}
 			initScale = transform.GetChild(0).localScale;
 			StartCoroutine(Works());
 		}
@@ -24,9 +29,12 @@ public class TrailScaler : MonoBehaviour
 	}
 	IEnumerator Works()
 	{
-		transform.GetChild(0).localScale = initScale * (Mathf.Clamp(vp.velMag, 0, 110) / 110);
-		for (int i = 1; i < 3; ++i)
-			transform.GetChild(i).localScale = Vector3.one * (0.5f * Mathf.Clamp(vp.velMag, 0, 110) / 110);
-		yield return null;
+		while(true)
+		{
+			transform.GetChild(0).localScale = initScale * (Mathf.Clamp(vp.velMag, 0, 110) / 110);
+			for (int i = 1; i < 3; ++i)
+				transform.GetChild(i).localScale = Vector3.one * (0.5f * Mathf.Clamp(vp.velMag, 0, 110) / 110);
+			yield return null;
+		}
 	}
 }

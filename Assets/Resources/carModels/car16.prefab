@@ -13272,8 +13272,7 @@ MonoBehaviour:
   - {fileID: 8300000, guid: b08c99567558fd14db654fc4a16ea68f, type: 3}
   - {fileID: 8300000, guid: fcce9f8132480eb46befdb286a2256d4, type: 3}
   sparks: {fileID: 6347354151603906554}
-  cameraDistanceChange: 0
-  cameraHeightChange: 0
+  cameraheightOffset: 0
   steeringControl: {fileID: 6779875395873480448}
   colliding: 0
   crashing: 0
@@ -13369,6 +13368,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e45c5ede14091ac489343ac18aa547dd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  angleThres: 15
   evoBloorp: {fileID: 515682680}
   rX_delta: 0
   euler: {x: 0, y: 0, z: 0}

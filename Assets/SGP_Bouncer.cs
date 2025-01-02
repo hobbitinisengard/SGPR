@@ -25,9 +25,9 @@ public class SGP_Bouncer : MonoBehaviour
 		{
 			Keyframe[] kf = new Keyframe[]
 			{
-				new (Mathf.Cos((90 + 30)*Mathf.Deg2Rad),0,      0, 1/15f), // cos 90+30 = -0.5f
-				new (Mathf.Cos((90 + 45)*Mathf.Deg2Rad),1, -1/15f, -1/15f), // cos 90+45 = -0.7f
-				new (Mathf.Cos((90 + 60)*Mathf.Deg2Rad),0,  1/15f, 0), // cos 90+60 = -0.8f
+				new (Mathf.Cos((90 + 20)*Mathf.Deg2Rad),0),
+				new (Mathf.Cos((90 + 45)*Mathf.Deg2Rad),1), 
+				new (Mathf.Cos((90 + 70)*Mathf.Deg2Rad),0),
 			};
 			multCurve = new AnimationCurve(kf);
 		}
