@@ -53,7 +53,7 @@ public class TrackSelector : TrackSelectorTemplate
 			rivalsButtonText.transform.parent.GetComponent<Button>().interactable = false;
 		}
 		
-		raceTypeButtonText.text = Enum.GetName(typeof(RaceType), F.I.s_raceType);
+		raceTypeButtonText.text = "Event: " + Enum.GetName(typeof(RaceType), F.I.s_raceType);
 	}
 	public void SwitchLaps(bool init = false)
 	{
