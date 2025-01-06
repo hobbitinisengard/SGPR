@@ -7,6 +7,7 @@ using System.IO;
 using System.Collections.Generic;
 using Unity.Services.Lobbies.Models;
 using Unity.Netcode;
+using System.Linq;
 
 namespace RVP
 {
@@ -342,32 +343,41 @@ namespace RVP
 				musicPlayer.PlayDelayed(5);
 			}
 
-			List<int> preferredCars = new();
-			for (int i = 0; i < F.I.cars.Length; ++i)
-			{
-				if (F.I.tracks[F.I.s_trackName].preferredCarClass == CarGroup.Wild
-					|| F.I.tracks[F.I.s_trackName].preferredCarClass == CarGroup.Team)
-				{
-					if (F.I.cars[i].category == CarGroup.Wild || F.I.cars[i].category == CarGroup.Team)
-						preferredCars.Add(i + 1);
-				}
-				else
-				{
-					if (F.I.cars[i].category == CarGroup.Aero || F.I.cars[i].category == CarGroup.Speed)
-						preferredCars.Add(i + 1);
-				}
-			}
+			Car[] preferredCars = F.I.cars.Where(c => c.category == F.I.tracks[F.I.s_trackName].preferredCarClass).ToArray();
+			
 
 			CarPlacement[] carPlacements;
 			if (ServerC.I.AmHost)
 			{
 				carPlacements = new CarPlacement[F.I.s_cpuRivals + 1];
+				List<Car> roosterCars = new();
+
+				foreach(Car c in F.I.cars)
+				{
+					for (int i = 0; i < c.rooster; i++)
+						roosterCars.Add(c);
+				}
+
 				for (int i = 0; i < F.I.s_cpuRivals; ++i)
-					carPlacements[i] = CarPlacement.CPU(i, preferredCars);
+				{
+					Car car;
+					if (roosterCars.Count > 0)
+					{
+						car = roosterCars[^1];
+						roosterCars.RemoveAt(roosterCars.Count-1);
+					}
+					else
+					{
+						bool pickPreferred = UnityEngine.Random.value <= .7f;
+						car = pickPreferred ? preferredCars.GetRandom() : F.I.cars.GetRandom();
+					}
+					carPlacements[i] = CarPlacement.CPU(i, car);
+				}
+					
 
 				if(F.I.s_spectator)
 				{
-					carPlacements[^1] = CarPlacement.CPU(F.I.s_cpuRivals, preferredCars);
+					carPlacements[^1] = CarPlacement.CPU(F.I.s_cpuRivals, preferredCars.GetRandom());
 				}
 				else
 				{

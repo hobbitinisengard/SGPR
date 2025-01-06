@@ -17,12 +17,12 @@
       "frontSpringDistance": 0.3,
       "frontSpringForce": 20.0,
       "frontSpringExponent": 1.0,
-      "frontSpringDampening": 0.1,
+      "frontSpringDampening": 0.2,
       "RearSteerRangeDegs": 0.0,
       "RearSpringDistance": 0.3,
       "RearSpringForce": 20.0,
       "RearSpringExponent": 1.0,
-      "RearSpringDampening": 0.1
+      "RearSpringDampening": 0.2
     },
     "bms": {
       "driftSpinAssist": 20.0,

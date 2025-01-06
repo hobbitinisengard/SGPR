@@ -13,13 +13,10 @@ public class CarPlacement
 	public string carName;
 	public string name;
 	public Livery sponsor;
-	public static CarPlacement CPU(int pos, in List<int> preferredCars)
+	public static CarPlacement CPU(int pos, Car c)
 	{
-		bool pickPreferred = UnityEngine.Random.value <= .7f;
-		string carStr = "car" + (pickPreferred ? preferredCars.GetRandom().ToString("D2") : 
-			UnityEngine.Random.Range(1,20).ToString("D2"));
 		return new CarPlacement() {
-			carName = carStr,
+			carName = c.internalName,
 			position = pos,
 			name = "CP" + (pos + 1).ToString(),
 			sponsor = (Livery)(((int)F.I.s_PlayerCarSponsor + pos) % F.I.Liveries),
