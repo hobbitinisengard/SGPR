@@ -15,12 +15,12 @@
     "sus": {
       "frontSteerRangeDegs": 35.0,
       "frontSpringDistance": 0.2,
-      "frontSpringForce": 9.0,
+      "frontSpringForce": 8.0,
       "frontSpringExponent": 1.0,
       "frontSpringDampening": 0.2,
       "RearSteerRangeDegs": 0.0,
       "RearSpringDistance": 0.2,
-      "RearSpringForce": 7.0,
+      "RearSpringForce": 8.0,
       "RearSpringExponent": 1.0,
       "RearSpringDampening": 0.2
     },
@@ -69,7 +69,7 @@
     "chassis": {
       "mass": 0.7,
       "longtitunalCOM": 0.0,
-      "verticalCOM": 0.45,
+      "verticalCOM": 0.5,
       "drag": 0.3,
       "angularDrag": 1.0,
       "evoSmoothTime": 0.07,
