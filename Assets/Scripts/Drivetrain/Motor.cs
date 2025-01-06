@@ -116,7 +116,7 @@ namespace RVP
 					{
 						jet.transform.localScale = (1 + 0.1f * sine) * baseJetScale * Vector3.one;
 						jet.SetActive(true);
-						jet.GetComponent<MeshRenderer>().material.SetVector("_Offset", new Vector4(0, Mathf.Sin(sinArg / 30f)));
+						jet.GetComponent<MeshRenderer>().material.SetVector("_Offset", new Vector2(0, Mathf.Sin(sinArg / 30f)));
 					}
 				}
 				else

@@ -446,10 +446,47 @@ namespace RVP
 			matName = matName[..^1] + ((int)sponsor).ToString();
 			Material newMat = Resources.Load<Material>("materials/" + matName);
 			newMat.name = matName;
-			newMat.mainTexture = ImgPathToTexture2D(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "/textures/" + matName + ".jpg");
+			newMat.mainTexture = ImgPathToTexture2D(F.I.documentsSGPRpath + "textures/" + matName + ".jpg");
+
+			// assign to body
 			mr.material = newMat;
+
+			// assign to wheels
+			foreach(var w in wheels)
+			{
+				var wmr = w.transform.GetChild(0).GetComponent<MeshRenderer>();
+				var mats = wmr.materials;
+				for (int i=0; i<mats.Length;i++)
+				{
+					if (mats[i].name.Contains("grid"))
+					{
+						mats[i] = newMat;
+					}
+				}
+				wmr.materials = mats;
+			}
+			// assign to antennas
+			var anchor = bodyObj.transform.GetChild(0);
+			for(int i=0; i<anchor.childCount; i++)
+			{
+				if(anchor.GetChild(i).TryGetComponent<MeshRenderer>(out var amr))
+				{
+					var mats = amr.materials;
+					for (int j = 0; j < mats.Length; j++)
+					{
+						if (mats[j].name.Contains("grid"))
+						{
+							mats[j] = newMat;
+						}
+					}
+					amr.materials = mats;
+				}
+			}
+
+			// assign to flag
 			if (antennaFlag != null)
 				antennaFlag.material = newMat;
+
 			RaceManager.I.hud.AddToProgressBar(this);
 			sampleText.textMesh.color = F.ReadColor(sponsor);
 		}
