@@ -446,12 +446,19 @@ namespace RVP
 			matName = matName[..^1] + ((int)sponsor).ToString();
 			Material newMat = Resources.Load<Material>("materials/" + matName);
 			newMat.name = matName;
-			newMat.mainTexture = 
+			newMat.mainTexture = ImgPathToTexture2D(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "/textures/" + matName + ".jpg");
 			mr.material = newMat;
 			if (antennaFlag != null)
 				antennaFlag.material = newMat;
 			RaceManager.I.hud.AddToProgressBar(this);
 			sampleText.textMesh.color = F.ReadColor(sponsor);
+		}
+		private Texture2D ImgPathToTexture2D(string imgPath)
+		{
+			byte[] pngBytes = System.IO.File.ReadAllBytes(imgPath);
+			Texture2D tex = new Texture2D(1024, 1024);
+			tex.LoadImage(pngBytes);
+			return tex;
 		}
 		void OnNameChanged()
 		{

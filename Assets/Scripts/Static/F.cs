@@ -70,8 +70,8 @@ public static class F
 
 			string copyToPath = newPath.Replace(sourcePath, targetPath);
 
-			// don't overwrite userdata.json and ranking.json; original parts and tracks are overwritten
-			if (ext != ".json" || !File.Exists(copyToPath))
+			// don't overwrite textures and userdata.json and ranking.json; original parts and tracks are overwritten
+			if ((ext != ".jpg" && ext != ".json") || !File.Exists(copyToPath))
 				File.Copy(newPath, copyToPath, overwrite: true);
 		}
 	}
