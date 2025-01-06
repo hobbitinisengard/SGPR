@@ -446,6 +446,7 @@ namespace RVP
 			matName = matName[..^1] + ((int)sponsor).ToString();
 			Material newMat = Resources.Load<Material>("materials/" + matName);
 			newMat.name = matName;
+			newMat.mainTexture = 
 			mr.material = newMat;
 			if (antennaFlag != null)
 				antennaFlag.material = newMat;
