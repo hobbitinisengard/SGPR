@@ -55,8 +55,9 @@ public class RankingData
 public class Info : MonoBehaviour
 {
 	public MultiPlayerSelector mpSelectorInitializer;
-	public Shader transpShader;
 	public Text versionText;
+	public Material transpMaterial;
+	public Material opaqueMaterial;
 	public const string VERSION = "0.4.3";
 	public bool minimized { get; private set;}
 	void OnApplicationFocus(bool hasFocus)

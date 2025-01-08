@@ -29,15 +29,16 @@ Material:
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
   - _DISABLE_SSR_TRANSPARENT
-  - _DOUBLESIDED_ON
-  - _ENABLE_FOG_ON_TRANSPARENT
   - _NORMALMAP_TANGENT_SPACE
   - _REFRACTION_PLANE
   - _SURFACE_TYPE_TRANSPARENT
-  m_InvalidKeywords: []
+  m_InvalidKeywords:
+  - _ALPHABLEND_ON
+  - _EMISSION
+  - _SPECULARHIGHLIGHTS_OFF
   m_LightmapFlags: 0
   m_EnableInstancingVariants: 0
-  m_DoubleSidedGI: 1
+  m_DoubleSidedGI: 0
   m_CustomRenderQueue: 3000
   stringTagMap:
     MotionVector: User
@@ -250,8 +251,8 @@ Material:
     - _ContrastDetailMap: 0
     - _ContrastTransparentMap: 0
     - _Cull: 2
-    - _CullMode: 0
-    - _CullModeForward: 0
+    - _CullMode: 2
+    - _CullModeForward: 2
     - _Cutoff: 0.5
     - _DepthOffsetEnable: 0
     - _DetailAlbedoScale: 1
@@ -269,7 +270,7 @@ Material:
     - _DistortionEnabled: 0
     - _DistortionStrength: 1
     - _DistortionStrengthScaled: 0
-    - _DoubleSidedEnable: 1
+    - _DoubleSidedEnable: 0
     - _DoubleSidedGIMode: 0
     - _DoubleSidedNormalMode: 1
     - _DstBlend: 10
@@ -283,7 +284,7 @@ Material:
     - _EnableBlendModePreserveSpecularLighting: 1
     - _EnableDetailMask: 0
     - _EnableExternalAlpha: 0
-    - _EnableFogOnTransparent: 1
+    - _EnableFogOnTransparent: 0
     - _EnableGeometricSpecularAA: 0
     - _EnergyConservingSpecularColor: 1
     - _ExcludeFromTUAndAA: 0
@@ -313,7 +314,7 @@ Material:
     - _LinkDetailsWithBase: 1
     - _MaterialID: 1
     - _MaterialTypeMask: 2
-    - _Metallic: 1
+    - _Metallic: 0
     - _MetallicRemapMax: 1
     - _MetallicRemapMin: 0
     - _Mode: 2
@@ -375,10 +376,10 @@ Material:
     - _TransparentBackfaceEnable: 0
     - _TransparentCullMode: 2
     - _TransparentDepthPostpassEnable: 0
-    - _TransparentDepthPrepassEnable: 0
+    - _TransparentDepthPrepassEnable: 1
     - _TransparentSortPriority: 0
     - _TransparentWritingMotionVec: 0
-    - _TransparentZWrite: 0
+    - _TransparentZWrite: 1
     - _UVBase: 0
     - _UVDetail: 0
     - _UVEmissive: 0
@@ -391,7 +392,7 @@ Material:
     - _ZTestDepthEqualForOpaque: 4
     - _ZTestGBuffer: 4
     - _ZTestTransparent: 4
-    - _ZWrite: 0
+    - _ZWrite: 1
     - __dirty: 1
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}

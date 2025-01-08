@@ -32,42 +32,24 @@ public class Ghost : NetworkBehaviour
 		{
 			for(int i=0; i<r.materials.Length; ++i)
 			{
-				r.materials[i] = isHittable ? ToOpaqueMode(r.materials[i]) : ToFadeMode(r.materials[i]);
+				//var tex = r.materials[i].mainTexture;
+				if (isHittable)
+				{
+					// Set Surface Type to Opaque
+					//r.materials[i] = F.I.opaqueMaterial;
+					r.materials[i].SetColor("_BaseColor", Color.white);
+					// Enable Opaque-related keywords
+					//r.materials[i].EnableKeyword("_SURFACE_TYPE_OPAQUE");
+					//r.materials[i].DisableKeyword("_SURFACE_TYPE_TRANSPARENT");
+				}
+				else
+				{
+					//r.materials[i] = F.I.transpMaterial;
+					r.materials[i].SetColor("_BaseColor", new Color(1,1,1,.4f));
+				}
+				//r.materials[i].mainTexture = tex;
 			}
 		}
-	}
-	public Material ToOpaqueMode(Material material)
-	{
-		//float specularIntensity = material.GetFloat("_SpecularIntensity");
-		//float smoothness = material.GetFloat("_Glossiness");
-		material.shader = opaqueShader;
-		if(!material.name.Contains("tyre"))
-		{
-			material.SetFloat("_Metallic", 1);
-			material.SetFloat("Smoothness", .5f);
-		}
-		material.SetFloat("_SurfaceType", 0);//SurfaceType.Opaque
-		
-		return material;
-	}
-
-	public Material ToFadeMode(Material material)
-	{
-		material.shader = F.I.transpShader;
-		// Set Rendering Mode to Fade
-		material.SetFloat("_Mode", 2); // 2 corresponds to Fade mode
-		material.SetOverrideTag("RenderType", "Transparent");
-		material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-		material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-		material.SetInt("_ZWrite", 0);
-		material.DisableKeyword("_ALPHATEST_ON");
-		material.EnableKeyword("_ALPHABLEND_ON");
-		material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
-		material.SetColor("_Color", new Color(1,1,1,.25f));
-		// Set Color Mode to Multiply
-		material.SetFloat("_ColorMode", 0); // 0 corresponds to Multiply mode
-		material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
-		return material;
 	}
 
 	public void SetGhostPermanently()

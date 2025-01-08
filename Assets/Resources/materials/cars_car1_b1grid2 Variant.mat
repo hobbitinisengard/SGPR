@@ -24,29 +24,30 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: cars_car1_b1grid2 Variant
-  m_Shader: {fileID: 211, guid: 0000000000000000f000000000000000, type: 0}
+  m_Shader: {fileID: 4800000, guid: 6e4ae4064600d784cac1e41a9e6f2e59, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
-  - _ALPHABLEND_ON
-  m_InvalidKeywords:
   - _DISABLE_SSR_TRANSPARENT
-  - _DOUBLESIDED_ON
   - _NORMALMAP_TANGENT_SPACE
+  - _SURFACE_TYPE_TRANSPARENT
+  m_InvalidKeywords:
+  - _ALPHABLEND_ON
+  - _EMISSION
+  - _SPECULARHIGHLIGHTS_OFF
   m_LightmapFlags: 0
   m_EnableInstancingVariants: 0
-  m_DoubleSidedGI: 1
+  m_DoubleSidedGI: 0
   m_CustomRenderQueue: 3000
   stringTagMap:
     MotionVector: User
     RenderType: Transparent
   disabledShaderPasses:
-  - TransparentDepthPrepass
+  - GRABPASS
   - TransparentDepthPostpass
   - TransparentBackface
   - RayTracingPrepass
   - MOTIONVECTORS
-  - GRABPASS
   m_LockedProperties: 
   m_SavedProperties:
     serializedVersion: 3
@@ -124,7 +125,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: 614f5d0d9bcd46144b4cae65735a1e66, type: 3}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MaskMap:
@@ -229,7 +230,7 @@ Material:
     - _AlphaCutoffPostpass: 0.5
     - _AlphaCutoffPrepass: 0.5
     - _AlphaCutoffShadow: 0.5
-    - _AlphaDstBlend: 0
+    - _AlphaDstBlend: 10
     - _AlphaRemapMax: 1
     - _AlphaRemapMin: 0
     - _AlphaSrcBlend: 1
@@ -250,8 +251,8 @@ Material:
     - _ContrastDetailMap: 0
     - _ContrastTransparentMap: 0
     - _Cull: 2
-    - _CullMode: 0
-    - _CullModeForward: 0
+    - _CullMode: 2
+    - _CullModeForward: 2
     - _Cutoff: 0.5
     - _DepthOffsetEnable: 0
     - _DetailAlbedoScale: 1
@@ -269,11 +270,11 @@ Material:
     - _DistortionEnabled: 0
     - _DistortionStrength: 1
     - _DistortionStrengthScaled: 0
-    - _DoubleSidedEnable: 1
+    - _DoubleSidedEnable: 0
     - _DoubleSidedGIMode: 0
     - _DoubleSidedNormalMode: 1
     - _DstBlend: 10
-    - _DstBlend2: 0
+    - _DstBlend2: 10
     - _EmissionEnabled: 0
     - _EmissionIntensity: 0
     - _EmissiveColorMode: 1
@@ -283,7 +284,7 @@ Material:
     - _EnableBlendModePreserveSpecularLighting: 1
     - _EnableDetailMask: 0
     - _EnableExternalAlpha: 0
-    - _EnableFogOnTransparent: 1
+    - _EnableFogOnTransparent: 0
     - _EnableGeometricSpecularAA: 0
     - _EnergyConservingSpecularColor: 1
     - _ExcludeFromTUAndAA: 0
@@ -313,7 +314,7 @@ Material:
     - _LinkDetailsWithBase: 1
     - _MaterialID: 1
     - _MaterialTypeMask: 2
-    - _Metallic: 1
+    - _Metallic: 0
     - _MetallicRemapMax: 0
     - _MetallicRemapMin: 0
     - _Mode: 2
@@ -353,12 +354,12 @@ Material:
     - _SpecularOcclusionMode: 1
     - _SpreadDetailMap: 0
     - _SpreadTransparentMap: 0
-    - _SrcBlend: 5
+    - _SrcBlend: 1
     - _StencilRef: 0
-    - _StencilRefDepth: 8
+    - _StencilRefDepth: 0
     - _StencilRefDistortionVec: 4
-    - _StencilRefGBuffer: 10
-    - _StencilRefMV: 40
+    - _StencilRefGBuffer: 2
+    - _StencilRefMV: 32
     - _StencilWriteMask: 6
     - _StencilWriteMaskDepth: 9
     - _StencilWriteMaskDistortionVec: 4
@@ -366,7 +367,7 @@ Material:
     - _StencilWriteMaskMV: 41
     - _SubsurfaceMask: 1
     - _SupportDecals: 1
-    - _SurfaceType: 0
+    - _SurfaceType: 1
     - _TexWorldScale: 1
     - _TexWorldScaleEmissive: 1
     - _Thickness: 1
@@ -375,10 +376,10 @@ Material:
     - _TransparentBackfaceEnable: 0
     - _TransparentCullMode: 2
     - _TransparentDepthPostpassEnable: 0
-    - _TransparentDepthPrepassEnable: 0
+    - _TransparentDepthPrepassEnable: 1
     - _TransparentSortPriority: 0
     - _TransparentWritingMotionVec: 0
-    - _TransparentZWrite: 0
+    - _TransparentZWrite: 1
     - _UVBase: 0
     - _UVDetail: 0
     - _UVEmissive: 0
@@ -388,16 +389,16 @@ Material:
     - _UseShadowThreshold: 0
     - _VisualizeMask: 0
     - _ZTest: 4
-    - _ZTestDepthEqualForOpaque: 3
+    - _ZTestDepthEqualForOpaque: 4
     - _ZTestGBuffer: 4
     - _ZTestTransparent: 4
-    - _ZWrite: 0
+    - _ZWrite: 1
     - __dirty: 1
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _BaseColorMap_MipInfo: {r: 0, g: 0, b: 0, a: 0}
     - _CameraFadeParams: {r: 0, g: Infinity, b: 0, a: 0}
-    - _Color: {r: 1, g: 1, b: 1, a: 0.28235295}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _ColorAddSubDiff: {r: 0, g: 0, b: 0, a: 0}
     - _DeformNormal: {r: 0, g: 0, b: 0, a: 0}
     - _DetailColor: {r: 1, g: 1, b: 1, a: 0}
