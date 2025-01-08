@@ -554,7 +554,7 @@ namespace RVP
 			va = GetComponent<VehicleAssist>();
 			tr = transform;
 			rb = GetComponent<Rigidbody>();
-			originalDrag = rb.drag;
+			originalDrag = rb.linearDamping;
 			originalMass = rb.mass;
 
 			//for (int i = 0; i < roadColParent.childCount; i++)
@@ -664,13 +664,13 @@ namespace RVP
 			}
 
 			if (reallyGroundedWheels == 0 && !colliding && !crashing)
-				rb.drag = 0;
+				rb.linearDamping = 0;
 			else if (Physics.OverlapBox(tr.position, Vector3.one, Quaternion.identity, 1 << F.I.aeroTunnel).Length > 1)
 			{ // aerodynamic tunnel
-				rb.drag = 0.8f * originalDrag;
+				rb.linearDamping = 0.8f * originalDrag;
 			}
 			else
-				rb.drag = originalDrag;
+				rb.linearDamping = originalDrag;
 			// Shift single frame pressing logic
 			if (stopUpshift)
 			{
@@ -751,16 +751,16 @@ namespace RVP
 			GetGroundedWheels();
 
 			prevVel = localVelocity;
-			localVelocity = tr.InverseTransformDirection(rb.velocity - wheelContactsVelocity);
+			localVelocity = tr.InverseTransformDirection(rb.linearVelocity - wheelContactsVelocity);
 			acceleration = localVelocity - prevVel;
 
 			localAngularVel = tr.InverseTransformDirection(rb.angularVelocity);
 
-			velMag = rb.velocity.magnitude;
+			velMag = rb.linearVelocity.magnitude;
 
 
 
-			sqrVelMag = rb.velocity.sqrMagnitude;
+			sqrVelMag = rb.linearVelocity.sqrMagnitude;
 			forwardDir = tr.forward;
 			rightDir = tr.right;
 			upDir = tr.up;
@@ -1145,8 +1145,8 @@ namespace RVP
 			originalMass = mass;
 			rb.mass = mass;
 			originalDrag = drag;
-			rb.drag = drag;
-			rb.angularDrag = angularDrag;
+			rb.linearDamping = drag;
+			rb.angularDamping = angularDrag;
 			initAngularDrag = angularDrag;
 		}
 	}

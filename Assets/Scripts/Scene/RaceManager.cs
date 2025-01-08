@@ -38,7 +38,7 @@ namespace RVP
 		public static int ignoreWheelCastLayer;
 
 		[Tooltip("Frictionless physic material")]
-		public PhysicMaterial frictionlessMat;
+		public PhysicsMaterial frictionlessMat;
 
 		public static Vector3 worldUpDir; // Global up direction, opposite of normalized gravity direction
 

@@ -69,7 +69,7 @@ public class Info : MonoBehaviour
 		UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
 		MultiPlayerSelector.I = mpSelectorInitializer;
 		versionText.text = VERSION;
-		int MPtags = CurrentPlayer.ReadOnlyTags().Count;
+		int MPtags = CurrentPlayer.ReadOnlyTags().Count();
 		switch (MPtags)
 		{
 			case 1:

@@ -69,7 +69,7 @@ namespace RVP
         [System.NonSerialized]
         public bool canDetach;
         public Mesh wheelMeshLoose; // Mesh for detached wheel collider
-        public PhysicMaterial detachedWheelMaterial;
+        public PhysicsMaterial detachedWheelMaterial;
 
         void Start() {
             tr = transform;
@@ -167,7 +167,7 @@ namespace RVP
                 // Get velocity of ground to offset from local vertical velocity
                 Vector3 groundVel = Vector3.zero;
                 if (contactPoint.col.attachedRigidbody) {
-                    groundVel = contactPoint.col.attachedRigidbody.velocity;
+                    groundVel = contactPoint.col.attachedRigidbody.linearVelocity;
                 }
 
                 // Get the vertical velocity of the wheel
@@ -221,7 +221,7 @@ namespace RVP
                 detachedCol.sharedMesh = wheelMeshLoose ? wheelMeshLoose : detachFilter.sharedMesh;
 
                 rb.mass -= mass;
-                detachedBody.velocity = rb.GetPointVelocity(visualWheel.position);
+                detachedBody.linearVelocity = rb.GetPointVelocity(visualWheel.position);
                 detachedBody.angularVelocity = rb.angularVelocity;
 
                 visualWheel.gameObject.SetActive(false);

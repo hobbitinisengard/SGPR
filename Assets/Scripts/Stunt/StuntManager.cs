@@ -179,7 +179,7 @@ namespace RVP
 				case EndStuntReqParallelAlignment.None:
 					return true;
 				case EndStuntReqParallelAlignment.Forward_w:
-					return Parallel(vp.forwardDir, vp.rb.velocity);
+					return Parallel(vp.forwardDir, vp.rb.linearVelocity);
 				case EndStuntReqParallelAlignment.Up_gY:
 					return vp.upDot >= 0.9f; // same as: Parallel(vp.upDir, Vector3.up);
 			}

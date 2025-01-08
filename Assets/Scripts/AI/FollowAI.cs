@@ -314,7 +314,7 @@ namespace RVP
 			{
 				if ((!overRoad) // out of track
 					 || (vp.velMag > 10 && vp.groundedWheels > 2 && Vector3.Dot(vp.forwardDir, trackPathCreator.path.GetDirectionAtDistance(dist)) < -0.5f
-					&& Vector3.Dot(vp.rb.velocity.normalized, trackPathCreator.path.GetDirectionAtDistance(dist)) < -0.5f)) // wrong way drive
+					&& Vector3.Dot(vp.rb.linearVelocity.normalized, trackPathCreator.path.GetDirectionAtDistance(dist)) < -0.5f)) // wrong way drive
 				{
 					outOfTrackTime += Time.fixedDeltaTime;
 					lastOutOfTrackTime = Time.time;
@@ -525,7 +525,7 @@ namespace RVP
 						vp.SetSteer(0);
 					else
 					{
-						var newTargetSteer = Vector2.SignedAngle(targetDir, (vp.rb.velocity.normalized.Flat() + tr.forward.Flat()) / 2f);
+						var newTargetSteer = Vector2.SignedAngle(targetDir, (vp.rb.linearVelocity.normalized.Flat() + tr.forward.Flat()) / 2f);
 						newTargetSteer = F.Sign(newTargetSteer) * Mathf.InverseLerp(0, maxPhysicalSteerAngle, Mathf.Abs(newTargetSteer));
 						newTargetSteer *= (reverseTime == 0) ? 1 : -1;
 						vp.SetSteer(newTargetSteer);

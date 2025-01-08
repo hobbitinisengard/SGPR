@@ -210,7 +210,7 @@ namespace RVP
 					actualInput = 0;
 
 				if (vp.reallyGroundedWheels == 4)
-					vp.rb.AddForce(Time.fixedDeltaTime * boostEval * vp.rb.velocity.normalized);
+					vp.rb.AddForce(Time.fixedDeltaTime * boostEval * vp.rb.linearVelocity.normalized);
 
 				targetDrive.torque = actualInput * maxTorque * torqueCurve.Evaluate(currentkRPM); // TORQUE
 				targetDrive.torque = Mathf.Clamp(targetDrive.torque,float.MinValue,float.MaxValue);

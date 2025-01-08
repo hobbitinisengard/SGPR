@@ -213,7 +213,7 @@ namespace RVP
 		void ReplayCam()
 		{
 			tr.position = vp.followAI.currentCam.cam.transform.position;
-			Vector3 camTarget = vp.tr.position - replayCamAgility * Time.fixedDeltaTime * vp.rb.velocity;
+			Vector3 camTarget = vp.tr.position - replayCamAgility * Time.fixedDeltaTime * vp.rb.linearVelocity;
 			tr.rotation = Quaternion.LookRotation(camTarget - tr.position);
 		}
 		void FollowCam()
@@ -240,7 +240,7 @@ namespace RVP
 			else
 			{
 				targetUp = vp.wheels[2].contactPoint.normal;
-				targetForward = targetBody.velocity;
+				targetForward = targetBody.linearVelocity;
 			}
 
 			// ROLL: camera rolls proportional to car's effective angle and speed
@@ -265,11 +265,11 @@ namespace RVP
 			//Debug.DrawRay(vp.tr.position + Vector3.up * 3, targetUp, Color.white);
 			//camera look-position
 			// cos(45d) = 0.7f cos(0d) = 1 cos(90deg) = 0
-			if (vp.rb.velocity.magnitude < 1)
+			if (vp.rb.linearVelocity.magnitude < 1)
 				forward = vp.tr.forward;
 			else
 				forward = (vp.reallyGroundedWheels > 0)
-				 ? vp.tr.forward : vp.rb.velocity.normalized;
+				 ? vp.tr.forward : vp.rb.linearVelocity.normalized;
 
 			if(!F.I.chat.texting)
 			{
@@ -281,7 +281,7 @@ namespace RVP
 			forward = Quaternion.AngleAxis(xInput * 90 + yInput * 180, vp.tr.up) * forward;
 			forward = Quaternion.AngleAxis(Time.fixedDeltaTime * smoothYRot * Mathf.Rad2Deg, vp.tr.up) * forward;
 			lookObj.position = vp.tr.position - forward * targetCamCarDistance + Vector3.up * height;
-			lookObj.position += vp.rb.velocity * Time.fixedDeltaTime;
+			lookObj.position += vp.rb.linearVelocity * Time.fixedDeltaTime;
 			//--------------
 			targetForward = vp.tr.position + cHeight * Vector3.up - lookObj.position;
 			forwardLook = Vector3.Lerp(forwardLook, targetForward, forwardLookCoeff * Time.fixedDeltaTime);

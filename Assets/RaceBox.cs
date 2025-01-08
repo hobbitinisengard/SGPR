@@ -461,7 +461,7 @@ public class RaceBox : MonoBehaviour
 			if (!prevGroundedWheels0)
 			{
 				stableLandingTimer = 2;
-				w = vp.rb.velocity;
+				w = vp.rb.linearVelocity;
 				//w.y = 0; 
 				w = w.normalized;
 
@@ -706,11 +706,11 @@ public class RaceBox : MonoBehaviour
 					bool traf = Physics.Raycast(vp.tr.position, Vector3.down, out var hit, float.MaxValue, 1 << F.I.roadLayer);
 					if (!traf || Vector3.Distance(vp.tr.position, hit.point) < 4)
 						return;
-					if (vp.rb.velocity.y > 0 && vp.velMag > 13)
+					if (vp.rb.linearVelocity.y > 0 && vp.velMag > 13)
 					{
 						jumpTimer += Time.deltaTime;
 					}
-					else if (vp.rb.velocity.y < 0 && prevVel >= 0)
+					else if (vp.rb.linearVelocity.y < 0 && prevVel >= 0)
 					{ // jump pts
 						int level = -1;
 						int score = 0;
@@ -747,7 +747,7 @@ public class RaceBox : MonoBehaviour
 						}
 					}
 				}
-				prevVel = vp.rb.velocity.y;
+				prevVel = vp.rb.linearVelocity.y;
 			}
 			else
 			{

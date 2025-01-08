@@ -173,7 +173,7 @@ namespace RVP
 				 new Vector3(0, (targetTurnSpeed - vp.localAngularVel.y) * driftSpinAssist * driftSpinCurve.Evaluate(Mathf.Abs(Mathf.Pow(vp.localVelocity.x, driftSpinExponent))) * groundedFactor, 0),
 				 ForceMode.Acceleration);
 
-			float rightVelDot = Vector3.Dot(tr.right, rb.velocity.normalized);
+			float rightVelDot = Vector3.Dot(tr.right, rb.linearVelocity.normalized);
 
 			if (straightenAssist && vp.steerInput == 0 && Mathf.Abs(rightVelDot) < 0.1f && vp.sqrVelMag > 5)
 			{
@@ -247,7 +247,7 @@ namespace RVP
 		// Assist for accelerating while drifting
 		void ApplyDriftPush()
 		{
-			float pushFactor = (vp.accelAxisIsBrake ? vp.accelInput : vp.accelInput - vp.brakeInput) * Mathf.Abs(vp.localVelocity.x) * driftPush * groundedFactor * (1 - Mathf.Abs(Vector3.Dot(vp.forwardDir, rb.velocity.normalized)));
+			float pushFactor = (vp.accelAxisIsBrake ? vp.accelInput : vp.accelInput - vp.brakeInput) * Mathf.Abs(vp.localVelocity.x) * driftPush * groundedFactor * (1 - Mathf.Abs(Vector3.Dot(vp.forwardDir, rb.linearVelocity.normalized)));
 
 			rb.AddForce(
 				 vp.norm.TransformDirection(new Vector3(Mathf.Abs(pushFactor) * Mathf.Sign(vp.localVelocity.x), Mathf.Abs(pushFactor) * Mathf.Sign(vp.localVelocity.z), 0)),

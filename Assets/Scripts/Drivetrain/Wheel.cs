@@ -204,8 +204,8 @@ namespace RVP
 		Rigidbody detachedBody;
 		MeshFilter detachFilter;
 		MeshFilter detachTireFilter;
-		public PhysicMaterial detachedTireMaterial;
-		public PhysicMaterial detachedRimMaterial;
+		public PhysicsMaterial detachedTireMaterial;
+		public PhysicsMaterial detachedRimMaterial;
 
 		public ParticleSystem airGreenParticleSystem;
 		public float d_brakeForce;
@@ -426,7 +426,7 @@ namespace RVP
 			{
 				if (airGreenParticleSystem != null)
 				{
-					if (!grounded && vp.rb.velocity.y < 0 && !vp.colliding)
+					if (!grounded && vp.rb.linearVelocity.y < 0 && !vp.colliding)
 					{
 						if (!airGreenParticleSystem.isPlaying)
 						{
@@ -805,7 +805,7 @@ namespace RVP
 				}
 
 				rb.mass -= mass;
-				detachedBody.velocity = rb.GetPointVelocity(rim.position);
+				detachedBody.linearVelocity = rb.GetPointVelocity(rim.position);
 				detachedBody.angularVelocity = rb.angularVelocity;
 
 				rim.gameObject.SetActive(false);

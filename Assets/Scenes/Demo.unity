@@ -38,12 +38,12 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 1043417879}
-  m_IndirectSpecularColor: {r: 12496.025, g: 10530.411, b: 9589.884, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &4
 LightmapSettings:
   m_ObjectHideFlags: 0
-  serializedVersion: 12
+  serializedVersion: 13
+  m_BakeOnSceneLoad: 0
   m_GISettings:
     serializedVersion: 2
     m_BounceScale: 1
@@ -558,7 +558,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -606834691, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
+  m_Sprite: {fileID: -805425393, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -1029,6 +1029,7 @@ TrailRenderer:
   m_RayTraceProcedural: 0
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 4294967295
   m_RendererPriority: 0
   m_Materials:
@@ -6159,6 +6160,7 @@ MonoBehaviour:
   m_DeselectOnBackgroundClick: 0
   m_PointerBehavior: 0
   m_CursorLockBehavior: 0
+  m_ScrollDeltaPerTick: 6
 --- !u!114 &67133000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11950,6 +11952,7 @@ MeshRenderer:
   m_RayTraceProcedural: 0
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -16223,6 +16226,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_ProtocolType: 1
+  m_UseWebSockets: 0
+  m_UseEncryption: 0
   m_MaxPacketQueueSize: 128
   m_MaxPayloadSize: 6144
   m_HeartbeatTimeoutMS: 500
@@ -21507,6 +21512,7 @@ MeshRenderer:
   m_RayTraceProcedural: 0
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -26989,6 +26995,7 @@ MeshRenderer:
   m_RayTraceProcedural: 0
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -27992,7 +27999,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -1178902668, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
+  m_Sprite: {fileID: -1794119754, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -29547,6 +29554,7 @@ MeshRenderer:
   m_RayTraceProcedural: 0
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -33053,7 +33061,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 292.55768, y: -29.306702}
+  m_AnchoredPosition: {x: 292.55768, y: -29.30658}
   m_SizeDelta: {x: 82.771774, y: 50.700012}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &335092025
@@ -36219,6 +36227,7 @@ MeshRenderer:
   m_RayTraceProcedural: 0
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -39493,8 +39502,12 @@ Light:
   m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
+  m_ForceVisible: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
+  m_LightUnit: 1
+  m_LuxAtDistance: 1
+  m_EnableSpotReflector: 1
 --- !u!4 &396823866
 Transform:
   m_ObjectHideFlags: 0
@@ -41521,6 +41534,7 @@ MeshRenderer:
   m_RayTraceProcedural: 0
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -48351,6 +48365,7 @@ MeshRenderer:
   m_RayTraceProcedural: 0
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -54154,6 +54169,7 @@ MeshRenderer:
   m_RayTraceProcedural: 0
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -54341,6 +54357,7 @@ MeshRenderer:
   m_RayTraceProcedural: 0
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -54393,6 +54410,7 @@ MeshRenderer:
   m_RayTraceProcedural: 0
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -54445,6 +54463,7 @@ MeshRenderer:
   m_RayTraceProcedural: 0
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -54497,6 +54516,7 @@ MeshRenderer:
   m_RayTraceProcedural: 0
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -54549,6 +54569,7 @@ MeshRenderer:
   m_RayTraceProcedural: 0
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -54601,6 +54622,7 @@ MeshRenderer:
   m_RayTraceProcedural: 0
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -54653,6 +54675,7 @@ MeshRenderer:
   m_RayTraceProcedural: 0
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -54705,6 +54728,7 @@ MeshRenderer:
   m_RayTraceProcedural: 0
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -54859,7 +54883,7 @@ MonoBehaviour:
   EvoImage: {fileID: -1445210834, guid: 9659bd43869cd034e85fe3f0f3146b1d, type: 3}
   digitsSprites:
   - {fileID: 676967673, guid: 0f531b3af58aabd47af3595a76dfd1b2, type: 3}
-  - {fileID: 436056715, guid: 0f531b3af58aabd47af3595a76dfd1b2, type: 3}
+  - {fileID: 468366113, guid: 0f531b3af58aabd47af3595a76dfd1b2, type: 3}
   - {fileID: 1392795311, guid: 0f531b3af58aabd47af3595a76dfd1b2, type: 3}
   - {fileID: 1183462636, guid: 0f531b3af58aabd47af3595a76dfd1b2, type: 3}
   - {fileID: -1123412858, guid: 0f531b3af58aabd47af3595a76dfd1b2, type: 3}
@@ -55070,7 +55094,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -1500592591, guid: 0f531b3af58aabd47af3595a76dfd1b2, type: 3}
+  m_Sprite: {fileID: -1176355716, guid: 0f531b3af58aabd47af3595a76dfd1b2, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -59595,6 +59619,7 @@ MeshRenderer:
   m_RayTraceProcedural: 0
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -67202,11 +67227,11 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 82bc77776ea59b84ab5e807ccc6952fa, type: 3}
   - {fileID: 21300000, guid: 10656af82b4addf438dad5ca4e388061, type: 3}
   - {fileID: 21300000, guid: 30556601c40bd4c40a91ca08d3b9503b, type: 3}
-  - {fileID: -1753943805, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
-  - {fileID: 1656819302, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
-  - {fileID: -329834168, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
   - {fileID: 1818544239, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
+  - {fileID: -329834168, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
+  - {fileID: 1751053194, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
   - {fileID: 820905811, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
+  - {fileID: 207429927, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
   - {fileID: -2050689359, guid: c11ff98d1d5d89444b1bf31f5067b94b, type: 3}
   - {fileID: -1211246704, guid: c11ff98d1d5d89444b1bf31f5067b94b, type: 3}
   imgResult: {fileID: 1518364217}
@@ -79794,6 +79819,7 @@ MeshRenderer:
   m_RayTraceProcedural: 0
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -85016,6 +85042,7 @@ MeshRenderer:
   m_RayTraceProcedural: 0
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -88245,6 +88272,7 @@ MeshRenderer:
   m_RayTraceProcedural: 0
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -88607,8 +88635,12 @@ Light:
   m_BoundingSphereOverride: {x: 0, y: 9.1835e-41, z: 4.500305e-39, w: 4.545857e-39}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
+  m_ForceVisible: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
+  m_LightUnit: 2
+  m_LuxAtDistance: 1
+  m_EnableSpotReflector: 1
 --- !u!224 &1043417880
 RectTransform:
   m_ObjectHideFlags: 0
@@ -88643,14 +88675,14 @@ MonoBehaviour:
   m_PointlightHDType: 0
   m_SpotLightShape: 0
   m_AreaLightShape: 0
-  m_Intensity: 100000
   m_EnableSpotReflector: 1
+  m_LightUnit: 2
   m_LuxAtDistance: 1
+  m_Intensity: 100000
   m_InnerSpotPercent: 0
   m_SpotIESCutoffPercent: 100
   m_LightDimmer: 1
   m_VolumetricDimmer: 1
-  m_LightUnit: 2
   m_FadeDistance: 10000
   m_VolumetricFadeDistance: 10000
   m_AffectDiffuse: 1
@@ -88670,6 +88702,7 @@ MonoBehaviour:
   m_IESPoint: {fileID: 0}
   m_IESSpot: {fileID: 0}
   m_IncludeForRayTracing: 0
+  m_IncludeForPathTracing: 1
   m_AreaLightShadowCone: 120
   m_UseScreenSpaceShadows: 0
   m_InteractsWithSky: 1
@@ -88764,7 +88797,7 @@ MonoBehaviour:
   m_AreaLightEmissiveMeshShadowCastingMode: 0
   m_AreaLightEmissiveMeshMotionVectorGenerationMode: 0
   m_AreaLightEmissiveMeshLayer: -1
-  m_Version: 12
+  m_Version: 13
   m_ObsoleteShadowResolutionTier: 1
   m_ObsoleteUseShadowQualitySettings: 0
   m_ObsoleteCustomShadowResolution: 512
@@ -89397,7 +89430,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 1818544239, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
+  m_Sprite: {fileID: 820905811, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -89671,7 +89704,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 127.01413, y: -29.306702}
+  m_AnchoredPosition: {x: 127.01413, y: -29.30658}
   m_SizeDelta: {x: 82.771774, y: 50.700012}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1054588072
@@ -98913,7 +98946,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 820905811, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
+  m_Sprite: {fileID: 207429927, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -105541,7 +105574,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -1753943805, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
+  m_Sprite: {fileID: 1818544239, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -106127,7 +106160,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 47.81412, y: -29.306702}
+  m_AnchoredPosition: {x: 47.81412, y: -29.30658}
   m_SizeDelta: {x: 75.62824, y: 50.7}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1238725572
@@ -108685,7 +108718,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 1656819302, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
+  m_Sprite: {fileID: -329834168, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -113961,6 +113994,7 @@ MeshRenderer:
   m_RayTraceProcedural: 0
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -119503,6 +119537,13 @@ MonoBehaviour:
   deepLearningSuperSamplingUseCustomAttributes: 0
   deepLearningSuperSamplingUseOptimalSettings: 1
   deepLearningSuperSamplingSharpening: 0
+  allowFidelityFX2SuperResolution: 1
+  fidelityFX2SuperResolutionUseCustomQualitySettings: 0
+  fidelityFX2SuperResolutionQuality: 0
+  fidelityFX2SuperResolutionUseCustomAttributes: 0
+  fidelityFX2SuperResolutionUseOptimalSettings: 1
+  fidelityFX2SuperResolutionEnableSharpening: 0
+  fidelityFX2SuperResolutionSharpening: 0
   fsrOverrideSharpness: 0
   fsrSharpness: 0.92
   exposureTarget: {fileID: 0}
@@ -131615,6 +131656,7 @@ MonoBehaviour:
   m_StaticLightingSkyUniqueID: 0
   m_StaticLightingCloudsUniqueID: 0
   m_StaticLightingVolumetricClouds: 0
+  bounces: 1
 --- !u!4 &1537187422
 Transform:
   m_ObjectHideFlags: 1
@@ -144250,7 +144292,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 207429927, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
+  m_Sprite: {fileID: 395094187, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -144721,6 +144763,7 @@ MeshRenderer:
   m_RayTraceProcedural: 0
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -149266,7 +149309,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -375069761, guid: 0f531b3af58aabd47af3595a76dfd1b2, type: 3}
+  m_Sprite: {fileID: 436056715, guid: 0f531b3af58aabd47af3595a76dfd1b2, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -149802,7 +149845,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 34.8
+  m_fontSize: 34.5
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -152319,6 +152362,7 @@ LineRenderer:
   m_RayTraceProcedural: 0
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -161853,7 +161897,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -329834168, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
+  m_Sprite: {fileID: 1751053194, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -162936,7 +162980,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 1458711747, guid: 0f531b3af58aabd47af3595a76dfd1b2, type: 3}
+  m_Sprite: {fileID: 1493983778, guid: 0f531b3af58aabd47af3595a76dfd1b2, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -165206,6 +165250,7 @@ MeshRenderer:
   m_RayTraceProcedural: 0
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -167324,6 +167369,7 @@ MeshRenderer:
   m_RayTraceProcedural: 0
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -167808,6 +167854,7 @@ MeshRenderer:
   m_RayTraceProcedural: 0
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -171430,6 +171477,7 @@ MeshRenderer:
   m_RayTraceProcedural: 0
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -173072,6 +173120,13 @@ MonoBehaviour:
   deepLearningSuperSamplingUseCustomAttributes: 0
   deepLearningSuperSamplingUseOptimalSettings: 1
   deepLearningSuperSamplingSharpening: 0
+  allowFidelityFX2SuperResolution: 1
+  fidelityFX2SuperResolutionUseCustomQualitySettings: 0
+  fidelityFX2SuperResolutionQuality: 0
+  fidelityFX2SuperResolutionUseCustomAttributes: 0
+  fidelityFX2SuperResolutionUseOptimalSettings: 1
+  fidelityFX2SuperResolutionEnableSharpening: 0
+  fidelityFX2SuperResolutionSharpening: 0
   fsrOverrideSharpness: 0
   fsrSharpness: 0.92
   exposureTarget: {fileID: 0}
@@ -176459,7 +176514,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 209.78592, y: -29.306702}
+  m_AnchoredPosition: {x: 209.78592, y: -29.30658}
   m_SizeDelta: {x: 82.771774, y: 50.700012}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2049267889
@@ -187039,16 +187094,16 @@ MonoBehaviour:
   ptsAnim: {fileID: 592549296}
   raceManager: {fileID: 477576723}
   gearsSprites:
-  - {fileID: 1751053194, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
-  - {fileID: 207429927, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
-  - {fileID: -805425393, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
+  - {fileID: -1351531801, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
+  - {fileID: 64054743, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
   - {fileID: 395094187, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
   - {fileID: -456110046, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
   - {fileID: 139936217, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
   - {fileID: -625296948, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
   - {fileID: -1223708422, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
-  - {fileID: 64054743, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
-  - {fileID: -786538740, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
+  - {fileID: 1221793977, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
+  - {fileID: -1178902668, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
+  - {fileID: 225571867, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
   currentGear: {fileID: 1688426470}
   rpmIndicator: {fileID: 2055439452}
   batteryLack: {fileID: 900883661}
@@ -187068,15 +187123,15 @@ MonoBehaviour:
   - {fileID: 1103895579}
   - {fileID: 1995208006}
   positionsSprites:
-  - {fileID: -606834691, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
+  - {fileID: -2050689359, guid: c11ff98d1d5d89444b1bf31f5067b94b, type: 3}
   - {fileID: 1807912993, guid: f7e63ebf7764fd246b6cad1b90593fcc, type: 3}
   - {fileID: 447345384, guid: f7e63ebf7764fd246b6cad1b90593fcc, type: 3}
   - {fileID: 1927119911, guid: f7e63ebf7764fd246b6cad1b90593fcc, type: 3}
-  - {fileID: -1753943805, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
-  - {fileID: 1656819302, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
-  - {fileID: -329834168, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
   - {fileID: 1818544239, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
+  - {fileID: -329834168, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
+  - {fileID: 1751053194, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
   - {fileID: 820905811, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
+  - {fileID: 207429927, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
   - {fileID: -2050689359, guid: c11ff98d1d5d89444b1bf31f5067b94b, type: 3}
   - {fileID: -1211246704, guid: c11ff98d1d5d89444b1bf31f5067b94b, type: 3}
   positionImage: {fileID: 798159100}
@@ -187122,13 +187177,13 @@ MonoBehaviour:
   halflife: 0.2
   spring_maxV: 1
   SponserSprites:
-  - {fileID: 1221793977, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
-  - {fileID: -1794119754, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
+  - {fileID: -786538740, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
   - {fileID: 535505933, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
   - {fileID: 1414924242, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
   - {fileID: 959201065, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
   - {fileID: -737678224, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
   - {fileID: 1173726267, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
+  - {fileID: 525499074, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
   pauseMenu: {fileID: 1388013294}
   StuntInfo: {fileID: 1376600230}
   dimStuntTableTimer: -1
