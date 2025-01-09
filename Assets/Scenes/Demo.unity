@@ -9219,7 +9219,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: ROOSTER
+  m_text: ROSTER
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 6f7a7029a598e874cba8af41bec2f652, type: 2}
   m_sharedMaterial: {fileID: 7913625639079845202, guid: 6f7a7029a598e874cba8af41bec2f652,
@@ -32575,7 +32575,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 292.55768, y: -29.306702}
+  m_AnchoredPosition: {x: 292.55768, y: -29.30664}
   m_SizeDelta: {x: 82.771774, y: 50.700012}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &335092025
@@ -62804,7 +62804,7 @@ GameObject:
   - component: {fileID: 714068836}
   - component: {fileID: 714068835}
   m_Layer: 5
-  m_Name: RoosterView
+  m_Name: RosterView
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -87185,7 +87185,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 127.01413, y: -29.306702}
+  m_AnchoredPosition: {x: 127.01413, y: -29.30664}
   m_SizeDelta: {x: 82.771774, y: 50.700012}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1054588072
@@ -103641,7 +103641,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 47.81412, y: -29.306702}
+  m_AnchoredPosition: {x: 47.81412, y: -29.30664}
   m_SizeDelta: {x: 75.62824, y: 50.7}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1238725572
@@ -173406,7 +173406,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 209.78592, y: -29.306702}
+  m_AnchoredPosition: {x: 209.78592, y: -29.30664}
   m_SizeDelta: {x: 82.771774, y: 50.700012}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2049267889
@@ -180267,7 +180267,7 @@ PrefabInstance:
     - target: {fileID: 509757369793656648, guid: c45b5db04fef3904d8289011e629a352,
         type: 3}
       propertyPath: m_Name
-      value: Rooster
+      value: Roster
       objectReference: {fileID: 0}
     - target: {fileID: 509757369793656650, guid: c45b5db04fef3904d8289011e629a352,
         type: 3}
@@ -180462,7 +180462,7 @@ PrefabInstance:
     - target: {fileID: 1876160631357480379, guid: c45b5db04fef3904d8289011e629a352,
         type: 3}
       propertyPath: m_text
-      value: Rooster
+      value: Roster
       objectReference: {fileID: 0}
     - target: {fileID: 1876160631357480379, guid: c45b5db04fef3904d8289011e629a352,
         type: 3}
