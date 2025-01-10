@@ -13,7 +13,8 @@ using UnityEngine.EventSystems;
 using Unity.Multiplayer.Playmode;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
-public enum PlayerState { InRace, InLobbyUnready, InLobbyReady};
+using Unity.Collections;
+public enum PlayerState { InRace, InLobbyUnready, InLobbyReady };
 public enum Envir { GER, JAP, SPN, FRA, ENG, USA, ITA, MEX };
 public enum CarGroup { Wild, Aero, Speed, Team };
 public enum Livery { Random = 0, Special = 1, TGR, Rline, Itex, Caltex, Titan, Mysuko }
@@ -54,12 +55,14 @@ public class RankingData
 
 public class Info : MonoBehaviour
 {
+	[NonSerialized]
+	public Dictionary<int, VehicleParent> carRbs = new(10);
 	public MultiPlayerSelector mpSelectorInitializer;
 	public Text versionText;
 	public Material transpMaterial;
 	public Material opaqueMaterial;
 	public const string VERSION = "0.4.3";
-	public bool minimized { get; private set;}
+	public bool minimized { get; private set; }
 	void OnApplicationFocus(bool hasFocus)
 	{
 		minimized = !hasFocus;
@@ -101,6 +104,30 @@ public class Info : MonoBehaviour
 		ReloadCarPartsData();
 		LoadRanking();
 		icons = Resources.LoadAll<Sprite>(trackImagesPath + "tiles");
+		Physics.ContactModifyEvent += OnContactModify;
+	}
+	void OnContactModify(PhysicsScene scene, NativeArray<ModifiableContactPair> pairs)
+	{
+		foreach (var pair in pairs)
+		{
+			for (int i = 0; i < pair.contactCount; ++i)
+			{
+				if (pair.bodyInstanceID != 0 && pair.otherBodyInstanceID != 0 &&
+				carRbs.ContainsKey(pair.bodyInstanceID) && carRbs.ContainsKey(pair.otherBodyInstanceID))
+				{
+					pair.SetPoint(i, 0.5f * (carRbs[pair.bodyInstanceID].worldCOM + carRbs[pair.otherBodyInstanceID].worldCOM));
+				}
+					
+				//Vector3 normal = pair.GetNormal(i);
+				//float angle = Vector3.SignedAngle(normal, 
+				//	(vp.rb.worldCenterOfMass - pair.GetPoint(i)).normalized, vp.upDir);
+				//normal = Quaternion.AngleAxis(angle, vp.upDir) * normal;
+
+				//Vector3 normal = Vector3.ProjectOnPlane(pair.GetNormal(i), Vector3.up);
+				//pair.SetNormal(i, normal);
+				//pair.SetBounciness(i, 1);
+			}
+		}
 	}
 	string _documentsSGPRpath;
 	public string documentsSGPRpath
@@ -236,7 +263,7 @@ public class Info : MonoBehaviour
 		new (1406, 1337,1),// ita
 		new (564, 1231,1), //mex
 	};
-	public readonly int[] skys = new int[] { 
+	public readonly int[] skys = new int[] {
 		8, //ger
 		2, //jap
 		5, //spn

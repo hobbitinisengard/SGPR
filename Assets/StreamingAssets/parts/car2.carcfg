@@ -69,7 +69,7 @@
     "chassis": {
       "mass": 2.0,
       "longtitunalCOM": 0.01,
-      "verticalCOM": 0.5,
+      "verticalCOM": 0.6,
       "drag": 0.1,
       "angularDrag": 1.0,
       "evoSmoothTime": 0.07,

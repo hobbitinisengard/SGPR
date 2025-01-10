@@ -141,6 +141,7 @@ namespace RVP
 		public float rollInput;
 		[NonSerialized]
 		public float resetOnTrackTime = 0;
+		public Vector3 worldCOM { get; private set; }
 
 		//NetworkVariable<float> _accelInput = new(writePerm: NetworkVariableWritePermission.Owner);
 		//public float accelInput { get { return _accelInput.Value; } set { _accelInput.Value = value; } }
@@ -371,7 +372,6 @@ namespace RVP
 		private float lastCrashingTime;
 		public float initAngularDrag;
 		private Vector3 originalCOM;
-		private Vector3 zeroCOM;
 
 		public void SetBattery(float capacity, float chargingSpeed, float lowBatPercent, float evoBountyPercent)
 		{
@@ -651,17 +651,6 @@ namespace RVP
 		}
 		void Update()
 		{
-			if(reallyGroundedWheels > 0 && reallyGroundedWheels < 3)
-			{
-				if(rb.centerOfMass.y != 0)
-				{
-					rb.centerOfMass = zeroCOM;
-				}
-			}
-			else
-			{
-				rb.centerOfMass = originalCOM;
-			}
 
 			if (reallyGroundedWheels == 0 && !colliding && !crashing)
 				rb.linearDamping = 0;
@@ -767,6 +756,7 @@ namespace RVP
 			forwardDot = Vector3.Dot(forwardDir, RaceManager.worldUpDir);
 			rightDot = Vector3.Dot(rightDir, RaceManager.worldUpDir);
 			upDot = Vector3.Dot(upDir, RaceManager.worldUpDir);
+			worldCOM = rb.worldCenterOfMass;
 			norm.transform.position = tr.position;
 			norm.transform.rotation = Quaternion.LookRotation(reallyGroundedWheels == 0 ? upDir : wheelNormalAverage, forwardDir);
 
@@ -1139,8 +1129,6 @@ namespace RVP
 		public void SetChassis(float mass, float drag, float angularDrag, Vector3 com)
 		{
 			originalCOM = com;
-			zeroCOM = com;
-			zeroCOM.y = 0;
 			rb.centerOfMass = com;
 			originalMass = mass;
 			rb.mass = mass;
