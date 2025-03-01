@@ -61,7 +61,7 @@ public class Info : MonoBehaviour
 	public Text versionText;
 	public Material transpMaterial;
 	public Material opaqueMaterial;
-	public const string VERSION = "0.4.3";
+	public const string VERSION = "0.4.5";
 	public bool minimized { get; private set; }
 	void OnApplicationFocus(bool hasFocus)
 	{

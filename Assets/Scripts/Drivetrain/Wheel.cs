@@ -466,9 +466,25 @@ namespace RVP
 				Mathf.Max(0.001f, suspensionParent.targetCompression) + actualRadius, 0.001f);
 			//RaycastHit[] wheelHits = Physics.RaycastAll(transform.position, suspensionParent.springDirection, castDist, RaceManager.I.wheelCastMask);
 			//bool validHit = Physics.SphereCast(transform.position, actualRadius, suspensionParent.springDirection, out RaycastHit hit, castDist, RaceManager.I.wheelCastMask);
+
+			//Debug.DrawRay(transform.position, suspensionParent.springDirection, Color.yellow);
+			//Debug.DrawRay(rim.position, vp.tr.forward, Color.yellow);
+
 			bool validHit = Physics.Raycast(transform.position, suspensionParent.springDirection, out RaycastHit hit, castDist, RaceManager.I.wheelCastMask);
 			if(!validHit)
-				validHit = Physics.Raycast(transform.position, vp.tr.forward, out hit, castDist, RaceManager.I.wheelCastMask);
+			{
+				Vector3 rotAxis = Vector3.Cross(suspensionParent.springDirection, vp.forwardDir);
+				Vector3 rayDir = vp.forwardDir;
+				var q = Quaternion.AngleAxis(-90 / 3, rotAxis);
+				for(int i=0; i<7 && !validHit; ++i)
+				{
+					validHit = Physics.Raycast(rim.position, rayDir, out hit, actualRadius, RaceManager.I.wheelCastMask);
+					Debug.DrawRay(rim.position, rayDir, Color.yellow);
+					rayDir = q * rayDir;
+				}
+			}
+			
+				
 			//bool validHit = Physics.BoxCast(transform.position, new Vector3(.05f,.1f,.05f), suspensionParent.springDirection, out RaycastHit hit, 
 			//	 vp.tr.rotation, castDist, RaceManager.I.wheelCastMask);
 			//bool validHit = false;
@@ -496,7 +512,7 @@ namespace RVP
 			if (validHit)
 			{
 				//hit = wheelHits[hitIndex];
-				Debug.DrawLine(transform.position, hit.point);
+				//Debug.DrawLine(transform.position, hit.point);
 				if (!grounded && impactSnd && ((tireHitClips.Length > 0 && !popped) || (rimHitClip && popped)))
 				{
 					impactSnd.PlayOneShot(popped ? rimHitClip : tireHitClips[Mathf.RoundToInt(UnityEngine.Random.Range(0, tireHitClips.Length - 1))], Mathf.Clamp01(airTime * airTime));

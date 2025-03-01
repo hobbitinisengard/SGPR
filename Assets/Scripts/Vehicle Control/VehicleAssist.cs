@@ -12,13 +12,12 @@ namespace RVP
 		Transform tr;
 		Rigidbody rb;
 		VehicleParent vp;
-
 		[Header("Drift")]
 
 		[Tooltip("Variables are multiplied based on the number of wheels grounded out of the total number of wheels")]
 		public bool basedOnWheelsGrounded;
 		float groundedFactor;
-
+		private float angDragTime;
 		[Tooltip("How much to assist with spinning while drifting")]
 		public float driftSpinAssist;
 		public float driftSpinSpeed;
@@ -68,7 +67,7 @@ namespace RVP
 
 		//[Tooltip("Increase angular drag immediately after jumping")]
 		//public bool angularDragOnJump;
-		//float initialAngularDrag;
+		public float initialAngularDrag;
 		//float angDragTime = 0;
 
 		public float fallSpeedLimit = Mathf.Infinity;
@@ -82,7 +81,7 @@ namespace RVP
 			tr = transform;
 			rb = GetComponent<Rigidbody>();
 			vp = GetComponent<VehicleParent>();
-			//initialAngularDrag = rb.angularDrag;
+			initialAngularDrag = rb.angularDamping;
 			if (!vp.Owner)
 				enabled = false;
 		}
@@ -93,8 +92,8 @@ namespace RVP
 			{
 				groundedFactor = basedOnWheelsGrounded ? vp.reallyGroundedWheels / vp.wheels.Length : 1;
 
-				//angDragTime = 20;
-				//rb.angularDrag = initialAngularDrag;
+				angDragTime = .5f;
+				rb.angularDamping = initialAngularDrag;
 
 				if (driftSpinAssist > 0)
 				{
@@ -110,6 +109,13 @@ namespace RVP
 			{
 				if (!vp.crashing && !vp.raceBox.evoModule.stunting && vp.raceBox.curLap > 0)
 				{
+
+					//if (angularDragOnJump)
+					{
+						angDragTime = Mathf.Max(0, angDragTime - Time.fixedDeltaTime);
+						rb.angularDamping = (angDragTime > 0 && vp.upDot > 0.5) ? 1 : initialAngularDrag;
+					}
+
 					// aircontrol
 					vp.rb.AddForce(vp.steerInput * 5 * vp.tr.right, ForceMode.Acceleration);
 					Vector3 targetForce = vp.tr.TransformDirection(vp.steerInput, 0, 0);
@@ -186,7 +192,7 @@ namespace RVP
 		// Apply downforce
 		void ApplyDownforce()
 		{
-			if (vp.reallyGroundedWheels > 0 || applyDownforceInAir)
+			//if (vp.reallyGroundedWheels > 0 || applyDownforceInAir)
 			{
 				//rb.AddRelativeForce(
 				//	 new Vector3(0, downforceCurve.Evaluate(Mathf.Abs(vp.localVelocity.z)) * -downforce * (applyDownforceInAir ? 1 : groundedFactor) * (invertDownforceInReverse ? Mathf.Sign(vp.localVelocity.z) : 1), 0),

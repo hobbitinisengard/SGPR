@@ -3,8 +3,8 @@
   "desc": "This unreleased test track contains unique trackpieces",
   "valid": true,
   "envir": "JAP",
-  "preferredCarClass": "Speed",
-  "difficulty": 3,
+  "preferredCarClass": "Team",
+  "difficulty": 7,
   "unlocked": true,
   "icons": [
     0,

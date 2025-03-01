@@ -31,7 +31,7 @@
       "maxDriftAngle": 70.0,
       "autoSteerDrift": 0.0,
       "driftPush": 1.0,
-      "downforce": 2.0,
+      "downforce": 1.0,
       "frontBrakeForce": 1.0,
       "rearBrakeForce": 1.0
     },

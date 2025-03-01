@@ -65,16 +65,16 @@ public class SGP_Bouncer : MonoBehaviour
 			lastSideBounceTime = Time.time;
 			float mult;
 			Vector3 direction;
-			//if (contact.otherCollider.gameObject.layer == F.I.carCarCollisionLayer)
-			//{
-			//	mult = 0.01f;
-			//	//direction = Vector3.ProjectOnPlane(-collision.impulse, Vector3.up);
-			//	direction = (vp.tr.forward + norm + vp.tr.up).normalized;
-			//	rb.AddForceAtPosition(collision.impulse.magnitude * mult * direction,
-			//	collision.GetContact(0).point,//vp.transform.position
-			//	ForceMode.VelocityChange);
-			//}
-			//else
+			if (contact.otherCollider.gameObject.layer == F.I.carCarCollisionLayer)
+			{
+				mult = 1f;
+				//direction = Vector3.ProjectOnPlane(-collision.impulse, Vector3.up);
+				direction = norm;
+				rb.AddForceAtPosition(collision.impulse.magnitude * mult * direction,
+				collision.GetContact(0).point,//vp.transform.position
+				ForceMode.VelocityChange);
+			}
+			else
 			{
 				mult = multCurve.Evaluate(Vector3.Dot(norm, vp.tr.forward));
 				//Debug.Log(mult);

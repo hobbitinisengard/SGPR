@@ -956,7 +956,7 @@ public class ChassisSavable : PartSavable
 	{
 		//vp.cameraheightOffset = cameraHeight;
 		Vector3 COM = new Vector3(0, verticalCOM, (F.I.s_raceType == RaceType.Drift) ? 0 : longtitunalCOM);
-		vp.SetChassis(mass, drag, angularDrag:1, COM);
+		vp.SetChassis(mass, drag, angularDrag:0, COM);
 		vp.raceBox.evoModule.SetStuntCoeffs(evoSmoothTime, staticEvoMaxSpeed, evoAcceleration);
 		RaceManager.I.cam.UpdateLH();
 	}
@@ -968,7 +968,7 @@ public class ChassisSavable : PartSavable
 		var com = vp.rb.centerOfMass;
 		longtitunalCOM = com.z;
 		verticalCOM = com.y;
-		angularDrag = vp.initAngularDrag;
+		angularDrag = vp.va.initialAngularDrag;
 		vp.raceBox.evoModule.GetStuntCoeffs(ref evoSmoothTime, ref staticEvoMaxSpeed, ref evoAcceleration);
 	}
 }

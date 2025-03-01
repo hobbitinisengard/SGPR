@@ -370,7 +370,6 @@ namespace RVP
 
 		bool collisionDetectionChangerActive;
 		private float lastCrashingTime;
-		public float initAngularDrag;
 		private Vector3 originalCOM;
 
 		public void SetBattery(float capacity, float chargingSpeed, float lowBatPercent, float evoBountyPercent)
@@ -1135,7 +1134,7 @@ namespace RVP
 			originalDrag = drag;
 			rb.linearDamping = drag;
 			rb.angularDamping = angularDrag;
-			initAngularDrag = angularDrag;
+			va.initialAngularDrag = angularDrag;
 		}
 	}
 

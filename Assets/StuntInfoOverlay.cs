@@ -77,11 +77,13 @@ public class StuntInfoOverlay : MonoBehaviour
 	public void DimTexts(float opaqueness)
 	{
 		var c = postfixObjText.color;
-		c.a = opaqueness;
+		if(c.a > opaqueness)
+			c.a = opaqueness;
 		postfixObjText.color = c;
 
 		c = stuntObjText.color;
-		c.a = opaqueness;
+		if (c.a > opaqueness)
+			c.a = opaqueness;
 		stuntObjText.color = c;
 	}
 }

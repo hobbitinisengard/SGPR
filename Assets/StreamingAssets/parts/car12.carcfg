@@ -17,12 +17,12 @@
       "frontSpringDistance": 0.3,
       "frontSpringForce": 10.0,
       "frontSpringExponent": 1.0,
-      "frontSpringDampening": 0.1,
+      "frontSpringDampening": 0.2,
       "RearSteerRangeDegs": 0.0,
       "RearSpringDistance": 0.3,
       "RearSpringForce": 10.0,
       "RearSpringExponent": 1.0,
-      "RearSpringDampening": 0.1
+      "RearSpringDampening": 0.2
     },
     "bms": {
       "driftSpinAssist": 7.0,
@@ -31,7 +31,7 @@
       "maxDriftAngle": 70.0,
       "autoSteerDrift": 0.0,
       "driftPush": 1.0,
-      "downforce": 3.0,
+      "downforce": 1.0,
       "frontBrakeForce": 1.0,
       "rearBrakeForce": 1.0
     },
@@ -68,7 +68,7 @@
     },
     "chassis": {
       "mass": 1.0,
-      "longtitunalCOM": -0.07,
+      "longtitunalCOM": 0.0,
       "verticalCOM": 0.4,
       "drag": 0.3,
       "angularDrag": 1.0,
