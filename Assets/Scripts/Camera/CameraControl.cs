@@ -12,6 +12,8 @@ namespace RVP
 	// Class for controlling the camera
 	public class CameraControl : MonoBehaviour
 	{
+		GameObject waterObj;
+		float waterObjHeight;
 		public InputActionReference moveRef;
 		public InputActionReference changeCamRef;
 
@@ -133,6 +135,9 @@ namespace RVP
 		}
 		IEnumerator AllowChangingTarget()
 		{
+			waterObj = GameObject.Find("Water");
+			if (waterObj)
+				waterObjHeight = waterObj.transform.position.y + 2;
 			yield return new WaitForSeconds(1);
 			moveRef.action.performed += SwitchTarget;
 		}
@@ -174,6 +179,13 @@ namespace RVP
 			if (degs > 180)
 				degs -= 360;
 			return degs;
+		}
+		private void Update()
+		{
+			if(waterObj != null)
+			{
+				waterObj.SetActive(tr.position.y > waterObjHeight);
+			}
 		}
 		void FixedUpdate()
 		{
@@ -280,6 +292,7 @@ namespace RVP
 			smoothYRot = Mathf.Lerp(smoothYRot, smoothRotCoeff * vp.rb.angularVelocity.y, Time.fixedDeltaTime);
 			forward = Quaternion.AngleAxis(xInput * 90 + yInput * 180, vp.tr.up) * forward;
 			forward = Quaternion.AngleAxis(Time.fixedDeltaTime * smoothYRot * Mathf.Rad2Deg, vp.tr.up) * forward;
+			height = Mathf.InverseLerp(720, 0, vp.velMag) * (camerasLH[curCameraLH].y + vp.cameraheightOffset); // make the camera lower the faster you go
 			lookObj.position = vp.tr.position - forward * targetCamCarDistance + Vector3.up * height;
 			lookObj.position += vp.rb.linearVelocity * Time.fixedDeltaTime;
 			//--------------

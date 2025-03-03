@@ -15,7 +15,7 @@ namespace RVP
 	[DisallowMultipleComponent]
 
 	public class RaceManager : MonoBehaviour
-	{ 
+	{
 		AudioSource musicPlayer;
 		public Light Sun;
 		public ViewSwitcher viewSwitcher;
@@ -74,7 +74,6 @@ namespace RVP
 		{
 			TAKES_THE_LEAD, NO_ENERGY, SPLIT_TIME,
 		}
-
 		public void RemoveCars()
 		{
 			hud.Disconnect();
@@ -314,6 +313,7 @@ namespace RVP
 				yield return null;
 			}
 
+			
 			hud.pauseMenu.gameObject.SetActive(false);
 			editorPanel.pathFollower.SetActive(false);
 			for (int i = 0; i < editorPanel.placedTilesContainer.transform.childCount; ++i)

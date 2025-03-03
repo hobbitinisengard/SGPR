@@ -7044,7 +7044,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3412483887438150977}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.35396698, y: 0.03477846, z: -0.013173018, w: -0.9345183}
+  m_LocalRotation: {x: -0.35396704, y: 0.034778457, z: -0.0131730195, w: -0.9345182}
   m_LocalPosition: {x: 0.01537961, y: -0.09473553, z: -0.63677573}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -7119,7 +7119,7 @@ MonoBehaviour:
   suspension: {fileID: 6779875395759827803}
   isHub: 0
   connectObj: {fileID: 7036308157699955445}
-  connectPoint: {x: -0.0059217378, y: -0.09819916, z: -0.35098234}
+  connectPoint: {x: -0.005921696, y: -0.09819916, z: -0.35098258}
   rotate: 1
   stretch: 0
   solidAxle: 0
@@ -13244,7 +13244,6 @@ MonoBehaviour:
   steeringControl: {fileID: 6779875395873480448}
   colliding: 0
   crashing: 0
-  initAngularDrag: 0
 --- !u!114 &5969412531493064935
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13320,6 +13319,7 @@ MonoBehaviour:
   rollCheckDistance: 1
   rollOverForce: 2
   rollSpeedThreshold: 0
+  initialAngularDrag: 0
   fallSpeedLimit: Infinity
   applyFallLimitUpwards: 0
   X: 0.1
@@ -14333,7 +14333,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ecbf6806518860b4ba6e32c8e44407ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  generateHardCollider: 1
+  generateHardCollider: 0
   rpmBiasCurve:
     serializedVersion: 2
     m_Curve:
@@ -14754,7 +14754,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ecbf6806518860b4ba6e32c8e44407ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  generateHardCollider: 1
+  generateHardCollider: 0
   rpmBiasCurve:
     serializedVersion: 2
     m_Curve:
@@ -15884,7 +15884,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ecbf6806518860b4ba6e32c8e44407ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  generateHardCollider: 1
+  generateHardCollider: 0
   rpmBiasCurve:
     serializedVersion: 2
     m_Curve:
@@ -16173,7 +16173,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ecbf6806518860b4ba6e32c8e44407ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  generateHardCollider: 1
+  generateHardCollider: 0
   rpmBiasCurve:
     serializedVersion: 2
     m_Curve:
