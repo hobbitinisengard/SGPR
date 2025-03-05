@@ -27,7 +27,7 @@ namespace RVP
 		public Quaternion initialRotation;
 
 		public Wheel wheel;
-		CapsuleCollider compressCol; // The hard collider
+		SphereCollider compressCol; // The hard collider // capsuleCollider
 
 		[Tooltip("Generate a capsule collider for hard compressions")]
 		public bool generateHardCollider = true;
@@ -186,10 +186,12 @@ namespace RVP
 					//compressCol.sharedMesh = wheel.tr.GetChild(0).GetComponent<MeshFilter>().mesh;
 					//compressCol.convex = true;
 
-					compressCol = cap.AddComponent<CapsuleCollider>();
-					compressCol.direction = 1;
-					compressCol.radius = 0;// wheel.rimWidth;// * hardColliderRadiusFactor;
-					compressCol.height = (wheel.popped ? wheel.rimRadius : Mathf.Lerp(wheel.rimRadius, wheel.tireRadius, wheel.tirePressure)) * 2;
+					compressCol = cap.AddComponent<SphereCollider>();
+					compressCol.radius = wheel.tireRadius;
+					//compressCol = cap.AddComponent<CapsuleCollider>();
+					//compressCol.direction = 1;
+					//compressCol.radius = 0;// wheel.rimWidth;// * hardColliderRadiusFactor;
+					//compressCol.height = (wheel.popped ? wheel.rimRadius : Mathf.Lerp(wheel.rimRadius, wheel.tireRadius, wheel.tirePressure)) * 2;
 
 					compressCol.sharedMaterial = RaceManager.I.frictionlessMat;
 				}

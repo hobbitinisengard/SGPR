@@ -567,7 +567,7 @@ namespace RVP
 							}
 						}
 					}
-					if (NextStuntpointIn(15))
+					if (NextStuntpointIn(15) && vp.velMag > 50)
 					{
 						if (!aiStuntingProc)
 							StartCoroutine(AIStuntingProc());

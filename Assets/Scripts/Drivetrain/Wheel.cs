@@ -610,19 +610,17 @@ namespace RVP
 					|| slipDependence == SlipDependenceMode.sideways) ? (sidewaysSlip - forwardSlipVel) : sidewaysSlip;
 				float forwardSlipDependenceFactor = Mathf.Clamp01(forwardSlipDependence - Mathf.Clamp01(Mathf.Abs(sidewaysSlip)));
 				float sidewaysSlipDependenceFactor = Mathf.Clamp01(sidewaysSlipDependence - Mathf.Clamp01(Mathf.Abs(forwardSlip)));
-
+				float wheelFriction = contactPoint.surfaceFriction;
 				float targetForceX = forwardFrictionCurve.Evaluate(Mathf.Abs(forwardSlipFactor))
 					* -Math.Sign(forwardSlip) * (popped ? forwardRimFriction : forwardFriction)
 					* forwardSlipDependenceFactor * -suspensionParent.flippedSideFactor;
 				d_targetForce = targetForceX;
-				float targetForceZ = sidewaysFrictionCurve.Evaluate(Mathf.Abs(sidewaysSlipFactor))
+				float targetForceZ = wheelFriction * sidewaysFrictionCurve.Evaluate(Mathf.Abs(sidewaysSlipFactor))
 					* -Math.Sign(sidewaysSlip) * (popped ? sidewaysRimFriction : sidewaysFriction)
 					* sidewaysSlipDependenceFactor * normalFrictionCurve.Evaluate(Mathf.Clamp01(Vector3.Dot(contactPoint.normal, RaceManager.worldUpDir)));
 				Vector3 targetForce = tr.TransformDirection(targetForceX, 0, targetForceZ);
-				float wheelFriction = contactPoint.surfaceFriction;
-
 				float targetForceMultiplier = ((1 - compressionFrictionFactor) + (1 - suspensionParent.compression) * compressionFrictionFactor
-					 * Mathf.Clamp01(Mathf.Abs(suspensionParent.tr.InverseTransformDirection(localVel).z) * 2)) * wheelFriction;
+					 * Mathf.Clamp01(Mathf.Abs(suspensionParent.tr.InverseTransformDirection(localVel).z) * 2));
 				frictionForce = Vector3.Lerp(frictionForce, targetForce * targetForceMultiplier, 1 - frictionSmoothness);
 				rb.AddForceAtPosition(frictionForce, forceApplicationPoint, vp.wheelForceMode);
 

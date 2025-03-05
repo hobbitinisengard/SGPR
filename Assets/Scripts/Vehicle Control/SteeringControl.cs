@@ -97,7 +97,7 @@ namespace RVP
 					holdDuration = 0;
 				}
 
-				steerLimit = Mathf.Lerp(.2f, .5f, 2 * (holdDuration - .5f));
+				steerLimit = vp.wheels[0].groundedReally ? Mathf.Lerp(.2f, .5f, 2 * (holdDuration - .5f)) : 0;
 				holdCurveValue = 1;
 			}
 			else
@@ -111,9 +111,7 @@ namespace RVP
 
 				if (absSteerInput >= holdCurveValue)
 				{
-					var steerLimitVar = steerLimitCurve.Evaluate(vp.velMag);
-					//if (steerLimitVar > steerLimit)
-					steerLimit = steerLimitVar;
+					steerLimit = vp.wheels[0].groundedReally ? steerLimitCurve.Evaluate(vp.velMag) : 0;
 					servoAudio.volume = 1f;
 					servoAudio.pitch = (Mathf.Abs(targetSteer) > absSteerInput) ? 1.5f : 1;
 
@@ -122,7 +120,7 @@ namespace RVP
 				}
 				else
 				{
-					steerLimit = steerLimitCurve.Evaluate(vp.localVelocity.z);
+					steerLimit = vp.wheels[0].groundedReally ? steerLimitCurve.Evaluate(vp.localVelocity.z) : 0;
 					servoAudio.volume = 0;
 					holdDuration = Mathf.Lerp(holdDuration, absSteerInput, holdComebackSpeed * 10 * Time.fixedDeltaTime);
 				}

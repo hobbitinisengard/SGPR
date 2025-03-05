@@ -586,7 +586,6 @@ namespace RVP
 			GameObject normTemp = new (tr.name + "'s Normal");
 			norm = normTemp.transform;
 
-
 			if (F.I.s_spectator)
 			{
 				if (UnityEngine.Random.value > 0.5f)

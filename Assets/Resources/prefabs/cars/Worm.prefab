@@ -52,9 +52,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   goal: {fileID: 4886705088575996180}
+  targetHeight: 0.26
   root: {fileID: 0}
-  halflife: 0.1
-  frequency: 2
 --- !u!1 &5269567352742529318
 GameObject:
   m_ObjectHideFlags: 0
@@ -146,11 +145,12 @@ MeshRenderer:
   m_RayTraceProcedural: 0
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 2100000, guid: 5c270a73328a99e439fec44a0cf3a17d, type: 2}
-  - {fileID: -1936601654626518120, guid: 145fe57700747ec448449eef490f1647, type: 3}
+  - {fileID: 2100000, guid: 01763a1c279a5cd4d8f897f6b6cdbae5, type: 2}
   - {fileID: 2100000, guid: 5ecd18596078da147a89364573da8d97, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
@@ -256,6 +256,7 @@ SkinnedMeshRenderer:
   m_RayTraceProcedural: 0
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
