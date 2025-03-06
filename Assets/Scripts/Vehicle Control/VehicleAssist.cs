@@ -111,10 +111,10 @@ namespace RVP
 				{
 
 					//if (angularDragOnJump)
-					{
-						angDragTime = Mathf.Max(0, angDragTime - Time.fixedDeltaTime);
-						rb.angularDamping = (angDragTime > 0 && vp.upDot > 0.5) ? 1 : initialAngularDrag;
-					}
+					//{
+					//	angDragTime = Mathf.Max(0, angDragTime - Time.fixedDeltaTime);
+					//	rb.angularDamping = (angDragTime > 0 && vp.upDot > 0.5) ? 1 : initialAngularDrag;
+					//}
 
 					// aircontrol
 					vp.rb.AddForce(vp.steerInput * 5 * vp.tr.right, ForceMode.Acceleration);

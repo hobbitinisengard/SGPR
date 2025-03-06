@@ -71,7 +71,7 @@
       "longtitunalCOM": 0.0,
       "verticalCOM": 0.4,
       "drag": 0.3,
-      "angularDrag": 1.0,
+      "angularDrag": 0.1,
       "evoSmoothTime": 0.07,
       "staticEvoMaxSpeed": 900.0,
       "evoAcceleration": 15.0,
