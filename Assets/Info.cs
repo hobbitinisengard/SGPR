@@ -25,6 +25,7 @@ public enum PavementType { Arena, Volcano, Asphalt, Energy, Grid, Japan, Jungle,
 public enum MultiMode { Singleplayer, Multiplayer };
 public enum RaceType { Race, Knockout, Stunt, Drift, TimeTrial }
 public enum CpuLevel { Normal };
+public enum TimeOfDay { Day, Night, Sunrise, Sunset };
 
 [Serializable]
 public class PlayerSettingsData
@@ -351,7 +352,7 @@ public class Info : MonoBehaviour
 	/// </summary>
 	public int s_laps = 3;
 	public bool s_inEditor = true;
-	public bool s_isNight = false;
+	public TimeOfDay s_timeOfDay = TimeOfDay.Day;
 	public CpuLevel s_cpuLevel = CpuLevel.Normal;
 	public int s_cpuRivals = 0; // 0-9
 	[NonSerialized]

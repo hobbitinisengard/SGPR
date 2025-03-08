@@ -332,7 +332,11 @@ public class EditorPanel : MonoBehaviour
 	{
 		if (Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.N))
 		{
-			F.I.s_isNight = !F.I.s_isNight;
+			if(F.I.s_timeOfDay != TimeOfDay.Night)
+				F.I.s_timeOfDay = TimeOfDay.Night;
+			else
+				F.I.s_timeOfDay = TimeOfDay.Day;
+
 			raceManager.SetPartOfDay();
 			skybox.GetComponent<SkyboxController>().SetNightTimeLights();
 			SetEnvirLights();
@@ -1799,7 +1803,7 @@ public class EditorPanel : MonoBehaviour
 		{
 			var lights = envir.transform.Find("Lights");
 			if (lights != null)
-				lights.gameObject.SetActive(F.I.s_isNight);
+				lights.gameObject.SetActive(F.I.s_timeOfDay == TimeOfDay.Night);
 		}
 	}
 	public void RemoveTrackLeftovers()

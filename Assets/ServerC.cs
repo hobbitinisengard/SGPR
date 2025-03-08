@@ -323,7 +323,7 @@ public class ServerC : MonoBehaviour
 			+ (F.I.randomTracks ? "1" : "0")
 			+ ((int)F.I.s_raceType).ToString()
 			+ (F.I.s_laps).ToString("D2")
-			+ (F.I.s_isNight ? "1" : "0")
+			+ ((int)F.I.s_timeOfDay).ToString()
 			+ ((int)F.I.s_cpuLevel).ToString()
 			+ F.I.s_cpuRivals
 			+ ((int)F.I.s_roadType).ToString()
@@ -349,7 +349,7 @@ public class ServerC : MonoBehaviour
 		F.I.randomTracks = data[2] == '1';
 		F.I.s_raceType = (RaceType)(data[3] - '0');
 		F.I.s_laps = int.Parse(data[4..6]);
-		F.I.s_isNight = data[6] == '1';
+		F.I.s_timeOfDay = (TimeOfDay)(data[6] - '0');
 		F.I.s_cpuLevel = (CpuLevel)(data[7] - '0');
 		F.I.s_cpuRivals = data[8] - '0';
 		F.I.s_roadType = (PavementType)(data[9] - '0');

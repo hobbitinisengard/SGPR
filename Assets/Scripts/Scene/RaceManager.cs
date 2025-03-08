@@ -11,7 +11,6 @@ using System.Linq;
 
 namespace RVP
 {
-	public enum PartOfDay { Day, Night };
 	[DisallowMultipleComponent]
 
 	public class RaceManager : MonoBehaviour
@@ -54,7 +53,6 @@ namespace RVP
 		[Tooltip("Lifetime of tire marks")]
 		public float tireFadeTime;
 
-		public PartOfDay pod = PartOfDay.Day;
 		public NetworkManager networkManager;
 		public SGP_HUD hud;
 		public EditorPanel editorPanel;
@@ -227,20 +225,33 @@ namespace RVP
 		//}
 		public void SetPartOfDay()
 		{
-			SetPartOfDay(F.I.s_isNight ? PartOfDay.Night : PartOfDay.Day);
-		}
-		void SetPartOfDay(PartOfDay pod)
-		{
-			if (pod == PartOfDay.Day)
+			int eulerX = 0;
+			switch (F.I.s_timeOfDay)
 			{
-				Sun.intensity = 130000;
-				RenderSettings.ambientLight = new Color32(208, 208, 208, 1);
+				case TimeOfDay.Day:
+					Sun.intensity = 130000;
+					eulerX = UnityEngine.Random.Range(26, 143);
+					RenderSettings.ambientLight = new Color32(208, 208, 208, 1);
+					break;
+				case TimeOfDay.Night:
+					Sun.intensity = 1200;
+					eulerX = 120;
+					RenderSettings.ambientLight = new Color32(52, 52, 52, 1);
+					break;
+				case TimeOfDay.Sunrise:
+					Sun.intensity = 130000;
+					eulerX = UnityEngine.Random.Range(8, 26);
+					RenderSettings.ambientLight = new Color32(208, 208, 208, 1);
+					break;
+				case TimeOfDay.Sunset:
+					Sun.intensity = 130000;
+					eulerX = UnityEngine.Random.Range(2, 8);
+					RenderSettings.ambientLight = new Color32(208, 208, 208, 1);
+					break;
+				default:
+					break;
 			}
-			else if (pod == PartOfDay.Night)
-			{
-				Sun.intensity = 1200;
-				RenderSettings.ambientLight = new Color32(52, 52, 52, 1);
-			}
+			Sun.transform.rotation = Quaternion.Euler(eulerX, 0, 0);
 		}
 		void Awake()
 		{
@@ -299,8 +310,7 @@ namespace RVP
 		{
 			ResultsView.Clear();
 			F.I.raceStartDate = DateTime.UtcNow.AddSeconds(5);
-			var euler = Sun.transform.rotation.eulerAngles;
-			Sun.transform.rotation = Quaternion.Euler(euler.x, UnityEngine.Random.Range(-180, 180), euler.z);
+			
 			
 			StartCoroutine(StartRaceCoroutine());
 		}
@@ -332,7 +342,7 @@ namespace RVP
 
 			if ((F.I.tracks[F.I.s_trackName].envir == Envir.SPN
 						|| F.I.tracks[F.I.s_trackName].envir == Envir.ENG
-						|| F.I.tracks[F.I.s_trackName].envir == Envir.FRA) && F.I.s_isNight)
+						|| F.I.tracks[F.I.s_trackName].envir == Envir.FRA) && F.I.s_timeOfDay == TimeOfDay.Night)
 			{
 				musicPlayer.clip = Resources.Load<AudioClip>($"music/{F.I.tracks[F.I.s_trackName].envir}2");
 				musicPlayer.Play();

@@ -76,10 +76,12 @@ public class TrackSelector : TrackSelectorTemplate
 	}
 	public void SwitchDayNight(bool init = false)
 	{
+		int dir = 0;
 		if (!init)
-			F.I.s_isNight = !F.I.s_isNight;
+			dir = F.I.shiftInputRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
 
-		nightButtonText.text = F.I.s_isNight ? "Night" : "Day";
+		F.I.s_timeOfDay = (TimeOfDay)F.Wraparound((int)F.I.s_timeOfDay + dir, (int)TimeOfDay.Day, (int)TimeOfDay.Sunset);
+		nightButtonText.text = F.I.s_timeOfDay.ToString();
 	}
 	public void SwitchCPULevel(bool init = false)
 	{

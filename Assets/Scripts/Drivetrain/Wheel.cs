@@ -520,7 +520,7 @@ namespace RVP
 				}
 
 				grounded = true;
-				groundedReally = !isFront || (isFront && (vp.wheels[2].groundedReally || vp.wheels[3].groundedReally));
+				groundedReally = true;
 				contactPoint.distance = hit.distance - actualRadius;
 				contactPoint.point = hit.point + localVel * Time.fixedDeltaTime;
 				contactPoint.grounded = true;
@@ -542,10 +542,16 @@ namespace RVP
 
 				if (curSurface)
 				{
-					if (curSurface.friction == 1)
-						contactPoint.surfaceFriction = curSurface.friction;
+					if (!isFront || (isFront && (vp.wheels[2].groundedReally || vp.wheels[3].groundedReally)))
+					{
+						if (curSurface.friction == 1)
+							contactPoint.surfaceFriction = curSurface.friction;
+						else
+							contactPoint.surfaceFriction = Mathf.Lerp(curSurface.friction, Mathf.Max(.9f, curSurface.friction), vp.tyresOffroad);
+					}
 					else
-						contactPoint.surfaceFriction = Mathf.Lerp(curSurface.friction, Mathf.Max(.9f, curSurface.friction), vp.tyresOffroad);
+						contactPoint.surfaceFriction = 0;
+					
 
 					contactPoint.surfaceType = curSurface.surfaceType;
 				}

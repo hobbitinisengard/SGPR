@@ -634,7 +634,7 @@ namespace RVP
 			}
 			ResultsView.Add(this);
 			engine.ignition = true;
-			lightsInput = F.I.s_isNight;
+			lightsInput = F.I.s_timeOfDay == TimeOfDay.Night || F.I.s_timeOfDay == TimeOfDay.Sunset;
 			foreach (var l in frontLights)
 				l.SetActive(lightsInput);
 			foreach (var l in rearLights)
