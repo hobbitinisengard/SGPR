@@ -10,7 +10,6 @@ public class SGP_Bouncer : MonoBehaviour
 	public float lastSideBounceTime;
 	public float lastVVBounceTime;
 	float debounceTime = .5f;
-	float heightOffset = 1;
 	int rbId;
 	static AnimationCurve multCurve;
 	

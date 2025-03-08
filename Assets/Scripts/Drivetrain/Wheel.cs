@@ -520,7 +520,7 @@ namespace RVP
 				}
 
 				grounded = true;
-				groundedReally = true;
+				groundedReally = !isFront || (isFront && (vp.wheels[2].groundedReally || vp.wheels[3].groundedReally));
 				contactPoint.distance = hit.distance - actualRadius;
 				contactPoint.point = hit.point + localVel * Time.fixedDeltaTime;
 				contactPoint.grounded = true;
