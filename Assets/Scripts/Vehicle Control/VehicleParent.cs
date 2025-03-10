@@ -364,13 +364,13 @@ namespace RVP
 		int roadSurfaceType;
 		[NonSerialized]
 		public float tyresOffroad;
-		private float timeWhenInAir;
 
 		public CatchupStatus catchupStatus { get; private set; }
 
 		bool collisionDetectionChangerActive;
 		private float lastCrashingTime;
 		private Vector3 originalCOM;
+		public float bunnyhopInput;
 
 		public void SetBattery(float capacity, float chargingSpeed, float lowBatPercent, float evoBountyPercent)
 		{
@@ -518,7 +518,7 @@ namespace RVP
 			RaceManager.I.ExitButton();
 		}
 
-		public void SetBatteryLoading(bool status)
+		public void PlayBatteryLoadingFXs(bool status)
 		{
 			foreach (var ps in batteryLoadingParticleSystems)
 			{
@@ -839,6 +839,30 @@ namespace RVP
 		{
 			steerInput = Mathf.Clamp(f, -1, 1);
 		}
+		public void SetBunnyhop(int f)
+		{
+			if(f > 0)
+			{
+				if(reallyGroundedWheels > 2)
+				{
+					bunnyhopInput = 1;
+					rb.AddForce(40 * bunnyhopInput * originalMass * -upDir);
+				}
+			}
+			else
+			{
+				if (bunnyhopInput > 0)
+				{
+					if(reallyGroundedWheels > 2)
+					{
+						// perform bunnyhop
+						ApplyBatteryPenalty();
+						rb.AddForce(10 * bunnyhopInput * upDir, ForceMode.VelocityChange);
+					}
+					bunnyhopInput = 0;
+				}
+			}
+		}
 
 		// Set ebrake input
 		public void SetEbrake(float f)
@@ -1096,7 +1120,7 @@ namespace RVP
 		{
 			energyRemaining = Mathf.Clamp(energyRemaining + batteryCapacity * batteryStuntIncreasePercent, 0, batteryCapacity);
 		}
-		public void ResetOnTrackBatteryPenalty()
+		public void ApplyBatteryPenalty()
 		{
 			float penalty = (followAI.IsCPU ? 0 : 1) * 0.5f * batteryStuntIncreasePercent;
 
@@ -1135,6 +1159,8 @@ namespace RVP
 			rb.angularDamping = angularDrag;
 			va.initialAngularDrag = angularDrag;
 		}
+
+		
 	}
 
 	// Class for groups of wheels to check each FixedUpdate

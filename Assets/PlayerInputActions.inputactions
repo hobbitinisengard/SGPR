@@ -9,7 +9,7 @@
                     "name": "Submit",
                     "type": "Button",
                     "id": "fb7dbf1a-638f-49fc-8f22-d614b2c77412",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": true
@@ -36,7 +36,7 @@
                     "name": "Alt",
                     "type": "Button",
                     "id": "ec855edc-0dc9-40e8-9efa-3b150addee04",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false

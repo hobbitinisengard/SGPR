@@ -21,8 +21,8 @@ public class StuntsData : IEnumerable<Stunt>
 	public enum ExtraName
 	{
 		Trikstart, Wheelie, Handstand, Looper, Grind, Slide, Powerslide,
-		SidewinderLeft,
-		SidewinderRight
+		SidewinderLeft,SidewinderRight,
+		Railgrind, SideRailgrind
 	}
 	public bool availableForFrontend;
 	public Flip[] flipData; // Meteor X1 | Backflip 360
@@ -47,6 +47,8 @@ public class StuntsData : IEnumerable<Stunt>
 			new Stunt("POWERSLIDE", 600),
 			new Stunt("SIDEWINDER LEFT", 550),
 			new Stunt("SIDEWINDER RIGHT", 550),
+			new Stunt("RAILGRIND", 1750),
+			new Stunt("SIDE RAILGRIND", 3500),
 		};
 	}
 
@@ -144,6 +146,8 @@ public class RaceBox : MonoBehaviour
 	public float driftingTimer;
 	private float sidewinderLeftTimer;
 	private float sidewinderRightTimer;
+	private float grindTimer;
+	private float grindTime;
 
 	public PtsAnimInfo JumpPai
 	{
@@ -194,9 +198,9 @@ public class RaceBox : MonoBehaviour
 				lastTimeInAir = Time.time;
 
 			JumpDetector(Time.fixedDeltaTime);
-			StuntDetector(Time.fixedDeltaTime);
+			StuntDetector();
 			DriftDetector(Time.fixedDeltaTime);
-
+			RailgrindDetector();
 			if (F.I.s_raceType != RaceType.Drift)
 				FlipDetector(Time.fixedDeltaTime);
 
@@ -401,7 +405,35 @@ public class RaceBox : MonoBehaviour
 			}
 		}
 	}
-	void StuntDetector(float deltaTime)
+	void RailgrindDetector()
+	{
+		if(Time.time - grindTime > 1)
+		{
+			grindTimer = 0;
+		}
+		if (vp.reallyGroundedWheels == 0 && (vp.crashing || vp.colliding) && vp.velMag > 30)
+		{
+			if (Physics.Raycast(vp.tr.position + vp.upDir, -vp.upDir, out var hit,2) && Vector3.Dot(vp.upDir, hit.normal) > 0.86f)
+			{
+				vp.ChargeBattery();
+				if(vp.velMag < 50)
+					vp.rb.AddForce(vp.rb.linearVelocity * vp.rb.mass);
+				grindTimer += Time.fixedDeltaTime;
+				grindTime = Time.time;
+				if (grindTimer > 0.5f)
+				{
+					float dot = Vector3.Dot(vp.forwardDir, vp.rb.linearVelocity.normalized);
+					Debug.Log(dot);
+					if (dot > 0.86f)
+						StartCoroutine(AddExtraStuntCo(StuntsData.ExtraName.Railgrind));
+					if (Mathf.Abs(dot) < .34f)
+						StartCoroutine(AddExtraStuntCo(StuntsData.ExtraName.SideRailgrind));
+					grindTimer = -99;
+				}
+			}
+		}
+	}
+	void StuntDetector()
 	{
 		// trickstart/wheelie/stoppie detection
 		if (vp.velMag < .5f)
@@ -411,15 +443,15 @@ public class RaceBox : MonoBehaviour
 		{
 			if (vp.wheels[0].groundedReally)
 				if (vp.wheels[1].groundedReally)
-					handstandTimer += deltaTime;
+					handstandTimer += Time.fixedDeltaTime;
 				else if (vp.wheels[2].groundedReally)
-					sidewinderLeftTimer += deltaTime;
+					sidewinderLeftTimer += Time.fixedDeltaTime;
 
 			if (vp.wheels[2].groundedReally)
 				if (vp.wheels[3].groundedReally)
-					wheelieTimer += deltaTime;
+					wheelieTimer += Time.fixedDeltaTime;
 				else if (vp.wheels[1].groundedReally)
-					sidewinderRightTimer += deltaTime;
+					sidewinderRightTimer += Time.fixedDeltaTime;
 
 			if (wheelieTimer > .6f)
 			{

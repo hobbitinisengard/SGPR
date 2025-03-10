@@ -19,6 +19,7 @@ namespace RVP
 		public InputActionReference honkInput;
 		public InputActionReference rollInput;
 		public InputActionReference resetOnTrackInput;
+		public InputActionReference bunnyhopInput;
 
 		public string upshiftButton;
 		public string downshiftButton;
@@ -74,7 +75,7 @@ namespace RVP
 					vp.SetBrake(Mathf.Abs(Mathf.Clamp(input2.y, -1, 0)));
 					vp.SetSteer(input2.x);
 					vp.SetBoost((int)boostInput.action.ReadValue<float>());
-
+					vp.SetBunnyhop((int)bunnyhopInput.action.ReadValue<float>());
 					if (F.I.chat.texting)
 						return;
 

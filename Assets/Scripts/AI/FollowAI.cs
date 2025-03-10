@@ -634,7 +634,7 @@ namespace RVP
 
 			vp.raceBox.ResetOnTrack();
 			vp.engine.transmission.ShiftToGear(2);
-			vp.ResetOnTrackBatteryPenalty();
+			vp.ApplyBatteryPenalty();
 			rolledOverTime = 0;
 			pitsProgress = 0;
 			reverseAttempts = 0;

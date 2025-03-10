@@ -32575,7 +32575,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 292.55768, y: -29.306702}
+  m_AnchoredPosition: {x: 292.55768, y: -29.30664}
   m_SizeDelta: {x: 82.771774, y: 50.700012}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &335092025
@@ -57818,7 +57818,7 @@ PrefabInstance:
     - target: {fileID: 1876160631357480379, guid: c45b5db04fef3904d8289011e629a352,
         type: 3}
       propertyPath: m_text
-      value: STUNT CHALLENGE
+      value: SKATE PARK
       objectReference: {fileID: 0}
     - target: {fileID: 1876160631357480379, guid: c45b5db04fef3904d8289011e629a352,
         type: 3}
@@ -87184,7 +87184,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 127.01413, y: -29.306702}
+  m_AnchoredPosition: {x: 127.01413, y: -29.30664}
   m_SizeDelta: {x: 82.771774, y: 50.700012}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1054588072
@@ -103640,7 +103640,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 47.81412, y: -29.306702}
+  m_AnchoredPosition: {x: 47.81412, y: -29.30664}
   m_SizeDelta: {x: 75.62824, y: 50.7}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1238725572
@@ -173405,7 +173405,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 209.78592, y: -29.306702}
+  m_AnchoredPosition: {x: 209.78592, y: -29.30664}
   m_SizeDelta: {x: 82.771774, y: 50.700012}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2049267889
