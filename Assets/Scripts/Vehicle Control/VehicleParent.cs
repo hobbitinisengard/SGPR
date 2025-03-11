@@ -856,7 +856,6 @@ namespace RVP
 					if(reallyGroundedWheels > 2)
 					{
 						// perform bunnyhop
-						ApplyBatteryPenalty();
 						rb.AddForce(10 * bunnyhopInput * upDir, ForceMode.VelocityChange);
 					}
 					bunnyhopInput = 0;

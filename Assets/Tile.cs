@@ -42,14 +42,15 @@ public class Tile : MonoBehaviour
 		else
 		{ 
 			var childObj = transform.GetChild(0);
+			
 			if (childObj.name == "lights")
-			{// tile is an decoration with lights
+			{// tile is a decoration with lights
 				mc = gameObject.AddComponent<MeshCollider>();
 
 				lightObj = childObj.gameObject;
 				UpdateLights();
 			}
-			else
+			else if(childObj.name != "extra")
 			{// tile is a road
 				mc = childObj.gameObject.AddComponent<MeshCollider>();
 

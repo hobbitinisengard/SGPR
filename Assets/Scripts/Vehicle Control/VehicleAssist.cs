@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using static SlideInOut;
 
 namespace RVP
 {
@@ -211,6 +212,23 @@ namespace RVP
 			}
 		}
 
+		public void StabilizeRail(float dot)
+		{
+			if (vp.IsOwner)
+			{
+				if (vp.velMag < 30)
+					vp.rb.AddForce(vp.rb.linearVelocity * vp.rb.mass);
+
+				rb.AddForce(40 * vp.rb.mass * -vp.upDir);
+
+				if (dot > 0.86f) // stabilize along Z axis (railgrind)
+				{
+					rb.AddRelativeTorque(new Vector3(0, 0, -Mathf.Sign(vp.rightDot) * rollOverForce), ForceMode.Acceleration);
+				}
+				else if (Mathf.Abs(dot) < .34f) // stabilize along X axis (side railgrind)
+					rb.AddRelativeTorque(new Vector3(-Mathf.Sign(vp.forwardDot) * rollOverForce, 0, 0), ForceMode.Acceleration);
+			}
+		}
 		// Assist with rolling back over if upside down or on side
 		void RollOver()
 		{

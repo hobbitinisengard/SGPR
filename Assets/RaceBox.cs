@@ -416,13 +416,15 @@ public class RaceBox : MonoBehaviour
 			if (Physics.Raycast(vp.tr.position + vp.upDir, -vp.upDir, out var hit,2) && Vector3.Dot(vp.upDir, hit.normal) > 0.86f)
 			{
 				vp.ChargeBattery();
-				if(vp.velMag < 50)
-					vp.rb.AddForce(vp.rb.linearVelocity * vp.rb.mass);
+				
+
+				float dot = Vector3.Dot(vp.forwardDir, vp.rb.linearVelocity.normalized);
+				
+				vp.va.StabilizeRail(dot);
 				grindTimer += Time.fixedDeltaTime;
 				grindTime = Time.time;
-				if (grindTimer > 0.5f)
+				if (grindTimer > 0.15f)
 				{
-					float dot = Vector3.Dot(vp.forwardDir, vp.rb.linearVelocity.normalized);
 					Debug.Log(dot);
 					if (dot > 0.86f)
 						StartCoroutine(AddExtraStuntCo(StuntsData.ExtraName.Railgrind));
