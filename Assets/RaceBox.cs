@@ -96,6 +96,10 @@ public class RaceBox : MonoBehaviour
 			return TimeSpan.FromSeconds(lapTimer);
 		}
 	}
+	public bool IsGrinding
+	{
+		get { return Time.time - grindTime < 0.15f; }
+	}
 	public float RaceProgressLaps
 	{
 		get { return curLap + vp.followAI.LapProgressPercent; }

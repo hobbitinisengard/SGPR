@@ -471,7 +471,7 @@ namespace RVP
 			//Debug.DrawRay(rim.position, vp.tr.forward, Color.yellow);
 
 			bool validHit = Physics.Raycast(transform.position, suspensionParent.springDirection, out RaycastHit hit, castDist, RaceManager.I.wheelCastMask);
-			if(!validHit)
+			if(!validHit && !vp.raceBox.IsGrinding)
 			{
 				Vector3 rotAxis = Vector3.Cross(suspensionParent.springDirection, vp.forwardDir);
 				Vector3 rayDir = vp.forwardDir;
