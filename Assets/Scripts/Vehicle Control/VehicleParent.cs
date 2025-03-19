@@ -370,6 +370,7 @@ namespace RVP
 		bool collisionDetectionChangerActive;
 		private float lastCrashingTime;
 		private Vector3 originalCOM;
+		[NonSerialized]
 		public float bunnyhopInput;
 
 		public void SetBattery(float capacity, float chargingSpeed, float lowBatPercent, float evoBountyPercent)
@@ -555,7 +556,7 @@ namespace RVP
 			rb = GetComponent<Rigidbody>();
 			originalDrag = rb.linearDamping;
 			originalMass = rb.mass;
-
+			rb.collisionDetectionMode = CollisionDetectionMode.Discrete;
 			//for (int i = 0; i < roadColParent.childCount; i++)
 			//	roadColParent.GetChild(i).GetComponent<CapsuleCollider>().hasModifiableContacts = true;
 

@@ -97,7 +97,7 @@
     },
     "drive": {
       "driveType": 0.0,
-      "steerAdd": 5.0,
+      "steerAdd": 10.0,
       "holdComebackSpeed": 0.95,
       "steerLimitAt0": 1.0,
       "steerLimitAt200": 0.13,

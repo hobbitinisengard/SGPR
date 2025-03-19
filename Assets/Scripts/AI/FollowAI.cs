@@ -664,7 +664,6 @@ namespace RVP
 			dist = progress;
 
 			vp.ghost.StartGhostResetting();
-			rb.collisionDetectionMode = CollisionDetectionMode.Discrete;
 			rb.isKinematic = true;
 			tr.position = h.point + Vector3.up + resetDir;
 			yield return new WaitForFixedUpdate();
@@ -677,7 +676,6 @@ namespace RVP
 
 			OutOfPits(resetProgress: false);
 			rb.isKinematic = false;
-			rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
 			vp.resetOnTrackTime = Time.time;
 		}
 

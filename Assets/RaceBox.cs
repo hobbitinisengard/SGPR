@@ -419,9 +419,6 @@ public class RaceBox : MonoBehaviour
 		{
 			if (Physics.Raycast(vp.tr.position + vp.upDir, -vp.upDir, out var hit,2) && Vector3.Dot(vp.upDir, hit.normal) > 0.86f)
 			{
-				vp.ChargeBattery();
-				
-
 				float dot = Vector3.Dot(vp.forwardDir, vp.rb.linearVelocity.normalized);
 				
 				vp.va.StabilizeRail(dot);

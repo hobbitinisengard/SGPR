@@ -116,7 +116,10 @@ namespace RVP
 					servoAudio.pitch = (Mathf.Abs(targetSteer) > absSteerInput) ? 1.5f : 1;
 
 					if (absSteerInput != holdCurveValue)
-						holdDuration = Mathf.Clamp01(holdDuration + (vp.SGPshiftbutton > 0 ? 5 : 1) * (F.I.controllerInUse ? 20 : 1) * steerAdd * .01f * Time.fixedDeltaTime);
+					{
+						float add = (0.75f + .25f * holdDuration) * steerAdd;
+						holdDuration = Mathf.Clamp01(holdDuration + (vp.SGPshiftbutton > 0 ? 5 : 1) * (F.I.controllerInUse ? 20 : 1) * add * .01f * Time.fixedDeltaTime);
+					}
 				}
 				else
 				{

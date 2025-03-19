@@ -471,7 +471,7 @@ namespace RVP
 			//Debug.DrawRay(rim.position, vp.tr.forward, Color.yellow);
 
 			bool validHit = Physics.Raycast(transform.position, suspensionParent.springDirection, out RaycastHit hit, castDist, RaceManager.I.wheelCastMask);
-			if(!validHit && !vp.raceBox.IsGrinding)
+			if(!validHit)
 			{
 				Vector3 rotAxis = Vector3.Cross(suspensionParent.springDirection, vp.forwardDir);
 				Vector3 rayDir = vp.forwardDir;
@@ -542,15 +542,15 @@ namespace RVP
 
 				if (curSurface)
 				{
-					if (!isFront || (isFront && (vp.wheels[2].groundedReally || vp.wheels[3].groundedReally)))
-					{
+					//if (!isFront || (isFront && (vp.wheels[2].groundedReally || vp.wheels[3].groundedReally)))
+					//{
 						if (curSurface.friction == 1)
 							contactPoint.surfaceFriction = curSurface.friction;
 						else
 							contactPoint.surfaceFriction = Mathf.Lerp(curSurface.friction, Mathf.Max(.9f, curSurface.friction), vp.tyresOffroad);
-					}
-					else
-						contactPoint.surfaceFriction = 0;
+					//}
+					//else
+					//	contactPoint.surfaceFriction = 0;
 					
 
 					contactPoint.surfaceType = curSurface.surfaceType;
