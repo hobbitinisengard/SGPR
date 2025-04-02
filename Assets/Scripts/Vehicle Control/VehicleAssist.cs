@@ -83,8 +83,9 @@ namespace RVP
 			rb = GetComponent<Rigidbody>();
 			vp = GetComponent<VehicleParent>();
 			initialAngularDrag = rb.angularDamping;
-			if (!vp.Owner)
-				enabled = false;
+			if (F.I.s_raceType == RaceType.Drift)
+				if (!vp.Owner)
+					enabled = false;
 		}
 
 		void FixedUpdate()
@@ -121,12 +122,12 @@ namespace RVP
 					vp.rb.AddForce(vp.steerInput * 5 * vp.tr.right, ForceMode.Acceleration);
 					Vector3 targetForce = vp.tr.TransformDirection(vp.steerInput, 0, 0);
 					targetForce = Vector3.ProjectOnPlane(targetForce, Vector3.up);
-					var targetAnchor = (vp.wheels[0].tr.position + vp.wheels[1].tr.position)/2f;
-					vp.rb.AddForceAtPosition(targetForce,targetAnchor, ForceMode.Acceleration);
+					var targetAnchor = (vp.wheels[0].tr.position + vp.wheels[1].tr.position) / 2f;
+					vp.rb.AddForceAtPosition(targetForce, targetAnchor, ForceMode.Acceleration);
 
 					// max front alignment to road below
 					var detected = Physics.Raycast(tr.position, Vector3.down, out var hit);
-					if(detected && hit.collider.gameObject.layer == F.I.roadLayer)
+					if (detected && hit.collider.gameObject.layer == F.I.roadLayer)
 					{
 						//vp.upDir hit.normal;
 						//Vector3 torque = Vector3.right * torqueSpeed;
@@ -273,9 +274,9 @@ namespace RVP
 		{
 			float pushFactor = (vp.accelAxisIsBrake ? vp.accelInput : vp.accelInput - vp.brakeInput) * Mathf.Abs(vp.localVelocity.x) * driftPush * groundedFactor * (1 - Mathf.Abs(Vector3.Dot(vp.forwardDir, rb.linearVelocity.normalized)));
 
-			rb.AddForce(
-				 vp.norm.TransformDirection(new Vector3(Mathf.Abs(pushFactor) * Mathf.Sign(vp.localVelocity.x), Mathf.Abs(pushFactor) * Mathf.Sign(vp.localVelocity.z), 0)),
-				 ForceMode.Acceleration);
+			rb.AddForce(vp.norm.TransformDirection(new Vector3(Mathf.Abs(pushFactor) * Mathf.Sign(vp.localVelocity.x),
+					 Mathf.Abs(pushFactor) * Mathf.Sign(vp.localVelocity.z), 0)),
+					 ForceMode.Acceleration);
 		}
 	}
 }

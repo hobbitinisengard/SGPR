@@ -6684,7 +6684,6 @@ MonoBehaviour:
   steeringControl: {fileID: 6779875395873480448}
   colliding: 0
   crashing: 0
-  initAngularDrag: 0
 --- !u!114 &5969412531493064935
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6760,6 +6759,7 @@ MonoBehaviour:
   rollCheckDistance: 1
   rollOverForce: 2
   rollSpeedThreshold: 0
+  initialAngularDrag: 0
   fallSpeedLimit: Infinity
   applyFallLimitUpwards: 0
   X: 0.1
@@ -6955,6 +6955,10 @@ MonoBehaviour:
   lastCarCarBounceTime: 0
   lastSideBounceTime: 0
   lastVVBounceTime: 0
+  bouncyCols:
+  - {fileID: 5816070836215581479}
+  - {fileID: 3687819209482826504}
+  - {fileID: 1834431705911420082}
 --- !u!114 &865657811856999447
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10336,7 +10340,7 @@ MeshRenderer:
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 2100000, guid: 0a366beec3482914180fdd785c8a7560, type: 2}
-  - {fileID: 2100000, guid: f95eb13c38d4193408e2f6752e878e99, type: 2}
+  - {fileID: 2100000, guid: 47d27000dd5fd834ab71de8a6f1346e9, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -10515,7 +10519,7 @@ MeshRenderer:
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 2100000, guid: 0a366beec3482914180fdd785c8a7560, type: 2}
-  - {fileID: 2100000, guid: f95eb13c38d4193408e2f6752e878e99, type: 2}
+  - {fileID: 2100000, guid: 47d27000dd5fd834ab71de8a6f1346e9, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -10602,7 +10606,7 @@ MeshRenderer:
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 2100000, guid: 0a366beec3482914180fdd785c8a7560, type: 2}
-  - {fileID: 2100000, guid: f95eb13c38d4193408e2f6752e878e99, type: 2}
+  - {fileID: 2100000, guid: 47d27000dd5fd834ab71de8a6f1346e9, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -15409,7 +15413,7 @@ MeshRenderer:
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 2100000, guid: 0a366beec3482914180fdd785c8a7560, type: 2}
-  - {fileID: 2100000, guid: f95eb13c38d4193408e2f6752e878e99, type: 2}
+  - {fileID: 2100000, guid: 47d27000dd5fd834ab71de8a6f1346e9, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

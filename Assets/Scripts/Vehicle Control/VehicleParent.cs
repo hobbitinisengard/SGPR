@@ -450,20 +450,39 @@ namespace RVP
 
 			// assign to body
 			mr.material = newMat;
-
+			var wheelMat = Resources.Load<Material>("materials/carModels/Materials/cars_misc_tyre" + UnityEngine.Random.Range(1, 12).ToString());
+			//var wheelMatInv = new Material(wheelMat);
+			//wheelMatInv.name += "Inv";
+			//wheelMatInv.mainTextureScale = -Vector2.one;
 			// assign to wheels
-			foreach(var w in wheels)
+			foreach (var w in wheels)
 			{
 				var wmr = w.transform.GetChild(0).GetComponent<MeshRenderer>();
 				var mats = wmr.materials;
-				for (int i=0; i<mats.Length;i++)
+				// by convention first material is liverable, second is tyre texture
+				for (int i = 0; i < mats.Length; i++)
 				{
 					if (mats[i].name.Contains("grid"))
 					{
 						mats[i] = newMat;
 					}
+					if (mats[i].name.Contains("tyre"))
+					{
+						//if (!w.isLeft)
+						//{
+						//	mats[i] = wheelMatInv;
+						//	//var mf = w.transform.GetChild(0).GetComponent<MeshFilter>();
+						//	//var uvs = mf.mesh.uv;
+						//	//for (int i = 0; i < uvs.Length; ++i)
+						//	//	uvs[i] *= -1;
+						//	//mf.mesh.SetUVs(0, uvs);
+						//}
+						//else
+							mats[i] = wheelMat;
+					}
 				}
 				wmr.materials = mats;
+				
 			}
 			// assign to antennas
 			var anchor = bodyObj.transform.GetChild(0);
@@ -1135,7 +1154,6 @@ namespace RVP
 		}
 		void KnockoutMeInternal()
 		{
-			followAI.selfDriving = false;
 			SetAccel(0);
 			SetBrake(0);
 			SetSteer(0);

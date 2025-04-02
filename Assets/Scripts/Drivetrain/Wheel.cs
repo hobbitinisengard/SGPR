@@ -35,7 +35,7 @@ namespace RVP
 		[Header("Rotation")]
 
 		[Tooltip("Curve for setting final RPM of wheel based on driving torque/brake force, x-axis = torque/brake force, y-axis = lerp between raw RPM and target RPM")]
-		public AnimationCurve rpmBiasCurve;
+		//AnimationCurve rpmBiasCurve;
 
 		[Range(0, 10)]
 		public float axleFriction;
@@ -214,7 +214,8 @@ namespace RVP
 		public float eval;
 		float forceThreshold;
 		public float slipMult;
-		bool isFront;
+		public bool isFront => name[5] == 'F';
+		public bool isLeft => name[6] == 'L';
 		//AnimationCurve GenerateFrictionCurve(bool moreGrip = false)
 		//{
 		//    Keyframe[] keys = new Keyframe[SGPFrictionData.Length];
@@ -235,18 +236,19 @@ namespace RVP
 			if (sphereColTr)
 				sphereColTr.gameObject.layer = layer;
 		}
+		private void Awake()
+		{
+			tr = transform;
+			suspensionParent = tr.parent.GetComponent<Suspension>();
+		}
 		void Start()
 		{
-			isFront = name[5] == 'F';
-			tr = transform;
 			rb = tr.GetTopmostParentComponent<Rigidbody>();
 			vp = tr.GetTopmostParentComponent<VehicleParent>();
-			rpmBiasCurve = new(new Keyframe[] { new(0, .25f, 0, 1.6f), new(1, 1, 0, 1.6f) });
-
+			//rpmBiasCurve = new(new Keyframe[] { new(0, .25f, 0, 1.6f), new(1, 1, 0, 1.6f) });
 			forwardFrictionCurve ??= new AnimationCurve(new Keyframe[] { new(0, 0f), new(.2f, 1, 0, 0), new(1, .8f, 0, 0) });
 			sidewaysFrictionCurve ??= AnimationCurve.Linear(0, 0, .1f, 1);//new AnimationCurve(new Keyframe[] { new(0, 0f), new(.1f, 1f)});
-
-			suspensionParent = tr.parent.GetComponent<Suspension>();
+			
 			travelDist = suspensionParent.targetCompression;
 			canDetach = detachForce < Mathf.Infinity && Application.isPlaying;
 			initialTirePressure = tirePressure;
@@ -359,7 +361,9 @@ namespace RVP
 
 			airTime = grounded ? 0 : airTime + Time.fixedDeltaTime;
 			forceApplicationPoint = applyForceAtGroundContact ? contactPoint.point : tr.position;
-
+			//if (isFront)
+			//	forceApplicationPoint += transform.TransformDirection(0.2f * Vector3.forward);
+			//Debug.DrawLine(vp.tr.position, forceApplicationPoint, Color.yellow);
 			if (connected)
 			{
 				GetRawRPM();
@@ -479,7 +483,7 @@ namespace RVP
 				for(int i=0; i<7 && !validHit; ++i)
 				{
 					validHit = Physics.Raycast(rim.position, rayDir, out hit, actualRadius, RaceManager.I.wheelCastMask);
-					Debug.DrawRay(rim.position, rayDir, Color.yellow);
+					//Debug.DrawRay(rim.position, rayDir, Color.yellow);
 					rayDir = q * rayDir;
 				}
 			}
@@ -750,6 +754,8 @@ namespace RVP
 			if (Application.isPlaying && generateHardCollider && connected)
 			{
 				sphereColTr.position = rim.position;
+				//if(isFront)
+				//	sphereColTr.position += transform.TransformDirection(0.2f * Vector3.forward);
 			}
 		}
 

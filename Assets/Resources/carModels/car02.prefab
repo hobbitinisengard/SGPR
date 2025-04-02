@@ -13914,7 +13914,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 891902208
+  GlobalObjectIdHash: 977137140
   InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
@@ -14272,6 +14272,10 @@ MonoBehaviour:
   lastCarCarBounceTime: 0
   lastSideBounceTime: 0
   lastVVBounceTime: 0
+  bouncyCols:
+  - {fileID: 4046152421521391366}
+  - {fileID: 9054695656291353955}
+  - {fileID: 3135830691114949167}
 --- !u!114 &865657811856999447
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17297,7 +17301,7 @@ MeshRenderer:
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 2100000, guid: a16ec2fee6aee0c42ba032af93b5268c, type: 2}
-  - {fileID: 2100000, guid: 47d27000dd5fd834ab71de8a6f1346e9, type: 2}
+  - {fileID: 2100000, guid: 50d1b5a5b6311154fa9d8f7dceb4c9a3, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -18671,7 +18675,7 @@ MeshRenderer:
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 2100000, guid: a16ec2fee6aee0c42ba032af93b5268c, type: 2}
-  - {fileID: 2100000, guid: 47d27000dd5fd834ab71de8a6f1346e9, type: 2}
+  - {fileID: 2100000, guid: 50d1b5a5b6311154fa9d8f7dceb4c9a3, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -18758,7 +18762,7 @@ MeshRenderer:
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 2100000, guid: a16ec2fee6aee0c42ba032af93b5268c, type: 2}
-  - {fileID: 2100000, guid: 47d27000dd5fd834ab71de8a6f1346e9, type: 2}
+  - {fileID: 2100000, guid: 50d1b5a5b6311154fa9d8f7dceb4c9a3, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -19103,7 +19107,7 @@ MeshRenderer:
   m_RendererPriority: 0
   m_Materials:
   - {fileID: 2100000, guid: a16ec2fee6aee0c42ba032af93b5268c, type: 2}
-  - {fileID: 2100000, guid: 47d27000dd5fd834ab71de8a6f1346e9, type: 2}
+  - {fileID: 2100000, guid: 50d1b5a5b6311154fa9d8f7dceb4c9a3, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

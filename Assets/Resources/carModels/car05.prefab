@@ -13381,7 +13381,6 @@ MonoBehaviour:
   steeringControl: {fileID: 6779875395873480448}
   colliding: 0
   crashing: 0
-  bunnyhopInput: 0
 --- !u!114 &5969412531493064935
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13653,6 +13652,10 @@ MonoBehaviour:
   lastCarCarBounceTime: 0
   lastSideBounceTime: 0
   lastVVBounceTime: 0
+  bouncyCols:
+  - {fileID: 6333764322069355997}
+  - {fileID: 6697474777688004520}
+  - {fileID: 779181170822413481}
 --- !u!114 &865657811856999447
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -37,7 +37,7 @@ public class PlayerSettingsData
 	public int fpsLimit = 60;
 	public bool vSync = true;
 	public string playerName = "";
-	public float steerGamma = 0;
+	public float deadzone = 0;
 	public string serverName = "";
 	public string serverPassword = "";
 	public string serverMaxPlayers = "10";
@@ -56,14 +56,14 @@ public class RankingData
 
 public class Info : MonoBehaviour
 {
-	[NonSerialized]
-	public Dictionary<int, VehicleParent> carRbs = new(10);
+	
 	public MultiPlayerSelector mpSelectorInitializer;
 	public Text versionText;
 	public Material transpMaterial;
 	public Material opaqueMaterial;
-	public const string VERSION = "0.4.6";
+	public const string VERSION = "0.4.7";
 	public bool minimized { get; private set; }
+	
 	void OnApplicationFocus(bool hasFocus)
 	{
 		minimized = !hasFocus;
@@ -105,31 +105,9 @@ public class Info : MonoBehaviour
 		ReloadCarPartsData();
 		LoadRanking();
 		icons = Resources.LoadAll<Sprite>(trackImagesPath + "tiles");
-		Physics.ContactModifyEvent += OnContactModify;
+		
 	}
-	void OnContactModify(PhysicsScene scene, NativeArray<ModifiableContactPair> pairs)
-	{
-		foreach (var pair in pairs)
-		{
-			for (int i = 0; i < pair.contactCount; ++i)
-			{
-				if (pair.bodyInstanceID != 0 && pair.otherBodyInstanceID != 0 &&
-				carRbs.ContainsKey(pair.bodyInstanceID) && carRbs.ContainsKey(pair.otherBodyInstanceID))
-				{
-					pair.SetPoint(i, 0.5f * (carRbs[pair.bodyInstanceID].worldCOM + carRbs[pair.otherBodyInstanceID].worldCOM));
-				}
-					
-				//Vector3 normal = pair.GetNormal(i);
-				//float angle = Vector3.SignedAngle(normal, 
-				//	(vp.rb.worldCenterOfMass - pair.GetPoint(i)).normalized, vp.upDir);
-				//normal = Quaternion.AngleAxis(angle, vp.upDir) * normal;
-
-				//Vector3 normal = Vector3.ProjectOnPlane(pair.GetNormal(i), Vector3.up);
-				//pair.SetNormal(i, normal);
-				//pair.SetBounciness(i, 1);
-			}
-		}
-	}
+	
 	string _documentsSGPRpath;
 	public string documentsSGPRpath
 	{
@@ -146,6 +124,7 @@ public class Info : MonoBehaviour
 
 	public readonly int maxCarsInRace = 10;
 
+	// menu inputs
 	public PlayerSettingsData playerData;
 	public InputActionReference shiftRef;
 	public InputActionReference escRef;
@@ -157,6 +136,17 @@ public class Info : MonoBehaviour
 	public InputActionReference ctrlInputRef;
 	public InputActionReference altInputRef;
 	public InputActionReference pointRef;
+
+	// car steering inputs
+	public InputActionReference driveRef;
+	public InputActionReference boostInput;
+	public InputActionReference evoInput;
+	public InputActionReference honkInput;
+	public InputActionReference rollInput;
+	public InputActionReference resetOnTrackInput;
+	public InputActionReference bunnyhopInput;
+	public InputActionReference lookBackInput;
+	public InputActionReference lookAxisInput;
 
 	public RankingData rankingData;
 	public async void LoadRanking()
@@ -754,13 +744,14 @@ public class Car
 	public int price;
 	public int rooster;
 	public string internalName;
-	public Car(string internalName, int price, CarGroup carClass, string name, string desc)
+	public Car(string internalName, int price, CarGroup carClass, string name, string desc, int rooster = 0)
 	{
 		this.internalName = internalName;
 		this.desc = desc;
 		this.category = carClass;
 		this.name = name;
 		this.price = price;
+		this.rooster = rooster;
 	}
 }
 public struct PartInfo

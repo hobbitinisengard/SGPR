@@ -37,7 +37,7 @@
     },
     "battery": {
       "capacity": 1000.0,
-      "chargingSpeed": 400.0,
+      "chargingSpeed": 200.0,
       "lowBatPercent": 0.2,
       "evoBountyPercent": 0.15
     },

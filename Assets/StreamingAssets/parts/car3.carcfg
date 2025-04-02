@@ -67,7 +67,7 @@
       "cutoffKRPM": 10.5
     },
     "chassis": {
-      "mass": 1.5,
+      "mass": 1.0,
       "longtitunalCOM": 0.0,
       "verticalCOM": 0.4,
       "drag": 0.28,

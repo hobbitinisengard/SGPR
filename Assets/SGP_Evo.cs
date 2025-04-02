@@ -197,9 +197,7 @@ public class SGP_Evo : MonoBehaviour
 				stunting = false;
 				return;
 			}
-
-			bool inputValid = (vp.brakeInput + vp.accelInput + Mathf.Abs(vp.steerInput) + Mathf.Abs(vp.rollInput)) <= 1;
-			if (vp.SGPshiftbutton > 0 && inputValid)
+			if (vp.SGPshiftbutton > 0)
 			{
 				if (vp.accelInput > .2f)
 				{ // backflip
@@ -212,7 +210,7 @@ public class SGP_Evo : MonoBehaviour
 					r[0].UpdateTarget(Direction.CLOCK);
 					r[0].IncreaseEvoSpeed();
 				}
-				if (vp.rollInput != 0)
+				else if (vp.rollInput != 0)
 				{
 					if (vp.rollInput > .2f)
 					{ // right barrel roll
@@ -224,7 +222,7 @@ public class SGP_Evo : MonoBehaviour
 					}
 					r[2].IncreaseEvoSpeed();
 				}
-				if (vp.steerInput != 0)
+				else if (vp.steerInput != 0)
 				{ // rotation left/right 
 					if (vp.steerInput > .2f)
 						r[1].UpdateTarget(Direction.CLOCK);

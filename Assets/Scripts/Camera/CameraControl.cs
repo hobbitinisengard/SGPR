@@ -285,8 +285,8 @@ namespace RVP
 
 			if(!F.I.chat.texting)
 			{
-				xInput = vp.basicInput.lookAxisInput.action.ReadValue<float>();
-				yInput = -vp.basicInput.lookBackInput.action.ReadValue<float>();
+				xInput = F.I.lookAxisInput.action.ReadValue<float>();
+				yInput = -F.I.lookBackInput.action.ReadValue<float>();
 			}
 
 			smoothYRot = Mathf.Lerp(smoothYRot, smoothRotCoeff * vp.rb.angularVelocity.y, Time.fixedDeltaTime);

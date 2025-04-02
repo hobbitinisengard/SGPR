@@ -154,10 +154,12 @@ namespace RVP
 		[System.NonSerialized]
 		public bool jammed;
 		public Vector3 appliedSuspensionForce;
-
-		void Start()
+		private void Awake()
 		{
 			tr = transform;
+		}
+		void Start()
+		{
 			rb = tr.GetTopmostParentComponent<Rigidbody>();
 			vp = tr.GetTopmostParentComponent<VehicleParent>();
 			targetDrive = GetComponent<DriveForce>();
@@ -174,9 +176,20 @@ namespace RVP
 				{
 					GameObject cap = new GameObject("Compress Collider");
 					cap.layer = RaceManager.ignoreWheelCastLayer;
+					
 					compressTr = cap.transform;
 					compressTr.parent = tr;
-					compressTr.localPosition = Vector3.zero;
+					
+					
+					if (wheel.isFront)
+					{ // prevent sticking to walls by aligning front suspension hard colliders with rear ones
+						var rearSus = wheel.isLeft ? vp.wheels[2].suspensionParent : vp.wheels[3].suspensionParent;
+						compressTr.localPosition = (Math.Abs(rearSus.tr.localPosition.x - tr.localPosition.x) + rearSus.wheel.tireRadius / 2 - wheel.tireRadius / 2) * Vector3.forward;
+					}
+					else
+					{
+						compressTr.localPosition = Math.Abs(wheel.tireRadius / 2 - wheel.tireWidth / 2) * -Vector3.forward;
+					}
 					compressTr.localEulerAngles = new Vector3(camberAngle, 0, -casterAngle * flippedSideFactor);
 
 					setHardColliderRadiusFactor = hardColliderRadiusFactor;
@@ -195,8 +208,12 @@ namespace RVP
 
 					compressCol.sharedMaterial = RaceManager.I.frictionlessMat;
 				}
+				else
+				{
+					Debug.LogWarning("Not generate hard collider selected");
+				}
 
-				steerRangeMax = Mathf.Max(steerRangeMin, steerRangeMax);
+					steerRangeMax = Mathf.Max(steerRangeMin, steerRangeMax);
 
 				properties = GetComponent<SuspensionPropertyToggle>();
 				if (properties)

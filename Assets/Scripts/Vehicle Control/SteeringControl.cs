@@ -41,9 +41,9 @@ namespace RVP
 		public float collisionWheelMult;
 		void GenerateGammaCurve()
 		{
-			if (analogInputCurve == null || gamma != F.I.playerData.steerGamma)
+			if (analogInputCurve == null || gamma != F.I.playerData.deadzone)
 			{
-				gamma = F.I.playerData.steerGamma;
+				gamma = F.I.playerData.deadzone;
 				Keyframe[] keys2 = new Keyframe[16];
 				for (int i = 0; i < keys2.Length; i++)
 				{
@@ -104,10 +104,12 @@ namespace RVP
 			{
 				F.I.controllerInUse = (vp.basicInput.playerInput.currentControlScheme != "Keyboard");
 
-				if (F.I.playerData.steerGamma != gamma)
-				{
-					GenerateGammaCurve();
-				}
+				if (absSteerInput < F.I.playerData.deadzone)
+					absSteerInput = 0;
+				//if (F.I.playerData.deadzone != gamma)
+				//{
+				//	GenerateGammaCurve();
+				//}
 
 				if (absSteerInput >= holdCurveValue)
 				{
@@ -115,23 +117,20 @@ namespace RVP
 					servoAudio.volume = 1f;
 					servoAudio.pitch = (Mathf.Abs(targetSteer) > absSteerInput) ? 1.5f : 1;
 
-					if (absSteerInput != holdCurveValue)
+					if (absSteerInput > holdCurveValue)
 					{
-						float add = (0.75f + .25f * holdDuration) * steerAdd;
-						holdDuration = Mathf.Clamp01(holdDuration + (vp.SGPshiftbutton > 0 ? 5 : 1) * (F.I.controllerInUse ? 20 : 1) * add * .01f * Time.fixedDeltaTime);
+						float add = /*(0.75f + .25f * holdDuration) * */steerAdd;
+						holdDuration = Mathf.Clamp01(holdDuration + (vp.SGPshiftbutton > 0 ? 5 : 1) * add * .01f * Time.fixedDeltaTime);
 					}
 				}
 				else
 				{
 					steerLimit = vp.wheels[0].groundedReally ? steerLimitCurve.Evaluate(vp.localVelocity.z) : 0;
 					servoAudio.volume = 0;
-					holdDuration = Mathf.Lerp(holdDuration, absSteerInput, holdComebackSpeed * 10 * Time.fixedDeltaTime);
+					holdDuration = Mathf.Lerp(holdDuration, absSteerInput, holdComebackSpeed * 40 * Time.fixedDeltaTime);
 				}
-
-				if (F.I.controllerInUse)
-					holdCurveValue = Mathf.Lerp(holdCurveValue, absSteerInput, 10 * Time.deltaTime);//analogInputCurve.Evaluate(holdDuration);
-				else
-					holdCurveValue = keyboardInputCurve.Evaluate(holdDuration);
+				
+				holdCurveValue = keyboardInputCurve.Evaluate(holdDuration);
 			}
 
 

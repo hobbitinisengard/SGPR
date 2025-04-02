@@ -1,9 +1,12 @@
-
 using RVP;
+using System.Collections.Generic;
 using UnityEngine;
+using Unity.Collections;
+/* 
+ * 1. There is added force on every body collision projected flat
+*/
 public class SGP_Bouncer : MonoBehaviour
 {
-	Rigidbody rb;
 	VehicleParent vp;
 	public float lastBounceTime;
 	public float lastCarCarBounceTime;
@@ -12,36 +15,82 @@ public class SGP_Bouncer : MonoBehaviour
 	float debounceTime = .5f;
 	int rbId;
 	static AnimationCurve multCurve;
+	public Collider[] bouncyCols;
 	
+	static Dictionary<int, VehicleParent> carRbs = new(10);
+	static bool OnContactModifyRegistered = false;
 	void Awake()
 	{
 		vp = GetComponent<VehicleParent>();
-		rb = GetComponent<Rigidbody>();
 		rbId = vp.rb.GetInstanceID();
-		F.I.carRbs.Add(rbId, vp);
+		carRbs.Add(rbId, vp);
 
 		if (multCurve == null)
 		{
 			Keyframe[] kf = new Keyframe[]
 			{
-				new (Mathf.Cos((90 + 20)*Mathf.Deg2Rad),0f),
-				new (Mathf.Cos((90 + 45)*Mathf.Deg2Rad),1),
-				new (Mathf.Cos((90 + 70)*Mathf.Deg2Rad),0f),
+				new (Mathf.Cos((-90)*Mathf.Deg2Rad),1),
+				new (Mathf.Cos((0)*Mathf.Deg2Rad),0),
+				new (Mathf.Cos((90)*Mathf.Deg2Rad),1),
 			};
 			multCurve = new AnimationCurve(kf);
 		}
-		for (int i = 0; i < vp.ghost.colliders.Length; i++)
+		for (int i = 0; i < bouncyCols.Length; i++)
 		{
-			vp.ghost.colliders[i].hasModifiableContacts = true;
-		}	
+			bouncyCols[i].hasModifiableContacts = true;
+		}
+
+		if(!OnContactModifyRegistered)
+		{
+			OnContactModifyRegistered = true;
+			Physics.ContactModifyEvent += OnContactModify;
+		}
+	}
+	static void OnContactModify(PhysicsScene scene, NativeArray<ModifiableContactPair> pairs)
+	{
+		foreach (var pair in pairs)
+		{
+			if (/*pair.bodyInstanceID != 0 && pair.otherBodyInstanceID != 0 &&*/
+				carRbs.ContainsKey(pair.bodyInstanceID) && carRbs.ContainsKey(pair.otherBodyInstanceID))
+			{
+				if (pair.contactCount > 0)
+				{
+					float mult = 1;// Mathf.Abs(Vector3.Dot(pair.GetNormal(0), carRbs[pair.bodyInstanceID].rightDir));
+					//var oldPoint = pair.GetPoint(0);
+					var newPoint = carRbs[pair.bodyInstanceID].worldCOM;
+					//newPoint -= carRbs[pair.bodyInstanceID].upDir * carRbs[pair.bodyInstanceID].rb.centerOfMass.y;
+					pair.SetPoint(0, newPoint);
+					float upNormDot = Mathf.Abs(Vector3.Dot(carRbs[pair.bodyInstanceID].rightDir, pair.GetNormal(0)));
+					pair.SetBounciness(0, 2 * upNormDot);
+					//pair.SetNormal(0, mult * Vector3.ProjectOnPlane(pair.GetNormal(0)/*(carRbs[pair.bodyInstanceID].worldCOM - oldPoint).normalized*/, Vector3.up));
+					//pair.SetBounciness(0, 1);
+					//Vector3 n = pair.rotation * Vector3.up;
+					//pair.SetTargetVelocity(0, n * 10f);
+
+					for (int i = 1; i < pair.contactCount; ++i)
+					{
+						pair.IgnoreContact(i);
+					}
+				}
+			}
+			//Vector3 normal = pair.GetNormal(i);
+			//float angle = Vector3.SignedAngle(normal, 
+			//	(vp.rb.worldCenterOfMass - pair.GetPoint(i)).normalized, vp.upDir);
+			//normal = Quaternion.AngleAxis(angle, vp.upDir) * normal;
+
+			//Vector3 normal = Vector3.ProjectOnPlane(pair.GetNormal(i), Vector3.up);
+			//pair.SetNormal(i, normal);
+			//pair.SetBounciness(i, 1);
+
+		}
 	}
 	private void OnDestroy()
 	{
-		F.I.carRbs.Remove(rbId);
+		carRbs.Remove(rbId);
 	}
-	private void OnCollisionEnter(Collision collision)
+	private void OnCollisionEnter(Collision col)
 	{
-		ContactPoint contact = collision.GetContact(0);
+		ContactPoint contact = col.GetContact(0);
 		if (contact.otherCollider.gameObject.layer == F.I.ignoreWheelCastLayer)
 			return;
 		if (CountDownSeq.Countdown > 0)
@@ -63,24 +112,28 @@ public class SGP_Bouncer : MonoBehaviour
 
 			lastSideBounceTime = Time.time;
 			float mult;
-			Vector3 direction;
-			if (contact.otherCollider.gameObject.layer == F.I.carCarCollisionLayer)
+			Vector3 vec;
+			//if (contact.otherCollider.gameObject.layer == F.I.carCarCollisionLayer)
 			{
-				mult = 1f;
-				//direction = Vector3.ProjectOnPlane(-collision.impulse, Vector3.up);
-				direction = norm;
-				rb.AddForceAtPosition(collision.impulse.magnitude * mult * direction,
-				collision.GetContact(0).point,//vp.transform.position
-				ForceMode.VelocityChange);
+				//mult = 1f;
+				//direction = Vector3.ProjectOnPlane(-collision.impulse.normalized, Vector3.up);
+				////direction = norm;
+				//rb.AddForceAtPosition(collision.impulse.magnitude * mult * direction,
+				//collision.GetContact(0).point,//vp.transform.position
+				//ForceMode.VelocityChange);
 			}
-			else
+			//else
 			{
-				mult = multCurve.Evaluate(Vector3.Dot(norm, vp.tr.forward));
-				//Debug.Log(mult);
-				direction = (vp.tr.forward + norm + vp.tr.up).normalized;
-				rb.AddForceAtPosition(collision.relativeVelocity.magnitude * mult * direction,
-				collision.GetContact(0).point,//vp.transform.position
-				ForceMode.VelocityChange);
+				//vec = Vector3.ProjectOnPlane(-col.impulse, Vector3.up);
+				//vp.rb.AddForceAtPosition(vec,
+				//	vp.rb.worldCenterOfMass, //col.GetContact(0).point,//vp.rb.worldCenterOfMass + Vector3.up * vp.rb.centerOfMass.y//vp.transform.position
+				//	ForceMode.VelocityChange);
+
+				//for (int i=0; i<col.contactCount; ++i)
+				//{
+					
+				//}
+				
 			}
 			
 			//Debug.Log("B: " + Vector3.Dot(norm, vp.tr.forward));

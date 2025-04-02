@@ -18,7 +18,7 @@ public class SkyboxController : MonoBehaviour
 	public void SetNightTimeLights()
 	{
 		if (nightTimeLights)
-			nightTimeLights.SetActive(F.I.s_timeOfDay == TimeOfDay.Night || F.I.s_timeOfDay == TimeOfDay.Sunset);
+			nightTimeLights.SetActive(F.I.s_timeOfDay == TimeOfDay.Night);
 
 		nightSky.SetActive(F.I.s_timeOfDay == TimeOfDay.Night);
 

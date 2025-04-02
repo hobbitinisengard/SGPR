@@ -1313,7 +1313,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 16623251356481051}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.5519327, y: -0.39460588, z: -0.33247793, w: -0.6550687}
+  m_LocalRotation: {x: 0.22778918, y: -0.7269361, z: -0.5820032, w: -0.2845142}
   m_LocalPosition: {x: -0.008461505, y: 0.052305043, z: -0.24823186}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -7268,7 +7268,7 @@ GameObject:
   - component: {fileID: 3314469528195188988}
   - component: {fileID: 5970035122388943334}
   m_Layer: 26
-  m_Name: specialCol (1)
+  m_Name: carCarCol
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7346,7 +7346,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2657873385695298593}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.016715724, y: -0.9767608, z: -0.19694136, w: -0.08290419}
+  m_LocalRotation: {x: 0.016650014, y: -0.9768486, z: -0.1965815, w: -0.082736894}
   m_LocalPosition: {x: -0.102495864, y: 0.0066673676, z: -0.3696702}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -8072,7 +8072,7 @@ GameObject:
   - component: {fileID: 2677407719691328001}
   - component: {fileID: 2630508066903055719}
   m_Layer: 9
-  m_Name: Capsule (1)
+  m_Name: roadCol2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8087,7 +8087,7 @@ Transform:
   m_GameObject: {fileID: 3901301147301382424}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.484, y: 0.083, z: 0.2}
+  m_LocalPosition: {x: 0.6, y: 0.083, z: 0.2}
   m_LocalScale: {x: 1.16, y: 1.39, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -8112,8 +8112,8 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.54
-  m_Height: 1.33
+  m_Radius: 0.45
+  m_Height: 1.67
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &3917643179782311503
@@ -8498,7 +8498,7 @@ GameObject:
   - component: {fileID: 6985718824389098832}
   - component: {fileID: 55640270096130822}
   m_Layer: 9
-  m_Name: Capsule
+  m_Name: roadCol1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8513,7 +8513,7 @@ Transform:
   m_GameObject: {fileID: 4236253070238597062}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.522, y: 0.083, z: 0.2}
+  m_LocalPosition: {x: -0.6, y: 0.083, z: 0.2}
   m_LocalScale: {x: 1.16, y: 1.39, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -8538,8 +8538,8 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.54
-  m_Height: 1.33
+  m_Radius: 0.45
+  m_Height: 1.67
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &4328256267402655016
@@ -8679,7 +8679,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4668911572911429849}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.29003102, y: -0.70965505, z: -0.4413207, w: -0.46637735}
+  m_LocalRotation: {x: 0.28928182, y: -0.7104333, z: -0.44156092, w: -0.4654294}
   m_LocalPosition: {x: -0.00267284, y: 0.07714773, z: -0.3657341}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -14679,6 +14679,10 @@ MonoBehaviour:
   lastCarCarBounceTime: 0
   lastSideBounceTime: 0
   lastVVBounceTime: 0
+  bouncyCols:
+  - {fileID: 55640270096130822}
+  - {fileID: 2630508066903055719}
+  - {fileID: 5970035122388943334}
 --- !u!1 &6192630529381075353
 GameObject:
   m_ObjectHideFlags: 0
@@ -14781,7 +14785,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6752317073456384289}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.019909728, y: -0.96365905, z: -0.25559786, w: -0.075063966}
+  m_LocalRotation: {x: 0.011258055, y: -0.9786163, z: -0.19767947, w: -0.055733237}
   m_LocalPosition: {x: 0.08661578, y: 0.002967903, z: -0.26236486}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -15151,7 +15155,7 @@ Transform:
   m_GameObject: {fileID: 6779875394792814008}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: -0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: -0.667554, y: 0.269433, z: 1.02758}
+  m_LocalPosition: {x: -0.813, y: 0.269433, z: 1.028}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -15329,30 +15333,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   generateHardCollider: 1
-  rpmBiasCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0.25
-      inSlope: 0
-      outSlope: 1.6
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 1.6
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
   axleFriction: 0.001
   forwardFriction: 12
   sidewaysFriction: 12
@@ -15750,30 +15730,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   generateHardCollider: 1
-  rpmBiasCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0.25
-      inSlope: 0
-      outSlope: 1.6
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 1.6
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
   axleFriction: 0.001
   forwardFriction: 12
   sidewaysFriction: 12
@@ -16208,7 +16164,7 @@ Transform:
   m_GameObject: {fileID: 6779875395759827805}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: -0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: -0.96580094, y: 0.3951048, z: -1.037688}
+  m_LocalPosition: {x: -0.967, y: 0.3951048, z: -1.037688}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -16452,7 +16408,7 @@ Transform:
   m_GameObject: {fileID: 6779875396000727283}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 0.667554, y: 0.269433, z: 1.02758}
+  m_LocalPosition: {x: 0.813, y: 0.269433, z: 1.02758}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -16881,30 +16837,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   generateHardCollider: 1
-  rpmBiasCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0.25
-      inSlope: 0
-      outSlope: 1.6
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 1.6
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
   axleFriction: 0.001
   forwardFriction: 12
   sidewaysFriction: 12
@@ -17170,30 +17102,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   generateHardCollider: 1
-  rpmBiasCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0.25
-      inSlope: 0
-      outSlope: 1.6
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 1.6
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
   axleFriction: 0.001
   forwardFriction: 12
   sidewaysFriction: 12
@@ -17723,7 +17631,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7066952005493917493}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.019777562, y: -0.9656298, z: -0.24740505, w: 0.077192456}
+  m_LocalRotation: {x: -0.011469328, y: -0.979451, z: -0.19273587, w: 0.05828518}
   m_LocalPosition: {x: -0.0783315, y: 0.0029676445, z: -0.25098616}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -17877,7 +17785,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 2c28678368ecd954ebb35a4a38696c6b, type: 2}
+  - {fileID: 2100000, guid: c21282b6642dd6749b3efc0940cf485a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -18036,7 +17944,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7579505223938093249}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.5728391, y: -0.39453733, z: -0.36531615, w: 0.6186597}
+  m_LocalRotation: {x: -0.08714208, y: -0.7807341, z: -0.60857433, w: 0.11179373}
   m_LocalPosition: {x: 0.00847556, y: 0.052305333, z: -0.24946344}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -19396,7 +19304,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: f95eb13c38d4193408e2f6752e878e99, type: 2}
+  - {fileID: 2100000, guid: 98d68a737a1bd8e4f8939e3d30ee5854, type: 2}
   - {fileID: 2100000, guid: c21282b6642dd6749b3efc0940cf485a, type: 2}
   - {fileID: 2100000, guid: 005e97c6a1b64224a869785b13972931, type: 2}
   m_StaticBatchInfo:

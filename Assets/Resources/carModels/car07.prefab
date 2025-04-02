@@ -14040,7 +14040,6 @@ MonoBehaviour:
   steeringControl: {fileID: 6779875395873480448}
   colliding: 0
   crashing: 0
-  initAngularDrag: 0
 --- !u!114 &5969412531493064935
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14116,6 +14115,7 @@ MonoBehaviour:
   rollCheckDistance: 1
   rollOverForce: 2
   rollSpeedThreshold: 0
+  initialAngularDrag: 0
   fallSpeedLimit: Infinity
   applyFallLimitUpwards: 0
   X: 0.1
@@ -14311,6 +14311,10 @@ MonoBehaviour:
   lastCarCarBounceTime: 0
   lastSideBounceTime: 0
   lastVVBounceTime: 0
+  bouncyCols:
+  - {fileID: 9185913568210257136}
+  - {fileID: 1307828323660223374}
+  - {fileID: 454031019360510219}
 --- !u!114 &865657811856999447
 MonoBehaviour:
   m_ObjectHideFlags: 0
