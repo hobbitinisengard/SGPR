@@ -61,6 +61,8 @@ public class Info : MonoBehaviour
 	public Text versionText;
 	public Material transpMaterial;
 	public Material opaqueMaterial;
+	public Material emissiveRearLighter;
+	public Material emissiveRearDarker;
 	public const string VERSION = "0.4.7";
 	public bool minimized { get; private set; }
 	

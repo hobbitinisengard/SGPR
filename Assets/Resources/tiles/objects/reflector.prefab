@@ -27,13 +27,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1943551901}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.8620337, y: 0.18138032, z: -0.14307909, w: 0.4511401}
+  m_LocalRotation: {x: -0.8460533, y: -0.017018603, z: 0.21855816, w: 0.48593882}
   m_LocalPosition: {x: -0.55, y: 6.4, z: 20.43}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4149181844956324769}
-  m_LocalEulerAnglesHint: {x: -46.543, y: 143.375, z: -140.033}
+  m_LocalEulerAnglesHint: {x: -54.57, y: 221.796, z: -204.588}
 --- !u!108 &1943551903
 Light:
   m_ObjectHideFlags: 0
@@ -93,8 +93,12 @@ Light:
   m_BoundingSphereOverride: {x: 3.9526e-41, y: 2.524355e-29, z: 0, w: 2.6427295e+20}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
+  m_ForceVisible: 0
   m_ShadowRadius: 0.025
   m_ShadowAngle: 0
+  m_LightUnit: 4
+  m_LuxAtDistance: 1
+  m_EnableSpotReflector: 1
 --- !u!114 &6156198047882176957
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -110,14 +114,14 @@ MonoBehaviour:
   m_PointlightHDType: 0
   m_SpotLightShape: 0
   m_AreaLightShape: 0
-  m_Intensity: 30
   m_EnableSpotReflector: 1
+  m_LightUnit: 4
   m_LuxAtDistance: 1
+  m_Intensity: 30
   m_InnerSpotPercent: 1.7841488
   m_SpotIESCutoffPercent: 100
   m_LightDimmer: 1
   m_VolumetricDimmer: 1
-  m_LightUnit: 4
   m_FadeDistance: 10000
   m_VolumetricFadeDistance: 10000
   m_AffectDiffuse: 1
@@ -137,6 +141,7 @@ MonoBehaviour:
   m_IESPoint: {fileID: 0}
   m_IESSpot: {fileID: 0}
   m_IncludeForRayTracing: 1
+  m_IncludeForPathTracing: 1
   m_AreaLightShadowCone: 120
   m_UseScreenSpaceShadows: 0
   m_InteractsWithSky: 1
@@ -231,7 +236,7 @@ MonoBehaviour:
   m_AreaLightEmissiveMeshShadowCastingMode: 0
   m_AreaLightEmissiveMeshMotionVectorGenerationMode: 0
   m_AreaLightEmissiveMeshLayer: -1
-  m_Version: 12
+  m_Version: 13
   m_ObsoleteShadowResolutionTier: 1
   m_ObsoleteUseShadowQualitySettings: 0
   m_ObsoleteCustomShadowResolution: 512
@@ -249,9 +254,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_LensFlareData: {fileID: 11400000, guid: 25c14a125c47ca84d91092e582f0adef, type: 2}
-  intensity: 1
-  maxAttenuationDistance: 500
-  maxAttenuationScale: 50
+  version: 0
+  intensity: 3
+  maxAttenuationDistance: 100
+  maxAttenuationScale: 1
   distanceAttenuationCurve:
     serializedVersion: 2
     m_Curve:
@@ -300,7 +306,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  attenuationByLightShape: 1
+  attenuationByLightShape: 0
   radialScreenAttenuationCurve:
     serializedVersion: 2
     m_Curve:
@@ -327,6 +333,8 @@ MonoBehaviour:
     m_RotationOrder: 4
   useOcclusion: 1
   useBackgroundCloudOcclusion: 0
+  environmentOcclusion: 0
+  useWaterOcclusion: 0
   occlusionRadius: 0.5
   sampleCount: 32
   occlusionOffset: 0.05
@@ -362,6 +370,7 @@ MonoBehaviour:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
+  lightOverride: {fileID: 0}
 --- !u!1 &2995341041041694904
 GameObject:
   m_ObjectHideFlags: 0
@@ -455,8 +464,12 @@ Light:
   m_BoundingSphereOverride: {x: 3.9526e-41, y: 2.524355e-29, z: 0, w: 2.6427295e+20}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
+  m_ForceVisible: 0
   m_ShadowRadius: 0.025
   m_ShadowAngle: 0
+  m_LightUnit: 4
+  m_LuxAtDistance: 1
+  m_EnableSpotReflector: 1
 --- !u!114 &5023109681788474025
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -472,14 +485,14 @@ MonoBehaviour:
   m_PointlightHDType: 0
   m_SpotLightShape: 0
   m_AreaLightShape: 0
-  m_Intensity: 30
   m_EnableSpotReflector: 1
+  m_LightUnit: 4
   m_LuxAtDistance: 1
+  m_Intensity: 30
   m_InnerSpotPercent: 1.7841488
   m_SpotIESCutoffPercent: 100
   m_LightDimmer: 1
   m_VolumetricDimmer: 1
-  m_LightUnit: 4
   m_FadeDistance: 10000
   m_VolumetricFadeDistance: 10000
   m_AffectDiffuse: 1
@@ -499,6 +512,7 @@ MonoBehaviour:
   m_IESPoint: {fileID: 0}
   m_IESSpot: {fileID: 0}
   m_IncludeForRayTracing: 1
+  m_IncludeForPathTracing: 1
   m_AreaLightShadowCone: 120
   m_UseScreenSpaceShadows: 0
   m_InteractsWithSky: 1
@@ -593,7 +607,7 @@ MonoBehaviour:
   m_AreaLightEmissiveMeshShadowCastingMode: 0
   m_AreaLightEmissiveMeshMotionVectorGenerationMode: 0
   m_AreaLightEmissiveMeshLayer: -1
-  m_Version: 12
+  m_Version: 13
   m_ObsoleteShadowResolutionTier: 1
   m_ObsoleteUseShadowQualitySettings: 0
   m_ObsoleteCustomShadowResolution: 512
@@ -611,9 +625,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_LensFlareData: {fileID: 11400000, guid: 25c14a125c47ca84d91092e582f0adef, type: 2}
-  intensity: 1
-  maxAttenuationDistance: 500
-  maxAttenuationScale: 50
+  version: 0
+  intensity: 3
+  maxAttenuationDistance: 100
+  maxAttenuationScale: 1
   distanceAttenuationCurve:
     serializedVersion: 2
     m_Curve:
@@ -662,7 +677,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  attenuationByLightShape: 1
+  attenuationByLightShape: 0
   radialScreenAttenuationCurve:
     serializedVersion: 2
     m_Curve:
@@ -689,6 +704,8 @@ MonoBehaviour:
     m_RotationOrder: 4
   useOcclusion: 1
   useBackgroundCloudOcclusion: 0
+  environmentOcclusion: 0
+  useWaterOcclusion: 0
   occlusionRadius: 0.5
   sampleCount: 32
   occlusionOffset: 0.05
@@ -724,6 +741,7 @@ MonoBehaviour:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
+  lightOverride: {fileID: 0}
 --- !u!1 &5081412916536611453
 GameObject:
   m_ObjectHideFlags: 0
@@ -785,13 +803,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8055593153841392927}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.8620337, y: 0.18138032, z: -0.14307909, w: 0.4511401}
+  m_LocalRotation: {x: -0.7162617, y: 0.3580636, z: -0.5005427, w: 0.328963}
   m_LocalPosition: {x: 5.5299997, y: 3.7300053, z: 20.379997}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4149181844956324769}
-  m_LocalEulerAnglesHint: {x: -46.543, y: 143.375, z: -140.033}
+  m_LocalEulerAnglesHint: {x: -6.476, y: 106.517, z: -122.042}
 --- !u!108 &7213138508300984008
 Light:
   m_ObjectHideFlags: 0
@@ -851,8 +869,12 @@ Light:
   m_BoundingSphereOverride: {x: 3.9526e-41, y: 2.524355e-29, z: 0, w: 2.6427295e+20}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
+  m_ForceVisible: 0
   m_ShadowRadius: 0.025
   m_ShadowAngle: 0
+  m_LightUnit: 4
+  m_LuxAtDistance: 1
+  m_EnableSpotReflector: 1
 --- !u!114 &7260841495534283691
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -868,14 +890,14 @@ MonoBehaviour:
   m_PointlightHDType: 0
   m_SpotLightShape: 0
   m_AreaLightShape: 0
-  m_Intensity: 30
   m_EnableSpotReflector: 1
+  m_LightUnit: 4
   m_LuxAtDistance: 1
+  m_Intensity: 30
   m_InnerSpotPercent: 1.7841488
   m_SpotIESCutoffPercent: 100
   m_LightDimmer: 1
   m_VolumetricDimmer: 1
-  m_LightUnit: 4
   m_FadeDistance: 10000
   m_VolumetricFadeDistance: 10000
   m_AffectDiffuse: 1
@@ -895,6 +917,7 @@ MonoBehaviour:
   m_IESPoint: {fileID: 0}
   m_IESSpot: {fileID: 0}
   m_IncludeForRayTracing: 1
+  m_IncludeForPathTracing: 1
   m_AreaLightShadowCone: 120
   m_UseScreenSpaceShadows: 0
   m_InteractsWithSky: 1
@@ -989,7 +1012,7 @@ MonoBehaviour:
   m_AreaLightEmissiveMeshShadowCastingMode: 0
   m_AreaLightEmissiveMeshMotionVectorGenerationMode: 0
   m_AreaLightEmissiveMeshLayer: -1
-  m_Version: 12
+  m_Version: 13
   m_ObsoleteShadowResolutionTier: 1
   m_ObsoleteUseShadowQualitySettings: 0
   m_ObsoleteCustomShadowResolution: 512
@@ -1007,9 +1030,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_LensFlareData: {fileID: 11400000, guid: 25c14a125c47ca84d91092e582f0adef, type: 2}
-  intensity: 1
-  maxAttenuationDistance: 500
-  maxAttenuationScale: 50
+  version: 0
+  intensity: 3
+  maxAttenuationDistance: 100
+  maxAttenuationScale: 1
   distanceAttenuationCurve:
     serializedVersion: 2
     m_Curve:
@@ -1058,7 +1082,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  attenuationByLightShape: 1
+  attenuationByLightShape: 0
   radialScreenAttenuationCurve:
     serializedVersion: 2
     m_Curve:
@@ -1085,6 +1109,8 @@ MonoBehaviour:
     m_RotationOrder: 4
   useOcclusion: 1
   useBackgroundCloudOcclusion: 0
+  environmentOcclusion: 0
+  useWaterOcclusion: 0
   occlusionRadius: 0.5
   sampleCount: 32
   occlusionOffset: 0.05
@@ -1120,6 +1146,7 @@ MonoBehaviour:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
+  lightOverride: {fileID: 0}
 --- !u!1001 &3804775582919208047
 PrefabInstance:
   m_ObjectHideFlags: 0

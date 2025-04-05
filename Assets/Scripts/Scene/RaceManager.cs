@@ -234,7 +234,7 @@ namespace RVP
 					RenderSettings.ambientLight = new Color32(208, 208, 208, 1);
 					break;
 				case TimeOfDay.Night:
-					Sun.intensity = 1200;
+					Sun.intensity = 4800;
 					eulerX = 120;
 					RenderSettings.ambientLight = new Color32(52, 52, 52, 1);
 					break;

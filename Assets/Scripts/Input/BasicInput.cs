@@ -25,33 +25,6 @@ namespace RVP
 			vp.basicInput = this;
 			playerInput = GameObject.Find("Canvas").GetComponent<PlayerInput>();
 		}
-		void Update()
-		{
-			if (F.I.chat.texting)
-				return;
-
-			if (!string.IsNullOrEmpty(upshiftButton))
-			{
-				if (Input.GetButtonDown(upshiftButton))
-				{
-					vp.PressUpshift();
-				}
-			}
-
-			if (!string.IsNullOrEmpty(downshiftButton))
-			{
-				if (Input.GetButtonDown(downshiftButton))
-				{
-					vp.PressDownshift();
-				}
-			}
-
-			if (!string.IsNullOrEmpty(lightsButton))
-			{
-				if (Input.GetButtonDown(lightsButton))
-					vp.Switchlights();
-			}
-		}
 
 		void FixedUpdate()
 		{
@@ -59,6 +32,31 @@ namespace RVP
 			{
 				if (vp.Owner)
 				{
+					if (F.I.chat.texting)
+						return;
+
+					if (!string.IsNullOrEmpty(upshiftButton))
+					{
+						if (Input.GetButtonDown(upshiftButton))
+						{
+							vp.PressUpshift();
+						}
+					}
+
+					if (!string.IsNullOrEmpty(downshiftButton))
+					{
+						if (Input.GetButtonDown(downshiftButton))
+						{
+							vp.PressDownshift();
+						}
+					}
+
+					if (!string.IsNullOrEmpty(lightsButton))
+					{
+						if (Input.GetButtonDown(lightsButton))
+							vp.Switchlights();
+					}
+
 					Vector2 input2 = F.I.driveRef.action.ReadValue<Vector2>();
 					vp.SetAccel(Mathf.Clamp01(input2.y));
 					vp.SetBrake(Mathf.Abs(Mathf.Clamp(input2.y, -1, 0)));

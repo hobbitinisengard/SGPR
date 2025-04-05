@@ -6267,18 +6267,6 @@ MonoBehaviour:
       m_Calls: []
     m_ActionId: ecbdae8c-35b0-486f-b728-96962b9131ba
     m_ActionName: 'Global/QuickMessage[/Keyboard/1,/Keyboard/2,/Keyboard/3,/Keyboard/4,/Keyboard/5,/Keyboard/6,/Keyboard/7,/Keyboard/8,/Keyboard/9,/Keyboard/0]'
-  - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: f41f7157-13b6-4d39-b3aa-25b47505a310
-    m_ActionName: 'Global/Accelerate[/Keyboard/upArrow]'
-  - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: 40527b32-451c-4412-892e-24483aa84a4d
-    m_ActionName: 'Global/Brake[/Keyboard/downArrow]'
-  - m_PersistentCalls:
-      m_Calls: []
-    m_ActionId: 82392896-6419-4a72-8022-da066092530f
-    m_ActionName: 'Global/Steer[/Keyboard/leftArrow,/Keyboard/rightArrow]'
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: Keyboard
   m_DefaultActionMap: Global
@@ -6345,6 +6333,8 @@ MonoBehaviour:
   versionText: {fileID: 1279901460}
   transpMaterial: {fileID: 2100000, guid: ea5c97d590c71024a9582b1efb7ed6d3, type: 2}
   opaqueMaterial: {fileID: 2100000, guid: 6cb5e5f885c85a84784cb33a06e3adcc, type: 2}
+  emissiveRearLighter: {fileID: 2100000, guid: 683e6224559d7db4faf96c5815493852, type: 2}
+  emissiveRearDarker: {fileID: 2100000, guid: 11920d9d83ff3f241898746a7bbdf8ba, type: 2}
   s_PlayerCarSponsor: 0
   playerData:
     musicVol: 1

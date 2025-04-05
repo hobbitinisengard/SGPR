@@ -224,8 +224,9 @@ namespace RVP
 
 		public GameObject[] frontLights;
 		public GameObject[] rearLights;
-		public Material rearLightsBrakeMaterial;
-		public Material rearLightsOnMaterial;
+
+		Material rearLightsLighter = F.I.emissiveRearLighter;
+		Material rearLightsDarker = F.I.emissiveRearDarker;
 
 		[Tooltip("Accel axis is used for brake input")]
 		public bool accelAxisIsBrake;
@@ -447,6 +448,13 @@ namespace RVP
 			Material newMat = Resources.Load<Material>("materials/" + matName);
 			newMat.name = matName;
 			newMat.mainTexture = ImgPathToTexture2D(F.I.documentsSGPRpath + "textures/" + matName + ".jpg");
+
+			rearLightsLighter = new(rearLightsLighter);
+			rearLightsLighter.mainTexture = newMat.mainTexture;
+			//rearLightsBrakeMaterial.color = new(1, 18/255f, 0);
+			rearLightsDarker = new(rearLightsDarker);
+			rearLightsDarker.mainTexture = newMat.mainTexture;
+			//rearLightsOnMaterial.color = new(178/255f, 0, 0);
 
 			// assign to body
 			mr.material = newMat;
@@ -701,10 +709,10 @@ namespace RVP
 				stopDownShift = true;
 			}
 
-			if (inputInherit)
-			{
-				InheritInputOneShot();
-			}
+			//if (inputInherit)
+			//{
+			//	InheritInputOneShot();
+			//}
 
 			if (wheels[2].curSurfaceType != roadSurfaceType)
 			{
@@ -721,7 +729,7 @@ namespace RVP
 				{
 					l.SetActive(true);
 					l.GetComponent<MeshRenderer>().sharedMaterials =
-						 new Material[] { l.GetComponent<MeshRenderer>().sharedMaterials[0], rearLightsBrakeMaterial };
+						 new Material[] { l.GetComponent<MeshRenderer>().sharedMaterials[0], rearLightsLighter };
 					l.transform.GetChild(0).GetComponent<Light>().range = 10;
 				}
 			}
@@ -732,7 +740,7 @@ namespace RVP
 				{
 					l.SetActive(lightsInput);
 					l.GetComponent<MeshRenderer>().sharedMaterials =
-						 new Material[] { l.GetComponent<MeshRenderer>().sharedMaterials[0], rearLightsOnMaterial };
+						 new Material[] { l.GetComponent<MeshRenderer>().sharedMaterials[0], rearLightsDarker };
 					l.transform.GetChild(0).GetComponent<Light>().range = 2;
 				}
 			}
@@ -744,10 +752,10 @@ namespace RVP
 		}
 		public void FixedUpdate()
 		{
-			if (inputInherit)
-			{
-				InheritInput();
-			}
+			//if (inputInherit)
+			//{
+			//	InheritInput();
+			//}
 
 			if (wheelLoopDone && wheelGroups.Length > 0)
 			{
