@@ -1,0 +1,15 @@
+{
+  "author": "Team17",
+  "desc": "A long, fast track with a multitude of mad crossovers!",
+  "valid": true,
+  "envir": "ENG",
+  "preferredCarClass": "Speed",
+  "difficulty": 8,
+  "unlocked": true,
+  "icons": [
+    2,
+    3
+  ],
+  "TrackOrigin": 0,
+  "IsOriginal": true
+}

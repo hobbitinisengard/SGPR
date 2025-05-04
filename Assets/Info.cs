@@ -42,6 +42,7 @@ public class PlayerSettingsData
 	public string serverPassword = "";
 	public string serverMaxPlayers = "10";
 	public string[] quickMessages = new string[10];
+	public bool trail = false;
 }
 [Serializable]
 public class RankingData

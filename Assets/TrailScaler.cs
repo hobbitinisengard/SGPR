@@ -5,7 +5,6 @@ using UnityEngine;
 public class TrailScaler : MonoBehaviour
 {
 	VehicleParent vp;
-	Transform trailMaterial;
 	Vector3 initScale;
 	int children;
 	private void Start()
@@ -14,7 +13,7 @@ public class TrailScaler : MonoBehaviour
 		children = transform.childCount;
 		if (children>0)
 		{
-			if(vp == RaceManager.I.playerCar)
+			if(vp == RaceManager.I.playerCar && !F.I.playerData.trail)
 			{
 				gameObject.SetActive(false);
 				return;

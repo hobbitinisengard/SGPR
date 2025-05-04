@@ -4,6 +4,7 @@ using UnityEngine;
 public class GraphicsSettingsView : MonoBehaviour
 {
 	public TMP_Text vSyncText;
+	public TMP_Text trailText;
 	public TMP_InputField limiterInput;
 	private void OnEnable()
 	{
@@ -16,6 +17,12 @@ public class GraphicsSettingsView : MonoBehaviour
 		F.I.playerData.fpsLimit = Application.targetFrameRate;
 		limiterInput.text = F.I.playerData.fpsLimit.ToString();
 		F.I.SaveSettingsDataToJson();
+	}
+	public void SwitchTrail(bool init)
+	{
+		if(!init)
+			F.I.playerData.trail = !F.I.playerData.trail;
+		trailText.text = "Aerodynamic trail: " + (F.I.playerData.trail ? "Yes" : "No");
 	}
 	public void SwitchVSync(bool init)
 	{

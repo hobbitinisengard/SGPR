@@ -320,7 +320,7 @@ namespace RVP
 						sphereColTr.parent = tr;
 						sphereColTr.localPosition = Vector3.zero;
 						sphereColTr.localRotation = Quaternion.identity;
-						sphereCol.radius = .8f * tireRadius;//rimRadius;//Mathf.Min(rimWidth * 0.5f, rimRadius * 0.5f);//
+						sphereCol.radius = 0;// .8f * tireRadius;//rimRadius;//Mathf.Min(rimWidth * 0.5f, rimRadius * 0.5f);//
 						sphereCol.sharedMaterial = RaceManager.I.frictionlessMat;
 					}
 
