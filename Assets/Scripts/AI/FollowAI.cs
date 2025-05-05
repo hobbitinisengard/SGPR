@@ -521,7 +521,7 @@ namespace RVP
 						targetDir = F.Flat(target.pos - vp.tr.position);
 					}
 
-					if(looping)
+					if(looping || vp.reallyGroundedWheels <= 2)
 						vp.SetSteer(0);
 					else
 					{

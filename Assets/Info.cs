@@ -13,7 +13,6 @@ using UnityEngine.EventSystems;
 using Unity.Multiplayer.Playmode;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
-using Unity.Collections;
 public enum PlayerState { InRace, InLobbyUnready, InLobbyReady };
 public enum Envir { GER, JAP, SPN, FRA, ENG, USA, ITA, MEX };
 public enum CarGroup { Wild, Aero, Speed, Team };
@@ -69,7 +68,12 @@ public class Info : MonoBehaviour
 	
 	void OnApplicationFocus(bool hasFocus)
 	{
+		
 		minimized = !hasFocus;
+		if (minimized)
+			F.I.enterRef.action.Disable();
+		else
+			F.I.enterRef.action.Enable();
 	}
 	private void Awake()
 	{

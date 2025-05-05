@@ -123,10 +123,10 @@ public class SGP_Bouncer : MonoBehaviour
 			}
 			else
 			{
-				vec = Vector3.ProjectOnPlane(-col.impulse, Vector3.up);
-				vp.rb.AddForceAtPosition(vec,
-					col.GetContact(0).point, //col.GetContact(0).point,//vp.rb.worldCenterOfMass + Vector3.up * vp.rb.centerOfMass.y//vp.transform.position
-					ForceMode.VelocityChange);
+				//vec = Vector3.ProjectOnPlane(-col.impulse, Vector3.up);
+				//vp.rb.AddForceAtPosition(vec,
+				//	col.GetContact(0).point, //col.GetContact(0).point,//vp.rb.worldCenterOfMass + Vector3.up * vp.rb.centerOfMass.y//vp.transform.position
+				//	ForceMode.VelocityChange);
 
 				//for (int i=0; i<col.contactCount; ++i)
 				//{

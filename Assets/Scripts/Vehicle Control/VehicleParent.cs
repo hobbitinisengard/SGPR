@@ -225,8 +225,8 @@ namespace RVP
 		public GameObject[] frontLights;
 		public GameObject[] rearLights;
 
-		Material rearLightsLighter = F.I.emissiveRearLighter;
-		Material rearLightsDarker = F.I.emissiveRearDarker;
+		Material rearLightsLighter;
+		Material rearLightsDarker;
 
 		[Tooltip("Accel axis is used for brake input")]
 		public bool accelAxisIsBrake;
@@ -588,6 +588,9 @@ namespace RVP
 			//	roadColParent.GetChild(i).GetComponent<CapsuleCollider>().hasModifiableContacts = true;
 
 			F.I.s_cars.Add(this);
+
+			rearLightsLighter = F.I.emissiveRearLighter;
+			rearLightsDarker = F.I.emissiveRearDarker;
 		}
 		public override void OnNetworkSpawn()
 		{

@@ -1,0 +1,15 @@
+{
+  "author": "Team17",
+  "desc": "A long, high track that is best navigated by hugging the racing line..",
+  "valid": true,
+  "envir": "FRA",
+  "preferredCarClass": "Aero",
+  "difficulty": 6,
+  "unlocked": true,
+  "icons": [
+    2,
+    3
+  ],
+  "TrackOrigin": 0,
+  "IsOriginal": true
+}

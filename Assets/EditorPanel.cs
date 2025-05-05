@@ -85,7 +85,7 @@ public class EditorPanel : MonoBehaviour
 	public GameObject pathFollower;
 	public RenderTexture renderTexture;
 	public YouSureDialog YouSurePanel;
-	public Text trackName;
+	string trackName;
 	public Sprite elementSprite;
 	public Sprite selectedElSprite;
 	public GameObject TilesMain;
@@ -1555,15 +1555,15 @@ public class EditorPanel : MonoBehaviour
 	}
 	public void QuickSave()
 	{
-		string name = trackName.text;
+		string name = trackName;
 		if (name[0] == '*')
-			trackName.text = trackName.text[1..];
+			trackName = trackName[1..];
 	}
 	public void SaveTrack()
 	{
 		if (trackNameInputField.text.Length <= 3)
 			trackNameInputField.text = "Untitled";
-		trackName.text = trackNameInputField.text;
+		trackName = trackNameInputField.text;
 
 		TrackSavableData TRACK = new TrackSavableData();
 		TRACK.windExternal = windExternal;
@@ -1696,28 +1696,28 @@ public class EditorPanel : MonoBehaviour
 		}
 
 		string JsonContent = JsonConvert.SerializeObject(tHeader, Formatting.Indented);
-		string path = Path.Combine(F.I.tracksPath, trackName.text + ".track"); // .TRACK 
+		string path = Path.Combine(F.I.tracksPath, trackName + ".track"); // .TRACK 
 		File.WriteAllText(path, JsonContent);
 
 		// save image
 		Texture2D tex = F.toTexture2D(renderTexture);
-		path = Path.Combine(F.I.tracksPath, trackName.text + ".jpg"); // .JPG
+		path = Path.Combine(F.I.tracksPath, trackName + ".jpg"); // .JPG
 		File.WriteAllBytes(path, tex.EncodeToJPG(50));
 
 		// save track editor data
 		JsonContent = JsonConvert.SerializeObject(TRACK);
-		path = Path.Combine(F.I.tracksPath, trackName.text + ".data"); // .DATA
+		path = Path.Combine(F.I.tracksPath, trackName + ".data"); // .DATA
 		File.WriteAllText(path, JsonContent);
 
 		//serialize records aside from .track file
 		JsonContent = JsonConvert.SerializeObject(tHeader.records, Formatting.Indented);
-		path = Path.Combine(F.I.tracksPath, trackName.text + ".rec");    // .REC
+		path = Path.Combine(F.I.tracksPath, trackName + ".rec");    // .REC
 		File.WriteAllText(path, JsonContent);
 
-		if (!F.I.tracks.ContainsKey(trackName.text))
-			F.I.tracks.Add(trackName.text, tHeader);
+		if (!F.I.tracks.ContainsKey(trackName))
+			F.I.tracks.Add(trackName, tHeader);
 		else
-			F.I.tracks[trackName.text] = tHeader;
+			F.I.tracks[trackName] = tHeader;
 	}
 	bool PathValid()
 	{
@@ -1844,7 +1844,7 @@ public class EditorPanel : MonoBehaviour
 		terrainBtn.gameObject.SetActive(terrain != null);
 
 		SetEnvirLights();
-		trackName.text = F.I.s_trackName;
+		trackName = F.I.s_trackName;
 		string path = Path.Combine(F.I.tracksPath, F.I.s_trackName + ".data");
 
 		terrainEditor.SetTerrain(terrain);
@@ -1854,7 +1854,7 @@ public class EditorPanel : MonoBehaviour
 
 		
 
-		trackNameInputField.text = trackName.text;
+		trackNameInputField.text = trackName;
 
 		yield return null; // update containers
 
@@ -2020,7 +2020,7 @@ public class EditorPanel : MonoBehaviour
 		F.I.s_laps = 3;
 		F.I.s_cpuRivals = 3;
 		F.I.s_raceType = RaceType.Race;
-		if (trackName.text.Length == 3)
+		if (trackName.Length == 3)
 		{
 			DisplayMessageFor("Save track!", 2);
 			return;

@@ -3,7 +3,7 @@
   "desc": "Fast chicanes and tunnel transitions are the highlights of this speedy racetrack!",
   "valid": true,
   "envir": "GER",
-  "preferredCarClass": "Team",
+  "preferredCarClass": "Speed",
   "difficulty": 8,
   "unlocked": true,
   "icons": [
