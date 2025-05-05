@@ -218,6 +218,433 @@ MonoBehaviour:
       on stick up
     m_Metadata:
       m_Items: []
+  - m_Id: 31217090822144
+    m_Localized: BRAKE AXIS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31406203600896
+    m_Localized: Move stick right to register steer right input. Steer left will
+      be on the same axis
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31799994220544
+    m_Localized: STEER AXIS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31932731359232
+    m_Localized: Jet
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32046300528640
+    m_Localized: BOOST
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32231219003392
+    m_Localized: Perform stunt / handbrake
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32455110950912
+    m_Localized: STUNTS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32651203051520
+    m_Localized: Used to look around your car
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32802156052480
+    m_Localized: LOOK BACK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32962080669696
+    m_Localized: LOOK LEFT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33040572874752
+    m_Localized: LOOK RIGHT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33207963353088
+    m_Localized: ROLL LEFT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33408870514688
+    m_Localized: ROLL RIGHT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33552093413376
+    m_Localized: Extra button for doing barrelrolls stunts
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33879534338048
+    m_Localized: TOGGLE CAMERA
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33981845995520
+    m_Localized: Change camera
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34127711305728
+    m_Localized: RESET ON TRACK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34243113385984
+    m_Localized: Beep beep :)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34424500256768
+    m_Localized: HORN
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34593245495296
+    m_Localized: Button for navigating menu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34667568562176
+    m_Localized: UI UP
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34818588672000
+    m_Localized: UI DOWN
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34898922176512
+    m_Localized: UI LEFT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34933957197824
+    m_Localized: UI RIGHT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 35246063747072
+    m_Localized: UI ENTER
+    m_Metadata:
+      m_Items: []
+  - m_Id: 35318721675264
+    m_Localized: UI BACK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 35368357068800
+    m_Localized: UI HORIZONTAL AXIS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 35484086304768
+    m_Localized: UI VERTICAL AXIS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 35537223942144
+    m_Localized: UI SHIFT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 35598737604608
+    m_Localized: UI CTRL
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45386905157632
+    m_Localized: Axis for navigating track selection
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45587250282496
+    m_Localized: Modifier used with 'UI ENTER' to reduce the number of laps by 3
+      in menus
+    m_Metadata:
+      m_Items: []
+  - m_Id: 46129997414400
+    m_Localized: Modifier used with 'UI ENTER' to reduce the number of laps by 1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 46500530618368
+    m_Localized: Modifier used with 'UI ENTER' to increase the number of laps by
+      1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 46743628283904
+    m_Localized: UI ALT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 46986130358272
+    m_Localized: WAITING FOR INPUT ...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47612792930304
+    m_Localized: CREATE A NEW TRACK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47712244072448
+    m_Localized: Create completely new track from scratch
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47915260968960
+    m_Localized: Load or remove any existing track
+    m_Metadata:
+      m_Items: []
+  - m_Id: 48173298745344
+    m_Localized: LOAD TRACK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 48563280936960
+    m_Localized: Sorted by difficulty
+    m_Metadata:
+      m_Items: []
+  - m_Id: 48647049576448
+    m_Localized: Sorted by name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 48863903481856
+    m_Localized: "LOAD\t"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 49023677104128
+    m_Localized: DELETE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 49441526251520
+    m_Localized: Tex
+    m_Metadata:
+      m_Items: []
+  - m_Id: 49493950857216
+    m_Localized: Random
+    m_Metadata:
+      m_Items: []
+  - m_Id: 49859950018560
+    m_Localized: LAP
+    m_Metadata:
+      m_Items: []
+  - m_Id: 49891310829568
+    m_Localized: RACE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 49930355605504
+    m_Localized: STUNT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 49985640726528
+    m_Localized: Original
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50751705186304
+    m_Localized: Community
+    m_Metadata:
+      m_Items: []
+  - m_Id: 51519850020864
+    m_Localized: ENTER YOUR NAME
+    m_Metadata:
+      m_Items: []
+  - m_Id: 51916786368512
+    m_Localized: SELECT ENVIRONMENT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 52091248443392
+    m_Localized: SELECT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 52413027057664
+    m_Localized: SELECT CAR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 52967866368000
+    m_Localized: GRIP
+    m_Metadata:
+      m_Items: []
+  - m_Id: 53556436271104
+    m_Localized: POWER
+    m_Metadata:
+      m_Items: []
+  - m_Id: 53832828321792
+    m_Localized: WILD WHEELS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 53951506153472
+    m_Localized: AERO BLASTERS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 54117642534912
+    m_Localized: SPEED DEMONS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 54285888651264
+    m_Localized: TEAM SPECIALS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 54689061928960
+    m_Localized: SERVER LIST
+    m_Metadata:
+      m_Items: []
+  - m_Id: 54979148382208
+    m_Localized: Refresh server list
+    m_Metadata:
+      m_Items: []
+  - m_Id: 55151899181056
+    m_Localized: REFRESH
+    m_Metadata:
+      m_Items: []
+  - m_Id: 55256932941824
+    m_Localized: Host your own game
+    m_Metadata:
+      m_Items: []
+  - m_Id: 55394770354176
+    m_Localized: START A SERVER
+    m_Metadata:
+      m_Items: []
+  - m_Id: 55728926359552
+    m_Localized: SERVER SETTINGS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 55983394783232
+    m_Localized: Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56287515377664
+    m_Localized: Max players
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56551219658752
+    m_Localized: Password (empty or more than 8 chars)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56946205655040
+    m_Localized: SELECT TRACK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 58433099005952
+    m_Localized: Roster
+    m_Metadata:
+      m_Items: []
+  - m_Id: 59241395912704
+    m_Localized: Select number of opponents of this car
+    m_Metadata:
+      m_Items: []
+  - m_Id: 59935712608256
+    m_Localized: Reset roster
+    m_Metadata:
+      m_Items: []
+  - m_Id: 60106060070912
+    m_Localized: RESET
+    m_Metadata:
+      m_Items: []
+  - m_Id: 60611503063040
+    m_Localized: PLAYER
+    m_Metadata:
+      m_Items: []
+  - m_Id: 60913451008000
+    m_Localized: CAR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 61089779548160
+    m_Localized: SCORE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 61383661846528
+    m_Localized: READY
+    m_Metadata:
+      m_Items: []
+  - m_Id: 61514993893376
+    m_Localized: Garage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 61583004532736
+    m_Localized: Daytime
+    m_Metadata:
+      m_Items: []
+  - m_Id: 61628621783040
+    m_Localized: Night
+    m_Metadata:
+      m_Items: []
+  - m_Id: 61652248297472
+    m_Localized: Sunrise
+    m_Metadata:
+      m_Items: []
+  - m_Id: 61694916952064
+    m_Localized: Sunset
+    m_Metadata:
+      m_Items: []
+  - m_Id: 61990388891648
+    m_Localized: Catchup
+    m_Metadata:
+      m_Items: []
+  - m_Id: 62391175610368
+    m_Localized: You sure?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 62877173809152
+    m_Localized: Chat
+    m_Metadata:
+      m_Items: []
+  - m_Id: 63027099205632
+    m_Localized: RESULTS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 63312634839040
+    m_Localized: POSITION
+    m_Metadata:
+      m_Items: []
+  - m_Id: 63684845764608
+    m_Localized: BEST LAP
+    m_Metadata:
+      m_Items: []
+  - m_Id: 63966233231360
+    m_Localized: AEROMILES
+    m_Metadata:
+      m_Items: []
+  - m_Id: 64051687981056
+    m_Localized: DRIFT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 64196605378560
+    m_Localized: 1-st
+    m_Metadata:
+      m_Items: []
+  - m_Id: 64245213167616
+    m_Localized: 2-nd
+    m_Metadata:
+      m_Items: []
+  - m_Id: 64297121873920
+    m_Localized: 3-rd
+    m_Metadata:
+      m_Items: []
+  - m_Id: 64355041017856
+    m_Localized: 4-th
+    m_Metadata:
+      m_Items: []
+  - m_Id: 64395650269184
+    m_Localized: 5-th
+    m_Metadata:
+      m_Items: []
+  - m_Id: 64426713284608
+    m_Localized: 6-th
+    m_Metadata:
+      m_Items: []
+  - m_Id: 64467838435328
+    m_Localized: 7-th
+    m_Metadata:
+      m_Items: []
+  - m_Id: 64509567565824
+    m_Localized: 8-th
+    m_Metadata:
+      m_Items: []
+  - m_Id: 64540538306560
+    m_Localized: 9-th
+    m_Metadata:
+      m_Items: []
+  - m_Id: 64571769094144
+    m_Localized: 10-th
+    m_Metadata:
+      m_Items: []
+  - m_Id: 64578404483072
+    m_Localized: 'SCORE:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 70863850045440
+    m_Localized: STUNT GP REMASTERED\n\nProgramming  - @viatrufka\nmusic here & tracks
+      - DJ Mistone (@luckygoose)\ntracks - @Arkhnen\n\nSPECIAL THANKS\n\n martin
+      (forum.xen-tax.com) - for format .PMD v.1.82 and tools \n\n@Halamix2, @TushkaN
+      - for format .PMD v.1.62\n\nJustin Couch for Randomation Vehicle Physics -
+      free vehicle physics library
+    m_Metadata:
+      m_Items: []
+  - m_Id: 71441426677760
+    m_Localized: RANKING
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

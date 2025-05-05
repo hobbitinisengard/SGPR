@@ -23,7 +23,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 607039258624
-    m_Localized: WIELU GRACZY
+    m_Localized: GRA WIELOOSOBOWA
     m_Metadata:
       m_Items: []
   - m_Id: 669446307840
@@ -213,6 +213,434 @@ MonoBehaviour:
   - m_Id: 30297254789120
     m_Localized: "Zarejestruj hamulce przechylaj\u0105c grzybek w d\xF3\u0142. Gaz
       zostanie automatycznie przypisany symetrycznie"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31217090822144
+    m_Localized: "O\u015A HAMULCA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31406203600896
+    m_Localized: "Przesu\u0144 o\u015B w prawo. O\u015B w lewo zostanie przypisana
+      symetrycznie"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31799994220544
+    m_Localized: "O\u015A STEROWANIA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31932731359232
+    m_Localized: Dopalacz
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32046300528640
+    m_Localized: DOPALACZ
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32231219003392
+    m_Localized: "Ewolucje / hamulec r\u0119czny"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32455110950912
+    m_Localized: SKOKI
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32651203051520
+    m_Localized: "U\u017Cywane do rozgl\u0105dania si\u0119 wok\xF3\u0142 auta"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32802156052480
+    m_Localized: "SP\xD3JRZ W TY\u0141"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32962080669696
+    m_Localized: "SP\xD3JRZ W LEWO"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33040572874752
+    m_Localized: "SP\xD3JRZ W PRAWO"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33207963353088
+    m_Localized: BECZKUJ W LEWO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33408870514688
+    m_Localized: BECZKUJ W PRAWO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33552093413376
+    m_Localized: Dodatkowy przycisk do wykonywania beczek
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33879534338048
+    m_Localized: "ZMIE\u0143 KAMER\u0118"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33981845995520
+    m_Localized: "Zmie\u0144 kamer\u0119"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34127711305728
+    m_Localized: "POWR\xD3T NA TRAS\u0118"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34243113385984
+    m_Localized: bip bip :)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34424500256768
+    m_Localized: KLAKSON
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34593245495296
+    m_Localized: Przycisk do nawigacji po menu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34667568562176
+    m_Localized: "INTERFEJS G\xD3RA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34818588672000
+    m_Localized: "INTERFEJS D\xD3\u0141"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34898922176512
+    m_Localized: INTERFEJS LEWO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34933957197824
+    m_Localized: INTERFEJS PRAWO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 35246063747072
+    m_Localized: "INTERFEJS ZATWIERD\u0179"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 35318721675264
+    m_Localized: INTERFEJS COFNIJ
+    m_Metadata:
+      m_Items: []
+  - m_Id: 35368357068800
+    m_Localized: "INTERFEJS O\u015A POZIOMA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 35484086304768
+    m_Localized: "INTERFEJS O\u015A PIONOWA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 35537223942144
+    m_Localized: INTERFEJS SHIFT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 35598737604608
+    m_Localized: INTERFEJS CTRL
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45386905157632
+    m_Localized: "O\u015B do nawigacji menu wyboru trasy"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45587250282496
+    m_Localized: "Modyfikator u\u017Cywany razem z 'INTERFEJS ENTER' do np. zmniejszania
+      ilo\u015Bci okr\u0105\u017Ce\u0144 o 3"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 46129997414400
+    m_Localized: "Modyfikator u\u017Cywany razem z 'INTERFEJS ENTER' do np. zmniejszania
+      ilo\u015Bci okr\u0105\u017Ce\u0144 o 1"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 46500530618368
+    m_Localized: "Modyfikator u\u017Cywany razem z 'INTERFEJS ENTER' do np. zwi\u0119kszania
+      ilo\u015Bci okr\u0105\u017Ce\u0144 o 1"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 46743628283904
+    m_Localized: INTERFEJS ALT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 46986130358272
+    m_Localized: "WCI\u015ANIJ KLAWISZ / O\u015A ..."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47612792930304
+    m_Localized: "STW\xD3RZ NOW\u0104 TRAS\u0118"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47712244072448
+    m_Localized: "Stw\xF3rz ca\u0142kowicie now\u0105 tras\u0119 od podstaw"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47915260968960
+    m_Localized: "Za\u0142aduj lub usu\u0144 ju\u017C istniej\u0105c\u0105 tras\u0119"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 48173298745344
+    m_Localized: "ZA\u0141ADUJ TRAS\u0118"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 48563280936960
+    m_Localized: "Posortowane po poziomie trudno\u015Bci"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 48647049576448
+    m_Localized: Posortowane po nazwie
+    m_Metadata:
+      m_Items: []
+  - m_Id: 48863903481856
+    m_Localized: "ZA\u0141ADUJ"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 49023677104128
+    m_Localized: "USU\u0143"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 49441526251520
+    m_Localized: Tor
+    m_Metadata:
+      m_Items: []
+  - m_Id: 49493950857216
+    m_Localized: Losowo
+    m_Metadata:
+      m_Items: []
+  - m_Id: 49859950018560
+    m_Localized: OKR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 49891310829568
+    m_Localized: "WY\u015ACIG"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 49930355605504
+    m_Localized: SKOK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 49985640726528
+    m_Localized: Oryginalne
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50751705186304
+    m_Localized: "Spo\u0142eczno\u015B\u0107"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 51519850020864
+    m_Localized: "PODAJ KSYWK\u0118"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 51916786368512
+    m_Localized: "WYBIERZ \u015ARODOWISKO"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 52091248443392
+    m_Localized: WYBIERZ
+    m_Metadata:
+      m_Items: []
+  - m_Id: 52413027057664
+    m_Localized: WYBIERZ AUTKO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 52967866368000
+    m_Localized: CZEP
+    m_Metadata:
+      m_Items: []
+  - m_Id: 53556436271104
+    m_Localized: MOC
+    m_Metadata:
+      m_Items: []
+  - m_Id: 53832828321792
+    m_Localized: DZIKIE RESORY
+    m_Metadata:
+      m_Items: []
+  - m_Id: 53951506153472
+    m_Localized: PIONIERZY PRZESTWORZY
+    m_Metadata:
+      m_Items: []
+  - m_Id: 54117642534912
+    m_Localized: "DEMONY SZYBKO\u015ACI"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 54285888651264
+    m_Localized: "SPECJA\u0141Y TEAMU"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 54689061928960
+    m_Localized: "LISTA SERWER\xD3W"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 54979148382208
+    m_Localized: "Od\u015Bwie\u017C list\u0119 serwer\xF3w"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 55151899181056
+    m_Localized: "OD\u015AWIE\u017B"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 55256932941824
+    m_Localized: "Zahostuj w\u0142asn\u0105 gr\u0119"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 55394770354176
+    m_Localized: URUCHOM SERWER
+    m_Metadata:
+      m_Items: []
+  - m_Id: 55728926359552
+    m_Localized: USTAWIENIA SERWERA
+    m_Metadata:
+      m_Items: []
+  - m_Id: 55983394783232
+    m_Localized: Nazwa
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56287515377664
+    m_Localized: "Maks. ilo\u015B\u0107 graczy"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56551219658752
+    m_Localized: "Has\u0142o (puste lub przynajmniej 8 znak\xF3w)"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56946205655040
+    m_Localized: "WYBIERZ TRAS\u0118"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 58433099005952
+    m_Localized: Lista
+    m_Metadata:
+      m_Items: []
+  - m_Id: 59241395912704
+    m_Localized: "Wybierz liczb\u0119 wyst\u0105pie\u0144 tego autka"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 59935712608256
+    m_Localized: "Resetuj list\u0119"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 60106060070912
+    m_Localized: RESET
+    m_Metadata:
+      m_Items: []
+  - m_Id: 60611503063040
+    m_Localized: GRACZ
+    m_Metadata:
+      m_Items: []
+  - m_Id: 60913451008000
+    m_Localized: AUTKO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 61089779548160
+    m_Localized: WYNIK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 61383661846528
+    m_Localized: GOTOWY
+    m_Metadata:
+      m_Items: []
+  - m_Id: 61514993893376
+    m_Localized: Autka
+    m_Metadata:
+      m_Items: []
+  - m_Id: 61583004532736
+    m_Localized: "Dzie\u0144"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 61628621783040
+    m_Localized: Noc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 61652248297472
+    m_Localized: "Wsch\xF3d"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 61694916952064
+    m_Localized: "Zach\xF3d"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 61990388891648
+    m_Localized: "Pogo\u0144"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 62391175610368
+    m_Localized: Na pewno?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 62877173809152
+    m_Localized: Czat
+    m_Metadata:
+      m_Items: []
+  - m_Id: 63027099205632
+    m_Localized: WYNIKI
+    m_Metadata:
+      m_Items: []
+  - m_Id: 63312634839040
+    m_Localized: POZYCJA
+    m_Metadata:
+      m_Items: []
+  - m_Id: 63684845764608
+    m_Localized: NAJ. OKR.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 63966233231360
+    m_Localized: EWOLUCJE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 64051687981056
+    m_Localized: DRIFT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 64196605378560
+    m_Localized: 1-szy
+    m_Metadata:
+      m_Items: []
+  - m_Id: 64245213167616
+    m_Localized: 2-gi
+    m_Metadata:
+      m_Items: []
+  - m_Id: 64297121873920
+    m_Localized: 3-ci
+    m_Metadata:
+      m_Items: []
+  - m_Id: 64355041017856
+    m_Localized: 4-ty
+    m_Metadata:
+      m_Items: []
+  - m_Id: 64395650269184
+    m_Localized: 5-ty
+    m_Metadata:
+      m_Items: []
+  - m_Id: 64426713284608
+    m_Localized: 6-ty
+    m_Metadata:
+      m_Items: []
+  - m_Id: 64467838435328
+    m_Localized: 7-my
+    m_Metadata:
+      m_Items: []
+  - m_Id: 64509567565824
+    m_Localized: 8-my
+    m_Metadata:
+      m_Items: []
+  - m_Id: 64540538306560
+    m_Localized: 9-ty
+    m_Metadata:
+      m_Items: []
+  - m_Id: 64571769094144
+    m_Localized: 10-ty
+    m_Metadata:
+      m_Items: []
+  - m_Id: 64578404483072
+    m_Localized: 'WYNIK:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 70863850045440
+    m_Localized: "STUNT GP REMASTERED\\n\\nProgramowanie  - @viatrufka\\nmuzyka i
+      tory - DJ Mistone (@luckygoose)\\ntory - @Arkhnen\\n\\nSPECJALNIE PODZI\u0118KOWANIA\\n\\n
+      martin (forum.xen-tax.com) - za format .PMD v.1.82 i narz\u0119dzia \\n\\n@Halamix2,
+      @TushkaN - za format .PMD v.1.62\\n\\nJustin Couch za Randomation Vehicle Physics
+      - darmow\u0105 bibliotek\u0119 fizyki aut"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 71441426677760
+    m_Localized: RANKING
     m_Metadata:
       m_Items: []
   references:
