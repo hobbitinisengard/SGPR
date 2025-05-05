@@ -15,12 +15,12 @@
     "sus": {
       "frontSteerRangeDegs": 35.0,
       "frontSpringDistance": 0.3,
-      "frontSpringForce": 3.0,
+      "frontSpringForce": 7.0,
       "frontSpringExponent": 1.0,
       "frontSpringDampening": 0.0,
       "RearSteerRangeDegs": 0.0,
       "RearSpringDistance": 0.3,
-      "RearSpringForce": 3.0,
+      "RearSpringForce": 7.0,
       "RearSpringExponent": 1.0,
       "RearSpringDampening": 0.0
     },

@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
 using System;
 
@@ -225,10 +224,6 @@ namespace RVP
 
 		void FixedUpdate()
 		{
-			Work(Time.fixedDeltaTime);
-		}
-		public void Work(float deltaTime)
-		{
 			upDir = tr.up;
 			forwardDir = tr.forward;
 			targetCompression = 1;
@@ -250,7 +245,7 @@ namespace RVP
 
 			if (targetCompression > 0)
 			{
-				ApplySuspensionForce(deltaTime);
+				ApplySuspensionForce();
 			}
 
 			// Set hard collider size if it is changed during play mode
@@ -305,7 +300,7 @@ namespace RVP
 		}
 
 		// Apply suspension forces to support vehicles
-		void ApplySuspensionForce(float deltaTime)
+		void ApplySuspensionForce()
 		{
 			if (wheel.grounded && wheel.connected)
 			{
@@ -350,8 +345,8 @@ namespace RVP
 				if (compression == 0 && !generateHardCollider && applyHardContactForce)
 				{
 					rb.AddForceAtPosition(
-						 -vp.norm.TransformDirection(0, 0, Mathf.Clamp(travelVel, -hardContactSensitivity * .01f / deltaTime, 0)
-						 + penetration) * hardContactForce * Mathf.Clamp01(.01f / deltaTime),
+						 -vp.norm.TransformDirection(0, 0, Mathf.Clamp(travelVel, -hardContactSensitivity * .01f / Time.fixedDeltaTime, 0)
+						 + penetration) * hardContactForce * Mathf.Clamp01(.01f / Time.fixedDeltaTime),
 						 applyForceAtGroundContact ? wheel.contactPoint.point : wheel.tr.position,
 						 vp.suspensionForceMode);
 				}

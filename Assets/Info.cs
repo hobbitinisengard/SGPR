@@ -13,6 +13,9 @@ using UnityEngine.EventSystems;
 using Unity.Multiplayer.Playmode;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using UnityEngine.Localization.Settings;
+using System.Collections;
+using UnityEngine.Localization;
 public enum PlayerState { InRace, InLobbyUnready, InLobbyReady };
 public enum Envir { GER, JAP, SPN, FRA, ENG, USA, ITA, MEX };
 public enum CarGroup { Wild, Aero, Speed, Team };
@@ -23,8 +26,9 @@ public enum ActionHappening { InLobby, InRace }
 public enum PavementType { Arena, Volcano, Asphalt, Energy, Grid, Japan, Jungle, Random }
 public enum MultiMode { Singleplayer, Multiplayer };
 public enum RaceType { Race, Knockout, Stunt, Drift, TimeTrial }
-public enum CpuLevel { Normal };
+public enum CpuLevel { Easy, Normal, Hard };
 public enum TimeOfDay { Day, Night, Sunrise, Sunset };
+public enum Language { English, Polish };
 
 [Serializable]
 public class PlayerSettingsData
@@ -42,6 +46,7 @@ public class PlayerSettingsData
 	public string serverMaxPlayers = "10";
 	public string[] quickMessages = new string[10];
 	public bool trail = false;
+	public Language language = Language.English;
 }
 [Serializable]
 public class RankingData
@@ -56,7 +61,9 @@ public class RankingData
 
 public class Info : MonoBehaviour
 {
-	
+	public LocalizedString localizedYes;
+	public LocalizedString localizedNo;
+	public const string TranslationTableName = "default";
 	public MultiPlayerSelector mpSelectorInitializer;
 	public Text versionText;
 	public Material transpMaterial;
@@ -112,7 +119,12 @@ public class Info : MonoBehaviour
 		ReloadCarPartsData();
 		LoadRanking();
 		icons = Resources.LoadAll<Sprite>(trackImagesPath + "tiles");
-		
+		StartCoroutine(LoadLanguage());
+	}
+	IEnumerator LoadLanguage()
+	{
+		yield return LocalizationSettings.InitializationOperation;
+		LocalizationSettings.SelectedLocale = LocalizationSettings.AvailableLocales.Locales[(int)F.I.playerData.language];
 	}
 	
 	string _documentsSGPRpath;

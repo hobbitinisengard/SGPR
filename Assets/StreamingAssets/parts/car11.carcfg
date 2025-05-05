@@ -75,7 +75,7 @@
       "evoSmoothTime": 0.07,
       "staticEvoMaxSpeed": 300.0,
       "evoAcceleration": 30.0,
-      "dragsterEffect": 0.4
+      "twistGain": 0.25
     },
     "boost": {
       "maxBoost": 4.0,

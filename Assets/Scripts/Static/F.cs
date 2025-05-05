@@ -157,6 +157,10 @@ public static class F
 	{
 		return 1 - Mathf.Pow(1 - x, 5);
 	}
+	public static float EasingInQuint(float x)
+	{
+		return Mathf.Pow(x, 5);
+	}
 	public static int R(int min, int max)
 	{
 		return UnityEngine.Random.Range(min, max);

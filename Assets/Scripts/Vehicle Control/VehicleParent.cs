@@ -227,7 +227,7 @@ namespace RVP
 
 		Material rearLightsLighter;
 		Material rearLightsDarker;
-
+		private float wheelbase;
 		[Tooltip("Accel axis is used for brake input")]
 		public bool accelAxisIsBrake;
 
@@ -373,6 +373,8 @@ namespace RVP
 		private Vector3 originalCOM;
 		[NonSerialized]
 		public float bunnyhopInput;
+		[NonSerialized]
+		public float twistGain = 0.25f;
 
 		public void SetBattery(float capacity, float chargingSpeed, float lowBatPercent, float evoBountyPercent)
 		{
@@ -591,6 +593,7 @@ namespace RVP
 
 			rearLightsLighter = F.I.emissiveRearLighter;
 			rearLightsDarker = F.I.emissiveRearDarker;
+			wheelbase = Vector3.Distance(wheels[0].transform.position, wheels[2].transform.position);
 		}
 		public override void OnNetworkSpawn()
 		{
@@ -796,6 +799,15 @@ namespace RVP
 				if (accelInput > 0 && localVelocity.z > -3)
 					reversing = false;
 			}
+
+			if(reallyGroundedWheels == 4)
+			{
+
+				//float radius = wheelbase / Mathf.Sin(wheels[0].suspensionParent.steerRangeMax * Mathf.Deg2Rad * wheels[0].suspensionParent.steerAngle);
+				//rb.AddTorque(twistGain * Mathf.Pow(velMag, 2) / radius * forwardDir, ForceMode.Acceleration);
+				float coeff = (wheels[1].suspensionParent.appliedSuspensionForce.magnitude - wheels[0].suspensionParent.appliedSuspensionForce.magnitude) / (wheels[0].suspensionParent.springForce);
+				rb.AddTorque(twistGain * coeff * forwardDir, ForceMode.Acceleration);
+			}
 		}
 		public void SetHonkerInput(int f)
 		{
@@ -828,12 +840,13 @@ namespace RVP
 			}
 			f = Mathf.Clamp(f, -1, 1);
 
-			if (BatteryPercent <= 0 && velMag > 30)
+			if ((F.I.s_cpuLevel != CpuLevel.Hard && BatteryPercent <= 0 && velMag > 30) || (F.I.s_cpuLevel == CpuLevel.Hard && BatteryPercent <= 0 && velMag > 0))
 				f = 0;
+
 			if (Owner)
 				accelInput = f;
 
-			if (energyRemaining > 0 && !followAI.IsCPU)
+			if (energyRemaining > 0 && (!followAI.IsCPU || F.I.s_cpuLevel == CpuLevel.Easy))
 				energyRemaining -= accelInput * engine.fuelConsumption * Time.deltaTime;
 		}
 
@@ -1177,8 +1190,9 @@ namespace RVP
 			SGP_HUD.I.infoText.AddMessage(new(tr.name + " ELIMINATED!", BottomInfoType.ELIMINATED));
 		}
 
-		public void SetChassis(float mass, float drag, float angularDrag, Vector3 com)
+		public void SetChassis(float mass, float drag, float angularDrag, Vector3 com, float twistGain)
 		{
+			this.twistGain = twistGain;
 			originalCOM = com;
 			rb.centerOfMass = com;
 			originalMass = mass;
@@ -1188,8 +1202,6 @@ namespace RVP
 			rb.angularDamping = angularDrag;
 			va.initialAngularDrag = angularDrag;
 		}
-
-		
 	}
 
 	// Class for groups of wheels to check each FixedUpdate

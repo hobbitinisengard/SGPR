@@ -10,6 +10,7 @@ public class TrackSelector : TrackSelectorTemplate
 	public TextMeshProUGUI rivalsButtonText;
 	public TextMeshProUGUI catchupButtonText;
 	public TextMeshProUGUI sponsorButtonText;
+	public TextMeshProUGUI LevelButtonText;
 
 	protected int maxCPURivals = 9;
 	protected override void OnEnable()
@@ -89,12 +90,8 @@ public class TrackSelector : TrackSelectorTemplate
 		if (!init)
 			dir = F.I.shiftInputRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
 
-		F.I.s_cpuLevel = CpuLevel.Normal;//(CpuLevel)F.Wraparound((int)F.I.s_cpuLevel+dir, 0, 3);
-		string cpuLevelStr = F.I.s_cpuLevel switch
-		{
-			_ => "Normal",
-		};
-		//CPULevelButtonText.text = "CPU: " + cpuLevelStr;
+		F.I.s_cpuLevel = (CpuLevel)F.Wraparound((int)F.I.s_cpuLevel+dir, 0, 2);
+		LevelButtonText.text = "Bots: " + F.I.s_cpuLevel.ToString();
 	}
 	public void SwitchRivals(bool init = false)
 	{

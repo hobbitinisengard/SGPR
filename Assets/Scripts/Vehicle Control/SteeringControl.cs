@@ -121,6 +121,7 @@ namespace RVP
 					{
 						float add = /*(0.75f + .25f * holdDuration) * */steerAdd;
 						holdDuration = Mathf.Clamp01(holdDuration + (vp.SGPshiftbutton > 0 ? 5 : 1) * add * .01f * Time.fixedDeltaTime);
+						
 					}
 				}
 				else
@@ -155,7 +156,7 @@ namespace RVP
 				}
 
 
-				if (F.I.catchup)
+				if ((F.I.catchup && F.I.s_cpuLevel != CpuLevel.Hard) || (F.I.s_cpuLevel == CpuLevel.Hard && vp.followAI.IsCPU))
 				{
 					float coeff = Mathf.InverseLerp(0, 400, F.I.s_cars[0].raceBox.RaceProgressDist - vp.raceBox.RaceProgressDist);
 					foreach (var w in vp.wheels)

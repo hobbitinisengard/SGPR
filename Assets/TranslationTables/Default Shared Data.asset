@@ -1,0 +1,221 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b11a58205ec3474ca216360e9fa74a8, type: 3}
+  m_Name: Default Shared Data
+  m_EditorClassIdentifier: 
+  m_TableCollectionName: Default
+  m_TableCollectionNameGuidString: 0a6030b51386fcc41b3d83e8a5929166
+  m_Entries:
+  - m_Id: 323084877824
+    m_Key: SINGLE PLAYER
+    m_Metadata:
+      m_Items: []
+  - m_Id: 607039258624
+    m_Key: MULTI PLAYER
+    m_Metadata:
+      m_Items: []
+  - m_Id: 669446307840
+    m_Key: PLAYER'S MANUAL
+    m_Metadata:
+      m_Items: []
+  - m_Id: 860580741120
+    m_Key: RECORDS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 905560457216
+    m_Key: OPTIONS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 945041440768
+    m_Key: EXIT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7614202904576
+    m_Key: PRESS ENTER
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7678107320320
+    m_Key: Yes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7741118349312
+    m_Key: No
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8191913754624
+    m_Key: '*License*'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8785990778880
+    m_Key: MAIN MENU
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9849905348608
+    m_Key: Select a single player game
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10063009546240
+    m_Key: Start your own lobby or join a server online
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10285001474048
+    m_Key: View the Stunt GPR user's manual
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10403113074688
+    m_Key: View your records
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10581798813696
+    m_Key: Quit Stunt GP
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11048763260928
+    m_Key: Configure Stunt GP options
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17647040987136
+    m_Key: Wins TOP 100
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17736107032576
+    m_Key: Points TOP 100
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17814204973056
+    m_Key: Championships TOP 100
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17924557111296
+    m_Key: Team wins TOP 100
+    m_Metadata:
+      m_Items: []
+  - m_Id: 18027086872576
+    m_Key: Team championships TOP 100
+    m_Metadata:
+      m_Items: []
+  - m_Id: 18171958132736
+    m_Key: Team points TOP 100
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19958601613312
+    m_Key: ARCADE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19966491099136
+    m_Key: EXHIBITION
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20069574508544
+    m_Key: TIME TRIAL
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20075589140480
+    m_Key: SKATE PARK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20139082514432
+    m_Key: CHAMPIONSHIPS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20169092759552
+    m_Key: EDITOR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21319934279680
+    m_Key: Unlock cars & tracks in ever harder challenges
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21488641769472
+    m_Key: Races in which you determine the conditions
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22066021269504
+    m_Key: Show off your stunt skills on a stunt arena
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22373761548288
+    m_Key: Take part in an entire SGP season
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22584969920512
+    m_Key: Create and edit tracks
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23460790927360
+    m_Key: REMAP CONTROLLER
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23780929568768
+    m_Key: MULTIPLAYER SETTINGS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24202255794176
+    m_Key: GAME SETTINGS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24337685676032
+    m_Key: CREDITS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24823847452672
+    m_Key: Switch Vsync
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24916629651456
+    m_Key: Switch aerodynamic trail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 25058606841856
+    m_Key: Switch language
+    m_Metadata:
+      m_Items: []
+  - m_Id: 25168451469312
+    m_Key: Language
+    m_Metadata:
+      m_Items: []
+  - m_Id: 25824813907968
+    m_Key: VSync
+    m_Metadata:
+      m_Items: []
+  - m_Id: 25938286608384
+    m_Key: Aerodynamic trail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27610790494208
+    m_Key: FPS limiter
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28282818658304
+    m_Key: Quick messages are written to chat when pressing keyboard buttons 0-9
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28767185272832
+    m_Key: Quick message
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30297254789120
+    m_Key: Register brakes by
+    m_Metadata:
+      m_Items: []
+  m_Metadata:
+    m_Items: []
+  m_KeyGenerator:
+    rid: 497116813262586133
+  references:
+    version: 2
+    RefIds:
+    - rid: 497116813262586133
+      type: {class: DistributedUIDGenerator, ns: UnityEngine.Localization.Tables,
+        asm: Unity.Localization}
+      data:
+        m_CustomEpoch: 1746455858353

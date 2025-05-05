@@ -14,13 +14,13 @@
   "customParts": {
     "sus": {
       "frontSteerRangeDegs": 35.0,
-      "frontSpringDistance": 0.3,
-      "frontSpringForce": 10.0,
+      "frontSpringDistance": 0.2,
+      "frontSpringForce": 9.0,
       "frontSpringExponent": 1.0,
       "frontSpringDampening": 0.2,
       "RearSteerRangeDegs": 0.0,
-      "RearSpringDistance": 0.3,
-      "RearSpringForce": 10.0,
+      "RearSpringDistance": 0.2,
+      "RearSpringForce": 9.0,
       "RearSpringExponent": 1.0,
       "RearSpringDampening": 0.2
     },
@@ -68,8 +68,8 @@
     },
     "chassis": {
       "mass": 1.0,
-      "longtitunalCOM": -0.01,
-      "verticalCOM": 0.4,
+      "longtitunalCOM": -0.02,
+      "verticalCOM": 0.38,
       "drag": 0.3,
       "angularDrag": 0.1,
       "evoSmoothTime": 0.07,

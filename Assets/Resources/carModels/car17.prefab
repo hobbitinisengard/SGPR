@@ -11711,10 +11711,6 @@ MonoBehaviour:
   - {fileID: 6657220250863250050}
   rearLights:
   - {fileID: 5343642536240803875}
-  rearLightsBrakeMaterial: {fileID: 2100000, guid: 683e6224559d7db4faf96c5815493852,
-    type: 2}
-  rearLightsOnMaterial: {fileID: 2100000, guid: 11920d9d83ff3f241898746a7bbdf8ba,
-    type: 2}
   accelAxisIsBrake: 0
   brakeIsReverse: 1
   holdEbrakePark: 0
@@ -12740,30 +12736,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   generateHardCollider: 1
-  rpmBiasCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0.25
-      inSlope: 0
-      outSlope: 1.6
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 1.6
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
   axleFriction: 0.001
   forwardFriction: 12
   sidewaysFriction: 12
@@ -13161,30 +13133,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   generateHardCollider: 1
-  rpmBiasCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0.25
-      inSlope: 0
-      outSlope: 1.6
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 1.6
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
   axleFriction: 0.001
   forwardFriction: 12
   sidewaysFriction: 12
@@ -14286,30 +14234,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   generateHardCollider: 1
-  rpmBiasCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0.25
-      inSlope: 0
-      outSlope: 1.6
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 1.6
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
   axleFriction: 0.001
   forwardFriction: 12
   sidewaysFriction: 12
@@ -14575,30 +14499,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   generateHardCollider: 1
-  rpmBiasCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0.25
-      inSlope: 0
-      outSlope: 1.6
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 1.6
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
   axleFriction: 0.001
   forwardFriction: 12
   sidewaysFriction: 12
@@ -15564,7 +15464,7 @@ Transform:
   m_GameObject: {fileID: 8116374242895552131}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.506, y: 0.03, z: 0.214}
+  m_LocalPosition: {x: -0.678, y: 0.03, z: 0.37}
   m_LocalScale: {x: 1, y: 1.39, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -15590,7 +15490,7 @@ CapsuleCollider:
   m_Enabled: 1
   serializedVersion: 2
   m_Radius: 0.6
-  m_Height: 1.38
+  m_Height: 1.86
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &8360615460056739792
@@ -15879,7 +15779,7 @@ Transform:
   m_GameObject: {fileID: 8817473814503940659}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.5, y: 0.03, z: 0.214}
+  m_LocalPosition: {x: 0.678, y: 0.03, z: 0.37}
   m_LocalScale: {x: 1, y: 1.39, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -15905,7 +15805,7 @@ CapsuleCollider:
   m_Enabled: 1
   serializedVersion: 2
   m_Radius: 0.6
-  m_Height: 1.38
+  m_Height: 1.86
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &9001036821392098763

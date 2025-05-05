@@ -40,11 +40,11 @@ public class SGP_Bouncer : MonoBehaviour
 			bouncyCols[i].hasModifiableContacts = true;
 		}
 
-		//if(!OnContactModifyRegistered)
-		//{
-		//	OnContactModifyRegistered = true;
-		//	Physics.ContactModifyEvent += OnContactModify;
-		//}
+		if (!OnContactModifyRegistered)
+		{
+			OnContactModifyRegistered = true;
+			Physics.ContactModifyEvent += OnContactModify;
+		}
 	}
 	static void OnContactModify(PhysicsScene scene, NativeArray<ModifiableContactPair> pairs)
 	{
@@ -59,8 +59,11 @@ public class SGP_Bouncer : MonoBehaviour
 					pair.SetPoint(0, carRbs[pair.bodyInstanceID].worldCOM);
 					var normal = pair.GetNormal(0);
 					//float upNormDot = Mathf.Abs(Vector3.Dot(carRbs[pair.bodyInstanceID].rightDir, normal));
-					pair.SetBounciness(0, 2);
+
+					pair.SetBounciness(0, 1);
+
 					pair.SetNormal(0, Vector3.ProjectOnPlane(normal, Vector3.up));
+
 					//pair.SetNormal(0, mult * Vector3.ProjectOnPlane(pair.GetNormal(0)/*(carRbs[pair.bodyInstanceID].worldCOM - oldPoint).normalized*/, Vector3.up));
 					//pair.SetBounciness(0, 1);
 					//Vector3 n = pair.rotation * Vector3.up;
@@ -104,7 +107,7 @@ public class SGP_Bouncer : MonoBehaviour
 		Vector3 norm = contact.normal;
 		float upNormDot = Vector3.Dot(vp.tr.up, norm);
 
-		//if (upNormDot < .1f && upNormDot > -.5f) // angle between 84d and 135d
+		
 		{
 			if (Time.time - lastSideBounceTime < debounceTime)
 				return;
@@ -112,8 +115,14 @@ public class SGP_Bouncer : MonoBehaviour
 			lastSideBounceTime = Time.time;
 			float mult;
 			Vector3 vec;
+
 			if (contact.otherCollider.gameObject.layer == F.I.carCarCollisionLayer)
 			{
+				// original sgp effect (tushkan)
+				vec = Vector3.ProjectOnPlane(-col.impulse, Vector3.up);
+				vp.rb.AddForceAtPosition(vec,
+					col.GetContact(0).point, //col.GetContact(0).point,//vp.rb.worldCenterOfMass + Vector3.up * vp.rb.centerOfMass.y//vp.transform.position
+					ForceMode.VelocityChange);
 				//mult = 1f;
 				//direction = Vector3.ProjectOnPlane(-collision.impulse.normalized, Vector3.up);
 				////direction = norm;
@@ -123,16 +132,21 @@ public class SGP_Bouncer : MonoBehaviour
 			}
 			else
 			{
-				//vec = Vector3.ProjectOnPlane(-col.impulse, Vector3.up);
-				//vp.rb.AddForceAtPosition(vec,
-				//	col.GetContact(0).point, //col.GetContact(0).point,//vp.rb.worldCenterOfMass + Vector3.up * vp.rb.centerOfMass.y//vp.transform.position
-				//	ForceMode.VelocityChange);
+				if (col.impulse.magnitude < 40)
+					return;
 
-				//for (int i=0; i<col.contactCount; ++i)
-				//{
-
-				//}
-
+				// workaround for unity slingshot
+				if (upNormDot < .1f && upNormDot > -.5f) // angle between 84d and 135d
+				{
+					mult = multCurve.Evaluate(Vector3.Dot(norm, vp.tr.forward));
+					//Debug.Log("B: " + Vector3.Dot(norm, vp.tr.forward));
+					Vector3 addForce = mult * col.relativeVelocity;
+					Vector3 direction = (vp.tr.forward + norm + vp.tr.up).normalized;
+					lastSideBounceTime = Time.time;
+					vp.rb.AddForceAtPosition(direction * addForce.magnitude,
+					col.GetContact(0).point,//vp.transform.position
+					ForceMode.VelocityChange);
+				}
 			}
 			
 			//Debug.Log("B: " + Vector3.Dot(norm, vp.tr.forward));
