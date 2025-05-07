@@ -68,14 +68,14 @@ namespace RVP
 		}
 		public Stunt(Stunt s)
 		{
-			name = s.name;
+			name = F.I.LocStr(s.name);
 			overlayName = name;
 			score = s.score;
 		}
 		public Stunt(string name, float score)
 		{
-			this.name = name;
-			overlayName = name;
+			this.name = F.I.LocStr(name);
+			overlayName = this.name;
 			this.score = score;
 		}
 	}
@@ -127,8 +127,8 @@ namespace RVP
 			endStuntReqParallelAlignment = rs.endStuntReqParallelAlignment;
 			angleThreshold = rs.angleThreshold;
 			negativeProgress = rs.negativeProgress;
-			halfFirstPositiveName = rs.halfFirstPositiveName;
-			halfFirstNegativeName = rs.halfFirstNegativeName;
+			halfFirstPositiveName = F.I.LocStr(rs.halfFirstPositiveName);
+			halfFirstNegativeName = F.I.LocStr(rs.halfFirstNegativeName);
 			lastWriteWasPositive = rs.lastWriteWasPositive;
 			isHalfRotation = rs.isHalfRotation;
 			canBeReverse = rs.canBeReverse;
@@ -197,31 +197,36 @@ namespace RVP
 		public void WriteOverlayName(bool natural)
 		{
 			isHalfRotation = false;
-			overlayName = (natural ? "NATURAL " : "");
+			string prefix, direction;
+			prefix = F.I.LocStr(natural ? "NATURAL" : "");
 			if (isReverse)
-				overlayName += "REVERSE ";
+				prefix += " " + F.I.LocStr("REVERSE");
 			if (rotationAxis.x != 0)
 			{
 				if (lastWriteWasPositive)
-					overlayName += "FRONT ";
+					direction = F.I.LocStr("FRONT");
 				else
-					overlayName += "BACK ";
+					direction = F.I.LocStr("BACK");
 			}
 			else if (rotationAxis.y != 0)
 			{
 				if (lastWriteWasPositive)
-					overlayName += "RIGHT ";
+					direction = F.I.LocStr("RIGHT");
 				else
-					overlayName += "LEFT ";
+					direction = F.I.LocStr("LEFT");
 			}
-			else if (rotationAxis.z != 0)
+			else //if (rotationAxis.z != 0)
 			{
 				if (lastWriteWasPositive)
-					overlayName += "LEFT ";
+					direction = F.I.LocStr("LEFT");
 				else
-					overlayName += "RIGHT ";
+					direction = F.I.LocStr("RIGHT");
 			}
-			overlayName += name;
+
+			if (F.I.playerData.language == Language.Polish)
+				overlayName = (prefix.Length > 0 ? prefix + " " : "") + name + " " + direction;
+			else
+				overlayName = (prefix.Length > 0 ? prefix + " " : "") + direction + " " + name;
 		}
 		public override string PostfixText()
 		{

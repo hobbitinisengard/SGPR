@@ -1,6 +1,13 @@
 {
   "author": "Arkhnen & Viatrufka",
-  "desc": "This packed track is full of ramps and deceitful turns - tight enough to lose control.",
+  "localizedNames":[
+	"TRICK ALLEY",
+	"DOWCIPNA ALEJKA",
+	],
+  "localizedDescriptions": [
+	"This packed track is full of ramps and deceitful turns - tight enough to lose control",
+	"Ta stłoczona trasa pełna jest ramp i zdradliwych zakrętów - wystarczająco ciasnych by utracić kontrolę.",
+	],
   "valid": true,
   "envir": "ENG",
   "preferredCarClass": "Team",

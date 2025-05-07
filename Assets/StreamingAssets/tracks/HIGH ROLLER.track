@@ -1,6 +1,13 @@
 {
   "author": "Team17",
-  "desc": "This complex, winding track has a number of high curved bends.",
+  "localizedNames":[
+	"HIGH ROLLER",
+	"ZROLOWANY",
+	],
+  "localizedDescriptions": [
+	"This complex, winding track has a number of high curved bends.",
+	"Złożona, kręta trasa z dużą ilością ostrych zakrętów.",
+	],
   "valid": true,
   "envir": "GER",
   "preferredCarClass": "Team",

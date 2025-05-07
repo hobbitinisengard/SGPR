@@ -1,0 +1,21 @@
+{
+  "author": "viatrufka",
+  "localizedNames":[
+	"ON TWO WHEELS",
+	"NA DWÓCH KOŁACH",
+	],
+  "localizedDescriptions": [
+	"Landing on two wheels has been difficult. Let's practice that.",
+	"Jazda na dwóch kołach była dotychczas trudna. Poćwiczmy.",
+	],
+  "valid": true,
+  "envir": "ENG",
+  "preferredCarClass": "Aero",
+  "difficulty": 4,
+  "unlocked": true,
+  "icons": [
+    5
+  ],
+  "TrackOrigin": 1,
+  "IsOriginal": false
+}

@@ -122,7 +122,8 @@ public class ComponentPanel : MonoBehaviour
 		// Load file/folder: file, Allow multiple selection: true
 		// Initial path: default (Documents), Initial filename: empty
 		// Title: "Load File", Submit button text: "Load"
-		yield return FileBrowser.WaitForLoadDialog(FileBrowser.PickMode.Files, false, F.I.partsPath, null, "Select configuration file..", "Load");
+		yield return FileBrowser.WaitForLoadDialog(FileBrowser.PickMode.Files, false, F.I.partsPath, null, 
+			F.I.LocStr("Select configuration file.."), F.I.LocStr("LOAD"));
 
 		// Dialog is closed
 		Debug.Log(FileBrowser.Success); // (FileBrowser.Success) - whether the user has selected some files or cancelled the operation 
@@ -137,7 +138,7 @@ public class ComponentPanel : MonoBehaviour
 		{
 			string[] extensions = F.I.partInfos.Select(i => i.fileExtension).ToArray();
 			var extensionFilter = new[] {
-			 new FileBrowser.Filter("SGPR car parts configuration files", extensions)};
+			 new FileBrowser.Filter(F.I.LocStr("SGPR car components configuration files"), extensions)};
 			FileBrowser.SetFilters(true, extensionFilter);
 			StartCoroutine(ShowLoadDialogCoroutine());
 		}
@@ -250,7 +251,7 @@ public class ComponentPanel : MonoBehaviour
 				var extensionFilter = new[] { new FileBrowser.Filter("SGPR car config file", CarConfig.extension) };
 				FileBrowser.SetFilters(false, extensionFilter);
 
-				yield return FileBrowser.WaitForSaveDialog(FileBrowser.PickMode.Files, false, F.I.partsPath, vp.carConfig.name, "Save car config file..", "Save");
+				yield return FileBrowser.WaitForSaveDialog(FileBrowser.PickMode.Files, false, F.I.partsPath, vp.carConfig.name, F.I.LocStr("Save car config file.."), F.I.LocStr("SAVE"));
 
 				if (FileBrowser.Success)
 				{
@@ -273,7 +274,7 @@ public class ComponentPanel : MonoBehaviour
 				var extensionFilter = new[] { new FileBrowser.Filter("SGPR Car part", F.I.partInfos[(int)selectedPart].fileExtension) };
 				FileBrowser.SetFilters(false, extensionFilter);
 
-				yield return FileBrowser.WaitForSaveDialog(FileBrowser.PickMode.Files, false, F.I.partsPath, vp.carConfig.GetPartName(selectedPart), "Save part file..", "Save");
+				yield return FileBrowser.WaitForSaveDialog(FileBrowser.PickMode.Files, false, F.I.partsPath, vp.carConfig.GetPartName(selectedPart), F.I.LocStr("Save part file.."), F.I.LocStr("SAVE"));
 				if (FileBrowser.Success)
 				{
 					string filepath = FileBrowser.Result[0];

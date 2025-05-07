@@ -1,6 +1,13 @@
 {
   "author": "Team17",
-  "desc": "This unrelease offers more stunting opportunities compared to its final variant",
+  "localizedNames":[
+	"CURB CITY CIRCUIT II",
+	"WYBOISTE MIASTO II",
+	],
+  "localizedDescriptions": [
+	"This unrelease offers more stunting opportunities compared to its final variant",
+	"Ta wersja oferuje możliwość większego nakręcenia aerometru, porównując ją do jej oficjalnego wariantu.",
+	],
   "valid": true,
   "envir": "USA",
   "preferredCarClass": "Speed",

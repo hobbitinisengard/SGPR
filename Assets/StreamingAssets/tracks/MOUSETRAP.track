@@ -1,6 +1,13 @@
 {
   "author": "Arkhnen & Viatrufka",
-  "desc": "Fast chicanes and tunnel transitions are the highlights of this speedy racetrack!",
+  "localizedNames":[
+	"MIND YOUR STEP",
+	"UWAGA STOPIEŃ",
+	],
+  "localizedDescriptions": [
+	"This long track will make you climb many stairs.",
+	"Na tej trasie wespniesz się na najdłuższe schody.",
+	],
   "valid": true,
   "envir": "GER",
   "preferredCarClass": "Speed",

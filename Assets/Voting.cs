@@ -49,13 +49,13 @@ public class Voting : NetworkBehaviour
 		if(voteFor == VoteFor.RESTART)
 		{
 			votesForRestart++;
-			msg = $"voted for RESTART. [{votesForRestart}/{votesRequiredToPass}]";
+			msg = F.I.LocStr("Voted for RESTART.") + $" [{votesForRestart}/{votesRequiredToPass}]";
 			passed = votesForRestart >= votesRequiredToPass;
 		}
 		if(voteFor == VoteFor.END)
 		{
 			votesForEnd++;
-			msg = $"voted for END. [{votesForEnd}/{votesRequiredToPass}]";
+			msg = F.I.LocStr("Voted for END.") + $" [{votesForEnd}/{votesRequiredToPass}]";
 			color = Color.red;
 			passed = votesForEnd >= votesRequiredToPass;
 		}
@@ -93,7 +93,7 @@ public class Voting : NetworkBehaviour
 			yield return null;
 		}
 		if (votingTimer > -1)
-			F.I.chat.AddChatRowAsServer("all votes expired");
+			F.I.chat.AddChatRowAsServer(F.I.LocStr("All votes expired."));
 
 		votesForEnd = 0;
 		votesForRestart = 0;
@@ -115,5 +115,4 @@ public class Voting : NetworkBehaviour
 	{
 		RaceManager.I.BackToMenu(applyScoring:false);
 	}
-	
 }

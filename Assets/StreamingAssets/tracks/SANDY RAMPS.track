@@ -1,6 +1,13 @@
 {
   "author": "Arkhnen & Viatrufka",
-  "desc": "Do you like jumping like a kangaroo? Better pick up your momentum!",
+  "localizedNames":[
+	"SANDY RAMPS",
+	"PIASZCZYSTE RAMPY",
+	],
+  "localizedDescriptions": [
+	"Do you like jumping like a kangaroo? Better pick up your momentum!",
+	"Lubisz skakać jak kangur? Lepiej nabierz rozpędu!",
+	],
   "valid": true,
   "envir": "SPN",
   "preferredCarClass": "Speed",

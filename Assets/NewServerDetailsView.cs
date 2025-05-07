@@ -29,7 +29,7 @@ public class NewServerDetailsView : MainMenuView
 	new private void OnEnable()
 	{
 		base.OnEnable();
-		OkbuttonText.text = "OK";
+		OkbuttonText.text = F.I.LocStr("OK");
 	}
 	public void SetServerName(string str)
    {
@@ -59,7 +59,7 @@ public class NewServerDetailsView : MainMenuView
 	public async void CreateLobby()
 	{
 		prevViewForbidden = true;
-		OkbuttonText.text = "WAIT";
+		OkbuttonText.text = F.I.LocStr("WAIT");
 		F.I.SaveSettingsDataToJson();
 		F.I.s_trackName = F.I.tracks.First(kv => kv.Value.valid).Key;
 		string sha = F.I.SHA(F.I.tracksPath + F.I.s_trackName + ".data");

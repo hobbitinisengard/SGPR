@@ -1,6 +1,13 @@
 {
   "author": "Arkhnen & Viatrufka",
-  "desc": "This track will make you go to the limit, even outside the warehouse. Friendly reminder: RC cars don't like water! ",
+  "localizedNames":[
+	"BOLD STRAIGHTS",
+	"ZUCHWAŁE PROSTE",
+	],
+  "localizedDescriptions": [
+	"This track will make you go to the limit, even outside the warehouse. Friendly reminder: RC cars don't like water!",
+	"Na tym torze pojedziesz do odcinki, nawet poza magazyn. Przypominajka: zdalnie sterowane autka nie lubią wody!",
+	],
   "valid": true,
   "envir": "FRA",
   "preferredCarClass": "Speed",

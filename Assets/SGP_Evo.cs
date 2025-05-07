@@ -214,11 +214,11 @@ public class SGP_Evo : MonoBehaviour
 				{
 					if (vp.rollInput > .2f)
 					{ // right barrel roll
-						r[2].UpdateTarget(Direction.CLOCK);
+						r[2].UpdateTarget(Direction.ANTICLOCK);
 					}
 					else if (vp.rollInput < -.2f)
 					{ // left barrel roll
-						r[2].UpdateTarget(Direction.ANTICLOCK);
+						r[2].UpdateTarget(Direction.CLOCK);
 					}
 					r[2].IncreaseEvoSpeed();
 				}

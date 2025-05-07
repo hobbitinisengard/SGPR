@@ -33,7 +33,7 @@ public class GraphicsSettingsView : MonoBehaviour
 	{
 		if(!init)
 			F.I.playerData.trail = !F.I.playerData.trail;
-		trailText.text = trailLoc.GetLocalizedString() + ": " + (F.I.playerData.trail ? F.I.localizedYes.GetLocalizedString() : F.I.localizedNo.GetLocalizedString());
+		trailText.text = trailLoc.GetLocalizedString() + ": " + (F.I.playerData.trail ? F.I.LocStr("Yes") : F.I.LocStr("No"));
 	}
 	public void SwitchLang(bool init)
 	{
@@ -52,6 +52,6 @@ public class GraphicsSettingsView : MonoBehaviour
 			F.I.playerData.vSync = !F.I.playerData.vSync;
 			QualitySettings.vSyncCount = F.I.playerData.vSync ? 1 : 0;
 		}
-		vSyncText.text = vSyncLoc.GetLocalizedString() + ": " + (F.I.playerData.vSync ? F.I.localizedYes.GetLocalizedString() : F.I.localizedNo.GetLocalizedString());
+		vSyncText.text = vSyncLoc.GetLocalizedString() + ": " + (F.I.playerData.vSync ? F.I.LocStr("Yes") : F.I.LocStr("No"));
 	}
 }

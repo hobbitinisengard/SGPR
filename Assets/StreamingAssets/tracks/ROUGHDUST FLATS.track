@@ -1,6 +1,13 @@
 {
   "author": "Team17",
-  "desc": "The only flat track in the original Stunt GP collection, this is far from a gentle experience!",
+  "localizedNames":[
+	"ROUGHDUST FLATS",
+	"PYŁOWE RÓWNINY",
+	],
+  "localizedDescriptions": [
+	"The only flat track in the original Stunt GP collection, this is far from a gentle experience!",
+	"Ta jedyna płaska trasa w Stunt GP wcale nie jest miłym przerywnikiem!",
+	],
   "valid": true,
   "envir": "SPN",
   "preferredCarClass": "Team",

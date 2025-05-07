@@ -92,13 +92,13 @@ public class EditorPanel : MonoBehaviour
 	public SC_TerrainEditor terrainEditor;
 	public FlyCamera flyCamera;
 	public RaceManager raceManager;
-	public GameObject savePanel;
+	public SavePanelWorks savePanel;
 	public GameObject toolsPanel;
 	public TMP_InputField trackNameInputField;
 	public TMP_InputField trackDescInputField;
 	public TMP_InputField trackAuthorInputField;
 	public TMP_Dropdown trackDifficultyDropdown;
-	public TMP_Dropdown carGroupDropdown;
+	CarGroup carGroup;
 	public Transform invisibleLevel;
 	public GameObject tileGroups;
 	public GameObject arrowModel;
@@ -1377,14 +1377,14 @@ public class EditorPanel : MonoBehaviour
 	public void ToggleSavePanel()
 	{
 		toolsPanel.SetActive(false);
-		bool savePanelActive = !savePanel.activeSelf;
+		bool savePanelActive = !savePanel.gameObject.activeSelf;
 		if (savePanelActive)
 		{
 			trackDifficultyDropdown.value = CalculateTrackDifficulty();
-			carGroupDropdown.value = (int)CalculatePreferredCarClass();
+			carGroup = CalculatePreferredCarClass();
 
 		}
-		savePanel.SetActive(savePanelActive);
+		savePanel.gameObject.SetActive(savePanelActive);
 		SwitchTo(Mode.None);
 	}
 	CarGroup CalculatePreferredCarClass()
@@ -1525,7 +1525,7 @@ public class EditorPanel : MonoBehaviour
 	}
 	public void ToggleToolsPanel()
 	{
-		savePanel.SetActive(false);
+		savePanel.gameObject.SetActive(false);
 		toolsPanel.SetActive(!toolsPanel.activeSelf);
 		SwitchTo(Mode.None);
 	}
@@ -1562,7 +1562,7 @@ public class EditorPanel : MonoBehaviour
 	public void SaveTrack()
 	{
 		if (trackNameInputField.text.Length <= 3)
-			trackNameInputField.text = "Untitled";
+			trackNameInputField.text = F.I.LocStr("Untitled");
 		trackName = trackNameInputField.text;
 
 		TrackSavableData TRACK = new TrackSavableData();
@@ -1680,19 +1680,20 @@ public class EditorPanel : MonoBehaviour
 		TrackHeader tHeader = new()
 		{
 			unlocked = true,
-			preferredCarClass = (CarGroup)carGroupDropdown.value,
+			preferredCarClass = carGroup,
 			difficulty = trackDifficultyDropdown.value,
 			envir = F.I.tracks[F.I.s_trackName].envir,
 			author = trackAuthorInputField.text,
 			icons = icons.ToArray(),
-			desc = trackDescInputField.text,
+			localizedDescriptions = savePanel.localizedDescriptions,
+			localizedNames = savePanel.localizedNames,
 			records = new(),
 		};
 
 		tHeader.valid = PathValid();
 		if (!tHeader.valid)
 		{
-			DisplayMessageFor("Create raceline to validate track", 3);
+			DisplayMessageFor(F.I.LocStr("Create raceline first"), 3);
 		}
 
 		string JsonContent = JsonConvert.SerializeObject(tHeader, Formatting.Indented);
@@ -1713,7 +1714,7 @@ public class EditorPanel : MonoBehaviour
 		JsonContent = JsonConvert.SerializeObject(tHeader.records, Formatting.Indented);
 		path = Path.Combine(F.I.tracksPath, trackName + ".rec");    // .REC
 		File.WriteAllText(path, JsonContent);
-
+		
 		if (!F.I.tracks.ContainsKey(trackName))
 			F.I.tracks.Add(trackName, tHeader);
 		else
@@ -1851,11 +1852,6 @@ public class EditorPanel : MonoBehaviour
 
 		invisibleLevel.localScale = F.I.invisibleLevelDimensions[(int)F.I.tracks[F.I.s_trackName].envir];
 
-
-		
-
-		trackNameInputField.text = trackName;
-
 		yield return null; // update containers
 
 		if (!File.Exists(path))
@@ -1870,14 +1866,14 @@ public class EditorPanel : MonoBehaviour
 		string trackJson = File.ReadAllText(path);
 		TrackSavableData TRACK = JsonConvert.DeserializeObject<TrackSavableData>(trackJson);
 
-
-		trackDescInputField.text = F.I.tracks[F.I.s_trackName].desc;
+		savePanel.GetComponent<SavePanelWorks>().localizedNames = F.I.tracks[F.I.s_trackName].localizedNames;
+		savePanel.GetComponent<SavePanelWorks>().localizedDescriptions = F.I.tracks[F.I.s_trackName].localizedDescriptions;
 
 		trackAuthorInputField.text = F.I.tracks[F.I.s_trackName].author;
 
 		trackDifficultyDropdown.value = F.I.tracks[F.I.s_trackName].difficulty;
 
-		carGroupDropdown.value = (int)F.I.tracks[F.I.s_trackName].preferredCarClass;
+		carGroup = F.I.tracks[F.I.s_trackName].preferredCarClass;
 
 		windExternal = TRACK.windExternal;
 		windRandom = TRACK.windRandom;
@@ -1947,11 +1943,11 @@ public class EditorPanel : MonoBehaviour
 	}
 	IEnumerator OpenLoadTrackFileBrowserCo()
 	{
-		if (savePanel.activeSelf || toolsPanel.activeSelf)
+		if (savePanel.gameObject.activeSelf || toolsPanel.activeSelf)
 			yield break;
 
 		FileBrowser.SetFilters(false, new FileBrowser.Filter("track", ".track"));
-		yield return FileBrowser.WaitForLoadDialog(FileBrowser.PickMode.Files, false, F.I.tracksPath, null, "Select track..", "Load");
+		yield return FileBrowser.WaitForLoadDialog(FileBrowser.PickMode.Files, false, F.I.tracksPath, null, F.I.LocStr("Select track.."), F.I.LocStr("LOAD"));
 
 		if (FileBrowser.Success)
 		{
@@ -2022,7 +2018,7 @@ public class EditorPanel : MonoBehaviour
 		F.I.s_raceType = RaceType.Race;
 		if (trackName.Length == 3)
 		{
-			DisplayMessageFor("Save track!", 2);
+			DisplayMessageFor(F.I.LocStr("Save track!"), 2);
 			return;
 		}
 		if (isPathClosed)
@@ -2032,7 +2028,7 @@ public class EditorPanel : MonoBehaviour
 		}
 		else
 		{
-			DisplayMessageFor("Path isn't closed!", 2);
+			DisplayMessageFor(F.I.LocStr("Racingline isn't closed!"), 2);
 			return;
 		}
 	}

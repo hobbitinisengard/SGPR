@@ -1,4 +1,3 @@
-using System.Linq;
 using TMPro;
 using UnityEngine;
 
@@ -15,7 +14,7 @@ public class RoosterVIew : MonoBehaviour
 			{
 				var btn = carClass.GetChild(j);
 				var car = F.I.Car(btn.name);
-				btn.GetChild(0).GetComponent<TextMeshProUGUI>().text = car.name + ": " + car.rooster;
+				btn.GetChild(0).GetComponent<TextMeshProUGUI>().text = F.I.LocStr(car.name) + ": " + car.rooster;
 			}
 		}
 	}
@@ -36,7 +35,7 @@ public class RoosterVIew : MonoBehaviour
 		{
 			car.rooster += dir;
 			allRoosters = newRoosters;
-			btn.GetChild(0).GetComponent<TextMeshProUGUI>().text = car.name + ": " + car.rooster;
+			btn.GetChild(0).GetComponent<TextMeshProUGUI>().text = F.I.LocStr(car.name) + ": " + car.rooster;
 		}
 	}
 }

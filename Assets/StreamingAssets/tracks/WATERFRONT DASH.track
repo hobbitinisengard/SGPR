@@ -1,6 +1,13 @@
 {
   "author": "Team17",
-  "desc": "This long and winding track takes you all over the waterfront!",
+  "localizedNames":[
+	"WATERFRONT DASH",
+	"WYPAD NAD MORZE",
+	],
+  "localizedDescriptions": [
+	"This long and winding track takes you all over the waterfront!",
+	"Długa i kręta trasa nadmorska.",
+	],
   "valid": true,
   "envir": "ITA",
   "preferredCarClass": "Aero",

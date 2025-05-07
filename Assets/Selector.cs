@@ -57,11 +57,16 @@ public class TrackSelectorTemplate : Sfxable
 
 		F.I.s_roadType = (PavementType)F.Wraparound((int)(F.I.s_roadType + dir), 0, F.I.pavementTypes + 1);
 		F.I.randomPavement = F.I.s_roadType == PavementType.Random;
-		wayButtonText.text = "Tex: " + F.I.s_roadType.ToString();
+		wayButtonText.text = F.I.LocStr("Tex") + ": " + F.I.LocStr(F.I.s_roadType.ToString());
 	}
 	internal void ResetButtons()
 	{
 		SwitchRoadType(true);
+
+		if (curSortingCondition == SortingCond.Name)
+			sortButton.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = F.I.LocStr("Sorted by name");
+		else
+			sortButton.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = F.I.LocStr("Sorted by difficulty");
 	}
 	bool ValidCheck(bool trackValid)
 	{
@@ -180,18 +185,18 @@ public class TrackSelectorTemplate : Sfxable
 			if (selectedTrack == null)
 			{
 				Debug.LogError("selectedTrack is null");
-				trackDescText.text = "No tracks available";
+				trackDescText.text = F.I.LocStr("Whoops.. No tracks available");
 				trackAuthorText.text = "";
 			}
 		}
 		else if (!F.I.randomTracks)
 		{
-			trackDescText.text = selectedTrack.name + "\n\n" + F.I.tracks[selectedTrack.name].desc;
+			trackDescText.text = F.I.tracks[selectedTrack.name].LocalizedName + "\n\n" + F.I.tracks[selectedTrack.name].LocalizedDesc;
 
 			if (F.I.tracks[selectedTrack.name].IsOriginal || F.I.tracks[selectedTrack.name].author == "")
 				trackAuthorText.text = "";
 			else
-				trackAuthorText.text = "by " + F.I.tracks[selectedTrack.name].author;
+				trackAuthorText.text = F.I.tracks[selectedTrack.name].author;
 
 			if (radial.gameObject.activeSelf)
 				radial.SetAnimTo(selectedTrack.parent.GetSiblingIndex());
@@ -252,9 +257,9 @@ public class TrackSelectorTemplate : Sfxable
 	{
 		curSortingCondition = (SortingCond)(((int)curSortingCondition + 1) % 2);
 		if (curSortingCondition == SortingCond.Name)
-			sortButton.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "Sorted by track's name";
+			sortButton.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = F.I.LocStr("Sorted by name");
 		else
-			sortButton.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "Sorted by track's difficulty";
+			sortButton.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = F.I.LocStr("Sorted by difficulty");
 		// reload 
 		if (loadCo)
 			StopCoroutine(Load());

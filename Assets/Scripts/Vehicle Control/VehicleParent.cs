@@ -835,7 +835,7 @@ namespace RVP
 				energyRemaining = batteryCapacity;
 			else if (BatteryPercent <= 0 && Time.time - lastNoBatteryMessage > 60)
 			{
-				RaceManager.I.hud.infoText.AddMessage(new Message(name + " IS OUT OF BATTERY!", BottomInfoType.NO_BATT));
+				RaceManager.I.hud.infoText.AddMessage(new Message(name + " " + F.I.LocStr("IS OUT OF BATTERY!"), BottomInfoType.NO_BATT));
 				lastNoBatteryMessage = Time.time;
 			}
 			f = Mathf.Clamp(f, -1, 1);
@@ -867,7 +867,10 @@ namespace RVP
 				else
 				{
 					if (brakeIsReverse && reversing)
-						brakeInput = 1;
+					{
+						if (!(F.I.s_cpuLevel == CpuLevel.Hard && BatteryPercent <= 0))
+							brakeInput = 1;
+					}
 					else
 					{
 						if (brakeStart == 0)
@@ -1187,7 +1190,7 @@ namespace RVP
 		void KnockoutMeRpc()
 		{
 			KnockoutMeInternal();
-			SGP_HUD.I.infoText.AddMessage(new(tr.name + " ELIMINATED!", BottomInfoType.ELIMINATED));
+			SGP_HUD.I.infoText.AddMessage(new(tr.name + " " + F.I.LocStr("ELIMINATED!"), BottomInfoType.ELIMINATED));
 		}
 
 		public void SetChassis(float mass, float drag, float angularDrag, Vector3 com, float twistGain)

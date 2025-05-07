@@ -1,6 +1,13 @@
 {
   "author": "luckygoose",
-  "desc": "A medium-length track built inside a crowded warehouse with few twisting turns and technical jumps.",
+  "localizedNames":[
+	"WAREHOUSE ROCK",
+	"MAGAZYNOWY SZAŁ",
+	],
+  "localizedDescriptions": [
+	"A medium-length track built inside a crowded warehouse with few twisting turns and technical jumps.",
+	"Średniej długości trasa zbudowana wewnątrz stłoczonej hali z paroma krętymi skrętami i wymagającymi uwagi rampami.",
+	],
   "valid": true,
   "envir": "FRA",
   "preferredCarClass": "Speed",

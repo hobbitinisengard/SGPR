@@ -1,6 +1,13 @@
 {
   "author": "Team17",
-  "desc": "More difficult version out of two unreleased variants.  ",
+  "localizedNames":[
+	"CURB CITY CIRCUIT I",
+	"WYBOISTE MIASTO I",
+	],
+  "localizedDescriptions": [
+	"More difficult version out of two unreleased variants.",
+	"Trudniejszy wariant spośród dwóch niewydanych wersji.",
+	],
   "valid": true,
   "envir": "USA",
   "preferredCarClass": "Aero",

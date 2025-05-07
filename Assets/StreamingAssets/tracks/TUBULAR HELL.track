@@ -1,6 +1,13 @@
 {
   "author": "Team17",
-  "desc": "A long and winding track with many ramps. Try not to climb too high in the tubular sections!",
+  "localizedNames":[
+	"TUBULAR HELL",
+	"PIEKŁO RUROWE",
+	],
+  "localizedDescriptions": [
+	"A long and winding track with many ramps. Try not to climb too high in the tubular sections!",
+	"Długa i zdradliwa trasa - dużo ramp. Nie skacz w nich zbyt wysoko!",
+	],
   "valid": true,
   "envir": "JAP",
   "preferredCarClass": "Speed",

@@ -177,19 +177,19 @@ namespace RVP
 						switch (F.I.s_raceType)
 						{
 							case RaceType.Race:
-								hud.infoText.AddMessage(new(leader.name + " TAKES THE LEAD!", BottomInfoType.NEW_LEADER));
+								hud.infoText.AddMessage(new(leader.name + " " + F.I.LocStr("TAKES THE LEAD!"), BottomInfoType.NEW_LEADER));
 								break;
 							case RaceType.Knockout:
-								hud.infoText.AddMessage(new(leader.name + " TAKES THE LEAD!", BottomInfoType.NEW_LEADER));
+								hud.infoText.AddMessage(new(leader.name + " " + F.I.LocStr("TAKES THE LEAD!"), BottomInfoType.NEW_LEADER));
 								break;
 							case RaceType.Stunt:
-								hud.infoText.AddMessage(new(leader.name + " TAKES THE LEAD! AEROMILES:" + leader.raceBox.Aero, BottomInfoType.NEW_LEADER));
+								hud.infoText.AddMessage(new(leader.name + " " + F.I.LocStr("TAKES THE LEAD!") + " " + F.I.LocStr("AEROMILES") + ": " + leader.raceBox.Aero, BottomInfoType.NEW_LEADER));
 								break;
 							case RaceType.Drift:
-								hud.infoText.AddMessage(new(leader.name + " TAKES THE LEAD! DRIFTSCORE:" + leader.raceBox.Drift, BottomInfoType.NEW_LEADER));
+								hud.infoText.AddMessage(new(leader.name + " " + F.I.LocStr("TAKES THE LEAD!") + " " + F.I.LocStr("DRIFT") + ": " + leader.raceBox.Drift, BottomInfoType.NEW_LEADER));
 								break;
 							case RaceType.TimeTrial:
-								hud.infoText.AddMessage(new(leader.name + " TAKES THE LEAD! LAP:" + leader.raceBox.bestLapTime.ToLaptimeStr(), BottomInfoType.NEW_LEADER));
+								hud.infoText.AddMessage(new(leader.name + " " + F.I.LocStr("TAKES THE LEAD!") + " " + F.I.LocStr("LAP") + ": " + leader.raceBox.bestLapTime.ToLaptimeStr(), BottomInfoType.NEW_LEADER));
 								break;
 							default:
 								break;
@@ -333,7 +333,7 @@ namespace RVP
 			}
 			if (startlines != 1)
 			{
-				editorPanel.DisplayMessageFor("Exactly 1 startline needed", 3);
+				editorPanel.DisplayMessageFor(F.I.LocStr("Exactly 1 startline needed"), 3);
 				yield break;
 			}
 			editorPanel.gameObject.SetActive(false);

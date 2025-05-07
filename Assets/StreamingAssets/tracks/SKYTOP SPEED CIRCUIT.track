@@ -1,6 +1,13 @@
 {
   "author": "Team17",
-  "desc": "A very small, fast track with a couple of jumps and high banks",
+  "localizedNames":[
+	"SKYTOP SPEED CIRCUIT",
+	"DROGA DO NIEBA",
+	],
+  "localizedDescriptions": [
+	"A very small, fast track with a couple of jumps and high banks",
+	"Bardzo szybka trasa - pełna ostrych zakrętów.",
+	],
   "valid": true,
   "envir": "USA",
   "preferredCarClass": "Team",

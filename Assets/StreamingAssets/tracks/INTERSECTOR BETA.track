@@ -1,6 +1,13 @@
 {
   "author": "Team17",
-  "desc": "Beta version of intersector offers the same amount of jumps and one crossing. You'll have to do without the  pits.",
+  "localizedNames":[
+	"INTERSECTOR BETA",
+	"KRZYŻOWY OGIEŃ BETA",
+	],
+  "localizedDescriptions": [
+	"Beta version of intersector offers the same amount of jumps and one crossing. You'll have to do without the  pits.",
+	"Ta nieznana wersja toru posiada podobną ilość skoków i jedno skrzyżowanie. Będziesz musiał się obejść bez pitów.",
+	],
   "valid": true,
   "envir": "ENG",
   "preferredCarClass": "Aero",

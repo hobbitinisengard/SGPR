@@ -1,0 +1,15 @@
+{
+  "author": "",
+  "valid": false,
+  "envir": "FRA",
+  "preferredCarClass": "Speed",
+  "difficulty": 0,
+  "unlocked": true,
+  "icons": [
+    2,
+    3,
+    5
+  ],
+  "TrackOrigin": 1,
+  "IsOriginal": false
+}

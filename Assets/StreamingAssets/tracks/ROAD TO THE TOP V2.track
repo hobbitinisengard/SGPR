@@ -1,6 +1,13 @@
 {
   "author": "Arkhnen & Viatrufka",
-  "desc": "This track takes you on a black trail. Prepare for a long and steep excursion",
+  "localizedNames":[
+	"ROAD TO THE TOP II",
+	"DROGA NA SZCZYT II",
+	],
+  "localizedDescriptions": [
+	"This track takes you on a black trail. Prepare for a long and steep excursion.",
+	"Ta droga zabierze Cię na czarny szlak. Przygotuj się na długą i stromą wyprawę.",
+	],
   "valid": true,
   "envir": "SPN",
   "preferredCarClass": "Aero",

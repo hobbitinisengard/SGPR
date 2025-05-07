@@ -1,6 +1,13 @@
 {
   "author": "Viatrufka",
-  "desc": "This track requires more of the car, as it combines well known turns with a long dirt sequence",
+  "localizedNames":[
+	"THE HEIST",
+	"NAPAD",
+	],
+  "localizedDescriptions": [
+	"This track requires more of the car, as it combines well known turns with a long dirt sequence",
+	"Ten tor wymaga od auta więcej; łączy dobrze znane zakręty z długim szutrowym odcinkiem",
+	],
   "valid": true,
   "envir": "JAP",
   "preferredCarClass": "Speed",

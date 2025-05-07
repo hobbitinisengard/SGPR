@@ -104,7 +104,7 @@ public class ServerList : MonoBehaviour
 		if (playersOnlineRN < F.I.maxConcurrentUsers)
 			startAServerButton.interactable = true;
 		else
-			ShowErrorMessage("Servers are overloaded. Try again later");
+			ShowErrorMessage(F.I.LocStr("Servers are overloaded. Try again later"));
 	}
 	public async void JoinLobby(string joinId)
 	{

@@ -1,6 +1,13 @@
 {
   "author": "Team17",
-  "desc": "A long, winding track with multi-levels and a loop.",
+  "localizedNames":[
+	"SNAKESTORM",
+	"DROGA DO NIEBA",
+	],
+  "localizedDescriptions": [
+	"A long, winding track with multi-levels and a loop.",
+	"Mała, szybka trasa z kilkoma skoczniami i spadkami.",
+	],
   "valid": true,
   "envir": "GER",
   "preferredCarClass": "Speed",

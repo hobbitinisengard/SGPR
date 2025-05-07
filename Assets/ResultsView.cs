@@ -360,13 +360,23 @@ public class ResultsView : MainMenuView
 	}
 	string Pos(int i)
 	{
-		return i switch
+		string s;
+		switch (i)
 		{
-			0 => "1-st",
-			1 => "2-nd",
-			2 => "3-rd",
-			_ => (i + 1).ToString() + "-th"
-		};
+			case 0:
+				s = "1-st";
+				break;
+			case 1:
+				s = "2-nd";
+				break;
+			case 2:
+				s = "3-rd";
+				break;
+			default:
+				s = (i + 1).ToString() + "-th";
+				break;
+		}
+		return F.I.LocStr(s);
 	}
 	void SetText(Transform tr, string content, bool highlight)
 	{
@@ -400,7 +410,7 @@ public class ResultsView : MainMenuView
 		};
 
 		isAddingScore = true;
-		addingScoreCo = StartCoroutine(AddingScoreSeq("POSITION:", positionBonus, medal));
+		addingScoreCo = StartCoroutine(AddingScoreSeq(F.I.LocStr("POSITION") + ":", positionBonus, medal));
 
 		while (isAddingScore)
 			yield return null;
@@ -417,7 +427,7 @@ public class ResultsView : MainMenuView
 				};
 
 				isAddingScore = true;
-				addingScoreCo = StartCoroutine(AddingScoreSeq("LAP-TIME:", lapBonus, medal));
+				addingScoreCo = StartCoroutine(AddingScoreSeq(F.I.LocStr("LAPTIME") + ":", lapBonus, medal));
 
 				while (isAddingScore)
 					yield return null;
@@ -432,7 +442,7 @@ public class ResultsView : MainMenuView
 					_ => null,
 				};
 				isAddingScore = true;
-				addingScoreCo = StartCoroutine(AddingScoreSeq("STUNTS:", stuntBonus, medal));
+				addingScoreCo = StartCoroutine(AddingScoreSeq(F.I.LocStr("STUNTS") + ":", stuntBonus, medal));
 
 				while (isAddingScore)
 					yield return null;
@@ -447,14 +457,14 @@ public class ResultsView : MainMenuView
 					_ => null,
 				};
 				isAddingScore = true;
-				addingScoreCo = StartCoroutine(AddingScoreSeq("DRIFT:", driftBonus, medal));
+				addingScoreCo = StartCoroutine(AddingScoreSeq(F.I.LocStr("DRIFT") + ":", driftBonus, medal));
 
 				while (isAddingScore)
 					yield return null;
 			}
 
 			isAddingScore = true;
-			addingScoreCo = StartCoroutine(AddingScoreSeq("AEROMETER:", aeroMeter, null));
+			addingScoreCo = StartCoroutine(AddingScoreSeq(F.I.LocStr("AEROMILES") + ":", aeroMeter, null));
 
 			while (isAddingScore)
 				yield return null;

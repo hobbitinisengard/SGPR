@@ -57,9 +57,8 @@ public class LeaderBoardTable : MonoBehaviour
 		newRow.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>().color = player.ReadColor();
 
 		string carNr = (player == ServerC.I.PlayerMe) ? F.I.s_playerCarName : player.carNameGet();
-		string carName = F.I.Car(carNr).name;
 
-		newRow.GetChild(1).GetComponent<TextMeshProUGUI>().text = F.I.randomCars ? "*random*" : carName;
+		newRow.GetChild(1).GetComponent<TextMeshProUGUI>().text = F.I.randomCars ? F.I.LocStr("Random") : F.I.LocStr(carNr);
 
 		newRow.GetChild(2).GetComponent<TextMeshProUGUI>().text = (F.I.scoringType == ScoringType.Championship ? "$ " : "") + player.ScoreGet().ToString();
 	}

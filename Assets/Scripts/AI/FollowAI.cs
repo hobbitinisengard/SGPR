@@ -225,7 +225,7 @@ namespace RVP
 		{
 			if (pitsPathCreator)
 			{
-				RaceManager.I.hud.infoText.AddMessage(new Message(vp.name + " RETURNS ON TRACK!", BottomInfoType.PIT_OUT));
+				RaceManager.I.hud.infoText.AddMessage(new Message(vp.name + " " + F.I.LocStr("RETURNS ON TRACK!"), BottomInfoType.PIT_OUT));
 				speedLimit = 1024;
 				speedLimitDist = -1;
 				if (resetProgress)

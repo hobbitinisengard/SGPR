@@ -1,6 +1,5 @@
 using RVP;
 using System.Collections;
-using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -20,7 +19,7 @@ public class ResultsSeq : MonoBehaviour
 	public Image dimmer;
 	//AnimationCurve pulseCurve;
 	Color yellowDark = new (0.3607f, 0.3607f, 0);
-	string[] rightBoxLabels = new string[] { "BEST LAP", "RACE-TIME", "AEROMILES", "DRIFT"};
+	string[] rightBoxLabels;
 	int rightBoxLabelInt = 0;
 	Coroutine seq, dimCo,showResultCo, showTableCo;
 	AudioSource audioSource;
@@ -35,6 +34,7 @@ public class ResultsSeq : MonoBehaviour
 	private void Awake()
 	{
 		audioSource = GetComponent<AudioSource>();
+		rightBoxLabels = new string[] { F.I.LocStr("BEST LAP"), F.I.LocStr("RACE TIME"), F.I.LocStr("AEROMILES"), F.I.LocStr("DRIFT") };
 	}
 	private void OnDisable()
 	{
@@ -176,7 +176,7 @@ public class ResultsSeq : MonoBehaviour
 		{
 			if (F.I.gameMode == MultiMode.Multiplayer && ResultsView.FinishedPlayers < ServerC.I.lobby.Players.Count)
 			{
-				pressEnterText.text = "WAITING";
+				pressEnterText.text = F.I.LocStr("WAIT");
 			}
 			else
 			{
@@ -185,7 +185,7 @@ public class ResultsSeq : MonoBehaviour
 					if (F.I.CurRound == F.I.Rounds)
 						lastRoundEndedTime = Time.time;
 				}
-				pressEnterText.text = "PRESS ENTER";
+				pressEnterText.text = F.I.LocStr("PRESS ENTER");
 				yield break;
 			}
 			yield return new WaitForSeconds(1);

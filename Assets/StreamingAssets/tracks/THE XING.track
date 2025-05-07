@@ -1,6 +1,13 @@
 {
   "author": "Team17",
-  "desc": "This unreleased test track contains unique trackpieces",
+  "localizedNames":[
+	"THE XING",
+	"SKRZYŻOWANIE",
+	],
+  "localizedDescriptions": [
+	"This unreleased test track contains unique trackpieces",
+	"Ta niewydana trasa testowa zawiera unikalne elementy.",
+	],
   "valid": true,
   "envir": "JAP",
   "preferredCarClass": "Team",

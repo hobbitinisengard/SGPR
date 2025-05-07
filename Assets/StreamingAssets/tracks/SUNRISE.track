@@ -1,6 +1,13 @@
 {
   "author": "viatrufka",
-  "desc": "Controlling your car on this bumpy track may be essential to win here",
+  "localizedNames":[
+	"SUNRISE",
+	"WSCHÓD",
+	],
+  "localizedDescriptions": [
+	"Controlling your car on this bumpy track may be essential to win here.",
+	"Kontrola auta na tej wyboistej trasie, może okazać się kluczowa do zwycięstwa.",
+	],
   "valid": true,
   "envir": "JAP",
   "preferredCarClass": "Aero",

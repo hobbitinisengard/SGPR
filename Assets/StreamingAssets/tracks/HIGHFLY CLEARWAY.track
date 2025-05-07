@@ -1,6 +1,13 @@
 {
   "author": "Team17",
-  "desc": "A large and difficult track with bumps, jumps and cross-overs.",
+  "localizedNames":[
+	"HIGHFLY CLEARWAY",
+	"WYSKOKOWA TRASA",
+	],
+  "localizedDescriptions": [
+	"A large and difficult track with bumps, jumps and cross-overs.",
+	"Długa i trudna trasa pełna muld, skoczni i skrzyżowań.",
+	],
   "valid": true,
   "envir": "JAP",
   "preferredCarClass": "Speed",

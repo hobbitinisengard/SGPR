@@ -4,9 +4,6 @@ using UnityEngine;
 using static PtsAnim;
 using System.Collections.Generic;
 using System.Collections;
-using Newtonsoft.Json;
-using System.IO;
-
 public class StuntRotInfo
 {
 	public int axis;
@@ -33,9 +30,10 @@ public class StuntsData : IEnumerable<Stunt>
 		// deep copy
 		this.flipData = new Flip[flipData.Length];
 		for (int i = 0; i < flipData.Length; ++i)
+		{
 			this.flipData[i] = new Flip(flipData[i]);
-
-		driftData = new Drift("Slide", 0);
+		}
+		driftData = new Drift("SLIDE", 0);
 		extraData = new Stunt[] // = ExtraName.Length
 		{
 			new Stunt("TRICKSTART", 550),
@@ -259,15 +257,15 @@ public class RaceBox : MonoBehaviour
 		var drift = stuntsData.driftData;
 		string overlayName;
 		if (driftingTimer <= 2)
-			overlayName = "Slide";
+			overlayName = F.I.LocStr("SLIDE");
 		else if (driftingTimer <= 4)
-			overlayName = "Powerslide";
+			overlayName = F.I.LocStr("GOOD");
 		else if (driftingTimer <= 6)
-			overlayName = "Superslide";
+			overlayName = F.I.LocStr("GREAT");
 		else if (driftingTimer <= 8)
-			overlayName = "Megaslide";
+			overlayName = F.I.LocStr("POWERSLIDE");
 		else
-			overlayName = "Masterslide";
+			overlayName = F.I.LocStr("MASTER DRIFT!");
 
 		drift.overlayName = overlayName;
 
@@ -822,14 +820,14 @@ public class RaceBox : MonoBehaviour
 						if (curLap == F.I.s_laps && vp == RaceManager.I.playerCar)
 						{
 							RaceManager.I.hud.infoText.AddMessage(
-										new("FINAL LAP", BottomInfoType.FINAL_LAP));
+										new(F.I.LocStr("FINAL LAP"), BottomInfoType.FINAL_LAP));
 						}
 						if(vp != RaceManager.I.playerCar)
 						{
 							if (starLevel == 10)
 							{
 								RaceManager.I.hud.infoText.AddMessage(
-											new(vp.tr.name + " COMPLETES LAP WITH 10 AERO STARS!", BottomInfoType.HIGHEST_AEROMILES_COMBO));
+											new(vp.tr.name + " " + F.I.LocStr("COMPLETES LAP WITH 10 AERO STARS!"), BottomInfoType.HIGHEST_AEROMILES_COMBO));
 							}
 						}
 						
@@ -845,7 +843,7 @@ public class RaceBox : MonoBehaviour
 									RaceManager.I.hud.lapRecordSeq.gameObject.SetActive(true);
 								else
 									RaceManager.I.hud.infoText.AddMessage(
-										new(vp.tr.name + " SETS NEW LAP RECORD: " + curlaptime.Value.ToLaptimeStr(), BottomInfoType.NEW_LAPRECORD));
+										new(vp.tr.name + " " + F.I.LocStr("SETS NEW LAP RECORD: ") + curlaptime.Value.ToLaptimeStr(), BottomInfoType.NEW_LAPRECORD));
 							}
 							RaceManager.I.hud.SetRec(TimeSpan.FromSeconds(F.I.tracks[F.I.s_trackName].records.lap.secondsOrPts));
 						}
@@ -870,7 +868,7 @@ public class RaceBox : MonoBehaviour
 						int curPos = RaceManager.I.Position(vp) + 1;
 						if (!F.I.s_inEditor && curPos == 1)
 						{
-							RaceManager.I.hud.infoText.AddMessage(new(vp.tr.name + " WINS!", BottomInfoType.CAR_WINS));
+							RaceManager.I.hud.infoText.AddMessage(new(vp.tr.name + " " + F.I.LocStr("WINS!"), BottomInfoType.CAR_WINS));
 							Online.I.ActivateEndraceTimer();
 						}
 						// in racemode after the end of a race, cars still run around the track, ghosts overtake each other. Don't let it change results

@@ -156,15 +156,15 @@ public class RankingView : MainMenuView
 		switch (F.I.scoringType)
 		{
 			case ScoringType.Championship:
-				gameName = "CHAMPIONSHIPS";
+				gameName = F.I.LocStr("CHAMPIONSHIPS");
 				data = F.I.teams ? F.I.rankingData.TeamChamp : F.I.rankingData.Champ;
 				break;
 			case ScoringType.Points:
-				gameName = "POINTS";
+				gameName = F.I.LocStr("POINTS");
 				data = F.I.teams ? F.I.rankingData.TeamPts : F.I.rankingData.Pts;
 				break;
 			case ScoringType.Victory:
-				gameName = "VICTORY";
+				gameName = F.I.LocStr("VICTORIES");
 				data = F.I.teams ? F.I.rankingData.TeamVic : F.I.rankingData.Vic;
 				break;
 			default:
@@ -173,7 +173,7 @@ public class RankingView : MainMenuView
 				break;
 		}
 
-		upBarText.text = "MULTIPLAYER RANKING - " + (F.I.teams ? "TEAM " : "") + gameName + " - Top 100";
+		upBarText.text = F.I.LocStr("RANKING") + " - " + (F.I.teams ? F.I.LocStr("TEAMS") + " " : "") + gameName + " - Top 100";
 
 		float newScore = 0;
 		if (newEntry != null)
@@ -207,7 +207,7 @@ public class RankingView : MainMenuView
 			{
 				row.GetChild(1).GetComponent<TextMeshProUGUI>().text = curNode.Value.name;
 				row.GetChild(2).GetComponent<TextMeshProUGUI>().text = curNode.Value.dateStr;
-				row.GetChild(3).GetComponent<TextMeshProUGUI>().text = "Round " + curNode.Value.rounds.ToString();
+				row.GetChild(3).GetComponent<TextMeshProUGUI>().text = F.I.LocStr("Round") + " " + curNode.Value.rounds.ToString();
 				row.GetChild(4).GetComponent<TextMeshProUGUI>().text = F.I.scoringType switch
 				{
 					ScoringType.Championship => curNode.Value.moneyOrPerc.ToString("F0"),

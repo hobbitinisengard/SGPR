@@ -128,7 +128,7 @@ public class Chat : NetworkBehaviour
 	
 	public void PlayerLeft(Player p)
 	{
-		AddChatRowLocally(p.NameGet(), "has left the server", Color.white, Color.grey);
+		AddChatRowLocally(p.NameGet(), F.I.LocStr("has left the server"), Color.white, Color.grey);
 	}
 	public void AddChatRowAsServer(string msg)
 	{

@@ -1,6 +1,13 @@
 {
   "author": "luckygoose",
-  "desc": "This long track will make you climb many stairs.",
+  "localizedNames":[
+	"MIND YOUR STEP",
+	"UWAGA STOPIEŃ",
+	],
+  "localizedDescriptions": [
+	"This long track will make you climb many stairs.",
+	"Na tej trasie wespniesz się na najdłuższe schody.",
+	],
   "valid": true,
   "envir": "ITA",
   "preferredCarClass": "Speed",

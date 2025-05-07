@@ -1,6 +1,13 @@
 {
   "author": "Team17",
-  "desc": "This short, speedy circuit offers a number of stunt opportunities and high-banks for sneaky overtaking.",
+  "localizedNames":[
+	"BANK JOB",
+	"ODSKOK",
+	],
+  "localizedDescriptions": [
+	"This short, speedy circuit offers a number of stunt opportunities and high-banks for sneaky overtaking.",
+	"Krótka i szybka trasa dająca duże pole do popisu - i  wiele miejsc do wyprzedzania.",
+	],
   "valid": true,
   "envir": "JAP",
   "preferredCarClass": "Speed",

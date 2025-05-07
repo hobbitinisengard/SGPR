@@ -1,6 +1,13 @@
 {
   "author": "Team17",
-  "desc": "A three level sunken area and a high banked climb are the highlights of this dusty track.",
+  "localizedNames":[
+	"SUNKEN SIGHTS",
+	"ZATOPIONE ŚCIEŻKI",
+	],
+  "localizedDescriptions": [
+	"A three level sunken area and a high banked climb are the highlights of this dusty track.",
+	"Trójpoziomowy zatopiony obszar i stromy podjazd to wyróżniki tej trasy.",
+	],
   "valid": true,
   "envir": "SPN",
   "preferredCarClass": "Wild",

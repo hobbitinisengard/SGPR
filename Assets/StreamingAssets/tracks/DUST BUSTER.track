@@ -1,6 +1,13 @@
 {
   "author": "Team17",
-  "desc": "This fast, relatively flat track offers many ways to drive",
+  "localizedNames":[
+	"DUST BUSTER",
+	"PROCH I PYŁ",
+	],
+  "localizedDescriptions": [
+	"This fast, relatively flat track offers many ways to drive",
+	"Szybka i względnie płaska trasa - jedź jak chcesz!",
+	],
   "valid": true,
   "envir": "JAP",
   "preferredCarClass": "Speed",

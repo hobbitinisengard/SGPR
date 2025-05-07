@@ -3,7 +3,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using TMPro;
-using UnityEngine.Localization.Settings;
 using UnityEngine.Localization;
 
 public class MainMenuButton : Sfxable, ISelectHandler, IDeselectHandler, ISubmitHandler

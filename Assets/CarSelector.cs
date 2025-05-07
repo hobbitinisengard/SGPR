@@ -128,12 +128,12 @@ public class CarSelector : Sfxable
 		}
 		if (selectedCar == null)
 		{
-			carDescText.text = "No cars available lulz";
+			carDescText.text = "No cars available lol";
 		}
 		else
 		{
 			buttonsContainer.GetChild(selectedCar.parent.GetSiblingIndex()).GetComponent<MainMenuButton>().Select();
-			carDescText.text = F.I.Car(selectedCar.name).name + "\n\n" + F.I.Car(selectedCar.name).desc;
+			carDescText.text = F.I.LocStr(F.I.Car(selectedCar.name).name) + "\n\n" + F.I.LocStr(selectedCar.name + "d");
 		}
 		radial.gameObject.SetActive(selectedCar);
 		containerCo = StartCoroutine(MoveToCar());
@@ -186,7 +186,7 @@ public class CarSelector : Sfxable
 				// new car has been selected
 				// set description
 				var car = F.I.Car(selectedCar.name);
-				carDescText.text = car.name + "\n\n" + car.desc;
+				carDescText.text = F.I.LocStr(car.name) + "\n\n" + F.I.LocStr(selectedCar.name+"d");
 				// set bars
 				if (barsAndRadialCo != null)
 					StopCoroutine(barsAndRadialCo);

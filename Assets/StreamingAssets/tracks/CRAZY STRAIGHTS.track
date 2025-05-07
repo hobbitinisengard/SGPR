@@ -1,6 +1,13 @@
 {
   "author": "Team17",
-  "desc": "This long speed track offers opportunity for a number of jump stunts.",
+  "localizedNames":[
+	"CRAZY STRAIGHTS",
+	"SZALONE PROSTE",
+	],
+  "localizedDescriptions": [
+	"This long speed track offers opportunity for a number of jump stunts.",
+	"Ta szybka trasa pozwala również na niezłe skoki.",
+	],
   "valid": true,
   "envir": "FRA",
   "preferredCarClass": "Aero",

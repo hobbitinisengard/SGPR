@@ -54,7 +54,7 @@ public class TrackSelector : TrackSelectorTemplate
 			rivalsButtonText.transform.parent.GetComponent<Button>().interactable = false;
 		}
 		
-		raceTypeButtonText.text = "Event: " + Enum.GetName(typeof(RaceType), F.I.s_raceType);
+		raceTypeButtonText.text = F.I.LocStr(F.I.s_raceType.ToString());
 	}
 	public void SwitchLaps(bool init = false)
 	{
@@ -73,7 +73,7 @@ public class TrackSelector : TrackSelectorTemplate
 			}
 		}
 		F.I.s_laps = F.Wraparound(F.I.s_laps, 1, 99);
-		lapsButtonText.text = "Laps: " + F.I.s_laps.ToString();
+		lapsButtonText.text = F.I.LocStr("Laps") + ": " + F.I.s_laps.ToString();
 	}
 	public void SwitchDayNight(bool init = false)
 	{
@@ -82,7 +82,7 @@ public class TrackSelector : TrackSelectorTemplate
 			dir = F.I.shiftInputRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
 
 		F.I.s_timeOfDay = (TimeOfDay)F.Wraparound((int)F.I.s_timeOfDay + dir, (int)TimeOfDay.Day, (int)TimeOfDay.Sunset);
-		nightButtonText.text = F.I.s_timeOfDay.ToString();
+		nightButtonText.text = F.I.LocStr(F.I.s_timeOfDay.ToString());
 	}
 	public void SwitchCPULevel(bool init = false)
 	{
@@ -91,7 +91,7 @@ public class TrackSelector : TrackSelectorTemplate
 			dir = F.I.shiftInputRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
 
 		F.I.s_cpuLevel = (CpuLevel)F.Wraparound((int)F.I.s_cpuLevel+dir, 0, 2);
-		LevelButtonText.text = "Bots: " + F.I.s_cpuLevel.ToString();
+		LevelButtonText.text = F.I.LocStr("CPU") + ": " + F.I.LocStr(F.I.s_cpuLevel.ToString());
 	}
 	public void SwitchRivals(bool init = false)
 	{
@@ -110,13 +110,13 @@ public class TrackSelector : TrackSelectorTemplate
 			F.I.s_laps = F.I.maxCarsInRace - 1 - maxCPURivals + F.I.s_cpuRivals;
 			SwitchLaps(true);
 		}
-		rivalsButtonText.text = "Opponents: " + F.I.s_cpuRivals.ToString();
+		rivalsButtonText.text = F.I.LocStr("Rivals") + ": " + F.I.s_cpuRivals.ToString();
 	}
 	public void SwitchCatchup(bool init = false)
 	{
 		if (!init)
 			F.I.catchup = !F.I.catchup;
-		catchupButtonText.text = "Catchup: " + (F.I.catchup ? "Yes" : "No");
+		catchupButtonText.text = F.I.LocStr("Catchup") + ": " + (F.I.catchup ? F.I.LocStr("Yes") : F.I.LocStr("No"));
 	}
 	public void SwitchSponsor(bool init = false)
 	{
@@ -127,6 +127,6 @@ public class TrackSelector : TrackSelectorTemplate
 				ServerC.I.AmHost ? 0 : 1, F.I.Liveries);
 		}
 		F.I.teams = F.I.s_PlayerCarSponsor != Livery.Random;
-		sponsorButtonText.text = "Sponsor:" + F.I.s_PlayerCarSponsor.ToString();
+		sponsorButtonText.text = F.I.LocStr("Sponsor") + ": " + F.I.LocStr(F.I.s_PlayerCarSponsor.ToString());
 	}
 }

@@ -1,6 +1,13 @@
 {
   "author": "luckygoose",
-  "desc": "A medium length track with many off-road  sections and demanding corners.",
+  "localizedNames":[
+	"GRASSY HILLS",
+	"TRAWIASTE WZGÓRZA",
+	],
+  "localizedDescriptions": [
+	"A medium length track with many off-road  sections and demanding corners.",
+	"Średniej długości trasa z wieloma sekcjami szutrowymi i wymagającymi zakrętami.",
+	],
   "valid": true,
   "envir": "ENG",
   "preferredCarClass": "Team",

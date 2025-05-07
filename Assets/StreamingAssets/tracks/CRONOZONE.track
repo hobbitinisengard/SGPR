@@ -1,6 +1,13 @@
 {
   "author": "Team17",
-  "desc": "A very fast track with burns and a very sharp turn",
+  "localizedNames":[
+	"CRONOZONE",
+	"CZASOPRZESTRZEŃ",
+	],
+  "localizedDescriptions": [
+	"A very fast track with burns and a very sharp turn",
+	"Bardzo szybka trasa - pełna ostrych zakrętów.",
+	],
   "valid": true,
   "envir": "FRA",
   "preferredCarClass": "Speed",

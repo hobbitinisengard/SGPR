@@ -15,18 +15,18 @@ using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using UnityEngine.Localization.Settings;
 using System.Collections;
-using UnityEngine.Localization;
+using UnityEngine.Localization.Tables;
 public enum PlayerState { InRace, InLobbyUnready, InLobbyReady };
 public enum Envir { GER, JAP, SPN, FRA, ENG, USA, ITA, MEX };
 public enum CarGroup { Wild, Aero, Speed, Team };
-public enum Livery { Random = 0, Special = 1, TGR, Rline, Itex, Caltex, Titan, Mysuko }
+public enum Livery { Random = 0, Golden = 1, TGR, Rline, Itex, Caltex, Titan, Mysuko }
 public enum RecordType { BestLap, RaceTime, StuntScore, DriftScore }
 public enum ScoringType { Championship, Points, Victory }
 public enum ActionHappening { InLobby, InRace }
 public enum PavementType { Arena, Volcano, Asphalt, Energy, Grid, Japan, Jungle, Random }
 public enum MultiMode { Singleplayer, Multiplayer };
 public enum RaceType { Race, Knockout, Stunt, Drift, TimeTrial }
-public enum CpuLevel { Easy, Normal, Hard };
+public enum CpuLevel { Easy, Medium, Hard };
 public enum TimeOfDay { Day, Night, Sunrise, Sunset };
 public enum Language { English, Polish };
 
@@ -61,16 +61,15 @@ public class RankingData
 
 public class Info : MonoBehaviour
 {
-	public LocalizedString localizedYes;
-	public LocalizedString localizedNo;
-	public const string TranslationTableName = "default";
+	StringTable localizedTable; 
+	public const string TranslationTableName = "Default";
 	public MultiPlayerSelector mpSelectorInitializer;
 	public Text versionText;
 	public Material transpMaterial;
 	public Material opaqueMaterial;
 	public Material emissiveRearLighter;
 	public Material emissiveRearDarker;
-	public const string VERSION = "0.4.7";
+	public const string VERSION = "0.5";
 	public bool minimized { get; private set; }
 	
 	void OnApplicationFocus(bool hasFocus)
@@ -81,6 +80,12 @@ public class Info : MonoBehaviour
 			F.I.enterRef.action.Disable();
 		else
 			F.I.enterRef.action.Enable();
+	}
+	/// <summary>Retrieves localized string from loaded localization table</summary>
+	public string LocStr(string key)
+	{
+		var entry = localizedTable.GetEntry(key);
+		return entry == null ? key : entry.GetLocalizedString();
 	}
 	private void Awake()
 	{
@@ -125,6 +130,7 @@ public class Info : MonoBehaviour
 	{
 		yield return LocalizationSettings.InitializationOperation;
 		LocalizationSettings.SelectedLocale = LocalizationSettings.AvailableLocales.Locales[(int)F.I.playerData.language];
+		localizedTable = LocalizationSettings.StringDatabase.GetTable(TranslationTableName);
 	}
 	
 	string _documentsSGPRpath;
@@ -139,7 +145,7 @@ public class Info : MonoBehaviour
 	public string rankingPath { get { return documentsSGPRpath + "ranking.json"; } }
 	public string lastPath { get { return documentsSGPRpath + "path.txt"; } }
 
-	public Livery s_PlayerCarSponsor = Livery.Special;
+	public Livery s_PlayerCarSponsor = Livery.Golden;
 
 	public readonly int maxCarsInRace = 10;
 
@@ -286,18 +292,17 @@ public class Info : MonoBehaviour
 
 	public int Environments = 8;
 	public int Liveries = 7;
-
-	public readonly string[] EnvirDescs =
-	{
-		"GERMANY\n\nLoud crowd cheering and powerful spotlights..This german arena is really a place to show off.",
-		"JAPAN\n\nHere in this calm japanese dojo placed on the outskirts of Kyoto you can meditate or organize a race!",
-		"SPAIN\n\nBeaches like this usually ooze holidays. This is not an exception: warm sand, palms, and sun.. What could people possibly want more? Maybe a RC car race :)",
-		"FRANCE\n\nThis shadowy warehouse is full of boxes, forklifts and machinery. There are some really dark places here.",
-		"ENGLAND\n\nEnglish go-kart track is a good location to test your driving skills. This place has a reputation for great races.",
-		"USA\n\nAre you looking for an intense experience? Racing on top of a multistorey parking lot located in the heart of New York will be a bombastic idea!",
-		"ITALY\n\nFeeling mediterranean? This italian coast is very scenic, especially at night. There are two dangers here to look out however: staircase descent and water!",
-		"MEXICO\n\nOnly some people are in a possession of info that there's this ancient place located in the middle of an unknown mexican forest, where aztecs used to race RC-cars. However no-one really knows how to get there."
-	};
+	//public readonly string[] EnvirDescs =
+	//{
+	//	"GERMANY\n\nLoud crowd cheering and powerful spotlights..This german arena is really a place to show off.",
+	//	"JAPAN\n\nHere in this calm japanese dojo placed on the outskirts of Kyoto you can meditate or organize a race!",
+	//	"SPAIN\n\nBeaches like this usually ooze holidays. This is not an exception: warm sand, palms, and sun.. What could people possibly want more? Maybe a RC car race :)",
+	//	"FRANCE\n\nThis shadowy warehouse is full of boxes, forklifts and machinery. There are some really dark places here.",
+	//	"ENGLAND\n\nEnglish go-kart track is a good location to test your driving skills. This place has a reputation for great races.",
+	//	"USA\n\nAre you looking for an intense experience? Racing on top of a multistorey parking lot located in the heart of New York will be a bombastic idea!",
+	//	"ITALY\n\nFeeling mediterranean? This italian coast is very scenic, especially at night. There are two dangers here to look out however: staircase descent and water!",
+	//	"MEXICO\n\nOnly some people are in a possession of info that there's this ancient place located in the middle of an unknown mexican forest, where aztecs used to race RC-cars. However no-one really knows how to get there."
+	//};
 
 	public readonly string carPrefabsPath = "carModels/";
 	public readonly string carImagesPath = "carImages/";
@@ -362,7 +367,7 @@ public class Info : MonoBehaviour
 	public int s_laps = 3;
 	public bool s_inEditor = true;
 	public TimeOfDay s_timeOfDay = TimeOfDay.Day;
-	public CpuLevel s_cpuLevel = CpuLevel.Normal;
+	public CpuLevel s_cpuLevel = CpuLevel.Medium;
 	public int s_cpuRivals = 0; // 0-9
 	[NonSerialized]
 	public PavementType s_roadType = PavementType.Random;
@@ -481,14 +486,14 @@ public class Info : MonoBehaviour
 		// 0         1			2			3			4					5				6				7		8			9
 		//"stunty", "loop", "jumpy", "windy", "intersecting", "no_pit", "no_jumps", "icy", "sandy", "offroad"
 		//										unlock   preffered				   author            flags
-		tracks.Add("JAP", new TrackHeader(0, 0, 4, Envir.JAP, null, new int[] { }, null, false));
-		tracks.Add("GER", new TrackHeader(0, 0, 4, Envir.GER, null, new int[] { }, null, false));
-		tracks.Add("SPN", new TrackHeader(0, 0, 4, Envir.SPN, null, new int[] { }, null, false));
-		tracks.Add("FRA", new TrackHeader(0, 0, 4, Envir.FRA, null, new int[] { }, null, false));
-		tracks.Add("ENG", new TrackHeader(0, 0, 4, Envir.ENG, null, new int[] { }, null, false));
-		tracks.Add("USA", new TrackHeader(0, 0, 4, Envir.USA, null, new int[] { }, null, false));
-		tracks.Add("ITA", new TrackHeader(0, 0, 4, Envir.ITA, null, new int[] { }, null, false));
-		tracks.Add("MEX", new TrackHeader(0, 0, 4, Envir.MEX, null, new int[] { }, null, false));
+		tracks.Add("JAP", new TrackHeader(0, 0, 4, Envir.JAP, null, new int[] { }, null, null, false));
+		tracks.Add("GER", new TrackHeader(0, 0, 4, Envir.GER, null, new int[] { }, null, null, false));
+		tracks.Add("SPN", new TrackHeader(0, 0, 4, Envir.SPN, null, new int[] { }, null, null, false));
+		tracks.Add("FRA", new TrackHeader(0, 0, 4, Envir.FRA, null, new int[] { }, null, null, false));
+		tracks.Add("ENG", new TrackHeader(0, 0, 4, Envir.ENG, null, new int[] { }, null, null, false));
+		tracks.Add("USA", new TrackHeader(0, 0, 4, Envir.USA, null, new int[] { }, null, null, false));
+		tracks.Add("ITA", new TrackHeader(0, 0, 4, Envir.ITA, null, new int[] { }, null, null, false));
+		tracks.Add("MEX", new TrackHeader(0, 0, 4, Envir.MEX, null, new int[] { }, null, null, false));
 
 		//tracks.Add("track01", new TrackHeader(1, (CarGroup)2, 6, Envir.FRA, null, new int[] { 2 }, "CRAZY STRAIGHTS\n\nThis long speed track offers opportunity for a number of jump stunts."));
 		//tracks.Add("track02", new TrackHeader(1, (CarGroup)2, 4, Envir.JAP, null, new int[] { 0 }, "BANK JOB\n\nThis short, speedy circuit offers a number of stunt opportunities and high-banks for sneaky overtaking."));
@@ -695,7 +700,10 @@ public class TrackRecords
 public class TrackHeader
 {
 	public string author;
-	public string desc;
+	/// <summary>Read from helper method instead of this field</summary>
+	public string[] localizedDescriptions;
+	/// <summary>Read from helper method instead of this field</summary>
+	public string[] localizedNames;
 	/// <summary>
 	/// whether the track can be raced on (has its path closed)
 	/// </summary>
@@ -719,7 +727,7 @@ public class TrackHeader
 		records = new();
 	}
 	public TrackHeader(int unlocked, CarGroup prefCarClass, int trackDifficulty,
-		Envir envir, string author, int[] icons, string desc, bool valid = true)
+		Envir envir, string author, int[] icons, string[] descs, string[] localizedNames, bool valid = true)
 		: this()
 	{
 		this.unlocked = unlocked > 0;
@@ -727,7 +735,8 @@ public class TrackHeader
 		this.difficulty = trackDifficulty;
 		this.envir = envir;
 		this.author = author;
-		this.desc = desc;
+		this.localizedDescriptions = descs;
+		this.localizedNames = localizedNames;
 		this.valid = valid;
 		this.icons = icons;
 	}
@@ -739,7 +748,8 @@ public class TrackHeader
 		this.difficulty = h.difficulty;
 		this.envir = h.envir;
 		this.author = h.author;
-		this.desc = h.desc;
+		this.localizedDescriptions = h.localizedDescriptions;
+		this.localizedNames = h.localizedNames;
 		this.valid = h.valid;
 		this.icons = h.icons;
 	}
@@ -751,6 +761,20 @@ public class TrackHeader
 	public bool IsOriginal
 	{
 		get { return TrackOrigin == 0; }
+	}
+	public string LocalizedDesc
+	{
+		get
+		{
+			return localizedDescriptions[(int)F.I.playerData.language];
+		}
+	}
+	public string LocalizedName
+	{
+		get
+		{
+			return localizedNames[(int)F.I.playerData.language];
+		}
 	}
 }
 

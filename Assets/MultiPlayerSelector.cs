@@ -112,7 +112,7 @@ public class MultiPlayerSelector : TrackSelector
 		}
 		foreach (var p in newPlayers)
 		{
-			F.I.chat.AddChatRowLocally(p.Player.NameGet(), "has joined the server", Color.white, Color.grey);
+			F.I.chat.AddChatRowLocally(p.Player.NameGet(), F.I.LocStr("has joined the server"), Color.white, Color.grey);
 		}
 	}
 
@@ -413,7 +413,7 @@ public class MultiPlayerSelector : TrackSelector
 		
 
 		ServerC.I.CarNameSet();
-		randomCarsText.text = "Cars:" + (F.I.randomCars ? "Random" : "Select");
+		randomCarsText.text = "Cars:" + (F.I.randomCars ? F.I.LocStr("Random") : F.I.LocStr("Select"));
 		garageBtn.interactable = !F.I.randomCars;
 	}
 	void PickRandomTrack()
@@ -438,7 +438,7 @@ public class MultiPlayerSelector : TrackSelector
 		if (F.I.randomTracks)
 		{
 			EnableSelectionOfTracks(false);
-			trackDescText.text = "*random*";
+			trackDescText.text = F.I.LocStr("Random");
 		}
 		else
 		{
@@ -446,7 +446,7 @@ public class MultiPlayerSelector : TrackSelector
 		}
 		SetTrackShaenigans();
 
-		randomTracksText.text = "Tracks:" + (F.I.randomTracks ? "Random" : "Select");
+		randomTracksText.text = F.I.LocStr("Tracks") + ":" + F.I.LocStr(F.I.randomTracks ? "Random" : "Select");
 	}
 	public async void SwitchReady(bool init = false)
 	{
@@ -473,11 +473,11 @@ public class MultiPlayerSelector : TrackSelector
 				if (!Online.I.IsSpawned || ServerC.I.AnyClientsStillInRace || (amReady && Time.time - clientConnectedTime < 3))
 				{
 					if (Time.time - clientConnectedTime < 3)
-						F.I.chat.AddChatRowLocally("", "A new player is synching right now...", Color.grey, Color.grey);
+						F.I.chat.AddChatRowLocally("", F.I.LocStr("A new player is synching right now..."), Color.grey, Color.grey);
 					if (!Online.I.IsSpawned)
-						F.I.chat.AddChatRowLocally("", "No synchronization. Try again or reconnect", Color.grey, Color.grey);
+						F.I.chat.AddChatRowLocally("", F.I.LocStr("No synchronization. Try again or reconnect"), Color.grey, Color.grey);
 					if (ServerC.I.AnyClientsStillInRace)
-						F.I.chat.AddChatRowLocally("", "Some players haven't come back to lobby yet", Color.grey, Color.grey);
+						F.I.chat.AddChatRowLocally("", F.I.LocStr("Some players haven't come back to lobby yet"), Color.grey, Color.grey);
 
 					PlaySFX("fe-cardserror");
 					readyClicked = false;
@@ -532,7 +532,7 @@ public class MultiPlayerSelector : TrackSelector
 
 		UpdateInteractableButtons();
 
-		readyText.text = (ServerC.I.AmHost ? "HOST " : "") + "SWITCH READY";
+		readyText.text = F.I.LocStr((ServerC.I.AmHost ? "HOST " : "")) + F.I.LocStr("READY");
 
 		if (lobbyCntdwnCo != null)
 			StopCoroutine(lobbyCntdwnCo);
@@ -586,7 +586,7 @@ public class MultiPlayerSelector : TrackSelector
 			dir = F.I.shiftRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
 		}
 		F.I.scoringType = (ScoringType)F.Wraparound((int)F.I.scoringType + dir, 0, Enum.GetNames(typeof(ScoringType)).Length - 1);
-		scoringText.text = F.I.scoringType.ToString();
+		scoringText.text = F.I.LocStr(F.I.scoringType.ToString());
 	}
 	public void SwitchRound(bool init = false)
 	{
@@ -611,13 +611,13 @@ public class MultiPlayerSelector : TrackSelector
 
 		
 		if (ServerC.I.GetRounds() != F.I.Rounds && F.I.Rounds > 0)
-			roundText.text = "Rounds: " + F.I.Rounds;
+			roundText.text = F.I.LocStr("Rounds") + ": " + F.I.Rounds;
 		else
 		{
 			if (F.I.Rounds == 0)
-				roundText.text = $"Rounds:No limit";
+				roundText.text = F.I.LocStr("Rounds") + ": " + F.I.LocStr("No limit");
 			else
-				roundText.text = $"Round {F.I.CurRound}/{F.I.Rounds}";
+				roundText.text = $"{F.I.LocStr("Round")} {F.I.CurRound}/{F.I.Rounds}";
 		}
 	}
 
@@ -628,7 +628,7 @@ public class MultiPlayerSelector : TrackSelector
 		{
 			if (F.I.teams && ServerC.I.TeamsInLobby < 2)
 			{
-				F.I.chat.AddChatRowLocally("", "You need at least two teams", Color.grey, Color.grey);
+				F.I.chat.AddChatRowLocally("", F.I.LocStr("You need at least two teams"), Color.grey, Color.grey);
 			}
 			else
 			{

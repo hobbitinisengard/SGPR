@@ -132,7 +132,7 @@ public static class F
 		{
 			switch (livery)
 			{
-				case Livery.Special:
+				case Livery.Golden:
 					return Color.yellow;
 				case Livery.TGR:
 					return new Color(1, 165 / 255f, 0); // orange

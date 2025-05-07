@@ -1,6 +1,13 @@
 {
   "author": "Team17",
-  "desc": "A huge, winding off-road track featuring a very bumpy mid section and multi-level turns.",
+  "localizedNames":[
+	"SANDWINDER REVERSE",
+	"PUSTYNNA BURZA REWERS",
+	],
+  "localizedDescriptions": [
+	"A huge, winding off-road track featuring a very bumpy mid section and multi-level turns.",
+	"Długa, kręta i wyboista trasa w terenie.",
+	],
   "valid": true,
   "envir": "SPN",
   "preferredCarClass": "Wild",

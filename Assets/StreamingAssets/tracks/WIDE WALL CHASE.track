@@ -1,6 +1,13 @@
 {
   "author": "Team17",
-  "desc": "A very fast track where you can use the burns for overtaking",
+  "localizedNames":[
+	"WIDE WALL CHASE",
+	"GONITWA NA MUR",
+	],
+  "localizedDescriptions": [
+	"A very fast track where you can use the burns for overtaking",
+	"Bardzo szybka, krótka trasa - dopalanie i wyprzedzanie.",
+	],
   "valid": true,
   "envir": "SPN",
   "preferredCarClass": "Aero",
