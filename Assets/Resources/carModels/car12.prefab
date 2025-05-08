@@ -6679,7 +6679,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6276839599008851211}
   - component: {fileID: 4621540415288751797}
-  - component: {fileID: 1834431705911420082}
+  - component: {fileID: 8617766377442499569}
   m_Layer: 26
   m_Name: specialCol
   m_TagString: Untagged
@@ -6710,8 +6710,8 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2226377184569121310}
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
---- !u!64 &1834431705911420082
-MeshCollider:
+--- !u!65 &8617766377442499569
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -6728,10 +6728,9 @@ MeshCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+  serializedVersion: 3
+  m_Size: {x: 1.01, y: 1.67, z: 0.73}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &2657873385695298593
 GameObject:
   m_ObjectHideFlags: 0
@@ -13192,10 +13191,6 @@ MonoBehaviour:
   - {fileID: 6657220250863250050}
   rearLights:
   - {fileID: 5343642536240803875}
-  rearLightsBrakeMaterial: {fileID: 2100000, guid: 683e6224559d7db4faf96c5815493852,
-    type: 2}
-  rearLightsOnMaterial: {fileID: 2100000, guid: 11920d9d83ff3f241898746a7bbdf8ba,
-    type: 2}
   accelAxisIsBrake: 0
   brakeIsReverse: 1
   holdEbrakePark: 0
@@ -13511,6 +13506,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4004a853526701343b191aaf6c4b56c8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  vecGain: 1.25
   lastBounceTime: 0
   lastCarCarBounceTime: 0
   lastSideBounceTime: 0
@@ -13518,7 +13514,7 @@ MonoBehaviour:
   bouncyCols:
   - {fileID: 3236269440781315893}
   - {fileID: 3544394306072605553}
-  - {fileID: 1834431705911420082}
+  - {fileID: 0}
 --- !u!114 &865657811856999447
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13532,7 +13528,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   colliders:
-  - {fileID: 1834431705911420082}
+  - {fileID: 8617766377442499569}
   ghostableParts:
   - {fileID: 3121731709739079424}
   - {fileID: 6760984639519360765}
@@ -14338,30 +14334,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   generateHardCollider: 0
-  rpmBiasCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0.25
-      inSlope: 0
-      outSlope: 1.6
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 1.6
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
   axleFriction: 0.001
   forwardFriction: 12
   sidewaysFriction: 12
@@ -14759,30 +14731,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   generateHardCollider: 0
-  rpmBiasCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0.25
-      inSlope: 0
-      outSlope: 1.6
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 1.6
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
   axleFriction: 0.001
   forwardFriction: 12
   sidewaysFriction: 12
@@ -15889,30 +15837,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   generateHardCollider: 0
-  rpmBiasCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0.25
-      inSlope: 0
-      outSlope: 1.6
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 1.6
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
   axleFriction: 0.001
   forwardFriction: 12
   sidewaysFriction: 12
@@ -16178,30 +16102,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   generateHardCollider: 0
-  rpmBiasCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0.25
-      inSlope: 0
-      outSlope: 1.6
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 1.6
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
   axleFriction: 0.001
   forwardFriction: 12
   sidewaysFriction: 12

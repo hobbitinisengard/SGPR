@@ -12,6 +12,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using SimpleFileBrowser;
+using UnityEngine.Localization.Settings;
 
 public class ReplayCam
 {
@@ -85,7 +86,6 @@ public class EditorPanel : MonoBehaviour
 	public GameObject pathFollower;
 	public RenderTexture renderTexture;
 	public YouSureDialog YouSurePanel;
-	string trackName;
 	public Sprite elementSprite;
 	public Sprite selectedElSprite;
 	public GameObject TilesMain;
@@ -349,8 +349,6 @@ public class EditorPanel : MonoBehaviour
 		{
 			SwitchTo(Mode.None);
 		}
-		if (Input.GetKey(KeyCode.LeftAlt) && Input.GetKey(KeyCode.S))
-			QuickSave();
 		switch (mode)
 		{
 			case Mode.TestDriveArrow:
@@ -1553,17 +1551,13 @@ public class EditorPanel : MonoBehaviour
 		YouSurePanel.HidePanel();
 		raceManager.BackToMenu(applyScoring: false);
 	}
-	public void QuickSave()
-	{
-		string name = trackName;
-		if (name[0] == '*')
-			trackName = trackName[1..];
-	}
 	public void SaveTrack()
 	{
-		if (trackNameInputField.text.Length <= 3)
-			trackNameInputField.text = F.I.LocStr("Untitled");
-		trackName = trackNameInputField.text;
+		if(savePanel.localizedNames.Any(n => n.Length < 3))
+		{
+			DisplayMessageFor(F.I.LocStr("Names or descriptions are too short"), 3);
+			return;
+		}
 
 		TrackSavableData TRACK = new TrackSavableData();
 		TRACK.windExternal = windExternal;
@@ -1675,8 +1669,6 @@ public class EditorPanel : MonoBehaviour
 
 		TRACK.heights = GetHeightsmap();
 
-
-		// save track header
 		TrackHeader tHeader = new()
 		{
 			unlocked = true,
@@ -1685,17 +1677,20 @@ public class EditorPanel : MonoBehaviour
 			envir = F.I.tracks[F.I.s_trackName].envir,
 			author = trackAuthorInputField.text,
 			icons = icons.ToArray(),
-			localizedDescriptions = savePanel.localizedDescriptions,
-			localizedNames = savePanel.localizedNames,
+			localizedDescriptions = new string[LocalizationSettings.AvailableLocales.Locales.Count],
+			localizedNames = new string[LocalizationSettings.AvailableLocales.Locales.Count],
 			records = new(),
+			valid = PathValid()
 		};
+		Array.Copy(savePanel.localizedDescriptions, tHeader.localizedDescriptions, savePanel.localizedDescriptions.Length);
+		Array.Copy(savePanel.localizedNames, tHeader.localizedNames, savePanel.localizedNames.Length);
 
-		tHeader.valid = PathValid();
 		if (!tHeader.valid)
 		{
-			DisplayMessageFor(F.I.LocStr("Create raceline first"), 3);
+			DisplayMessageFor(F.I.LocStr("No racingline defined"), 3);
 		}
 
+		string trackName = tHeader.localizedNames[(int)F.I.playerData.language];
 		string JsonContent = JsonConvert.SerializeObject(tHeader, Formatting.Indented);
 		string path = Path.Combine(F.I.tracksPath, trackName + ".track"); // .TRACK 
 		File.WriteAllText(path, JsonContent);
@@ -1845,29 +1840,34 @@ public class EditorPanel : MonoBehaviour
 		terrainBtn.gameObject.SetActive(terrain != null);
 
 		SetEnvirLights();
-		trackName = F.I.s_trackName;
+
 		string path = Path.Combine(F.I.tracksPath, F.I.s_trackName + ".data");
 
 		terrainEditor.SetTerrain(terrain);
 
 		invisibleLevel.localScale = F.I.invisibleLevelDimensions[(int)F.I.tracks[F.I.s_trackName].envir];
 
+		savePanel.localizedNames = TrackHeader.EmptyLocStrArray("");
+		savePanel.localizedDescriptions = TrackHeader.EmptyLocStrArray("");
+
 		yield return null; // update containers
 
 		if (!File.Exists(path))
 		{
-			Debug.LogWarning("No data file found, path:" + path);
+			if(F.I.s_trackName.Length > 3)
+				Debug.LogWarning("No data file found, path:" + path);
 			float[,] heights = null;
 			SetHeightsmap(ref heights);
 			loadingTrack = false;
+
 			yield break;
 		}
 
 		string trackJson = File.ReadAllText(path);
 		TrackSavableData TRACK = JsonConvert.DeserializeObject<TrackSavableData>(trackJson);
 
-		savePanel.GetComponent<SavePanelWorks>().localizedNames = F.I.tracks[F.I.s_trackName].localizedNames;
-		savePanel.GetComponent<SavePanelWorks>().localizedDescriptions = F.I.tracks[F.I.s_trackName].localizedDescriptions;
+		Array.Copy(F.I.tracks[F.I.s_trackName].localizedNames, savePanel.localizedNames, LocalizationSettings.AvailableLocales.Locales.Count);
+		Array.Copy(F.I.tracks[F.I.s_trackName].localizedDescriptions, savePanel.localizedDescriptions, LocalizationSettings.AvailableLocales.Locales.Count);
 
 		trackAuthorInputField.text = F.I.tracks[F.I.s_trackName].author;
 
@@ -2016,6 +2016,7 @@ public class EditorPanel : MonoBehaviour
 		F.I.s_laps = 3;
 		F.I.s_cpuRivals = 3;
 		F.I.s_raceType = RaceType.Race;
+		string trackName = savePanel.localizedNames[(int)F.I.playerData.language];
 		if (trackName.Length == 3)
 		{
 			DisplayMessageFor(F.I.LocStr("Save track!"), 2);

@@ -1,7 +1,6 @@
 using System;
 using TMPro;
 using UnityEngine;
-using UnityEngine.Localization.Settings;
 
 public class SavePanelWorks : MonoBehaviour
 {
@@ -18,8 +17,6 @@ public class SavePanelWorks : MonoBehaviour
 	private void Awake()
 	{
 		editorPanel = transform.parent.GetComponent<EditorPanel>();
-		localizedDescriptions = new string[LocalizationSettings.AvailableLocales.Locales.Count];
-		localizedNames = new string[LocalizationSettings.AvailableLocales.Locales.Count];
 	}
 	private void OnEnable()
 	{
@@ -39,6 +36,11 @@ public class SavePanelWorks : MonoBehaviour
 	public void RegisterDescription(string desc)
 	{
 		localizedDescriptions[languageDropdown.value] = desc;
+	}
+	public void LanguageChanged()
+	{
+		trackName.text = localizedNames[languageDropdown.value];
+		trackDescr.text = localizedDescriptions[languageDropdown.value];
 	}
 	public void SetFlyCamera(bool enabled)
 	{

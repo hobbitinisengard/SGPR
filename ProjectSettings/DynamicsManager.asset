@@ -3,10 +3,10 @@
 --- !u!55 &1
 PhysicsManager:
   m_ObjectHideFlags: 0
-  serializedVersion: 16
+  serializedVersion: 18
   m_Gravity: {x: 0, y: -30, z: 0}
   m_DefaultMaterial: {fileID: 0}
-  m_BounceThreshold: 10
+  m_BounceThreshold: 0
   m_DefaultMaxDepenetrationVelocity: 10
   m_SleepThreshold: 0.005
   m_DefaultContactOffset: 1e-45
@@ -28,9 +28,9 @@ PhysicsManager:
   m_BroadphaseType: 0
   m_FrictionType: 0
   m_EnableEnhancedDeterminism: 0
-  m_EnableUnifiedHeightmaps: 1
   m_ImprovedPatchFriction: 1
   m_SolverType: 1
   m_DefaultMaxAngularSpeed: 7
   m_ScratchBufferChunkCount: 16
+  m_CurrentBackendId: 4072204805
   m_FastMotionThreshold: 3.4028235e+38

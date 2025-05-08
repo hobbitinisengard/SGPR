@@ -1,6 +1,5 @@
 using TMPro;
 using UnityEngine;
-using UnityEngine.Localization;
 using UnityEngine.Localization.Settings;
 
 public class GraphicsSettingsView : MonoBehaviour
@@ -9,9 +8,6 @@ public class GraphicsSettingsView : MonoBehaviour
 	public TMP_Text trailText;
 	public TMP_Text langText;
 	public TMP_InputField limiterInput;
-	public LocalizedString vSyncLoc;
-	public LocalizedString trailLoc;
-	public LocalizedString langLoc;
 	private void OnEnable()
 	{
 		SwitchLang(true);
@@ -33,7 +29,7 @@ public class GraphicsSettingsView : MonoBehaviour
 	{
 		if(!init)
 			F.I.playerData.trail = !F.I.playerData.trail;
-		trailText.text = trailLoc.GetLocalizedString() + ": " + (F.I.playerData.trail ? F.I.LocStr("Yes") : F.I.LocStr("No"));
+		trailText.text = F.I.LocStr("Aerodynamic trail") + ": " + (F.I.playerData.trail ? F.I.LocStr("Yes") : F.I.LocStr("No"));
 	}
 	public void SwitchLang(bool init)
 	{
@@ -41,9 +37,10 @@ public class GraphicsSettingsView : MonoBehaviour
 		{
 			int dir = F.I.shiftRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
 			F.I.playerData.language = (Language)F.Wraparound((int)F.I.playerData.language + dir, 0, LocalizationSettings.AvailableLocales.Locales.Count-1);
+			F.I.UpdateLanguage();
+			OnEnable();
 		}
-		LocalizationSettings.SelectedLocale = LocalizationSettings.AvailableLocales.Locales[(int)F.I.playerData.language];
-		langText.text = langLoc.GetLocalizedString() + ": " + F.I.playerData.language.ToString();
+		langText.text = F.I.LocStr("Language") + ": " + F.I.LocStr(F.I.playerData.language.ToString());
 	}
 	public void SwitchVSync(bool init)
 	{
@@ -52,6 +49,6 @@ public class GraphicsSettingsView : MonoBehaviour
 			F.I.playerData.vSync = !F.I.playerData.vSync;
 			QualitySettings.vSyncCount = F.I.playerData.vSync ? 1 : 0;
 		}
-		vSyncText.text = vSyncLoc.GetLocalizedString() + ": " + (F.I.playerData.vSync ? F.I.LocStr("Yes") : F.I.LocStr("No"));
+		vSyncText.text = F.I.LocStr("VSync") + ": " + (F.I.playerData.vSync ? F.I.LocStr("Yes") : F.I.LocStr("No"));
 	}
 }

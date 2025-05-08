@@ -870,7 +870,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 303048955789312
-    m_Localized: "Pierw stw\xF3rz lini\u0119 wy\u015Bcigow\u0105"
+    m_Localized: "Brak linii wy\u015Bcigowej"
     m_Metadata:
       m_Items: []
   - m_Id: 303434231971840
@@ -1269,7 +1269,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 608751083847680
-    m_Localized: '*  KONTYNUUJ'
+    m_Localized: "*  WZN\xD3W"
     m_Metadata:
       m_Items: []
   - m_Id: 608971393859584
@@ -1409,6 +1409,22 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 625142658760704
     m_Localized: PROWADZI!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 964890581532672
+    m_Localized: "Zbyt kr\xF3tkie nazwy lub opisy"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 965317620400128
+    m_Localized: Pusto
+    m_Metadata:
+      m_Items: []
+  - m_Id: 981524369113088
+    m_Localized: Opis
+    m_Metadata:
+      m_Items: []
+  - m_Id: 981667046752256
+    m_Localized: Autor
     m_Metadata:
       m_Items: []
   references:

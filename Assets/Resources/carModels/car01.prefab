@@ -2859,14 +2859,14 @@ ParticleSystem:
         m_RotationOrder: 4
   ShapeModule:
     serializedVersion: 6
-    enabled: 0
-    type: 0
+    enabled: 1
+    type: 2
     angle: 25
     length: 5
     boxThickness: {x: 0, y: 0, z: 0}
     radiusThickness: 1
     donutRadius: 0.2
-    m_Position: {x: 0, y: 0, z: 0}
+    m_Position: {x: 0, y: 0, z: -1.5}
     m_Rotation: {x: 0, y: 0, z: 0}
     m_Scale: {x: 0.11500752, y: 0.017320234, z: 0.21103145}
     placementMode: 0
@@ -2947,7 +2947,7 @@ ParticleSystem:
     sphericalDirectionAmount: 0
     randomPositionAmount: 0
     radius:
-      value: 1
+      value: 15
       mode: 0
       spread: 0
       speed:
@@ -7266,7 +7266,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6333014363592387657}
   - component: {fileID: 3314469528195188988}
-  - component: {fileID: 5970035122388943334}
+  - component: {fileID: 301478497854231025}
   m_Layer: 26
   m_Name: carCarCol
   m_TagString: Untagged
@@ -7297,8 +7297,8 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2625685432439864201}
   m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
---- !u!64 &5970035122388943334
-MeshCollider:
+--- !u!65 &301478497854231025
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -7315,10 +7315,9 @@ MeshCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+  serializedVersion: 3
+  m_Size: {x: 1.01, y: 1.67, z: 0.73}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &2657873385695298593
 GameObject:
   m_ObjectHideFlags: 0
@@ -8087,7 +8086,7 @@ Transform:
   m_GameObject: {fileID: 3901301147301382424}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.6, y: 0.083, z: 0.2}
+  m_LocalPosition: {x: 0.6, y: 0.2, z: 0.2}
   m_LocalScale: {x: 1.16, y: 1.39, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -8113,7 +8112,7 @@ CapsuleCollider:
   m_Enabled: 1
   serializedVersion: 2
   m_Radius: 0.45
-  m_Height: 1.67
+  m_Height: 2.15
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &3917643179782311503
@@ -8513,7 +8512,7 @@ Transform:
   m_GameObject: {fileID: 4236253070238597062}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.6, y: 0.083, z: 0.2}
+  m_LocalPosition: {x: -0.6, y: 0.2, z: 0.2}
   m_LocalScale: {x: 1.16, y: 1.39, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -8539,7 +8538,7 @@ CapsuleCollider:
   m_Enabled: 1
   serializedVersion: 2
   m_Radius: 0.45
-  m_Height: 1.67
+  m_Height: 2.15
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &4328256267402655016
@@ -10003,14 +10002,14 @@ ParticleSystem:
         m_RotationOrder: 4
   ShapeModule:
     serializedVersion: 6
-    enabled: 0
-    type: 0
+    enabled: 1
+    type: 2
     angle: 25
     length: 5
     boxThickness: {x: 0, y: 0, z: 0}
     radiusThickness: 1
     donutRadius: 0.2
-    m_Position: {x: 0, y: 0, z: 0}
+    m_Position: {x: 0, y: 0, z: -1.5}
     m_Rotation: {x: 0, y: 0, z: 0}
     m_Scale: {x: 0.11500752, y: 0.017320234, z: 0.21103145}
     placementMode: 0
@@ -10091,7 +10090,7 @@ ParticleSystem:
     sphericalDirectionAmount: 0
     randomPositionAmount: 0
     radius:
-      value: 1
+      value: 13.05
       mode: 0
       spread: 0
       speed:
@@ -14352,10 +14351,6 @@ MonoBehaviour:
   rearLights:
   - {fileID: 5343642536240803875}
   - {fileID: 3561402817275663656}
-  rearLightsBrakeMaterial: {fileID: 2100000, guid: 683e6224559d7db4faf96c5815493852,
-    type: 2}
-  rearLightsOnMaterial: {fileID: 2100000, guid: 11920d9d83ff3f241898746a7bbdf8ba,
-    type: 2}
   accelAxisIsBrake: 0
   brakeIsReverse: 1
   holdEbrakePark: 0
@@ -14592,7 +14587,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   colliders:
-  - {fileID: 5970035122388943334}
+  - {fileID: 301478497854231025}
   ghostableParts:
   - {fileID: 3121731709739079424}
   - {fileID: 6760984639519360765}
@@ -14675,6 +14670,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4004a853526701343b191aaf6c4b56c8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  vecGain: 1.25
   lastBounceTime: 0
   lastCarCarBounceTime: 0
   lastSideBounceTime: 0
@@ -14682,7 +14678,7 @@ MonoBehaviour:
   bouncyCols:
   - {fileID: 55640270096130822}
   - {fileID: 2630508066903055719}
-  - {fileID: 5970035122388943334}
+  - {fileID: 0}
 --- !u!1 &6192630529381075353
 GameObject:
   m_ObjectHideFlags: 0

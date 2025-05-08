@@ -16,6 +16,8 @@ using UnityEngine.UI;
 using UnityEngine.Localization.Settings;
 using System.Collections;
 using UnityEngine.Localization.Tables;
+using UnityEngine.Localization;
+using UnityEngine.ResourceManagement.AsyncOperations;
 public enum PlayerState { InRace, InLobbyUnready, InLobbyReady };
 public enum Envir { GER, JAP, SPN, FRA, ENG, USA, ITA, MEX };
 public enum CarGroup { Wild, Aero, Speed, Team };
@@ -69,7 +71,7 @@ public class Info : MonoBehaviour
 	public Material opaqueMaterial;
 	public Material emissiveRearLighter;
 	public Material emissiveRearDarker;
-	public const string VERSION = "0.5";
+	public const string VERSION = "0.4.8";
 	public bool minimized { get; private set; }
 	
 	void OnApplicationFocus(bool hasFocus)
@@ -124,15 +126,24 @@ public class Info : MonoBehaviour
 		ReloadCarPartsData();
 		LoadRanking();
 		icons = Resources.LoadAll<Sprite>(trackImagesPath + "tiles");
-		StartCoroutine(LoadLanguage());
+		LocalizationSettings.InitializeSynchronously = true;
 	}
-	IEnumerator LoadLanguage()
+	private void Start()
 	{
-		yield return LocalizationSettings.InitializationOperation;
-		LocalizationSettings.SelectedLocale = LocalizationSettings.AvailableLocales.Locales[(int)F.I.playerData.language];
+		UpdateLanguage(true);
+	}
+	public void UpdateLanguage(bool firstRun = false)
+	{
+		StartCoroutine(UpdateLanguageCo(firstRun));
+	}
+	IEnumerator UpdateLanguageCo(bool firstRun)
+	{
+		if(firstRun)
+			yield return LocalizationSettings.InitializationOperation.WaitForCompletion();
+		LocalizationSettings.SelectedLocale = LocalizationSettings.AvailableLocales.Locales[(int)playerData.language];
 		localizedTable = LocalizationSettings.StringDatabase.GetTable(TranslationTableName);
 	}
-	
+		
 	string _documentsSGPRpath;
 	public string documentsSGPRpath
 	{
@@ -536,6 +547,11 @@ public class Info : MonoBehaviour
 			string name = Path.GetFileNameWithoutExtension(path);
 			string recordsPath = path[..path.IndexOf('.')] + ".rec";
 			TrackHeader header = JsonConvert.DeserializeObject<TrackHeader>(trackJson);
+
+			if (header.localizedNames.Any(n => n == "")) // if importing old tracks with no localizations, at least write a name
+				for (int i = 0; i < header.localizedNames.Length; ++i)
+					header.localizedNames[i] = name;
+				
 			tracks.Add(name, header);
 
 			if (File.Exists(recordsPath))
@@ -725,9 +741,11 @@ public class TrackHeader
 	public TrackHeader()
 	{
 		records = new();
+		localizedDescriptions = EmptyLocStrArray("");
+		localizedNames = EmptyLocStrArray("");
 	}
 	public TrackHeader(int unlocked, CarGroup prefCarClass, int trackDifficulty,
-		Envir envir, string author, int[] icons, string[] descs, string[] localizedNames, bool valid = true)
+		Envir envir, string author, int[] icons, string[] localizedDescriptions, string[] localizedNames, bool valid = true)
 		: this()
 	{
 		this.unlocked = unlocked > 0;
@@ -735,7 +753,11 @@ public class TrackHeader
 		this.difficulty = trackDifficulty;
 		this.envir = envir;
 		this.author = author;
-		this.localizedDescriptions = descs;
+
+		localizedDescriptions ??= EmptyLocStrArray("----");
+		this.localizedDescriptions = localizedDescriptions;
+
+		localizedNames ??= EmptyLocStrArray("----");
 		this.localizedNames = localizedNames;
 		this.valid = valid;
 		this.icons = icons;
@@ -753,15 +775,25 @@ public class TrackHeader
 		this.valid = h.valid;
 		this.icons = h.icons;
 	}
+	public static string[] EmptyLocStrArray(string str)
+	{
+		string[] descs = new string[LocalizationSettings.AvailableLocales.Locales.Count()];
+		for (int i = 0; i < descs.Length; i++)
+			descs[i] = str;
 
+		return descs;
+	}
+	[JsonIgnore]
 	public int TrackOrigin
 	{
 		get { return (author == "Team17") ? 0 : 1; }
 	}
+	[JsonIgnore]
 	public bool IsOriginal
 	{
 		get { return TrackOrigin == 0; }
 	}
+	[JsonIgnore]
 	public string LocalizedDesc
 	{
 		get
@@ -769,6 +801,7 @@ public class TrackHeader
 			return localizedDescriptions[(int)F.I.playerData.language];
 		}
 	}
+	[JsonIgnore]
 	public string LocalizedName
 	{
 		get

@@ -59,7 +59,7 @@ public class SGP_Bouncer : MonoBehaviour
 			{
 				if (pair.contactCount > 0)
 				{
-					//pair.SetPoint(0, carRbs[pair.otherBodyInstanceID].worldCOM);
+					pair.SetPoint(0, carRbs[pair.otherBodyInstanceID].worldCOM);
 					
 					var normal = pair.GetNormal(0);
 					pair.SetNormal(0, Vector3.ProjectOnPlane(normal, Vector3.up));

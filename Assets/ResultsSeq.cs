@@ -34,7 +34,7 @@ public class ResultsSeq : MonoBehaviour
 	private void Awake()
 	{
 		audioSource = GetComponent<AudioSource>();
-		rightBoxLabels = new string[] { F.I.LocStr("BEST LAP"), F.I.LocStr("RACE TIME"), F.I.LocStr("AEROMILES"), F.I.LocStr("DRIFT") };
+		
 	}
 	private void OnDisable()
 	{
@@ -44,6 +44,7 @@ public class ResultsSeq : MonoBehaviour
 	}
 	private void OnEnable()
 	{
+		rightBoxLabels = new string[] { F.I.LocStr("BEST LAP"), F.I.LocStr("RACE TIME"), F.I.LocStr("AEROMILES"), F.I.LocStr("DRIFT") };
 		if (showResultCo != null)
 			StopCoroutine(showResultCo);
 		if (seq != null)

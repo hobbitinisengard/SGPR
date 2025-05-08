@@ -871,7 +871,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 303048955789312
-    m_Localized: Create raceline first
+    m_Localized: No racingline defined
     m_Metadata:
       m_Items: []
   - m_Id: 303434231971840
@@ -1409,6 +1409,22 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 625142658760704
     m_Localized: TAKES THE LEAD!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 964890581532672
+    m_Localized: Names or descriptions are too short
+    m_Metadata:
+      m_Items: []
+  - m_Id: 965317620400128
+    m_Localized: Empty
+    m_Metadata:
+      m_Items: []
+  - m_Id: 981524369113088
+    m_Localized: Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 981667046752256
+    m_Localized: Author
     m_Metadata:
       m_Items: []
   references:
