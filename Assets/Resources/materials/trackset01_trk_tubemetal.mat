@@ -298,7 +298,7 @@ Material:
     - _RefractionModel: 0
     - _Saturation: 0
     - _Scale: 0.1
-    - _Smoothness: 0.5
+    - _Smoothness: 0
     - _SmoothnessRemapMax: 1
     - _SmoothnessRemapMin: 0
     - _SmoothnessTextureChannel: 0

@@ -1,0 +1,21 @@
+{
+  "author": "abc",
+  "localizedDescriptions": [
+    "endesc",
+    "pldesc"
+  ],
+  "localizedNames": [
+    "entest",
+    "pltest"
+  ],
+  "valid": true,
+  "envir": "ENG",
+  "preferredCarClass": "Team",
+  "difficulty": 2,
+  "unlocked": true,
+  "icons": [
+    3,
+    5,
+    6
+  ]
+}

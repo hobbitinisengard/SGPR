@@ -1,0 +1,20 @@
+{
+  "author": "luckygoose",
+  "localizedDescriptions": [
+    "",
+    ""
+  ],
+  "localizedNames": [
+    "OLD TRACK EXAMPLE",
+    "OLD TRACK EXAMPLE"
+  ],
+  "valid": true,
+  "envir": "ITA",
+  "preferredCarClass": "Team",
+  "difficulty": 10,
+  "unlocked": true,
+  "icons": [
+    2,
+    3
+  ]
+}
