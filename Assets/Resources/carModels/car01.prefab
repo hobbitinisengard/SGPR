@@ -14594,7 +14594,6 @@ MonoBehaviour:
   - {fileID: 6250492473087983474}
   - {fileID: 7939150304631603867}
   - {fileID: 2743996718150263175}
-  - {fileID: 8746739494003343115}
   - {fileID: 5823232406785712099}
   - {fileID: 5715247988994545434}
   - {fileID: 8908699561723997585}
@@ -14678,7 +14677,6 @@ MonoBehaviour:
   bouncyCols:
   - {fileID: 55640270096130822}
   - {fileID: 2630508066903055719}
-  - {fileID: 0}
 --- !u!1 &6192630529381075353
 GameObject:
   m_ObjectHideFlags: 0

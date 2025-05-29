@@ -13921,7 +13921,6 @@ MonoBehaviour:
   bouncyCols:
   - {fileID: 2849710192615575345}
   - {fileID: 3514099010678596411}
-  - {fileID: 0}
 --- !u!114 &865657811856999447
 MonoBehaviour:
   m_ObjectHideFlags: 0

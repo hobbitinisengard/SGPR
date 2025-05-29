@@ -196,7 +196,7 @@ Material:
     - _AlphaCutoffPrepass: 0.5
     - _AlphaCutoffShadow: 0.5
     - _AlphaDstBlend: 10
-    - _AlphaRemapMax: 0.4975961
+    - _AlphaRemapMax: 0.47642678
     - _AlphaRemapMin: 0
     - _AlphaSrcBlend: 1
     - _Anisotropy: 0
@@ -270,7 +270,7 @@ Material:
     - _LinkDetailsWithBase: 1
     - _MaterialID: 1
     - _MaterialTypeMask: 2
-    - _Metallic: 0
+    - _Metallic: 1
     - _MetallicRemapMax: 0
     - _MetallicRemapMin: 0
     - _Mode: 3
