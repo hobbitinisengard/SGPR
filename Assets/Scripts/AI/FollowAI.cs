@@ -116,7 +116,7 @@ namespace RVP
 				if (Time.time - LapProgressPercentTime > .2f) // for better performance
 				{
 					LapProgressPercentTime = Time.time;
-					int universalPathProgress = GetDist(1 << F.I.racingLineLayer);
+					int universalPathProgress = GetDist(1 << racingLineLayerNumber);
 					if (universalPathProgress > progress + 2 * radius || universalPathProgress < progress - 2 * radius)
 						universalPathProgress = progress;
 
@@ -162,7 +162,7 @@ namespace RVP
 			tr = transform;
 			rb = GetComponent<Rigidbody>();
 			vp = GetComponent<VehicleParent>();
-			racingLineLayerNumber = F.I.racingLineLayer;
+			racingLineLayerNumber = F.I.racingLineLayers[0];
 			stuntPoints = F.I.stuntpointsContainer;
 			replayCams = F.I.replayCams;
 			trackPathCreator = F.I.universalPath;

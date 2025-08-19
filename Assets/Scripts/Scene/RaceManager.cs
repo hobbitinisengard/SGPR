@@ -452,6 +452,8 @@ namespace RVP
 			hud.gameObject.SetActive(!F.I.s_spectator);
 			countDownSeq.gameObject.SetActive(!F.I.s_spectator);
 
+			yield return null;
+
 			editorPanel.GenerateMergedTrackColliders();
 
 			if (F.I.s_spectator)

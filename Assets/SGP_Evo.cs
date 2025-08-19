@@ -6,330 +6,644 @@ using UnityEngine;
 public enum Direction { ANTICLOCK = -1, CLOCK = 1 };
 public class RotationDampStruct
 {
-	
-	public float evoSmoothTime = 0.07f;
-	public float staticEvoMaxSpeed = 1100; // 400 = hustler max speed. 1500 = dart max speed
-	public float evoAcceleration = 15; // 15 = hustler max acc.  57 = dart max acc
 
-	// increases when holding shift
-	float evoMaxSpeed = 0;
-	float pos = 0;
-	public float targetPos = 0;
-	public float speed = 0;
-	float prevSpeed = 0;
-	public float offset = 0;
-	private Axis axis;
-	public float Delta { get { return speed - prevSpeed; } }
-	public bool Active { get { return Mathf.Abs(targetPos - pos) > 0.1f; } }
-	public float Pos { get { return pos + offset; } }
-	public void UpdateTargetToValue(int target)
-	{
-		targetPos = target;
-		evoMaxSpeed = 5 * evoAcceleration;
+    public float evoSmoothTime = 0.07f;
+    public float staticEvoMaxSpeed = 1100; // 400 = hustler max speed. 1500 = dart max speed
+    public float evoAcceleration = 15; // 15 = hustler max acc.  57 = dart max acc
 
-		//Debug.Log(targetPos + " " + pos + " " + speed);
-	}
-	public void UpdateTarget(Direction dir)
-	{
-		if (speed * (int)dir < 0)
-		{
-			speed = 0;
-			evoMaxSpeed = 0.1f;
-		}
+    // increases when holding shift and arrow
+    float evoMaxSpeed = 0;
+    float pos = 0;
+    public float targetPos = 0;
+    public float speed = 0;
+    float prevSpeed = 0;
+    public float offset = 0;
+    private Axis axis;
+    public float Delta { get { return speed - prevSpeed; } }
+    public bool Active { get { return Mathf.Abs(targetPos - pos) > 0.1f; } }
+    public float Pos { get { return pos + offset; } }
+    public void UpdateTargetToValue(int target)
+    {
+        targetPos = target;
+        evoMaxSpeed = 5 * evoAcceleration;
 
-		if (dir == Direction.CLOCK)
-		{
-			if (pos > 315)
-			{
-				if (axis == Axis.X) // better landing
-					targetPos = 710;
-				else
-					targetPos = 720;
-			}
-			else if (pos > 45)
-			{
-				if (pos > 135)
-				{
-					if (axis == Axis.X)
-						targetPos = 350;
-					else
-						targetPos = 360;
-				}
-				else
-					targetPos = 180;
-			}
-			else
-				targetPos = 90;
-		}
-		else
-		{
-			if (pos < 45)
-			{
-				if (axis == Axis.X)
-					targetPos = -370;
-				else
-					targetPos = -360;
-			}
-			else if (pos < 315)
-			{
-				if (pos > 225)
-					targetPos = 180;
-				else
-				{
-					if (axis == Axis.X)
-						targetPos = -10;
-					else
-						targetPos = 0;
-				}
-			}
-			else
-				targetPos = 270;
-		}
-		//Debug.Log(targetPos + " " + pos + " " + speed);
-	}
+        //Debug.Log(targetPos + " " + pos + " " + speed);
+    }
+    public void UpdateTarget(Direction dir)
+    {
+        if (speed * (int)dir < 0)
+        {
+            speed = 0;
+            evoMaxSpeed = 0.1f;
+        }
 
-	float degs(float deg)
-	{
-		if (deg > 360)
-		{
-			deg -= 360;
-		}
-		else if (deg < 0)
-		{
-			deg += 360;
-		}
-		return deg;
-	}
-	public void Init(float newpos, Axis axis)
-	{
-		this.axis = axis;
-		if (axis == Axis.Y)
-		{
-			offset = newpos;
-			pos = 0;
-		}
-		else
-			pos = newpos;
-		targetPos = pos;
-		speed = 0;
-		evoMaxSpeed = 0;
-	}
-	public void SmoothDamp(float deltaTime)
-	{
-		pos = degs(pos);
-		prevSpeed = speed;
-		pos = Mathf.SmoothDamp(pos, targetPos, ref speed,
-				 evoSmoothTime, evoMaxSpeed, deltaTime);
-	}
-	public void IncreaseEvoSpeed()
-	{
-		evoMaxSpeed += evoAcceleration;
-		if (evoMaxSpeed > staticEvoMaxSpeed)
-			evoMaxSpeed = staticEvoMaxSpeed;
-	}
-	public void DecreaseMaxEvoSpeed()
-	{
-		if (!Active)
-			evoMaxSpeed = speed;
-	}
-	public void CloseAdvancedMode()
-	{
-		if (speed > 0) // clockwise rotation
-		{
-			targetPos = 360;
-		}
-		else // anticlockwise rotation
-		{
-			targetPos = 0;
-		}
-	}
+        if (dir == Direction.CLOCK)
+        {
+            if (pos > 315)
+            {
+                if (axis == Axis.X) // better landing
+                    targetPos = 710;
+                else
+                    targetPos = 720;
+            }
+            else if (pos > 45)
+            {
+                if (pos > 135)
+                {
+                    if (axis == Axis.X)
+                        targetPos = 350;
+                    else
+                        targetPos = 360;
+                }
+                else
+                    targetPos = 180;
+            }
+            else
+                targetPos = 90;
+        }
+        else
+        {
+            if (pos < 45)
+            {
+                if (axis == Axis.X)
+                    targetPos = -370;
+                else
+                    targetPos = -360;
+            }
+            else if (pos < 315)
+            {
+                if (pos > 225)
+                    targetPos = 180;
+                else
+                {
+                    if (axis == Axis.X)
+                        targetPos = -10;
+                    else
+                        targetPos = 0;
+                }
+            }
+            else
+                targetPos = 270;
+        }
+        //Debug.Log(targetPos + " " + pos + " " + speed);
+    }
+
+    float degs(float deg)
+    {
+        if (deg > 360)
+        {
+            deg -= 360;
+        }
+        else if (deg < 0)
+        {
+            deg += 360;
+        }
+        return deg;
+    }
+    public void Init(float newpos, Axis axis)
+    {
+        this.axis = axis;
+        if (axis == Axis.Y)
+        {
+            offset = newpos;
+            pos = 0;
+        }
+        else
+            pos = newpos;
+        targetPos = pos;
+        speed = 0;
+        evoMaxSpeed = 0;
+    }
+    public void SmoothDamp(float deltaTime)
+    {
+        pos = degs(pos);
+        prevSpeed = speed;
+        pos = Mathf.SmoothDamp(pos, targetPos, ref speed,
+                 evoSmoothTime, evoMaxSpeed, deltaTime);
+    }
+    public void IncreaseEvoSpeed()
+    {
+        evoMaxSpeed += evoAcceleration;
+        if (evoMaxSpeed > staticEvoMaxSpeed)
+            evoMaxSpeed = staticEvoMaxSpeed;
+    }
+    public void DecreaseMaxEvoSpeed()
+    {
+        if (!Active)
+        {
+            speed -= evoAcceleration / 2f;
+            evoMaxSpeed = speed;
+        }
+    }
+    public void CloseAdvancedMode()
+    {
+        if (speed > 0) // clockwise rotation
+        {
+            targetPos = 360;
+        }
+        else // anticlockwise rotation
+        {
+            targetPos = 0;
+        }
+    }
 }
 public class SGP_Evo : MonoBehaviour
 {
-	public float angleThres = 15;
-	public AudioSource evoBloorp;
-	Rigidbody rb;
-	VehicleParent vp;
-	float shiftPressTime;
-	int prevSGPShiftButton;
-	public bool stunting { get; private set; }
-	float maxTimeToInit = 1f;
-	RotationDampStruct[] r;
-	public float rX_delta;
-	public Vector3 euler;
-	public float posy;
-	public float tary;
-	public float rotationSpeed = 5f;
-	[NonSerialized]
-	public Vector3 localEvoAngularVelocity = Vector3.zero;
+    public float angleThres = 15;
+    public AudioSource evoBloorp;
+    Rigidbody rb;
+    VehicleParent vp;
+    float shiftPressTime;
+    int prevSGPShiftButton;
+    public bool stunting { get; private set; }
+    float maxTimeToInit = 1f;
+    RotationDampStruct[] r;
+    public float rX_delta;
+    public Vector3 euler;
+    public float posy;
+    public float tary;
+    public float rotationSpeed = 5f;
+    [NonSerialized]
+    public Vector3 localEvoAngularVelocity = Vector3.zero;
 
-	public float mult = 1;
+    public float mult = 1;
 
-	void Awake()
-	{
-		rb = GetComponent<Rigidbody>();
-		vp = GetComponent<VehicleParent>();
-		r = F.InitializeArray<RotationDampStruct>(3);
-	}
-	public void SetStuntCoeffs(float evoSmoothTime, float staticEvoMaxSpeed, float evoAcceleration)
-	{
-		foreach(var rds in r)
-		{
-			rds.evoSmoothTime = evoSmoothTime;
-			rds.staticEvoMaxSpeed = staticEvoMaxSpeed;
-			rds.evoAcceleration = evoAcceleration;
-		}
-	}
-	public void GetStuntCoeffs(ref float evoSmoothTime, ref float staticEvoMaxSpeed, ref float evoAcceleration)
-	{
-		evoSmoothTime = r[0].evoSmoothTime;
-		staticEvoMaxSpeed = r[0].staticEvoMaxSpeed;
-		evoAcceleration = r[0].evoAcceleration;
-	}
+    void Awake()
+    {
+        rb = GetComponent<Rigidbody>();
+        vp = GetComponent<VehicleParent>();
+        r = F.InitializeArray<RotationDampStruct>(3);
+    }
+    public void SetStuntCoeffs(float evoSmoothTime, float staticEvoMaxSpeed, float evoAcceleration)
+    {
+        foreach (var rds in r)
+        {
+            rds.evoSmoothTime = evoSmoothTime;
+            rds.staticEvoMaxSpeed = staticEvoMaxSpeed;
+            rds.evoAcceleration = evoAcceleration;
+        }
+    }
+    public void GetStuntCoeffs(ref float evoSmoothTime, ref float staticEvoMaxSpeed, ref float evoAcceleration)
+    {
+        evoSmoothTime = r[0].evoSmoothTime;
+        staticEvoMaxSpeed = r[0].staticEvoMaxSpeed;
+        evoAcceleration = r[0].evoAcceleration;
+    }
 
-	public void FixedUpdate()
-	{
-		if (stunting)
-		{
-			if (vp.crashing || vp.colliding || vp.reallyGroundedWheels > 0)
-			{
-				//Debug.Log("Crashed");
-				stunting = false;
-				return;
-			}
-			if (vp.SGPshiftbutton > 0)
-			{
-				if (vp.accelInput > .2f)
-				{ // backflip
-					r[0].UpdateTarget(Direction.ANTICLOCK);
-					r[0].IncreaseEvoSpeed();
-				}
-				else if (vp.brakeInput > 0)
-				{
-					// frontflip
-					r[0].UpdateTarget(Direction.CLOCK);
-					r[0].IncreaseEvoSpeed();
-				}
-				else if (vp.rollInput != 0)
-				{
-					if (vp.rollInput > .2f)
-					{ // right barrel roll
-						r[2].UpdateTarget(Direction.ANTICLOCK);
-					}
-					else if (vp.rollInput < -.2f)
-					{ // left barrel roll
-						r[2].UpdateTarget(Direction.CLOCK);
-					}
-					r[2].IncreaseEvoSpeed();
-				}
-				else if (vp.steerInput != 0)
-				{ // rotation left/right 
-					if (vp.steerInput > .2f)
-						r[1].UpdateTarget(Direction.CLOCK);
-					else if (vp.steerInput < -.2f)
-						r[1].UpdateTarget(Direction.ANTICLOCK);
-					r[1].IncreaseEvoSpeed();
+    public void FixedUpdate()
+    {
+        if (stunting)
+        {
+            if (vp.rb.isKinematic || vp.crashing || vp.colliding || vp.reallyGroundedWheels > 0)
+            {
+                //Debug.Log("Crashed");
+                stunting = false;
+                return;
+            }
+            if (vp.SGPshiftbutton > 0)
+            {
 
-					int rest = (int)r[0].Pos % 90;
-					r[0].UpdateTargetToValue(90 * ((int)r[0].Pos / 90) + ((rest < angleThres) ? 0 : 90));
-				}
-			}
-			else
-			{
-				foreach (RotationDampStruct rds in r)
-				{
-					rds.DecreaseMaxEvoSpeed();
-					// rotation locking to 90 and 180deg turns off when not pressing shift
-					if (vp.SGPshiftbutton == 0)
-						rds.CloseAdvancedMode();
-				}
-			}
+                if (vp.accelInput > .2f)
+                { // backflip
+                    r[0].UpdateTarget(Direction.ANTICLOCK);
+                    r[0].IncreaseEvoSpeed();
+                }
+                else if (vp.brakeInput > 0)
+                {
+                    // frontflip
+                    r[0].UpdateTarget(Direction.CLOCK);
+                    r[0].IncreaseEvoSpeed();
+                }
+                else if (vp.rollInput != 0)
+                {
+                    if (vp.rollInput > .2f)
+                    { // right barrel roll
+                        r[2].UpdateTarget(Direction.ANTICLOCK);
+                    }
+                    else if (vp.rollInput < -.2f)
+                    { // left barrel roll
+                        r[2].UpdateTarget(Direction.CLOCK);
+                    }
+                    r[2].IncreaseEvoSpeed();
+                }
+                else if (vp.steerInput != 0)
+                { // rotation left/right 
+                    if (vp.steerInput > .2f)
+                        r[1].UpdateTarget(Direction.CLOCK);
+                    else if (vp.steerInput < -.2f)
+                        r[1].UpdateTarget(Direction.ANTICLOCK);
+                    r[1].IncreaseEvoSpeed();
 
-			foreach (RotationDampStruct rds in r)
-				rds.SmoothDamp(Time.fixedDeltaTime);
+                    int rest = (int)r[0].Pos % 90;
+                    r[0].UpdateTargetToValue(90 * ((int)r[0].Pos / 90) + ((rest < angleThres) ? 0 : 90));
+                }
+                else
+                {
+                    // if no input, just increase evo speed
+                    foreach (RotationDampStruct rds in r)
+                    {
+                        rds.DecreaseMaxEvoSpeed();
+                    }
+                }
+            }
+            else
+            {
+                foreach (RotationDampStruct rds in r)
+                {
+                    rds.DecreaseMaxEvoSpeed();
+                    // rotation locking to 90 and 180deg turns off when not pressing shift
+                    if (vp.SGPshiftbutton == 0)
+                        rds.CloseAdvancedMode();
+                }
+            }
 
-			if (r.Any(a => a.Active))
-			{
-				//rb.rotation = Quaternion.Euler(r[0].Pos, r[1].Pos, r[2].Pos);
-				//rb.angularVelocity = vp.tr.TransformDirection(Mathf.Deg2Rad * new Vector3(r[0].speed, r[1].speed, r[2].speed));
-				Vector3 curForward = vp.forwardDir;
-				Vector3 curUpward = vp.upDir;
-				Vector3 targetForward = vp.tr.TransformDirection(Quaternion.Euler(new Vector3(r[0].Pos, r[1].Pos, r[2].Pos)) * Vector3.forward);
-				Vector3 targetUpward = vp.tr.TransformDirection(Quaternion.Euler(new Vector3(r[0].Pos, r[1].Pos, r[2].Pos)) * Vector3.up);
+            foreach (RotationDampStruct rds in r)
+                rds.SmoothDamp(Time.fixedDeltaTime);
 
-                Quaternion curRot = Quaternion.LookRotation(curForward, curUpward);
-                Quaternion targetRot = Quaternion.LookRotation(targetForward, targetUpward);
+            if (r.Any(a => a.Active))
+            {
+                rb.rotation = Quaternion.Euler(r[0].Pos, r[1].Pos, r[2].Pos);
+                rb.angularVelocity = vp.tr.TransformDirection(Mathf.Deg2Rad * new Vector3(r[0].speed, r[1].speed, r[2].speed));
+            }
 
-                Quaternion deltaRotation = targetRot * Quaternion.Inverse(curRot);
+            //rb.AddRelativeTorque(Mathf.Deg2Rad * new Vector3(r[0].Delta, r[1].Delta, r[2].Delta), ForceMode.VelocityChange);
 
-                deltaRotation.ToAngleAxis(out float angle, out Vector3 axis);
-
-                //// Handle the angle wrapping (Unity returns 0-360, but we want -180 to 180)
-                //if (angle > 180f)
-                //    angle -= 360f;
-
-
-                // Angular velocity vector (axis scaled by angular speed)
-                Vector3 targetAngularVelocity = axis * angle * Mathf.Deg2Rad;
-                //Vector3 targetAngularVelocity = vp.tr.TransformDirection(Mathf.Deg2Rad * new Vector3(r[0].speed, r[1].speed, r[2].speed));
-                
-				float maxTorque = Mathf.Infinity; // or set to your maximum allowed torque
-
-                Vector3 currentAngularVelocity = rb.angularVelocity;
-                //Vector3 inertiaWorld = rb.inertiaTensorRotation * Vector3.Scale(rb.inertiaTensor, rb.inertiaTensorRotation * Vector3.one);
-                Quaternion inertiaRotation = rb.inertiaTensorRotation;
-
-                Vector3 angularAcceleration = (targetAngularVelocity - currentAngularVelocity) / Time.fixedDeltaTime;
-                Vector3 torque = inertiaRotation * Vector3.Scale(rb.inertiaTensor, Quaternion.Inverse(inertiaRotation) * angularAcceleration);
-
-                // Optionally clamp torque
-                if (torque.magnitude > maxTorque)
-                    torque = torque.normalized * maxTorque;
-
-                rb.AddTorque(torque, ForceMode.Acceleration);
-                //rb.AddTorque(Mathf.Deg2Rad * rb.mass * new Vector3(r[0].speed, r[1].speed, r[2].speed), ForceMode.Force);
-			}
-
-			//rb.AddRelativeTorque(Mathf.Deg2Rad * new Vector3(r[0].Delta, r[1].Delta, r[2].Delta), ForceMode.VelocityChange);
-
-			//Vector3 delta = new Vector3(r[0].Delta(), r[1].Delta(), r[2].Delta());
+            //Vector3 delta = new Vector3(r[0].Delta(), r[1].Delta(), r[2].Delta());
 
 
-			//if(vp.name.Contains("Clone"))
-			//{
-			//    Debug.DrawRay(vp.transform.position, vp.transform.TransformDirection(localEvoAngularVelocity), Color.red, 3);
-			//    //Debug.Log(localEvoAngularVelocity.magnitude);
+            //if(vp.name.Contains("Clone"))
+            //{
+            //    Debug.DrawRay(vp.transform.position, vp.transform.TransformDirection(localEvoAngularVelocity), Color.red, 3);
+            //    //Debug.Log(localEvoAngularVelocity.magnitude);
 
-			//}
-		}
-		else
-		{
-			if (vp.SGPshiftbutton > 0)
-			{
-				if (prevSGPShiftButton == 0 && (vp.reallyGroundedWheels == 4 || ((vp.crashing || vp.colliding))))
-				{ // shift press before jump
-					shiftPressTime = Time.time;
-					//Debug.Log("shiftPressTime");
-				}
-			}
+            //}
+        }
+        else
+        {
+            if (vp.SGPshiftbutton > 0)
+            {
+                if (prevSGPShiftButton == 0 && (vp.reallyGroundedWheels == 4 || ((vp.crashing || vp.colliding))))
+                { // shift press before jump
+                    shiftPressTime = Time.time;
+                    //Debug.Log("shiftPressTime");
+                }
+            }
 
-			if (vp.reallyGroundedWheels == 0 && !vp.colliding && !vp.crashing && (Time.time - shiftPressTime) < maxTimeToInit)
-			{
-				//Debug.Log("stunting");
-				evoBloorp.Play();
-				stunting = true;
-				euler = vp.tr.rotation.eulerAngles;
-				r[0].Init(euler.x, Axis.X); //rX
-				r[1].Init(euler.y, Axis.Y); // rY
-				r[2].Init(euler.z, Axis.Z); // rZ
-			}
-		}
-		prevSGPShiftButton = vp.SGPshiftbutton;
-	}
+            if (vp.reallyGroundedWheels == 0 && !vp.colliding && !vp.crashing && (Time.time - shiftPressTime) < maxTimeToInit)
+            {
+                //Debug.Log("stunting");
+                evoBloorp.Play();
+                stunting = true;
+                euler = vp.tr.rotation.eulerAngles;
+                r[0].Init(euler.x, Axis.X); //rX
+                r[1].Init(euler.y, Axis.Y); // rY
+                r[2].Init(euler.z, Axis.Z); // rZ
+            }
+        }
+        prevSGPShiftButton = vp.SGPshiftbutton;
+    }
 
-	internal void Reset()
-	{
-		stunting = false;
-	}
+    internal void Reset()
+    {
+        stunting = false;
+    }
 }
+
+
+
+
+//using RVP;
+//using System;
+//using System.Linq;
+//using UnityEngine;
+
+//public enum Direction { ANTICLOCK = -1, CLOCK = 1 };
+//public class RotationDampStruct
+//{
+
+//	public float evoSmoothTime = 0.07f;
+//	public float staticEvoMaxSpeed = 1100; // 400 = hustler max speed. 1500 = dart max speed
+//	public float evoAcceleration = 15; // 15 = hustler max acc.  57 = dart max acc
+
+//	// increases when holding shift
+//	float evoMaxSpeed = 0;
+//	float pos = 0;
+//	public float targetPos = 0;
+//	public float speed = 0;
+//	float prevSpeed = 0;
+//	public float offset = 0;
+//	private Axis axis;
+//	public float Delta { get { return speed - prevSpeed; } }
+//	public bool Active { get { return Mathf.Abs(targetPos - pos) > 0.1f; } }
+//	public float Pos { get { return pos + offset; } }
+//	public void UpdateTargetToValue(int target)
+//	{
+//		targetPos = target;
+//		evoMaxSpeed = 5 * evoAcceleration;
+
+//		//Debug.Log(targetPos + " " + pos + " " + speed);
+//	}
+//	public void UpdateTarget(Direction dir)
+//	{
+//		if (speed * (int)dir < 0)
+//		{
+//			speed = 0;
+//			evoMaxSpeed = 0.1f;
+//		}
+
+//		if (dir == Direction.CLOCK)
+//		{
+//			if (pos > 315)
+//			{
+//				if (axis == Axis.X) // better landing
+//					targetPos = 710;
+//				else
+//					targetPos = 720;
+//			}
+//			else if (pos > 45)
+//			{
+//				if (pos > 135)
+//				{
+//					if (axis == Axis.X)
+//						targetPos = 350;
+//					else
+//						targetPos = 360;
+//				}
+//				else
+//					targetPos = 180;
+//			}
+//			else
+//				targetPos = 90;
+//		}
+//		else
+//		{
+//			if (pos < 45)
+//			{
+//				if (axis == Axis.X)
+//					targetPos = -370;
+//				else
+//					targetPos = -360;
+//			}
+//			else if (pos < 315)
+//			{
+//				if (pos > 225)
+//					targetPos = 180;
+//				else
+//				{
+//					if (axis == Axis.X)
+//						targetPos = -10;
+//					else
+//						targetPos = 0;
+//				}
+//			}
+//			else
+//				targetPos = 270;
+//		}
+//		//Debug.Log(targetPos + " " + pos + " " + speed);
+//	}
+
+//	float degs(float deg)
+//	{
+//		if (deg > 360)
+//		{
+//			deg -= 360;
+//		}
+//		else if (deg < 0)
+//		{
+//			deg += 360;
+//		}
+//		return deg;
+//	}
+//	public void Init(float newpos, Axis axis)
+//	{
+//		this.axis = axis;
+//		if (axis == Axis.Y)
+//		{
+//			offset = newpos;
+//			pos = 0;
+//		}
+//		else
+//			pos = newpos;
+//		targetPos = pos;
+//		speed = 0;
+//		evoMaxSpeed = 0;
+//	}
+//	public void SmoothDamp(float deltaTime)
+//	{
+//		pos = degs(pos);
+//		prevSpeed = speed;
+//		pos = Mathf.SmoothDamp(pos, targetPos, ref speed,
+//				 evoSmoothTime, evoMaxSpeed, deltaTime);
+//	}
+//	public void IncreaseEvoSpeed()
+//	{
+//		evoMaxSpeed += evoAcceleration;
+//		if (evoMaxSpeed > staticEvoMaxSpeed)
+//			evoMaxSpeed = staticEvoMaxSpeed;
+//	}
+//	public void DecreaseMaxEvoSpeed()
+//	{
+//		if (!Active)
+//			evoMaxSpeed = speed;
+//	}
+//	public void CloseAdvancedMode()
+//	{
+//		if (speed > 0) // clockwise rotation
+//		{
+//			targetPos = 360;
+//		}
+//		else // anticlockwise rotation
+//		{
+//			targetPos = 0;
+//		}
+//	}
+//}
+//public class SGP_Evo : MonoBehaviour
+//{
+//	public float angleThres = 15;
+//	public AudioSource evoBloorp;
+//	Rigidbody rb;
+//	VehicleParent vp;
+//	float shiftPressTime;
+//	int prevSGPShiftButton;
+//	public bool stunting { get; private set; }
+//	float maxTimeToInit = 1f;
+//	RotationDampStruct[] r;
+//	public float rX_delta;
+//	public Vector3 euler;
+//	public float posy;
+//	public float tary;
+//	public float rotationSpeed = 5f;
+//	[NonSerialized]
+//	public Vector3 localEvoAngularVelocity = Vector3.zero;
+
+//	public float mult = 1;
+
+//	void Awake()
+//	{
+//		rb = GetComponent<Rigidbody>();
+//		vp = GetComponent<VehicleParent>();
+//		r = F.InitializeArray<RotationDampStruct>(3);
+//	}
+//	public void SetStuntCoeffs(float evoSmoothTime, float staticEvoMaxSpeed, float evoAcceleration)
+//	{
+//		foreach(var rds in r)
+//		{
+//			rds.evoSmoothTime = evoSmoothTime;
+//			rds.staticEvoMaxSpeed = staticEvoMaxSpeed;
+//			rds.evoAcceleration = evoAcceleration;
+//		}
+//	}
+//	public void GetStuntCoeffs(ref float evoSmoothTime, ref float staticEvoMaxSpeed, ref float evoAcceleration)
+//	{
+//		evoSmoothTime = r[0].evoSmoothTime;
+//		staticEvoMaxSpeed = r[0].staticEvoMaxSpeed;
+//		evoAcceleration = r[0].evoAcceleration;
+//	}
+
+//	public void FixedUpdate()
+//	{
+//		if (stunting)
+//		{
+//			if (vp.crashing || vp.colliding || vp.reallyGroundedWheels > 0)
+//			{
+//				//Debug.Log("Crashed");
+//				stunting = false;
+//				return;
+//			}
+//			if (vp.SGPshiftbutton > 0)
+//			{
+//				if (vp.accelInput > .2f)
+//				{ // backflip
+//					r[0].UpdateTarget(Direction.ANTICLOCK);
+//					r[0].IncreaseEvoSpeed();
+//				}
+//				else if (vp.brakeInput > 0)
+//				{
+//					// frontflip
+//					r[0].UpdateTarget(Direction.CLOCK);
+//					r[0].IncreaseEvoSpeed();
+//				}
+//				else if (vp.rollInput != 0)
+//				{
+//					if (vp.rollInput > .2f)
+//					{ // right barrel roll
+//						r[2].UpdateTarget(Direction.ANTICLOCK);
+//					}
+//					else if (vp.rollInput < -.2f)
+//					{ // left barrel roll
+//						r[2].UpdateTarget(Direction.CLOCK);
+//					}
+//					r[2].IncreaseEvoSpeed();
+//				}
+//				else if (vp.steerInput != 0)
+//				{ // rotation left/right 
+//					if (vp.steerInput > .2f)
+//						r[1].UpdateTarget(Direction.CLOCK);
+//					else if (vp.steerInput < -.2f)
+//						r[1].UpdateTarget(Direction.ANTICLOCK);
+//					r[1].IncreaseEvoSpeed();
+
+//					int rest = (int)r[0].Pos % 90;
+//					r[0].UpdateTargetToValue(90 * ((int)r[0].Pos / 90) + ((rest < angleThres) ? 0 : 90));
+//				}
+//			}
+//			else
+//			{
+//				foreach (RotationDampStruct rds in r)
+//				{
+//					rds.DecreaseMaxEvoSpeed();
+//					// rotation locking to 90 and 180deg turns off when not pressing shift
+//					if (vp.SGPshiftbutton == 0)
+//						rds.CloseAdvancedMode();
+//				}
+//			}
+
+//			foreach (RotationDampStruct rds in r)
+//				rds.SmoothDamp(Time.fixedDeltaTime);
+
+//			if (r.Any(a => a.Active))
+//			{
+//				//rb.rotation = Quaternion.Euler(r[0].Pos, r[1].Pos, r[2].Pos);
+//				//rb.angularVelocity = vp.tr.TransformDirection(Mathf.Deg2Rad * new Vector3(r[0].speed, r[1].speed, r[2].speed));
+//				Vector3 curForward = vp.forwardDir;
+//				Vector3 curUpward = vp.upDir;
+//				Vector3 targetForward = Quaternion.Euler(new Vector3(r[0].Pos, r[1].Pos, r[2].Pos)) * Vector3.forward;
+//				Vector3 targetUpward = Quaternion.Euler(new Vector3(r[0].Pos, r[1].Pos, r[2].Pos)) * Vector3.up;
+
+//                Quaternion curRot = Quaternion.LookRotation(curForward, curUpward);
+//                Quaternion targetRot = Quaternion.LookRotation(targetForward, targetUpward);
+
+//                Quaternion deltaRotation = targetRot * Quaternion.Inverse(curRot);
+
+//                deltaRotation.ToAngleAxis(out float angle, out Vector3 axis);
+
+//                //// Handle the angle wrapping (Unity returns 0-360, but we want -180 to 180)
+//                //if (angle > 180f)
+//                //    angle -= 360f;
+
+
+//                // Angular velocity vector (axis scaled by angular speed)
+//                Vector3 targetAngularVelocity = axis * angle * Mathf.Deg2Rad;
+//                //Vector3 targetAngularVelocity = vp.tr.TransformDirection(Mathf.Deg2Rad * new Vector3(r[0].speed, r[1].speed, r[2].speed));
+
+//				float maxTorque = Mathf.Infinity; // or set to your maximum allowed torque
+
+//                Vector3 currentAngularVelocity = rb.angularVelocity;
+//                //Vector3 inertiaWorld = rb.inertiaTensorRotation * Vector3.Scale(rb.inertiaTensor, rb.inertiaTensorRotation * Vector3.one);
+//                Quaternion inertiaRotation = rb.inertiaTensorRotation;
+
+//                Vector3 angularAcceleration = (targetAngularVelocity - currentAngularVelocity) / Time.fixedDeltaTime;
+//                Vector3 torque = inertiaRotation * Vector3.Scale(rb.inertiaTensor, Quaternion.Inverse(inertiaRotation) * angularAcceleration);
+
+//                // Optionally clamp torque
+//                if (torque.magnitude > maxTorque)
+//                    torque = torque.normalized * maxTorque;
+
+//                rb.AddTorque(torque, ForceMode.Acceleration);
+//                //rb.AddTorque(Mathf.Deg2Rad * rb.mass * new Vector3(r[0].speed, r[1].speed, r[2].speed), ForceMode.Force);
+//			}
+
+//			//rb.AddRelativeTorque(Mathf.Deg2Rad * new Vector3(r[0].Delta, r[1].Delta, r[2].Delta), ForceMode.VelocityChange);
+
+//			//Vector3 delta = new Vector3(r[0].Delta(), r[1].Delta(), r[2].Delta());
+
+
+//			//if(vp.name.Contains("Clone"))
+//			//{
+//			//    Debug.DrawRay(vp.transform.position, vp.transform.TransformDirection(localEvoAngularVelocity), Color.red, 3);
+//			//    //Debug.Log(localEvoAngularVelocity.magnitude);
+
+//			//}
+//		}
+//		else
+//		{
+//			if (vp.SGPshiftbutton > 0)
+//			{
+//				if (prevSGPShiftButton == 0 && (vp.reallyGroundedWheels == 4 || ((vp.crashing || vp.colliding))))
+//				{ // shift press before jump
+//					shiftPressTime = Time.time;
+//					//Debug.Log("shiftPressTime");
+//				}
+//			}
+
+//			if (vp.reallyGroundedWheels == 0 && !vp.colliding && !vp.crashing && (Time.time - shiftPressTime) < maxTimeToInit)
+//			{
+//				//Debug.Log("stunting");
+//				evoBloorp.Play();
+//				stunting = true;
+//				euler = vp.tr.rotation.eulerAngles;
+//				r[0].Init(euler.x, Axis.X); //rX
+//				r[1].Init(euler.y, Axis.Y); // rY
+//				r[2].Init(euler.z, Axis.Z); // rZ
+//			}
+//		}
+//		prevSGPShiftButton = vp.SGPshiftbutton;
+//	}
+
+//	internal void Reset()
+//	{
+//		stunting = false;
+//	}
+//}
 

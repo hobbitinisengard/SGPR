@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 7743342784857691922}
   - component: {fileID: 6690724697820747959}
   - component: {fileID: 8880761877405707389}
-  m_Layer: 28
+  m_Layer: 0
   m_Name: sky3
   m_TagString: Untagged
   m_Icon: {fileID: 0}

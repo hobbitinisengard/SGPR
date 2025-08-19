@@ -264,7 +264,7 @@ public class K1999
 		}
 		return racingLine;
 	}
-	public void LoadData(in List<Vector3> leftLimits, in List<Vector3> rightLimits)//const RoadStrip & road)
+	public void LoadData(in IList<Vector3> leftLimits, in IList<Vector3> rightLimits)//const RoadStrip & road)
 	{
 		Divs = leftLimits.Count;
 		tx = new float[Divs];

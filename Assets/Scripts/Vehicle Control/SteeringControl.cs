@@ -39,6 +39,11 @@ namespace RVP
 		[Range(0, 1)]
 		public float absSteerInput;
 		public float collisionWheelMult;
+		public AnimationCurve holdDurationThresholdCurve { get; private set; } = AnimationCurve.Linear(0.5f, 0, 1, 1);
+        public void SetHoldDurationThreshold(float holdDurationThreshold)
+		{
+			holdDurationThresholdCurve = AnimationCurve.Linear(holdDurationThreshold, 0, 1, 1);
+        }
 		void GenerateGammaCurve()
 		{
 			if (analogInputCurve == null || gamma != F.I.playerData.deadzone)
@@ -120,7 +125,6 @@ namespace RVP
 					{
 						float add = /*(0.75f + .25f * holdDuration) * */steerAdd;
 						holdDuration = Mathf.Clamp01(holdDuration + (vp.SGPshiftbutton > 0 ? 5 : 1) * add * .01f * Time.fixedDeltaTime);
-						
 					}
 				}
 				else
@@ -148,9 +152,9 @@ namespace RVP
 			{
 				if (!vp.followAI.selfDriving)
 				{
-					//vp.wheels[0].sidewaysFriction = Mathf.Lerp(vp.wheels[2].initSidewaysFriction, shiftRearFriction, 2.5f * (holdDuration - .6f));
-					//vp.wheels[1].sidewaysFriction = vp.wheels[0].sidewaysFriction;
-					vp.wheels[2].sidewaysFriction = Mathf.Lerp(vp.wheels[2].initSidewaysFriction, shiftRearFriction, 2 * (holdDuration - .5f));
+					vp.wheels[0].sidewaysFriction = Mathf.Lerp(vp.wheels[2].initSidewaysFriction, shiftRearFriction, holdDurationThresholdCurve.Evaluate(holdDuration-0.1f));// 2.5f * (holdDuration - .6f));
+					vp.wheels[1].sidewaysFriction = vp.wheels[0].sidewaysFriction;
+					vp.wheels[2].sidewaysFriction = Mathf.Lerp(vp.wheels[2].initSidewaysFriction, shiftRearFriction, holdDurationThresholdCurve.Evaluate(holdDuration));
 					vp.wheels[3].sidewaysFriction = vp.wheels[2].sidewaysFriction;
 				}
 

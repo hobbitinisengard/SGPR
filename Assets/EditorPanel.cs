@@ -116,7 +116,7 @@ public class EditorPanel : MonoBehaviour
 	public GameObject infoText;
 	public GameObject fillMenu;
 	public GameObject replayCamerasContainer;
-	public GameObject mergedTrackCollidersContainer;
+	Transform mergedTrackCollidersContainer;
 	public Image connectButtonImage;
 	public Image snappingButtonImage;
 	public Image scalatorButtonImage;
@@ -128,7 +128,7 @@ public class EditorPanel : MonoBehaviour
 	public Toggle ShowXAxisToggle;
 	LineRenderer ShowXAxisLineRenderer;
 	public Button terrainBtn;
-	public RacingPathParams[] racingPathParams;//20,0,0,50
+	public RacingPathParams racingPathParams;//10,0,0,50
 	Vector3? lastEditorCameraPosition;
 	Quaternion lastEditorCameraRotation;
 	Dictionary<string, GameObject> cachedTiles = new Dictionary<string, GameObject>();
@@ -145,7 +145,6 @@ public class EditorPanel : MonoBehaviour
 	bool curMirror;
 	public GameObject placedTilesContainer { get; private set; }
 
-	PathCreator[] pathCreators;
 	GameObject[] racingLineContainers;
 	Vector4[] racingLine;
 
@@ -221,9 +220,8 @@ public class EditorPanel : MonoBehaviour
 		buttonAnimationCurve.AddKey(new Keyframe(.5f, 1));
 		placedTilesContainer = new GameObject("placedTilesContainer");
 
-		pathCreators = raceManager.racingPaths;
-		racingLineContainers = new GameObject[pathCreators.Length];
-		for (int i = 0; i < pathCreators.Length; ++i)
+		racingLineContainers = new GameObject[raceManager.racingPaths.Length];
+		for (int i = 0; i < raceManager.racingPaths.Length; ++i)
 		{
 			racingLineContainers[i] = new GameObject("racingLine" + i.ToString());
 		}
@@ -1009,18 +1007,29 @@ public class EditorPanel : MonoBehaviour
 		}
 
 
-		//Vector3[] middlesOfRoad = new Vector3[Lpath.Count];
-		//for (int i = 0; i < middlesOfRoad.Length; ++i)
-		//	middlesOfRoad[i] = (Lpath[i] + Rpath[i]) / 2f;
-		//RaceManager.I.universalPath.bezierPath = new BezierPath(middlesOfRoad, true, PathSpace.xyz);
-
-		for (int i = 0; i < pathCreators.Length; ++i)
+		List<Vector3> middlesOfRoad = new(Lpath.Count);
+		for (int i = 0; i < Lpath.Count; ++i)
 		{
-			K1999 k1999 = new(racingPathParams[i]);
-			k1999.LoadData(Lpath, Rpath);
-			k1999.CalcRaceLine();
-			racingLine = k1999.GetRacingLine(Lpath, Rpath);
+            middlesOfRoad.Add((Lpath[i] + Rpath[i]) / 2f);
+        }
+			
 
+		RaceManager.I.universalPath.bezierPath = new BezierPath(middlesOfRoad, true, PathSpace.xyz);
+
+		for (int i = 0; i < raceManager.racingPaths.Length; ++i)
+		{
+			K1999 k1999 = new(racingPathParams);
+
+			if (i == 0)
+				k1999.LoadData(Lpath, middlesOfRoad);
+			else if(i == 1)
+                k1999.LoadData(middlesOfRoad, Rpath);
+			else
+                k1999.LoadData(Lpath, Rpath);
+
+            k1999.CalcRaceLine();
+			racingLine = k1999.GetRacingLine(Lpath, Rpath);
+            
 			if (replacements != null)
 			{
 				foreach (var r in replacements)
@@ -1034,7 +1043,8 @@ public class EditorPanel : MonoBehaviour
 					}
 				}
 			}
-			pathCreators[i].bezierPath = new BezierPath(racingLine.ToArray(), true, PathSpace.xyz);
+
+			raceManager.racingPaths[i].bezierPath = new BezierPath(racingLine.ToArray(), true, PathSpace.xyz);
 			SetPathClosed(true);
 			connectButtonImage.color = Color.green;
 			pathFollower.SetActive(true);
@@ -1046,7 +1056,7 @@ public class EditorPanel : MonoBehaviour
 			}
 			// Create castable points
 			float progress = 0;
-			if (pathCreators[i].path.length > 10000)
+			if (raceManager.racingPaths[i].path.length > 10000)
 			{
 				Debug.LogError("Path > 10000");
 				loadingTrack = false;
@@ -1054,16 +1064,16 @@ public class EditorPanel : MonoBehaviour
 			}
 			else
 			{
-				for (int j = 0; j < 10000 && progress < pathCreators[i].path.length; ++j)
+				for (int j = 0; j < 10000 && progress < raceManager.racingPaths[i].path.length; ++j)
 				{
 					GameObject castable = GameObject.CreatePrimitive(PrimitiveType.Sphere);
 					Destroy(castable.GetComponent<MeshRenderer>());
-					castable.transform.position = pathCreators[i].path.GetPointAtDistance(progress);
+					castable.transform.position = raceManager.racingPaths[i].path.GetPointAtDistance(progress);
 					castable.transform.parent = racingLineContainers[i].transform;
 					var col = castable.GetComponent<SphereCollider>();
 					col.radius = 1;
 					col.isTrigger = true;
-					castable.layer = F.I.racingLineLayer;
+					castable.layer = F.I.racingLineLayers[i];
 					castable.name = progress.ToString(CultureInfo.InvariantCulture);
 					progress += F.I.racingPathResolution;
 				}
@@ -1075,7 +1085,7 @@ public class EditorPanel : MonoBehaviour
 				{
 					if (c.isStuntZone || c.trackCamera != null)
 					{
-						Collider[] hits = Physics.OverlapSphere(c.transform.position + Vector3.up, 30, 1 << F.I.racingLineLayer);
+						Collider[] hits = Physics.OverlapSphere(c.transform.position + Vector3.up, 30, 1 << F.I.racingLineLayers[0]);
 						float min = 999;
 						int closestIdx = 0;
 						for (int j = 0; j < hits.Length; ++j)
@@ -1819,27 +1829,44 @@ public class EditorPanel : MonoBehaviour
 		{ // remove leftover replay cams in container
 			Destroy(replayCamerasContainer.transform.GetChild(i).gameObject);
 		}
-		Destroy(mergedTrackCollidersContainer);
+		if(mergedTrackCollidersContainer != null)
+			Destroy(mergedTrackCollidersContainer.gameObject);
     }
     public void GenerateMergedTrackColliders()
     {
-        mergedTrackCollidersContainer = new GameObject("MergedTrackColliders");
-        List<Transform>[] tilesToBeMergedBySurfaceType = new List<Transform>[GroundSurfaceMaster.surfaceTypesStatic.Length];
-		for (int i = 0; i < tilesToBeMergedBySurfaceType.Length; ++i)
+        mergedTrackCollidersContainer = new GameObject("MergedTrackColliders").transform;
+        List<CombineInstance>[] combinedMeshesToBeMergedBySurfaceType = new List<CombineInstance>[GroundSurfaceMaster.surfaceTypesStatic.Length];
+		for (int i = 0; i < combinedMeshesToBeMergedBySurfaceType.Length; ++i)
 		{
-			tilesToBeMergedBySurfaceType[i] = new List<Transform>();
 			var newMergedTrackColliderForSurfaceType = new GameObject(GroundSurfaceMaster.surfaceTypesStatic[i].ToString() + "MergedCollider");
-			newMergedTrackColliderForSurfaceType.transform.parent = mergedTrackCollidersContainer.transform;
+			newMergedTrackColliderForSurfaceType.transform.parent = mergedTrackCollidersContainer;
+			combinedMeshesToBeMergedBySurfaceType[i] = new List<CombineInstance>();
         }
 		for (int i = 0; i < placedTilesContainer.transform.childCount; ++i)
 		{
 			Tile tile = placedTilesContainer.transform.GetChild(i).GetComponent<Tile>();
-			if (tile.gameObject.layer == F.I.roadLayer)
+			if (tile.transform.childCount > 0 && tile.transform.GetChild(0).gameObject.layer == F.I.roadLayer)
 			{
-				tilesToBeMergedBySurfaceType[tile.mc.GetComponent<GroundSurfaceInstance>().surfaceType].Add(tile.transform);
-			}
+				var sType = tile.mc.GetComponent<GroundSurfaceInstance>().surfaceType;
+				combinedMeshesToBeMergedBySurfaceType[sType].Add(new CombineInstance()
+				{
+					mesh = tile.mc.sharedMesh,
+					transform = tile.mc.transform.localToWorldMatrix,
+				});
+				tile.mc.enabled = false;
+            }
 		}
-		
+		for(int i=0; i<combinedMeshesToBeMergedBySurfaceType.Length; i++)
+		{
+			var mergedContainer = mergedTrackCollidersContainer.GetChild(i);
+			mergedContainer.gameObject.layer = F.I.roadLayer;
+			var mc = mergedContainer.gameObject.AddComponent<MeshCollider>();
+			Mesh combinedMesh = new();
+			combinedMesh.CombineMeshes(combinedMeshesToBeMergedBySurfaceType[i].ToArray(),false);
+			//combinedMesh = Info.MergeVertices(combinedMesh);
+			mc.sharedMesh = combinedMesh;
+			mergedContainer.gameObject.AddComponent<GroundSurfaceInstance>().surfaceType = i;
+        }
 
     }
     public IEnumerator LoadTrack()

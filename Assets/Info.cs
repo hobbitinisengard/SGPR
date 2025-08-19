@@ -14,10 +14,8 @@ using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
-using UnityEngine.Localization;
 using UnityEngine.Localization.Settings;
 using UnityEngine.Localization.Tables;
-using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.UI;
 public enum PlayerState { InRace, InLobbyUnready, InLobbyReady };
 public enum Envir { GER, JAP, SPN, FRA, ENG, USA, ITA, MEX };
@@ -73,7 +71,7 @@ public class Info : MonoBehaviour
 	public Material emissiveRearLighter;
 	public Material emissiveRearDarker;
 	public AudioMixer mainAudioMixer;
-	public const string VERSION = "0.4.8";
+	public const string VERSION = "0.4.9";
 	public bool minimized { get; private set; }
     [DllImport("user32.dll")]
     static extern bool SetCursorPos(int X, int Y);
@@ -326,6 +324,8 @@ public class Info : MonoBehaviour
 	public ViewSwitcher viewSwitcher;
 	public Chat chat;
 	public PathCreator universalPath;
+	public PathCreator extraPath1;
+	public PathCreator extraPath2;
 
 	public List<int> stuntpointsContainer = new();
 	public List<ReplayCam> replayCams = new();
@@ -349,7 +349,7 @@ public class Info : MonoBehaviour
 	public readonly int terrainLayer = 13;
 	public readonly int cameraLayer = 14;
 	public readonly int flagLayer = 15;
-	public readonly int racingLineLayer = 16;
+	public readonly int[] racingLineLayers = new[] { 16, 27, 28 };
 	public readonly int pitsLineLayer = 17;
 	public readonly int pitsZoneLayer = 18;
 	public readonly int aeroTunnel = 19;
@@ -633,6 +633,47 @@ public class Info : MonoBehaviour
 		w.Close();
 	}
 
+    public static Mesh MergeVertices(Mesh combinedMesh, float threshold = 0.0001f)
+    {
+        Vector3[] oldVerts = combinedMesh.vertices;
+        int[] oldTris = combinedMesh.triangles;
+
+        List<Vector3> newVerts = new List<Vector3>();
+        int[] map = new int[oldVerts.Length];
+
+        for (int i = 0; i < oldVerts.Length; i++)
+        {
+            bool found = false;
+            for (int j = 0; j < newVerts.Count; j++)
+            {
+                if (Vector3.Distance(oldVerts[i], newVerts[j]) < threshold)
+                {
+                    map[i] = j;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                map[i] = newVerts.Count;
+                newVerts.Add(oldVerts[i]);
+            }
+        }
+
+        // Remap triangles
+        int[] newTris = new int[oldTris.Length];
+        for (int i = 0; i < oldTris.Length; i++)
+        {
+            newTris[i] = map[oldTris[i]];
+        }
+
+        Mesh weldedMesh = new Mesh();
+        weldedMesh.vertices = newVerts.ToArray();
+        weldedMesh.triangles = newTris;
+        weldedMesh.RecalculateNormals();
+		return weldedMesh;
+    }
+
 }
 [Serializable]
 public class Record
@@ -895,5 +936,6 @@ public static class IMG2Sprite
 		}
 		return null;                     // Return null if load failed
 	}
+   
 }
 
