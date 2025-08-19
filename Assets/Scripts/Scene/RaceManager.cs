@@ -311,7 +311,6 @@ namespace RVP
 			ResultsView.Clear();
 			F.I.raceStartDate = DateTime.UtcNow.AddSeconds(5);
 			
-			
 			StartCoroutine(StartRaceCoroutine());
 		}
 		IEnumerator StartRaceCoroutine()
@@ -452,6 +451,8 @@ namespace RVP
 			DemoSGPLogo.SetActive(F.I.s_spectator);
 			hud.gameObject.SetActive(!F.I.s_spectator);
 			countDownSeq.gameObject.SetActive(!F.I.s_spectator);
+
+			editorPanel.GenerateMergedTrackColliders();
 
 			if (F.I.s_spectator)
 				StartCoroutine(SpectatorLoop());

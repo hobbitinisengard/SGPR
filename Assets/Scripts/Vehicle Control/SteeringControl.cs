@@ -80,7 +80,6 @@ namespace RVP
 		}
 		void FixedUpdate()
 		{
-			collisionWheelMult = Mathf.Clamp01(collisionWheelMult + Time.fixedDeltaTime);
 			absSteerInput = Mathf.Abs(vp.steerInput);
 			if (vp.followAI.selfDriving)
 			{
@@ -149,9 +148,9 @@ namespace RVP
 			{
 				if (!vp.followAI.selfDriving)
 				{
-					vp.wheels[0].sidewaysFriction = collisionWheelMult * Mathf.Lerp(vp.wheels[2].initSidewaysFriction, shiftRearFriction, 4 * (holdDuration-.75f));
-					vp.wheels[1].sidewaysFriction = vp.wheels[0].sidewaysFriction;
-					vp.wheels[2].sidewaysFriction = collisionWheelMult * Mathf.Lerp(vp.wheels[2].initSidewaysFriction, shiftRearFriction, 2 * (holdDuration - .5f));
+					//vp.wheels[0].sidewaysFriction = Mathf.Lerp(vp.wheels[2].initSidewaysFriction, shiftRearFriction, 2.5f * (holdDuration - .6f));
+					//vp.wheels[1].sidewaysFriction = vp.wheels[0].sidewaysFriction;
+					vp.wheels[2].sidewaysFriction = Mathf.Lerp(vp.wheels[2].initSidewaysFriction, shiftRearFriction, 2 * (holdDuration - .5f));
 					vp.wheels[3].sidewaysFriction = vp.wheels[2].sidewaysFriction;
 				}
 

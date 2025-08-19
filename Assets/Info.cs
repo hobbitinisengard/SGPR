@@ -1,23 +1,24 @@
 using Newtonsoft.Json;
+using PathCreation;
 using RVP;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
+using Unity.Multiplayer.Playmode;
 using UnityEngine;
 using UnityEngine.Audio;
-using System.Security.Cryptography;
-using PathCreation;
 using UnityEngine.EventSystems;
-using Unity.Multiplayer.Playmode;
 using UnityEngine.InputSystem;
-using UnityEngine.UI;
-using UnityEngine.Localization.Settings;
-using System.Collections;
-using UnityEngine.Localization.Tables;
 using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
+using UnityEngine.Localization.Tables;
 using UnityEngine.ResourceManagement.AsyncOperations;
+using UnityEngine.UI;
 public enum PlayerState { InRace, InLobbyUnready, InLobbyReady };
 public enum Envir { GER, JAP, SPN, FRA, ENG, USA, ITA, MEX };
 public enum CarGroup { Wild, Aero, Speed, Team };
@@ -71,17 +72,18 @@ public class Info : MonoBehaviour
 	public Material opaqueMaterial;
 	public Material emissiveRearLighter;
 	public Material emissiveRearDarker;
+	public AudioMixer mainAudioMixer;
 	public const string VERSION = "0.4.8";
 	public bool minimized { get; private set; }
-	
-	void OnApplicationFocus(bool hasFocus)
+    [DllImport("user32.dll")]
+    static extern bool SetCursorPos(int X, int Y);
+    void OnApplicationFocus(bool hasFocus)
 	{
-		
 		minimized = !hasFocus;
-		if (minimized)
-			F.I.enterRef.action.Disable();
-		else
-			F.I.enterRef.action.Enable();
+		//if (minimized)
+		//	F.I.enterRef.action.Disable();
+		//else
+		//	F.I.enterRef.action.Enable();
 	}
 	/// <summary>Retrieves localized string from loaded localization table</summary>
 	public string LocStr(string key)
@@ -92,6 +94,7 @@ public class Info : MonoBehaviour
 	private void Awake()
 	{
 		F.I = this;
+		SetCursorPos(0, 0);
 		UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
 		MultiPlayerSelector.I = mpSelectorInitializer;
 		versionText.text = VERSION;

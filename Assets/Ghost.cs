@@ -32,6 +32,8 @@ public class Ghost : NetworkBehaviour
 		{
 			for(int i=0; i<r.materials.Length; ++i)
 			{
+				if (r.materials[i].name.Contains("reflect"))
+					continue;
 				//var tex = r.materials[i].mainTexture;
 				if (isHittable)
 				{

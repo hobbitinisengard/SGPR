@@ -44,11 +44,11 @@ public class SGP_Bouncer : MonoBehaviour
 			bouncyCols[i].hasModifiableContacts = true;
 		}
 
-		//if (!OnContactModifyRegistered)
-		//{
-		//	OnContactModifyRegistered = true;
-		//	Physics.ContactModifyEvent += OnContactModify;
-		//}
+		if (!OnContactModifyRegistered)
+		{
+			OnContactModifyRegistered = true;
+			Physics.ContactModifyEvent += OnContactModify;
+		}
 	}
 	static void OnContactModify(PhysicsScene scene, NativeArray<ModifiableContactPair> pairs)
 	{
@@ -108,6 +108,7 @@ public class SGP_Bouncer : MonoBehaviour
 		
 
 		vp.colliding = true;
+		vp.rb.mass = vp.originalMass * Mathf.InverseLerp(83, 44, col.impulse.magnitude);
 		Vector3 norm = contact.normal;
 		float upNormDot = Vector3.Dot(vp.tr.up, norm);
 		
@@ -121,13 +122,16 @@ public class SGP_Bouncer : MonoBehaviour
 
 			if (contact.otherCollider.gameObject.layer == F.I.carCarCollisionLayer)
 			{
-				mult = vp.rb.mass / vp.originalMass;
-				vec = Vector3.ProjectOnPlane(-col.impulse / mult, Vector3.up);
-				vp.rb.AddForceAtPosition(vec,
-					vp.rb.worldCenterOfMass,//col.GetContact(0).point,
-					ForceMode.Impulse);
+				// collision car to car - project on plane 
+				// + force up
+				//vec = Vector3.ProjectOnPlane(-col.relativeVelocity, Vector3.up);
+				//vec += Vector3.up * col.relativeVelocity.magnitude;
+    //            vp.rb.AddForceAtPosition(vec,
+				//	vp.rb.worldCenterOfMass,//col.GetContact(0).point,
+				//	ForceMode.VelocityChange);
 
-				vp.rb.mass = minimumMass * vp.originalMass;
+				//vp.rb.mass = minimumMass * vp.originalMass;
+
 			//	//mult = 1f;
 			//	//direction = Vector3.ProjectOnPlane(-collision.impulse.normalized, Vector3.up);
 			//	////direction = norm;

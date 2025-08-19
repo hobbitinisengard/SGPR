@@ -191,7 +191,7 @@ public class SGP_Evo : MonoBehaviour
 	{
 		if (stunting)
 		{
-			if (vp.rb.isKinematic || vp.crashing || vp.colliding || vp.reallyGroundedWheels > 0)
+			if (vp.crashing || vp.colliding || vp.reallyGroundedWheels > 0)
 			{
 				//Debug.Log("Crashed");
 				stunting = false;
@@ -250,8 +250,44 @@ public class SGP_Evo : MonoBehaviour
 
 			if (r.Any(a => a.Active))
 			{
-				rb.rotation = Quaternion.Euler(r[0].Pos, r[1].Pos, r[2].Pos);
-				rb.angularVelocity = vp.tr.TransformDirection(Mathf.Deg2Rad * new Vector3(r[0].speed, r[1].speed, r[2].speed));
+				//rb.rotation = Quaternion.Euler(r[0].Pos, r[1].Pos, r[2].Pos);
+				//rb.angularVelocity = vp.tr.TransformDirection(Mathf.Deg2Rad * new Vector3(r[0].speed, r[1].speed, r[2].speed));
+				Vector3 curForward = vp.forwardDir;
+				Vector3 curUpward = vp.upDir;
+				Vector3 targetForward = vp.tr.TransformDirection(Quaternion.Euler(new Vector3(r[0].Pos, r[1].Pos, r[2].Pos)) * Vector3.forward);
+				Vector3 targetUpward = vp.tr.TransformDirection(Quaternion.Euler(new Vector3(r[0].Pos, r[1].Pos, r[2].Pos)) * Vector3.up);
+
+                Quaternion curRot = Quaternion.LookRotation(curForward, curUpward);
+                Quaternion targetRot = Quaternion.LookRotation(targetForward, targetUpward);
+
+                Quaternion deltaRotation = targetRot * Quaternion.Inverse(curRot);
+
+                deltaRotation.ToAngleAxis(out float angle, out Vector3 axis);
+
+                //// Handle the angle wrapping (Unity returns 0-360, but we want -180 to 180)
+                //if (angle > 180f)
+                //    angle -= 360f;
+
+
+                // Angular velocity vector (axis scaled by angular speed)
+                Vector3 targetAngularVelocity = axis * angle * Mathf.Deg2Rad;
+                //Vector3 targetAngularVelocity = vp.tr.TransformDirection(Mathf.Deg2Rad * new Vector3(r[0].speed, r[1].speed, r[2].speed));
+                
+				float maxTorque = Mathf.Infinity; // or set to your maximum allowed torque
+
+                Vector3 currentAngularVelocity = rb.angularVelocity;
+                //Vector3 inertiaWorld = rb.inertiaTensorRotation * Vector3.Scale(rb.inertiaTensor, rb.inertiaTensorRotation * Vector3.one);
+                Quaternion inertiaRotation = rb.inertiaTensorRotation;
+
+                Vector3 angularAcceleration = (targetAngularVelocity - currentAngularVelocity) / Time.fixedDeltaTime;
+                Vector3 torque = inertiaRotation * Vector3.Scale(rb.inertiaTensor, Quaternion.Inverse(inertiaRotation) * angularAcceleration);
+
+                // Optionally clamp torque
+                if (torque.magnitude > maxTorque)
+                    torque = torque.normalized * maxTorque;
+
+                rb.AddTorque(torque, ForceMode.Acceleration);
+                //rb.AddTorque(Mathf.Deg2Rad * rb.mass * new Vector3(r[0].speed, r[1].speed, r[2].speed), ForceMode.Force);
 			}
 
 			//rb.AddRelativeTorque(Mathf.Deg2Rad * new Vector3(r[0].Delta, r[1].Delta, r[2].Delta), ForceMode.VelocityChange);

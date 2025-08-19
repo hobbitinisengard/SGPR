@@ -891,7 +891,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 304453825331200
-    m_Localized: "Z\u0142oty"
+    m_Localized: Golden
     m_Metadata:
       m_Items: []
   - m_Id: 304757304197120
@@ -1425,6 +1425,14 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 981667046752256
     m_Localized: Author
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38262869724815360
+    m_Localized: Music volume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38262940063293440
+    m_Localized: SFX Volume
     m_Metadata:
       m_Items: []
   references:

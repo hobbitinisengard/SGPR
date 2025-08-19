@@ -1001,13 +1001,13 @@ MonoBehaviour:
   active: 1
   quality:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 3
   focusMode:
     m_OverrideState: 1
     m_Value: 0
   focusDistance:
     m_OverrideState: 1
-    m_Value: 10
+    m_Value: 44.28
   focusDistanceMode:
     m_OverrideState: 1
     m_Value: 0
@@ -1016,31 +1016,31 @@ MonoBehaviour:
     m_Value: 0
   nearFocusEnd:
     m_OverrideState: 1
-    m_Value: 4
+    m_Value: 2000
   farFocusStart:
     m_OverrideState: 1
-    m_Value: 10
+    m_Value: 2000
   farFocusEnd:
     m_OverrideState: 1
-    m_Value: 20
+    m_Value: 3500
   m_NearSampleCount:
     m_OverrideState: 1
-    m_Value: 5
+    m_Value: 3
   m_NearMaxBlur:
     m_OverrideState: 1
-    m_Value: 4
+    m_Value: 0
   m_FarSampleCount:
     m_OverrideState: 1
-    m_Value: 7
+    m_Value: 4
   m_FarMaxBlur:
     m_OverrideState: 1
-    m_Value: 8
+    m_Value: 1.5
   m_Resolution:
     m_OverrideState: 1
-    m_Value: 2
+    m_Value: 4
   m_HighQualityFiltering:
     m_OverrideState: 1
-    m_Value: 1
+    m_Value: 0
   m_PhysicallyBased:
     m_OverrideState: 1
     m_Value: 0
@@ -2503,7 +2503,7 @@ MonoBehaviour:
     m_Value: 0.3
   cascadeShadowBorder0:
     m_OverrideState: 1
-    m_Value: 0.06905067
+    m_Value: 0
   cascadeShadowBorder1:
     m_OverrideState: 1
     m_Value: 0.05086228

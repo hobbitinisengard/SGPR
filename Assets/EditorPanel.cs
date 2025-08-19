@@ -116,6 +116,7 @@ public class EditorPanel : MonoBehaviour
 	public GameObject infoText;
 	public GameObject fillMenu;
 	public GameObject replayCamerasContainer;
+	public GameObject mergedTrackCollidersContainer;
 	public Image connectButtonImage;
 	public Image snappingButtonImage;
 	public Image scalatorButtonImage;
@@ -1799,7 +1800,7 @@ public class EditorPanel : MonoBehaviour
 		{
 			var lights = envir.transform.Find("Lights");
 			if (lights != null)
-				lights.gameObject.SetActive(F.I.s_timeOfDay == TimeOfDay.Night);
+				lights.gameObject.SetActive(F.I.s_timeOfDay == TimeOfDay.Night || F.I.tracks[F.I.s_trackName].envir == Envir.FRA);
 		}
 	}
 	public void RemoveTrackLeftovers()
@@ -1818,8 +1819,30 @@ public class EditorPanel : MonoBehaviour
 		{ // remove leftover replay cams in container
 			Destroy(replayCamerasContainer.transform.GetChild(i).gameObject);
 		}
-	}
-	public IEnumerator LoadTrack()
+		Destroy(mergedTrackCollidersContainer);
+    }
+    public void GenerateMergedTrackColliders()
+    {
+        mergedTrackCollidersContainer = new GameObject("MergedTrackColliders");
+        List<Transform>[] tilesToBeMergedBySurfaceType = new List<Transform>[GroundSurfaceMaster.surfaceTypesStatic.Length];
+		for (int i = 0; i < tilesToBeMergedBySurfaceType.Length; ++i)
+		{
+			tilesToBeMergedBySurfaceType[i] = new List<Transform>();
+			var newMergedTrackColliderForSurfaceType = new GameObject(GroundSurfaceMaster.surfaceTypesStatic[i].ToString() + "MergedCollider");
+			newMergedTrackColliderForSurfaceType.transform.parent = mergedTrackCollidersContainer.transform;
+        }
+		for (int i = 0; i < placedTilesContainer.transform.childCount; ++i)
+		{
+			Tile tile = placedTilesContainer.transform.GetChild(i).GetComponent<Tile>();
+			if (tile.gameObject.layer == F.I.roadLayer)
+			{
+				tilesToBeMergedBySurfaceType[tile.mc.GetComponent<GroundSurfaceInstance>().surfaceType].Add(tile.transform);
+			}
+		}
+		
+
+    }
+    public IEnumerator LoadTrack()
 	{
 		if (!initialized)
 			Initialize();
@@ -2034,5 +2057,5 @@ public class EditorPanel : MonoBehaviour
 		}
 	}
 
-
+   
 }
