@@ -3,11 +3,13 @@ using PathCreation;
 using RVP;
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
+using System.Threading;
 using System.Threading.Tasks;
 using Unity.Multiplayer.Playmode;
 using UnityEngine;
@@ -349,10 +351,11 @@ public class Info : MonoBehaviour
 	public readonly int terrainLayer = 13;
 	public readonly int cameraLayer = 14;
 	public readonly int flagLayer = 15;
-	public readonly int[] racingLineLayers = new[] { 16, 27, 28 };
+	public readonly int[] racingLineLayers = new[] { 16, 25, 27, 28};
 	public readonly int pitsLineLayer = 17;
 	public readonly int pitsZoneLayer = 18;
 	public readonly int aeroTunnel = 19;
+	public readonly int vehicleTriggerLayer = 22;
 	public readonly int surfaceLayer = 23;
 	public readonly int ghostLayer = 24;
 	public readonly int carCarCollisionLayer = 26;
@@ -633,45 +636,75 @@ public class Info : MonoBehaviour
 		w.Close();
 	}
 
-    public static Mesh MergeVertices(Mesh combinedMesh, float threshold = 0.0001f)
+    public static Mesh MergeVertices(Mesh combinedMesh, float threshold = 0.7f)
     {
         Vector3[] oldVerts = combinedMesh.vertices;
         int[] oldTris = combinedMesh.triangles;
 
-        List<Vector3> newVerts = new List<Vector3>();
-        int[] map = new int[oldVerts.Length];
+        Vector3Int Quantize(Vector3 v) =>
+            new Vector3Int(
+                Mathf.RoundToInt(v.x / threshold),
+                Mathf.RoundToInt(v.y / threshold),
+                Mathf.RoundToInt(v.z / threshold)
+            );
 
-        for (int i = 0; i < oldVerts.Length; i++)
+        var dict = new ConcurrentDictionary<Vector3Int, int>();
+        var verts = new List<Vector3>();
+        int[] map = new int[oldVerts.Length];
+        int counter = -1;
+        object lockObj = new object();
+
+        Parallel.For(0, oldVerts.Length, i =>
         {
-            bool found = false;
-            for (int j = 0; j < newVerts.Count; j++)
+            Vector3Int q = Quantize(oldVerts[i]);
+            int? assigned = null;
+
+            // Check 27 neighboring bins
+            for (int dx = -1; dx <= 1 && !assigned.HasValue; dx++)
+                for (int dy = -1; dy <= 1 && !assigned.HasValue; dy++)
+                    for (int dz = -1; dz <= 1 && !assigned.HasValue; dz++)
+                    {
+                        Vector3Int neighbor = new Vector3Int(q.x + dx, q.y + dy, q.z + dz);
+                        if (dict.TryGetValue(neighbor, out int idx))
+                        {
+                            Vector3 existing;
+                            lock (lockObj) existing = verts[idx];
+                            if (Vector3.Distance(existing, oldVerts[i]) < threshold)
+                                assigned = idx;
+                        }
+                    }
+
+            if (!assigned.HasValue)
             {
-                if (Vector3.Distance(oldVerts[i], newVerts[j]) < threshold)
+                lock (lockObj)
                 {
-                    map[i] = j;
-                    found = true;
-                    break;
+                    // Double-check after entering lock to avoid duplicate rep
+                    if (!dict.TryGetValue(q, out int idx2))
+                    {
+                        int newIndex = ++counter;
+                        verts.Add(oldVerts[i]);
+                        dict[q] = newIndex;
+                        assigned = newIndex;
+                    }
+                    else
+                    {
+                        assigned = idx2;
+                    }
                 }
             }
-            if (!found)
-            {
-                map[i] = newVerts.Count;
-                newVerts.Add(oldVerts[i]);
-            }
-        }
 
-        // Remap triangles
+            map[i] = assigned.Value;
+        });
+
         int[] newTris = new int[oldTris.Length];
         for (int i = 0; i < oldTris.Length; i++)
-        {
             newTris[i] = map[oldTris[i]];
-        }
 
         Mesh weldedMesh = new Mesh();
-        weldedMesh.vertices = newVerts.ToArray();
+        weldedMesh.vertices = verts.ToArray();
         weldedMesh.triangles = newTris;
         weldedMesh.RecalculateNormals();
-		return weldedMesh;
+        return weldedMesh;
     }
 
 }

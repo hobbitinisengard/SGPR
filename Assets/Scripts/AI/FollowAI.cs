@@ -23,11 +23,9 @@ namespace RVP
 		}
 		const int steepestAllowedAngleOnRespawnDegs = 75;
 		List<int> stuntPoints;
-		int racingLineLayerNumber;
 		public List<ReplayCam> replayCams { get; private set; }
-		[NonSerialized]
-		public PathCreator trackPathCreator;
-		PathCreator pitsPathCreator;
+		public PathCreator trackPathCreator { get; private set; }
+        PathCreator pitsPathCreator;
 		/// <summary>
 		/// CPU takes control in pits
 		/// </summary>
@@ -116,7 +114,7 @@ namespace RVP
 				if (Time.time - LapProgressPercentTime > .2f) // for better performance
 				{
 					LapProgressPercentTime = Time.time;
-					int universalPathProgress = GetDist(1 << racingLineLayerNumber);
+					int universalPathProgress = GetDist(1 << F.I.universalPath.gameObject.layer);
 					if (universalPathProgress > progress + 2 * radius || universalPathProgress < progress - 2 * radius)
 						universalPathProgress = progress;
 
@@ -144,7 +142,8 @@ namespace RVP
 			progress = 1;
 			dist = 1;
 			lapProgressPercent = 0;
-			target.dist = progress;
+            trackPathCreator = RaceManager.I.racingPaths.GetRandom();
+            target.dist = progress;
 			target.pos = trackPathCreator.path.GetPointAtDistance(target.dist);
 			curStuntpointIdx = 0;
 			ResetCurCameraIdx();
@@ -162,10 +161,9 @@ namespace RVP
 			tr = transform;
 			rb = GetComponent<Rigidbody>();
 			vp = GetComponent<VehicleParent>();
-			racingLineLayerNumber = F.I.racingLineLayers[0];
 			stuntPoints = F.I.stuntpointsContainer;
 			replayCams = F.I.replayCams;
-			trackPathCreator = F.I.universalPath;
+			trackPathCreator = RaceManager.I.racingPaths.GetRandom();
 			ResetCurCameraIdx();
 			enabled = true;
 		}
@@ -178,7 +176,7 @@ namespace RVP
 			yield return null; // wait till other components initialize
 
 			maxPhysicalSteerAngle = vp.steeringControl.steeredWheels[0].steerRangeMax;
-			dist = GetDist(1 << racingLineLayerNumber);
+			dist = GetDist(1 << trackPathCreator.gameObject.layer);
 
 			if (progress == 0) // progress could be synched earlier so set progress when it's not been set
 			{
@@ -230,7 +228,7 @@ namespace RVP
 				speedLimitDist = -1;
 				if (resetProgress)
 				{
-					var newDist = GetDist(1 << racingLineLayerNumber) + 40;
+					var newDist = GetDist(1 << trackPathCreator.gameObject.layer) + 40;
 					if (newDist < progress + 300)
 						progress = newDist;
 				}
@@ -361,7 +359,7 @@ namespace RVP
 			{
 				if (Time.time - distLastTime > .2f) // for better performance
 				{
-					dist = GetDist(1 << racingLineLayerNumber);
+					dist = GetDist(1 << trackPathCreator.gameObject.layer);
 					distLastTime = Time.time;
 				}
 
@@ -651,7 +649,8 @@ namespace RVP
 			(!Physics.Raycast(resetPos + 5 * Vector3.up, Vector3.down, out h, 15, 1 << F.I.roadLayer)
 			|| Vector3.Dot(h.normal, Vector3.up) < -0.5f // while not hit road or hit culled face (backface raycasts are on)
 			|| Vector3.SignedAngle(resetDir, Vector3.up, Vector3.Cross(resetDir, Vector3.up)) < steepestAllowedAngleOnRespawnDegs
-			|| h.transform.parent.name == "loop") && progress < (trackPathCreator.path.length - 15))
+			|| (Physics.Raycast(resetPos + 5 * Vector3.up, Vector3.down, out h, 15, 1 << F.I.vehicleTriggerLayer) && h.rigidbody.gameObject.CompareTag("Loop"))) 
+			&& progress < (trackPathCreator.path.length - 15))
 			{
 				progress += 10;
 				resetPos = trackPathCreator.path.GetPointAtDistance(progress);
@@ -665,7 +664,7 @@ namespace RVP
 
 			vp.ghost.StartGhostResetting();
 			rb.isKinematic = true;
-			tr.position = h.point + Vector3.up + resetDir;
+			tr.position = resetPos + Vector3.up + resetDir;
 			yield return new WaitForFixedUpdate();
 			//rb.angularVelocity = Vector3.zero;
 			//rb.velocity = Vector3.zero;

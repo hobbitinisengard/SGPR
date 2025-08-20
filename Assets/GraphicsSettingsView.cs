@@ -60,20 +60,22 @@ public class GraphicsSettingsView : MonoBehaviour
     {
         if (!init)
         {
-            float add = (F.I.shiftRef.action.ReadValue<float>() > 0 ? -.1f : .1f);
-            F.I.playerData.musicVol = F.Wraparound(F.I.playerData.musicVol + add, 0, 1);
+            int add = (F.I.shiftRef.action.ReadValue<float>() > 0 ? -1 : 1);
+			int val = Mathf.RoundToInt(F.I.playerData.musicVol * 10);
+            F.I.playerData.musicVol = F.Wraparound(val + add, 0, 10) / 10f;
             F.I.SetMixerLevelLog("musicVol", F.I.playerData.musicVol, F.I.mainAudioMixer);
         }
-        musicText.text = F.I.LocStr("Music volume") + ": " + (F.I.playerData.musicVol*100).ToString("F0") + "%";
+        musicText.text = F.I.LocStr("Music Volume") + ": " + (F.I.playerData.musicVol*100).ToString("F0") + "%";
     }
     public void SwitchSFXVol(bool init)
     {
         if (!init)
         {
-            float add = (F.I.shiftRef.action.ReadValue<float>() > 0 ? -.1f : .1f);
-            F.I.playerData.musicVol = F.Wraparound(F.I.playerData.sfxVol + add, 0, 1);
+            int add = (F.I.shiftRef.action.ReadValue<float>() > 0 ? -1 : 1);
+            int val = Mathf.RoundToInt(F.I.playerData.sfxVol * 10);
+            F.I.playerData.sfxVol = F.Wraparound(val + add, 0, 10)/10f;
             F.I.SetMixerLevelLog("sfxVol", F.I.playerData.sfxVol, F.I.mainAudioMixer);
         }
-        sfxText.text = F.I.LocStr("SFX volume") + ": " + (F.I.playerData.sfxVol * 100).ToString("F0") + "%";
+        sfxText.text = F.I.LocStr("SFX Volume") + ": " + (F.I.playerData.sfxVol * 100).ToString("F0") + "%";
     }
 }

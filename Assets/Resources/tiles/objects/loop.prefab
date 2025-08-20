@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 4777826923259501358}
   m_Layer: 22
   m_Name: LoopBountyZone
-  m_TagString: Untagged
+  m_TagString: Loop
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -118,8 +118,8 @@ GameObject:
   - component: {fileID: 8609342579257266011}
   - component: {fileID: 1614069324693962731}
   m_Layer: 22
-  m_Name: Cube
-  m_TagString: Untagged
+  m_Name: Loop
+  m_TagString: Loop
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -222,7 +222,7 @@ GameObject:
   - component: {fileID: 1066110847180725674}
   m_Layer: 22
   m_Name: LoopBountyZone (1)
-  m_TagString: Untagged
+  m_TagString: Loop
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

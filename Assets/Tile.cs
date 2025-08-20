@@ -5,10 +5,18 @@ using System.IO;
 using System.Linq;
 using UnityEngine;
 
+
+
 [DisallowMultipleComponent]
 public class Tile : MonoBehaviour
 {
-	[NonSerialized]
+    public enum Type
+    {
+        NotRoad = 0,
+        NotRoadWithLights = 1,
+        Road = 2,
+    }
+    [NonSerialized]
 	public EditorPanel panel;
 	/// <summary>
 	/// Only one tile at a time may be not 'placed': the one that the player is currently selecting in track editor
@@ -23,8 +31,9 @@ public class Tile : MonoBehaviour
 	GameObject lightObj;
 
 	public MeshCollider[] Endings { get; private set; }
+	public Type type { get; private set; } = Type.NotRoad;
 
-	public void UpdateLights()
+    public void UpdateLights()
 	{
 		if(lightObj)
 		{
@@ -38,21 +47,29 @@ public class Tile : MonoBehaviour
 	{
 		// add mesh collider to 'main' mesh 
 		if (transform.childCount == 0) // tile isn't a road
-			mc = gameObject.AddComponent<MeshCollider>();
-		else
+		{
+            mc = gameObject.AddComponent<MeshCollider>();
+			type = Type.NotRoad;
+        }
+        else
 		{ 
 			var childObj = transform.GetChild(0);
 			
 			if (childObj.name == "lights")
-			{// tile is a decoration with lights
-				mc = gameObject.AddComponent<MeshCollider>();
+			{
+				type = Type.NotRoadWithLights;
+                mc = gameObject.AddComponent<MeshCollider>();
 
 				lightObj = childObj.gameObject;
 				UpdateLights();
 			}
 			else if(childObj.name != "extra")
-			{// tile is a road
-				mc = childObj.gameObject.AddComponent<MeshCollider>();
+			{
+                // some of the ad tiles have moving parts. they are not roads, but they have mesh colliders
+                if (childObj.name != "obrot")
+					type = Type.Road;
+
+                mc = childObj.gameObject.AddComponent<MeshCollider>();
 
 				if(childObj.childCount > 0)
 				{

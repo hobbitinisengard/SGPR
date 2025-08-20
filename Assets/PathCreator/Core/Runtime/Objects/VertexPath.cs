@@ -191,17 +191,20 @@ namespace PathCreation
 		public Vector3 GetTangent(int index)
 		{
 			return MathUtility.TransformDirection(localTangents[index], transform, space);
-		}
+			//return localTangents[index];
+        }
 
 		public Vector3 GetNormal(int index)
 		{
 			return MathUtility.TransformDirection(localNormals[index], transform, space);
-		}
+			//return localNormals[index];
+        }
 
 		public Vector4 GetPoint(int index)
 		{
 			return MathUtility.TransformPoint(localPoints[index], transform, space);
-		}
+			//return localPoints[index];
+        }
 		public Task<Vector4> GetPointAtDistanceAsync(float dst, EndOfPathInstruction endOfPathInstruction = EndOfPathInstruction.Loop)
 		{
 			return new Task<Vector4>(() => GetPointAtDistance(dst, endOfPathInstruction));

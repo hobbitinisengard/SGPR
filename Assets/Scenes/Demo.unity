@@ -34411,7 +34411,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 292.55768, y: -29.30658}
+  m_AnchoredPosition: {x: 292.55768, y: -29.306702}
   m_SizeDelta: {x: 82.771774, y: 50.700012}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &335092025
@@ -47546,6 +47546,7 @@ MonoBehaviour:
   - {fileID: 1913667369}
   - {fileID: 817293622}
   - {fileID: 390162733}
+  - {fileID: 2016430666}
   universalPath: {fileID: 2016430666}
   wheelCastMask:
     serializedVersion: 2
@@ -92802,7 +92803,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 127.01413, y: -29.30658}
+  m_AnchoredPosition: {x: 127.01413, y: -29.306702}
   m_SizeDelta: {x: 82.771774, y: 50.700012}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1054588072
@@ -105796,7 +105797,7 @@ PrefabInstance:
     - target: {fileID: 9209864997834222817, guid: 5fbe097fbb9f8f14f90c43482d70db7f,
         type: 3}
       propertyPath: BottomTextOnSelect
-      value: 
+      value: SFX Volume
       objectReference: {fileID: 0}
     - target: {fileID: 9209864997834222817, guid: 5fbe097fbb9f8f14f90c43482d70db7f,
         type: 3}
@@ -110255,7 +110256,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 47.81412, y: -29.30658}
+  m_AnchoredPosition: {x: 47.81412, y: -29.306702}
   m_SizeDelta: {x: 75.62824, y: 50.7}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1238725572
@@ -159296,7 +159297,7 @@ PrefabInstance:
     - target: {fileID: 1008837888474214145, guid: 6dc085f0557a9ec41b077378ce12574a,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -30.74997
+      value: -30.75
       objectReference: {fileID: 0}
     - target: {fileID: 1008837888474214145, guid: 6dc085f0557a9ec41b077378ce12574a,
         type: 3}
@@ -170290,7 +170291,7 @@ PrefabInstance:
     - target: {fileID: 9209864997834222817, guid: 5fbe097fbb9f8f14f90c43482d70db7f,
         type: 3}
       propertyPath: BottomTextOnSelect
-      value: 
+      value: Music Volume
       objectReference: {fileID: 0}
     - target: {fileID: 9209864997834222817, guid: 5fbe097fbb9f8f14f90c43482d70db7f,
         type: 3}
@@ -183737,7 +183738,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 209.78592, y: -29.30658}
+  m_AnchoredPosition: {x: 209.78592, y: -29.306702}
   m_SizeDelta: {x: 82.771774, y: 50.700012}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2049267889

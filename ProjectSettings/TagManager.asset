@@ -25,7 +25,7 @@ TagManager:
   - Terrain
   - TrackCamera
   - Flag
-  - Racingline
+  - Racingline0
   - PitsLine
   - PitsZone
   - AeroTunnel
@@ -34,9 +34,9 @@ TagManager:
   - VehicleTrigger
   - Surface
   - Ghost
-  - Racingline2
+  - Racingline1
   - CarCarCollision
-  - Background
+  - Racingline2
   - Sky
   - 
   - 
