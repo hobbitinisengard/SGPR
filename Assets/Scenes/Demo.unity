@@ -158614,11 +158614,6 @@ MonoBehaviour:
   initialRotationSlider: {fileID: 1892458573}
   ShowXAxisToggle: {fileID: 561788000}
   terrainBtn: {fileID: 628305501}
-  racingPathParams:
-    SecurityR: 10
-    SideDistExt: 0
-    SideDistInt: 0
-    Iterations: 50
 --- !u!114 &1773213222
 MonoBehaviour:
   m_ObjectHideFlags: 0

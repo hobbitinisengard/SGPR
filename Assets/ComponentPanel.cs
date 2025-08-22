@@ -614,7 +614,8 @@ public class DriveSavable : PartSavable
 	public float driveType;
 	public float steerAdd;
 	public float holdComebackSpeed;
-    public float holdThreshold;
+    public float gripAdd;
+	public float gripComebackSpeed;
     public float steerLimitAt0;
 	public float steerLimitAt200;
 	public float steerLimitAt300;
@@ -632,7 +633,8 @@ public class DriveSavable : PartSavable
 	{
 		steerAdd = original.steerAdd;
 		holdComebackSpeed = original.holdComebackSpeed;
-        holdThreshold = original.holdThreshold;
+        gripAdd = original.gripAdd;
+        gripComebackSpeed = original.gripComebackSpeed;
 		steerLimitAt0 = original.steerLimitAt0;
 		steerLimitAt200 = original.steerLimitAt200;
 		steerLimitAt300 = original.steerLimitAt300;
@@ -648,8 +650,9 @@ public class DriveSavable : PartSavable
 	{
 		steerAdd = vp.steeringControl.steerAdd;
 		holdComebackSpeed = vp.steeringControl.holdComebackSpeed;
-		holdThreshold = vp.steeringControl.holdDurationThresholdCurve.keys[0].time;
-		steerLimitAt0 = vp.steeringControl.steerLimitCurve.keys[0].value;
+		gripAdd = vp.steeringControl.gripComebackSpeed;
+		gripComebackSpeed = vp.steeringControl.gripComebackSpeed;
+        steerLimitAt0 = vp.steeringControl.steerLimitCurve.keys[0].value;
 		steerLimitAt200 = vp.steeringControl.steerLimitCurve.keys[1].value;
 		steerLimitAt300 = vp.steeringControl.steerLimitCurve.keys[2].value;
 		
@@ -665,7 +668,8 @@ public class DriveSavable : PartSavable
 
 		vp.steeringControl.steerAdd = steerAdd;
 		vp.steeringControl.holdComebackSpeed = holdComebackSpeed;
-		vp.steeringControl.SetHoldDurationThreshold(holdThreshold);
+		vp.steeringControl.gripAdd = gripAdd;
+		vp.steeringControl.gripComebackSpeed = gripComebackSpeed;
 
 		//vp.steeringControl.steerLimitCurve = AnimationCurve.Linear(0, steerLimitAt0, 83, steerLimitAt200);
 		vp.steeringControl.steerLimitCurve = new AnimationCurve(new Keyframe[] {

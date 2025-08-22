@@ -96,12 +96,11 @@ namespace RVP
 		private float smoothTimeSpeed = 2.5f;
 		public int maxPitch = 10;
 		public float cHeight = 2;
-		public float smoothRotCoeff = 0.01f;
-		public float replayCamAgility = 1;
+		float smoothRotCoeff = 0.01f;
+		float replayCamAgility = 1;
 		float forwardLookCoeff = 10;
 		float upLookCoeff = 1f;
 		Vector3 forward;
-		const float xyInputCamSpeedCoeff = 5;
 		readonly AnimationCurve fovAtSpeed = AnimationCurve.Linear(50, 54, 83, 64);
 		/// <summary>
 		/// used for smooth change between cam rotation by velocity to cam rotation by lookObj 

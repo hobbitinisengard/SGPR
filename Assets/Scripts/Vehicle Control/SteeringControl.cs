@@ -18,6 +18,8 @@ namespace RVP
 		public Suspension[] steeredWheels;
 		[Range(0, 1f)]
 		public float holdDuration = 0;
+        [Range(0, 1f)]
+        public float gripDuration = 0;
 		public float steerLimit;
 		public float maxDegreesRotation;
 		static AnimationCurve keyboardInputCurve;
@@ -39,11 +41,8 @@ namespace RVP
 		[Range(0, 1)]
 		public float absSteerInput;
 		public float collisionWheelMult;
-		public AnimationCurve holdDurationThresholdCurve { get; private set; } = AnimationCurve.Linear(0.5f, 0, 1, 1);
-        public void SetHoldDurationThreshold(float holdDurationThreshold)
-		{
-			holdDurationThresholdCurve = AnimationCurve.Linear(holdDurationThreshold, 0, 1, 1);
-        }
+		public float gripAdd = 0.25f;
+		public float gripComebackSpeed = 1;
 		void GenerateGammaCurve()
 		{
 			if (analogInputCurve == null || gamma != F.I.playerData.deadzone)
@@ -94,14 +93,16 @@ namespace RVP
 					servoAudio.pitch = (Mathf.Abs(targetSteer) > absSteerInput) ? 1.5f : 1;
 
 					holdDuration = Mathf.Clamp01(holdDuration + Time.fixedDeltaTime);
+					gripDuration = 0;
 				}
 				else
 				{
 					servoAudio.volume = 0;
 					holdDuration = 0;
+					gripDuration = 0;
 				}
 
-				steerLimit = vp.wheels[0].groundedReally ? Mathf.Lerp(.2f, .5f, 2 * (holdDuration - .5f)) : 0;
+				steerLimit = vp.wheels[0].groundedReally ? Mathf.Lerp(.2f, .5f, 2 * (Mathf.Clamp01(holdDuration) - .5f)) : 0;
 				holdCurveValue = 1;
 			}
 			else
@@ -110,10 +111,6 @@ namespace RVP
 
 				if (absSteerInput < F.I.playerData.deadzone)
 					absSteerInput = 0;
-				//if (F.I.playerData.deadzone != gamma)
-				//{
-				//	GenerateGammaCurve();
-				//}
 
 				if (absSteerInput >= holdCurveValue)
 				{
@@ -123,8 +120,8 @@ namespace RVP
 
 					if (absSteerInput > holdCurveValue)
 					{
-						float add = /*(0.75f + .25f * holdDuration) * */steerAdd;
-						holdDuration = Mathf.Clamp01(holdDuration + (vp.SGPshiftbutton > 0 ? 5 : 1) * add * .01f * Time.fixedDeltaTime);
+						holdDuration = Mathf.Clamp01(holdDuration + (vp.SGPshiftbutton > 0 ? 5 : 1) * steerAdd * .01f * Time.fixedDeltaTime);
+                        gripDuration = Mathf.Clamp01(gripDuration + (vp.SGPshiftbutton > 0 ? 2 : 1) * gripAdd * .01f * Time.fixedDeltaTime);
 					}
 				}
 				else
@@ -132,6 +129,7 @@ namespace RVP
 					steerLimit = vp.wheels[0].groundedReally ? steerLimitCurve.Evaluate(vp.localVelocity.z) : 0;
 					servoAudio.volume = 0;
 					holdDuration = Mathf.Lerp(holdDuration, absSteerInput, holdComebackSpeed * 40 * Time.fixedDeltaTime);
+                    gripDuration = Mathf.Lerp(gripDuration, absSteerInput, gripComebackSpeed * 40 * Time.fixedDeltaTime);
 				}
 				
 				holdCurveValue = keyboardInputCurve.Evaluate(holdDuration);
@@ -152,9 +150,9 @@ namespace RVP
 			{
 				if (!vp.followAI.selfDriving)
 				{
-					vp.wheels[0].sidewaysFriction = Mathf.Lerp(vp.wheels[2].initSidewaysFriction, shiftRearFriction, holdDurationThresholdCurve.Evaluate(holdDuration-0.1f));// 2.5f * (holdDuration - .6f));
+					vp.wheels[0].sidewaysFriction = Mathf.Lerp(vp.wheels[2].initSidewaysFriction, shiftRearFriction, Mathf.Clamp01(gripDuration-0.1f));// 2.5f * (holdDuration - .6f));
 					vp.wheels[1].sidewaysFriction = vp.wheels[0].sidewaysFriction;
-					vp.wheels[2].sidewaysFriction = Mathf.Lerp(vp.wheels[2].initSidewaysFriction, shiftRearFriction, holdDurationThresholdCurve.Evaluate(holdDuration));
+					vp.wheels[2].sidewaysFriction = Mathf.Lerp(vp.wheels[2].initSidewaysFriction, shiftRearFriction, gripDuration);
 					vp.wheels[3].sidewaysFriction = vp.wheels[2].sidewaysFriction;
 				}
 
