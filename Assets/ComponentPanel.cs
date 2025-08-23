@@ -669,7 +669,7 @@ public class DriveSavable : PartSavable
 		vp.steeringControl.steerAdd = steerAdd;
 		vp.steeringControl.holdComebackSpeed = holdComebackSpeed;
 		vp.steeringControl.gripAdd = gripAdd;
-		vp.steeringControl.gripComebackSpeed = gripComebackSpeed;
+		vp.steeringControl.gripComebackSpeed = 0.8f;//gripComebackSpeed;
 
 		//vp.steeringControl.steerLimitCurve = AnimationCurve.Linear(0, steerLimitAt0, 83, steerLimitAt200);
 		vp.steeringControl.steerLimitCurve = new AnimationCurve(new Keyframe[] {

@@ -77,26 +77,13 @@ public class SGP_Bouncer : MonoBehaviour
                 if (pair.contactCount > 0)
                 {
                     pair.SetPoint(0, carRbs[pair.otherBodyInstanceID].worldCOM);
-
-                    var normal = pair.GetNormal(0);
-                    pair.SetNormal(0, Vector3.ProjectOnPlane(normal, Vector3.up));
-
-                    //pair.SetTargetVelocity(0, n * 10f);
+                    pair.SetNormal(0, (pair.GetNormal(0) + Vector3.up)/2f);
                     for (int i = 1; i < pair.contactCount; ++i)
                     {
                         pair.IgnoreContact(i);
                     }
                 }
             }
-            //Vector3 normal = pair.GetNormal(i);
-            //float angle = Vector3.SignedAngle(normal, 
-            //	(vp.rb.worldCenterOfMass - pair.GetPoint(i)).normalized, vp.upDir);
-            //normal = Quaternion.AngleAxis(angle, vp.upDir) * normal;
-
-            //Vector3 normal = Vector3.ProjectOnPlane(pair.GetNormal(i), Vector3.up);
-            //pair.SetNormal(i, normal);
-            //pair.SetBounciness(i, 1);
-
         }
     }
     private void OnDestroy()
@@ -124,7 +111,11 @@ collision_energy_impact_timedelay,0.4,"Range(0, 1) Time in Seconds"
         int index = Mathf.Clamp(Mathf.RoundToInt(Mathf.Abs(impactStrength01) * (tableSize - 1)), 0, tableSize - 1);
         return colRestitutionTable[index];
     }
-    private void OnCollisionEnter(Collision col)
+    private void OnCollisionEnter(Collision collision)
+    {
+        OnCollisionStay(collision);
+    }
+    private void OnCollisionStay(Collision col)
     {
         int contactsNr = col.GetContacts(contacts);
         if (contacts[0].otherCollider.gameObject.layer == F.I.ignoreWheelCastLayer)
@@ -146,12 +137,14 @@ collision_energy_impact_timedelay,0.4,"Range(0, 1) Time in Seconds"
             // bounce
             float impactStrength = Vector3.Dot(vp.rb.linearVelocity, collisionNormal);
             //float restitution = GetRestitution(impactStrength); // e.g., from a curve or table
-            //vp.rb.linearVelocity = Vector3.Reflect(vp.rb.linearVelocity, -collisionNormal) * restitution;
+            //vp.rb.AddForce((collisionNormal + Vector3.up)/2f * impactStrength * restitution, ForceMode.VelocityChange);
+            //vp.rb.linearVelocity += Vector3.Reflect(vp.rb.linearVelocity, -collisionNormal) * restitution;
 
             // rotational impulse
             float rotationalImpulse = impactStrength * rotationalFrictionScale;
             vp.rb.AddTorque(-collisionNormal * rotationalImpulse, ForceMode.VelocityChange);
 
+            //Debug.Log(impactStrength.ToString("F2"));
             // shock
             if (Mathf.Abs(impactStrength) > shockThreshold)
             {

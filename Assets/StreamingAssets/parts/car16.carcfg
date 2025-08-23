@@ -99,7 +99,7 @@
       "driveType": 0.0,
       "steerAdd": 10.0,
       "holdComebackSpeed": 0.99,
-      "gripAdd": 2.0,
+      "gripAdd": 4.0,
       "gripComebackSpeed": 0.95,
       "steerLimitAt0": 1.0,
       "steerLimitAt200": 0.15,
