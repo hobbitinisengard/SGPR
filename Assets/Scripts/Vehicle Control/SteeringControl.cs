@@ -150,8 +150,8 @@ namespace RVP
 			{
 				if (!vp.followAI.selfDriving)
 				{
-					vp.wheels[0].sidewaysFriction = Mathf.Lerp(vp.wheels[2].initSidewaysFriction, shiftRearFriction, gripDuration==1?1:0/*Mathf.Clamp01(gripDuration-0.1f)*/);// 2.5f * (holdDuration - .6f));
-					vp.wheels[1].sidewaysFriction = vp.wheels[0].sidewaysFriction;
+					//vp.wheels[0].sidewaysFriction = Mathf.Lerp(vp.wheels[2].initSidewaysFriction, shiftRearFriction, gripDuration==1?1:0/*Mathf.Clamp01(gripDuration-0.1f)*/);// 2.5f * (holdDuration - .6f));
+					//vp.wheels[1].sidewaysFriction = vp.wheels[0].sidewaysFriction;
 					vp.wheels[2].sidewaysFriction = Mathf.Lerp(vp.wheels[2].initSidewaysFriction, shiftRearFriction, gripDuration == 1 ? 1 : 0 /*gripDuration*/);
 					vp.wheels[3].sidewaysFriction = vp.wheels[2].sidewaysFriction;
 				}

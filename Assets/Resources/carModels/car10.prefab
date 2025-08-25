@@ -1706,7 +1706,7 @@ CapsuleCollider:
   m_Enabled: 1
   serializedVersion: 2
   m_Radius: 0.45
-  m_Height: 1.39
+  m_Height: 1.89
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &811222819001924069
@@ -14053,11 +14053,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4004a853526701343b191aaf6c4b56c8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  vecGain: 1.25
   lastBounceTime: 0
-  lastCarCarBounceTime: 0
-  lastSideBounceTime: 0
-  lastVVBounceTime: 0
+  shockThreshold: 0.25
   bouncyCols:
   - {fileID: 4379756539735352014}
   - {fileID: 6520378823981916582}
@@ -16156,6 +16153,7 @@ MonoBehaviour:
   - {fileID: 6779875394792814007}
   - {fileID: 6779875396000727281}
   holdDuration: 0
+  gripDuration: 0
   steerLimit: 0
   maxDegreesRotation: 0
   holdComebackSpeed: 0
@@ -16213,6 +16211,8 @@ MonoBehaviour:
   shiftRearFriction: 0
   absSteerInput: 0
   collisionWheelMult: 0
+  gripAdd: 0.25
+  gripComebackSpeed: 1
 --- !u!1 &6779875396000727283
 GameObject:
   m_ObjectHideFlags: 0
@@ -18261,7 +18261,7 @@ CapsuleCollider:
   m_Enabled: 1
   serializedVersion: 2
   m_Radius: 0.45
-  m_Height: 1.39
+  m_Height: 1.89
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &8253767713071665807

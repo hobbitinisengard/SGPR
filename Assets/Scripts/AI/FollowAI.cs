@@ -630,6 +630,7 @@ namespace RVP
 			foreach (var w in vp.wheels)
 				w.gameObject.GetComponent<TireMarkCreate>().EndMark();
 
+			
 			vp.raceBox.ResetOnTrack();
 			vp.engine.transmission.ShiftToGear(2);
 			vp.ApplyBatteryPenalty();
@@ -666,9 +667,11 @@ namespace RVP
 			rb.isKinematic = true;
 			tr.position = resetPos + Vector3.up + resetDir;
 			yield return new WaitForFixedUpdate();
-			//rb.angularVelocity = Vector3.zero;
-			//rb.velocity = Vector3.zero;
-			tr.rotation = Quaternion.LookRotation(trackPathCreator.path.GetDirectionAtDistance(progress));
+
+            vp.antenna?.Reset();
+            //rb.angularVelocity = Vector3.zero;
+            //rb.velocity = Vector3.zero;
+            tr.rotation = Quaternion.LookRotation(trackPathCreator.path.GetDirectionAtDistance(progress));
 
 			target.dist = dist + reqDist;
 			target.pos = trackPathCreator.path.GetPointAtDistance(target.dist);
@@ -676,7 +679,9 @@ namespace RVP
 			OutOfPits(resetProgress: false);
 			rb.isKinematic = false;
 			vp.resetOnTrackTime = Time.time;
-		}
+
+            
+        }
 
 		public void DriveThruPits(in PathCreator pitsPathCreator)
 		{

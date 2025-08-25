@@ -5602,8 +5602,6 @@ MonoBehaviour:
   smoothTime: 1
   maxPitch: 10
   cHeight: 2
-  smoothRotCoeff: 0.01
-  replayCamAgility: 1
 --- !u!1 &61074762
 GameObject:
   m_ObjectHideFlags: 0
@@ -91715,7 +91713,7 @@ Light:
   m_LightShadowCasterMode: 2
   m_AreaSize: {x: 0.5, y: 0.5}
   m_BounceIntensity: 1
-  m_ColorTemperature: 7000
+  m_ColorTemperature: 5500
   m_UseColorTemperature: 1
   m_BoundingSphereOverride: {x: 0, y: 9.1835e-41, z: 4.500305e-39, w: 4.545857e-39}
   m_UseBoundingSphereOverride: 0

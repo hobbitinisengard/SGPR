@@ -90,6 +90,8 @@ namespace RVP
 		//public Transform roadColParent;
 		public VehicleAssist va { get; private set; }
 		public Renderer antennaFlag;
+		[NonSerialized]
+		public Antenna antenna;
 		public MeshRenderer[] springRenderers;
 		public AudioSource honkerAudio;
 		public SampleText sampleText;

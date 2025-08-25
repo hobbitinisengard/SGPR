@@ -5,13 +5,11 @@ using UnityEngine;
 public class SGP_Bouncer : MonoBehaviour
 {
     static float shockScale = 0.01f;
-    float maxShock = 100;
+    float maxShock = 9999;
 
     ContactPoint[] contacts = new ContactPoint[20];
     VehicleParent vp;
     public float lastBounceTime;
-    public float lastCarCarBounceTime;
-    public float lastSideBounceTime;
     float rotationalFrictionScale = 0.05f;
     public float shockThreshold = 0.25f;
     //public float timeDelay = .4f;
@@ -111,12 +109,16 @@ collision_energy_impact_timedelay,0.4,"Range(0, 1) Time in Seconds"
         int index = Mathf.Clamp(Mathf.RoundToInt(Mathf.Abs(impactStrength01) * (tableSize - 1)), 0, tableSize - 1);
         return colRestitutionTable[index];
     }
-    private void OnCollisionEnter(Collision collision)
+    private void OnCollisionEnter(Collision col)
     {
-        OnCollisionStay(collision);
+        Bounce(col);
     }
     private void OnCollisionStay(Collision col)
     {
+        Bounce(col);
+    }
+    void Bounce(Collision col)
+    { 
         int contactsNr = col.GetContacts(contacts);
         if (contacts[0].otherCollider.gameObject.layer == F.I.ignoreWheelCastLayer)
             return;
@@ -128,6 +130,7 @@ collision_energy_impact_timedelay,0.4,"Range(0, 1) Time in Seconds"
             collisionNormal += contacts[i].normal;
         }
         collisionNormal /= contactsNr;
+       
         //collisionNormal = (vp.rb.worldCenterOfMass - collisionNormal).normalized;
 
         //if (contacts[0].otherCollider.gameObject.layer != F.I.carCarCollisionLayer)
@@ -136,9 +139,15 @@ collision_energy_impact_timedelay,0.4,"Range(0, 1) Time in Seconds"
 
             // bounce
             float impactStrength = Vector3.Dot(vp.rb.linearVelocity, collisionNormal);
-            //float restitution = GetRestitution(impactStrength); // e.g., from a curve or table
-            //vp.rb.AddForce((collisionNormal + Vector3.up)/2f * impactStrength * restitution, ForceMode.VelocityChange);
-            //vp.rb.linearVelocity += Vector3.Reflect(vp.rb.linearVelocity, -collisionNormal) * restitution;
+            //if (Mathf.Abs(impactStrength) > bounceThres) // recreate bug of stunt gp where only strong impacts cause bounce
+            //{
+            //    float restitution = GetRestitution(impactStrength); // e.g., from a curve or table
+            //    //vp.rb.AddForce(collisionNormal * impactStrength * restitution, ForceMode.VelocityChange);
+            //    Vector3 reflectBugVector = Vector3.Reflect(vp.rb.linearVelocity, -collisionNormal) * restitution;
+            //    vp.rb.AddForce(reflectBugVector, ForceMode.VelocityChange);
+            //    //vp.rb.linearVelocity += Vector3.Reflect(vp.rb.linearVelocity, -collisionNormal) * restitution;
+            //}
+           
 
             // rotational impulse
             float rotationalImpulse = impactStrength * rotationalFrictionScale;

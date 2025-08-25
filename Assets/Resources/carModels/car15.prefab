@@ -7908,7 +7908,7 @@ Transform:
   m_GameObject: {fileID: 4586391704353841744}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.5, y: 0.099, z: -0.165}
+  m_LocalPosition: {x: 0.5, y: 0.078, z: -0.165}
   m_LocalScale: {x: 1, y: 1.15, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -7934,7 +7934,7 @@ CapsuleCollider:
   m_Enabled: 1
   serializedVersion: 2
   m_Radius: 0.4
-  m_Height: 1.68
+  m_Height: 2.16
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &4668911572911429849
@@ -13935,11 +13935,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4004a853526701343b191aaf6c4b56c8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  vecGain: 1.25
   lastBounceTime: 0
-  lastCarCarBounceTime: 0
-  lastSideBounceTime: 0
-  lastVVBounceTime: 0
+  shockThreshold: 0.25
   bouncyCols:
   - {fileID: 286425104666075164}
   - {fileID: 2949184458665484620}
@@ -16083,6 +16080,7 @@ MonoBehaviour:
   - {fileID: 6779875394792814007}
   - {fileID: 6779875396000727281}
   holdDuration: 0
+  gripDuration: 0
   steerLimit: 0
   maxDegreesRotation: 0
   holdComebackSpeed: 0
@@ -16140,6 +16138,8 @@ MonoBehaviour:
   shiftRearFriction: 0
   absSteerInput: 0
   collisionWheelMult: 0
+  gripAdd: 0.25
+  gripComebackSpeed: 1
 --- !u!1 &6779875396000727283
 GameObject:
   m_ObjectHideFlags: 0
@@ -17507,7 +17507,7 @@ Transform:
   m_GameObject: {fileID: 7189413584262465208}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.506, y: 0.099, z: -0.165}
+  m_LocalPosition: {x: -0.506, y: 0.078, z: -0.165}
   m_LocalScale: {x: 1, y: 1.15, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -17533,7 +17533,7 @@ CapsuleCollider:
   m_Enabled: 1
   serializedVersion: 2
   m_Radius: 0.4
-  m_Height: 1.68
+  m_Height: 2.16
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &7245213174569605233
