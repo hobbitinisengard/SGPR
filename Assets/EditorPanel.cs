@@ -317,23 +317,24 @@ public class EditorPanel : MonoBehaviour
     {
         currentTile.transform.RotateAround(currentTile.transform.localPosition, axis, angle);
     }
+    public void SwitchDayNight(TimeOfDay timeOfDay)
+    {
+        F.I.s_timeOfDay = timeOfDay;
+
+        raceManager.SetPartOfDay();
+        skybox.GetComponent<SkyboxController>().SetNightTimeLights();
+        SetEnvirLights();
+        for (int i = 0; i < placedTilesContainer.transform.childCount; ++i)
+        {
+            placedTilesContainer.transform.GetChild(i).GetComponent<Tile>().UpdateLights();
+        }
+    }
 
     void Update()
     {
-        if (Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.N))
+        if (Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.N) && !savePanel.gameObject.activeSelf)
         {
-            if (F.I.s_timeOfDay != TimeOfDay.Night)
-                F.I.s_timeOfDay = TimeOfDay.Night;
-            else
-                F.I.s_timeOfDay = TimeOfDay.Day;
-
-            raceManager.SetPartOfDay();
-            skybox.GetComponent<SkyboxController>().SetNightTimeLights();
-            SetEnvirLights();
-            for (int i = 0; i < placedTilesContainer.transform.childCount; ++i)
-            {
-                placedTilesContainer.transform.GetChild(i).GetComponent<Tile>().UpdateLights();
-            }
+            SwitchDayNight((TimeOfDay)F.Wraparound((int)F.I.s_timeOfDay + 1, (int)TimeOfDay.Day, (int)TimeOfDay.Night));
         }
         if (Input.GetKeyDown(KeyCode.Escape))
         {

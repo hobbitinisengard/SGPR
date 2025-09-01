@@ -23,6 +23,7 @@ public class SavePanelWorks : MonoBehaviour
 		editorPanel.SetPylonVisibility(false);
 		trackName.text = localizedNames[languageDropdown.value];
 		trackDescr.text = localizedDescriptions[languageDropdown.value];
+		editorPanel.SwitchDayNight(TimeOfDay.Day);
 	}
 	private void OnDisable()
 	{

@@ -124,7 +124,7 @@ public class Tile : MonoBehaviour
 			connector.layer = F.I.connectorLayer;
 			var mf = connector.AddComponent<MeshFilter>();
 			var mr = connector.AddComponent<MeshRenderer>();
-			mf.mesh = Resources.Load<Mesh>("sphere");
+			mf.mesh = F.I.sphereMesh;
 			mr.enabled = true;
 			mr.material = Connector.blue;
 		}

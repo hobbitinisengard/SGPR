@@ -72,6 +72,7 @@ public class Info : MonoBehaviour
 	public Material opaqueMaterial;
 	public Material emissiveRearLighter;
 	public Material emissiveRearDarker;
+	public Mesh sphereMesh;
 	public AudioMixer mainAudioMixer;
 	public const string VERSION = "0.4.9";
 	public bool minimized { get; private set; }

@@ -6672,6 +6672,8 @@ MonoBehaviour:
   opaqueMaterial: {fileID: 2100000, guid: 6cb5e5f885c85a84784cb33a06e3adcc, type: 2}
   emissiveRearLighter: {fileID: 2100000, guid: 683e6224559d7db4faf96c5815493852, type: 2}
   emissiveRearDarker: {fileID: 2100000, guid: 11920d9d83ff3f241898746a7bbdf8ba, type: 2}
+  sphereMesh: {fileID: 973877516759717424, guid: a8ac8799ecc50584584c0b3c85000116,
+    type: 3}
   mainAudioMixer: {fileID: 24100000, guid: c5f923143ad9e1c418a1d20196290002, type: 2}
   s_PlayerCarSponsor: 0
   playerData:
