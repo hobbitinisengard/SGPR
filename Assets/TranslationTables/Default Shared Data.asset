@@ -64,7 +64,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 10063009546240
-    m_Key: Start your own lobby or join a server online
+    m_Key: Start splitscreen or an online multiplayer
     m_Metadata:
       m_Items: []
   - m_Id: 10285001474048

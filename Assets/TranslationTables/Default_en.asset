@@ -73,7 +73,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 10063009546240
-    m_Localized: Start your own lobby or join a server online
+    m_Localized: Start splitscreen or an online multiplayer
     m_Metadata:
       m_Items: []
   - m_Id: 10285001474048
