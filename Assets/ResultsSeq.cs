@@ -175,13 +175,13 @@ public class ResultsSeq : MonoBehaviour
 	{
 		while(true)
 		{
-			if (F.I.gameMode == MultiMode.Multiplayer && ResultsView.FinishedPlayers < ServerC.I.lobby.Players.Count)
+			if (F.I.gameMode == GameMode.Multiplayer && ResultsView.FinishedPlayers < ServerC.I.lobby.Players.Count)
 			{
 				pressEnterText.text = F.I.LocStr("WAIT");
 			}
 			else
 			{
-				if (F.I.gameMode == MultiMode.Multiplayer)
+				if (F.I.gameMode == GameMode.Multiplayer)
 				{
 					if (F.I.CurRound == F.I.Rounds)
 						lastRoundEndedTime = Time.time;
@@ -205,7 +205,7 @@ public class ResultsSeq : MonoBehaviour
 		{
 			if (submitFlag && dimCo == null) // CLOSING SEQUENCE
 			{
-				if (F.I.gameMode == MultiMode.Singleplayer 
+				if (F.I.gameMode == GameMode.Exhibition 
 					|| ResultsView.FinishedPlayers >= ServerC.I.lobby.Players.Count)
 				{
 					foreach (var b in boxes)

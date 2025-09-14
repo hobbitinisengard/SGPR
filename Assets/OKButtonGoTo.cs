@@ -6,6 +6,8 @@ public class OKButtonGoTo : MonoBehaviour
 	public MainMenuView menuView;
 	public MainMenuView onExhibitionGoToThis;
 	public MainMenuView onMultiplayerGoToThis;
+	public MainMenuView onSplitscreenGoToThis;
+	public MainMenuView onArcadeGoToThis;
 	private void OnEnable()
 	{
 		GetComponent<Button>().onClick.AddListener(GoToView);	
@@ -15,11 +17,17 @@ public class OKButtonGoTo : MonoBehaviour
 	{
 		switch (F.I.gameMode)
 		{
-			case MultiMode.Singleplayer:
+			case GameMode.Exhibition:
 				menuView.GoToView(onExhibitionGoToThis);
 				break;
-			case MultiMode.Multiplayer:
+			case GameMode.Multiplayer:
 				menuView.GoToView(onMultiplayerGoToThis);
+				break;
+			case GameMode.Splitscreen:
+				menuView.GoToView(onSplitscreenGoToThis); 
+				break;
+			case GameMode.Arcade:
+				menuView.GoToView(onArcadeGoToThis);
 				break;
 			default:
 				break;

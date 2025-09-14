@@ -40,7 +40,7 @@ public class Online : NetworkBehaviour
 	}
 	public void ActivateEndraceTimer()
 	{
-		if(F.I.gameMode == MultiMode.Multiplayer)
+		if(F.I.gameMode == GameMode.Multiplayer)
 			CountdownTillForceEveryoneToResultsRpc();
 	}
 	[Rpc(SendTo.Everyone)]

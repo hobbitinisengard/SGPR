@@ -1434,6 +1434,26 @@ MonoBehaviour:
     m_Localized: "G\u0142o\u015Bno\u015B\u0107 efekt\xF3w"
     m_Metadata:
       m_Items: []
+  - m_Id: 45342225111781376
+    m_Localized: GRA PRZEZ INTERNET
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45342315754885120
+    m_Localized: GRACZY NA DZIELONYM EKRANIE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45342737819308032
+    m_Localized: DZIELONY EKRAN
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47500128618876928
+    m_Localized: Wybranie innego wariantu zmieni odblokowane auta i trasy
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47791721053753344
+    m_Localized: WYBIERZ WARIANT
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

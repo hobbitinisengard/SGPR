@@ -1403,6 +1403,26 @@ MonoBehaviour:
     m_Key: SFX Volume
     m_Metadata:
       m_Items: []
+  - m_Id: 45342225111781376
+    m_Key: ONLINE GAME
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45342315754885120
+    m_Key: SPLIT SCREEN PLAYERS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45342737819308032
+    m_Key: SPLIT SCREEN
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47500128618876928
+    m_Key: arcadeVariantSub
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47791721053753344
+    m_Key: SELECT ARCADE VARIANT
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

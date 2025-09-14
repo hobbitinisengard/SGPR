@@ -336,7 +336,7 @@ namespace RVP
 		[NonSerialized]
 		public GameObject customCam;
 		private float lastNoBatteryMessage;
-		public bool Owner { get { return IsOwner || F.I.gameMode == MultiMode.Singleplayer; } }
+		public bool Owner { get { return IsOwner || F.I.gameMode == GameMode.Exhibition; } }
 		[NonSerialized]
 		public int lastRoundScore;
 		[Rpc(SendTo.SpecifiedInParams)]
@@ -542,7 +542,7 @@ namespace RVP
 				NetworkManager.OnTransportFailure += NetworkManager_OnTransportFailure;
 				//newCar.followAI.SetCPU(true); // CPU drives player's car
 			}
-			sampleText.gameObject.SetActive(!F.I.s_spectator && F.I.gameMode == MultiMode.Multiplayer && RaceManager.I.playerCar != this);
+			sampleText.gameObject.SetActive(!F.I.s_spectator && F.I.gameMode == GameMode.Multiplayer && RaceManager.I.playerCar != this);
 		}
 
 		private void NetworkManager_OnTransportFailure()
@@ -605,7 +605,7 @@ namespace RVP
 
 		private void Start()
 		{
-			if (F.I.gameMode == MultiMode.Singleplayer)
+			if (F.I.gameMode == GameMode.Exhibition)
 				Initialize();
 		}
 
@@ -663,7 +663,7 @@ namespace RVP
 					RequestRaceboxValuesRpc(RpcTarget.Owner);
 				}
 			}
-			else if (F.I.gameMode == MultiMode.Multiplayer)
+			else if (F.I.gameMode == GameMode.Multiplayer)
 			{
 				ServerC.I.ReadySet(PlayerState.InRace);
 				ServerC.I.UpdatePlayerData();
@@ -1176,7 +1176,7 @@ namespace RVP
 		}
 		public void KnockoutMe()
 		{
-			if (F.I.gameMode == MultiMode.Multiplayer)
+			if (F.I.gameMode == GameMode.Multiplayer)
 				KnockoutMeRpc();
 			else
 				KnockoutMeInternal();

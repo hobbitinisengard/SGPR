@@ -1863,7 +1863,7 @@ public class EditorPanel : MonoBehaviour
             Destroy(replayCamerasContainer.transform.GetChild(i).gameObject);
         }
         if (mergedTrackCollidersContainer != null)
-            Destroy(mergedTrackCollidersContainer.gameObject);
+            DestroyImmediate(mergedTrackCollidersContainer.gameObject);
     }
     public void GenerateMergedTrackColliders()
     {

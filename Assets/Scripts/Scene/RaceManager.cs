@@ -100,11 +100,11 @@ namespace RVP
 		{ 
 			switch (F.I.gameMode)
 			{
-				case MultiMode.Singleplayer:
+				case GameMode.Exhibition:
 					RemoveCars();
 					StartRace();
 					break;
-				case MultiMode.Multiplayer:
+				case GameMode.Multiplayer:
 					if (Voting.I != null)
 						Voting.I.VoteForRestart();
 					break;
@@ -126,7 +126,7 @@ namespace RVP
 			if (resultsSeq.gameObject.activeSelf)
 				return;
 
-			if (F.I.gameMode == MultiMode.Multiplayer && ServerC.I.AmHost)
+			if (F.I.gameMode == GameMode.Multiplayer && ServerC.I.AmHost)
 				if(ResultsView.FinishedPlayers == 0)
 					Voting.I.EndForEveryone(); // host's decision is immediate
 				else
@@ -144,7 +144,7 @@ namespace RVP
 			else
 			{
 				BackToMenu(applyScoring: false);
-				if (F.I.gameMode == MultiMode.Multiplayer && !ServerC.I.AmHost)
+				if (F.I.gameMode == GameMode.Multiplayer && !ServerC.I.AmHost)
 					ServerC.I.DisconnectFromLobby();
 				
 			}
@@ -390,7 +390,7 @@ namespace RVP
 				}
 				else
 				{
-					if(F.I.gameMode == MultiMode.Singleplayer)
+					if(F.I.gameMode == GameMode.Exhibition)
 						carPlacements[^1] = CarPlacement.LocalPlayer();
 					else
 						carPlacements[^1] = CarPlacement.OnlinePlayer(ServerC.I.LeaderboardPos + F.I.s_cpuRivals, ServerC.I.PlayerMe);
@@ -431,14 +431,14 @@ namespace RVP
 				var position = new Vector3(startPos.x, startPos.y + 3, startPos.z);
 				var rotation = Quaternion.LookRotation(dirVec);
 
-				if (F.I.gameMode == MultiMode.Multiplayer && !ServerC.I.AmHost)
+				if (F.I.gameMode == GameMode.Multiplayer && !ServerC.I.AmHost)
 					Online.I.GibCar(position, rotation);
 				else
 				{
 					VehicleParent newCar;
 					var carModel = Resources.Load<GameObject>(F.I.carPrefabsPath + cp.carName);
 					
-					if (F.I.gameMode == MultiMode.Singleplayer)
+					if (F.I.gameMode == GameMode.Exhibition)
 						newCar = Instantiate(carModel, position, rotation).GetComponent<VehicleParent>();
 					else
 						newCar = NetworkObject.InstantiateAndSpawn(carModel, networkManager, networkManager.LocalClientId, position: position, rotation: rotation).GetComponent<VehicleParent>();
@@ -515,7 +515,7 @@ namespace RVP
 				Online.I.raceAlreadyStarted.Value = false;
 			
 			musicPlayer.Stop();
-			if(F.I.gameMode == MultiMode.Multiplayer)
+			if(F.I.gameMode == GameMode.Multiplayer)
 				yield return new WaitForSeconds(1);
 			resultsSeq.gameObject.SetActive(true);
 			cam.mode = CameraControl.Mode.Replay;

@@ -889,7 +889,7 @@ public class RaceBox : MonoBehaviour
 							}
 						}
 
-						if (F.I.gameMode == MultiMode.Multiplayer && ResultsView.FinishedPlayers >= ServerC.I.lobby.Players.Count)
+						if (F.I.gameMode == GameMode.Multiplayer && ResultsView.FinishedPlayers >= ServerC.I.lobby.Players.Count)
 						{
 							RaceManager.I.hud.endraceTimer.gameObject.SetActive(false);
 						}
@@ -914,7 +914,7 @@ public class RaceBox : MonoBehaviour
 	private void OnDisable()
 	{
 		// in case we are disconnecting early
-		if (F.I.gameMode == MultiMode.Multiplayer && !ServerC.I.networkManager.IsConnectedClient)
+		if (F.I.gameMode == GameMode.Multiplayer && !ServerC.I.networkManager.IsConnectedClient)
 			return;
 
 		// You can disable racebox only ONCE
@@ -930,7 +930,7 @@ public class RaceBox : MonoBehaviour
 
 			vp.ghost.SetGhostPermanently();
 
-			if (F.I.gameMode == MultiMode.Multiplayer)
+			if (F.I.gameMode == GameMode.Multiplayer)
 			{
 				if (vp.Owner)
 				{

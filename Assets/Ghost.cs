@@ -56,7 +56,7 @@ public class Ghost : NetworkBehaviour
 
 	public void SetGhostPermanently()
 	{
-		if (F.I.gameMode == MultiMode.Multiplayer && vp.Owner)
+		if (F.I.gameMode == GameMode.Multiplayer && vp.Owner)
 			SetHittableRpc(false, true);
 		else
 			SetHittable(false, true);
@@ -68,7 +68,7 @@ public class Ghost : NetworkBehaviour
 	}
 	public void StartGhostResetting()
 	{
-		if (F.I.gameMode == MultiMode.Multiplayer)
+		if (F.I.gameMode == GameMode.Multiplayer)
 			StartGhostResettingRpc();
 		else
 		{

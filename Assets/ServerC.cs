@@ -445,7 +445,7 @@ public class ServerC : MonoBehaviour
 	{
 		get
 		{
-			return F.I.gameMode == MultiMode.Singleplayer || networkManager.IsHost;
+			return F.I.gameMode == GameMode.Exhibition || networkManager.IsHost;
 		}
 	}
 	public ActionHappening ActionHappening

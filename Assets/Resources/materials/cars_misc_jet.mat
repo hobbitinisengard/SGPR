@@ -260,7 +260,7 @@ Material:
     - _MetallicRemapMax: 1
     - _MetallicRemapMin: 0
     - _Mode: 0
-    - _Mult: 4.08
+    - _Mult: 3.18
     - _NormalMapSpace: 0
     - _NormalScale: 1
     - _ObjectSpaceUVMapping: 0
@@ -324,6 +324,7 @@ Material:
     - _ZTestGBuffer: 3
     - _ZTestTransparent: 4
     - _ZWrite: 1
+    - _alpha: 0.68
     m_Colors:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 0}
     - _BaseColorMap_MipInfo: {r: 0, g: 0, b: 0, a: 0}
@@ -342,5 +343,6 @@ Material:
     - _UVDetailsMappingMask: {r: 1, g: 0, b: 0, a: 0}
     - _UVMappingMask: {r: 1, g: 0, b: 0, a: 0}
     - _UVMappingMaskEmissive: {r: 1, g: 0, b: 0, a: 0}
+    - _reddish: {r: 1, g: 0, b: 0, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

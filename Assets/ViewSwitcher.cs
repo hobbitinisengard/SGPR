@@ -111,7 +111,7 @@ public class ViewSwitcher : MonoBehaviour
 			RaceManager.I.editorPanel.RemoveTrackLeftovers();
 			Time.timeScale = 1;
 
-			if (applyScoring && F.I.gameMode == MultiMode.Multiplayer && ResultsView.Count > 1)
+			if (applyScoring && F.I.gameMode == GameMode.Multiplayer && ResultsView.Count > 1)
 			{
 				lobbyView.SetActive(false);
 				resultsView.SetActive(true);
