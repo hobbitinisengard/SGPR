@@ -128,6 +128,7 @@ public class Info : MonoBehaviour
 		PopulateTrackData();
 		ReloadCarPartsData();
 		LoadRanking();
+		LoadArcade();
 		icons = Resources.LoadAll<Sprite>(trackImagesPath + "tiles");
 		LocalizationSettings.InitializeSynchronously = true;
 	}
@@ -157,6 +158,7 @@ public class Info : MonoBehaviour
 	public string tracksPath { get { return documentsSGPRpath + "tracks\\"; } }
 	public string userdataPath { get { return documentsSGPRpath + "userdata.json"; } }
 	public string rankingPath { get { return documentsSGPRpath + "ranking.json"; } }
+	public string arcadePath { get { return documentsSGPRpath + "arcade\\"; } }
 	public string lastPath { get { return documentsSGPRpath + "path.txt"; } }
 
 	public Livery s_PlayerCarSponsor = Livery.Golden;
@@ -188,7 +190,40 @@ public class Info : MonoBehaviour
 	public InputActionReference lookAxisInput;
 
 	public RankingData rankingData;
-	public async void LoadRanking()
+	[NonSerialized]
+	public List<ArcadeVariant> arcadeVariants;
+    public async void LoadArcade()
+    {
+        // iterate over all files in arcadePath
+		arcadeVariants = new List<ArcadeVariant>();
+		if (!Directory.Exists(arcadePath))
+			Directory.CreateDirectory(arcadePath);
+		string[] filepaths = Directory.GetFiles(arcadePath, "*.json", SearchOption.TopDirectoryOnly);
+
+        if (filepaths.Length == 0)
+        {
+			var newVariant = ArcadeVariant.GenerateOriginalVariant();
+			arcadeVariants.Add(newVariant);
+        }
+		else
+		{
+            foreach (var filepath in filepaths)
+            {
+                string jsonText = await File.ReadAllTextAsync(filepath);
+                try
+                {
+                    ArcadeVariant variant = JsonConvert.DeserializeObject<ArcadeVariant>(jsonText);
+                    if (variant != null)
+                        arcadeVariants.Add(variant);
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError("Error loading arcade variant from " + filepath + ": " + e.Message);
+                }
+            }
+        }
+    }
+    public async void LoadRanking()
 	{
 		if (!File.Exists(rankingPath))
 		{
@@ -202,6 +237,7 @@ public class Info : MonoBehaviour
 			rankingData = JsonConvert.DeserializeObject<RankingData>(serializedRanking);
 		}
 	}
+
 	public async void SaveRanking()
 	{
 		string serializedRanking = JsonConvert.SerializeObject(rankingData);

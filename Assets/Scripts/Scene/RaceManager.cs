@@ -442,7 +442,7 @@ namespace RVP
 						newCar = Instantiate(carModel, position, rotation).GetComponent<VehicleParent>();
 					else
 						newCar = NetworkObject.InstantiateAndSpawn(carModel, networkManager, networkManager.LocalClientId, position: position, rotation: rotation).GetComponent<VehicleParent>();
-					newCar.sponsor = cp.sponsor;
+					newCar.sponsor = cp.livery;
 					newCar.name = cp.name;
 				}
 			} // ---carPlacements

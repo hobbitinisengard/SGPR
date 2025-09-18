@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Unity.Services.Lobbies.Models;
+﻿using Unity.Services.Lobbies.Models;
 
 public class CarPlacement
 {
@@ -12,14 +11,14 @@ public class CarPlacement
 	/// </summary>
 	public string carName;
 	public string name;
-	public Livery sponsor;
+	public Livery livery = Livery.Random;
 	public static CarPlacement CPU(int pos, Car c)
 	{
 		return new CarPlacement() {
 			carName = c.internalName,
 			position = pos,
 			name = "CP" + (pos + 1).ToString(),
-			sponsor = (Livery)(((int)F.I.s_PlayerCarSponsor + pos) % F.I.Liveries),
+			livery = (Livery)(((int)F.I.s_PlayerCarSponsor + pos) % F.I.Liveries),
 		};
 	}
 	public static CarPlacement LocalPlayer()
@@ -29,7 +28,7 @@ public class CarPlacement
 			carName = F.I.s_playerCarName,
 			position = F.I.s_cpuRivals,
 			name = F.I.playerData.playerName,
-			sponsor = F.I.s_PlayerCarSponsor,
+			livery = F.I.s_PlayerCarSponsor,
 		};
 	}
 	public static CarPlacement OnlinePlayer(int pos, Player p)
@@ -40,7 +39,7 @@ public class CarPlacement
 			carName = p.carNameGet(),
 			position = (F.I.s_cpuRivals + pIndex),
 			name = p.NameGet(),
-			sponsor = p.SponsorGet(),
+			livery = p.SponsorGet(),
 		};
 	}
 }
