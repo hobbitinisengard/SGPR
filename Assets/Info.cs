@@ -21,7 +21,7 @@ using UnityEngine.UI;
 public enum PlayerState { InRace, InLobbyUnready, InLobbyReady };
 public enum Envir { GER, JAP, SPN, FRA, ENG, USA, ITA, MEX };
 public enum CarGroup { Wild, Aero, Speed, Team };
-public enum Livery { Random = 0, Golden = 1, TGR, Rline, Itex, Caltex, Titan, Mysuko }
+public enum Livery { Random = 0, Golden = 1, TGR=2, Rline=3, Itex=4, Caltex=5, Titan=6, Mysuko=7 }
 public enum RecordType { BestLap, RaceTime, StuntScore, DriftScore }
 public enum ScoringType { Championship, Points, Victory }
 public enum ActionHappening { InLobby, InRace }
@@ -204,6 +204,9 @@ public class Info : MonoBehaviour
         {
 			var newVariant = ArcadeVariant.GenerateOriginalVariant();
 			arcadeVariants.Add(newVariant);
+			string serializedVariant = JsonConvert.SerializeObject(newVariant, Formatting.Indented);
+			string filepath = Path.Combine(arcadePath, "original.json");
+			await File.WriteAllTextAsync(filepath, serializedVariant);
         }
 		else
 		{
@@ -397,7 +400,8 @@ public class Info : MonoBehaviour
 	public readonly int carCarCollisionLayer = 26;
 
 	public readonly Color32 yellow = new(255, 223, 0, 255);
-	public readonly Color32 red = new(255, 64, 64, 255);
+    public readonly Color32 orange = new(255, 69, 0, 255);
+    public readonly Color32 red = new(255, 64, 64, 255);
 	/// <summary>
 	/// Only one object at the time can have this layer
 	/// </summary>
@@ -483,7 +487,8 @@ public class Info : MonoBehaviour
 	{
 		if (cars == null)
 		{
-			cars = new Car[]
+            
+            cars = new Car[]
 			{
 				new ("car01",0,CarGroup.Speed, "MEAN STREAK","Fast, light and agile, this racer offers much for those who wish to modify their vehicle."),
 				new ("car02",45000,CarGroup.Wild, "THE HUSTLER","Sturdy 4x4 pick-up truck with an eye for the outrageous!"),
