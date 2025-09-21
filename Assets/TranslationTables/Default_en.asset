@@ -1455,6 +1455,14 @@ MonoBehaviour:
     m_Localized: SELECT ARCADE VARIANT
     m_Metadata:
       m_Items: []
+  - m_Id: 50016945589522432
+    m_Localized: TRACKS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50017676967088128
+    m_Localized: PROGRESS
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

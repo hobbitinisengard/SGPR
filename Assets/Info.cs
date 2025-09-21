@@ -21,7 +21,7 @@ using UnityEngine.UI;
 public enum PlayerState { InRace, InLobbyUnready, InLobbyReady };
 public enum Envir { GER, JAP, SPN, FRA, ENG, USA, ITA, MEX };
 public enum CarGroup { Wild, Aero, Speed, Team };
-public enum Livery { Random = 0, Golden = 1, TGR=2, Rline=3, Itex=4, Caltex=5, Titan=6, Mysuko=7 }
+public enum Livery { Random = 0, Golden = 1, TGR = 2, Rline = 3, Itex = 4, Caltex = 5, Titan = 6, Mysuko = 7 }
 public enum RecordType { BestLap, RaceTime, StuntScore, DriftScore }
 public enum ScoringType { Championship, Points, Victory }
 public enum ActionHappening { InLobby, InRace }
@@ -48,6 +48,7 @@ public class PlayerSettingsData
 	public string serverMaxPlayers = "10";
 	public string[] quickMessages = new string[10];
 	public bool trail = false;
+	public string currentArcadeVariant = "Original";
 	public Language language = Language.English;
 }
 [Serializable]
@@ -64,6 +65,9 @@ public class RankingData
 public class Info : MonoBehaviour
 {
 	StringTable localizedTable;
+	public CarSelector carSelector;
+	[NonSerialized]
+	public ArcadeVariant curVariant;
 	public const string TranslationTableName = "Default";
 	public MultiPlayerSelector mpSelectorInitializer;
 	public Text versionText;
@@ -192,41 +196,104 @@ public class Info : MonoBehaviour
 	public RankingData rankingData;
 	[NonSerialized]
 	public List<ArcadeVariant> arcadeVariants;
-    public async void LoadArcade()
-    {
-        // iterate over all files in arcadePath
+	[NonSerialized]
+	public int curArcadeNodeID = 0;
+	[NonSerialized]
+	public bool[] unlockedLiveries = new bool[8] { true, false, false, false, false, false, false, false };
+	public async void LoadArcade()
+	{
+		// iterate over all files in arcadePath
 		arcadeVariants = new List<ArcadeVariant>();
 		if (!Directory.Exists(arcadePath))
 			Directory.CreateDirectory(arcadePath);
 		string[] filepaths = Directory.GetFiles(arcadePath, "*.json", SearchOption.TopDirectoryOnly);
 
-        if (filepaths.Length == 0)
-        {
+		if (filepaths.Length == 0)
+		{
 			var newVariant = ArcadeVariant.GenerateOriginalVariant();
 			arcadeVariants.Add(newVariant);
 			string serializedVariant = JsonConvert.SerializeObject(newVariant, Formatting.Indented);
-			string filepath = Path.Combine(arcadePath, "original.json");
+			string filepath = Path.Combine(arcadePath, "Original.json");
 			await File.WriteAllTextAsync(filepath, serializedVariant);
-        }
+			playerData.currentArcadeVariant = newVariant.name;
+		}
 		else
 		{
-            foreach (var filepath in filepaths)
-            {
-                string jsonText = await File.ReadAllTextAsync(filepath);
-                try
-                {
-                    ArcadeVariant variant = JsonConvert.DeserializeObject<ArcadeVariant>(jsonText);
-                    if (variant != null)
-                        arcadeVariants.Add(variant);
-                }
-                catch (Exception e)
-                {
-                    Debug.LogError("Error loading arcade variant from " + filepath + ": " + e.Message);
-                }
-            }
-        }
-    }
-    public async void LoadRanking()
+			foreach (var filepath in filepaths)
+			{
+				string jsonText = await File.ReadAllTextAsync(filepath);
+				try
+				{
+					ArcadeVariant variant = JsonConvert.DeserializeObject<ArcadeVariant>(jsonText);
+					if (variant != null)
+						arcadeVariants.Add(variant);
+
+					string progressPath = Path.ChangeExtension(filepath, ".progress");
+					if (File.Exists(progressPath))
+					{
+						string progressText = await File.ReadAllTextAsync(progressPath);
+						variant.progress = JsonConvert.DeserializeObject<ArcadeVariant.Progress>(progressText);
+					}
+					else
+					{
+						variant.progress = new ArcadeVariant.Progress();
+						//string serializedProgress = JsonConvert.SerializeObject(variant.progress, Formatting.Indented);
+						//await File.WriteAllTextAsync(progressPath, serializedProgress);
+					}
+				}
+				catch (Exception e)
+				{
+					Debug.LogError("Error loading arcade variant from " + filepath + ": " + e.Message);
+				}
+			}
+		}
+		curVariant = arcadeVariants.FirstOrDefault(v => v.name == playerData.currentArcadeVariant);
+		ReloadArcadeProgress();
+	}
+	public void ReloadArcadeProgress()
+	{
+		foreach (var track in tracks.Values)
+			track.unlocked = false;
+		foreach (var car in cars)
+			car.unlocked = false;
+		foreach (var livery in Enum.GetValues(typeof(Livery)).Cast<Livery>())
+			unlockedLiveries[(int)livery] = livery == Livery.Random;
+		var allowedCarsInArcade = curVariant.GetAllowedCarsIndices();
+		foreach (var c in cars)
+			c.allowedInArcade = false;
+		for (int i = 0; i < allowedCarsInArcade.Count; i++)
+			F.I.cars[allowedCarsInArcade[i]].allowedInArcade = true;
+
+		foreach (var node in curVariant.nodes)
+		{
+			if (node.prizeSetup != null)
+			{
+				if (curVariant.progress.unlockedPaths[node.id].Length > 0)
+				{ // this event has already been completed
+					string[] prizeNames = node.prizeSetup.name.Split(' ');
+					foreach (var prizeName in prizeNames)
+					{
+						if (prizeName.StartsWith("trk"))
+						{
+							tracks[node.trackName].unlocked = true;
+						}
+						if (prizeName.StartsWith("car"))
+						{
+							Car(prizeName).unlocked = true;
+						}
+						if (prizeName.StartsWith("lvr"))
+						{
+							if (Enum.TryParse(prizeName[3..], out Livery livery))
+							{
+								unlockedLiveries[(int)livery] = true;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	public async void LoadRanking()
 	{
 		if (!File.Exists(rankingPath))
 		{
@@ -400,8 +467,8 @@ public class Info : MonoBehaviour
 	public readonly int carCarCollisionLayer = 26;
 
 	public readonly Color32 yellow = new(255, 223, 0, 255);
-    public readonly Color32 orange = new(255, 69, 0, 255);
-    public readonly Color32 red = new(255, 64, 64, 255);
+	public readonly Color32 orange = new(255, 69, 0, 255);
+	public readonly Color32 red = new(255, 64, 64, 255);
 	/// <summary>
 	/// Only one object at the time can have this layer
 	/// </summary>
@@ -487,9 +554,9 @@ public class Info : MonoBehaviour
 	{
 		if (cars == null)
 		{
-            
-            cars = new Car[]
-			{
+
+			cars = new Car[]
+{
 				new ("car01",0,CarGroup.Speed, "MEAN STREAK","Fast, light and agile, this racer offers much for those who wish to modify their vehicle."),
 				new ("car02",45000,CarGroup.Wild, "THE HUSTLER","Sturdy 4x4 pick-up truck with an eye for the outrageous!"),
 				new ("car03",50000,CarGroup.Aero, "TWIN EAGLE","Take flight with this light and speedy stuntcar."),
@@ -510,7 +577,7 @@ public class Info : MonoBehaviour
 				new ("car18",55000,CarGroup.Team, "WORM MOBILE","Super Speedy Buggy!"),
 				new ("car19",100000,CarGroup.Team, "FORMULA 17","Incredibly fast racing car."),
 				new ("car20",90000,CarGroup.Team, "TEAM MACHINE","The ultimate, hugely versatile stock car.")
-			};
+};
 		}
 		ReloadCarConfigs();
 	}
@@ -847,8 +914,8 @@ public class TrackHeader
 	/// <summary>
 	/// starts from 0 (sprites are from 4!)
 	/// </summary>
-	public int difficulty;//
-	public bool unlocked;//
+	public int difficulty;
+	public bool unlocked;
 	public int[] icons;
 	/// <summary>
 	/// lap, race, stunt, drift 
@@ -938,6 +1005,8 @@ public class Car
 	public int price;
 	public int rooster;
 	public string internalName;
+	public bool unlocked = false;
+	public bool allowedInArcade = false;
 	public Car(string internalName, int price, CarGroup carClass, string name, string desc, int rooster = 0)
 	{
 		this.internalName = internalName;

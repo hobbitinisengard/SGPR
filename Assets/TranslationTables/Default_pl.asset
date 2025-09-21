@@ -1454,6 +1454,14 @@ MonoBehaviour:
     m_Localized: WYBIERZ WARIANT
     m_Metadata:
       m_Items: []
+  - m_Id: 50016945589522432
+    m_Localized: TRAS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50017676967088128
+    m_Localized: "POST\u0118P"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

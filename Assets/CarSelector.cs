@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using UnityEngine.UIElements.Experimental;
 
-public enum GarageType { Unlocked, Earned, Wild, Aero, Speed, Specials }
+public enum GarageType { Unlocked, Earned, Arcade }
 public class CarSelector : Sfxable
 {
 	public RectTransform[] bars;
@@ -60,17 +60,11 @@ public class CarSelector : Sfxable
 		switch (type)
 		{
 			case GarageType.Unlocked:
-				return c.price != -1;
+				return c.price != -1 && c.unlocked;
 			case GarageType.Earned:
 				return c.price != -1 && c.price <= playerMoney;
-			case GarageType.Aero:
-				return c.price != -1 && c.category == CarGroup.Aero;
-			case GarageType.Wild:
-				return c.price != -1 && c.category == CarGroup.Wild;
-			case GarageType.Speed:
-				return c.price != -1 && c.category == CarGroup.Speed;
-			case GarageType.Specials:
-				return c.price != -1 && c.category == CarGroup.Team;
+			case GarageType.Arcade:
+				return c.price != -1 && c.allowedInArcade;
 			default:
 				return false;
 		}

@@ -3,7 +3,6 @@
 internal class ServerListRowLobbyJoiner : Sfxable
 {
 	ServerList serverlist;
-
 	public void Set(ServerList list, string joinCode, bool hasPassword, bool joinable)
 	{
 		serverlist = list;

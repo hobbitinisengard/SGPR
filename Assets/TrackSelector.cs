@@ -10,6 +10,7 @@ public class TrackSelector : TrackSelectorTemplate
 	public TextMeshProUGUI catchupButtonText;
 	public TextMeshProUGUI sponsorButtonText;
 	public TextMeshProUGUI LevelButtonText;
+	public TextMeshProUGUI wayButtonText;
 
 	protected int maxCPURivals = 9;
 	protected override void OnEnable()
@@ -19,6 +20,7 @@ public class TrackSelector : TrackSelectorTemplate
 	}
 	public new void ResetButtons()
 	{
+		SwitchRoadType(true);
 		SwitchCatchup(true);
 		SwitchCPULevel(true);
 		SwitchDayNight(true);
@@ -27,6 +29,21 @@ public class TrackSelector : TrackSelectorTemplate
 		SwitchRivals(true);
 		SwitchSponsor(true);
 		base.ResetButtons();
+	}
+	public void SwitchRoadType(bool init = false)
+	{
+		int dir = 0;
+		if (init)
+		{
+			if (F.I.randomPavement)
+				F.I.s_roadType = PavementType.Random;
+		}
+		else
+			dir = F.I.shiftInputRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
+
+		F.I.s_roadType = (PavementType)F.Wraparound((int)(F.I.s_roadType + dir), 0, F.I.pavementTypes + 1);
+		F.I.randomPavement = F.I.s_roadType == PavementType.Random;
+		wayButtonText.text = F.I.LocStr("Tex") + ": " + F.I.LocStr(F.I.s_roadType.ToString());
 	}
 	public void SwitchRaceType(bool init = false)
 	{
@@ -122,8 +139,11 @@ public class TrackSelector : TrackSelectorTemplate
 		if (!init)
 		{
 			int dir = F.I.shiftRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
-			F.I.s_PlayerCarSponsor = (Livery)F.Wraparound((int)F.I.s_PlayerCarSponsor + dir, 
-				ServerC.I.AmHost ? 0 : 1, F.I.Liveries);
+			do
+			{
+				F.I.s_PlayerCarSponsor = (Livery)F.Wraparound((int)F.I.s_PlayerCarSponsor + dir,
+					ServerC.I.AmHost ? 0 : 1, F.I.Liveries);
+			} while(F.I.unlockedLiveries[(int)F.I.s_PlayerCarSponsor] == false);
 		}
 		F.I.teams = F.I.s_PlayerCarSponsor != Livery.Random;
 		sponsorButtonText.text = F.I.LocStr("Sponsor") + ": " + F.I.LocStr(F.I.s_PlayerCarSponsor.ToString());
