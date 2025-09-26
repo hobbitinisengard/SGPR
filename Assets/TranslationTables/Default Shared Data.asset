@@ -1431,6 +1431,54 @@ MonoBehaviour:
     m_Key: PROGRESS
     m_Metadata:
       m_Items: []
+  - m_Id: 51147302351212544
+    m_Key: Finish at least in {0}. place!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 51147750902665216
+    m_Key: Do a lap faster than {0}!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 51147988979748864
+    m_Key: Get at least {0} aero stars!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 51148071712395264
+    m_Key: Get at least {0} aeromiles!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 51148241250357248
+    m_Key: Get at least {0} drift points!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 51148376172728320
+    m_Key: Finish the race in less than {0}!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 51148493227364352
+    m_Key: Set the fastest lap time!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 51148632834772992
+    m_Key: Always finish in first place!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 51148676208070656
+    m_Key: Always get the highest stunt points!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 51149075795218432
+    m_Key: Find all hidden paths!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 51158714318393344
+    m_Key: QUIT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 52216372991430656
+    m_Key: UNLOCKED
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

@@ -14,11 +14,11 @@ public class TrackSelectorTemplate : Sfxable
 	public Scrollbar scrolly;
 	public Transform tilesContainer;
 	public Transform recordsContainer;
-	public MainMenuButton sortButton;
+	
 	public TextMeshProUGUI trackDescText;
 	public Text trackAuthorText;
 	public RadialOneVisible radial;
-	
+
 	/// <summary>
 	/// If true, populate menu only with valid tracks
 	/// </summary>
@@ -41,17 +41,6 @@ public class TrackSelectorTemplate : Sfxable
 		if (loadCo)
 			StopCoroutine(Load());
 		StartCoroutine(Load());
-
-		ResetButtons();
-	}
-	
-	internal void ResetButtons()
-	{
-
-		if (curSortingCondition == SortingCond.Name)
-			sortButton.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = F.I.LocStr("Sorted by name");
-		else
-			sortButton.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = F.I.LocStr("Sorted by difficulty");
 	}
 	bool ValidCheck(bool trackValid)
 	{
@@ -59,9 +48,23 @@ public class TrackSelectorTemplate : Sfxable
 			return trackValid;
 		return true;
 	}
+	bool TrackCheckDependingOnGameMode(string trackName)
+	{
+		if (F.I.gameMode == GameMode.Arcade)
+		{
+			//foreach (var targetNodeID in F.I.curVariant.nodes[F.I.curArcadeNodeID].connections)
+			//{
+			//	if (F.I.curVariant.nodes[targetNodeID].trackName == trackName)
+					return true;
+			//}
+		}
+		else
+			return F.I.tracks[trackName].unlocked && ValidCheck(F.I.tracks[trackName].valid);
+		//return false;
+	}
 	bool[] PopulateContent()
 	{
-		
+
 		bool[] existingTrackClasses = new bool[2];
 
 		for (int i = 0; i < trackContent.childCount; ++i)
@@ -73,20 +76,31 @@ public class TrackSelectorTemplate : Sfxable
 				Destroy(trackClass.GetChild(j).gameObject);
 			}
 		}
-		
+
 		string[] sortedTracks;
 		// populate track grid	
-		if (curSortingCondition == SortingCond.Name)
-			sortedTracks = F.I.tracks.OrderBy(t => t.Key).Select(kv => kv.Key).ToArray();
-		else //if(curSortingCondition == SortingCond.Difficulty)
-			sortedTracks = F.I.tracks.OrderBy(t => t.Value.difficulty).Select(kv => kv.Key).ToArray();
+		if (F.I.gameMode == GameMode.Exhibition)
+		{
+			if (curSortingCondition == SortingCond.Name)
+				sortedTracks = F.I.tracks.OrderBy(t => t.Key).Select(kv => kv.Key).ToArray();
+			else //if(curSortingCondition == SortingCond.Difficulty)
+				sortedTracks = F.I.tracks.OrderBy(t => t.Value.difficulty).Select(kv => kv.Key).ToArray();
+		}
+		else
+		{
+			sortedTracks = new string[F.I.curVariant.nodes[F.I.curArcadeNodeID].connections.Length - 1];
+			for (int i = 0; i < sortedTracks.Length; ++i)
+				sortedTracks[i] = F.I.curVariant.nodes[F.I.curVariant.nodes[F.I.curArcadeNodeID].connections[i]].trackName;
+		}
+
 
 		foreach (var trackName in sortedTracks)
 		{
-			TrackHeader track = F.I.tracks[trackName];
-			if (track.unlocked && ValidCheck(track.valid))
+			if (TrackCheckDependingOnGameMode(trackName))
 			{
-				int trackOrigin = track.TrackOrigin;
+				int trackOrigin = 0;
+				if( F.I.gameMode != GameMode.Arcade)
+					trackOrigin = F.I.tracks[trackName].TrackOrigin;
 				var newtrack = Instantiate(trackImageTemplate, trackContent.GetChild(trackOrigin));
 				newtrack.name = trackName;
 				newtrack.GetComponent<Image>().sprite = IMG2Sprite.LoadNewSprite(F.I.tracksPath + trackName + ".jpg");
@@ -103,15 +117,15 @@ public class TrackSelectorTemplate : Sfxable
 	protected IEnumerator Load(string specificTrackName = null, bool forceReload = false)
 	{
 		loadCo = true;
-		if (specificTrackName!= null)
+		if (specificTrackName != null)
 			F.I.s_trackName = specificTrackName;
 
 		int visibleTracks = trackContent.GetChild(0).childCount + (trackContent.GetChild(1) != null ? trackContent.GetChild(1).childCount : 0);
-		int validTracks = F.I.tracks.Count(t => ValidCheck(t.Value.valid));
+		int validTracks = F.I.tracks.Count(t => TrackCheckDependingOnGameMode(t.Key));
 
 		bool reloadContent = (visibleTracks != validTracks) || forceReload;
 
-		bool[] existingTrackClasses = reloadContent ? PopulateContent() : new bool[] {true, true };
+		bool[] existingTrackClasses = reloadContent ? PopulateContent() : new bool[] { true, true };
 
 		yield return null; // wait for one frame for active objects to refresh
 
@@ -124,7 +138,7 @@ public class TrackSelectorTemplate : Sfxable
 				if (trackContent.GetChild(i).childCount > 0)
 				{
 					Transform Trackclass = trackContent.GetChild(i);
-					for(int j=0; j<Trackclass.childCount; ++j)
+					for (int j = 0; j < Trackclass.childCount; ++j)
 					{
 						if (Trackclass.GetChild(j).name == F.I.s_trackName)
 						{
@@ -161,7 +175,7 @@ public class TrackSelectorTemplate : Sfxable
 
 		scrollx.gameObject.SetActive(!F.I.randomTracks && ServerC.I.AmHost);
 		scrolly.gameObject.SetActive(!F.I.randomTracks && ServerC.I.AmHost);
-		
+
 		radial.gameObject.SetActive(!F.I.randomTracks);
 		// set description
 		if (selectedTrack == null)
@@ -190,7 +204,7 @@ public class TrackSelectorTemplate : Sfxable
 		// focus on track
 		if (containerCo != null)
 			StopCoroutine(containerCo);
-		if(gameObject.activeInHierarchy)
+		if (gameObject.activeInHierarchy)
 			containerCo = StartCoroutine(MoveToTrack());
 	}
 	protected void CalculateTargetToSelect(InputAction.CallbackContext ctx)
@@ -238,18 +252,7 @@ public class TrackSelectorTemplate : Sfxable
 			}
 		}
 	}
-	public void SortTrackList()
-	{
-		curSortingCondition = (SortingCond)(((int)curSortingCondition + 1) % 2);
-		if (curSortingCondition == SortingCond.Name)
-			sortButton.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = F.I.LocStr("Sorted by name");
-		else
-			sortButton.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = F.I.LocStr("Sorted by difficulty");
-		// reload 
-		if (loadCo)
-			StopCoroutine(Load());
-		StartCoroutine(Load(F.I.s_trackName, forceReload: true));
-	}
+	
 	protected void SetRecords()
 	{
 		if (!F.I.randomTracks)
@@ -305,7 +308,7 @@ public class TrackSelectorTemplate : Sfxable
 			Destroy(tilesContainer.GetChild(i).gameObject);
 
 
-		if (! F.I.randomTracks)
+		if (!F.I.randomTracks)
 		{
 			if (selectedTrack)
 			{

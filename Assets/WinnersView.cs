@@ -21,9 +21,27 @@ public class WinnersView : MainMenuView
 	{
 		GoToView(rankingView);
 	}
-	public void PrepareView()
+	public void PrepareUsingArcade(bool continuationReq)
 	{
-
+		if(continuationReq)
+		{
+			description.text = "";
+			result123Obj.gameObject.SetActive(false);
+			succOverObj.gameObject.SetActive(true);
+			succOverObj.sprite = succOverSprites[0];
+			music = gameoverClip;
+		}
+		else
+		{
+			description.text = "";
+			result123Obj.gameObject.SetActive(false);
+			succOverObj.gameObject.SetActive(true);
+			succOverObj.sprite = succOverSprites[1];
+			music = goodendingClip;
+		}
+	}
+	public void PrepareViewUsingMultiplayer()
+	{
 		var players = ResultsView.SortedResultsByScore;
 		rankingView.sortedResults = players;
 

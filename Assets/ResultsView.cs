@@ -17,6 +17,7 @@ public class ResultInfo
 	public float progress;
 	public float drift;
 	public float aeromiles;
+	public int maxAeroStars;
 	public int score { get; private set; }
 	public Livery sponsor;
 
@@ -246,19 +247,157 @@ public class ResultsView : MainMenuView
 
 	public void OKButton()
 	{
-		if (F.I.Rounds > 0 && F.I.CurRound > F.I.Rounds)
+		if (F.I.gameMode == GameMode.Multiplayer)
 		{
-			for (int i = 0; i < resultData.Count; ++i)
+			if (F.I.Rounds > 0 && F.I.CurRound > F.I.Rounds)
 			{
-				resultData[i].SetPostRaceScore(resultData[i].score + CalculatePostraceReward(resultData[i]));
+				for (int i = 0; i < resultData.Count; ++i)
+				{
+					resultData[i].SetPostRaceScore(resultData[i].score + CalculatePostraceReward(resultData[i]));
+				}
+				winnersView.PrepareViewUsingMultiplayer();
+				GoToView(winnersView);
 			}
-			winnersView.PrepareView();
-			GoToView(winnersView);
+			else
+			{
+				Clear();
+				GoToView(MultiPlayerSelector.I.thisView);
+			}
 		}
-		else
+		else if (F.I.gameMode == GameMode.Arcade)
 		{
-			Clear();
-			GoToView(MultiPlayerSelector.I.thisView);
+			bool continuationCheck = CheckArcadeCondition(F.I.curNode.continuationReq);
+			bool prizeCheck = CheckArcadeCondition(F.I.curNode.prizeReq);
+			List<string> prizes = prizeCheck ? UnlockPrizes() : null;
+			int targetNodeID = ArcadeSelector.I.TargetNodeID;
+			if (continuationCheck)
+			{ // update unlocked paths
+				if(!F.I.curVariant.progress.unlockedPaths[F.I.curArcadeNodeID].Any(nodeID => nodeID == targetNodeID))
+				{
+					F.I.curVariant.progress.unlockedPaths[F.I.curArcadeNodeID].Add(targetNodeID);
+				}
+			}
+
+			if (continuationCheck && !prizeCheck)
+			{ // when continuing arcade 
+				Clear();
+				GoToView(ArcadeSelector.I.thisView);
+			}
+			else
+			{
+				for (int i = 0; i < resultData.Count; ++i)
+				{
+					resultData[i].SetPostRaceScore(resultData[i].score + CalculatePostraceReward(resultData[i]));
+				}
+
+				bool IsNotLastRaceInCurPath = F.I.curVariant.nodes[F.I.curArcadeNodeID].connections.Any(c => c > 0);
+
+				if(!continuationCheck || !IsNotLastRaceInCurPath)
+				{ // finished arcade run
+					winnersView.PrepareUsingArcade(continuationCheck);
+					GoToView(winnersView);
+				}
+				if(prizeCheck && continuationCheck && IsNotLastRaceInCurPath)
+				{ // won prize and continuing arcade
+					PrizeView.I.Prepare(prizes);
+					GoToView(PrizeView.I);
+				}
+			}
+		}
+	}
+	enum ArcadeResult
+	{
+		Failed,
+		Succeeded,
+		Continue
+	}
+	/// <returns>list of unlocked prizes</returns>
+	List<string> UnlockPrizes()
+	{
+		string[] prizes = F.I.curVariant.nodes[F.I.curArcadeNodeID].prizeReq.name.Split(' ');
+		List<string> prizeList = new(prizes);
+		for (int i = 0; i < prizes.Length; i++)
+		{
+			if (prizes[i].Contains("car") && !F.I.Car(prizes[i]).unlocked)
+			{
+				prizeList.Add(prizes[i]);
+				F.I.Car(prizes[i]).unlocked = true;
+				continue;
+			}
+			if (prizes[i].Contains("lvr") && !F.I.unlockedLiveries[int.Parse(prizes[i])])
+			{
+				prizeList.Add(prizes[i]);
+				F.I.unlockedLiveries[int.Parse(prizes[i])] = true;
+				continue;
+			}
+			if (prizes[i].Length > 5 && F.I.tracks[prizes[i]].unlocked)
+			{
+				prizeList.Add(prizes[i]);
+				F.I.tracks[prizes[i]].unlocked = true;
+				continue;
+			}
+		}
+		return prizeList;
+	}
+	bool CheckArcadeCondition(ArcadeVariant.Prize req)
+	{
+		ResultInfo playerResult;
+		if (F.I.alwaysFirst)
+		{
+			F.I.alwaysFirst = SortedResultsByFinishPos[0].name == F.I.playerData.playerName;
+		}
+
+		switch (req.condition)
+		{
+			case ArcadeVariant.Prize.Condition.PositionAtLeast:
+				var sortedPlayers = SortedResultsByFinishPos;
+				int minimumPosition = int.Parse(req.conditionArgument);
+				for (int i = 0; i < minimumPosition; ++i)
+				{
+					if (sortedPlayers[i].name == F.I.playerData.playerName)
+						return true;
+				}
+				return false;
+			case ArcadeVariant.Prize.Condition.LapAtMost:
+				playerResult = resultData.First(p => p.name == F.I.playerData.playerName);
+				TimeSpan requiredLap = TimeSpan.Parse(req.conditionArgument);
+				return playerResult.lap <= requiredLap;
+			case ArcadeVariant.Prize.Condition.AeroStarsAtLeast:
+				playerResult = resultData.First(p => p.name == F.I.playerData.playerName);
+				int starsReq = int.Parse(req.conditionArgument);
+				return playerResult.maxAeroStars >= starsReq;
+			case ArcadeVariant.Prize.Condition.StuntAtLeast:
+				playerResult = resultData.First(p => p.name == F.I.playerData.playerName);
+				float aeromilesReq = float.Parse(req.conditionArgument);
+				return playerResult.aeromiles >= aeromilesReq;
+			case ArcadeVariant.Prize.Condition.DriftsAtLeast:
+				playerResult = resultData.First(p => p.name == F.I.playerData.playerName);
+				float driftsReq = float.Parse(req.conditionArgument);
+				return playerResult.drift >= driftsReq;
+			case ArcadeVariant.Prize.Condition.TimeAtMost:
+				playerResult = resultData.First(p => p.name == F.I.playerData.playerName);
+				TimeSpan timeAtMostReq = TimeSpan.Parse(req.conditionArgument);
+				return playerResult.raceTime <= timeAtMostReq;
+			case ArcadeVariant.Prize.Condition.FastestLaptime:
+				resultData.Sort((ResultInfo A, ResultInfo B) =>
+				{
+					return A.lap.CompareTo(B.lap);
+				});
+				return resultData[0].name == F.I.playerData.playerName;
+			case ArcadeVariant.Prize.Condition.AlwaysFirst:
+				return F.I.alwaysFirst;
+			case ArcadeVariant.Prize.Condition.AllPathsFound:
+				// sum of all unlocked paths in all nodes
+				int allPaths = F.I.curVariant.nodes.Sum(n => n.connections.Length);
+				int unlockedPaths = 0;
+				for (int i = 0; i < F.I.curVariant.progress.unlockedPaths.Count; i++)
+				{
+					unlockedPaths += F.I.curVariant.progress.unlockedPaths[i].Count;
+				}
+				return unlockedPaths == allPaths;
+			default:
+				Debug.Log("null");
+				return false;
 		}
 	}
 	new void Awake()

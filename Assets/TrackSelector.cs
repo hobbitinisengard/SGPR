@@ -11,14 +11,14 @@ public class TrackSelector : TrackSelectorTemplate
 	public TextMeshProUGUI sponsorButtonText;
 	public TextMeshProUGUI LevelButtonText;
 	public TextMeshProUGUI wayButtonText;
-
+	public MainMenuButton sortButton;
 	protected int maxCPURivals = 9;
 	protected override void OnEnable()
 	{
 		base.OnEnable();
 		ResetButtons();
 	}
-	public new void ResetButtons()
+	public void ResetButtons()
 	{
 		SwitchRoadType(true);
 		SwitchCatchup(true);
@@ -28,7 +28,22 @@ public class TrackSelector : TrackSelectorTemplate
 		SwitchRaceType(true);
 		SwitchRivals(true);
 		SwitchSponsor(true);
-		base.ResetButtons();
+		if (curSortingCondition == SortingCond.Name)
+			sortButton.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = F.I.LocStr("Sorted by name");
+		else
+			sortButton.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = F.I.LocStr("Sorted by difficulty");
+	}
+	public void SortTrackList()
+	{
+		curSortingCondition = (SortingCond)(((int)curSortingCondition + 1) % 2);
+		if (curSortingCondition == SortingCond.Name)
+			sortButton.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = F.I.LocStr("Sorted by name");
+		else
+			sortButton.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = F.I.LocStr("Sorted by difficulty");
+		// reload 
+		if (loadCo)
+			StopCoroutine(Load());
+		StartCoroutine(Load(F.I.s_trackName, forceReload: true));
 	}
 	public void SwitchRoadType(bool init = false)
 	{

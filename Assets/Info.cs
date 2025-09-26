@@ -68,6 +68,8 @@ public class Info : MonoBehaviour
 	public CarSelector carSelector;
 	[NonSerialized]
 	public ArcadeVariant curVariant;
+	public ArcadeVariant.Node curNode => curVariant?.nodes[curArcadeNodeID];
+
 	public const string TranslationTableName = "Default";
 	public MultiPlayerSelector mpSelectorInitializer;
 	public Text versionText;
@@ -199,6 +201,10 @@ public class Info : MonoBehaviour
 	[NonSerialized]
 	public int curArcadeNodeID = 0;
 	[NonSerialized]
+	public bool alwaysFirst = true;
+	[NonSerialized]
+	public bool alwaysBestStuntScore = true;
+	[NonSerialized]
 	public bool[] unlockedLiveries = new bool[8] { true, false, false, false, false, false, false, false };
 	public async void LoadArcade()
 	{
@@ -236,7 +242,7 @@ public class Info : MonoBehaviour
 					}
 					else
 					{
-						variant.progress = new ArcadeVariant.Progress();
+						variant.progress = new ArcadeVariant.Progress(variant.nodes.Length);
 						//string serializedProgress = JsonConvert.SerializeObject(variant.progress, Formatting.Indented);
 						//await File.WriteAllTextAsync(progressPath, serializedProgress);
 					}
@@ -266,11 +272,11 @@ public class Info : MonoBehaviour
 
 		foreach (var node in curVariant.nodes)
 		{
-			if (node.prizeSetup != null)
+			if (node.prizeReq != null)
 			{
-				if (curVariant.progress.unlockedPaths[node.id].Length > 0)
+				if (curVariant.progress.unlockedPaths[node.id].Count > 0)
 				{ // this event has already been completed
-					string[] prizeNames = node.prizeSetup.name.Split(' ');
+					string[] prizeNames = node.prizeReq.name.Split(' ');
 					foreach (var prizeName in prizeNames)
 					{
 						if (prizeName.StartsWith("trk"))

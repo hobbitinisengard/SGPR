@@ -32,11 +32,13 @@ public class ArcadeVariant
 	public class Progress
 	{
 		public float progress; // 0 to 1
-		public int[][] unlockedPaths;
+		public List<List<int>> unlockedPaths;
 		public RankingRowData[] rankingRows;
-		public Progress()
+		public Progress(int nodes)
 		{
-			unlockedPaths = Array.Empty<int[]>();
+			unlockedPaths = new List<List<int>>(nodes);
+			for (int i = 0; i < nodes; ++i)
+				unlockedPaths.Add(new List<int>());
 			rankingRows = Array.Empty<RankingRowData>();
 		}
 	}
@@ -65,7 +67,7 @@ public class ArcadeVariant
 
 		public CarPlacement[] cars;
 
-		public Prize prizeSetup;
+		public Prize prizeReq;
 		public Prize continuationReq;
 	}
 
@@ -86,7 +88,6 @@ public class ArcadeVariant
 			TimeAtMost,
 			FastestLaptime,
 			AlwaysFirst,
-			AlwaysHighestAero,
 			AllPathsFound,
 		}
 	}
@@ -357,7 +358,7 @@ public class ArcadeVariant
 												new() { name = "CP5", carName = "2", livery = (Livery)6,  },
 										},
 										continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
-										prizeSetup = new Prize(){name = "car2",condition = Prize.Condition.PositionAtLeast, conditionArgument = "1"},
+										prizeReq = new Prize(){name = "car2",condition = Prize.Condition.PositionAtLeast, conditionArgument = "1"},
 										pavementType = (PavementType)1,
 								},
 										new() {
@@ -377,7 +378,7 @@ public class ArcadeVariant
 												new() { name = "CP5", carName = "5", livery = (Livery)6,  },
 										},
 										continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
-										prizeSetup = new Prize(){name = "car6",condition = Prize.Condition.PositionAtLeast, conditionArgument = "1"},
+										prizeReq = new Prize(){name = "car6",condition = Prize.Condition.PositionAtLeast, conditionArgument = "1"},
 										pavementType = (PavementType)0,
 								},
 										new() {
@@ -397,7 +398,7 @@ public class ArcadeVariant
 												new() { name = "CP5", carName = "12", livery = (Livery)6,  },
 										},
 										continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
-										prizeSetup = new Prize(){name = "car3",condition = Prize.Condition.PositionAtLeast, conditionArgument = "1"},
+										prizeReq = new Prize(){name = "car3",condition = Prize.Condition.PositionAtLeast, conditionArgument = "1"},
 										pavementType = (PavementType)1,
 								},
 										new() {
@@ -417,7 +418,7 @@ public class ArcadeVariant
 												new() { name = "CP5", carName = "12", livery = (Livery)6,  },
 										},
 										continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
-										prizeSetup = new Prize(){name = "car14",condition = Prize.Condition.PositionAtLeast, conditionArgument = "1"},
+										prizeReq = new Prize(){name = "car14",condition = Prize.Condition.PositionAtLeast, conditionArgument = "1"},
 										pavementType = (PavementType)5,
 								},
 										new() {
@@ -437,7 +438,7 @@ public class ArcadeVariant
 												new() { name = "CP5", carName = "8", livery = (Livery)5,  },
 										},
 										continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
-										prizeSetup = new Prize(){name = "car16",condition = Prize.Condition.PositionAtLeast, conditionArgument = "1"},
+										prizeReq = new Prize(){name = "car16",condition = Prize.Condition.PositionAtLeast, conditionArgument = "1"},
 										pavementType = (PavementType)6,
 								},
 										new() {
@@ -457,7 +458,7 @@ public class ArcadeVariant
 												new() { name = "CP5", carName = "8", livery = (Livery)5,  },
 										},
 										continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
-										prizeSetup = new Prize(){name = "car5",condition = Prize.Condition.PositionAtLeast, conditionArgument = "1"},
+										prizeReq = new Prize(){name = "car5",condition = Prize.Condition.PositionAtLeast, conditionArgument = "1"},
 										pavementType = (PavementType)6,
 								},
 				}
