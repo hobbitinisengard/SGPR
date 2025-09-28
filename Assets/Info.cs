@@ -21,7 +21,7 @@ using UnityEngine.UI;
 public enum PlayerState { InRace, InLobbyUnready, InLobbyReady };
 public enum Envir { GER, JAP, SPN, FRA, ENG, USA, ITA, MEX };
 public enum CarGroup { Wild, Aero, Speed, Team };
-public enum Livery { Random = 0, Golden = 1, TGR = 2, Rline = 3, Itex = 4, Caltex = 5, Titan = 6, Mysuko = 7 }
+public enum Livery { Random = 0, Team = 1, TGR = 2, Rline = 3, Itex = 4, Caltex = 5, Titan = 6, Mysuko = 7 }
 public enum RecordType { BestLap, RaceTime, StuntScore, DriftScore }
 public enum ScoringType { Championship, Points, Victory }
 public enum ActionHappening { InLobby, InRace }
@@ -68,7 +68,7 @@ public class Info : MonoBehaviour
 	public CarSelector carSelector;
 	[NonSerialized]
 	public ArcadeVariant curVariant;
-	public ArcadeVariant.Node curNode => curVariant?.nodes[curArcadeNodeID];
+	public ArcadeVariant.Node curNode => curVariant?.nodes[curArcadeNodeID]; 
 
 	public const string TranslationTableName = "Default";
 	public MultiPlayerSelector mpSelectorInitializer;
@@ -167,7 +167,9 @@ public class Info : MonoBehaviour
 	public string arcadePath { get { return documentsSGPRpath + "arcade\\"; } }
 	public string lastPath { get { return documentsSGPRpath + "path.txt"; } }
 
-	public Livery s_PlayerCarSponsor = Livery.Golden;
+	public const string arcadeProgressExtension = ".progress";
+
+	public Livery s_PlayerCarSponsor = Livery.Team;
 
 	public readonly int maxCarsInRace = 10;
 
@@ -205,7 +207,8 @@ public class Info : MonoBehaviour
 	[NonSerialized]
 	public bool alwaysBestStuntScore = true;
 	[NonSerialized]
-	public bool[] unlockedLiveries = new bool[8] { true, false, false, false, false, false, false, false };
+	public Livery?[] unlockedLiveries = new Livery?[] { Livery.Random, null, null, null, null, null, null, null };
+
 	public async void LoadArcade()
 	{
 		// iterate over all files in arcadePath
@@ -220,55 +223,65 @@ public class Info : MonoBehaviour
 			arcadeVariants.Add(newVariant);
 			string serializedVariant = JsonConvert.SerializeObject(newVariant, Formatting.Indented);
 			string filepath = Path.Combine(arcadePath, "Original.json");
+			filepaths = new string[] { filepath };
 			await File.WriteAllTextAsync(filepath, serializedVariant);
 			playerData.currentArcadeVariant = newVariant.name;
 		}
-		else
-		{
-			foreach (var filepath in filepaths)
-			{
-				string jsonText = await File.ReadAllTextAsync(filepath);
-				try
-				{
-					ArcadeVariant variant = JsonConvert.DeserializeObject<ArcadeVariant>(jsonText);
-					if (variant != null)
-						arcadeVariants.Add(variant);
 
-					string progressPath = Path.ChangeExtension(filepath, ".progress");
-					if (File.Exists(progressPath))
-					{
-						string progressText = await File.ReadAllTextAsync(progressPath);
-						variant.progress = JsonConvert.DeserializeObject<ArcadeVariant.Progress>(progressText);
-					}
-					else
-					{
-						variant.progress = new ArcadeVariant.Progress(variant.nodes.Length);
-						//string serializedProgress = JsonConvert.SerializeObject(variant.progress, Formatting.Indented);
-						//await File.WriteAllTextAsync(progressPath, serializedProgress);
-					}
-				}
-				catch (Exception e)
+		foreach (var filepath in filepaths)
+		{
+			string jsonText = await File.ReadAllTextAsync(filepath);
+			try
+			{
+				ArcadeVariant variant = JsonConvert.DeserializeObject<ArcadeVariant>(jsonText);
+				if (variant != null)
+					arcadeVariants.Add(variant);
+
+				string progressPath = Path.ChangeExtension(filepath, arcadeProgressExtension);
+				if (File.Exists(progressPath))
 				{
-					Debug.LogError("Error loading arcade variant from " + filepath + ": " + e.Message);
+					string progressText = await File.ReadAllTextAsync(progressPath);
+					variant.progress = JsonConvert.DeserializeObject<ArcadeVariant.Progress>(progressText);
+				}
+				else
+				{
+					variant.progress = new ArcadeVariant.Progress(variant.nodes.Length);
+					//string serializedProgress = JsonConvert.SerializeObject(variant.progress, Formatting.Indented);
+					//await File.WriteAllTextAsync(progressPath, serializedProgress);
 				}
 			}
+			catch (Exception e)
+			{
+				Debug.LogError("Error loading arcade variant from " + filepath + ": " + e.Message);
+			}
 		}
-		curVariant = arcadeVariants.FirstOrDefault(v => v.name == playerData.currentArcadeVariant);
-		ReloadArcadeProgress();
+		SwitchArcadeVariant(playerData.currentArcadeVariant);
 	}
-	public void ReloadArcadeProgress()
+	public void SaveArcadeProgress()
 	{
+		string jsonText = JsonConvert.SerializeObject(F.I.curVariant.progress);
+		File.WriteAllText(arcadePath + F.I.curVariant.name + arcadeProgressExtension, jsonText);
+	}
+	public void SwitchArcadeVariant(string newVariantName)
+	{
+		curVariant = arcadeVariants.FirstOrDefault(v => v.name == newVariantName);
+		// sort curVariant nodes by id to ensure correct order
+		Array.Sort(F.I.curVariant.nodes, (a, b) => a.id.CompareTo(b.id));
+
+		for (int i=0; i<unlockedLiveries.Length; i++)
+				unlockedLiveries[i] = null;
+		unlockedLiveries[0] = Livery.Random;
+
 		foreach (var track in tracks.Values)
-			track.unlocked = false;
+			track.unlocked = true; // all tracks are unlocked by default
 		foreach (var car in cars)
+		{
+			car.starter = false;
 			car.unlocked = false;
-		foreach (var livery in Enum.GetValues(typeof(Livery)).Cast<Livery>())
-			unlockedLiveries[(int)livery] = livery == Livery.Random;
-		var allowedCarsInArcade = curVariant.GetAllowedCarsIndices();
-		foreach (var c in cars)
-			c.allowedInArcade = false;
-		for (int i = 0; i < allowedCarsInArcade.Count; i++)
-			F.I.cars[allowedCarsInArcade[i]].allowedInArcade = true;
+		}
+		var starterCarNrs = curVariant.starterCarsIdxs;
+		foreach(var n in starterCarNrs)
+			cars[n].starter = true;
 
 		foreach (var node in curVariant.nodes)
 		{
@@ -276,25 +289,31 @@ public class Info : MonoBehaviour
 			{
 				if (curVariant.progress.unlockedPaths[node.id].Count > 0)
 				{ // this event has already been completed
-					string[] prizeNames = node.prizeReq.name.Split(' ');
+					string[] prizeNames = node.prizeReq.name.Split(',');
 					foreach (var prizeName in prizeNames)
 					{
-						if (prizeName.StartsWith("trk"))
-						{
-							tracks[node.trackName].unlocked = true;
-						}
 						if (prizeName.StartsWith("car"))
 						{
 							Car(prizeName).unlocked = true;
 						}
 						if (prizeName.StartsWith("lvr"))
 						{
-							if (Enum.TryParse(prizeName[3..], out Livery livery))
-							{
-								unlockedLiveries[(int)livery] = true;
-							}
+							int liveryIdx = int.Parse(prizeName[3..]);
+							if (unlockedLiveries[liveryIdx] == null)
+								unlockedLiveries[liveryIdx] = (Livery)liveryIdx;
+						}
+						else
+						{
+							tracks[node.trackName].unlocked = true;
 						}
 					}
+				}
+				else
+				{ // lock prizes for uncompleted races
+					string[] prizeNames = node.prizeReq.name.Split(',');
+					foreach (var prizeName in prizeNames)
+						if (!prizeName.StartsWith("car") && !prizeName.StartsWith("lvr"))
+							tracks[node.trackName].unlocked = false;
 				}
 			}
 		}
@@ -488,7 +507,7 @@ public class Info : MonoBehaviour
 	/// <summary>
 	/// e.g car01
 	/// </summary>
-	public string s_playerCarName = "car01";
+	public int s_playerCarIdx = 0;
 	[NonSerialized]
 	public RaceType s_raceType = RaceType.Race;
 	/// <summary>
@@ -517,7 +536,6 @@ public class Info : MonoBehaviour
 	internal bool randomTracks;
 	internal int hostId;
 	public int racingPathResolution = 10;
-	public readonly string version = "0.3";
 
 	public const int AfterMultiPlayerRaceWaitForPlayersSeconds = 30;
 
@@ -563,26 +581,26 @@ public class Info : MonoBehaviour
 
 			cars = new Car[]
 {
-				new ("car01",0,CarGroup.Speed, "MEAN STREAK","Fast, light and agile, this racer offers much for those who wish to modify their vehicle."),
-				new ("car02",45000,CarGroup.Wild, "THE HUSTLER","Sturdy 4x4 pick-up truck with an eye for the outrageous!"),
-				new ("car03",50000,CarGroup.Aero, "TWIN EAGLE","Take flight with this light and speedy stuntcar."),
-				new ("car04",0,CarGroup.Aero, "SKY HAWK","Get airborne with this very versatile stunt car."),
-				new ("car05",30000,CarGroup.Speed, "THE PHANTOM","Fast, sleek and tough to handle."),
-				new ("car06",30000,CarGroup.Wild, "ROAD HOG","Rock and Roll with the rough ridin' road hog."),
-				new ("car07",0,CarGroup.Wild, "DUNE RAT","Defy the laws of physics in this buggy."),
-				new ("car08",50000,CarGroup.Speed, "LIGHTNIN'","Supercharged super speed. Easy does it!"),
-				new ("car09",30000,CarGroup.Speed, "ALLEY KAT","Sleek and powerful, this cat is ready to roar."),
-				new ("car10",40000,CarGroup.Wild, "SAND SHARK","This beachcomber is at home on any stunt circuit."),
-				new ("car11",45000,CarGroup.Wild, "THE BRUTE","Unleash the Brute for no-nonsense on the road!"),
-				new ("car12",70000,CarGroup.Aero, "WILD DART","Fly fast and true with this stuntcar."),
-				new ("car13",65000,CarGroup.Wild, "RAGING BULL","Powerful and fast, this streetwise 4x4 is incredible."),
-				new ("car14",15000,CarGroup.Aero, "FLYING MANTIS","Super light and very fast."),
-				new ("car15",35000,CarGroup.Aero, "STUNT MONKEY","Monkey see, monkey do! Go bananas with this wild ride!"),
-				new ("car16",50000,CarGroup.Speed, "INFERNO","This speed demon is on fire!"),
-				new ("car17",35000,CarGroup.Team, "FORK","Despite its looks, it moves like fork lightning!"),
-				new ("car18",55000,CarGroup.Team, "WORM MOBILE","Super Speedy Buggy!"),
-				new ("car19",100000,CarGroup.Team, "FORMULA 17","Incredibly fast racing car."),
-				new ("car20",90000,CarGroup.Team, "TEAM MACHINE","The ultimate, hugely versatile stock car.")
+				new ("car01",0,CarGroup.Speed, Livery.Itex, "MEAN STREAK","Fast, light and agile, this racer offers much for those who wish to modify their vehicle."),
+				new ("car02",45000,CarGroup.Wild,Livery.Caltex, "THE HUSTLER","Sturdy 4x4 pick-up truck with an eye for the outrageous!"),
+				new ("car03",50000,CarGroup.Aero, Livery.Mysuko, "TWIN EAGLE","Take flight with this light and speedy stuntcar."),
+				new ("car04",0,CarGroup.Aero, Livery.TGR, "SKY HAWK","Get airborne with this very versatile stunt car."),
+				new ("car05",30000,CarGroup.Speed, Livery.Rline, "THE PHANTOM","Fast, sleek and tough to handle."),
+				new ("car06",30000,CarGroup.Wild, Livery.Titan, "ROAD HOG","Rock and Roll with the rough ridin' road hog."),
+				new ("car07",0,CarGroup.Wild, Livery.Itex, "DUNE RAT","Defy the laws of physics in this buggy."),
+				new ("car08",50000,CarGroup.Speed, Livery.Titan, "LIGHTNIN'","Supercharged super speed. Easy does it!"),
+				new ("car09",30000,CarGroup.Speed, Livery.Caltex, "ALLEY KAT","Sleek and powerful, this cat is ready to roar."),
+				new ("car10",40000,CarGroup.Wild, Livery.Itex, "SAND SHARK","This beachcomber is at home on any stunt circuit."),
+				new ("car11",45000,CarGroup.Wild, Livery.TGR, "THE BRUTE","Unleash the Brute for no-nonsense on the road!"),
+				new ("car12",70000,CarGroup.Aero, Livery.Titan,"WILD DART","Fly fast and true with this stuntcar."),
+				new ("car13",65000,CarGroup.Wild, Livery.Mysuko, "RAGING BULL","Powerful and fast, this streetwise 4x4 is incredible."),
+				new ("car14",15000,CarGroup.Aero, Livery.Caltex, "FLYING MANTIS","Super light and very fast."),
+				new ("car15",35000,CarGroup.Aero, Livery.Rline, "STUNT MONKEY","Monkey see, monkey do! Go bananas with this wild ride!"),
+				new ("car16",50000,CarGroup.Speed, Livery.Titan, "INFERNO","This speed demon is on fire!"),
+				new ("car17",35000,CarGroup.Team, Livery.Team, "FORK","Despite its looks, it moves like fork lightning!"),
+				new ("car18",55000,CarGroup.Team, Livery.Team, "WORM MOBILE","Super Speedy Buggy!"),
+				new ("car19",100000,CarGroup.Team, Livery.Itex, "FORMULA 17","Incredibly fast racing car."),
+				new ("car20",90000,CarGroup.Team, Livery.Team, "TEAM MACHINE","The ultimate, hugely versatile stock car.")
 };
 		}
 		ReloadCarConfigs();
@@ -821,6 +839,7 @@ public class Info : MonoBehaviour
 		return weldedMesh;
 	}
 
+	
 }
 [Serializable]
 public class Record
@@ -1012,8 +1031,9 @@ public class Car
 	public int rooster;
 	public string internalName;
 	public bool unlocked = false;
-	public bool allowedInArcade = false;
-	public Car(string internalName, int price, CarGroup carClass, string name, string desc, int rooster = 0)
+	public bool starter = false;
+	public Livery defaultLivery { get; private set; } = Livery.TGR;
+	public Car(string internalName, int price, CarGroup carClass, Livery defaultLivery, string name, string desc, int rooster = 0)
 	{
 		this.internalName = internalName;
 		this.desc = desc;
@@ -1021,6 +1041,20 @@ public class Car
 		this.name = name;
 		this.price = price;
 		this.rooster = rooster;
+		this.defaultLivery = defaultLivery;
+	}
+	public static int Name2Index(string name)
+	{ // i.e. car05
+		try
+		{
+			int i = int.Parse(name[3..]);
+			return i - 1;
+		}
+		catch
+		{
+			Debug.Log(name);
+			return 0;
+		}
 	}
 }
 public struct PartInfo

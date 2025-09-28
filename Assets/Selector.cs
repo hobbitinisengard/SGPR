@@ -52,7 +52,7 @@ public class TrackSelectorTemplate : Sfxable
 	{
 		if (F.I.gameMode == GameMode.Arcade)
 		{
-			//foreach (var targetNodeID in F.I.curVariant.nodes[F.I.curArcadeNodeID].connections)
+			//foreach (var targetNodeID in F.I.curNode.connections)
 			//{
 			//	if (F.I.curVariant.nodes[targetNodeID].trackName == trackName)
 					return true;
@@ -79,20 +79,26 @@ public class TrackSelectorTemplate : Sfxable
 
 		string[] sortedTracks;
 		// populate track grid	
-		if (F.I.gameMode == GameMode.Exhibition)
+		if (F.I.gameMode == GameMode.Arcade)
+		{
+			if (ArcadeSelector.I.TargetNodeID() == -1)
+			{
+				sortedTracks = new string[] { F.I.curNode.trackName };
+			}
+			else
+			{
+				sortedTracks = new string[F.I.curNode.connections.Length];
+				for (int i = 0; i < sortedTracks.Length; ++i)
+					sortedTracks[i] = F.I.curVariant.nodes[F.I.curNode.connections[i]].trackName;
+			}
+		}
+		else
 		{
 			if (curSortingCondition == SortingCond.Name)
 				sortedTracks = F.I.tracks.OrderBy(t => t.Key).Select(kv => kv.Key).ToArray();
 			else //if(curSortingCondition == SortingCond.Difficulty)
 				sortedTracks = F.I.tracks.OrderBy(t => t.Value.difficulty).Select(kv => kv.Key).ToArray();
 		}
-		else
-		{
-			sortedTracks = new string[F.I.curVariant.nodes[F.I.curArcadeNodeID].connections.Length - 1];
-			for (int i = 0; i < sortedTracks.Length; ++i)
-				sortedTracks[i] = F.I.curVariant.nodes[F.I.curVariant.nodes[F.I.curArcadeNodeID].connections[i]].trackName;
-		}
-
 
 		foreach (var trackName in sortedTracks)
 		{
@@ -159,8 +165,8 @@ public class TrackSelectorTemplate : Sfxable
 		}
 		F.I.s_trackName = selectedTrack.name;
 
-		radial.gameObject.SetActive(selectedTrack);
-		radial.SetChildrenActive(trackContent);
+		radial?.gameObject.SetActive(selectedTrack);
+		radial?.SetChildrenActive(trackContent);
 		startButton.Select();
 		SetTrackShaenigans();
 		loadCo = false;
@@ -176,7 +182,7 @@ public class TrackSelectorTemplate : Sfxable
 		scrollx.gameObject.SetActive(!F.I.randomTracks && ServerC.I.AmHost);
 		scrolly.gameObject.SetActive(!F.I.randomTracks && ServerC.I.AmHost);
 
-		radial.gameObject.SetActive(!F.I.randomTracks);
+		radial?.gameObject.SetActive(!F.I.randomTracks);
 		// set description
 		if (selectedTrack == null)
 		{
@@ -197,7 +203,7 @@ public class TrackSelectorTemplate : Sfxable
 			else
 				trackAuthorText.text = F.I.tracks[selectedTrack.name].author;
 
-			if (radial.gameObject.activeSelf)
+			if (radial != null && radial.gameObject.activeSelf)
 				radial.SetAnimTo(selectedTrack.parent.GetSiblingIndex());
 		}
 

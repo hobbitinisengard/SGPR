@@ -1511,6 +1511,18 @@ MonoBehaviour:
     m_Localized: UNLOCKED
     m_Metadata:
       m_Items: []
+  - m_Id: 52421218851950592
+    m_Localized: Congratulations! You've unlocked car {0} in Exhibition Mode!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 52421961499611136
+    m_Localized: Congratulations! You've unlocked track {0} in Exhibition Mode!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 52422051018641408
+    m_Localized: Congratulations! You've unlocked livery {0} in Exhibition Mode!
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

@@ -77,10 +77,10 @@ namespace RVP
 			hud.Disconnect();
 			hud.gameObject.SetActive(false);
 			cam.Disconnect();
-			
-			if(ServerC.I.AmHost)
+
+			if (ServerC.I.AmHost)
 			{
-				for (int i = 0; i < F.I.s_cars.Count;i++)
+				for (int i = 0; i < F.I.s_cars.Count; i++)
 				{
 					if (F.I.s_cars[i].Owner) // cars remove themselves from I.s_cars array on destroy
 						Destroy(F.I.s_cars[i].gameObject);
@@ -97,7 +97,7 @@ namespace RVP
 			viewSwitcher.PlayDimmerToMenu(applyScoring);
 		}
 		public void RestartButton()
-		{ 
+		{
 			switch (F.I.gameMode)
 			{
 				case GameMode.Exhibition:
@@ -127,7 +127,7 @@ namespace RVP
 				return;
 
 			if (F.I.gameMode == GameMode.Multiplayer && ServerC.I.AmHost)
-				if(ResultsView.FinishedPlayers == 0)
+				if (ResultsView.FinishedPlayers == 0)
 					Voting.I.EndForEveryone(); // host's decision is immediate
 				else
 					return;
@@ -135,7 +135,7 @@ namespace RVP
 			musicPlayer.Stop();
 			countDownSeq.gameObject.SetActive(false);
 
-			
+
 			if (F.I.s_inEditor)
 			{
 				RemoveCars();
@@ -146,7 +146,7 @@ namespace RVP
 				BackToMenu(applyScoring: false);
 				if (F.I.gameMode == GameMode.Multiplayer && !ServerC.I.AmHost)
 					ServerC.I.DisconnectFromLobby();
-				
+
 			}
 		}
 
@@ -199,7 +199,7 @@ namespace RVP
 				for (int i = 0; i < F.I.s_cars.Count; ++i)
 				{
 					if (F.I.s_cars[i] == vp)
-						return Mathf.Clamp(i, 0,9);
+						return Mathf.Clamp(i, 0, 9);
 				}
 			}
 			return 0;
@@ -208,8 +208,8 @@ namespace RVP
 		public void KnockoutCarsBehind(VehicleParent survivorCar)
 		{
 			F.I.s_cars.Sort((carA, carB) => LiveProgress(carB).CompareTo(LiveProgress(carA)));
-			
-			for (int i = F.I.s_cars.FindIndex(c => c == survivorCar)+1; i < F.I.s_cars.Count; ++i)
+
+			for (int i = F.I.s_cars.FindIndex(c => c == survivorCar) + 1; i < F.I.s_cars.Count; ++i)
 			{
 				if (F.I.s_cars[i].raceBox.enabled)
 				{
@@ -299,7 +299,7 @@ namespace RVP
 			editorPanel.gameObject.SetActive(false);
 			F.I.s_raceType = RaceType.Race;
 			F.I.s_laps = 0;
-			var carModel = Resources.Load<GameObject>(F.I.carPrefabsPath + F.I.s_playerCarName);
+			var carModel = Resources.Load<GameObject>(F.I.carPrefabsPath + F.I.s_playerCarIdx);
 			var newCar = Instantiate(carModel, position, rotation).GetComponent<VehicleParent>();
 			newCar.followAI.enabled = false;
 			newCar.raceBox.enabled = true;
@@ -310,7 +310,7 @@ namespace RVP
 		{
 			ResultsView.Clear();
 			F.I.raceStartDate = DateTime.UtcNow.AddSeconds(5);
-			
+
 			StartCoroutine(StartRaceCoroutine());
 		}
 		IEnumerator StartRaceCoroutine()
@@ -322,7 +322,7 @@ namespace RVP
 				yield return null;
 			}
 
-			
+
 			hud.pauseMenu.gameObject.SetActive(false);
 			editorPanel.pathFollower.SetActive(false);
 			for (int i = 0; i < editorPanel.placedTilesContainer.transform.childCount; ++i)
@@ -352,48 +352,60 @@ namespace RVP
 				musicPlayer.PlayDelayed(5);
 			}
 
-			Car[] preferredCars = F.I.cars.Where(c => c.category == F.I.tracks[F.I.s_trackName].preferredCarClass).ToArray();
-			
-
+			List<int> preferredCarsIdxs = new();
+			for (int i = 0; i < F.I.cars.Length; i++)
+			{
+				if (F.I.cars[i].category == F.I.tracks[F.I.s_trackName].preferredCarClass)
+					preferredCarsIdxs.Add(i);
+			}
 			CarPlacement[] carPlacements;
 			if (ServerC.I.AmHost)
 			{
 				carPlacements = new CarPlacement[F.I.s_cpuRivals + 1];
-				List<Car> roosterCars = new();
 
-				foreach(Car c in F.I.cars)
+				if (F.I.gameMode == GameMode.Arcade)
 				{
-					for (int i = 0; i < c.rooster; i++)
-						roosterCars.Add(c);
-				}
-
-				for (int i = 0; i < F.I.s_cpuRivals; ++i)
-				{
-					Car car;
-					if (roosterCars.Count > 0)
-					{
-						car = roosterCars[^1];
-						roosterCars.RemoveAt(roosterCars.Count-1);
-					}
-					else
-					{
-						bool pickPreferred = UnityEngine.Random.value <= .7f;
-						car = pickPreferred ? preferredCars.GetRandom() : F.I.cars.GetRandom();
-					}
-					carPlacements[i] = CarPlacement.CPU(i, car);
-				}
-					
-
-				if(F.I.s_spectator)
-				{
-					carPlacements[^1] = CarPlacement.CPU(F.I.s_cpuRivals, preferredCars.GetRandom());
+					for (int i = 0; i < F.I.curNode.cars.Length; ++i)
+						carPlacements[i] = F.I.curNode.cars[i];
 				}
 				else
 				{
-					if(F.I.gameMode == GameMode.Exhibition)
-						carPlacements[^1] = CarPlacement.LocalPlayer();
-					else
+					List<int> roosterCars = new();
+
+					for (int i = 0; i < F.I.cars.Length; ++i)
+					{
+						Car c = F.I.cars[i];
+						for (int j = 0; j < c.rooster; j++)
+							roosterCars.Add(i);
+					}
+
+					for (int i = 0; i < F.I.s_cpuRivals; ++i)
+					{
+						int carIdx;
+						if (roosterCars.Count > 0)
+						{
+							carIdx = roosterCars[^1];
+							roosterCars.RemoveAt(roosterCars.Count - 1);
+						}
+						else
+						{
+							bool pickPreferred = UnityEngine.Random.value <= .7f;
+							carIdx = pickPreferred ? preferredCarsIdxs.GetRandom() : UnityEngine.Random.Range(0, 19);
+						}
+						carPlacements[i] = CarPlacement.CPU(i, carIdx);
+					}
+				}
+
+				if (F.I.s_spectator)
+				{
+					carPlacements[^1] = CarPlacement.CPU(F.I.s_cpuRivals, preferredCarsIdxs.GetRandom());
+				}
+				else
+				{
+					if (F.I.gameMode == GameMode.Multiplayer)
 						carPlacements[^1] = CarPlacement.OnlinePlayer(ServerC.I.LeaderboardPos + F.I.s_cpuRivals, ServerC.I.PlayerMe);
+					else
+						carPlacements[^1] = CarPlacement.LocalPlayer();
 				}
 			}
 			else
@@ -436,12 +448,13 @@ namespace RVP
 				else
 				{
 					VehicleParent newCar;
-					var carModel = Resources.Load<GameObject>(F.I.carPrefabsPath + cp.carName);
-					
-					if (F.I.gameMode == GameMode.Exhibition)
-						newCar = Instantiate(carModel, position, rotation).GetComponent<VehicleParent>();
-					else
+					var carModel = Resources.Load<GameObject>(F.I.carPrefabsPath + F.I.cars[cp.carIdx].internalName);
+
+					if (F.I.gameMode == GameMode.Multiplayer)
 						newCar = NetworkObject.InstantiateAndSpawn(carModel, networkManager, networkManager.LocalClientId, position: position, rotation: rotation).GetComponent<VehicleParent>();
+					else
+						newCar = Instantiate(carModel, position, rotation).GetComponent<VehicleParent>();
+
 					newCar.sponsor = cp.livery;
 					newCar.name = cp.name;
 				}
@@ -464,9 +477,9 @@ namespace RVP
 			int index = ServerC.I.lobby.Players.FindIndex(p => p.Id == lobbyId);
 			Player p = ServerC.I.lobby.Players[index];
 			var carModel = Resources.Load<GameObject>(F.I.carPrefabsPath + p.carNameGet());
-			if(position == null)
+			if (position == null)
 				position = F.I.s_cars[^1].tr.position + Vector3.up * 3;
-			if(rotation == null)
+			if (rotation == null)
 				rotation = F.I.s_cars[^1].tr.rotation;
 
 			if (F.I.s_cars.Count == F.I.maxCarsInRace)
@@ -485,7 +498,7 @@ namespace RVP
 			int curLap = F.I.s_cars[^1].raceBox.curLap - 1;
 			if (curLap < 0)
 				curLap = 0;
-			var newCar = NetworkObject.InstantiateAndSpawn(carModel, networkManager, relayId, position:position.Value, rotation:rotation.Value).GetComponent<VehicleParent>();
+			var newCar = NetworkObject.InstantiateAndSpawn(carModel, networkManager, relayId, position: position.Value, rotation: rotation.Value).GetComponent<VehicleParent>();
 			newCar.sponsor = p.SponsorGet();
 			newCar.name = p.NameGet();
 			newCar.SetCurLapRpc(curLap, newCar.RpcTarget.Owner);
@@ -511,11 +524,11 @@ namespace RVP
 		}
 		IEnumerator FinishSeq()
 		{
-			if(ServerC.I.AmHost)
+			if (ServerC.I.AmHost)
 				Online.I.raceAlreadyStarted.Value = false;
-			
+
 			musicPlayer.Stop();
-			if(F.I.gameMode == GameMode.Multiplayer)
+			if (F.I.gameMode == GameMode.Multiplayer)
 				yield return new WaitForSeconds(1);
 			resultsSeq.gameObject.SetActive(true);
 			cam.mode = CameraControl.Mode.Replay;
@@ -527,7 +540,7 @@ namespace RVP
 			} while (resultsSeq.gameObject.activeSelf);
 
 			if (F.I.tracks.ContainsKey(F.I.s_trackName))
-			{ 
+			{
 				var json = JsonConvert.SerializeObject(F.I.tracks[F.I.s_trackName].records);
 				var path = Path.Combine(F.I.tracksPath, F.I.s_trackName + ".rec");
 				File.WriteAllTextAsync(path, json);
@@ -548,7 +561,7 @@ namespace RVP
 		}
 		public void TimeForRaceEnded()
 		{
-			for(int i=0; i< F.I.s_cars.Count; ++i)
+			for (int i = 0; i < F.I.s_cars.Count; ++i)
 			{
 				F.I.s_cars[i].raceBox.enabled = false;
 			}

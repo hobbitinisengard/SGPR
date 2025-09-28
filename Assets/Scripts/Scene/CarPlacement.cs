@@ -9,13 +9,13 @@ public class CarPlacement
 	/// <summary>
 	/// from 0 to 19
 	/// </summary>
-	public string carName;
+	public int carIdx;
 	public string name;
 	public Livery livery = Livery.Random;
-	public static CarPlacement CPU(int pos, Car c)
+	public static CarPlacement CPU(int pos, int carIdx)
 	{
 		return new CarPlacement() {
-			carName = c.internalName,
+			carIdx = carIdx,
 			position = pos,
 			name = "CP" + (pos + 1).ToString(),
 			livery = (Livery)(((int)F.I.s_PlayerCarSponsor + pos) % F.I.Liveries),
@@ -25,7 +25,7 @@ public class CarPlacement
 	{
 		return new CarPlacement()
 		{
-			carName = F.I.s_playerCarName,
+			carIdx = F.I.s_playerCarIdx,
 			position = F.I.s_cpuRivals,
 			name = F.I.playerData.playerName,
 			livery = F.I.s_PlayerCarSponsor,
@@ -36,7 +36,7 @@ public class CarPlacement
 		var pIndex = pos - F.I.s_cpuRivals;
 		return new CarPlacement()
 		{
-			carName = p.carNameGet(),
+			carIdx = Car.Name2Index(p.carNameGet()),
 			position = (F.I.s_cpuRivals + pIndex),
 			name = p.NameGet(),
 			livery = p.SponsorGet(),

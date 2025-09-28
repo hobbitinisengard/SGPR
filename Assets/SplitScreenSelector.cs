@@ -191,12 +191,11 @@ public class SplitScreenSelector : TrackSelector
 
 			if (F.I.randomCars)
 			{
-				int randomNr = UnityEngine.Random.Range(0, F.I.cars.Length);
-				F.I.s_playerCarName = "car" + (randomNr + 1).ToString("D2");
+				F.I.s_playerCarIdx = UnityEngine.Random.Range(0, F.I.cars.Length);
 			}
 			else
 			{
-				F.I.s_playerCarName = "car01";
+				F.I.s_playerCarIdx = 0;
 			}
 		}
 		ServerC.I.CarNameSet();

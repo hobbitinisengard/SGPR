@@ -156,9 +156,8 @@ public class TrackSelector : TrackSelectorTemplate
 			int dir = F.I.shiftRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
 			do
 			{
-				F.I.s_PlayerCarSponsor = (Livery)F.Wraparound((int)F.I.s_PlayerCarSponsor + dir,
-					ServerC.I.AmHost ? 0 : 1, F.I.Liveries);
-			} while(F.I.unlockedLiveries[(int)F.I.s_PlayerCarSponsor] == false);
+				F.I.s_PlayerCarSponsor = (Livery)F.Wraparound((int)F.I.s_PlayerCarSponsor + dir,ServerC.I.AmHost ? 0 : 1, F.I.Liveries);
+			} while(F.I.unlockedLiveries[(int)F.I.s_PlayerCarSponsor] != null && F.I.gameMode != GameMode.Multiplayer);
 		}
 		F.I.teams = F.I.s_PlayerCarSponsor != Livery.Random;
 		sponsorButtonText.text = F.I.LocStr("Sponsor") + ": " + F.I.LocStr(F.I.s_PlayerCarSponsor.ToString());

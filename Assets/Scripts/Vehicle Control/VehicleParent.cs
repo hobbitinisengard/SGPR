@@ -180,7 +180,19 @@ namespace RVP
 				if (ServerC.I.AmHost)
 				{
 					if (value == Livery.Random)
-						value = F.RandomLivery();
+					{
+						if(name == F.I.playerData.playerName)
+						{
+							// pick random from unlocked liveries
+							var pickedLivery = F.I.unlockedLiveries.GetRandom();
+							if (pickedLivery == Livery.Random)
+								value = F.I.cars[carNumber - 1].defaultLivery;
+							else
+								value = pickedLivery.Value;
+						}
+						else
+								value = F.RandomLivery();
+					}
 					_sponsor.Value = value;
 				}
 			}

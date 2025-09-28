@@ -266,41 +266,39 @@ public class ResultsView : MainMenuView
 		}
 		else if (F.I.gameMode == GameMode.Arcade)
 		{
+			for (int i = 0; i < resultData.Count; ++i)
+			{
+				resultData[i].SetPostRaceScore(resultData[i].score + CalculatePostraceReward(resultData[i]));
+			}
+
 			bool continuationCheck = CheckArcadeCondition(F.I.curNode.continuationReq);
 			bool prizeCheck = CheckArcadeCondition(F.I.curNode.prizeReq);
 			List<string> prizes = prizeCheck ? UnlockPrizes() : null;
-			int targetNodeID = ArcadeSelector.I.TargetNodeID;
+			int targetNodeID = ArcadeSelector.I.TargetNodeID();
 			if (continuationCheck)
 			{ // update unlocked paths
 				if(!F.I.curVariant.progress.unlockedPaths[F.I.curArcadeNodeID].Any(nodeID => nodeID == targetNodeID))
 				{
 					F.I.curVariant.progress.unlockedPaths[F.I.curArcadeNodeID].Add(targetNodeID);
+					F.I.SaveArcadeProgress();
 				}
 			}
-
-			if (continuationCheck && !prizeCheck)
-			{ // when continuing arcade 
-				Clear();
-				GoToView(ArcadeSelector.I.thisView);
+			if (prizes != null && prizes.Count > 0)
+			{
+				PrizeView.I.Prepare(prizes, continuationCheck);
+				GoToView(PrizeView.I.thisView);
 			}
 			else
 			{
-				for (int i = 0; i < resultData.Count; ++i)
+				if (continuationCheck) // go back to arcade selector
 				{
-					resultData[i].SetPostRaceScore(resultData[i].score + CalculatePostraceReward(resultData[i]));
+					Clear();
+					GoToView(ArcadeSelector.I.thisView);
 				}
-
-				bool IsNotLastRaceInCurPath = F.I.curVariant.nodes[F.I.curArcadeNodeID].connections.Any(c => c > 0);
-
-				if(!continuationCheck || !IsNotLastRaceInCurPath)
-				{ // finished arcade run
+				else
+				{ // go to winners view
 					winnersView.PrepareUsingArcade(continuationCheck);
 					GoToView(winnersView);
-				}
-				if(prizeCheck && continuationCheck && IsNotLastRaceInCurPath)
-				{ // won prize and continuing arcade
-					PrizeView.I.Prepare(prizes);
-					GoToView(PrizeView.I);
 				}
 			}
 		}
@@ -314,27 +312,25 @@ public class ResultsView : MainMenuView
 	/// <returns>list of unlocked prizes</returns>
 	List<string> UnlockPrizes()
 	{
-		string[] prizes = F.I.curVariant.nodes[F.I.curArcadeNodeID].prizeReq.name.Split(' ');
+		string[] prizes = F.I.curNode.prizeReq.name.Split(',');
 		List<string> prizeList = new(prizes);
 		for (int i = 0; i < prizes.Length; i++)
 		{
-			if (prizes[i].Contains("car") && !F.I.Car(prizes[i]).unlocked)
+			if (prizes[i].Contains("car") && !F.I.Car(prizes[i]).unlocked) // unlock car
 			{
 				prizeList.Add(prizes[i]);
 				F.I.Car(prizes[i]).unlocked = true;
-				continue;
 			}
-			if (prizes[i].Contains("lvr") && !F.I.unlockedLiveries[int.Parse(prizes[i])])
+			else if (prizes[i].Contains("lvr") && !F.I.unlockedLiveries.Contains((Livery)int.Parse(prizes[i]))) // unlock livery
 			{
 				prizeList.Add(prizes[i]);
-				F.I.unlockedLiveries[int.Parse(prizes[i])] = true;
-				continue;
+				int liveryNr = int.Parse(prizes[i]);
+				F.I.unlockedLiveries[liveryNr] = (Livery)liveryNr;
 			}
-			if (prizes[i].Length > 5 && F.I.tracks[prizes[i]].unlocked)
+			else
 			{
-				prizeList.Add(prizes[i]);
+				prizeList.Add(prizes[i]); // unlock track
 				F.I.tracks[prizes[i]].unlocked = true;
-				continue;
 			}
 		}
 		return prizeList;

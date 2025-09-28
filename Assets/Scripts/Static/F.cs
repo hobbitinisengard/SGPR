@@ -132,7 +132,7 @@ public static class F
 		{
 			switch (livery)
 			{
-				case Livery.Golden:
+				case Livery.Team:
 					return Color.yellow;
 				case Livery.TGR:
 					return new Color(1, 165 / 255f, 0); // orange
@@ -196,6 +196,22 @@ public static class F
 	public static T GetRandom<T>(this IList<T> collection)
 	{
 		return collection[UnityEngine.Random.Range(0, collection.Count)];
+	}
+	public static bool GetRandom<T>(this IList<T> collection, bool[] mask, out T picked)
+	{
+		picked = default;
+		if (collection.Count != mask.Length)
+			throw new ArgumentException("collection and mask must have the same length");
+		List<T> filtered = new List<T>();
+		for (int i = 0; i < collection.Count; ++i)
+		{
+			if (mask[i])
+				filtered.Add(collection[i]);
+		}
+		if (filtered.Count == 0)
+			return false;
+		picked = filtered[UnityEngine.Random.Range(0, filtered.Count)];
+		return true;
 	}
 	public static byte ToByte(this bool val)
 	{
@@ -324,6 +340,13 @@ public static class F
 			GameObject.Destroy(tr.GetChild(i).gameObject);
 		}
 	}
+	public static void DestroyImmediateAllChildren(this Transform tr)
+	{
+		for (int i = 0; i < tr.childCount; ++i)
+		{
+			GameObject.DestroyImmediate(tr.GetChild(i).gameObject);
+		}
+	}
 	/// <param name="group">search children of this transform</param>
 	/// <param name="excludeChild"></param>
 	public static float PosAmongstActive(this Transform group, Transform child, bool countChildAsActive = true)
@@ -389,7 +412,6 @@ public static class F
 	}
 	public static Livery RandomLivery()
 	{
-		
 		return (Livery)UnityEngine.Random.Range(1, F.I.Liveries + 1);
 	}
 	public static PavementType RandomRoadType()

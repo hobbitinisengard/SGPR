@@ -21,23 +21,23 @@ public class WinnersView : MainMenuView
 	{
 		GoToView(rankingView);
 	}
-	public void PrepareUsingArcade(bool continuationReq)
+	public void PrepareUsingArcade(bool continuationCheck)
 	{
-		if(continuationReq)
-		{
-			description.text = "";
-			result123Obj.gameObject.SetActive(false);
-			succOverObj.gameObject.SetActive(true);
-			succOverObj.sprite = succOverSprites[0];
-			music = gameoverClip;
-		}
-		else
+		if(continuationCheck)
 		{
 			description.text = "";
 			result123Obj.gameObject.SetActive(false);
 			succOverObj.gameObject.SetActive(true);
 			succOverObj.sprite = succOverSprites[1];
 			music = goodendingClip;
+		}
+		else
+		{
+			description.text = "";
+			result123Obj.gameObject.SetActive(false);
+			succOverObj.gameObject.SetActive(true);
+			succOverObj.sprite = succOverSprites[0];
+			music = gameoverClip;
 		}
 	}
 	public void PrepareViewUsingMultiplayer()

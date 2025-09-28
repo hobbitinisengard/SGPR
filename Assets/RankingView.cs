@@ -52,7 +52,6 @@ public class RankingRowData
 			absoluteScore = me.score;
 		}
 
-
 		switch (F.I.scoringType)
 		{
 			case ScoringType.Championship:
@@ -86,6 +85,7 @@ public class RankingRowData
 }
 public class RankingView : MainMenuView
 {
+	public MainMenuView SinglePlayerView;
 	public MainMenuView recordsView;
 	public TextMeshProUGUI upBarText;
 	public GameObject rankingRowPrefab;
@@ -104,10 +104,15 @@ public class RankingView : MainMenuView
 	public List<ResultInfo> sortedResults;
 	public void OKButton()
 	{
-		if (sortedResults == null || sortedResults.Count == 0)
+		if (sortedResults == null || sortedResults.Count == 0) // no sortedResults indicates there was no race played before
 			GoToView(recordsView);
 		else
-			GoToView(MultiPlayerSelector.I.thisView);
+		{
+			if (F.I.gameMode == GameMode.Arcade)
+				GoToView(SinglePlayerView);
+			else
+				GoToView(MultiPlayerSelector.I.thisView);
+		}
 	}
 	protected override void Awake()
 	{
@@ -160,8 +165,16 @@ public class RankingView : MainMenuView
 				data = F.I.teams ? F.I.rankingData.TeamChamp : F.I.rankingData.Champ;
 				break;
 			case ScoringType.Points:
-				gameName = F.I.LocStr("POINTS");
-				data = F.I.teams ? F.I.rankingData.TeamPts : F.I.rankingData.Pts;
+				if(F.I.gameMode == GameMode.Arcade)
+				{
+					data = F.I.curVariant.progress.rankingRows;
+					gameName = F.I.LocStr("ARCADE");
+				}
+				else
+				{
+					gameName = F.I.LocStr("POINTS");
+					data = F.I.teams ? F.I.rankingData.TeamPts : F.I.rankingData.Pts;
+				}
 				break;
 			case ScoringType.Victory:
 				gameName = F.I.LocStr("VICTORIES");

@@ -626,9 +626,9 @@ public class ServerC : MonoBehaviour
 	}
 	public void CarNameSet()
 	{
-		if (PlayerMe.Data[ServerC.k_carName].Value != F.I.s_playerCarName)
+		if (PlayerMe.Data[ServerC.k_carName].Value != F.I.cars[F.I.s_playerCarIdx].internalName)
 		{
-			PlayerMe.Data[ServerC.k_carName].Value = F.I.s_playerCarName;
+			PlayerMe.Data[ServerC.k_carName].Value = F.I.cars[F.I.s_playerCarIdx].internalName;
 			playerChanged = true;
 		}
 	}

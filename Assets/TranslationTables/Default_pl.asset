@@ -1510,6 +1510,21 @@ MonoBehaviour:
     m_Localized: ODBLOKOWANE
     m_Metadata:
       m_Items: []
+  - m_Id: 52421218851950592
+    m_Localized: "Gratulacje! Odblokowa\u0142e\u015B dost\u0119p do wozu {0}  w trybie
+      Szybkiego Wy\u015Bcigu!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 52421961499611136
+    m_Localized: "Gratulacje! Odblokowa\u0142e\u015B dost\u0119p do trasy {0}  w
+      trybie Szybkiego Wy\u015Bcigu!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 52422051018641408
+    m_Localized: "Gratulacje! Odblokowa\u0142e\u015B malowanie {0}  w trybie Szybkiego
+      Wy\u015Bcigu!"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

@@ -44,7 +44,7 @@ public class CarSelector : Sfxable
 	{ // in unity, 
 		F.I.move2Ref.action.performed -= CalculateTargetToSelect;
 		persistentSelectedCar = selectedCar.name;
-		F.I.s_playerCarName = selectedCar.name;
+		F.I.s_playerCarIdx = Car.Name2Index(selectedCar.name);
 	}
 	private void OnEnable()
 	{
@@ -60,11 +60,11 @@ public class CarSelector : Sfxable
 		switch (type)
 		{
 			case GarageType.Unlocked:
-				return c.price != -1 && c.unlocked;
+				return c.price != -1 && (c.unlocked || c.starter);
 			case GarageType.Earned:
 				return c.price != -1 && c.price <= playerMoney;
 			case GarageType.Arcade:
-				return c.price != -1 && c.allowedInArcade;
+				return c.price != -1 && c.starter;
 			default:
 				return false;
 		}
@@ -173,7 +173,7 @@ public class CarSelector : Sfxable
 				if (tempSelectedCar != null && tempSelectedCar != selectedCar)
 				{
 					selectedCar = tempSelectedCar;
-					F.I.s_playerCarName = selectedCar.name;
+					F.I.s_playerCarIdx = Car.Name2Index(selectedCar.name);
 					buttonsContainer.GetChild(selectedCar.parent.GetSiblingIndex()).GetComponent<MainMenuButton>().Select();
 					PlaySFX("fe-bitmapscroll");
 				}

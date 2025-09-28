@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using System;
 using TMPro;
 using UnityEngine.InputSystem;
+using UnityEngine.EventSystems;
 
 public class MainMenuView : Sfxable
 {
@@ -89,6 +90,8 @@ public class MainMenuView : Sfxable
 	protected virtual void OnDisable()
 	{
 		F.I.escRef.action.started -= CancelPressed;
+		// get current selection and save it 
+		firstButtonToBeSelected = EventSystem.current.currentSelectedGameObject?.GetComponent<Button>() ?? firstButtonToBeSelected;
 	}
 	protected virtual void OnEnable()
 	{
