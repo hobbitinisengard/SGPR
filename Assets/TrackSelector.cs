@@ -10,8 +10,7 @@ public class TrackSelector : TrackSelectorTemplate
 	public TextMeshProUGUI catchupButtonText;
 	public TextMeshProUGUI sponsorButtonText;
 	public TextMeshProUGUI LevelButtonText;
-	public TextMeshProUGUI wayButtonText;
-	public MainMenuButton sortButton;
+	
 	protected int maxCPURivals = 9;
 	protected override void OnEnable()
 	{
@@ -28,38 +27,9 @@ public class TrackSelector : TrackSelectorTemplate
 		SwitchRaceType(true);
 		SwitchRivals(true);
 		SwitchSponsor(true);
-		if (curSortingCondition == SortingCond.Name)
-			sortButton.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = F.I.LocStr("Sorted by name");
-		else
-			sortButton.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = F.I.LocStr("Sorted by difficulty");
+		
 	}
-	public void SortTrackList()
-	{
-		curSortingCondition = (SortingCond)(((int)curSortingCondition + 1) % 2);
-		if (curSortingCondition == SortingCond.Name)
-			sortButton.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = F.I.LocStr("Sorted by name");
-		else
-			sortButton.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = F.I.LocStr("Sorted by difficulty");
-		// reload 
-		if (loadCo)
-			StopCoroutine(Load());
-		StartCoroutine(Load(F.I.s_trackName, forceReload: true));
-	}
-	public void SwitchRoadType(bool init = false)
-	{
-		int dir = 0;
-		if (init)
-		{
-			if (F.I.randomPavement)
-				F.I.s_roadType = PavementType.Random;
-		}
-		else
-			dir = F.I.shiftInputRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
-
-		F.I.s_roadType = (PavementType)F.Wraparound((int)(F.I.s_roadType + dir), 0, F.I.pavementTypes + 1);
-		F.I.randomPavement = F.I.s_roadType == PavementType.Random;
-		wayButtonText.text = F.I.LocStr("Tex") + ": " + F.I.LocStr(F.I.s_roadType.ToString());
-	}
+	
 	public void SwitchRaceType(bool init = false)
 	{
 		int dir = 0;

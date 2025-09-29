@@ -18,6 +18,8 @@ public class TrackSelectorTemplate : Sfxable
 	public TextMeshProUGUI trackDescText;
 	public Text trackAuthorText;
 	public RadialOneVisible radial;
+	public TextMeshProUGUI wayButtonText;
+	public MainMenuButton sortButton;
 
 	/// <summary>
 	/// If true, populate menu only with valid tracks
@@ -37,10 +39,50 @@ public class TrackSelectorTemplate : Sfxable
 	}
 	protected virtual void OnEnable()
 	{
+		SwitchRoadType(true);
+
+		// set sorting button text
+		if(sortButton != null)
+		{
+			if (curSortingCondition == SortingCond.Name)
+				sortButton.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = F.I.LocStr("Sorted by name");
+			else
+				sortButton.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = F.I.LocStr("Sorted by difficulty");
+		}
+
 		F.I.move2Ref.action.performed += CalculateTargetToSelect;
 		if (loadCo)
 			StopCoroutine(Load());
 		StartCoroutine(Load());
+	}
+	public void SortTrackList()
+	{
+		if (sortButton == null)
+			return;
+		curSortingCondition = (SortingCond)(((int)curSortingCondition + 1) % 2);
+		if (curSortingCondition == SortingCond.Name)
+			sortButton.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = F.I.LocStr("Sorted by name");
+		else
+			sortButton.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = F.I.LocStr("Sorted by difficulty");
+		// reload 
+		if (loadCo)
+			StopCoroutine(Load());
+		StartCoroutine(Load(F.I.s_trackName, forceReload: true));
+	}
+	public void SwitchRoadType(bool init = false)
+	{
+		int dir = 0;
+		if (init)
+		{
+			if (F.I.randomPavement)
+				F.I.s_roadType = PavementType.Random;
+		}
+		else
+			dir = F.I.shiftInputRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
+
+		F.I.s_roadType = (PavementType)F.Wraparound((int)(F.I.s_roadType + dir), 0, F.I.pavementTypes + 1);
+		F.I.randomPavement = F.I.s_roadType == PavementType.Random;
+		wayButtonText.text = F.I.LocStr("Tex") + ": " + F.I.LocStr(F.I.s_roadType.ToString());
 	}
 	bool ValidCheck(bool trackValid)
 	{
