@@ -23,7 +23,12 @@ public class WinnersView : MainMenuView
 	}
 	public void PrepareUsingArcade(bool continuationCheck)
 	{
-		if(continuationCheck)
+
+		var players = ResultsView.SortedResultsByScore;
+		rankingView.sortedResults = players;
+		rankingView.SetRankingType(ScoringType.Points, false, GameMode.Arcade);
+
+		if (continuationCheck)
 		{
 			description.text = "";
 			result123Obj.gameObject.SetActive(false);
@@ -44,6 +49,7 @@ public class WinnersView : MainMenuView
 	{
 		var players = ResultsView.SortedResultsByScore;
 		rankingView.sortedResults = players;
+		rankingView.SetRankingType(F.I.scoringType, F.I.teams, GameMode.Multiplayer);
 
 		if (F.I.teams)
 		{

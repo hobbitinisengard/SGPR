@@ -102,17 +102,33 @@ public class RankingView : MainMenuView
 	private Transform selectedRow;
 	[NonSerialized]
 	public List<ResultInfo> sortedResults;
+
+	GameMode showGameMode = GameMode.Multiplayer;
+	public void SetRankingType(ScoringType s, bool teams, GameMode gm)
+	{
+		F.I.scoringType = s;
+		F.I.teams = teams;
+		showGameMode = gm;
+	}
+	public void SetRankingType(RankingType rt)
+	{
+		F.I.scoringType = rt.scoringType;
+		F.I.teams = rt.teams;
+		showGameMode = rt.showTypeOfGameMode;
+	}
 	public void OKButton()
 	{
-		if (sortedResults == null || sortedResults.Count == 0) // no sortedResults indicates there was no race played before
-			GoToView(recordsView);
-		else
+		if (F.I.gameMode == GameMode.Arcade)
 		{
-			if (F.I.gameMode == GameMode.Arcade)
-				GoToView(SinglePlayerView);
-			else
-				GoToView(MultiPlayerSelector.I.thisView);
+			ResultsView.Clear();
+			GoToView(SinglePlayerView);
 		}
+		else if (F.I.gameMode == GameMode.Multiplayer)
+		{
+			GoToView(MultiPlayerSelector.I.thisView);
+		}
+		else
+			GoToView(recordsView);
 	}
 	protected override void Awake()
 	{
@@ -165,7 +181,7 @@ public class RankingView : MainMenuView
 				data = F.I.teams ? F.I.rankingData.TeamChamp : F.I.rankingData.Champ;
 				break;
 			case ScoringType.Points:
-				if(F.I.gameMode == GameMode.Arcade)
+				if(showGameMode == GameMode.Arcade)
 				{
 					data = F.I.curVariant.progress.rankingRows;
 					gameName = F.I.LocStr("ARCADE");

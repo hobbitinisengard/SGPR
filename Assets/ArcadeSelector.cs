@@ -14,6 +14,7 @@ public class ArcadeSelector : TrackSelectorTemplate
 	public GameObject nodePrefab;
 	public GameObject pathPrefab;
 	public Sprite squareRounded;
+	public Sprite circle;
 	public Text arcadeReqText;
 	Coroutine blinkingCo;
 	RectTransform curNodeRT;
@@ -21,15 +22,6 @@ public class ArcadeSelector : TrackSelectorTemplate
 	Image selectedPath;
 	int curPathConnectionIdx;
 	Dictionary<string, RectTransform> pathsRTs = new();
-	/// <summary>
-	/// if targetID is the same as curNodeID, we're playing the first node of the variant - there is no node selection yet 
-	/// </summary>
-	public int TargetNodeID()
-	{
-		if (targetNodeRT == null)
-			return -1;
-		return int.Parse(targetNodeRT.name);
-	}
 	private new void Awake()
 	{
 		base.Awake();
@@ -45,66 +37,85 @@ public class ArcadeSelector : TrackSelectorTemplate
 
 		if (blinkingCo != null)
 			StopCoroutine(blinkingCo);
-		var nodeTR = nodeParent.GetChild(F.I.curArcadeNodeID);
-		nodeTR.GetComponent<Image>().color = F.I.curNode.color;
+		targetNodeRT.GetComponent<Image>().color = F.I.curVariant.nodes[curPathConnectionIdx].color;
 
-		foreach (var targetID in F.I.curNode.connections)
+		if(F.I.curArcadeNodeID != -1)
 		{
-			pathsRTs[F.I.curArcadeNodeID + "-" + targetID].GetComponent<Image>().color = Color.gray;
+			foreach (var targetID in F.I.curNode.connections)
+			{
+				pathsRTs[F.I.curArcadeNodeID + "-" + targetID].GetComponent<Image>().color = Color.gray;
+				var pathGO = pathsRTs[F.I.curArcadeNodeID + "-" + targetID].gameObject;
+				pathGO.SetActive(pathGO.CompareTag(Info.alreadyWalkedTag));
+			}
 		}
+		
 		base.OnDisable();
+	}
+	public void MoveNodeForward()
+	{
+		if(F.I.curArcadeNodeID >= 0)
+			pathsRTs[F.I.curArcadeNodeID + "-" + F.I.targetArcadeNodeID].tag = Info.alreadyWalkedTag;
+
+		targetNodeRT.GetComponent<Image>().sprite = circle;
+		F.I.curArcadeNodeID = targetNodeRT.GetSiblingIndex();
+		F.I.targetArcadeNodeID = F.I.curNode.connections[0];
 	}
 	protected override void OnEnable()
 	{
 		F.I.move2Ref.action.performed += ChangePath;
-		if (F.I.curArcadeNodeID == 0) // when starting new arcade variant
+
+		if (F.I.curArcadeNodeID == -1) // when starting new arcade variant
 		{
-			F.I.curArcadeNodeID = F.I.curVariant.starts.FirstOrDefault(s => s.allowedCarsIdxs.Any(carIdx => carIdx == F.I.s_playerCarIdx)).node;
+			F.I.targetArcadeNodeID = F.I.curVariant.starts.FirstOrDefault(s => s.allowedCarsIdxs.Any(carIdx => carIdx == F.I.s_playerCarIdx)).node;
 			CreateNodeMap();
 		}
+		targetNodeRT = nodeParent.GetChild(F.I.targetArcadeNodeID).GetComponent<RectTransform>();
+		
+		if(F.I.curArcadeNodeID >= 0)
+			curNodeRT = nodeParent.GetChild(F.I.curArcadeNodeID).GetComponent<RectTransform>();
 		else
-		{
-			F.I.curArcadeNodeID = TargetNodeID();
-		}
-		WriteContinuationText();
+			curNodeRT = null;
 
-		curNodeRT = nodeParent.GetChild(F.I.curArcadeNodeID).GetComponent<RectTransform>();
 		ChangePath(0);
 		if (blinkingCo != null)
 			StopCoroutine(blinkingCo);
-		StartCoroutine(Blinking());
+		blinkingCo = StartCoroutine(Blinking());
 
 		// modified base OnEnable
 		F.I.move2Ref.action.performed += CalculateTargetToSelect;
 		if (loadCo)
 			StopCoroutine(Load());
 		StartCoroutine(Load(forceReload:true));
+
+		WriteContinuationText();
 	}
 	void AlignMapToCurrentNodes()
 	{
 		// make sure current node and target node are visible in viewport
 		var contentRT = nodeParent.GetComponent<RectTransform>();
 		var viewportDims = nodeParent.GetComponent<RectTransform>().sizeDelta;
-		float newContentX = 0, newContentY = 0;
-		if (curNodeRT.anchoredPosition.x < 0 || curNodeRT.anchoredPosition.x > viewportDims.x
-			|| targetNodeRT.anchoredPosition.x < 0 || targetNodeRT.anchoredPosition.x > viewportDims.x)
-		{ // if either node is out of viewport horizontally
-			newContentX = -Mathf.Min(curNodeRT.anchoredPosition.x, targetNodeRT.anchoredPosition.x)
-				+ viewportDims.x / 2;
-			newContentX = Mathf.Clamp(newContentX, -contentRT.rect.width + viewportDims.x, 0);
-		}
-		if (curNodeRT.anchoredPosition.y < 0 || curNodeRT.anchoredPosition.y > viewportDims.y
-			|| targetNodeRT.anchoredPosition.y < 0 || targetNodeRT.anchoredPosition.y > viewportDims.y)
-		{ // if either node is out of viewport vertically
-			newContentY = -Mathf.Min(curNodeRT.anchoredPosition.y, targetNodeRT.anchoredPosition.y)
-				+ viewportDims.y / 2;
-			newContentY = Mathf.Clamp(newContentY, -contentRT.rect.height + viewportDims.y, 0);
-		}
+		var focusObj = curNodeRT == null ? targetNodeRT : pathsRTs[F.I.curArcadeNodeID + "-" + F.I.targetArcadeNodeID];
+		// first move contentRT so focusObj is visible in viewport
+		float newContentX = contentRT.anchoredPosition.x;
+		float newContentY = contentRT.anchoredPosition.y;
+		var focusPos = focusObj.anchoredPosition + contentRT.anchoredPosition;
+		if (focusPos.x < 0)
+			newContentX += -focusPos.x + 20;
+		else if (focusPos.x > viewportDims.x)
+			newContentX -= focusPos.x - viewportDims.x + 20;
+		if (focusPos.y < 0)
+			newContentY += -focusPos.y + 20;
+		else if (focusPos.y > viewportDims.y)
+			newContentY -= focusPos.y - viewportDims.y + 20;
+		// then clamp contentRT to not go out of bounds
+		//newContentX = Mathf.Clamp(newContentX, -contentRT.sizeDelta.x + viewportDims.x, 0);
+		//newContentY = Mathf.Clamp(newContentY, -contentRT.sizeDelta.y + viewportDims.y, 0);
+
 		contentRT.anchoredPosition = new Vector2(newContentX, newContentY);
 	}
-	private void ChangePath(InputAction.CallbackContext context)
+	void ChangePath(InputAction.CallbackContext context)
 	{
-		if (targetNodeRT == null || F.I.curNode.connections == null)
+		if (curNodeRT == null)
 			return;
 		Vector2 move2 = F.I.move2Ref.action.ReadValue<Vector2>();
 		int x = Mathf.RoundToInt(move2.x);
@@ -113,21 +124,40 @@ public class ArcadeSelector : TrackSelectorTemplate
 	}
 	void ChangePath(int dir)
 	{
-		if(selectedPath != null)
-			selectedPath.color = Color.gray;
-		curPathConnectionIdx = (curPathConnectionIdx + dir) % F.I.curNode.connections.Length;
-		var targetNodeID = F.I.curNode.connections[curPathConnectionIdx];
-		selectedPath = pathsRTs[F.I.curArcadeNodeID + "-" + targetNodeID].GetComponent<Image>();
-		targetNodeRT = nodeParent.GetChild(targetNodeID).GetComponent<RectTransform>();
+		if(F.I.curArcadeNodeID == -1)
+		{
+			curPathConnectionIdx = 0;
+		}
+		else
+		{
+			if(blinkingCo != null)
+				StopCoroutine(blinkingCo);
+			if (selectedPath != null)
+			{
+				selectedPath.color = Color.gray;
+				selectedPath.gameObject.SetActive(selectedPath.gameObject.CompareTag(Info.alreadyWalkedTag));
+			}
+			targetNodeRT.GetComponent<Image>().color = F.I.curVariant.nodes[curPathConnectionIdx].color;
+			curPathConnectionIdx = Mathf.Clamp(curPathConnectionIdx + dir, 0, F.I.curNode.connections.Length - 1);
+			var targetNodeID = F.I.curNode.connections[curPathConnectionIdx];
+			selectedPath = pathsRTs[F.I.curArcadeNodeID + "-" + targetNodeID].GetComponent<Image>();
+			targetNodeRT = nodeParent.GetChild(targetNodeID).GetComponent<RectTransform>();
+			F.I.targetArcadeNodeID = targetNodeID;
+			blinkingCo = StartCoroutine(Blinking());
+		}
 		AlignMapToCurrentNodes();
 	}
 	IEnumerator Blinking()
 	{
 		float timer = 0;
-		selectedPath.gameObject.SetActive(true);
+		selectedPath?.gameObject.SetActive(true);
+		var Color = targetNodeRT.GetComponent<Image>().color;
+		var img = targetNodeRT.GetComponent<Image>();
 		while (true)
 		{
-			selectedPath.color = new Color(1, 0, 0, Mathf.Abs(Mathf.Sin(timer * 2 * Mathf.PI)));
+			if (selectedPath)
+				selectedPath.color = new Color(1, 0, 0, Mathf.Abs(Mathf.Sin(timer * 2 * Mathf.PI)));
+			img.color = new Color(Color.r, Color.g, Color.b, Mathf.Abs(Mathf.Sin(timer * 2 * Mathf.PI)));
 			timer += Time.unscaledDeltaTime;
 			yield return null;
 		}
@@ -161,13 +191,14 @@ public class ArcadeSelector : TrackSelectorTemplate
 				var dir = (posB - posA).normalized;
 				var dist = Vector2.Distance(posA, posB);
 				var angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
-				var newPath = Instantiate(pathPrefab, (posA + posB) / 2, Quaternion.Euler(0, 0, angle), pathParent);
+				var newPath = Instantiate(pathPrefab, Vector3.zero, Quaternion.Euler(0, 0, angle), pathParent);
 				newPath.name = nodeA_RT.name + "-" + nodeB_RT.name;
 				var rt = newPath.GetComponent<RectTransform>();
 				pathsRTs.Add(newPath.name, rt);
 				var nodeARadius = nodeA_IMG.sprite.rect.width / 2;
 				var nodeBRadius = nodeB_IMG.sprite.rect.width / 2;
 				rt.sizeDelta = new Vector2(dist - nodeARadius - nodeBRadius, rt.sizeDelta.y);
+				rt.anchoredPosition = (posA + posB) / 2f;
 				rt.GetComponent<Image>().color = Color.gray;
 				newPath.SetActive(false);
 			}
@@ -199,6 +230,7 @@ public class ArcadeSelector : TrackSelectorTemplate
 		else
 			F.I.s_cpuRivals = F.I.curNode.cars.Length;
 		F.I.s_trackName = F.I.curNode.trackName;
+		F.I.catchup = true;
 	}
 	void WriteContinuationText()
 	{

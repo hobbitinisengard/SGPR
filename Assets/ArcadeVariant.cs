@@ -100,7 +100,7 @@ public class ArcadeVariant
 					size = 1,
 					coords = new Vector2(3,0),
 					trackName = "DUST BUSTER",
-					laps = 3,
+					laps = 1,
 					cars = new CarPlacement[]
 					{
 							new() { name = "CP1", carIdx = 10, livery = Livery.Titan,  },
@@ -157,7 +157,7 @@ public class ArcadeVariant
 					size = 1,
 					coords = new Vector2(2,1),
 					trackName = "THE SANDWINDER",
-					laps = 4,
+					laps = 1,
 					cars = new CarPlacement[]
 					{
 							new() { name = "CP1", carIdx = 10, livery = (Livery)6,  },
@@ -233,7 +233,7 @@ public class ArcadeVariant
 					size = 1,
 					coords = new Vector2(1,2),
 					trackName = "SUNKEN SIGHTS",
-					laps = 5,
+					laps = 1,
 					cars = new CarPlacement[]
 					{
 							new() { name = "CP1", carIdx = 10, livery = (Livery)7,  },
@@ -328,7 +328,7 @@ public class ArcadeVariant
 					size = 1,
 					coords = new Vector2(0,3),
 					trackName = "ROUGHDUST FLATS",
-					laps = 6,
+					laps = 1,
 					cars = new CarPlacement[]
 					{
 							new() { name = "CP1", carIdx = 10, livery = (Livery)5,  },

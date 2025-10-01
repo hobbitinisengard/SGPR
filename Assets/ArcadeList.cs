@@ -33,7 +33,8 @@ public class ArcadeList : MainMenuView
 				{
 					F.I.SwitchArcadeVariant(EventSystem.current.currentSelectedGameObject.name);
 				}
-				F.I.curArcadeNodeID = 0;
+				F.I.curArcadeNodeID = -1;
+				F.I.curArcadeScore = 0;
 				GoToView(enterNameView);
 			});
 			newRow.GetChild(0).GetComponent<TextMeshProUGUI>().text = variant.name;

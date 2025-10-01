@@ -90,7 +90,24 @@ public class ResultsView : MainMenuView
 	public Sprite[] silverMedals; // race,lap,stunt,drift
 	public Sprite[] goldMedals;
 	readonly static List<ResultInfo> resultData = new();
-
+	public static bool PlayerFinished
+	{
+		get
+		{
+			return resultData.FirstOrDefault(p => p.name == F.I.playerData.playerName) != default;
+		}
+	}
+	static int Pos(string carName, Comparison<ResultInfo> comp)
+	{
+		resultData.Sort(comp);
+		int index = resultData.FindIndex(pr => pr.name == carName);
+		if (index != -1)
+		{
+			return index + 1;
+		}
+		Debug.LogError("PlayerName not found in resultData");
+		return -1;
+	}
 	/// <summary>
 	/// Returns 1-10
 	/// </summary>
@@ -274,13 +291,26 @@ public class ResultsView : MainMenuView
 			bool continuationCheck = CheckArcadeCondition(F.I.curNode.continuationReq);
 			bool prizeCheck = CheckArcadeCondition(F.I.curNode.prizeReq);
 			List<string> prizes = prizeCheck ? UnlockPrizes() : null;
-			int targetNodeID = ArcadeSelector.I.TargetNodeID();
+
+			// if won the event, unlock current track too
+			if (SortedResultsByFinishPos[0].name == F.I.playerData.playerName)
+			{
+				if (!F.I.tracks[F.I.s_trackName].unlocked)
+				{
+					// unlock current track if won
+					prizes.Add(F.I.s_trackName);
+					F.I.tracks[F.I.s_trackName].unlocked = true;
+				}
+			}
+
 			if (continuationCheck)
 			{ // update unlocked paths
-				if(!F.I.curVariant.progress.unlockedPaths[F.I.curArcadeNodeID].Any(nodeID => nodeID == targetNodeID))
+				if (F.I.curArcadeNodeID >=0)
 				{
-					F.I.curVariant.progress.unlockedPaths[F.I.curArcadeNodeID].Add(targetNodeID);
-					F.I.SaveArcadeProgress();
+					if (!F.I.curVariant.progress.unlockedPaths[F.I.curArcadeNodeID].Any(nodeID => nodeID == F.I.targetArcadeNodeID))
+					{
+						F.I.curVariant.progress.unlockedPaths[F.I.curArcadeNodeID].Add(F.I.targetArcadeNodeID);
+					}
 				}
 			}
 			if (prizes != null && prizes.Count > 0)
@@ -293,10 +323,12 @@ public class ResultsView : MainMenuView
 				if (continuationCheck) // go back to arcade selector
 				{
 					Clear();
+					ArcadeSelector.I.MoveNodeForward();
 					GoToView(ArcadeSelector.I.thisView);
 				}
 				else
 				{ // go to winners view
+					F.I.SaveArcadeProgress();
 					winnersView.PrepareUsingArcade(continuationCheck);
 					GoToView(winnersView);
 				}
@@ -327,26 +359,30 @@ public class ResultsView : MainMenuView
 				int liveryNr = int.Parse(prizes[i]);
 				F.I.unlockedLiveries[liveryNr] = (Livery)liveryNr;
 			}
-			else
+			else if(!F.I.tracks[prizes[i]].unlocked)
 			{
 				prizeList.Add(prizes[i]); // unlock track
 				F.I.tracks[prizes[i]].unlocked = true;
 			}
 		}
+
 		return prizeList;
 	}
 	bool CheckArcadeCondition(ArcadeVariant.Prize req)
 	{
+		if(req == null)
+			return false;
+
 		ResultInfo playerResult;
+		var sortedPlayers = SortedResultsByFinishPos;
 		if (F.I.alwaysFirst)
 		{
-			F.I.alwaysFirst = SortedResultsByFinishPos[0].name == F.I.playerData.playerName;
+			F.I.alwaysFirst = sortedPlayers[0].name == F.I.playerData.playerName;
 		}
-
+		
 		switch (req.condition)
 		{
 			case ArcadeVariant.Prize.Condition.PositionAtLeast:
-				var sortedPlayers = SortedResultsByFinishPos;
 				int minimumPosition = int.Parse(req.conditionArgument);
 				for (int i = 0; i < minimumPosition; ++i)
 				{
@@ -440,11 +476,13 @@ public class ResultsView : MainMenuView
 		cellSize.y = Mathf.Clamp(gridTableTr.rect.height / (1 + resultData.Count), 0, maxRowHeight);
 		gridTable.cellSize = cellSize;
 		resultData.Sort(ComparisonBasedOnRaceType());
+
 		// grid has 5 rows and max 11 cols
 		for (int i = 0; i < 10; i++)
 		{
 			bool visible = i < resultData.Count;
-			bool highlight = visible && ServerC.I.networkManager.LocalClientId == resultData[i].id;
+			bool highlight = visible && ((F.I.gameMode == GameMode.Arcade && resultData[i].name == F.I.playerData.playerName) ||
+				(F.I.gameMode == GameMode.Multiplayer && ServerC.I.networkManager.LocalClientId == resultData[i].id));
 			if (highlight)
 				finalPosition = i;
 			SetText(gridTableTr.GetChild(cols + cols * i + 0), visible ? Pos(i) : null, highlight);
@@ -454,9 +492,18 @@ public class ResultsView : MainMenuView
 			SetText(gridTableTr.GetChild(cols + cols * i + 4), visible ? resultData[i].drift.ToString("N0") : null, highlight);
 		}
 
-		lapPos = Pos(ServerC.I.networkManager.LocalClientId, lapComp);
-		stuntPos = Pos(ServerC.I.networkManager.LocalClientId, stuntComp);
-		driftPos = Pos(ServerC.I.networkManager.LocalClientId, driftComp);
+		if(F.I.gameMode == GameMode.Multiplayer)
+		{
+			lapPos = Pos(ServerC.I.networkManager.LocalClientId, lapComp);
+			stuntPos = Pos(ServerC.I.networkManager.LocalClientId, stuntComp);
+			driftPos = Pos(ServerC.I.networkManager.LocalClientId, driftComp);
+		}
+		else
+		{
+			lapPos = Pos(F.I.playerData.playerName, lapComp);
+			stuntPos = Pos(F.I.playerData.playerName, stuntComp);
+			driftPos = Pos(F.I.playerData.playerName, driftComp);
+		}
 
 		positionPerc = (resultData.Count - finalPosition) / (float)resultData.Count;
 		positionBonus = 0;
@@ -484,8 +531,17 @@ public class ResultsView : MainMenuView
 		}
 		Debug.Log(resultData[finalPosition].name + string.Format("OnEnable. lap,stunt,drift = {0}, {1}, {2}, {3}, {4}",
 			positionBonus, lapBonus, stuntBonus, driftBonus, aeroMeter));
-		ServerC.I.ScoreSet(ServerC.I.PlayerMe.ScoreGet() + grandScoreFinal);
-		ServerC.I.UpdatePlayerData();
+
+		if(F.I.gameMode == GameMode.Multiplayer)
+		{
+			ServerC.I.ScoreSet(ServerC.I.PlayerMe.ScoreGet() + grandScoreFinal);
+			ServerC.I.UpdatePlayerData();
+		}
+		else
+		{
+			F.I.curArcadeScore += grandScoreFinal;
+		}
+		
 
 		if (payoutCo != null)
 			StopCoroutine(payoutCo);
@@ -523,7 +579,6 @@ public class ResultsView : MainMenuView
 		}
 		tr.gameObject.SetActive(content != null);
 	}
-
 
 	IEnumerator PayoutSeq()
 	{

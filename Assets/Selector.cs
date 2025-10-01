@@ -104,76 +104,80 @@ public class TrackSelectorTemplate : Sfxable
 			return F.I.tracks[trackName].unlocked && ValidCheck(F.I.tracks[trackName].valid);
 		//return false;
 	}
-	bool[] PopulateContent()
-	{
-
-		bool[] existingTrackClasses = new bool[2];
-
-		for (int i = 0; i < trackContent.childCount; ++i)
-		{  // remove tracks from previous entry
-			Transform trackClass = trackContent.GetChild(i);
-			for (int j = 0; j < trackClass.childCount; ++j)
-			{
-				//Debug.Log(trackClass.GetChild(j).name);
-				Destroy(trackClass.GetChild(j).gameObject);
-			}
-		}
-
-		string[] sortedTracks;
-		// populate track grid	
-		if (F.I.gameMode == GameMode.Arcade)
-		{
-			if (ArcadeSelector.I.TargetNodeID() == -1)
-			{
-				sortedTracks = new string[] { F.I.curNode.trackName };
-			}
-			else
-			{
-				sortedTracks = new string[F.I.curNode.connections.Length];
-				for (int i = 0; i < sortedTracks.Length; ++i)
-					sortedTracks[i] = F.I.curVariant.nodes[F.I.curNode.connections[i]].trackName;
-			}
-		}
-		else
-		{
-			if (curSortingCondition == SortingCond.Name)
-				sortedTracks = F.I.tracks.OrderBy(t => t.Key).Select(kv => kv.Key).ToArray();
-			else //if(curSortingCondition == SortingCond.Difficulty)
-				sortedTracks = F.I.tracks.OrderBy(t => t.Value.difficulty).Select(kv => kv.Key).ToArray();
-		}
-
-		foreach (var trackName in sortedTracks)
-		{
-			if (TrackCheckDependingOnGameMode(trackName))
-			{
-				int trackOrigin = 0;
-				if( F.I.gameMode != GameMode.Arcade)
-					trackOrigin = F.I.tracks[trackName].TrackOrigin;
-				var newtrack = Instantiate(trackImageTemplate, trackContent.GetChild(trackOrigin));
-				newtrack.name = trackName;
-				newtrack.GetComponent<Image>().sprite = IMG2Sprite.LoadNewSprite(F.I.tracksPath + trackName + ".jpg");
-				newtrack.SetActive(true);
-				existingTrackClasses[trackOrigin] = true;
-				if (persistentSelectedTrack != null && persistentSelectedTrack == trackName)
-				{
-					selectedTrack = newtrack.transform;
-				}
-			}
-		}
-		return existingTrackClasses;
-	}
+	
 	protected IEnumerator Load(string specificTrackName = null, bool forceReload = false)
 	{
 		loadCo = true;
 		if (specificTrackName != null)
 			F.I.s_trackName = specificTrackName;
 
-		int visibleTracks = trackContent.GetChild(0).childCount + (trackContent.GetChild(1) != null ? trackContent.GetChild(1).childCount : 0);
+		int visibleTracks = trackContent.GetChild(0).childCount + (trackContent.childCount > 1 ? trackContent.GetChild(1).childCount : 0);
 		int validTracks = F.I.tracks.Count(t => TrackCheckDependingOnGameMode(t.Key));
 
 		bool reloadContent = (visibleTracks != validTracks) || forceReload;
 
-		bool[] existingTrackClasses = reloadContent ? PopulateContent() : new bool[] { true, true };
+		bool[] existingTrackClasses;
+
+		if (F.I.gameMode == GameMode.Arcade)
+			existingTrackClasses = new[] { true };
+		else
+			existingTrackClasses = new bool[] { true, true };
+
+		if (reloadContent)
+		{
+			for (int i = 0; i < trackContent.childCount; ++i)
+			{  // remove tracks from previous entry
+				Transform trackClass = trackContent.GetChild(i);
+				for (int j = 0; j < trackClass.childCount; ++j)
+				{
+					//Debug.Log(trackClass.GetChild(j).name);
+					Destroy(trackClass.GetChild(j).gameObject);
+				}
+			}
+
+			string[] sortedTracks;
+			// populate track grid	
+			if (F.I.gameMode == GameMode.Arcade)
+			{
+				if (F.I.curArcadeNodeID == -1)
+				{
+					sortedTracks = new string[] { F.I.curVariant.nodes[F.I.targetArcadeNodeID].trackName };
+				}
+				else
+				{
+					sortedTracks = new string[F.I.curNode.connections.Length];
+					for (int i = 0; i < sortedTracks.Length; ++i)
+						sortedTracks[i] = F.I.curVariant.nodes[F.I.curNode.connections[i]].trackName;
+				}
+			}
+			else
+			{
+				if (curSortingCondition == SortingCond.Name)
+					sortedTracks = F.I.tracks.OrderBy(t => t.Key).Select(kv => kv.Key).ToArray();
+				else //if(curSortingCondition == SortingCond.Difficulty)
+					sortedTracks = F.I.tracks.OrderBy(t => t.Value.difficulty).Select(kv => kv.Key).ToArray();
+			}
+
+			foreach (var trackName in sortedTracks)
+			{
+				if (TrackCheckDependingOnGameMode(trackName))
+				{
+					int trackOrigin = 0;
+					if (F.I.gameMode != GameMode.Arcade)
+						trackOrigin = F.I.tracks[trackName].TrackOrigin;
+
+					var newtrack = Instantiate(trackImageTemplate, trackContent.GetChild(trackOrigin));
+					newtrack.name = trackName;
+					newtrack.GetComponent<Image>().sprite = IMG2Sprite.LoadNewSprite(F.I.tracksPath + trackName + ".jpg");
+					newtrack.SetActive(true);
+					existingTrackClasses[trackOrigin] = true;
+					if (persistentSelectedTrack != null && persistentSelectedTrack == trackName)
+					{
+						selectedTrack = newtrack.transform;
+					}
+				}
+			}
+		}
 
 		yield return null; // wait for one frame for active objects to refresh
 
@@ -216,7 +220,8 @@ public class TrackSelectorTemplate : Sfxable
 	protected void SetTrackShaenigans()
 	{
 		trackContent.GetChild(0).gameObject.SetActive(!F.I.randomTracks);
-		trackContent.GetChild(1).gameObject.SetActive(!F.I.randomTracks);
+		if(trackContent.childCount > 1)
+			trackContent.GetChild(1).gameObject.SetActive(!F.I.randomTracks);
 
 		SetTiles();
 		SetRecords();

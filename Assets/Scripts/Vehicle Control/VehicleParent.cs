@@ -348,7 +348,7 @@ namespace RVP
 		[NonSerialized]
 		public GameObject customCam;
 		private float lastNoBatteryMessage;
-		public bool Owner { get { return IsOwner || F.I.gameMode == GameMode.Exhibition; } }
+		public bool Owner { get { return IsOwner || F.I.gameMode != GameMode.Multiplayer; } }
 		[NonSerialized]
 		public int lastRoundScore;
 		[Rpc(SendTo.SpecifiedInParams)]
@@ -617,7 +617,7 @@ namespace RVP
 
 		private void Start()
 		{
-			if (F.I.gameMode == GameMode.Exhibition)
+			if (F.I.gameMode != GameMode.Multiplayer)
 				Initialize();
 		}
 
@@ -639,8 +639,6 @@ namespace RVP
 				if (UnityEngine.Random.value > 0.5f)
 					RaceManager.I.cam.Connect(this, CameraControl.Mode.Replay);
 			}
-
-			
 
 			StartCoroutine(ApplySetup());
 		}
@@ -793,8 +791,6 @@ namespace RVP
 
 			velMag = rb.linearVelocity.magnitude;
 
-
-
 			sqrVelMag = rb.linearVelocity.sqrMagnitude;
 			forwardDir = tr.forward;
 			rightDir = tr.right;
@@ -803,10 +799,8 @@ namespace RVP
 			rightDot = Vector3.Dot(rightDir, RaceManager.worldUpDir);
 			upDot = Vector3.Dot(upDir, RaceManager.worldUpDir);
 			worldCOM = rb.worldCenterOfMass;
-			norm.transform.position = tr.position;
-			norm.transform.rotation = Quaternion.LookRotation(reallyGroundedWheels == 0 ? upDir : wheelNormalAverage, forwardDir);
-
-			if(brakeIsReverse)
+			norm.transform.SetPositionAndRotation(tr.position, Quaternion.LookRotation(reallyGroundedWheels == 0 ? upDir : wheelNormalAverage, forwardDir));
+			if (brakeIsReverse)
 			{
 				if (brakeInput > 0 && localVelocity.z < 3)
 					reversing = true;

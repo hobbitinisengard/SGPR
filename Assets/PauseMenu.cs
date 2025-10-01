@@ -39,12 +39,12 @@ public class PauseMenu : Sfxable
 	private void OnEnable()
 	{
 		steerGamma.SetActive(F.I.controllerInUse);
-		if(F.I.gameMode == GameMode.Exhibition)
+		if(F.I.gameMode != GameMode.Multiplayer)
 			Time.timeScale = 0;
 		F.I.gamePaused = true;
 		paused.TransitionTo(0);
 		timeElapsed = 0;
-		restartButton.SetActive(!F.I.s_inEditor);
+		restartButton.SetActive(!F.I.s_inEditor && F.I.gameMode != GameMode.Arcade);
 		endButton.SetActive(F.I.gameMode == GameMode.Multiplayer);
 		startColor = veil.color;
 		firstButton.Select();
@@ -59,7 +59,7 @@ public class PauseMenu : Sfxable
 		PlaySFX("menublip2",true);
 		veil.color = startColor;
 
-		if(!F.I.s_inEditor && F.I.gameMode == GameMode.Exhibition)
+		if(!F.I.s_inEditor && F.I.gameMode != GameMode.Multiplayer)
 			F.I.raceStartDate = F.I.raceStartDate.AddSeconds(timeElapsed);
 	}
 }

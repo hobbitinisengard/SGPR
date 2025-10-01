@@ -18,7 +18,7 @@ public class CarPlacement
 			carIdx = carIdx,
 			position = pos,
 			name = "CP" + (pos + 1).ToString(),
-			livery = (Livery)(((int)F.I.s_PlayerCarSponsor + pos) % F.I.Liveries),
+			livery = (Livery)(((int)F.I.s_PlayerCarSponsor + pos + 1) % (F.I.Liveries - 1)), // avoid random
 		};
 	}
 	public static CarPlacement LocalPlayer()

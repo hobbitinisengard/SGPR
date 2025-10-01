@@ -17,6 +17,9 @@ public class ViewSwitcher : MonoBehaviour
 	public GameObject lobbyView;
 	public GameObject resultsView;
 
+	public GameObject arcadeMapView;
+	public GameObject SPView;
+
 	AudioSource menuMusic;
 
 	float timer = 0;
@@ -111,10 +114,26 @@ public class ViewSwitcher : MonoBehaviour
 			RaceManager.I.editorPanel.RemoveTrackLeftovers();
 			Time.timeScale = 1;
 			
-			if (applyScoring && (F.I.gameMode == GameMode.Multiplayer || F.I.gameMode == GameMode.Arcade) && ResultsView.Count > 1)
+			if (applyScoring)
 			{
-				lobbyView.SetActive(false);
-				resultsView.SetActive(true);
+				if (F.I.gameMode == GameMode.Arcade)
+				{
+					arcadeMapView.SetActive(false);
+
+					if (ResultsView.PlayerFinished)
+					{
+						resultsView.SetActive(true);
+					}
+					else
+					{
+						SPView.SetActive(true);
+					}
+				}
+				else if (F.I.gameMode == GameMode.Multiplayer && ResultsView.Count > 1)
+				{
+					lobbyView.SetActive(false);
+					resultsView.SetActive(true);
+				}
 			}
 		}));
 	}

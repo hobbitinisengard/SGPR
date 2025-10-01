@@ -1,11 +1,15 @@
+using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class YouSureDialog : MonoBehaviour
 {
-   public GameObject notInteractableExternalButtonsContainer;
+  public GameObject notInteractableExternalButtonsContainer;
 	public Coroutine hideCo;
+	[NonSerialized]
+	public Button selectMeAfterDisable;
 	void SetInteractibilityOfButtons(bool toValue)
 	{
 		for (int i = 0; i < notInteractableExternalButtonsContainer.transform.childCount; ++i)
@@ -37,15 +41,14 @@ public class YouSureDialog : MonoBehaviour
 	}
 	private void OnEnable()
 	{
+		selectMeAfterDisable = EventSystem.current.currentSelectedGameObject.GetComponent<Button>();
 		SetInteractibilityOfButtons(false);
 		transform.GetChild(1).GetComponent<Button>().Select();
 	}
 	private void OnDisable()
 	{
 		SetInteractibilityOfButtons(true);
-		var btnTr = notInteractableExternalButtonsContainer.transform.GetChild(2);
-		var btn = btnTr.GetComponent<Button>() ?? btnTr.GetChild(0).GetComponent<Button>();
-		btn.Select();
+		selectMeAfterDisable.Select();
 		gameObject.SetActive(false);
 	}
 }

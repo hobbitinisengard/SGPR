@@ -8,6 +8,7 @@ TagManager:
   - Underside
   - carBody
   - VisibleInPictureMode
+  - walked
   layers:
   - Default
   - TransparentFX

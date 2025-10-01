@@ -7,10 +7,4 @@ public class RecordsView : MainMenuView
 		base.OnEnable();
 		ResultsView.Clear();
 	}
-	public void GoToRanking(RankingType rankingType)
-	{
-		F.I.teams = rankingType.teams;
-		F.I.scoringType = rankingType.scoringType;
-		GoToView(rankingView);
-	}
 }

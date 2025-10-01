@@ -20,7 +20,7 @@ public class SampleText : MonoBehaviour
 		heightOverCar = transform.localPosition.y;
 		if (mainCamera == null)
 			mainCamera = GameObject.Find("MainCamera").transform;
-		if (F.I.gameMode == GameMode.Exhibition)
+		if (F.I.gameMode != GameMode.Multiplayer)
 			gameObject.SetActive(false);
 	}
 

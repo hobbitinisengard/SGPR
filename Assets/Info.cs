@@ -68,8 +68,19 @@ public class Info : MonoBehaviour
 	public CarSelector carSelector;
 	[NonSerialized]
 	public ArcadeVariant curVariant;
-	public ArcadeVariant.Node curNode => curVariant?.nodes[curArcadeNodeID]; 
-
+	public ArcadeVariant.Node curNode 
+	{ get {
+			if (curArcadeNodeID == -1)
+				return curVariant.nodes[targetArcadeNodeID];
+			return curVariant.nodes[curArcadeNodeID]; 
+		} 
+	}
+	[NonSerialized]
+	public int curArcadeNodeID = -1;
+	[NonSerialized]
+	public int targetArcadeNodeID = 0;
+	[NonSerialized]
+	public int curArcadeScore = 0;
 	public const string TranslationTableName = "Default";
 	public MultiPlayerSelector mpSelectorInitializer;
 	public Text versionText;
@@ -168,8 +179,9 @@ public class Info : MonoBehaviour
 	public string lastPath { get { return documentsSGPRpath + "path.txt"; } }
 
 	public const string arcadeProgressExtension = ".progress";
+	public const string alreadyWalkedTag = "walked";
 
-	public Livery s_PlayerCarSponsor = Livery.Team;
+	public Livery s_PlayerCarSponsor = Livery.TGR;
 
 	public readonly int maxCarsInRace = 10;
 
@@ -200,16 +212,15 @@ public class Info : MonoBehaviour
 	public RankingData rankingData;
 	[NonSerialized]
 	public List<ArcadeVariant> arcadeVariants;
-	[NonSerialized]
-	public int curArcadeNodeID = 0;
+	
 	[NonSerialized]
 	public bool alwaysFirst = true;
 	[NonSerialized]
 	public bool alwaysBestStuntScore = true;
 	[NonSerialized]
 	public Livery?[] unlockedLiveries = new Livery?[] { Livery.Random, null, null, null, null, null, null, null };
-
-	public async void LoadArcade()
+	
+	public void LoadArcade()
 	{
 		// iterate over all files in arcadePath
 		arcadeVariants = new List<ArcadeVariant>();
@@ -224,13 +235,13 @@ public class Info : MonoBehaviour
 			string serializedVariant = JsonConvert.SerializeObject(newVariant, Formatting.Indented);
 			string filepath = Path.Combine(arcadePath, "Original.json");
 			filepaths = new string[] { filepath };
-			await File.WriteAllTextAsync(filepath, serializedVariant);
+			File.WriteAllText(filepath, serializedVariant);
 			playerData.currentArcadeVariant = newVariant.name;
 		}
 
 		foreach (var filepath in filepaths)
 		{
-			string jsonText = await File.ReadAllTextAsync(filepath);
+			string jsonText = File.ReadAllText(filepath);
 			try
 			{
 				ArcadeVariant variant = JsonConvert.DeserializeObject<ArcadeVariant>(jsonText);
@@ -240,7 +251,7 @@ public class Info : MonoBehaviour
 				string progressPath = Path.ChangeExtension(filepath, arcadeProgressExtension);
 				if (File.Exists(progressPath))
 				{
-					string progressText = await File.ReadAllTextAsync(progressPath);
+					string progressText = File.ReadAllText(progressPath);
 					variant.progress = JsonConvert.DeserializeObject<ArcadeVariant.Progress>(progressText);
 				}
 				else
@@ -269,15 +280,15 @@ public class Info : MonoBehaviour
 		Array.Sort(F.I.curVariant.nodes, (a, b) => a.id.CompareTo(b.id));
 
 		for (int i=0; i<unlockedLiveries.Length; i++)
-				unlockedLiveries[i] = null;
-		unlockedLiveries[0] = Livery.Random;
+				unlockedLiveries[i] = (Livery)i;
 
 		foreach (var track in tracks.Values)
 			track.unlocked = true; // all tracks are unlocked by default
+
 		foreach (var car in cars)
 		{
 			car.starter = false;
-			car.unlocked = false;
+			car.unlocked = true;
 		}
 		var starterCarNrs = curVariant.starterCarsIdxs;
 		foreach(var n in starterCarNrs)
@@ -287,33 +298,26 @@ public class Info : MonoBehaviour
 		{
 			if (node.prizeReq != null)
 			{
-				if (curVariant.progress.unlockedPaths[node.id].Count > 0)
-				{ // this event has already been completed
+				if (curVariant.progress.unlockedPaths[node.id].Count == 0)
+				{ // this event hasn't been completed - lock prizes for uncompleted races
 					string[] prizeNames = node.prizeReq.name.Split(',');
 					foreach (var prizeName in prizeNames)
 					{
 						if (prizeName.StartsWith("car"))
 						{
-							Car(prizeName).unlocked = true;
+							Car(prizeName).unlocked = false;
 						}
-						if (prizeName.StartsWith("lvr"))
+						else if (prizeName.StartsWith("lvr"))
 						{
 							int liveryIdx = int.Parse(prizeName[3..]);
-							if (unlockedLiveries[liveryIdx] == null)
-								unlockedLiveries[liveryIdx] = (Livery)liveryIdx;
+							unlockedLiveries[liveryIdx] = (Livery)liveryIdx;
 						}
 						else
 						{
-							tracks[node.trackName].unlocked = true;
+							tracks[prizeName].unlocked = true;
 						}
 					}
-				}
-				else
-				{ // lock prizes for uncompleted races
-					string[] prizeNames = node.prizeReq.name.Split(',');
-					foreach (var prizeName in prizeNames)
-						if (!prizeName.StartsWith("car") && !prizeName.StartsWith("lvr"))
-							tracks[node.trackName].unlocked = false;
+					tracks[node.trackName].unlocked = false;
 				}
 			}
 		}

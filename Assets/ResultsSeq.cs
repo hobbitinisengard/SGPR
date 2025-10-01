@@ -205,7 +205,7 @@ public class ResultsSeq : MonoBehaviour
 		{
 			if (submitFlag && dimCo == null) // CLOSING SEQUENCE
 			{
-				if (F.I.gameMode == GameMode.Exhibition 
+				if (F.I.gameMode != GameMode.Multiplayer 
 					|| ResultsView.FinishedPlayers >= ServerC.I.lobby.Players.Count)
 				{
 					foreach (var b in boxes)

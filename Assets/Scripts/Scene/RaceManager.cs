@@ -143,10 +143,16 @@ namespace RVP
 			}
 			else
 			{
-				BackToMenu(applyScoring: false);
-				if (F.I.gameMode == GameMode.Multiplayer && !ServerC.I.AmHost)
-					ServerC.I.DisconnectFromLobby();
-
+				if(F.I.gameMode == GameMode.Arcade)
+				{
+					BackToMenu(applyScoring: true);
+				}
+				else
+				{
+					BackToMenu(applyScoring: false);
+					if (F.I.gameMode == GameMode.Multiplayer && !ServerC.I.AmHost)
+						ServerC.I.DisconnectFromLobby();
+				}
 			}
 		}
 
@@ -366,7 +372,10 @@ namespace RVP
 				if (F.I.gameMode == GameMode.Arcade)
 				{
 					for (int i = 0; i < F.I.curNode.cars.Length; ++i)
+					{
 						carPlacements[i] = F.I.curNode.cars[i];
+						carPlacements[i].position = i;
+					}
 				}
 				else
 				{
@@ -443,7 +452,7 @@ namespace RVP
 				var position = new Vector3(startPos.x, startPos.y + 3, startPos.z);
 				var rotation = Quaternion.LookRotation(dirVec);
 
-				if (F.I.gameMode == GameMode.Multiplayer && !ServerC.I.AmHost)
+				if (!ServerC.I.AmHost)
 					Online.I.GibCar(position, rotation);
 				else
 				{
