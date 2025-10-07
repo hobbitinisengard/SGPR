@@ -156,7 +156,7 @@ public class SGP_Evo : MonoBehaviour
     float shiftPressTime;
     int prevSGPShiftButton;
     public bool stunting { get; private set; }
-    float maxTimeToInit = 1f;
+    const float maxTimeToInit = 1f;
     RotationDampStruct[] r;
     public float rX_delta;
     public Vector3 euler;

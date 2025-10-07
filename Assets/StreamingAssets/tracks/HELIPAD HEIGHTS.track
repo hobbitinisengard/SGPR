@@ -1,13 +1,13 @@
 {
   "author": "Team17",
-  "localizedNames":[
-	"HELIPAD HEIGHTS",
-	"LOTNICZE ODLOTY",
-	],
   "localizedDescriptions": [
-	"This interior and exterior track features a spectacular leap across a skyline!",
-	"Na tej trasie przeskoczysz horyzont!",
-	],
+    "This interior and exterior track features a spectacular leap across a skyline!",
+    "Na tej trasie przeskoczysz horyzont!"
+  ],
+  "localizedNames": [
+    "HELIPAD HEIGHTS",
+    "LOTNICZE ODLOTY"
+  ],
   "valid": true,
   "envir": "USA",
   "preferredCarClass": "Aero",
@@ -16,7 +16,5 @@
   "icons": [
     2,
     3
-  ],
-  "TrackOrigin": 0,
-  "IsOriginal": true
+  ]
 }

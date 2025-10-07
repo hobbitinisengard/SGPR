@@ -1,21 +1,20 @@
 {
   "author": "Team17",
-  "localizedNames":[
-	"HIGH ROLLER",
-	"ZROLOWANY",
-	],
   "localizedDescriptions": [
-	"This complex, winding track has a number of high curved bends.",
-	"Złożona, kręta trasa z dużą ilością ostrych zakrętów.",
-	],
+    "This complex, winding track has a number of high curved bends.",
+    "Złożona, kręta trasa z dużą ilością ostrych zakrętów."
+  ],
+  "localizedNames": [
+    "HIGH ROLLER",
+    "ZROLOWANY"
+  ],
   "valid": true,
   "envir": "GER",
   "preferredCarClass": "Team",
   "difficulty": 9,
   "unlocked": true,
   "icons": [
+    2,
     3
-  ],
-  "TrackOrigin": 0,
-  "IsOriginal": true
+  ]
 }

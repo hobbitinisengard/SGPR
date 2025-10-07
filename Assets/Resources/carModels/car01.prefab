@@ -14669,11 +14669,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4004a853526701343b191aaf6c4b56c8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  shockScale: 0.05
+  maxShock: 10000
   lastBounceTime: 0
   shockThreshold: 0.25
   bouncyCols:
-  - {fileID: 55640270096130822}
-  - {fileID: 2630508066903055719}
+  - {fileID: 301478497854231025}
 --- !u!1 &6192630529381075353
 GameObject:
   m_ObjectHideFlags: 0

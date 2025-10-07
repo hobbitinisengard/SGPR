@@ -1,13 +1,13 @@
 {
   "author": "luckygoose",
-  "localizedNames":[
-	"ROOFTOP PARTY",
-	"IMREZA NA DACHU",
-	],
   "localizedDescriptions": [
-	"This unusually placed track has few very narrow turns that will test your car's turning radius. Do you dare  to jump over the tire pile?",
-	"Ta niezwykle umiejscowiona trasa posiada parę bardzo krętych nawrotek, które przetestują zwinność twojego wozu. Odważysz się przeskoczyć przez płot?",
-	],
+    "This unusually placed track has few very narrow turns that will test your car's turning radius. Do you dare  to jump over the tire pile?",
+    "Ta niezwykle umiejscowiona trasa posiada parę bardzo krętych nawrotek, które przetestują zwinność twojego wozu. Odważysz się przeskoczyć przez płot?"
+  ],
+  "localizedNames": [
+    "ROOFTOP PARTY",
+    "IMREZA NA DACHU"
+  ],
   "valid": true,
   "envir": "ENG",
   "preferredCarClass": "Team",
@@ -17,7 +17,5 @@
     0,
     2,
     3
-  ],
-  "TrackOrigin": 1,
-  "IsOriginal": false
+  ]
 }

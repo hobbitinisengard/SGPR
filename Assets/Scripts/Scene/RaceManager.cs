@@ -145,6 +145,7 @@ namespace RVP
 			{
 				if(F.I.gameMode == GameMode.Arcade)
 				{
+					ResultsView.playerDNF = true;
 					BackToMenu(applyScoring: true);
 				}
 				else
@@ -464,8 +465,8 @@ namespace RVP
 					else
 						newCar = Instantiate(carModel, position, rotation).GetComponent<VehicleParent>();
 
-					newCar.sponsor = cp.livery;
 					newCar.name = cp.name;
+					newCar.sponsor = cp.livery;
 				}
 			} // ---carPlacements
 			SetPitsLayer(F.I.roadLayer);
@@ -475,8 +476,6 @@ namespace RVP
 			countDownSeq.gameObject.SetActive(!F.I.s_spectator);
 
 			yield return null;
-
-			editorPanel.GenerateMergedTrackColliders();
 
 			if (F.I.s_spectator)
 				StartCoroutine(SpectatorLoop());

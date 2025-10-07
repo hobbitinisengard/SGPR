@@ -108,7 +108,7 @@ public class EditorPanel : MonoBehaviour
 	public GameObject infoText;
 	public GameObject fillMenu;
 	public GameObject replayCamerasContainer;
-	Transform mergedTrackCollidersContainer;
+	public Transform mergedTrackCollidersContainer;
 	public Image connectButtonImage;
 	public Image snappingButtonImage;
 	public Image scalatorButtonImage;
@@ -429,8 +429,7 @@ public class EditorPanel : MonoBehaviour
 						{ // REMOVING 
 							HideCurrentTile();
 							Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-							if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity,
-									1 << F.I.roadLayer))
+							if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity) && hit.transform.parent != null && hit.transform.parent == placedTilesContainer)
 							{
 								HideCurrentTile();
 								if (Input.GetMouseButtonDown(0))
@@ -1430,9 +1429,9 @@ public class EditorPanel : MonoBehaviour
 		bool savePanelActive = !savePanel.gameObject.activeSelf;
 		if (savePanelActive)
 		{
+			
 			trackDifficultyDropdown.value = CalculateTrackDifficulty();
 			carGroup = CalculatePreferredCarClass();
-
 		}
 		savePanel.gameObject.SetActive(savePanelActive);
 		SwitchTo(Mode.None);
@@ -1851,7 +1850,7 @@ public class EditorPanel : MonoBehaviour
 		{
 			var lights = envir.transform.Find("Lights");
 			if (lights != null)
-				lights.gameObject.SetActive(F.I.s_timeOfDay == TimeOfDay.Night || F.I.tracks[F.I.s_trackName].envir == Envir.FRA);
+				lights.gameObject.SetActive(F.I.s_timeOfDay == TimeOfDay.Night || (!F.I.s_inEditor && F.I.tracks[F.I.s_trackName].envir == Envir.FRA));
 		}
 	}
 	public void RemoveTrackLeftovers()
@@ -1870,12 +1869,10 @@ public class EditorPanel : MonoBehaviour
 		{ // remove leftover replay cams in container
 			Destroy(replayCamerasContainer.transform.GetChild(i).gameObject);
 		}
-		if (mergedTrackCollidersContainer != null)
-			DestroyImmediate(mergedTrackCollidersContainer.gameObject);
+		mergedTrackCollidersContainer.DestroyAllChildren();
 	}
 	public void GenerateMergedTrackColliders()
 	{
-		mergedTrackCollidersContainer = new GameObject("MergedTrackColliders").transform;
 		List<GameObject>[] combinedMeshesToBeMergedBySurfaceType = new List<GameObject>[GroundSurfaceMaster.surfaceTypesStatic.Length];
 		for (int i = 0; i < combinedMeshesToBeMergedBySurfaceType.Length; ++i)
 		{
@@ -2020,6 +2017,8 @@ public class EditorPanel : MonoBehaviour
 		ApplyWindToCloths();
 		SetHeightsmap(ref TRACK.heights);
 		SwitchToConnect();
+		if(!F.I.s_inEditor)
+			GenerateMergedTrackColliders();
 	}
 	public void OpenLoadTrackFileBrowser()
 	{

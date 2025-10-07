@@ -4,180 +4,180 @@ using Unity.Collections;
 using UnityEngine;
 public class SGP_Bouncer : MonoBehaviour
 {
-    static float shockScale = 0.01f;
-    float maxShock = 9999;
+	public float shockScale = 0.05f;
+	public float maxShock = 10000;
+	public float minShock = 0.01f;
+	ContactPoint[] contacts = new ContactPoint[20];
+	VehicleParent vp;
+	public float lastBounceTime;
+	public float rotationalFrictionScale = 0.05f;
+	public float shockThreshold = 0.25f;
+	//public float timeDelay = .4f;
+	int rbId;
+	static AnimationCurve multCurve;
+	public Collider[] bouncyCols;
 
-    ContactPoint[] contacts = new ContactPoint[20];
-    VehicleParent vp;
-    public float lastBounceTime;
-    float rotationalFrictionScale = 0.05f;
-    public float shockThreshold = 0.25f;
-    //public float timeDelay = .4f;
-    int rbId;
-    static AnimationCurve multCurve;
-    public Collider[] bouncyCols;
+	static Dictionary<int, VehicleParent> carRbs = new(10);
+	static bool OnContactModifyRegistered = false;
+	readonly static float[] colRestitutionTable = new float[] {
+				 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f,
+				 0.000000f, 0.000567f, 0.001135f, 0.001702f, 0.002270f, 0.002837f, 0.003405f, 0.003972f,
+				 0.004539f, 0.007853f, 0.011166f, 0.014479f, 0.017793f, 0.021106f, 0.024419f, 0.027733f,
+				 0.031046f, 0.044842f, 0.058639f, 0.072435f, 0.086232f, 0.100029f, 0.113825f, 0.127622f,
+				 0.141418f, 0.168396f, 0.195375f, 0.222353f, 0.249331f, 0.276310f, 0.303288f, 0.330266f,
+				 0.357244f, 0.386774f, 0.416303f, 0.445833f, 0.475362f, 0.498690f, 0.522018f, 0.545346f,
+				 0.568673f, 0.587365f, 0.606056f, 0.624748f, 0.643439f, 0.662131f, 0.680822f, 0.699514f,
+				 0.718205f, 0.733274f, 0.748342f, 0.763410f, 0.778478f, 0.793546f, 0.808615f, 0.823683f,
+				 0.838751f, 0.850874f, 0.862996f, 0.875119f, 0.887242f, 0.894770f, 0.902297f, 0.909825f,
+				 0.917353f, 0.924881f, 0.932408f, 0.939936f, 0.947464f, 0.951480f, 0.955497f, 0.959514f,
+				 0.963531f, 0.967547f, 0.971564f, 0.975581f, 0.979597f, 0.984698f, 0.989799f, 0.994899f,
+				 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f,
+				 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f,
+				 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f,
+				 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f,
+				 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f,
+		}; // from GAME\CONFIG\LEVELS\DEFAULT.CFG
 
-    static Dictionary<int, VehicleParent> carRbs = new(10);
-    static bool OnContactModifyRegistered = false;
-    readonly static float[] colRestitutionTable = new float[] {
-         0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f,
-         0.000000f, 0.000567f, 0.001135f, 0.001702f, 0.002270f, 0.002837f, 0.003405f, 0.003972f,
-         0.004539f, 0.007853f, 0.011166f, 0.014479f, 0.017793f, 0.021106f, 0.024419f, 0.027733f,
-         0.031046f, 0.044842f, 0.058639f, 0.072435f, 0.086232f, 0.100029f, 0.113825f, 0.127622f,
-         0.141418f, 0.168396f, 0.195375f, 0.222353f, 0.249331f, 0.276310f, 0.303288f, 0.330266f,
-         0.357244f, 0.386774f, 0.416303f, 0.445833f, 0.475362f, 0.498690f, 0.522018f, 0.545346f,
-         0.568673f, 0.587365f, 0.606056f, 0.624748f, 0.643439f, 0.662131f, 0.680822f, 0.699514f,
-         0.718205f, 0.733274f, 0.748342f, 0.763410f, 0.778478f, 0.793546f, 0.808615f, 0.823683f,
-         0.838751f, 0.850874f, 0.862996f, 0.875119f, 0.887242f, 0.894770f, 0.902297f, 0.909825f,
-         0.917353f, 0.924881f, 0.932408f, 0.939936f, 0.947464f, 0.951480f, 0.955497f, 0.959514f,
-         0.963531f, 0.967547f, 0.971564f, 0.975581f, 0.979597f, 0.984698f, 0.989799f, 0.994899f,
-         1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f,
-         1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f,
-         1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f,
-         1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f,
-         1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f,
-    }; // from GAME\CONFIG\LEVELS\DEFAULT.CFG
+	void Awake()
+	{
+		vp = GetComponent<VehicleParent>();
+		rbId = vp.rb.GetInstanceID();
+		carRbs.Add(rbId, vp);
 
-    void Awake()
-    {
-        vp = GetComponent<VehicleParent>();
-        rbId = vp.rb.GetInstanceID();
-        carRbs.Add(rbId, vp);
+		if (multCurve == null)
+		{
+			Keyframe[] kf = new Keyframe[]
+			{
+								new (Mathf.Cos((-90)*Mathf.Deg2Rad),1),
+								new (Mathf.Cos((0)*Mathf.Deg2Rad),0),
+								new (Mathf.Cos((90)*Mathf.Deg2Rad),1),
+			};
+			multCurve = new AnimationCurve(kf);
+		}
+		for (int i = 0; i < bouncyCols.Length; i++)
+		{
+			bouncyCols[i].hasModifiableContacts = true;
+		}
 
-        if (multCurve == null)
-        {
-            Keyframe[] kf = new Keyframe[]
-            {
-                new (Mathf.Cos((-90)*Mathf.Deg2Rad),1),
-                new (Mathf.Cos((0)*Mathf.Deg2Rad),0),
-                new (Mathf.Cos((90)*Mathf.Deg2Rad),1),
-            };
-            multCurve = new AnimationCurve(kf);
-        }
-        for (int i = 0; i < bouncyCols.Length; i++)
-        {
-            bouncyCols[i].hasModifiableContacts = true;
-        }
+		if (!OnContactModifyRegistered)
+		{
+			OnContactModifyRegistered = true;
+			Physics.ContactModifyEvent += OnContactModify;
+		}
+	}
+	static void OnContactModify(PhysicsScene scene, NativeArray<ModifiableContactPair> pairs)
+	{
+		foreach (var pair in pairs)
+		{
+			if (/*pair.bodyInstanceID != 0 && pair.otherBodyInstanceID != 0 &&*/
+					carRbs.ContainsKey(pair.bodyInstanceID) && carRbs.ContainsKey(pair.otherBodyInstanceID)) // car-car collisions
+			{
+				if (pair.contactCount > 0)
+				{
+					pair.SetPoint(0, carRbs[pair.otherBodyInstanceID].worldCOM);
+					//pair.SetNormal(0, (pair.GetNormal(0) + Vector3.up) / 2f);
+					for (int i = 1; i < pair.contactCount; ++i)
+					{
+						pair.IgnoreContact(i);
+					}
+				}
+			}
+		}
+	}
+	private void OnDestroy()
+	{
+		carRbs.Remove(rbId);
+	}
 
-        if (!OnContactModifyRegistered)
-        {
-            OnContactModifyRegistered = true;
-            Physics.ContactModifyEvent += OnContactModify;
-        }
-    }
-    static void OnContactModify(PhysicsScene scene, NativeArray<ModifiableContactPair> pairs)
-    {
-        foreach (var pair in pairs)
-        {
-            if (/*pair.bodyInstanceID != 0 && pair.otherBodyInstanceID != 0 &&*/
-                carRbs.ContainsKey(pair.bodyInstanceID) && carRbs.ContainsKey(pair.otherBodyInstanceID)) // car-car collisions
-            {
-                if (pair.contactCount > 0)
-                {
-                    pair.SetPoint(0, carRbs[pair.otherBodyInstanceID].worldCOM);
-                    pair.SetNormal(0, (pair.GetNormal(0) + Vector3.up)/2f);
-                    for (int i = 1; i < pair.contactCount; ++i)
-                    {
-                        pair.IgnoreContact(i);
-                    }
-                }
-            }
-        }
-    }
-    private void OnDestroy()
-    {
-        carRbs.Remove(rbId);
-    }
-
-    /*collision_energy_min,0.25,"Range(0,100) Min energy for a single impact"
+	/*collision_energy_min,0.25,"Range(0,100) Min energy for a single impact"
 collision_energy_max,0.5,"Range(0,100) Max energy for a single impact"
 collision_energy_scale,0.01,Single impact energy scale
 collision_energy_impact_limit,0.75,"Range(0,100) Max impact energy after multiple collisions per time"
 collision_energy_impact_timedelay,0.4,"Range(0, 1) Time in Seconds"
-	 */
-    void ApplyShock(Vector3 direction, float impactStrength)
-    {
-        float maxShock = 0.75f;
-        float shockScale = 0.01f;
-        float shockMagnitude = Mathf.Min(impactStrength * shockScale * impactStrength * shockScale, maxShock);
-        Vector3 shockForce = direction * shockMagnitude;
-        vp.rb.AddForce(shockForce * 4, ForceMode.VelocityChange);
-    }
-    float GetRestitution(float impactStrength01)
-    {
-        int tableSize = colRestitutionTable.Length;
-        int index = Mathf.Clamp(Mathf.RoundToInt(Mathf.Abs(impactStrength01) * (tableSize - 1)), 0, tableSize - 1);
-        return colRestitutionTable[index];
-    }
-    private void OnCollisionEnter(Collision col)
-    {
-        Bounce(col);
-    }
-    private void OnCollisionStay(Collision col)
-    {
-        Bounce(col);
-    }
-    void Bounce(Collision col)
-    { 
-        int contactsNr = col.GetContacts(contacts);
-        if (contacts[0].otherCollider.gameObject.layer == F.I.ignoreWheelCastLayer)
-            return;
-        if (CountDownSeq.Countdown > 0)
-            return;
-        Vector3 collisionNormal = Vector3.zero;
-        for (int i = 0; i < contactsNr; i++)
-        {
-            collisionNormal += contacts[i].normal;
-        }
-        collisionNormal /= contactsNr;
-       
-        //collisionNormal = (vp.rb.worldCenterOfMass - collisionNormal).normalized;
+ */
+	void ApplyShock(Vector3 direction, float impactStrength)
+	{
+		
+		float shockMagnitude = Mathf.Max(minShock, Mathf.Min(impactStrength * shockScale * impactStrength * shockScale, maxShock));
+		Debug.Log(shockMagnitude);
+		Vector3 shockForce = direction * shockMagnitude;
+		vp.rb.AddForce(shockForce * 4, ForceMode.VelocityChange);
+	}
+	float GetRestitution(float impactStrength01)
+	{
+		int tableSize = colRestitutionTable.Length;
+		int index = Mathf.Clamp(Mathf.RoundToInt(Mathf.Abs(impactStrength01) * (tableSize - 1)), 0, tableSize - 1);
+		return colRestitutionTable[index];
+	}
+	private void OnCollisionEnter(Collision col)
+	{
+		Bounce(col);
+	}
+	private void OnCollisionStay(Collision col)
+	{
+		Bounce(col);
+	}
+	void Bounce(Collision col)
+	{
+		int contactsNr = col.GetContacts(contacts);
+		if (contacts[0].otherCollider.gameObject.layer == F.I.ignoreWheelCastLayer)
+			return;
+		if (CountDownSeq.Countdown > 0)
+			return;
+		Vector3 collisionNormal = Vector3.zero;
+		for (int i = 0; i < contactsNr; i++)
+		{
+			collisionNormal += contacts[i].normal;
+		}
+		collisionNormal /= contactsNr;
 
-        //if (contacts[0].otherCollider.gameObject.layer != F.I.carCarCollisionLayer)
-        {
-            // HandleParticleToSceneCollision__FUi
+		//collisionNormal = (vp.rb.worldCenterOfMass - collisionNormal).normalized;
 
-            // bounce
-            float impactStrength = Vector3.Dot(vp.rb.linearVelocity, collisionNormal);
-            //if (Mathf.Abs(impactStrength) > bounceThres) // recreate bug of stunt gp where only strong impacts cause bounce
-            //{
-            //    float restitution = GetRestitution(impactStrength); // e.g., from a curve or table
-            //    //vp.rb.AddForce(collisionNormal * impactStrength * restitution, ForceMode.VelocityChange);
-            //    Vector3 reflectBugVector = Vector3.Reflect(vp.rb.linearVelocity, -collisionNormal) * restitution;
-            //    vp.rb.AddForce(reflectBugVector, ForceMode.VelocityChange);
-            //    //vp.rb.linearVelocity += Vector3.Reflect(vp.rb.linearVelocity, -collisionNormal) * restitution;
-            //}
-           
+		if (contacts[0].otherCollider.gameObject.layer == F.I.carCarCollisionLayer)
+		{
+			//HandleCarToCarCollisionImpact__Fv
 
-            // rotational impulse
-            float rotationalImpulse = impactStrength * rotationalFrictionScale;
-            vp.rb.AddTorque(-collisionNormal * rotationalImpulse, ForceMode.VelocityChange);
+			Vector3 collisionDir = (transform.position - col.body.transform.position).normalized;
+			float impactStrength = Vector3.Dot(col.relativeVelocity, collisionDir);
+			ApplyShock(collisionDir, impactStrength);
+		}
+		else
+		{
+			// HandleParticleToSceneCollision__FUi
 
-            //Debug.Log(impactStrength.ToString("F2"));
-            // shock
-            if (Mathf.Abs(impactStrength) > shockThreshold)
-            {
-                float shockMagnitude = Mathf.Min(impactStrength * shockScale * impactStrength * shockScale, maxShock);
-                Vector3 shockForce = collisionNormal * shockMagnitude;
-                vp.rb.AddForce(shockForce, ForceMode.VelocityChange);
-            }
-        }
-        //else
-        {
-            //HandleCarToCarCollisionImpact__Fv
+			// bounce
+			float impactStrength = Vector3.Dot(vp.rb.linearVelocity, collisionNormal);
+			//if (Mathf.Abs(impactStrength) > bounceThres) // recreate bug of stunt gp where only strong impacts cause bounce
+			//{
+			//    float restitution = GetRestitution(impactStrength); // e.g., from a curve or table
+			//    //vp.rb.AddForce(collisionNormal * impactStrength * restitution, ForceMode.VelocityChange);
+			//    Vector3 reflectBugVector = Vector3.Reflect(vp.rb.linearVelocity, -collisionNormal) * restitution;
+			//    vp.rb.AddForce(reflectBugVector, ForceMode.VelocityChange);
+			//    //vp.rb.linearVelocity += Vector3.Reflect(vp.rb.linearVelocity, -collisionNormal) * restitution;
+			//}
 
-            //Vector3 collisionDir = (col.body.transform.position - transform.position).normalized;
-            //float impactStrength = Vector3.Dot(col.relativeVelocity, collisionDir);
-            //ApplyShock(collisionDir, impactStrength);
 
-        }
-        vp.colliding = true;
-    }
+			// rotational impulse
+			float rotationalImpulse = impactStrength * rotationalFrictionScale;
+			vp.rb.AddTorque(-collisionNormal * rotationalImpulse, ForceMode.VelocityChange);
 
-    private void OnCollisionExit(Collision collision)
-    {
-        vp.colliding = false;
-    }
+			//Debug.Log(impactStrength.ToString("F2"));
+			// shock
+			//if (Mathf.Abs(impactStrength) > shockThreshold)
+			//{
+			//	float shockMagnitude = Mathf.Min(impactStrength * shockScale * impactStrength * shockScale, maxShock);
+			//	Vector3 shockForce = collisionNormal * shockMagnitude;
+			//	vp.rb.AddForce(shockForce, ForceMode.VelocityChange);
+			//}
+
+		}
+		vp.colliding = true;
+	}
+
+	private void OnCollisionExit(Collision collision)
+	{
+		vp.colliding = false;
+	}
 }
 
 //private void OnCollisionEnter(Collision col)

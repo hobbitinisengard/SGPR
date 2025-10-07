@@ -33,13 +33,12 @@ public class ArcadeList : MainMenuView
 				{
 					F.I.SwitchArcadeVariant(EventSystem.current.currentSelectedGameObject.name);
 				}
-				F.I.curArcadeNodeID = -1;
-				F.I.curArcadeScore = 0;
+				F.I.arcadeSelector.Reset();
 				GoToView(enterNameView);
 			});
 			newRow.GetChild(0).GetComponent<TextMeshProUGUI>().text = variant.name;
 			newRow.GetChild(1).GetComponent<TextMeshProUGUI>().text = variant.nodes.Length + " " + F.I.LocStr("TRACKS");
-			newRow.GetChild(2).GetComponent<TextMeshProUGUI>().text = F.I.LocStr("PROGRESS") + ": " + variant.progress.progress.ToString("F0") + "%";
+			newRow.GetChild(2).GetComponent<TextMeshProUGUI>().text = F.I.LocStr("PROGRESS") + ": " + variant.progress.OverallProgress().ToString("F0") + "%";
 		}
 	}
 }

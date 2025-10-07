@@ -120,14 +120,7 @@ public class ViewSwitcher : MonoBehaviour
 				{
 					arcadeMapView.SetActive(false);
 
-					if (ResultsView.PlayerFinished)
-					{
-						resultsView.SetActive(true);
-					}
-					else
-					{
-						SPView.SetActive(true);
-					}
+					resultsView.SetActive(true);
 				}
 				else if (F.I.gameMode == GameMode.Multiplayer && ResultsView.Count > 1)
 				{

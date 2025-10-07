@@ -1,13 +1,13 @@
 {
   "author": "Arkhnen & Viatrufka",
-  "localizedNames":[
-	"SHADY TURNS",
-	"CIENISTE SKRĘTY",
-	],
   "localizedDescriptions": [
-	"Keep your eyes on the road as the multitude of turns can make you dizzy!",
-	"Utrzymaj uważny wzrok za kółkiem, bo mnogość zakrętów może przyprawić o zawrót głowy!",
-	],
+    "Keep your eyes on the road as the multitude of turns can make you dizzy!",
+    "Utrzymaj uważny wzrok za kółkiem, bo mnogość zakrętów może przyprawić o zawrót głowy!"
+  ],
+  "localizedNames": [
+    "SHADY TURNS",
+    "CIENISTE SKRĘTY"
+  ],
   "valid": true,
   "envir": "GER",
   "preferredCarClass": "Speed",
@@ -16,7 +16,5 @@
   "icons": [
     2,
     3
-  ],
-  "TrackOrigin": 1,
-  "IsOriginal": false
+  ]
 }

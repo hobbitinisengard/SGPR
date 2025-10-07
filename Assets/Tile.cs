@@ -10,13 +10,13 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public class Tile : MonoBehaviour
 {
-    public enum Type
-    {
-        NotRoad = 0,
-        NotRoadWithLights = 1,
-        Road = 2,
-    }
-    [NonSerialized]
+	public enum Type
+	{
+		NotRoad = 0,
+		NotRoadWithLights = 1,
+		Road = 2,
+	}
+	[NonSerialized]
 	public EditorPanel panel;
 	/// <summary>
 	/// Only one tile at a time may be not 'placed': the one that the player is currently selecting in track editor
@@ -33,9 +33,9 @@ public class Tile : MonoBehaviour
 	public MeshCollider[] Endings { get; private set; }
 	public Type type { get; private set; } = Type.NotRoad;
 
-    public void UpdateLights()
+	public void UpdateLights()
 	{
-		if(lightObj)
+		if (lightObj)
 		{
 			for (int i = 0; i < lightObj.transform.childCount; ++i)
 			{
@@ -48,30 +48,30 @@ public class Tile : MonoBehaviour
 		// add mesh collider to 'main' mesh 
 		if (transform.childCount == 0) // tile isn't a road
 		{
-            mc = gameObject.AddComponent<MeshCollider>();
+			mc = gameObject.AddComponent<MeshCollider>();
 			type = Type.NotRoad;
-        }
-        else
-		{ 
+		}
+		else
+		{
 			var childObj = transform.GetChild(0);
-			
+
 			if (childObj.name == "lights")
 			{
 				type = Type.NotRoadWithLights;
-                mc = gameObject.AddComponent<MeshCollider>();
+				mc = gameObject.AddComponent<MeshCollider>();
 
 				lightObj = childObj.gameObject;
 				UpdateLights();
 			}
-			else if(childObj.name != "extra")
+			else if (childObj.name != "extra")
 			{
-                // some of the ad tiles have moving parts. they are not roads, but they have mesh colliders
-                if (childObj.name != "obrot")
+				// some of the ad tiles have moving parts. they are not roads, but they have mesh colliders
+				if (childObj.name != "obrot")
 					type = Type.Road;
 
-                mc = childObj.gameObject.AddComponent<MeshCollider>();
+				mc = childObj.gameObject.AddComponent<MeshCollider>();
 
-				if(childObj.childCount > 0)
+				if (childObj.childCount > 0)
 				{
 					List<MeshCollider> endings = new();
 					for (int i = 0; i < childObj.childCount; ++i)
@@ -83,7 +83,7 @@ public class Tile : MonoBehaviour
 							endings.Add(ending);
 						}
 					}
-					if(endings.Count > 0)
+					if (endings.Count > 0)
 						Endings = endings.ToArray();
 				}
 			}
@@ -95,7 +95,7 @@ public class Tile : MonoBehaviour
 		{
 			Debug.LogError("PavementType is random");
 		}
-		else if(F.I.s_roadType != PavementType.Arena)
+		else if (F.I.s_roadType != PavementType.Arena)
 		{
 			var mr = mc.transform.GetComponent<MeshRenderer>();
 			string replacementStr = "0" + ((int)F.I.s_roadType).ToString();
@@ -133,7 +133,8 @@ public class Tile : MonoBehaviour
 	internal void SetPlaced()
 	{
 		placed = true;
-		mc.gameObject.layer = F.I.roadLayer;
+		if(type == Type.Road)
+			mc.gameObject.layer = F.I.roadLayer;
 		if (name.Contains("dirt")) //= mud
 			mc.gameObject.AddComponent<GroundSurfaceInstance>().surfaceType = 1;
 		else if (name.Contains("sand")) // =dust
@@ -170,13 +171,13 @@ public class Tile : MonoBehaviour
 			return false;
 
 		mirrored = !mirrored;
-		
+
 		var mf = mc.transform.GetComponent<MeshFilter>();
 		mf.mesh = MirrorMesh(mf.mesh);
 		if (mc)
 			mc.sharedMesh = mf.mesh;
 
-		if(Endings != null)
+		if (Endings != null)
 		{
 			foreach (MeshCollider end in Endings)
 			{ // mirror endings
@@ -186,7 +187,7 @@ public class Tile : MonoBehaviour
 			}
 		}
 
-		if(transform.childCount>0)
+		if (transform.childCount > 0)
 		{
 			//if(transform.GetChild(0).name == "lights")
 			//{
@@ -218,11 +219,11 @@ public class Tile : MonoBehaviour
 				mainMeshTr.GetChild(i).transform.localRotation = Quaternion.Euler(euler);
 			}
 		}
-		
+
 		for (int i = 1; i < transform.childCount; ++i)
 		{
 			Transform connector = transform.GetChild(i);
-			
+
 			// mirror path positions relative to connector
 			Transform[] paths = new Transform[connector.childCount];
 
@@ -251,7 +252,7 @@ public class Tile : MonoBehaviour
 			foreach (var c in paths)
 			{
 				if (c != null)
-					c.SetParent(connector,true);
+					c.SetParent(connector, true);
 			}
 		}
 		return mirrored;
@@ -300,11 +301,11 @@ public class Tile : MonoBehaviour
 		for (int i = 1; i < transform.childCount; ++i)
 		{
 			var connector = transform.GetChild(i);
-			
+
 			if (connector.childCount > 0)
 			{
 				GameObject[] children = new GameObject[connector.childCount];
-				for(int j = 0; j< children.Length; ++j)
+				for (int j = 0; j < children.Length; ++j)
 				{ // every time you change parent of a prev child, you pick 0th child 
 					children[j] = connector.GetChild(0).gameObject;
 					children[j].transform.parent = connector.parent;

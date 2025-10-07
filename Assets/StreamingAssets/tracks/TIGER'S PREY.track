@@ -1,13 +1,13 @@
 {
   "author": "Arkhnen & Viatrufka",
-   "localizedNames":[
-	"TIGER'S PREY",
-	"TYGRISI ŻER",
-	],
   "localizedDescriptions": [
-	"Two tunnel crossings and lots of space to scorch. Wake up your inner tiger",
-	"Dwa skrzyżowania w tunelu i mnóstwo miejsca do rozpędzania się. Obudź w sobie siłę lwa.",
-	],
+    "Two tunnel crossings and lots of space to scorch. Wake up your inner tiger",
+    "Dwa skrzyżowania w tunelu i mnóstwo miejsca do rozpędzania się. Obudź w sobie siłę lwa."
+  ],
+  "localizedNames": [
+    "TIGER'S PREY",
+    "TYGRISI ŻER"
+  ],
   "valid": true,
   "envir": "SPN",
   "preferredCarClass": "Speed",
@@ -16,7 +16,5 @@
   "icons": [
     2,
     3
-  ],
-  "TrackOrigin": 1,
-  "IsOriginal": false
+  ]
 }

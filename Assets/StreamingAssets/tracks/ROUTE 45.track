@@ -1,13 +1,13 @@
 {
   "author": "luckygoose",
-  "localizedNames":[
-	"ROUTE 45",
-	"MIĘDZYSTANOWA 45",
-	],
   "localizedDescriptions": [
-	"This quick, medium-short track features few narrow turns, a technical chicane, and high speed sections up in the clouds.",
-	"Ta szybka, średnio-długa trasa odznacza się paroma wąskimi skrętami, techniczną szykaną i prędkimi sekcjami położonymi wysoko w chmurach.",
-	],
+    "This quick, medium-short track features few narrow turns, a technical chicane, and high speed sections up in the clouds.",
+    "Ta szybka, średnio-długa trasa odznacza się paroma wąskimi skrętami, techniczną szykaną i prędkimi sekcjami położonymi wysoko w chmurach."
+  ],
+  "localizedNames": [
+    "ROUTE 45",
+    "MIĘDZYSTANOWA 45"
+  ],
   "valid": true,
   "envir": "USA",
   "preferredCarClass": "Speed",
@@ -17,7 +17,5 @@
     0,
     2,
     3
-  ],
-  "TrackOrigin": 1,
-  "IsOriginal": false
+  ]
 }

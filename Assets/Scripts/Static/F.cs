@@ -333,6 +333,26 @@ public static class F
 			}
 		}
 	}
+	public static string PosSuffix(int i)
+	{
+		string s;
+		switch (i)
+		{
+			case 0:
+				s = "1-st";
+				break;
+			case 1:
+				s = "2-nd";
+				break;
+			case 2:
+				s = "3-rd";
+				break;
+			default:
+				s = (i + 1).ToString() + "-th";
+				break;
+		}
+		return F.I.LocStr(s);
+	}
 	public static void DestroyAllChildren(this Transform tr)
 	{
 		for(int i=0; i<tr.childCount; ++i)

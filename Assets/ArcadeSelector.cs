@@ -1,13 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 public class ArcadeSelector : TrackSelectorTemplate
 {
-	public static ArcadeSelector I;
 	public MainMenuView thisView;
 	public Transform nodeParent;
 	public Transform pathParent;
@@ -16,20 +16,22 @@ public class ArcadeSelector : TrackSelectorTemplate
 	public Sprite squareRounded;
 	public Sprite circle;
 	public Text arcadeReqText;
+	public Transform objectivesContainer;
 	Coroutine blinkingCo;
 	RectTransform curNodeRT;
 	RectTransform targetNodeRT;
 	Image selectedPath;
 	int curPathConnectionIdx;
 	Dictionary<string, RectTransform> pathsRTs = new();
-	private new void Awake()
-	{
-		base.Awake();
-		I = this;
-	}
 	public void Reset()
 	{
-		F.I.curArcadeNodeID = 0;
+		F.DestroyAllChildren(nodeParent);
+		F.DestroyAllChildren(pathParent);
+		pathsRTs.Clear();
+		F.I.curArcadeNodeID = -1;
+		F.I.CurRound = 0;
+		F.I.curArcadeScore = 0;
+		selectedPath = null;
 	}
 	private new void OnDisable()
 	{
@@ -37,9 +39,9 @@ public class ArcadeSelector : TrackSelectorTemplate
 
 		if (blinkingCo != null)
 			StopCoroutine(blinkingCo);
-		targetNodeRT.GetComponent<Image>().color = F.I.curVariant.nodes[curPathConnectionIdx].color;
+		targetNodeRT.GetComponent<Image>().color = F.I.curVariant.nodes[F.I.targetArcadeNodeID].color;
 
-		if(F.I.curArcadeNodeID != -1)
+		if (F.I.curArcadeNodeID != -1)
 		{
 			foreach (var targetID in F.I.curNode.connections)
 			{
@@ -53,41 +55,83 @@ public class ArcadeSelector : TrackSelectorTemplate
 	}
 	public void MoveNodeForward()
 	{
-		if(F.I.curArcadeNodeID >= 0)
-			pathsRTs[F.I.curArcadeNodeID + "-" + F.I.targetArcadeNodeID].tag = Info.alreadyWalkedTag;
+		if(F.I.targetNode.connections.Length > 0)
+		{
+			if (F.I.curArcadeNodeID >= 0)
+				pathsRTs[F.I.curArcadeNodeID + "-" + F.I.targetArcadeNodeID].tag = Info.alreadyWalkedTag;
 
-		targetNodeRT.GetComponent<Image>().sprite = circle;
-		F.I.curArcadeNodeID = targetNodeRT.GetSiblingIndex();
-		F.I.targetArcadeNodeID = F.I.curNode.connections[0];
+			targetNodeRT.GetComponent<Image>().sprite = circle;
+			F.I.curArcadeNodeID = targetNodeRT.GetSiblingIndex();
+			F.I.targetArcadeNodeID = F.I.curNode.connections[0];
+			F.I.CurRound++;
+		}
 	}
 	protected override void OnEnable()
 	{
-		F.I.move2Ref.action.performed += ChangePath;
-
 		if (F.I.curArcadeNodeID == -1) // when starting new arcade variant
 		{
 			F.I.targetArcadeNodeID = F.I.curVariant.starts.FirstOrDefault(s => s.allowedCarsIdxs.Any(carIdx => carIdx == F.I.s_playerCarIdx)).node;
 			CreateNodeMap();
 		}
 		targetNodeRT = nodeParent.GetChild(F.I.targetArcadeNodeID).GetComponent<RectTransform>();
-		
-		if(F.I.curArcadeNodeID >= 0)
+
+		if (F.I.curArcadeNodeID >= 0)
 			curNodeRT = nodeParent.GetChild(F.I.curArcadeNodeID).GetComponent<RectTransform>();
 		else
 			curNodeRT = null;
 
+		curPathConnectionIdx = 0;
 		ChangePath(0);
 		if (blinkingCo != null)
 			StopCoroutine(blinkingCo);
 		blinkingCo = StartCoroutine(Blinking());
 
+		F.I.move2Ref.action.performed += ChangePath;
 		// modified base OnEnable
 		F.I.move2Ref.action.performed += CalculateTargetToSelect;
 		if (loadCo)
 			StopCoroutine(Load());
-		StartCoroutine(Load(forceReload:true));
+		StartCoroutine(Load(F.I.curVariant.nodes[F.I.curNode.connections[0]].trackName, forceReload: true));
 
 		WriteContinuationText();
+		
+	}
+	void UpdateObjectivesTable()
+	{
+		if(F.I.targetNode.prizeReqs.Length == 0)
+		{
+			objectivesContainer.gameObject.SetActive(false);
+			recordsContainer.gameObject.SetActive(true);
+		}
+		else
+		{
+			objectivesContainer.gameObject.SetActive(true);
+			recordsContainer.gameObject.SetActive(false);
+
+			for (int i = 0; i < objectivesContainer.childCount; ++i)
+			{
+				var text = objectivesContainer.GetChild(i).GetComponent<TextMeshProUGUI>();
+				if (i < F.I.targetNode.prizeReqs.Length)
+				{
+					bool achievedThisPrize = F.I.curVariant.progress.prizesCompleted[F.I.targetArcadeNodeID].GetBits(i) == 1;
+					text.text = GetObjectiveText(F.I.targetNode.prizeReqs[i]);
+					if (achievedThisPrize)
+					{
+						text.text = "<s>" + text.text + "</s>";
+						text.color = Color.gray;
+					}
+					else
+					{
+						text.color = Color.white;
+					}
+					text.gameObject.SetActive(true);
+				}
+				else
+				{
+					text.gameObject.SetActive(false);
+				}
+			}
+		}
 	}
 	void AlignMapToCurrentNodes()
 	{
@@ -137,7 +181,7 @@ public class ArcadeSelector : TrackSelectorTemplate
 				selectedPath.color = Color.gray;
 				selectedPath.gameObject.SetActive(selectedPath.gameObject.CompareTag(Info.alreadyWalkedTag));
 			}
-			targetNodeRT.GetComponent<Image>().color = F.I.curVariant.nodes[curPathConnectionIdx].color;
+			targetNodeRT.GetComponent<Image>().color = F.I.curVariant.nodes[F.I.targetArcadeNodeID].color;
 			curPathConnectionIdx = Mathf.Clamp(curPathConnectionIdx + dir, 0, F.I.curNode.connections.Length - 1);
 			var targetNodeID = F.I.curNode.connections[curPathConnectionIdx];
 			selectedPath = pathsRTs[F.I.curArcadeNodeID + "-" + targetNodeID].GetComponent<Image>();
@@ -146,6 +190,7 @@ public class ArcadeSelector : TrackSelectorTemplate
 			blinkingCo = StartCoroutine(Blinking());
 		}
 		AlignMapToCurrentNodes();
+		UpdateObjectivesTable();
 	}
 	IEnumerator Blinking()
 	{
@@ -164,9 +209,7 @@ public class ArcadeSelector : TrackSelectorTemplate
 	}
 	void CreateNodeMap()
 	{
-		F.DestroyAllChildren(nodeParent);
-		F.DestroyAllChildren(pathParent);
-		pathsRTs.Clear();
+		
 		foreach (var nodeData in F.I.curVariant.nodes)
 		{ // create nodes
 			var position = new Vector3(80 + 110 * nodeData.coords.x, 50 + 133.34f * nodeData.coords.y, 0);
@@ -200,37 +243,43 @@ public class ArcadeSelector : TrackSelectorTemplate
 				rt.sizeDelta = new Vector2(dist - nodeARadius - nodeBRadius, rt.sizeDelta.y);
 				rt.anchoredPosition = (posA + posB) / 2f;
 				rt.GetComponent<Image>().color = Color.gray;
-				newPath.SetActive(false);
+				bool pathAlreadyWalked = F.I.curVariant.progress.pathsDone[nodeData.id].Contains(nodeB_ID);
+				newPath.SetActive(pathAlreadyWalked);
+				if (pathAlreadyWalked)
+					newPath.tag = Info.alreadyWalkedTag;
 			}
 		}
-		for (int i = 0; i < F.I.curVariant.progress.unlockedNodes.Length; i++)
+		for (int i = 0; i < F.I.curVariant.progress.prizesCompleted.Length; i++)
 		{ // make node square if locked
-			if (!F.I.curVariant.progress.unlockedNodes[i])
+			if(F.I.curVariant.nodes[i].prizeReqs != null)
 			{
-				nodeParent.GetChild(i).GetComponent<Image>().sprite = squareRounded;
+				if (F.I.curVariant.progress.prizesCompleted[i].CountBits() < F.I.curVariant.nodes[i].prizeReqs.Length)
+				{
+					nodeParent.GetChild(i).GetComponent<Image>().sprite = squareRounded;
+				}
 			}
 		}
-		for (int i = 0; i < F.I.curVariant.progress.unlockedPaths.Count; i++)
-		{ // make visible if unlocked
-			for (int j = 0; j < F.I.curVariant.progress.unlockedPaths[i].Count; j++)
+		for (int i = 0; i < F.I.curVariant.progress.pathsDone.Count; i++)
+		{
+			for (int j = 0; j < F.I.curVariant.progress.pathsDone[i].Count; j++)
 			{// have driven on this node
-				pathsRTs[i + "-" + F.I.curVariant.progress.unlockedPaths[i][j]].gameObject.SetActive(true);
+				pathsRTs[i + "-" + F.I.curVariant.progress.pathsDone[i][j]].gameObject.SetActive(true);
 			}
 		}
 	}
 	public void SetArcadeConditions()
 	{
-		F.I.s_roadType = F.I.curNode.pavementType;
-		F.I.s_cpuLevel = F.I.curNode.cpuLevel;
-		F.I.s_timeOfDay = F.I.curNode.timeOfDay;
-		F.I.s_laps = F.I.curNode.laps;
-		F.I.s_raceType = F.I.curNode.raceType;
-		if (F.I.curNode.cars == null)
-			F.I.s_cpuRivals = 5;
-		else
-			F.I.s_cpuRivals = F.I.curNode.cars.Length;
-		F.I.s_trackName = F.I.curNode.trackName;
+		var node = F.I.targetNode;
+		F.I.s_roadType = node.pavementType;
+		F.I.randomPavement = false;
+		F.I.s_cpuLevel = node.cpuLevel;
+		F.I.s_timeOfDay = node.timeOfDay;
+		F.I.s_laps = node.laps;
+		F.I.s_raceType = node.raceType;
+		F.I.s_cpuRivals = node.cars.Length;
+		F.I.s_trackName = node.trackName;
 		F.I.catchup = true;
+		F.I.s_PlayerCarSponsor = F.I.cars[F.I.s_playerCarIdx].defaultLivery;
 	}
 	void WriteContinuationText()
 	{
@@ -238,35 +287,72 @@ public class ArcadeSelector : TrackSelectorTemplate
 		switch (req.condition)
 		{
 			case ArcadeVariant.Prize.Condition.PositionAtLeast:
-				arcadeReqText.text = string.Format(F.I.LocStr("Finish at least in {0}. place!"), req.conditionArgument);
+				arcadeReqText.text = F.I.LocStr("Finish at least ") + F.I.LocStr(F.PosSuffix(int.Parse(req.conditionArgument)));
 				break;
 			case ArcadeVariant.Prize.Condition.LapAtMost:
-				arcadeReqText.text = string.Format(F.I.LocStr("Do a lap faster than {0}!"), req.conditionArgument);
+				arcadeReqText.text = string.Format(F.I.LocStr("Do a lap faster than {0}"), req.conditionArgument);
 				break;
 			case ArcadeVariant.Prize.Condition.AeroStarsAtLeast:
-				arcadeReqText.text = string.Format(F.I.LocStr("Get at least {0} aero stars!"), req.conditionArgument);
+				arcadeReqText.text = string.Format(F.I.LocStr("Get at least {0} aero stars"), req.conditionArgument);
 				break;
 			case ArcadeVariant.Prize.Condition.StuntAtLeast:
-				arcadeReqText.text = string.Format(F.I.LocStr("Get at least {0} aeromiles!"), req.conditionArgument);
+				arcadeReqText.text = string.Format(F.I.LocStr("Get at least {0} aeromiles"), req.conditionArgument);
 				break;
 			case ArcadeVariant.Prize.Condition.DriftsAtLeast:
-				arcadeReqText.text = string.Format(F.I.LocStr("Get at least {0} drift points!"), req.conditionArgument);
+				arcadeReqText.text = string.Format(F.I.LocStr("Get at least {0} drift points"), req.conditionArgument);
 				break;
 			case ArcadeVariant.Prize.Condition.TimeAtMost:
-				arcadeReqText.text = string.Format(F.I.LocStr("Finish the race in less than {0}!"), req.conditionArgument);
+				arcadeReqText.text = string.Format(F.I.LocStr("Finish the race in less than {0}"), req.conditionArgument);
 				break;
 			case ArcadeVariant.Prize.Condition.FastestLaptime:
-				arcadeReqText.text = F.I.LocStr("Set the fastest lap time!");
+				arcadeReqText.text = F.I.LocStr("Set the fastest lap time");
 				break;
 			case ArcadeVariant.Prize.Condition.AlwaysFirst:
-				arcadeReqText.text = F.I.LocStr("Always finish in first place!");
+				arcadeReqText.text = F.I.LocStr("Always finish in first place");
 				break;
 			case ArcadeVariant.Prize.Condition.AllPathsFound:
-				arcadeReqText.text = F.I.LocStr("Find all hidden paths!");
+				arcadeReqText.text = F.I.LocStr("Find all hidden paths");
 				break;
 			default:
 				break;
 		}
 	}
-
+	string GetObjectiveText(ArcadeVariant.Prize req)
+	{
+		string text;
+		switch (req.condition)
+		{
+			case ArcadeVariant.Prize.Condition.PositionAtLeast:
+				text = F.I.LocStr("Finish at least ") + F.I.LocStr(F.PosSuffix(int.Parse(req.conditionArgument)));
+				break;
+			case ArcadeVariant.Prize.Condition.LapAtMost:
+				text = string.Format(F.I.LocStr("Do a lap faster than {0}"), req.conditionArgument);
+				break;
+			case ArcadeVariant.Prize.Condition.AeroStarsAtLeast:
+				text = string.Format(F.I.LocStr("Get at least {0} aero stars"), req.conditionArgument);
+				break;
+			case ArcadeVariant.Prize.Condition.StuntAtLeast:
+				text = string.Format(F.I.LocStr("Get at least {0} aeromiles"), req.conditionArgument);
+				break;
+			case ArcadeVariant.Prize.Condition.DriftsAtLeast:
+				text = string.Format(F.I.LocStr("Get at least {0} drift points"), req.conditionArgument);
+				break;
+			case ArcadeVariant.Prize.Condition.TimeAtMost:
+				text = string.Format(F.I.LocStr("Finish the race in less than {0}"), req.conditionArgument);
+				break;
+			case ArcadeVariant.Prize.Condition.FastestLaptime:
+				text = F.I.LocStr("Set the fastest lap time");
+				break;
+			case ArcadeVariant.Prize.Condition.AlwaysFirst:
+				text = F.I.LocStr("Always finish in first place");
+				break;
+			case ArcadeVariant.Prize.Condition.AllPathsFound:
+				text = F.I.LocStr("Find all hidden paths");
+				break;
+			default:
+				text = "Bottom text";
+				break;
+		}
+		return text;
+	}
 }

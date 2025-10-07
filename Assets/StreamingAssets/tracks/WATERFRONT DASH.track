@@ -1,21 +1,20 @@
 {
   "author": "Team17",
-  "localizedNames":[
-	"WATERFRONT DASH",
-	"WYPAD NAD MORZE",
-	],
   "localizedDescriptions": [
-	"This long and winding track takes you all over the waterfront!",
-	"Długa i kręta trasa nadmorska.",
-	],
+    "This long and winding track takes you all over the waterfront!",
+    "Długa i kręta trasa nadmorska."
+  ],
+  "localizedNames": [
+    "WATERFRONT DASH",
+    "WYPAD NAD MORZE"
+  ],
   "valid": true,
   "envir": "ITA",
   "preferredCarClass": "Aero",
   "difficulty": 6,
   "unlocked": true,
   "icons": [
+    2,
     3
-  ],
-  "TrackOrigin": 0,
-  "IsOriginal": true
+  ]
 }

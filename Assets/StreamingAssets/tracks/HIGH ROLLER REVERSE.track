@@ -1,13 +1,13 @@
 {
   "author": "Team17",
-  "localizedNames":[
-	"HIGH ROLLER REVERSE",
-	"ZROLOWANY REWERS",
-	],
   "localizedDescriptions": [
-	"This complex, winding track has a number of high curved bends.",
-	"Złożona, kręta trasa z dużą ilością ostrych zakrętów.",
-	],
+    "This complex, winding track has a number of high curved bends.",
+    "Złożona, kręta trasa z dużą ilością ostrych zakrętów."
+  ],
+  "localizedNames": [
+    "HIGH ROLLER REVERSE",
+    "ZROLOWANY REWERS"
+  ],
   "valid": true,
   "envir": "GER",
   "preferredCarClass": "Team",
@@ -16,7 +16,5 @@
   "icons": [
     2,
     3
-  ],
-  "TrackOrigin": 0,
-  "IsOriginal": true
+  ]
 }

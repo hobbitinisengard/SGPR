@@ -1,13 +1,13 @@
 {
   "author": "Arkhnen & Viatrufka",
-  "localizedNames":[
-	"SANDY RAMPS",
-	"PIASZCZYSTE RAMPY",
-	],
   "localizedDescriptions": [
-	"Do you like jumping like a kangaroo? Better pick up your momentum!",
-	"Lubisz skakać jak kangur? Lepiej nabierz rozpędu!",
-	],
+    "Do you like jumping like a kangaroo? Better pick up your momentum!",
+    "Lubisz skakać jak kangur? Lepiej nabierz rozpędu!"
+  ],
+  "localizedNames": [
+    "SANDY RAMPS",
+    "PIASZCZYSTE RAMPY"
+  ],
   "valid": true,
   "envir": "SPN",
   "preferredCarClass": "Speed",
@@ -15,7 +15,5 @@
   "unlocked": true,
   "icons": [
     2
-  ],
-  "TrackOrigin": 1,
-  "IsOriginal": false
+  ]
 }

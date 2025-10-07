@@ -1,13 +1,13 @@
 {
   "author": "luckygoose",
-  "localizedNames":[
-	"FULL LOT",
-	"STŁOCZONY PARKING",
-	],
   "localizedDescriptions": [
-	"It seems that the parking lot wasn't put out of order for this race. We won't do no harm, right?",
-	"Zdaje się, że ten parking nie został zwolniony na czas wyścigu. Nie narobimy szkód prawda?",
-	],
+    "It seems that the parking lot wasn't put out of order for this race. We won't do no harm, right?",
+    "Zdaje się, że ten parking nie został zwolniony na czas wyścigu. Nie narobimy szkód prawda?"
+  ],
+  "localizedNames": [
+    "FULL LOT",
+    "STŁOCZONY PARKING"
+  ],
   "valid": true,
   "envir": "USA",
   "preferredCarClass": "Team",
@@ -17,7 +17,5 @@
     0,
     2,
     3
-  ],
-  "TrackOrigin": 1,
-  "IsOriginal": false
+  ]
 }

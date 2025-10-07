@@ -1,13 +1,13 @@
 {
   "author": "Team17",
-  "localizedNames":[
-	"FLYING FINISH",
-	"KOŃCOWY ODLOT",
-	],
   "localizedDescriptions": [
-	"A short, tough and dramatic track with a huge jump over the finish line!",
-	"Krótka, ale efektowna trasa kończąca się skokiem na linię mety!",
-	],
+    "A short, tough and dramatic track with a huge jump over the finish line!",
+    "Krótka, ale efektowna trasa kończąca się skokiem na linię mety!"
+  ],
+  "localizedNames": [
+    "FLYING FINISH",
+    "KOŃCOWY ODLOT"
+  ],
   "valid": true,
   "envir": "ITA",
   "preferredCarClass": "Speed",
@@ -16,7 +16,5 @@
   "icons": [
     2,
     3
-  ],
-  "TrackOrigin": 0,
-  "IsOriginal": true
+  ]
 }

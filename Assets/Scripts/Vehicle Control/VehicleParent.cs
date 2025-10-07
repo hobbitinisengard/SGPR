@@ -185,7 +185,7 @@ namespace RVP
 						{
 							// pick random from unlocked liveries
 							var pickedLivery = F.I.unlockedLiveries.GetRandom();
-							if (pickedLivery == Livery.Random)
+							if (pickedLivery == null || pickedLivery == Livery.Random)
 								value = F.I.cars[carNumber - 1].defaultLivery;
 							else
 								value = pickedLivery.Value;

@@ -1,13 +1,13 @@
 {
   "author": "luckygoose",
-  "localizedNames":[
-	"DUNE ZONE",
-	"WYDMIASTA STREFA",
-	],
   "localizedDescriptions": [
-	"This relatively flat track partially engulfed by the dunes will test your car's grip. Ever enjoyed building sandcastles?",
-	"Lubisz budować zamki z piasku? Ta względnie płaska trasa częściowo otoczona wydmami przetestuje przyczepność Twojego wozu.",
-	],
+    "This relatively flat track partially engulfed by the dunes will test your car's grip. Ever enjoyed building sandcastles?",
+    "Lubisz budować zamki z piasku? Ta względnie płaska trasa częściowo otoczona wydmami przetestuje przyczepność Twojego wozu."
+  ],
+  "localizedNames": [
+    "DUNE ZONE",
+    "WYDMIASTA STREFA"
+  ],
   "valid": true,
   "envir": "SPN",
   "preferredCarClass": "Team",
@@ -17,7 +17,5 @@
     2,
     3,
     8
-  ],
-  "TrackOrigin": 1,
-  "IsOriginal": false
+  ]
 }

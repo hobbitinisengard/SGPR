@@ -24,6 +24,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4267529258818118093}
+  serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -62.07463, y: 0, z: -43.116817}
   m_LocalScale: {x: 1, y: 1, z: 1}
@@ -31,7 +32,6 @@ Transform:
   m_Children:
   - {fileID: 7280583768247045516}
   m_Father: {fileID: 0}
-  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &8826149327809851700
 MonoBehaviour:
@@ -51,6 +51,7 @@ PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
+    serializedVersion: 3
     m_TransformParent: {fileID: 6765297277462923918}
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: c8d3828368ce8e24a873f22d033f2581,
@@ -108,12 +109,24 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -2674737436931036237, guid: c8d3828368ce8e24a873f22d033f2581,
+        type: 3}
+      propertyPath: m_Name
+      value: obrot
+      objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: c8d3828368ce8e24a873f22d033f2581,
         type: 3}
       propertyPath: m_Name
-      value: main
+      value: obrot
       objectReference: {fileID: 0}
     m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: -2674737436931036237, guid: c8d3828368ce8e24a873f22d033f2581,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 540562825068177}
   m_SourcePrefab: {fileID: 100100000, guid: c8d3828368ce8e24a873f22d033f2581, type: 3}
 --- !u!1 &4062811297302118868 stripped
 GameObject:

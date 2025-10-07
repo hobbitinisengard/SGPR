@@ -76,6 +76,7 @@ public class ResultsView : MainMenuView
 	int finalPosition;
 	AudioSource tickSnd;
 	public WinnersView winnersView;
+	public PrizeView prizeView;
 	public Button OKbutton;
 	public GridLayoutGroup gridTable;
 	public GameObject grandScore0;
@@ -90,13 +91,7 @@ public class ResultsView : MainMenuView
 	public Sprite[] silverMedals; // race,lap,stunt,drift
 	public Sprite[] goldMedals;
 	readonly static List<ResultInfo> resultData = new();
-	public static bool PlayerFinished
-	{
-		get
-		{
-			return resultData.FirstOrDefault(p => p.name == F.I.playerData.playerName) != default;
-		}
-	}
+	public static bool playerDNF = false;
 	static int Pos(string carName, Comparison<ResultInfo> comp)
 	{
 		resultData.Sort(comp);
@@ -288,47 +283,37 @@ public class ResultsView : MainMenuView
 				resultData[i].SetPostRaceScore(resultData[i].score + CalculatePostraceReward(resultData[i]));
 			}
 
-			bool continuationCheck = CheckArcadeCondition(F.I.curNode.continuationReq);
-			bool prizeCheck = CheckArcadeCondition(F.I.curNode.prizeReq);
-			List<string> prizes = prizeCheck ? UnlockPrizes() : null;
-
-			// if won the event, unlock current track too
-			if (SortedResultsByFinishPos[0].name == F.I.playerData.playerName)
-			{
-				if (!F.I.tracks[F.I.s_trackName].unlocked)
-				{
-					// unlock current track if won
-					prizes.Add(F.I.s_trackName);
-					F.I.tracks[F.I.s_trackName].unlocked = true;
-				}
-			}
+			bool continuationCheck = CheckArcadeCondition(F.I.targetNode.continuationReq);
+			List<string> prizes = GetActualPrizeListAndMarkPrizesInProgress();
 
 			if (continuationCheck)
 			{ // update unlocked paths
-				if (F.I.curArcadeNodeID >=0)
+				if (F.I.curArcadeNodeID >= 0)
 				{
-					if (!F.I.curVariant.progress.unlockedPaths[F.I.curArcadeNodeID].Any(nodeID => nodeID == F.I.targetArcadeNodeID))
+					if (!F.I.curVariant.progress.pathsDone[F.I.curArcadeNodeID].Any(nodeID => nodeID == F.I.targetArcadeNodeID))
 					{
-						F.I.curVariant.progress.unlockedPaths[F.I.curArcadeNodeID].Add(F.I.targetArcadeNodeID);
+						F.I.curVariant.progress.pathsDone[F.I.curArcadeNodeID].Add(F.I.targetArcadeNodeID);
 					}
 				}
 			}
+			F.I.SaveArcadeProgress();
+
 			if (prizes != null && prizes.Count > 0)
 			{
-				PrizeView.I.Prepare(prizes, continuationCheck);
-				GoToView(PrizeView.I.thisView);
+				prizeView.Prepare(prizes, continuationCheck);
+				GoToView(prizeView);
 			}
 			else
 			{
-				if (continuationCheck) // go back to arcade selector
+				if (continuationCheck && F.I.targetNode.connections?.Length > 0) // go back to arcade selector
 				{
 					Clear();
-					ArcadeSelector.I.MoveNodeForward();
-					GoToView(ArcadeSelector.I.thisView);
+					F.I.arcadeSelector.MoveNodeForward();
+					GoToView(F.I.arcadeSelector.thisView);
 				}
 				else
 				{ // go to winners view
-					F.I.SaveArcadeProgress();
+
 					winnersView.PrepareUsingArcade(continuationCheck);
 					GoToView(winnersView);
 				}
@@ -341,36 +326,77 @@ public class ResultsView : MainMenuView
 		Succeeded,
 		Continue
 	}
-	/// <returns>list of unlocked prizes</returns>
-	List<string> UnlockPrizes()
+	List<string> GetActualPrizeListAndMarkPrizesInProgress()
 	{
-		string[] prizes = F.I.curNode.prizeReq.name.Split(',');
-		List<string> prizeList = new(prizes);
-		for (int i = 0; i < prizes.Length; i++)
+		List<string> prizes = new();
+
+		for (int i = 0; i < F.I.curVariant.globalPrizes.Length; ++i)
 		{
-			if (prizes[i].Contains("car") && !F.I.Car(prizes[i]).unlocked) // unlock car
+			var gprize = F.I.curVariant.globalPrizes[i];
+			if (gprize.condition == ArcadeVariant.Prize.Condition.AlwaysFirst)
 			{
-				prizeList.Add(prizes[i]);
-				F.I.Car(prizes[i]).unlocked = true;
+				if (F.I.alwaysFirst && F.I.targetNode.connections.Length == 0)
+				{
+					F.I.curVariant.progress.globalPrizesCompleted.SetBits(i, true);
+					prizes.AddRange(F.I.curVariant.globalPrizes[i].name.Split(","));
+				}
 			}
-			else if (prizes[i].Contains("lvr") && !F.I.unlockedLiveries.Contains((Livery)int.Parse(prizes[i]))) // unlock livery
+			else if (gprize.condition == ArcadeVariant.Prize.Condition.AllPathsFound)
 			{
-				prizeList.Add(prizes[i]);
-				int liveryNr = int.Parse(prizes[i]);
-				F.I.unlockedLiveries[liveryNr] = (Livery)liveryNr;
-			}
-			else if(!F.I.tracks[prizes[i]].unlocked)
-			{
-				prizeList.Add(prizes[i]); // unlock track
-				F.I.tracks[prizes[i]].unlocked = true;
+				if (F.I.curVariant.progress.pathsDone.Sum(p => p.Count) == F.I.curVariant.nodes.Sum(n => n.connections == null ? 0 : n.connections.Length))
+				{
+					F.I.curVariant.progress.globalPrizesCompleted.SetBits(i, true);
+					prizes.AddRange(F.I.curVariant.globalPrizes[i].name.Split(","));
+				}
 			}
 		}
 
-		return prizeList;
+		for (int j = 0; j < F.I.targetNode.prizeReqs.Length; ++j)
+		{
+			if (CheckArcadeCondition(F.I.targetNode.prizeReqs[j]))
+			{
+				F.I.curVariant.progress.prizesCompleted[F.I.targetArcadeNodeID].SetBits(j, true);
+				prizes.AddRange(F.I.targetNode.prizeReqs[j].name.Split(','));
+			}
+		}
+
+		for (int i = prizes.Count - 1; i >= 0; i--)
+		{
+			string prizeStr = prizes[i];
+			if (prizes[i].StartsWith("car")) // unlock car
+			{
+				if (F.I.Car(prizes[i]).unlocked)
+				{
+					prizes.RemoveAt(prizes.Count - 1);
+				}
+				F.I.Car(prizeStr).unlocked = true;
+			}
+			else if (prizes[i].Contains("spn")) // unlock livery
+			{
+				int liveryNr = int.Parse(prizes[i]);
+				if (F.I.unlockedLiveries.Contains((Livery)int.Parse(prizes[i][3..])))
+				{
+					prizes.RemoveAt(prizes.Count - 1);
+				}
+				F.I.unlockedLiveries[liveryNr] = (Livery)liveryNr;
+			}
+			else
+			{
+				string trackName = prizes[i];
+
+				if (F.I.tracks[prizes[i]].unlocked)
+				{
+					prizes.RemoveAt(prizes.Count - 1);
+				}
+				F.I.tracks[trackName].unlocked = true;
+			}
+		}
+
+		return prizes;
 	}
 	bool CheckArcadeCondition(ArcadeVariant.Prize req)
 	{
-		if(req == null)
+		if (req == null)
 			return false;
 
 		ResultInfo playerResult;
@@ -379,7 +405,7 @@ public class ResultsView : MainMenuView
 		{
 			F.I.alwaysFirst = sortedPlayers[0].name == F.I.playerData.playerName;
 		}
-		
+
 		switch (req.condition)
 		{
 			case ArcadeVariant.Prize.Condition.PositionAtLeast:
@@ -422,9 +448,9 @@ public class ResultsView : MainMenuView
 				// sum of all unlocked paths in all nodes
 				int allPaths = F.I.curVariant.nodes.Sum(n => n.connections.Length);
 				int unlockedPaths = 0;
-				for (int i = 0; i < F.I.curVariant.progress.unlockedPaths.Count; i++)
+				for (int i = 0; i < F.I.curVariant.progress.pathsDone.Count; i++)
 				{
-					unlockedPaths += F.I.curVariant.progress.unlockedPaths[i].Count;
+					unlockedPaths += F.I.curVariant.progress.pathsDone[i].Count;
 				}
 				return unlockedPaths == allPaths;
 			default:
@@ -450,7 +476,7 @@ public class ResultsView : MainMenuView
 		grandScore1.SetActive(false);
 		addingScore.SetActive(false);
 		medalsTable.gameObject.SetActive(false);
-
+		playerDNF = false;
 		base.OnDisable();
 	}
 	static Comparison<ResultInfo> ComparisonBasedOnRaceType()
@@ -468,6 +494,9 @@ public class ResultsView : MainMenuView
 
 	protected override void OnEnable()
 	{
+		if (playerDNF)
+			MakePlayerResultWorst();
+
 		F.I.CurRound++;
 		//ResultRandomizer(); // for testing 
 		grandScoreMoving = 0;
@@ -485,14 +514,14 @@ public class ResultsView : MainMenuView
 				(F.I.gameMode == GameMode.Multiplayer && ServerC.I.networkManager.LocalClientId == resultData[i].id));
 			if (highlight)
 				finalPosition = i;
-			SetText(gridTableTr.GetChild(cols + cols * i + 0), visible ? Pos(i) : null, highlight);
-			SetText(gridTableTr.GetChild(cols + cols * i + 1), visible ? resultData[i].name : null, highlight);
-			SetText(gridTableTr.GetChild(cols + cols * i + 2), visible ? resultData[i].lap.ToLaptimeStr() : null, highlight);
-			SetText(gridTableTr.GetChild(cols + cols * i + 3), visible ? resultData[i].aeromiles.ToString("N0") : null, highlight);
-			SetText(gridTableTr.GetChild(cols + cols * i + 4), visible ? resultData[i].drift.ToString("N0") : null, highlight);
+			SetText(gridTableTr.GetChild(cols + cols * i + 0), visible ? F.PosSuffix(i) : "", highlight);
+			SetText(gridTableTr.GetChild(cols + cols * i + 1), visible ? resultData[i].name : "", highlight);
+			SetText(gridTableTr.GetChild(cols + cols * i + 2), visible ? resultData[i].lap.ToLaptimeStr() : "", highlight);
+			SetText(gridTableTr.GetChild(cols + cols * i + 3), visible ? resultData[i].aeromiles.ToString("N0") : "", highlight);
+			SetText(gridTableTr.GetChild(cols + cols * i + 4), visible ? resultData[i].drift.ToString("N0") : "", highlight);
 		}
 
-		if(F.I.gameMode == GameMode.Multiplayer)
+		if (F.I.gameMode == GameMode.Multiplayer)
 		{
 			lapPos = Pos(ServerC.I.networkManager.LocalClientId, lapComp);
 			stuntPos = Pos(ServerC.I.networkManager.LocalClientId, stuntComp);
@@ -532,7 +561,7 @@ public class ResultsView : MainMenuView
 		Debug.Log(resultData[finalPosition].name + string.Format("OnEnable. lap,stunt,drift = {0}, {1}, {2}, {3}, {4}",
 			positionBonus, lapBonus, stuntBonus, driftBonus, aeroMeter));
 
-		if(F.I.gameMode == GameMode.Multiplayer)
+		if (F.I.gameMode == GameMode.Multiplayer)
 		{
 			ServerC.I.ScoreSet(ServerC.I.PlayerMe.ScoreGet() + grandScoreFinal);
 			ServerC.I.UpdatePlayerData();
@@ -541,7 +570,7 @@ public class ResultsView : MainMenuView
 		{
 			F.I.curArcadeScore += grandScoreFinal;
 		}
-		
+
 
 		if (payoutCo != null)
 			StopCoroutine(payoutCo);
@@ -549,26 +578,7 @@ public class ResultsView : MainMenuView
 
 		base.OnEnable();
 	}
-	string Pos(int i)
-	{
-		string s;
-		switch (i)
-		{
-			case 0:
-				s = "1-st";
-				break;
-			case 1:
-				s = "2-nd";
-				break;
-			case 2:
-				s = "3-rd";
-				break;
-			default:
-				s = (i + 1).ToString() + "-th";
-				break;
-		}
-		return F.I.LocStr(s);
-	}
+
 	void SetText(Transform tr, string content, bool highlight)
 	{
 		if (content != null)
@@ -577,7 +587,7 @@ public class ResultsView : MainMenuView
 			ugui.text = content;
 			ugui.color = highlight ? Color.white : Color.gray;
 		}
-		tr.gameObject.SetActive(content != null);
+		tr.gameObject.SetActive(content != "");
 	}
 
 	IEnumerator PayoutSeq()
@@ -721,5 +731,30 @@ public class ResultsView : MainMenuView
 		}
 		int x = F.R(0, resultData.Count);
 		resultData[x].name = F.I.playerData.playerName;
+	}
+
+	public static void MakePlayerResultWorst()
+	{
+		var p = resultData.FirstOrDefault(p => p.name == F.I.playerData.playerName);
+		switch (F.I.s_raceType)
+		{
+			case RaceType.Race:
+				p.raceTime = TimeSpan.FromHours(24);
+				break;
+			case RaceType.Knockout:
+				p.progress = -1000;
+				break;
+			case RaceType.Stunt:
+				p.aeromiles = -1000;
+				break;
+			case RaceType.Drift:
+				p.drift = -1000;
+				break;
+			case RaceType.TimeTrial:
+				p.lap = TimeSpan.FromHours(24);
+				break;
+			default:
+				break;
+		}
 	}
 }

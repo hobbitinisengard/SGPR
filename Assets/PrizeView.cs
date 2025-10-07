@@ -5,36 +5,30 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class PrizeView : Sfxable
+public class PrizeView : MainMenuView
 {
-	public static PrizeView I;
 	public GameObject UnlockPrefab;
-	[NonSerialized]
-	public MainMenuView thisView;
 	public WinnersView winnersView;
 	public Transform unlocksParent;
 	public GameObject OkButton;
 	int currentUnlockIndex = 0;
 	bool continuationCheck = false;
 	Coroutine moveCo;
-	public void Awake()
-	{
-		I = this;
-		thisView = GetComponent<MainMenuView>();
-	}
-	private void OnDisable()
+	protected override void OnDisable()
 	{
 		F.DestroyAllChildren(unlocksParent);
 		currentUnlockIndex = 0;
 		OkButton.SetActive(false);
+		base.OnDisable();
 	}
-	private void OnEnable()
+	protected override void OnEnable()
 	{
 		OkButton.SetActive(true);
 		OkButton.GetComponent<Button>().Select();
 		//Prepare(new List<string>() { "car01" }, false);
 		//Prepare(new List<string>() { "car01", "THE SANDWINDER" }, false);
-		Prepare(new List<string>() { "spn3", "spn1" }, false);
+		//Prepare(new List<string>() { "spn3", "spn1" }, false);
+		base.OnEnable();
 	}
 	public void Prepare(List<string> prizes, bool continuationCheck)
 	{
@@ -84,8 +78,17 @@ public class PrizeView : Sfxable
 	{
 		if(++currentUnlockIndex == unlocksParent.childCount)
 		{
-			winnersView.PrepareUsingArcade(continuationCheck);
-			thisView.GoToView(winnersView);
+			if (continuationCheck)
+			{
+				ResultsView.Clear();
+				F.I.arcadeSelector.MoveNodeForward();
+				GoToView(F.I.arcadeSelector.thisView);
+			}
+			else
+			{
+				winnersView.PrepareUsingArcade(continuationCheck);
+				GoToView(winnersView);
+			}
 		}
 		else
 		{

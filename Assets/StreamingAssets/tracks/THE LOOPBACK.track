@@ -1,21 +1,20 @@
 {
   "author": "Team17",
-  "localizedNames":[
-	"THE LOOPBACK",
-	"PĘTELKA",
-	],
   "localizedDescriptions": [
-	"A long, fast track with many opportunities for jumps and stunts.",
-	"Długa i szybka trasa z wieloma okazjami do skoków i ewolucji.",
-	],
+    "A long, fast track with many opportunities for jumps and stunts.",
+    "Długa i szybka trasa z wieloma okazjami do skoków i ewolucji."
+  ],
+  "localizedNames": [
+    "THE LOOPBACK",
+    "PĘTELKA"
+  ],
   "valid": true,
   "envir": "ENG",
   "preferredCarClass": "Aero",
   "difficulty": 5,
   "unlocked": true,
   "icons": [
+    2,
     3
-  ],
-  "TrackOrigin": 0,
-  "IsOriginal": true
+  ]
 }

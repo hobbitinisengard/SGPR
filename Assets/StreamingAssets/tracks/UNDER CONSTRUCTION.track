@@ -1,13 +1,13 @@
 {
   "author": "luckygoose",
-  "localizedNames":[
-	"UNDER CONSTRUCTION",
-	"W BUDOWIE",
-	],
   "localizedDescriptions": [
-	"This track might be short, however it might have been not intended. Be careful of the construction equipment.",
-	"Ta trasa może być krótka, lecz być może niezamierzenie. Uważaj na sprzęt budowlany.",
-	],
+    "This track might be short, however it might have been not intended. Be careful of the construction equipment.",
+    "Ta trasa może być krótka, lecz być może niezamierzenie. Uważaj na sprzęt budowlany."
+  ],
+  "localizedNames": [
+    "UNDER CONSTRUCTION",
+    "W BUDOWIE"
+  ],
   "valid": true,
   "envir": "ITA",
   "preferredCarClass": "Team",
@@ -16,7 +16,5 @@
   "icons": [
     2,
     3
-  ],
-  "TrackOrigin": 1,
-  "IsOriginal": false
+  ]
 }

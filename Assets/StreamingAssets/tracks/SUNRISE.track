@@ -1,21 +1,20 @@
 {
   "author": "viatrufka",
-  "localizedNames":[
-	"SUNRISE",
-	"WSCHÓD",
-	],
   "localizedDescriptions": [
-	"Controlling your car on this bumpy track may be essential to win here.",
-	"Kontrola auta na tej wyboistej trasie, może okazać się kluczowa do zwycięstwa.",
-	],
+    "Controlling your car on this bumpy track may be essential to win here.",
+    "Kontrola auta na tej wyboistej trasie, może okazać się kluczowa do zwycięstwa."
+  ],
+  "localizedNames": [
+    "SUNRISE",
+    "WSCHÓD"
+  ],
   "valid": true,
   "envir": "JAP",
   "preferredCarClass": "Aero",
   "difficulty": 3,
   "unlocked": true,
   "icons": [
+    2,
     5
-  ],
-  "TrackOrigin": 1,
-  "IsOriginal": false
+  ]
 }

@@ -27,10 +27,20 @@ public class RankingRowData
 	}
 	public RankingRowData(IEnumerable<ResultInfo> sortedPlayers)
 	{
-		ResultInfo me = sortedPlayers.First(p => p.id == ServerC.I.networkManager.LocalClientId);
+		ResultInfo me;
+		if(F.I.gameMode == GameMode.Multiplayer)
+		{
+			me = sortedPlayers.First(p => p.id == ServerC.I.networkManager.LocalClientId);
+			rounds = F.I.Rounds;
+		}
+		else
+		{
+			me = sortedPlayers.First(p => p.name == F.I.playerData.playerName);
+			rounds = F.I.CurRound;
+		}
 
 		dateStr = DateTime.Now.ToString();
-		rounds = F.I.Rounds;
+	
 		float absoluteScore = 0;
 		if (F.I.teams)
 		{

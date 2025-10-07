@@ -75,12 +75,20 @@ public class Info : MonoBehaviour
 			return curVariant.nodes[curArcadeNodeID]; 
 		} 
 	}
+	public ArcadeVariant.Node targetNode
+	{
+		get
+		{
+			return curVariant.nodes[targetArcadeNodeID];
+		}
+	}
 	[NonSerialized]
 	public int curArcadeNodeID = -1;
 	[NonSerialized]
 	public int targetArcadeNodeID = 0;
 	[NonSerialized]
 	public int curArcadeScore = 0;
+	public ArcadeSelector arcadeSelector;
 	public const string TranslationTableName = "Default";
 	public MultiPlayerSelector mpSelectorInitializer;
 	public Text versionText;
@@ -152,6 +160,7 @@ public class Info : MonoBehaviour
 	private void Start()
 	{
 		UpdateLanguage(true);
+		
 	}
 	public void UpdateLanguage(bool firstRun = false)
 	{
@@ -231,7 +240,6 @@ public class Info : MonoBehaviour
 		if (filepaths.Length == 0)
 		{
 			var newVariant = ArcadeVariant.GenerateOriginalVariant();
-			arcadeVariants.Add(newVariant);
 			string serializedVariant = JsonConvert.SerializeObject(newVariant, Formatting.Indented);
 			string filepath = Path.Combine(arcadePath, "Original.json");
 			filepaths = new string[] { filepath };
@@ -253,10 +261,11 @@ public class Info : MonoBehaviour
 				{
 					string progressText = File.ReadAllText(progressPath);
 					variant.progress = JsonConvert.DeserializeObject<ArcadeVariant.Progress>(progressText);
+					variant.progress.parent = variant;
 				}
 				else
 				{
-					variant.progress = new ArcadeVariant.Progress(variant.nodes.Length);
+					variant.progress = new ArcadeVariant.Progress(variant);
 					//string serializedProgress = JsonConvert.SerializeObject(variant.progress, Formatting.Indented);
 					//await File.WriteAllTextAsync(progressPath, serializedProgress);
 				}
@@ -279,49 +288,73 @@ public class Info : MonoBehaviour
 		// sort curVariant nodes by id to ensure correct order
 		Array.Sort(F.I.curVariant.nodes, (a, b) => a.id.CompareTo(b.id));
 
-		for (int i=0; i<unlockedLiveries.Length; i++)
+		for (int i=1; i<unlockedLiveries.Length; i++)
 				unlockedLiveries[i] = (Livery)i;
 
 		foreach (var track in tracks.Values)
-			track.unlocked = true; // all tracks are unlocked by default
+			track.unlocked = true;
 
 		foreach (var car in cars)
 		{
 			car.starter = false;
 			car.unlocked = true;
 		}
-		var starterCarNrs = curVariant.starterCarsIdxs;
-		foreach(var n in starterCarNrs)
-			cars[n].starter = true;
+		foreach(var s in F.I.curVariant.starts)
+			foreach(var i in s.allowedCarsIdxs)
+				cars[i].starter = true;
 
-		foreach (var node in curVariant.nodes)
+		return;// unlock all for testing 
+
+		List<string> prizeNamesToBeLocked = new();
+		foreach (var variant in F.I.arcadeVariants)
 		{
-			if (node.prizeReq != null)
+			for (int i = 0; i < variant.nodes.Length; ++i)// lock prizes for uncompleted prizes
 			{
-				if (curVariant.progress.unlockedPaths[node.id].Count == 0)
-				{ // this event hasn't been completed - lock prizes for uncompleted races
-					string[] prizeNames = node.prizeReq.name.Split(',');
-					foreach (var prizeName in prizeNames)
+				for (int j = 0; j < variant.nodes[i].prizeReqs.Length; ++j)
+				{
+					if (variant.progress.prizesCompleted[i].GetBits(j) == 0)
+						prizeNamesToBeLocked.AddRange(variant.nodes[i].prizeReqs[j].name.Split(','));
+				}
+			}
+
+			for (int i = 0; i < variant.globalPrizes.Length; ++i)
+			{
+				var gprize = variant.globalPrizes[i];
+				if (gprize.condition == ArcadeVariant.Prize.Condition.AlwaysFirst)
+				{
+					if (variant.progress.globalPrizesCompleted.GetBits(i) == 0)
 					{
-						if (prizeName.StartsWith("car"))
-						{
-							Car(prizeName).unlocked = false;
-						}
-						else if (prizeName.StartsWith("lvr"))
-						{
-							int liveryIdx = int.Parse(prizeName[3..]);
-							unlockedLiveries[liveryIdx] = (Livery)liveryIdx;
-						}
-						else
-						{
-							tracks[prizeName].unlocked = true;
-						}
+						prizeNamesToBeLocked.AddRange(gprize.name.Split(","));
 					}
-					tracks[node.trackName].unlocked = false;
+				}
+				else if (gprize.condition == ArcadeVariant.Prize.Condition.AllPathsFound)
+				{
+					if (variant.progress.pathsDone.Sum(p => p.Count) != variant.nodes.Sum(n => n.connections.Length))
+					{
+						prizeNamesToBeLocked.AddRange(gprize.name.Split(","));
+					}
 				}
 			}
 		}
+
+		foreach (var prizeName in prizeNamesToBeLocked)
+		{
+			if (prizeName.StartsWith("car"))
+			{
+				Car(prizeName).unlocked = false;
+			}
+			else if (prizeName.StartsWith("spn"))
+			{
+				int liveryIdx = int.Parse(prizeName[3..]);
+				unlockedLiveries[liveryIdx] = null;
+			}
+			else
+			{
+				tracks[prizeName].unlocked = false;
+			}
+		}
 	}
+		
 	public async void LoadRanking()
 	{
 		if (!File.Exists(rankingPath))
@@ -341,6 +374,7 @@ public class Info : MonoBehaviour
 	{
 		string serializedRanking = JsonConvert.SerializeObject(rankingData);
 		await File.WriteAllTextAsync(rankingPath, serializedRanking);
+		F.I.SaveArcadeProgress();
 	}
 	public string SHA(string filePath)
 	{

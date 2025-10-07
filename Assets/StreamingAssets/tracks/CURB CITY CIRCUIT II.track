@@ -1,22 +1,21 @@
 {
   "author": "Team17",
-  "localizedNames":[
-	"CURB CITY CIRCUIT II",
-	"WYBOISTE MIASTO II",
-	],
   "localizedDescriptions": [
-	"This unrelease offers more stunting opportunities compared to its final variant",
-	"Ta wersja oferuje możliwość większego nakręcenia aerometru, porównując ją do jej oficjalnego wariantu.",
-	],
+    "This unrelease offers more stunting opportunities compared to its final variant",
+    "Ta wersja oferuje możliwość większego nakręcenia aerometru, porównując ją do jej oficjalnego wariantu."
+  ],
+  "localizedNames": [
+    "CURB CITY CIRCUIT II",
+    "WYBOISTE MIASTO II"
+  ],
   "valid": true,
   "envir": "USA",
   "preferredCarClass": "Speed",
   "difficulty": 7,
   "unlocked": true,
   "icons": [
+    2,
     3,
     5
-  ],
-  "TrackOrigin": 0,
-  "IsOriginal": true
+  ]
 }

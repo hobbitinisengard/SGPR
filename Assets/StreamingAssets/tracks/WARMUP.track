@@ -1,13 +1,13 @@
 {
   "author": "viatrufka",
-  "localizedNames":[
-	"WARMUP",
-	"ROZGRZEWKA",
-	],
   "localizedDescriptions": [
-	"This track may look easy, however the last chicane can give you problems. Fly high!",
-	"Ta trasa być może wygląda na łatwą, ale ostatnia szykana jest zdradliwa. Leć wysoko!",
-	],
+    "This track may look easy, however the last chicane can give you problems. Fly high!",
+    "Ta trasa być może wygląda na łatwą, ale ostatnia szykana jest zdradliwa. Leć wysoko!"
+  ],
+  "localizedNames": [
+    "WARMUP",
+    "ROZGRZEWKA"
+  ],
   "valid": true,
   "envir": "JAP",
   "preferredCarClass": "Speed",
@@ -16,7 +16,5 @@
   "icons": [
     0,
     2
-  ],
-  "TrackOrigin": 1,
-  "IsOriginal": false
+  ]
 }

@@ -8,6 +8,7 @@ public class SavePanelWorks : MonoBehaviour
 	public TMP_InputField trackName;
 	public TMP_InputField trackAuthor;
 	public TMP_Dropdown languageDropdown;
+	public GameObject beigePlane;
 	EditorPanel editorPanel;
 	[NonSerialized]
 	public string[] localizedDescriptions;
@@ -21,13 +22,18 @@ public class SavePanelWorks : MonoBehaviour
 	private void OnEnable()
 	{
 		editorPanel.SetPylonVisibility(false);
+		beigePlane.SetActive(true);
+		Physics.BoxCast(Vector3.zero + 2000 * Vector3.down, new Vector3(3000, 1, 3000), Vector3.up, out var hit, Quaternion.identity, Mathf.Infinity, 1 << F.I.roadLayer);
+		beigePlane.transform.position = hit.point;
+		editorPanel.SetPylonVisibility(true);
 		trackName.text = localizedNames[languageDropdown.value];
 		trackDescr.text = localizedDescriptions[languageDropdown.value];
 		editorPanel.SwitchDayNight(TimeOfDay.Day);
 	}
 	private void OnDisable()
 	{
-		editorPanel.SetPylonVisibility(true);
+		beigePlane.SetActive(false);
+		//editorPanel.SetPylonVisibility(true);
 		SetFlyCamera(true);
 	}
 	public void RegisterName(string name)

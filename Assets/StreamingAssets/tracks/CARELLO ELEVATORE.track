@@ -1,13 +1,13 @@
 {
   "author": "luckygoose",
-  "localizedNames":[
-	"CARELLO ELEVATORE",
-	"WINDO WIDŁORE",
-	],
   "localizedDescriptions": [
-	"The italian union of forklift operators has organised a protest in cooperation with the Stunt GP racing federation...",
-	"Związek zawodowy włoskich operatorów wózków widłowych zorganizował protest, współpracując z federacją wyścigową Stunt GP...",
-	],
+    "The italian union of forklift operators has organised a protest in cooperation with the Stunt GP racing federation...",
+    "Związek zawodowy włoskich operatorów wózków widłowych zorganizował protest, współpracując z federacją wyścigową Stunt GP..."
+  ],
+  "localizedNames": [
+    "CARELLO ELEVATORE",
+    "WINDO WIDŁORE"
+  ],
   "valid": true,
   "envir": "ITA",
   "preferredCarClass": "Team",
@@ -16,7 +16,5 @@
   "icons": [
     2,
     3
-  ],
-  "TrackOrigin": 1,
-  "IsOriginal": false
+  ]
 }

@@ -1,22 +1,21 @@
 {
   "author": "Team17",
-   "localizedNames":[
-	"ITALIAN ICON",
-	"WŁOSKA IKONA",
-	],
   "localizedDescriptions": [
-	"Small technical track where you can jump a little too high.",
-	"Mały techniczny tor na którym można skakać trochę za wysoko.",
-	],
+    "Small technical track where you can jump a little too high.",
+    "Mały techniczny tor na którym można skakać trochę za wysoko."
+  ],
+  "localizedNames": [
+    "ITALIAN ICON",
+    "WŁOSKA IKONA"
+  ],
   "valid": true,
   "envir": "ITA",
   "preferredCarClass": "Speed",
-  "difficulty": 4,
+  "difficulty": 5,
   "unlocked": true,
   "icons": [
     1,
+    2,
     5
-  ],
-  "TrackOrigin": 0,
-  "IsOriginal": true
+  ]
 }

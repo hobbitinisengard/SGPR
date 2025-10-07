@@ -1,13 +1,13 @@
 {
   "author": "Arkhnen & Viatrufka",
-  "localizedNames":[
-	"TITANIC WORK",
-	"TYTANICZNA PRACA",
-	],
   "localizedDescriptions": [
-	"Try to stay off the barriers on this short fast track sponsored by TITAN",
-	"Spróbuj utrzymać wóz z dala od barier na tej krótkiej, szybkiej trasie stworzonej przez TITANa.",
-	],
+    "Try to stay off the barriers on this short fast track sponsored by TITAN",
+    "Spróbuj utrzymać wóz z dala od barier na tej krótkiej, szybkiej trasie stworzonej przez TITANa."
+  ],
+  "localizedNames": [
+    "TITANIC WORK",
+    "TYTANICZNA PRACA"
+  ],
   "valid": true,
   "envir": "SPN",
   "preferredCarClass": "Team",
@@ -16,7 +16,5 @@
   "icons": [
     2,
     3
-  ],
-  "TrackOrigin": 1,
-  "IsOriginal": false
+  ]
 }

@@ -1,13 +1,13 @@
 {
   "author": "Team17",
-  "localizedNames":[
-	"ENGLISH JAM",
-	"ANGIELSKI TŁOK",
-	],
   "localizedDescriptions": [
-	"Cramped track with lots of jumps, bridges and sharp turns. Acceleration plays an important role on this track",
-	"Stłoczona trasa pełna ramp, mostów i ostrych skrętów. Przyspieszenie twojego wozu odgrywa tu główną rolę.",
-	],
+    "Cramped track with lots of jumps, bridges and sharp turns. Acceleration plays an important role on this track",
+    "Stłoczona trasa pełna ramp, mostów i ostrych skrętów. Przyspieszenie twojego wozu odgrywa tu główną rolę."
+  ],
+  "localizedNames": [
+    "ENGLISH JAM",
+    "ANGIELSKI TŁOK"
+  ],
   "valid": true,
   "envir": "ENG",
   "preferredCarClass": "Aero",
@@ -19,7 +19,5 @@
     2,
     3,
     5
-  ],
-  "TrackOrigin": 0,
-  "IsOriginal": true
+  ]
 }
