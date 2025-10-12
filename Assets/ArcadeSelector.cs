@@ -17,6 +17,7 @@ public class ArcadeSelector : TrackSelectorTemplate
 	public Sprite circle;
 	public Text arcadeReqText;
 	public Transform objectivesContainer;
+	public Text objectivesRecordsTitle;
 	Coroutine blinkingCo;
 	RectTransform curNodeRT;
 	RectTransform targetNodeRT;
@@ -100,11 +101,13 @@ public class ArcadeSelector : TrackSelectorTemplate
 	{
 		if(F.I.targetNode.prizeReqs.Length == 0)
 		{
+			objectivesRecordsTitle.text = F.I.LocStr("RECORDS");
 			objectivesContainer.gameObject.SetActive(false);
 			recordsContainer.gameObject.SetActive(true);
 		}
 		else
 		{
+			objectivesRecordsTitle.text = F.I.LocStr("OBJECTIVES");
 			objectivesContainer.gameObject.SetActive(true);
 			recordsContainer.gameObject.SetActive(false);
 
@@ -136,21 +139,21 @@ public class ArcadeSelector : TrackSelectorTemplate
 	void AlignMapToCurrentNodes()
 	{
 		// make sure current node and target node are visible in viewport
-		var contentRT = nodeParent.GetComponent<RectTransform>();
-		var viewportDims = nodeParent.GetComponent<RectTransform>().sizeDelta;
-		var focusObj = curNodeRT == null ? targetNodeRT : pathsRTs[F.I.curArcadeNodeID + "-" + F.I.targetArcadeNodeID];
+		var contentRT = nodeParent.parent.GetComponent<RectTransform>();
+		var viewportDims = contentRT.sizeDelta;
+		var focusObj = targetNodeRT;
 		// first move contentRT so focusObj is visible in viewport
 		float newContentX = contentRT.anchoredPosition.x;
 		float newContentY = contentRT.anchoredPosition.y;
 		var focusPos = focusObj.anchoredPosition + contentRT.anchoredPosition;
 		if (focusPos.x < 0)
-			newContentX += -focusPos.x + 20;
+			newContentX += -focusPos.x + 100;
 		else if (focusPos.x > viewportDims.x)
-			newContentX -= focusPos.x - viewportDims.x + 20;
+			newContentX -= focusPos.x - viewportDims.x + 100;
 		if (focusPos.y < 0)
-			newContentY += -focusPos.y + 20;
+			newContentY += -focusPos.y + 100;
 		else if (focusPos.y > viewportDims.y)
-			newContentY -= focusPos.y - viewportDims.y + 20;
+			newContentY -= focusPos.y - viewportDims.y + 100;
 		// then clamp contentRT to not go out of bounds
 		//newContentX = Mathf.Clamp(newContentX, -contentRT.sizeDelta.x + viewportDims.x, 0);
 		//newContentY = Mathf.Clamp(newContentY, -contentRT.sizeDelta.y + viewportDims.y, 0);
@@ -209,7 +212,6 @@ public class ArcadeSelector : TrackSelectorTemplate
 	}
 	void CreateNodeMap()
 	{
-		
 		foreach (var nodeData in F.I.curVariant.nodes)
 		{ // create nodes
 			var position = new Vector3(80 + 110 * nodeData.coords.x, 50 + 133.34f * nodeData.coords.y, 0);
@@ -272,13 +274,13 @@ public class ArcadeSelector : TrackSelectorTemplate
 		var node = F.I.targetNode;
 		F.I.s_roadType = node.pavementType;
 		F.I.randomPavement = false;
-		F.I.s_cpuLevel = node.cpuLevel;
-		F.I.s_timeOfDay = node.timeOfDay;
+		F.I.s_cpuLevel = CpuLevel.Hard;
+		F.I.s_timeOfDay = (TimeOfDay)Random.Range(0,4);
 		F.I.s_laps = node.laps;
 		F.I.s_raceType = node.raceType;
 		F.I.s_cpuRivals = node.cars.Length;
 		F.I.s_trackName = node.trackName;
-		F.I.catchup = true;
+		F.I.catchup = false;
 		F.I.s_PlayerCarSponsor = F.I.cars[F.I.s_playerCarIdx].defaultLivery;
 	}
 	void WriteContinuationText()

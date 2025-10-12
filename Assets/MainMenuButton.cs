@@ -23,7 +23,7 @@ public class MainMenuButton : Sfxable, ISelectHandler, IDeselectHandler, ISubmit
 			text = transform.GetChild(0).GetComponent<TMP_InputField>().textComponent;
 		text.color = deselectedColor;
 		buttonComponent = GetComponent<Button>();
-		mainMenuView = transform.FindParentComponent<MainMenuView>();
+		mainMenuView = transform.GetParentComponent<MainMenuView>();
 	}
 	private void OnDisable()
 	{

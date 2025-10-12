@@ -4,20 +4,21 @@ using Unity.Collections;
 using UnityEngine;
 public class SGP_Bouncer : MonoBehaviour
 {
-	public float shockScale = 0.05f;
-	public float maxShock = 10000;
-	public float minShock = 0.01f;
+	float shockScale = 0.15f;
+	float rotationalFrictionScale = 0.15f;
+	float minShock = 0.1f;
+	float maxShock = 0.5f;
+	float maxRotShock = 1;
 	ContactPoint[] contacts = new ContactPoint[20];
 	VehicleParent vp;
 	public float lastBounceTime;
-	public float rotationalFrictionScale = 0.05f;
-	public float shockThreshold = 0.25f;
+	//public float shockThreshold = 0.25f;
 	//public float timeDelay = .4f;
 	int rbId;
 	static AnimationCurve multCurve;
 	public Collider[] bouncyCols;
 
-	static Dictionary<int, VehicleParent> carRbs = new(10);
+	readonly static Dictionary<int, VehicleParent> carRbs = new(10);
 	static bool OnContactModifyRegistered = false;
 	readonly static float[] colRestitutionTable = new float[] {
 				 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f,
@@ -97,9 +98,7 @@ collision_energy_impact_timedelay,0.4,"Range(0, 1) Time in Seconds"
  */
 	void ApplyShock(Vector3 direction, float impactStrength)
 	{
-		
 		float shockMagnitude = Mathf.Max(minShock, Mathf.Min(impactStrength * shockScale * impactStrength * shockScale, maxShock));
-		Debug.Log(shockMagnitude);
 		Vector3 shockForce = direction * shockMagnitude;
 		vp.rb.AddForce(shockForce * 4, ForceMode.VelocityChange);
 	}
@@ -130,7 +129,7 @@ collision_energy_impact_timedelay,0.4,"Range(0, 1) Time in Seconds"
 			collisionNormal += contacts[i].normal;
 		}
 		collisionNormal /= contactsNr;
-
+		
 		//collisionNormal = (vp.rb.worldCenterOfMass - collisionNormal).normalized;
 
 		if (contacts[0].otherCollider.gameObject.layer == F.I.carCarCollisionLayer)
@@ -138,15 +137,38 @@ collision_energy_impact_timedelay,0.4,"Range(0, 1) Time in Seconds"
 			//HandleCarToCarCollisionImpact__Fv
 
 			Vector3 collisionDir = (transform.position - col.body.transform.position).normalized;
-			float impactStrength = Vector3.Dot(col.relativeVelocity, collisionDir);
+			collisionDir = (collisionDir + Vector3.up) / 2f;
+			float impactStrength = Mathf.Abs(Vector3.Dot(col.relativeVelocity, collisionDir));
 			ApplyShock(collisionDir, impactStrength);
+
+			// rotational impulse
+			float rotationalImpulse = Mathf.Min(impactStrength * rotationalFrictionScale, maxRotShock);
+			vp.rb.AddTorque(-collisionNormal * rotationalImpulse, ForceMode.VelocityChange);
 		}
 		else
 		{
+
+			//Vector3 collisionDir = (collisionNormal + Vector3.up) / 2f;
+			//float impactStrength = Mathf.Abs(Vector3.Dot(col.relativeVelocity, collisionDir));
+			//Debug.Log(impactStrength);
+			//if(impactStrength > 15)
+			//{
+			//	ApplyShock(collisionDir, impactStrength);
+
+			//	// rotational impulse
+			//	float rotationalImpulse = Mathf.Min(impactStrength * rotationalFrictionScale, maxRotShock);
+			//	vp.rb.AddTorque(-collisionNormal * rotationalImpulse, ForceMode.VelocityChange);
+			//}
+
+
+
+
+
+
 			// HandleParticleToSceneCollision__FUi
 
 			// bounce
-			float impactStrength = Vector3.Dot(vp.rb.linearVelocity, collisionNormal);
+			//float impactStrength = Vector3.Dot(vp.rb.linearVelocity, collisionNormal);
 			//if (Mathf.Abs(impactStrength) > bounceThres) // recreate bug of stunt gp where only strong impacts cause bounce
 			//{
 			//    float restitution = GetRestitution(impactStrength); // e.g., from a curve or table
@@ -155,11 +177,6 @@ collision_energy_impact_timedelay,0.4,"Range(0, 1) Time in Seconds"
 			//    vp.rb.AddForce(reflectBugVector, ForceMode.VelocityChange);
 			//    //vp.rb.linearVelocity += Vector3.Reflect(vp.rb.linearVelocity, -collisionNormal) * restitution;
 			//}
-
-
-			// rotational impulse
-			float rotationalImpulse = impactStrength * rotationalFrictionScale;
-			vp.rb.AddTorque(-collisionNormal * rotationalImpulse, ForceMode.VelocityChange);
 
 			//Debug.Log(impactStrength.ToString("F2"));
 			// shock

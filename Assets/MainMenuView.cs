@@ -22,7 +22,7 @@ public class MainMenuView : Sfxable
 		base.Awake();
 
 		if (dimmer == null)
-			dimmer = transform.FindParentComponent<ViewSwitcher>();
+			dimmer = transform.GetParentComponent<ViewSwitcher>();
 	}
 	private void Start()
 	{

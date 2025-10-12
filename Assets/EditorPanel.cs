@@ -410,11 +410,11 @@ public class EditorPanel : MonoBehaviour
 							HideCurrentTile();
 							Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 							if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity,
-									1 << F.I.roadLayer))
+									 1 << F.I.roadLayer | 1 | 1 << F.I.pylonLayer))
 							{
-								var pickedTile = hit.transform.GetComponent<Tile>();
+								var pickedTile = hit.transform.GetParentComponent<Tile>();
 								if (pickedTile == null)
-									pickedTile = hit.transform.parent.GetComponent<Tile>();
+									return;
 								curMirror = pickedTile.mirrored;
 								if (pickedTile.transform.localScale.z != 1)
 								{
@@ -429,16 +429,14 @@ public class EditorPanel : MonoBehaviour
 						{ // REMOVING 
 							HideCurrentTile();
 							Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-							if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity) && hit.transform.parent != null && hit.transform.parent == placedTilesContainer)
+							if (Physics.Raycast(ray, out RaycastHit hit, Mathf.Infinity, ~0 & ~(1 << F.I.invisibleLevelLayer)))
 							{
-								HideCurrentTile();
 								if (Input.GetMouseButtonDown(0))
 								{
 									SetPathClosed(false);
-									if (hit.transform.gameObject.GetComponent<Tile>() == null)
-										Destroy(hit.transform.parent.gameObject);
-									else
-										Destroy(hit.transform.gameObject);
+									Tile t = F.GetParentComponent<Tile>(hit.transform);
+									if (t != null)
+										Destroy(t.gameObject);
 								}
 							}
 						}
@@ -502,7 +500,7 @@ public class EditorPanel : MonoBehaviour
 							}
 							if (scroll != 0)
 							{
-								int dir = (scroll > 0 ? -1 : 1);
+								float dir = (scroll > 0 ? -1 : 1);
 								if (Input.GetKey(KeyCode.Tab))
 								{ // SCALATOR
 									float morePrecision = Input.GetKey(KeyCode.LeftShift) ? .25f : 1;
@@ -517,6 +515,8 @@ public class EditorPanel : MonoBehaviour
 								}
 								else if (Input.GetKey(KeyCode.Z))
 								{// YAW ROTATION
+									float morePrecision = Input.GetKey(KeyCode.LeftShift) ? .01f : 1;
+									dir *= morePrecision;
 									xRot = (xRot + dir) % 360;
 									if (xRot % 90 == 0 && xRot != 0)
 									{
@@ -867,7 +867,7 @@ public class EditorPanel : MonoBehaviour
 			mr.material = new Material(mr.material);
 			selectedFlag.name = texturePath;
 			mr.material.mainTexture = await F.GetRemoteTexture(texturePath);
-			selectedFlag.FindParentComponent<Tile>().url = texturePath;
+			selectedFlag.GetParentComponent<Tile>().url = texturePath;
 		}
 	}
 	public async void SetFillFromURL(string path)
@@ -1750,6 +1750,7 @@ public class EditorPanel : MonoBehaviour
 		Texture2D tex = F.toTexture2D(renderTexture);
 		path = Path.Combine(F.I.tracksPath, trackName + ".jpg"); // .JPG
 		File.WriteAllBytes(path, tex.EncodeToJPG(50));
+		
 
 		// save track editor data
 		JsonContent = JsonConvert.SerializeObject(TRACK);
@@ -1764,13 +1765,16 @@ public class EditorPanel : MonoBehaviour
 		if (!F.I.tracks.ContainsKey(trackName))
 			F.I.tracks.Add(trackName, tHeader);
 		else
+		{
 			F.I.tracks[trackName] = tHeader;
+			F.I.loadSelector.RefreshTrackImage();
+		}
 	}
 	bool PathValid()
 	{
 		return racingLine != null && racingLine.Length > 2;
 	}
-	public void SetPylonVisibility(bool isVisible)
+	public void SetVisibleInPictureMode(bool isVisible)
 	{
 		for (int i = 0; i < placedTilesContainer.transform.childCount; ++i)
 		{

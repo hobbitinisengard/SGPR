@@ -38,7 +38,7 @@ public class ArcadeList : MainMenuView
 			});
 			newRow.GetChild(0).GetComponent<TextMeshProUGUI>().text = variant.name;
 			newRow.GetChild(1).GetComponent<TextMeshProUGUI>().text = variant.nodes.Length + " " + F.I.LocStr("TRACKS");
-			newRow.GetChild(2).GetComponent<TextMeshProUGUI>().text = F.I.LocStr("PROGRESS") + ": " + variant.progress.OverallProgress().ToString("F0") + "%";
+			newRow.GetChild(2).GetComponent<TextMeshProUGUI>().text = F.I.LocStr("PROGRESS") + ": " + variant.progress.OverallProgressPerc().ToString("F0") + "%";
 		}
 	}
 }

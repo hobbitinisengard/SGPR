@@ -21,11 +21,11 @@ public class SavePanelWorks : MonoBehaviour
 	}
 	private void OnEnable()
 	{
-		editorPanel.SetPylonVisibility(false);
+		editorPanel.SetVisibleInPictureMode(false);
 		beigePlane.SetActive(true);
 		Physics.BoxCast(Vector3.zero + 2000 * Vector3.down, new Vector3(3000, 1, 3000), Vector3.up, out var hit, Quaternion.identity, Mathf.Infinity, 1 << F.I.roadLayer);
 		beigePlane.transform.position = hit.point;
-		editorPanel.SetPylonVisibility(true);
+		editorPanel.SetVisibleInPictureMode(true);
 		trackName.text = localizedNames[languageDropdown.value];
 		trackDescr.text = localizedDescriptions[languageDropdown.value];
 		editorPanel.SwitchDayNight(TimeOfDay.Day);

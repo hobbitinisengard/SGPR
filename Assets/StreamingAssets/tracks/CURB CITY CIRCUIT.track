@@ -1,0 +1,20 @@
+{
+  "author": "Team17",
+  "localizedDescriptions": [
+    "A track of contrasts, straight outside and tricky inside.",
+    "Bardzo szybka trasa - dopalanie i wyprzedzanie."
+  ],
+  "localizedNames": [
+    "CURB CITY CIRCUIT",
+    "GONITWA NA MUR"
+  ],
+  "valid": true,
+  "envir": "USA",
+  "preferredCarClass": "Team",
+  "difficulty": 8,
+  "unlocked": true,
+  "icons": [
+    2,
+    3
+  ]
+}

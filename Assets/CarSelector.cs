@@ -94,7 +94,7 @@ public class CarSelector : Sfxable
 				if (ShowCar(car))
 				{
 					var newcar = Instantiate(carImageTemplate, carContent.GetChild((int)car.category));
-					newcar.name = "car" + (i + 1).ToString("D2");
+					newcar.name = "car" + i.ToString("D2");
 					newcar.GetComponent<Image>().sprite = Resources.Load<Sprite>(F.I.carImagesPath + newcar.name);
 					newcar.SetActive(true);
 					menuButtons[(int)car.category] = true;
@@ -102,7 +102,10 @@ public class CarSelector : Sfxable
 						selectedCar = newcar.transform;
 				}
 			}
-			//Debug.Log(menuButtons[0] + " " + menuButtons[1] + " " + menuButtons[2] + " " + menuButtons[3]);
+			for (int i = 0; i < buttonsContainer.childCount; ++i)
+			{// turn off all carclass buttons temporarily
+				buttonsContainer.GetChild(i).gameObject.SetActive(false);
+			}
 
 			yield return null; // wait for one frame for active objects to refresh
 
@@ -118,7 +121,6 @@ public class CarSelector : Sfxable
 				// disable car classes without children (required for sliders to work)
 				carContent.GetChild(i).gameObject.SetActive(menuButtons[i]);
 			}
-			
 		}
 		if (selectedCar == null)
 		{
@@ -132,7 +134,7 @@ public class CarSelector : Sfxable
 		radial.gameObject.SetActive(selectedCar);
 		containerCo = StartCoroutine(MoveToCar());
 		radial.SetChildrenActive(carContent);
-		
+
 		if (barsAndRadialCo != null)
 			StopCoroutine(barsAndRadialCo);
 		barsAndRadialCo = StartCoroutine(SetPerformanceBarsAndRadial());
@@ -157,7 +159,7 @@ public class CarSelector : Sfxable
 			if (posy >= 0 && posy <= 3 && posx >= 0)
 			{
 				Transform tempSelectedCar = null;
-				for (int i = posy; i < carContent.childCount && i >= 0;	i = (y > 0) ? (i + 1) : (i - 1))
+				for (int i = posy; i < carContent.childCount && i >= 0; i = (y > 0) ? (i + 1) : (i - 1))
 				{
 					Transform selectedClass = carContent.GetChild(i);
 
@@ -180,7 +182,7 @@ public class CarSelector : Sfxable
 				// new car has been selected
 				// set description
 				var car = F.I.Car(selectedCar.name);
-				carDescText.text = F.I.LocStr(car.name) + "\n\n" + F.I.LocStr(selectedCar.name+"d");
+				carDescText.text = F.I.LocStr(car.name) + "\n\n" + F.I.LocStr(selectedCar.name + "d");
 				// set bars
 				if (barsAndRadialCo != null)
 					StopCoroutine(barsAndRadialCo);

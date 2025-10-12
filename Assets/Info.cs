@@ -65,15 +65,18 @@ public class RankingData
 public class Info : MonoBehaviour
 {
 	StringTable localizedTable;
+	public LoadSelector loadSelector;
 	public CarSelector carSelector;
 	[NonSerialized]
 	public ArcadeVariant curVariant;
-	public ArcadeVariant.Node curNode 
-	{ get {
+	public ArcadeVariant.Node curNode
+	{
+		get
+		{
 			if (curArcadeNodeID == -1)
 				return curVariant.nodes[targetArcadeNodeID];
-			return curVariant.nodes[curArcadeNodeID]; 
-		} 
+			return curVariant.nodes[curArcadeNodeID];
+		}
 	}
 	public ArcadeVariant.Node targetNode
 	{
@@ -160,7 +163,7 @@ public class Info : MonoBehaviour
 	private void Start()
 	{
 		UpdateLanguage(true);
-		
+
 	}
 	public void UpdateLanguage(bool firstRun = false)
 	{
@@ -221,14 +224,14 @@ public class Info : MonoBehaviour
 	public RankingData rankingData;
 	[NonSerialized]
 	public List<ArcadeVariant> arcadeVariants;
-	
+
 	[NonSerialized]
 	public bool alwaysFirst = true;
 	[NonSerialized]
 	public bool alwaysBestStuntScore = true;
 	[NonSerialized]
 	public Livery?[] unlockedLiveries = new Livery?[] { Livery.Random, null, null, null, null, null, null, null };
-	
+
 	public void LoadArcade()
 	{
 		// iterate over all files in arcadePath
@@ -239,12 +242,15 @@ public class Info : MonoBehaviour
 
 		if (filepaths.Length == 0)
 		{
-			var newVariant = ArcadeVariant.GenerateOriginalVariant();
-			string serializedVariant = JsonConvert.SerializeObject(newVariant, Formatting.Indented);
-			string filepath = Path.Combine(arcadePath, "Original.json");
-			filepaths = new string[] { filepath };
-			File.WriteAllText(filepath, serializedVariant);
-			playerData.currentArcadeVariant = newVariant.name;
+			ArcadeVariant[] newVariants = ArcadeVariant.GenerateDefaultVariants();
+			foreach (var newVariant in newVariants)
+			{
+				string serializedVariant = JsonConvert.SerializeObject(newVariant, Formatting.Indented);
+				string filepath = Path.Combine(arcadePath, $"{newVariant.name}.json");
+				File.WriteAllText(filepath, serializedVariant);
+				playerData.currentArcadeVariant = newVariant.name;
+			}
+			filepaths = Directory.GetFiles(arcadePath, "*.json", SearchOption.TopDirectoryOnly);
 		}
 
 		foreach (var filepath in filepaths)
@@ -288,22 +294,26 @@ public class Info : MonoBehaviour
 		// sort curVariant nodes by id to ensure correct order
 		Array.Sort(F.I.curVariant.nodes, (a, b) => a.id.CompareTo(b.id));
 
-		for (int i=1; i<unlockedLiveries.Length; i++)
-				unlockedLiveries[i] = (Livery)i;
+		for (int i = 1; i < unlockedLiveries.Length; i++)
+			unlockedLiveries[i] = (Livery)i;
 
-		foreach (var track in tracks.Values)
-			track.unlocked = true;
+		foreach (var track in tracks)
+		{
+			if (track.Key.Length > 3) // don't unlock default environment tracks
+				track.Value.unlocked = true;
+		}
+
 
 		foreach (var car in cars)
 		{
 			car.starter = false;
 			car.unlocked = true;
 		}
-		foreach(var s in F.I.curVariant.starts)
-			foreach(var i in s.allowedCarsIdxs)
+		foreach (var s in F.I.curVariant.starts)
+			foreach (var i in s.allowedCarsIdxs)
 				cars[i].starter = true;
 
-		return;// unlock all for testing 
+		//return;// unlock all for testing 
 
 		List<string> prizeNamesToBeLocked = new();
 		foreach (var variant in F.I.arcadeVariants)
@@ -341,7 +351,7 @@ public class Info : MonoBehaviour
 		{
 			if (prizeName.StartsWith("car"))
 			{
-				Car(prizeName).unlocked = false;
+				F.I.cars[int.Parse(prizeName[3..])].unlocked = false;
 			}
 			else if (prizeName.StartsWith("spn"))
 			{
@@ -354,7 +364,7 @@ public class Info : MonoBehaviour
 			}
 		}
 	}
-		
+
 	public async void LoadRanking()
 	{
 		if (!File.Exists(rankingPath))
@@ -448,8 +458,6 @@ public class Info : MonoBehaviour
 	/// Number of track textures. Set pavementTypes+1 for random texture.
 	/// </summary>
 	public readonly int pavementTypes = 6;
-
-
 	public readonly int RaceTypes = 5;
 
 	public readonly Vector3[] invisibleLevelDimensions = new Vector3[]{
@@ -491,26 +499,34 @@ public class Info : MonoBehaviour
 	public readonly string carImagesPath = "carImages/";
 	public readonly string trackImagesPath = "trackImages/";
 	public readonly string editorTilesPath = "tiles/objects/";
+	public RankingView rankingView;
 	public ResultsView resultsView;
 	public ViewSwitcher viewSwitcher;
 	public Chat chat;
 	public PathCreator universalPath;
-	public PathCreator extraPath1;
-	public PathCreator extraPath2;
-
+	[NonSerialized]
 	public List<int> stuntpointsContainer = new();
+	[NonSerialized]
 	public List<ReplayCam> replayCams = new();
+	[NonSerialized]
 	public Vector3[] carSGPstats;
+	[NonSerialized]
 	public Car[] cars;
 	public ScoringType scoringType;
 	public GameMode gameMode = GameMode.Exhibition;
 	public ActionHappening actionHappening = ActionHappening.InLobby;
+	[NonSerialized]
 	public Dictionary<string, PartSavable> carParts;
+	[NonSerialized]
 	public SortedDictionary<string, TrackHeader> tracks;
+	[NonSerialized]
 	public Dictionary<string, AudioClip> audioClips;
-
+	[NonSerialized]
 	public bool loaded = false;
+	[NonSerialized]
 	public int roadLayer = 6;
+	[NonSerialized]
+	public int pylonLayer = 9;
 
 	public string visibleInPictureModeTag = "VisibleInPictureMode";
 	public readonly int ignoreWheelCastLayer = 8;
@@ -589,11 +605,11 @@ public class Info : MonoBehaviour
 		try
 		{
 			int i = int.Parse(name[3..]);
-			return cars[i - 1];
+			return cars[i];
 		}
 		catch
 		{
-			Debug.Log(name);
+			Debug.LogError(name);
 			return cars[0];
 		}
 	}
@@ -616,30 +632,29 @@ public class Info : MonoBehaviour
 	{
 		if (cars == null)
 		{
-
 			cars = new Car[]
-{
-				new ("car01",0,CarGroup.Speed, Livery.Itex, "MEAN STREAK","Fast, light and agile, this racer offers much for those who wish to modify their vehicle."),
-				new ("car02",45000,CarGroup.Wild,Livery.Caltex, "THE HUSTLER","Sturdy 4x4 pick-up truck with an eye for the outrageous!"),
-				new ("car03",50000,CarGroup.Aero, Livery.Mysuko, "TWIN EAGLE","Take flight with this light and speedy stuntcar."),
-				new ("car04",0,CarGroup.Aero, Livery.TGR, "SKY HAWK","Get airborne with this very versatile stunt car."),
-				new ("car05",30000,CarGroup.Speed, Livery.Rline, "THE PHANTOM","Fast, sleek and tough to handle."),
-				new ("car06",30000,CarGroup.Wild, Livery.Titan, "ROAD HOG","Rock and Roll with the rough ridin' road hog."),
-				new ("car07",0,CarGroup.Wild, Livery.Itex, "DUNE RAT","Defy the laws of physics in this buggy."),
-				new ("car08",50000,CarGroup.Speed, Livery.Titan, "LIGHTNIN'","Supercharged super speed. Easy does it!"),
-				new ("car09",30000,CarGroup.Speed, Livery.Caltex, "ALLEY KAT","Sleek and powerful, this cat is ready to roar."),
-				new ("car10",40000,CarGroup.Wild, Livery.Itex, "SAND SHARK","This beachcomber is at home on any stunt circuit."),
-				new ("car11",45000,CarGroup.Wild, Livery.TGR, "THE BRUTE","Unleash the Brute for no-nonsense on the road!"),
-				new ("car12",70000,CarGroup.Aero, Livery.Titan,"WILD DART","Fly fast and true with this stuntcar."),
-				new ("car13",65000,CarGroup.Wild, Livery.Mysuko, "RAGING BULL","Powerful and fast, this streetwise 4x4 is incredible."),
-				new ("car14",15000,CarGroup.Aero, Livery.Caltex, "FLYING MANTIS","Super light and very fast."),
-				new ("car15",35000,CarGroup.Aero, Livery.Rline, "STUNT MONKEY","Monkey see, monkey do! Go bananas with this wild ride!"),
-				new ("car16",50000,CarGroup.Speed, Livery.Titan, "INFERNO","This speed demon is on fire!"),
-				new ("car17",35000,CarGroup.Team, Livery.Team, "FORK","Despite its looks, it moves like fork lightning!"),
-				new ("car18",55000,CarGroup.Team, Livery.Team, "WORM MOBILE","Super Speedy Buggy!"),
-				new ("car19",100000,CarGroup.Team, Livery.Itex, "FORMULA 17","Incredibly fast racing car."),
-				new ("car20",90000,CarGroup.Team, Livery.Team, "TEAM MACHINE","The ultimate, hugely versatile stock car.")
-};
+			{
+				new ("car00",0,CarGroup.Speed, Livery.Itex, "MEAN STREAK","Fast, light and agile, this racer offers much for those who wish to modify their vehicle."),
+				new ("car01",45000,CarGroup.Wild,Livery.Caltex, "THE HUSTLER","Sturdy 4x4 pick-up truck with an eye for the outrageous!"),
+				new ("car02",50000,CarGroup.Aero, Livery.Mysuko, "TWIN EAGLE","Take flight with this light and speedy stuntcar."),
+				new ("car03",0,CarGroup.Aero, Livery.TGR, "SKY HAWK","Get airborne with this very versatile stunt car."),
+				new ("car04",30000,CarGroup.Speed, Livery.Rline, "THE PHANTOM","Fast, sleek and tough to handle."),
+				new ("car05",30000,CarGroup.Wild, Livery.Titan, "ROAD HOG","Rock and Roll with the rough ridin' road hog."),
+				new ("car06",0,CarGroup.Wild, Livery.Itex, "DUNE RAT","Defy the laws of physics in this buggy."),
+				new ("car07",50000,CarGroup.Speed, Livery.Titan, "LIGHTNIN'","Supercharged super speed. Easy does it!"),
+				new ("car08",30000,CarGroup.Speed, Livery.Caltex, "ALLEY KAT","Sleek and powerful, this cat is ready to roar."),
+				new ("car09",40000,CarGroup.Wild, Livery.Itex, "SAND SHARK","This beachcomber is at home on any stunt circuit."),
+				new ("car10",45000,CarGroup.Wild, Livery.TGR, "THE BRUTE","Unleash the Brute for no-nonsense on the road!"),
+				new ("car11",70000,CarGroup.Aero, Livery.Titan,"WILD DART","Fly fast and true with this stuntcar."),
+				new ("car12",65000,CarGroup.Wild, Livery.Mysuko, "RAGING BULL","Powerful and fast, this streetwise 4x4 is incredible."),
+				new ("car13",15000,CarGroup.Aero, Livery.Caltex, "FLYING MANTIS","Super light and very fast."),
+				new ("car14",35000,CarGroup.Aero, Livery.Rline, "STUNT MONKEY","Monkey see, monkey do! Go bananas with this wild ride!"),
+				new ("car15",50000,CarGroup.Speed, Livery.Titan, "INFERNO","This speed demon is on fire!"),
+				new ("car16",35000,CarGroup.Team, Livery.Team, "FORK","Despite its looks, it moves like fork lightning!"),
+				new ("car17",55000,CarGroup.Team, Livery.Team, "WORM MOBILE","Super Speedy Buggy!"),
+				new ("car18",100000,CarGroup.Team, Livery.Itex, "FORMULA 17","Incredibly fast racing car."),
+				new ("car19",90000,CarGroup.Team, Livery.Team, "TEAM MACHINE","The ultimate, hugely versatile stock car.")
+			};
 		}
 		ReloadCarConfigs();
 	}
@@ -654,9 +669,9 @@ public class Info : MonoBehaviour
 		{
 			await Task.Run(() =>
 			{
-				string filepath = partsPath + "car" + (i + 1).ToString() + partInfos[^1].fileExtension;
+				string filepath = partsPath + "car" + i.ToString() + partInfos[^1].fileExtension;
 				string jsonText = File.ReadAllText(filepath);
-				cars[i].config = new CarConfig("car" + (i + 1).ToString(), jsonText);
+				cars[i].config = new CarConfig("car" + i.ToString(), jsonText);
 			});
 		}
 	}
@@ -877,7 +892,7 @@ public class Info : MonoBehaviour
 		return weldedMesh;
 	}
 
-	
+
 }
 [Serializable]
 public class Record
@@ -985,7 +1000,6 @@ public class TrackHeader
 	/// </summary>
 	[NonSerialized]
 	public TrackRecords records;
-
 	public TrackHeader()
 	{
 		records = new();
@@ -1086,7 +1100,7 @@ public class Car
 		try
 		{
 			int i = int.Parse(name[3..]);
-			return i - 1;
+			return i;
 		}
 		catch
 		{

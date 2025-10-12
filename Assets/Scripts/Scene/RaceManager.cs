@@ -306,7 +306,7 @@ namespace RVP
 			editorPanel.gameObject.SetActive(false);
 			F.I.s_raceType = RaceType.Race;
 			F.I.s_laps = 0;
-			var carModel = Resources.Load<GameObject>(F.I.carPrefabsPath + F.I.s_playerCarIdx);
+			var carModel = Resources.Load<GameObject>(F.I.carPrefabsPath + F.I.cars[F.I.s_playerCarIdx].internalName);
 			var newCar = Instantiate(carModel, position, rotation).GetComponent<VehicleParent>();
 			newCar.followAI.enabled = false;
 			newCar.raceBox.enabled = true;
@@ -374,7 +374,7 @@ namespace RVP
 				{
 					for (int i = 0; i < F.I.curNode.cars.Length; ++i)
 					{
-						carPlacements[i] = F.I.curNode.cars[i];
+						carPlacements[i] = F.I.targetNode.cars[i];
 						carPlacements[i].position = i;
 					}
 				}

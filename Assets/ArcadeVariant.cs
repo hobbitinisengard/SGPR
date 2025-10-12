@@ -39,14 +39,14 @@ public class ArcadeVariant
 			for (int i = 0; i < nodes; ++i)
 				pathsDone.Add(new List<int>());
 		}
-		public float OverallProgress()
+		public float OverallProgressPerc()
 		{
 			float progress = 0;
 			progress += pathsDone.Sum(p => p.Count);
 			progress += prizesCompleted.Sum(p => p.CountBits());
 			progress += globalPrizesCompleted.CountBits();
 			progress /= parent.nodes.Sum(p => p.prizeReqs.Length) + parent.nodes.Sum(n => n.connections.Length) + parent.globalPrizes.Length;
-			return progress;
+			return progress * 100;
 		}
 	}
 	[Serializable]
@@ -68,9 +68,6 @@ public class ArcadeVariant
 		public int laps = 1;
 		public RaceType raceType;
 		public PavementType pavementType;
-
-		public CpuLevel cpuLevel = CpuLevel.Hard;
-		public TimeOfDay timeOfDay;
 
 		public CarPlacement[] cars;
 
@@ -103,23 +100,400 @@ public class ArcadeVariant
 		ArcadeVariant communityVariant = new()
 		{
 			name = "Community",
-			globalPrizes = new Prize[] { new() { name = "car20", condition = Prize.Condition.AllPathsFound } },
+			globalPrizes = new Prize[] { new() { name = "car18,car19", condition = Prize.Condition.AllPathsFound } },
 			starts = new StartPos[]
 			{
-				new(){node = 0, allowedCarsIdxs = new int[]{9}},
-				new(){node = 1, allowedCarsIdxs = new int[]{3}},
-				new(){node = 2, allowedCarsIdxs = new int[]{8}},
+				new(){node = 0, allowedCarsIdxs = new int[]{7}},
+				new(){node = 1, allowedCarsIdxs = new int[]{1,6}},
 			},
 			nodes = new Node[]
 			{
 				new()
 				{
 					id = 0,
-					connections = new int[] { 12 },
+					connections = new int[] { 2,3 },
+					color = Color.blue,
+					size = 1,
+					coords = new Vector2(5,0),
+					trackName = "WAREHOUSE ROCK",
+					laps = 2,
+					cars = new CarPlacement[]
+					{
+							new() { name = "CP1", carIdx = 10, livery = Livery.Titan,  },
+							new() { name = "CP2", carIdx = 09, livery = Livery.Rline,  },
+							new() { name = "CP3", carIdx = 06, livery = Livery.Mysuko,  },
+							new() { name = "CP4", carIdx = 05, livery = Livery.Caltex,  },
+							new() { name = "CP5", carIdx = 01, livery = Livery.Titan,  },
+					},
+					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
+					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "WAREHOUSE ROCK" } },//new Prize[]{ },
+					pavementType = (PavementType)0,
+				},
+				new()
+				{
+					id = 1,
+					connections = new int[] { 4,5 },
+					color = Color.blue,
+					size = 1,
+					coords = new Vector2(5,6),
+					trackName = "BOLD STRAIGHTS",
+					laps = 2,
+					cars = new CarPlacement[]
+					{
+							new() { name = "CP1", carIdx = 10, livery = Livery.Titan,  },
+							new() { name = "CP2", carIdx = 09, livery = Livery.Rline,  },
+							new() { name = "CP3", carIdx = 06, livery = Livery.Mysuko,  },
+							new() { name = "CP4", carIdx = 05, livery = Livery.Caltex,  },
+							new() { name = "CP5", carIdx = 01, livery = Livery.Titan,  },
+					},
+					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
+					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "BOLD STRAIGHTS" } },
+					pavementType = (PavementType)1,
+				},
+				new()
+				{
+					id = 2,
+					connections = new int[] { 6,7 },
+					color = Color.blue,
+					size = 1,
+					coords = new Vector2(2.5f,1),
+					trackName = "JAPANESE BRIDGE",
+					laps = 3,
+					cars = new CarPlacement[]
+					{
+							new() { name = "CP1", carIdx = 10, livery = Livery.Titan,  },
+							new() { name = "CP2", carIdx = 09, livery = Livery.Rline,  },
+							new() { name = "CP3", carIdx = 06, livery = Livery.Mysuko,  },
+							new() { name = "CP4", carIdx = 05, livery = Livery.Caltex,  },
+							new() { name = "CP5", carIdx = 01, livery = Livery.Titan,  },
+					},
+					continuationReq = new Prize(){condition = Prize.Condition.AeroStarsAtLeast,conditionArgument = "7"},
+					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "JAPANESE BRIDGE" } },
+					pavementType = (PavementType)2,
+				},
+				new()
+				{
+					id = 3,
+					connections = new int[] { 8,9 },
+					color = Color.green,
+					size = 1,
+					coords = new Vector2(7.5f,1),
+					trackName = "ROUTE 45",
+					laps = 3,
+					cars = new CarPlacement[]
+					{
+							new() { name = "CP1", carIdx = 10, livery = Livery.Titan,  },
+							new() { name = "CP2", carIdx = 09, livery = Livery.Rline,  },
+							new() { name = "CP3", carIdx = 06, livery = Livery.Mysuko,  },
+							new() { name = "CP4", carIdx = 05, livery = Livery.Caltex,  },
+							new() { name = "CP5", carIdx = 01, livery = Livery.Titan,  },
+					},
+					continuationReq = new Prize(){condition = Prize.Condition.FastestLaptime,conditionArgument = "1"},
+					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "ROUTE 45" } },
+					pavementType = (PavementType)3,
+				},
+				new()
+				{
+					id = 4,
+					connections = new int[] { 10,11 },
+					color = Color.blue,
+					size = 1,
+					coords = new Vector2(2.5f,5),
+					trackName = "SHADY TURNS",
+					laps = 3,
+					cars = new CarPlacement[]
+					{
+							new() { name = "CP1", carIdx = 10, livery = Livery.Titan,  },
+							new() { name = "CP2", carIdx = 09, livery = Livery.Rline,  },
+							new() { name = "CP3", carIdx = 06, livery = Livery.Mysuko,  },
+							new() { name = "CP4", carIdx = 05, livery = Livery.Caltex,  },
+							new() { name = "CP5", carIdx = 01, livery = Livery.Titan,  },
+					},
+					continuationReq = new Prize(){condition = Prize.Condition.FastestLaptime,conditionArgument = "1"},
+					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "SHADY TURNS" } },
+					pavementType = (PavementType)4,
+				},
+				new()
+				{
+					id = 5,
+					connections = new int[] { 12,13 },
 					color = F.I.orange,
 					size = 1,
-					coords = new Vector2(3,0),
-					trackName = "DUST BUSTER REVERSE",
+					coords = new Vector2(7.5f,5),
+					trackName = "THE HEIST",
+					laps = 3,
+					cars = new CarPlacement[]
+					{
+							new() { name = "CP1", carIdx = 10, livery = Livery.Titan,  },
+							new() { name = "CP2", carIdx = 09, livery = Livery.Rline,  },
+							new() { name = "CP3", carIdx = 06, livery = Livery.Mysuko,  },
+							new() { name = "CP4", carIdx = 05, livery = Livery.Caltex,  },
+							new() { name = "CP5", carIdx = 01, livery = Livery.Titan,  },
+					},
+					continuationReq = new Prize(){condition = Prize.Condition.FastestLaptime,conditionArgument = "1"},
+					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "THE HEIST" } },
+					pavementType = (PavementType)5,
+				},
+				new()
+				{
+					id = 6,
+					connections = new int[] { 18,14 },
+					color = Color.green,
+					size = 1,
+					coords = new Vector2(1,1.5f),
+					trackName = "CARELLO ELEVATORE",
+					laps = 3,
+					cars = new CarPlacement[]
+					{
+							new() { name = "CP1", carIdx = 10, livery = Livery.Titan,  },
+							new() { name = "CP2", carIdx = 09, livery = Livery.Rline,  },
+							new() { name = "CP3", carIdx = 06, livery = Livery.Mysuko,  },
+							new() { name = "CP4", carIdx = 05, livery = Livery.Caltex,  },
+							new() { name = "CP5", carIdx = 01, livery = Livery.Titan,  },
+					},
+					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
+					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "CARELLO ELEVATORE" } },
+					pavementType = (PavementType)6,
+				},
+				new()
+				{
+					id = 7,
+					connections = new int[] { 14,22 },
+					color = Color.green,
+					size = 1,
+					coords = new Vector2(3.5f,1.5f),
+					trackName = "HAWK SPACE",
+					laps = 3,
+					cars = new CarPlacement[]
+					{
+							new() { name = "CP1", carIdx = 10, livery = Livery.Titan,  },
+							new() { name = "CP2", carIdx = 09, livery = Livery.Rline,  },
+							new() { name = "CP3", carIdx = 06, livery = Livery.Mysuko,  },
+							new() { name = "CP4", carIdx = 05, livery = Livery.Caltex,  },
+							new() { name = "CP5", carIdx = 01, livery = Livery.Titan,  },
+					},
+					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
+					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "car03,HAWK SPACE" } },
+					pavementType = (PavementType)0,
+				},
+				new()
+				{
+					id = 8,
+					connections = new int[] { 22,15 },
+					color = Color.green,
+					size = 1,
+					coords = new Vector2(6.5f,1.5f),
+					trackName = "ROAD TO THE TOP II",
+					laps = 2,
+					cars = new CarPlacement[]
+					{
+							new() { name = "CP1", carIdx = 10, livery = Livery.Titan,  },
+							new() { name = "CP2", carIdx = 09, livery = Livery.Rline,  },
+							new() { name = "CP3", carIdx = 06, livery = Livery.Mysuko,  },
+							new() { name = "CP4", carIdx = 05, livery = Livery.Caltex,  },
+							new() { name = "CP5", carIdx = 01, livery = Livery.Titan,  },
+					},
+					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
+					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "car04,ROAD TO THE TOP II" } },
+					pavementType = (PavementType)1,
+				},
+				new()
+				{
+					id = 9,
+					connections = new int[] { 15,19 },
+					color = F.I.orange,
+					size = 1,
+					coords = new Vector2(9f,1.5f),
+					trackName = "DUNE ZONE",
+					laps = 3,
+					cars = new CarPlacement[]
+					{
+							new() { name = "CP1", carIdx = 10, livery = Livery.Titan,  },
+							new() { name = "CP2", carIdx = 09, livery = Livery.Rline,  },
+							new() { name = "CP3", carIdx = 06, livery = Livery.Mysuko,  },
+							new() { name = "CP4", carIdx = 05, livery = Livery.Caltex,  },
+							new() { name = "CP5", carIdx = 01, livery = Livery.Titan,  },
+					},
+					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
+					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "car05,DUNE ZONE" } },
+					pavementType = (PavementType)2,
+				},
+				new()
+				{
+					id = 10,
+					connections = new int[] { 20,16 },
+					color = Color.blue,
+					size = 1,
+					coords = new Vector2(1,4.5f),
+					trackName = "MIND YOUR STEP",
+					laps = 3,
+					cars = new CarPlacement[]
+					{
+							new() { name = "CP1", carIdx = 10, livery = Livery.Titan,  },
+							new() { name = "CP2", carIdx = 09, livery = Livery.Rline,  },
+							new() { name = "CP3", carIdx = 06, livery = Livery.Mysuko,  },
+							new() { name = "CP4", carIdx = 05, livery = Livery.Caltex,  },
+							new() { name = "CP5", carIdx = 01, livery = Livery.Titan,  },
+					},
+					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
+					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "car06,MIND YOUR STEP" } },
+					pavementType = (PavementType)3,
+				},
+				new()
+				{
+					id = 11,
+					connections = new int[] { 16,22 },
+					color = Color.green,
+					size = 1,
+					coords = new Vector2(3.5f,4.5f),
+					trackName = "ROOFTOP PARTY",
+					laps = 3,
+					cars = new CarPlacement[]
+					{
+							new() { name = "CP1", carIdx = 10, livery = Livery.Titan,  },
+							new() { name = "CP2", carIdx = 09, livery = Livery.Rline,  },
+							new() { name = "CP3", carIdx = 06, livery = Livery.Mysuko,  },
+							new() { name = "CP4", carIdx = 05, livery = Livery.Caltex,  },
+							new() { name = "CP5", carIdx = 01, livery = Livery.Titan,  },
+					},
+					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
+					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "car07,ROOFTOP PARTY" } },
+					pavementType = (PavementType)4,
+				},
+				new()
+				{
+					id = 12,
+					connections = new int[] { 22,17 },
+					color = F.I.orange,
+					size = 1,
+					coords = new Vector2(6.5f,4.5f),
+					trackName = "SANDY RAMPS",
+					laps = 3,
+					cars = new CarPlacement[]
+					{
+							new() { name = "CP1", carIdx = 10, livery = Livery.Titan,  },
+							new() { name = "CP2", carIdx = 09, livery = Livery.Rline,  },
+							new() { name = "CP3", carIdx = 06, livery = Livery.Mysuko,  },
+							new() { name = "CP4", carIdx = 05, livery = Livery.Caltex,  },
+							new() { name = "CP5", carIdx = 01, livery = Livery.Titan,  },
+					},
+					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
+					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "car08,SANDY RAMPS" } },
+					pavementType = (PavementType)5,
+				},
+				new()
+				{
+					id = 13,
+					connections = new int[] { 17,21 },
+					color = Color.blue,
+					size = 1,
+					coords = new Vector2(9,4.5f),
+					trackName = "SPECTACULAR STEPS",
+					laps = 3,
+					cars = new CarPlacement[]
+					{
+							new() { name = "CP1", carIdx = 10, livery = Livery.Titan,  },
+							new() { name = "CP2", carIdx = 09, livery = Livery.Rline,  },
+							new() { name = "CP3", carIdx = 06, livery = Livery.Mysuko,  },
+							new() { name = "CP4", carIdx = 05, livery = Livery.Caltex,  },
+							new() { name = "CP5", carIdx = 01, livery = Livery.Titan,  },
+					},
+					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
+					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "car09,SPECTACULAR STEPS" } },
+					pavementType = (PavementType)6,
+				},
+				new()
+				{
+					id = 14,
+					connections = new int[] { 18,22 },
+					color = Color.green,
+					size = 1,
+					coords = new Vector2(1.5f,2),
+					trackName = "TRICK ALLEY",
+					laps = 4,
+					cars = new CarPlacement[]
+					{
+							new() { name = "CP1", carIdx = 10, livery = Livery.Titan,  },
+							new() { name = "CP2", carIdx = 09, livery = Livery.Rline,  },
+							new() { name = "CP3", carIdx = 06, livery = Livery.Mysuko,  },
+							new() { name = "CP4", carIdx = 05, livery = Livery.Caltex,  },
+							new() { name = "CP5", carIdx = 01, livery = Livery.Titan,  },
+					},
+					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
+					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "car10,TRICK ALLEY" } },
+					pavementType = (PavementType)0,
+				},
+				new()
+				{
+					id = 15,
+					connections = new int[] { 22,19 },
+					color = Color.blue,
+					size = 1,
+					coords = new Vector2(8.5f,2),
+					trackName = "GLASSY HIGHWAY",
+					laps = 4,
+					cars = new CarPlacement[]
+					{
+							new() { name = "CP1", carIdx = 10, livery = Livery.Titan,  },
+							new() { name = "CP2", carIdx = 09, livery = Livery.Rline,  },
+							new() { name = "CP3", carIdx = 06, livery = Livery.Mysuko,  },
+							new() { name = "CP4", carIdx = 05, livery = Livery.Caltex,  },
+							new() { name = "CP5", carIdx = 01, livery = Livery.Titan,  },
+					},
+					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
+					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "car11,GLASSY HIGHWAY" } },
+					pavementType = (PavementType)1,
+				},
+				new()
+				{
+					id = 16,
+					connections = new int[] { 20,22 },
+					color = Color.blue,
+					size = 1,
+					coords = new Vector2(1.5f,4),
+					trackName = "ROAD TO THE TOP",
+					laps = 2,
+					cars = new CarPlacement[]
+					{
+							new() { name = "CP1", carIdx = 10, livery = Livery.Titan,  },
+							new() { name = "CP2", carIdx = 09, livery = Livery.Rline,  },
+							new() { name = "CP3", carIdx = 06, livery = Livery.Mysuko,  },
+							new() { name = "CP4", carIdx = 05, livery = Livery.Caltex,  },
+							new() { name = "CP5", carIdx = 01, livery = Livery.Titan,  },
+					},
+					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
+					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "spn7,car12,ROAD TO THE TOP" } },
+					pavementType = (PavementType)2,
+				},
+				new()
+				{
+					id = 17,
+					connections = new int[] { 22,21 },
+					color = Color.blue,
+					size = 1,
+					coords = new Vector2(8.5f,4),
+					trackName = "TIGER'S PREY",
+					laps = 3,
+					cars = new CarPlacement[]
+					{
+							new() { name = "CP1", carIdx = 10, livery = Livery.Titan,  },
+							new() { name = "CP2", carIdx = 09, livery = Livery.Rline,  },
+							new() { name = "CP3", carIdx = 06, livery = Livery.Mysuko,  },
+							new() { name = "CP4", carIdx = 05, livery = Livery.Caltex,  },
+							new() { name = "CP5", carIdx = 01, livery = Livery.Titan,  },
+					},
+					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
+					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "spn6,car13,TIGER'S PREY" } },
+					pavementType = (PavementType)3,
+				},
+				new()
+				{
+					id = 18,
+					connections = new int[] { 22 },
+					color = Color.blue,
+					size = 1,
+					coords = new Vector2(0.5f,2.5f),
+					trackName = "TITANIC WORK",
 					laps = 6,
 					cars = new CarPlacement[]
 					{
@@ -129,40 +503,120 @@ public class ArcadeVariant
 							new() { name = "CP4", carIdx = 05, livery = Livery.Caltex,  },
 							new() { name = "CP5", carIdx = 01, livery = Livery.Titan,  },
 					},
-					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "4"},
-					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "DUST BUSTER REVERSE" } },//new Prize[]{ },
+					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
+					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "spn5,car14,TITANIC WORK" } },
+					pavementType = (PavementType)4,
+				},
+				new()
+				{
+					id = 19,
+					connections = new int[] { 22 },
+					color = Color.green,
+					size = 1,
+					coords = new Vector2(9.5f,2.5f),
+					trackName = "UNDER CONSTRUCTION",
+					laps = 3,
+					cars = new CarPlacement[]
+					{
+							new() { name = "CP1", carIdx = 10, livery = Livery.Titan,  },
+							new() { name = "CP2", carIdx = 09, livery = Livery.Rline,  },
+							new() { name = "CP3", carIdx = 06, livery = Livery.Mysuko,  },
+							new() { name = "CP4", carIdx = 05, livery = Livery.Caltex,  },
+							new() { name = "CP5", carIdx = 01, livery = Livery.Titan,  },
+					},
+					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
+					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "spn4,car15,UNDER CONSTRUCTION" } },
 					pavementType = (PavementType)5,
+				},
+				new()
+				{
+					id = 20,
+					connections = new int[] { 22 },
+					color = F.I.orange,
+					size = 1,
+					coords = new Vector2(0.5f,3.5f),
+					trackName = "GRASSY HILLS",
+					laps = 3,
+					cars = new CarPlacement[]
+					{
+							new() { name = "CP1", carIdx = 10, livery = Livery.Titan,  },
+							new() { name = "CP2", carIdx = 09, livery = Livery.Rline,  },
+							new() { name = "CP3", carIdx = 06, livery = Livery.Mysuko,  },
+							new() { name = "CP4", carIdx = 05, livery = Livery.Caltex,  },
+							new() { name = "CP5", carIdx = 01, livery = Livery.Titan,  },
+					},
+					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
+					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "spn3,car16,GRASSY HILLS" } },
+					pavementType = (PavementType)6,
+				},
+				new()
+				{
+					id = 21,
+					connections = new int[] { 22 },
+					color = Color.green,
+					size = 1,
+					coords = new Vector2(9.5f,3.5f),
+					trackName = "FULL LOT",
+					laps = 6,
+					cars = new CarPlacement[]
+					{
+							new() { name = "CP1", carIdx = 10, livery = Livery.Titan,  },
+							new() { name = "CP2", carIdx = 09, livery = Livery.Rline,  },
+							new() { name = "CP3", carIdx = 06, livery = Livery.Mysuko,  },
+							new() { name = "CP4", carIdx = 05, livery = Livery.Caltex,  },
+							new() { name = "CP5", carIdx = 01, livery = Livery.Titan,  },
+					},
+					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
+					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "spn2,car17,FULL LOT" } },
+					pavementType = (PavementType)0,
+				},
+				new()
+				{
+					id = 22,
+					connections = new int[] { },
+					color = F.I.red,
+					size = 2,
+					coords = new Vector2(5,3),
+					trackName = "WHIRLWIND",
+					laps = 3,
+					cars = new CarPlacement[]
+					{
+							new() { name = "T17", carIdx = 15, livery = Livery.Team,  },
+							new() { name = "T17", carIdx = 15, livery = Livery.Rline,  },
+							new() { name = "T17", carIdx = 15, livery = Livery.Team,  },
+							new() { name = "T17", carIdx = 15, livery = Livery.Rline,  },
+							new() { name = "T17", carIdx = 15, livery = Livery.Team,  },
+					},
+					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
+					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "spn1,car18,WHIRLWIND" } },
+					pavementType = (PavementType)1,
+					raceType = RaceType.Knockout,
 				},
 			}
 		};
 		return communityVariant;
 	}
-	public static ArcadeVariant GenerateSidesweeperVariant()
+	public static ArcadeVariant GenerateProtoVariant()
 	{
 		ArcadeVariant reversedVariant = new()
 		{
-			name = "Sidesweeper",
-			globalPrizes = new Prize[] { new() { name = "car16", condition = Prize.Condition.AllPathsFound},
+			name = "Prototype",
+			globalPrizes = new Prize[] { new() { name = "car16,car17,AZTEC", condition = Prize.Condition.AllPathsFound},
 				new() {name = "car18,car19", condition = Prize.Condition.AlwaysFirst} },
 			starts = new StartPos[]
 			{
-				new() {node = 0, allowedCarsIdxs = new int[]{ 16,1 } },//fork,hustler
-				new() {node = 1, allowedCarsIdxs = new int[]{ 5 } },//road hog
-				new() {node = 2, allowedCarsIdxs = new int[]{ 2 } },//twin eagle
-				new() {node = 3, allowedCarsIdxs = new int[]{ 13 } },//mantis
-				new() {node = 4, allowedCarsIdxs = new int[]{ 15 } },//inferno
-				new() {node = 5, allowedCarsIdxs = new int[]{ 4 } },//inferno
+				new() {node = 0, allowedCarsIdxs = new int[]{ 0,1,2 } },
 			},
 			nodes = new Node[]
 			{
 				new() {
-					id = 15,
-					connections = new int[] { 12 },
-					color = F.I.orange,
+					id = 0,
+					connections = new int[] { 3,1,2,4 },
+					color = Color.blue,
 					size = 1,
-					coords = new Vector2(3,0),
-					trackName = "DUST BUSTER REVERSE",
-					laps = 6,
+					coords = new Vector2(5,3),
+					trackName = "RISE N FALL BETA",
+					laps = 3,
 					cars = new CarPlacement[]
 					{
 							new() { name = "CP1", carIdx = 10, livery = Livery.Titan,  },
@@ -171,17 +625,17 @@ public class ArcadeVariant
 							new() { name = "CP4", carIdx = 05, livery = Livery.Caltex,  },
 							new() { name = "CP5", carIdx = 01, livery = Livery.Titan,  },
 					},
-					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "4"},
-					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "DUST BUSTER REVERSE" } },//new Prize[]{ },
+					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
+					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "RISE N FALL BETA" } },
 					pavementType = (PavementType)5,
 				},
 				new() {
-					id = 16,
-					connections = new int[] { 13 },
+					id = 1,
+					connections = new int[] { 3,5,9 },
 					color = Color.green,
 					size = 1,
-					coords = new Vector2(5,0),
-					trackName = "SECRET SIX REVERSE",
+					coords = new Vector2(4,4),
+					trackName = "THE SECRET FIVE",
 					laps = 6,
 					cars = new CarPlacement[]
 					{
@@ -191,18 +645,18 @@ public class ArcadeVariant
 							new() { name = "CP4", carIdx = 13, livery = Livery.Caltex,  },
 							new() { name = "CP5", carIdx = 03, livery = Livery.Titan,  },
 					},
-					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "4"},
-					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "SECRET SIX REVERSE" } },//new Prize[]{ },
+					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
+					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "THE SECRET FIVE" } },//new Prize[]{ },
 					pavementType = (PavementType)6,
 				},
 				new() {
-					id = 17,
-					connections = new int[] { 14 },
+					id = 2,
+					connections = new int[] { 10,6,4 },
 					color = Color.blue,
 					size = 1,
-					coords = new Vector2(7,0),
-					trackName = "BANK JOB REVERSE",
-					laps = 6,
+					coords = new Vector2(6,4),
+					trackName = "CRONOZONE",
+					laps = 3,
 					cars = new CarPlacement[]
 					{
 							new() { name = "CP1", carIdx = 08, livery = Livery.TGR,  },
@@ -211,18 +665,18 @@ public class ArcadeVariant
 							new() { name = "CP4", carIdx = 08, livery = Livery.Rline,  },
 							new() { name = "CP5", carIdx = 07, livery = Livery.Mysuko,  },
 					},
-					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "4"},
-					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "BANK JOB REVERSE" } },//new Prize[]{ },
+					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
+					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "CRONOZONE" } },
 					pavementType = (PavementType)5,
 				},
 				new() {
-					id = 11,
-					connections = new int[] { 7,15 },
-					color = F.I.orange,
+					id = 3,
+					connections = new int[] { 20,8 },
+					color = Color.green,
 					size = 1,
-					coords = new Vector2(2,1),
-					trackName = "THE SANDWINDER REVERSE",
-					laps = 6,
+					coords = new Vector2(4,2),
+					trackName = "ENGLISH JAM",
+					laps = 2,
 					cars = new CarPlacement[]
 					{
 							new() { name = "CP1", carIdx = 10, livery = (Livery)6,  },
@@ -231,17 +685,17 @@ public class ArcadeVariant
 							new() { name = "CP4", carIdx = 05, livery = (Livery)6,  },
 							new() { name = "CP5", carIdx = 01, livery = (Livery)7,  },
 					},
-					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "3"},
-					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "THE SANDWINDER REVERSE" } },//new Prize[]{ },
+					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
+					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "ENGLISH JAM" } },
 					pavementType = (PavementType)1,
 				},
 				new() {
-					id = 12,
-					connections = new int[] { 8,16 },
+					id = 4,
+					connections = new int[] { 7,11 },
 					color = Color.green,
 					size = 1,
-					coords = new Vector2(4,1),
-					trackName = "SNAKESTORM REVERSE",
+					coords = new Vector2(6,2),
+					trackName = "ITALIAN ICON",
 					laps = 4,
 					cars = new CarPlacement[]
 					{
@@ -251,18 +705,18 @@ public class ArcadeVariant
 							new() { name = "CP4", carIdx = 13, livery = (Livery)5,  },
 							new() { name = "CP5", carIdx = 11, livery = (Livery)6,  },
 					},
-					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "3"},
-					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "SNAKESTORM REVERSE" } },
+					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
+					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "ITALIAN ICON" } },
 					pavementType = (PavementType)0,
 				},
 				new() {
-					id = 13,
-					connections = new int[] { 9,17 },
-					color = Color.green,
+					id = 5,
+					connections = new int[] { 13,9},
+					color = Color.blue,
 					size = 1,
-					coords = new Vector2(6,1),
-					trackName = "THE LOOPBACK REVERSE",
-					laps = 4,
+					coords = new Vector2(3,4),
+					trackName = "BANK JOB REVERSE",
+					laps = 3,
 					cars = new CarPlacement[]
 					{
 							new() { name = "CP1", carIdx = 14, livery = (Livery)2,  },
@@ -271,18 +725,18 @@ public class ArcadeVariant
 							new() { name = "CP4", carIdx = 13, livery = (Livery)5,  },
 							new() { name = "CP5", carIdx = 11, livery = (Livery)6,  },
 					},
-					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "3"},
-					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "THE LOOPBACK REVERSE" } },
-					pavementType = (PavementType)2,
+					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
+					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "BANK JOB REVERSE" } },
+					pavementType = (PavementType)1,
 				},
 				new() {
-					id = 14,
-					connections = new int[] { 10 },
+					id = 6,
+					connections = new int[] { 10,14 },
 					color = Color.blue,
 					size = 1,
-					coords = new Vector2(8,1),
-					trackName = "CURBED HEIGHTS REVERSE",
-					laps = 4,
+					coords = new Vector2(7,4),
+					trackName = "CRAZY STRAIGHTS REVERSE",
+					laps = 3,
 					cars = new CarPlacement[]
 					{
 							new() { name = "CP1", carIdx = 8, livery = (Livery)2,  },
@@ -291,18 +745,18 @@ public class ArcadeVariant
 							new() { name = "CP4", carIdx = 8, livery = (Livery)6,  },
 							new() { name = "CP5", carIdx = 7, livery = (Livery)5,  },
 					},
-					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "3"},
-					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "CURBED HEIGHTS REVERSE" } },
+					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
+					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "CRAZY STRAIGHTS REVERSE" } },
 					pavementType = (PavementType)2,
 				},
 				new() {
-					id = 6,
-					connections = new int[] { 1,11 },
-					color = F.I.orange,
+					id = 7,
+					connections = new int[] { 11,15 },
+					color = Color.blue,
 					size = 1,
-					coords = new Vector2(1,2),
-					trackName = "SUNKEN SIGHTS",
-					laps = 6,
+					coords = new Vector2(7,2),
+					trackName = "CURBED HEIGHTS REVERSE",
+					laps = 3,
 					cars = new CarPlacement[]
 					{
 							new() { name = "CP1", carIdx = 10, livery = (Livery)7,  },
@@ -311,18 +765,18 @@ public class ArcadeVariant
 							new() { name = "CP4", carIdx = 05, livery = (Livery)6,  },
 							new() { name = "CP5", carIdx = 01, livery = (Livery)4,  },
 					},
-					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "2"},
-					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "SUNKEN SIGHTS REVERSE" } },
-					pavementType = (PavementType)2,
+					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
+					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "CURBED HEIGHTS REVERSE" } },
+					pavementType = (PavementType)3,
 				},
 				new() {
-					id = 7,
-					connections = new int[] { 2,12},
-					color = F.I.orange,
+					id = 8,
+					connections = new int[] { 20,12},
+					color = Color.green,
 					size = 1,
 					coords = new Vector2(3,2),
-					trackName = "HELIPAD HEIGHTS REVERSE",
-					laps = 5,
+					trackName = "INTERSECTOR BETA",
+					laps = 3,
 					cars = new CarPlacement[]
 					{
 							new() { name = "CP1", carIdx = 0, livery = (Livery)2,  },
@@ -331,18 +785,18 @@ public class ArcadeVariant
 							new() { name = "CP4", carIdx = 3, livery = (Livery)5,  },
 							new() { name = "CP5", carIdx = 4, livery = (Livery)6,  },
 					},
-					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "2"},
-					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "HELIPAD HEIGHTS REVERSE" } },
-					pavementType = (PavementType)2,
+					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
+					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "INTERSECTOR BETA" } },
+					pavementType = (PavementType)4,
 				},
 				new() {
-					id = 8,
-					connections = new int[] { 3,13 },
-					color = Color.green,
+					id = 9,
+					connections = new int[] { 13 },
+					color = F.I.orange,
 					size = 1,
-					coords = new Vector2(5,2),
-					trackName = "FREEFALL FREEWAY REVERSE",
-					laps = 5,
+					coords = new Vector2(3,5),
+					trackName = "SANDWINDER REVERSE",
+					laps = 3,
 					cars = new CarPlacement[]
 					{
 							new() { name = "CP1", carIdx = 14, livery = (Livery)2,  },
@@ -351,17 +805,17 @@ public class ArcadeVariant
 							new() { name = "CP4", carIdx = 13, livery = (Livery)5,  },
 							new() { name = "CP5", carIdx = 11, livery = (Livery)6,  },
 					},
-					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "2"},
-					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "FREEFALL FREEWAY REVERSE" } },
-					pavementType = (PavementType)2,
+					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
+					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "SANDWINDER REVERSE" } },
+					pavementType = (PavementType)5,
 				},
 				new() {
-					id = 9,
-					connections = new int[] { 4,14 },
-					color = Color.blue,
+					id = 10,
+					connections = new int[] { 14 },
+					color = Color.green,
 					size = 1,
-					coords = new Vector2(7,2),
-					trackName = "HIGH ROLLER REVERSE",
+					coords = new Vector2(7,5),
+					trackName = "SECRET SIX",
 					laps = 5,
 					cars = new CarPlacement[]
 					{
@@ -371,18 +825,18 @@ public class ArcadeVariant
 							new() { name = "CP4", carIdx = 8, livery = (Livery)2,  },
 							new() { name = "CP5", carIdx = 7, livery = (Livery)5,  },
 					},
-					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "2"},
-					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "HIGH ROLLER REVERSE" }  },
-					pavementType = (PavementType)0,
+					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
+					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "SECRET SIX" }  },
+					pavementType = (PavementType)6,
 				},
 				new() {
-					id = 10,
-					connections = new int[] {5},
+					id = 11,
+					connections = new int[] {15},
 					color = Color.blue,
 					size = 1,
-					coords = new Vector2(9,2),
-					trackName = "CRAZY STRAIGHTS REVERSE",
-					laps = 5,
+					coords = new Vector2(7,1),
+					trackName = "SNAKESTORM REVERSE",
+					laps = 3,
 					cars = new CarPlacement[]
 					{
 							new() { name = "CP1", carIdx = 8, livery = (Livery)2,  },
@@ -391,18 +845,18 @@ public class ArcadeVariant
 							new() { name = "CP4", carIdx = 8, livery = (Livery)6,  },
 							new() { name = "CP5", carIdx = 7, livery = (Livery)5,  },
 					},
-					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "2"},
-					prizeReqs =   new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "CRAZY STRAIGHTS REVERSE" }  },
-					pavementType = (PavementType)5,
+					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
+					prizeReqs =   new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "SNAKESTORM REVERSE" }  },
+					pavementType = (PavementType)0,
 				},
 				new() {
-					id = 0,
-					connections = new int[]{ 6 },
-					color = F.I.orange,
+					id = 12,
+					connections = new int[]{ 16,13 },
+					color = Color.green,
 					size = 1,
-					coords = new Vector2(0,3),
-					trackName = "ROUGHDUST FLATS REVERSE",
-					laps = 6,
+					coords = new Vector2(2,1),
+					trackName = "TUBULAR HELL",
+					laps = 3,
 					cars = new CarPlacement[]
 					{
 							new() { name = "CP1", carIdx = 10, livery = (Livery)5,  },
@@ -412,17 +866,17 @@ public class ArcadeVariant
 							new() { name = "CP5", carIdx = 01, livery = (Livery)6,  },
 					},
 					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
-					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "ROUGHDUST FLATS REVERSE" } },
+					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "TUBULAR HELL" } },
 					pavementType = (PavementType)1,
 				},
 				new() {
-					id = 1,
-					connections = new int[]{ 7},
-					color = F.I.orange,
+					id = 13,
+					connections = new int[]{ 17},
+					color = Color.green,
 					size = 1,
-					coords = new Vector2(2,3),
-					trackName = "FLYING FINISH REVERSE",
-					laps = 6,
+					coords = new Vector2(2,5),
+					trackName = "TUBULAR HELL REVERSE",
+					laps = 3,
 					cars = new CarPlacement[]
 					{
 							new() { name = "CP1", carIdx = 0, livery = (Livery)2,  },
@@ -432,17 +886,17 @@ public class ArcadeVariant
 							new() { name = "CP5", carIdx = 4, livery = (Livery)6,  },
 					},
 					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
-					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "car5,FLYING FINISH REVERSE" } },
-					pavementType = (PavementType)0,
+					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "TUBULAR HELL REVERSE" } },
+					pavementType = (PavementType)2,
 				},
 				new() {
-					id = 2,
-					connections = new int[]{ 8},
+					id = 14,
+					connections = new int[]{ 15,18},
 					color = Color.green,
 					size = 1,
-					coords = new Vector2(4,3),
-					trackName = "HIGHFLY CLEARWAY REVERSE",
-					laps = 6,
+					coords = new Vector2(8,5),
+					trackName = "CURB CITY CIRCUIT II",
+					laps = 3,
 					cars = new CarPlacement[]
 					{
 							new() { name = "CP1", carIdx = 14, livery = (Livery)2,  },
@@ -452,17 +906,17 @@ public class ArcadeVariant
 							new() { name = "CP5", carIdx = 11, livery = (Livery)6,  },
 					},
 					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
-					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "car2,HIGHFLY CLEARWAY REVERSE" }},
-					pavementType = (PavementType)1,
+					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "CURB CITY CIRCUIT II" }},
+					pavementType = (PavementType)3,
 				},
 				new() {
-					id = 3,
-					connections = new int[]{ 9},
+					id = 15,
+					connections = new int[]{ 19},
 					color = Color.green,
 					size = 1,
-					coords = new Vector2(6,3),
-					trackName = "TWIN LOOP CIRCUIT",
-					laps = 6,
+					coords = new Vector2(8,1),
+					trackName = "THE XING",
+					laps = 3,
 					cars = new CarPlacement[]
 					{
 							new() { name = "CP1", carIdx = 14, livery = (Livery)2,  },
@@ -472,36 +926,36 @@ public class ArcadeVariant
 							new() { name = "CP5", carIdx = 11, livery = (Livery)6,  },
 					},
 					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
-					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "car13" } },
+					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "THE XING" } },
+					pavementType = (PavementType)4,
+				},
+				new() {
+					id = 16,
+					connections = new int[]{ },
+					color = F.I.orange,
+					size = 1,
+					coords = new Vector2(1,1),
+					trackName = "CURB CITY CIRCUIT I",
+					laps = 6,
+					cars = new CarPlacement[]
+					{
+							new() { name = "CP1", carIdx = 8, livery = (Livery)2,  },
+							new() { name = "CP2", carIdx = 0, livery = (Livery)3,  },
+							new() { name = "CP3", carIdx = 7, livery = (Livery)4,  },
+							new() { name = "CP4", carIdx = 8, livery = (Livery)6,  },
+							new() { name = "CP5", carIdx = 7, livery = (Livery)5,  },
+					},
+					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
+					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "CURB CITY CIRCUIT I" } },
 					pavementType = (PavementType)5,
 				},
 				new() {
-					id = 4,
-					connections = new int[]{ 10},
-					color = Color.blue,
-					size = 1,
-					coords = new Vector2(8,3),
-					trackName = "WATERFRONT DASH REVERSE",
-					laps = 6,
-					cars = new CarPlacement[]
-					{
-							new() { name = "CP1", carIdx = 8, livery = (Livery)2,  },
-							new() { name = "CP2", carIdx = 0, livery = (Livery)3,  },
-							new() { name = "CP3", carIdx = 7, livery = (Livery)4,  },
-							new() { name = "CP4", carIdx = 8, livery = (Livery)6,  },
-							new() { name = "CP5", carIdx = 7, livery = (Livery)5,  },
-					},
-					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
-					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "car15,WATERFRONT DASH REVERSE" } },
-					pavementType = (PavementType)6,
-				},
-				new() {
-					id = 5,
+					id = 17,
 					connections = new int[]{ },
 					color = Color.blue,
 					size = 1,
-					coords = new Vector2(10,3),
-					trackName = "INTERSECTOR REVERSE",
+					coords = new Vector2(1,5),
+					trackName = "HIGH ROLLER REVERSE",
 					laps = 6,
 					cars = new CarPlacement[]
 					{
@@ -512,8 +966,48 @@ public class ArcadeVariant
 							new() { name = "CP5", carIdx = 7, livery = (Livery)5,  },
 					},
 					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
-					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "car4,INTERSECTOR REVERSE" } },
+					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "HIGH ROLLER REVERSE" } },
 					pavementType = (PavementType)6
+				},
+				new() {
+					id = 18,
+					connections = new int[]{ },
+					color = Color.blue,
+					size = 1,
+					coords = new Vector2(9,5),
+					trackName = "BANK JOB BETA",
+					laps = 6,
+					cars = new CarPlacement[]
+					{
+							new() { name = "CP1", carIdx = 8, livery = (Livery)2,  },
+							new() { name = "CP2", carIdx = 0, livery = (Livery)3,  },
+							new() { name = "CP3", carIdx = 7, livery = (Livery)4,  },
+							new() { name = "CP4", carIdx = 8, livery = (Livery)6,  },
+							new() { name = "CP5", carIdx = 7, livery = (Livery)5,  },
+					},
+					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
+					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "car10,BANK JOB BETA" } },
+					pavementType = (PavementType)0
+				},
+				new() {
+					id = 19,
+					connections = new int[]{ },
+					color = Color.blue,
+					size = 1,
+					coords = new Vector2(9,1),
+					trackName = "RISE'N'FALL",
+					laps = 6,
+					cars = new CarPlacement[]
+					{
+							new() { name = "CP1", carIdx = 8, livery = (Livery)2,  },
+							new() { name = "CP2", carIdx = 0, livery = (Livery)3,  },
+							new() { name = "CP3", carIdx = 7, livery = (Livery)4,  },
+							new() { name = "CP4", carIdx = 8, livery = (Livery)6,  },
+							new() { name = "CP5", carIdx = 7, livery = (Livery)5,  },
+					},
+					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
+					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "car01,RISE'N'FALL" } },
+					pavementType = (PavementType)1
 				}
 			}
 		};
@@ -599,7 +1093,7 @@ public class ArcadeVariant
 					color = F.I.orange,
 					size = 1,
 					coords = new Vector2(2,1),
-					trackName = "THE SANDWINDER",
+					trackName = "SANDWINDER",
 					laps = 1,
 					cars = new CarPlacement[]
 					{
@@ -790,7 +1284,7 @@ public class ArcadeVariant
 							new() { name = "CP5", carIdx = 01, livery = (Livery)6,  },
 					},
 					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
-					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "car2,ROUGHDUST FLATS" } },
+					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "car02,ROUGHDUST FLATS" } },
 					pavementType = (PavementType)1,
 				},
 				new() {
@@ -810,7 +1304,7 @@ public class ArcadeVariant
 							new() { name = "CP5", carIdx = 4, livery = (Livery)6,  },
 					},
 					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
-					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "car6,FLYING FINISH" } },
+					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "car06,FLYING FINISH" } },
 					pavementType = (PavementType)0,
 				},
 				new() {
@@ -830,7 +1324,7 @@ public class ArcadeVariant
 							new() { name = "CP5", carIdx = 11, livery = (Livery)6,  },
 					},
 					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
-					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "car3,HIGHFLY CLEARWAY" }},
+					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "car03,HIGHFLY CLEARWAY" }},
 					pavementType = (PavementType)1,
 				},
 				new() {
@@ -890,11 +1384,17 @@ public class ArcadeVariant
 							new() { name = "CP5", carIdx = 7, livery = (Livery)5,  },
 					},
 					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
-					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "car5,INTERSECTOR" } },
+					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "car05,INTERSECTOR" } },
 					pavementType = (PavementType)6
 				}
 			}
 		};
 		return defaultVariant;
+	}
+
+	internal static ArcadeVariant[] GenerateDefaultVariants()
+	{
+		ArcadeVariant[] newVariants = new ArcadeVariant[] { GenerateCommunityVariant(), GenerateOriginalVariant(), GenerateProtoVariant() };
+		return newVariants;
 	}
 }

@@ -1,9 +1,13 @@
 using System.IO;
-using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class LoadSelector : TrackSelectorTemplate
 {
+	public void RefreshTrackImage()
+	{
+		selectedTrack.GetComponent<Image>().sprite = IMG2Sprite.LoadNewSprite(Path.Combine(F.I.tracksPath, selectedTrack.name + ".jpg"));
+	}
 	public void RemoveCurrentTrack()
 	{
 		if (selectedTrack == null || selectedTrack.parent.childCount == 1)
@@ -30,6 +34,7 @@ public class LoadSelector : TrackSelectorTemplate
 		StartCoroutine(Load(selectedTrack.name));
 		//containerCo = StartCoroutine(MoveToTrack());
 	}
+	
 	//bool[] PopulateContent()
 	//{
 	//	bool[] existingTrackClasses = new bool[2];

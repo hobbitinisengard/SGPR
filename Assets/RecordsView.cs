@@ -6,5 +6,6 @@ public class RecordsView : MainMenuView
 	{
 		base.OnEnable();
 		ResultsView.Clear();
+		F.I.gameMode = GameMode.Exhibition;
 	}
 }

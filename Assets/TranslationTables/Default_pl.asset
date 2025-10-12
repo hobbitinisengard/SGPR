@@ -1525,6 +1525,10 @@ MonoBehaviour:
       Wy\u015Bcigu!"
     m_Metadata:
       m_Items: []
+  - m_Id: 57652508077395968
+    m_Localized: CELE
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

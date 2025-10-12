@@ -1523,6 +1523,10 @@ MonoBehaviour:
     m_Localized: Congratulations! You've unlocked livery {0} in Exhibition Mode!
     m_Metadata:
       m_Items: []
+  - m_Id: 57652508077395968
+    m_Localized: OBJECTIVES
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

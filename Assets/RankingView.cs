@@ -187,10 +187,6 @@ public class RankingView : MainMenuView
 		switch (F.I.scoringType)
 		{
 			case ScoringType.Championship:
-				gameName = F.I.LocStr("CHAMPIONSHIPS");
-				data = F.I.teams ? F.I.rankingData.TeamChamp : F.I.rankingData.Champ;
-				break;
-			case ScoringType.Points:
 				if(showGameMode == GameMode.Arcade)
 				{
 					data = F.I.curVariant.progress.rankingRows;
@@ -198,9 +194,13 @@ public class RankingView : MainMenuView
 				}
 				else
 				{
-					gameName = F.I.LocStr("POINTS");
-					data = F.I.teams ? F.I.rankingData.TeamPts : F.I.rankingData.Pts;
+					gameName = F.I.LocStr("CHAMPIONSHIPS");
+					data = F.I.teams ? F.I.rankingData.TeamChamp : F.I.rankingData.Champ;
 				}
+				break;
+			case ScoringType.Points:
+				gameName = F.I.LocStr("POINTS");
+				data = F.I.teams ? F.I.rankingData.TeamPts : F.I.rankingData.Pts;
 				break;
 			case ScoringType.Victory:
 				gameName = F.I.LocStr("VICTORIES");

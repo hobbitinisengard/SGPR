@@ -1,0 +1,21 @@
+{
+  "author": "Team17",
+  "localizedDescriptions": [
+    "A long, winding track with multi-levels and a loop.",
+    "Długa wielopoziomowa trasa z pętlą!"
+  ],
+  "localizedNames": [
+    "SNAKESTORM REVERSE",
+    "ZAKRĘCONY REWERS"
+  ],
+  "valid": true,
+  "envir": "GER",
+  "preferredCarClass": "Aero",
+  "difficulty": 6,
+  "unlocked": true,
+  "icons": [
+    1,
+    2,
+    3
+  ]
+}

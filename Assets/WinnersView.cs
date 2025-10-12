@@ -26,7 +26,7 @@ public class WinnersView : MainMenuView
 
 		var players = ResultsView.SortedResultsByScore;
 		rankingView.sortedResults = players;
-		rankingView.SetRankingType(ScoringType.Points, false, GameMode.Arcade);
+		
 
 		if (continuationCheck)
 		{

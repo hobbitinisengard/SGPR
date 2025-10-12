@@ -304,8 +304,11 @@ public static class F
 		}
 		return null;
 	}
-	public static T FindParentComponent<T>(this Transform tr) where T : Component
+	public static T GetParentComponent<T>(this Transform tr) where T : Component
 	{
+		if(tr.GetComponent<T>() != null)
+			return tr.GetComponent<T>();
+
 		while (tr.parent != null)
 		{
 			if (tr.parent.GetComponent<T>() != null)
@@ -315,6 +318,28 @@ public static class F
 			tr = tr.parent;
 		}
 		return null;
+	}
+	public static int GetSiblingIndexInActive(this Transform tr)
+	{
+		if (tr == null || tr.parent == null)
+			return -1;
+
+		Transform parent = tr.parent;
+		int index = 0;
+
+		for (int i = 0; i < parent.childCount; i++)
+		{
+			Transform child = parent.GetChild(i);
+			if (!child.gameObject.activeSelf)
+				continue;
+
+			if (child == tr)
+				return index;
+
+			index++;
+		}
+
+		return -1;
 	}
 	public static void PlaySlideOutOnChildren(Transform node)
 	{

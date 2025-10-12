@@ -280,7 +280,10 @@ public class ResultsView : MainMenuView
 		{
 			for (int i = 0; i < resultData.Count; ++i)
 			{
-				resultData[i].SetPostRaceScore(resultData[i].score + CalculatePostraceReward(resultData[i]));
+				if (playerDNF)
+					resultData[i].SetPostRaceScore(resultData[i].score);
+				else
+					resultData[i].SetPostRaceScore(resultData[i].score + CalculatePostraceReward(resultData[i]));
 			}
 
 			bool continuationCheck = CheckArcadeCondition(F.I.targetNode.continuationReq);
@@ -297,6 +300,8 @@ public class ResultsView : MainMenuView
 				}
 			}
 			F.I.SaveArcadeProgress();
+
+			F.I.rankingView.SetRankingType(ScoringType.Championship, false, GameMode.Arcade);
 
 			if (prizes != null && prizes.Count > 0)
 			{
@@ -373,8 +378,8 @@ public class ResultsView : MainMenuView
 			}
 			else if (prizes[i].Contains("spn")) // unlock livery
 			{
-				int liveryNr = int.Parse(prizes[i]);
-				if (F.I.unlockedLiveries.Contains((Livery)int.Parse(prizes[i][3..])))
+				int liveryNr = int.Parse(prizes[i][3..]);
+				if (F.I.unlockedLiveries.Contains((Livery)liveryNr))
 				{
 					prizes.RemoveAt(prizes.Count - 1);
 				}
@@ -529,9 +534,16 @@ public class ResultsView : MainMenuView
 		}
 		else
 		{
-			lapPos = Pos(F.I.playerData.playerName, lapComp);
-			stuntPos = Pos(F.I.playerData.playerName, stuntComp);
-			driftPos = Pos(F.I.playerData.playerName, driftComp);
+			if(playerDNF)
+			{
+				lapPos = stuntPos = driftPos = 9;
+			}
+			else
+			{
+				lapPos = Pos(F.I.playerData.playerName, lapComp);
+				stuntPos = Pos(F.I.playerData.playerName, stuntComp);
+				driftPos = Pos(F.I.playerData.playerName, driftComp);
+			}
 		}
 
 		positionPerc = (resultData.Count - finalPosition) / (float)resultData.Count;

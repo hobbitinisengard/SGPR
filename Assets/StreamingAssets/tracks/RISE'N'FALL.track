@@ -1,0 +1,21 @@
+{
+  "author": "Team17",
+  "localizedDescriptions": [
+    "Have you got the stomach for the massive climb and fall? Not to mention the loop!",
+    "Jak tam twój żołądek? W górę i w dół. No i ta pętla..."
+  ],
+  "localizedNames": [
+    "RISE'N'FALL",
+    "Góra czy Dół"
+  ],
+  "valid": true,
+  "envir": "SPN",
+  "preferredCarClass": "Team",
+  "difficulty": 11,
+  "unlocked": true,
+  "icons": [
+    1,
+    2,
+    3
+  ]
+}

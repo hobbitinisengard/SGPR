@@ -180,7 +180,7 @@ public class Connector : MonoBehaviour
 			}
 			else
 			{
-				Tile otherTile = otherConnectorsCollider.transform.FindParentComponent<Tile>();
+				Tile otherTile = otherConnectorsCollider.transform.GetParentComponent<Tile>();
 				if (otherTile.placed)
 				{ // both connectors are placed, disable other one
 					otherConnectorsCollider.enabled = false;
