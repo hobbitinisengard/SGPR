@@ -65,6 +65,7 @@ public class RankingData
 public class Info : MonoBehaviour
 {
 	StringTable localizedTable;
+	public GameObject renderTextureCam;
 	public LoadSelector loadSelector;
 	public CarSelector carSelector;
 	[NonSerialized]
@@ -313,7 +314,8 @@ public class Info : MonoBehaviour
 			foreach (var i in s.allowedCarsIdxs)
 				cars[i].starter = true;
 
-		//return;// unlock all for testing 
+		if(playerData.playerName == "HAX")
+			return;// unlock all for testing 
 
 		List<string> prizeNamesToBeLocked = new();
 		foreach (var variant in F.I.arcadeVariants)
@@ -503,7 +505,6 @@ public class Info : MonoBehaviour
 	public ResultsView resultsView;
 	public ViewSwitcher viewSwitcher;
 	public Chat chat;
-	public PathCreator universalPath;
 	[NonSerialized]
 	public List<int> stuntpointsContainer = new();
 	[NonSerialized]

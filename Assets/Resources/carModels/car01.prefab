@@ -14265,7 +14265,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   lastBounceTime: 0
-  shockThreshold: 0.25
   bouncyCols:
   - {fileID: 4046152421521391366}
   - {fileID: 9054695656291353955}

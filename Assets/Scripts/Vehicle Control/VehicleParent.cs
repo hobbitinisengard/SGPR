@@ -998,25 +998,7 @@ namespace RVP
 		{
 			downshiftHold = f;
 		}
-
-		// Copy input from other vehicle
-		void InheritInput()
-		{
-			accelInput = inputInherit.accelInput;
-			brakeInput = inputInherit.brakeInput;
-			steerInput = inputInherit.steerInput;
-			ebrakeInput = inputInherit.ebrakeInput;
-			pitchInput = inputInherit.pitchInput;
-			yawInput = inputInherit.yawInput;
-			rollInput = inputInherit.rollInput;
-		}
-
-		// Copy single-frame input from other vehicle
-		void InheritInputOneShot()
-		{
-			upshiftPressed = inputInherit.upshiftPressed;
-			downshiftPressed = inputInherit.downshiftPressed;
-		}
+		
 		// Get the number of grounded wheels and the normals and velocities of surfaces they're sitting on
 		void GetGroundedWheels()
 		{

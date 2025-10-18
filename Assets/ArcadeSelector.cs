@@ -5,6 +5,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using UnityEngine.UI.Extensions.EasingCore;
 
 public class ArcadeSelector : TrackSelectorTemplate
 {
@@ -19,6 +20,7 @@ public class ArcadeSelector : TrackSelectorTemplate
 	public Transform objectivesContainer;
 	public Text objectivesRecordsTitle;
 	Coroutine blinkingCo;
+	Coroutine alignCo;
 	RectTransform curNodeRT;
 	RectTransform targetNodeRT;
 	Image selectedPath;
@@ -32,12 +34,14 @@ public class ArcadeSelector : TrackSelectorTemplate
 		F.I.curArcadeNodeID = -1;
 		F.I.CurRound = 0;
 		F.I.curArcadeScore = 0;
+		F.I.scoringType = ScoringType.Championship;
 		selectedPath = null;
 	}
 	private new void OnDisable()
 	{
 		F.I.move2Ref.action.performed -= ChangePath;
-
+		if (alignCo != null)
+			StopCoroutine(alignCo);
 		if (blinkingCo != null)
 			StopCoroutine(blinkingCo);
 		targetNodeRT.GetComponent<Image>().color = F.I.curVariant.nodes[F.I.targetArcadeNodeID].color;
@@ -136,7 +140,7 @@ public class ArcadeSelector : TrackSelectorTemplate
 			}
 		}
 	}
-	void AlignMapToCurrentNodes()
+	IEnumerator AlignMapToCurrentNodes()
 	{
 		// make sure current node and target node are visible in viewport
 		var contentRT = nodeParent.parent.GetComponent<RectTransform>();
@@ -154,11 +158,18 @@ public class ArcadeSelector : TrackSelectorTemplate
 			newContentY += -focusPos.y + 100;
 		else if (focusPos.y > viewportDims.y)
 			newContentY -= focusPos.y - viewportDims.y + 100;
-		// then clamp contentRT to not go out of bounds
-		//newContentX = Mathf.Clamp(newContentX, -contentRT.sizeDelta.x + viewportDims.x, 0);
-		//newContentY = Mathf.Clamp(newContentY, -contentRT.sizeDelta.y + viewportDims.y, 0);
 
-		contentRT.anchoredPosition = new Vector2(newContentX, newContentY);
+
+		Vector2 target = new Vector2(newContentX, newContentY);
+		Vector2 beginPos = contentRT.anchoredPosition;
+		float timer = 0;
+		while(timer < 1)
+		{
+			contentRT.anchoredPosition = Vector2.Lerp(beginPos,target,F.EasingOutQuint(timer));
+			timer += Time.deltaTime;
+			yield return null;
+		}
+		contentRT.anchoredPosition = target;
 	}
 	void ChangePath(InputAction.CallbackContext context)
 	{
@@ -177,8 +188,7 @@ public class ArcadeSelector : TrackSelectorTemplate
 		}
 		else
 		{
-			if(blinkingCo != null)
-				StopCoroutine(blinkingCo);
+			
 			if (selectedPath != null)
 			{
 				selectedPath.color = Color.gray;
@@ -190,9 +200,15 @@ public class ArcadeSelector : TrackSelectorTemplate
 			selectedPath = pathsRTs[F.I.curArcadeNodeID + "-" + targetNodeID].GetComponent<Image>();
 			targetNodeRT = nodeParent.GetChild(targetNodeID).GetComponent<RectTransform>();
 			F.I.targetArcadeNodeID = targetNodeID;
+
+			if (blinkingCo != null)
+				StopCoroutine(blinkingCo);
 			blinkingCo = StartCoroutine(Blinking());
 		}
-		AlignMapToCurrentNodes();
+		if (alignCo != null)
+			StopCoroutine(alignCo);
+
+		alignCo = StartCoroutine(AlignMapToCurrentNodes());
 		UpdateObjectivesTable();
 	}
 	IEnumerator Blinking()
@@ -289,7 +305,7 @@ public class ArcadeSelector : TrackSelectorTemplate
 		switch (req.condition)
 		{
 			case ArcadeVariant.Prize.Condition.PositionAtLeast:
-				arcadeReqText.text = F.I.LocStr("Finish at least ") + F.I.LocStr(F.PosSuffix(int.Parse(req.conditionArgument)));
+				arcadeReqText.text = F.I.LocStr("Finish at least ") + F.I.LocStr(F.PosSuffix(int.Parse(req.conditionArgument)-1));
 				break;
 			case ArcadeVariant.Prize.Condition.LapAtMost:
 				arcadeReqText.text = string.Format(F.I.LocStr("Do a lap faster than {0}"), req.conditionArgument);
@@ -325,7 +341,7 @@ public class ArcadeSelector : TrackSelectorTemplate
 		switch (req.condition)
 		{
 			case ArcadeVariant.Prize.Condition.PositionAtLeast:
-				text = F.I.LocStr("Finish at least ") + F.I.LocStr(F.PosSuffix(int.Parse(req.conditionArgument)));
+				text = F.I.LocStr("Finish at least ") + F.I.LocStr(F.PosSuffix(int.Parse(req.conditionArgument)-1));
 				break;
 			case ArcadeVariant.Prize.Condition.LapAtMost:
 				text = string.Format(F.I.LocStr("Do a lap faster than {0}"), req.conditionArgument);

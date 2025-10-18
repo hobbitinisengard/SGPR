@@ -53,7 +53,7 @@ public class WinnersView : MainMenuView
 
 		if (F.I.teams)
 		{
-			List<ResultInfo> winnerPlayers = new();
+			List<Result> winnerPlayers = new();
 			Livery winningTeam = players[0].sponsor;
 			foreach (var p in players)
 			{

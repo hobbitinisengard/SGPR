@@ -1496,7 +1496,7 @@ public class EditorPanel : MonoBehaviour
 		float dist = 0;
 		if (pits == null)
 		{
-			biggestPitPitDistance = F.I.universalPath.path.length;
+			biggestPitPitDistance = RaceManager.I.universalPath.path.length;
 		}
 		else
 		{

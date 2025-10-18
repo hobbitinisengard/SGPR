@@ -14,10 +14,17 @@ public class PrizeView : MainMenuView
 	int currentUnlockIndex = 0;
 	bool continuationCheck = false;
 	Coroutine moveCo;
+	Vector2 unlockparentBeginPos;
+	protected override void Awake()
+	{
+		unlockparentBeginPos = unlocksParent.GetComponent<RectTransform>().anchoredPosition;
+		base.Awake();
+	}
 	protected override void OnDisable()
 	{
 		F.DestroyAllChildren(unlocksParent);
 		currentUnlockIndex = 0;
+		unlocksParent.GetComponent<RectTransform>().anchoredPosition = unlockparentBeginPos;
 		OkButton.SetActive(false);
 		base.OnDisable();
 	}
@@ -76,7 +83,7 @@ public class PrizeView : MainMenuView
 	}
 	public void OKButton()
 	{
-		if(++currentUnlockIndex == unlocksParent.childCount)
+		if(++currentUnlockIndex >= unlocksParent.childCount)
 		{
 			if (continuationCheck)
 			{

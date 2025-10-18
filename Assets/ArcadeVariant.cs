@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json;
-using NUnit.Framework.Constraints;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -771,7 +770,7 @@ public class ArcadeVariant
 				},
 				new() {
 					id = 8,
-					connections = new int[] { 20,12},
+					connections = new int[] { 20,12,5},
 					color = Color.green,
 					size = 1,
 					coords = new Vector2(3,2),
@@ -1008,6 +1007,26 @@ public class ArcadeVariant
 					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
 					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "car01,RISE'N'FALL" } },
 					pavementType = (PavementType)1
+				},
+				new() {
+					id = 20,
+					connections = new int[]{ 12},
+					color = Color.blue,
+					size = 1,
+					coords = new Vector2(3,1),
+					trackName = "FREEFALL FREEWAY REVERSE",
+					laps = 6,
+					cars = new CarPlacement[]
+					{
+							new() { name = "CP1", carIdx = 8, livery = (Livery)2,  },
+							new() { name = "CP2", carIdx = 0, livery = (Livery)3,  },
+							new() { name = "CP3", carIdx = 7, livery = (Livery)4,  },
+							new() { name = "CP4", carIdx = 8, livery = (Livery)6,  },
+							new() { name = "CP5", carIdx = 7, livery = (Livery)5,  },
+					},
+					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
+					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "FREEFALL FREEWAY REVERSE" } },
+					pavementType = (PavementType)2
 				}
 			}
 		};

@@ -4,9 +4,9 @@ using Unity.Collections;
 using UnityEngine;
 public class SGP_Bouncer : MonoBehaviour
 {
-	float shockScale = 0.15f;
+	float shockScale = 0.02f;
 	float rotationalFrictionScale = 0.15f;
-	float minShock = 0.1f;
+	float minShock = 0.25f;
 	float maxShock = 0.5f;
 	float maxRotShock = 1;
 	ContactPoint[] contacts = new ContactPoint[20];
@@ -49,9 +49,9 @@ public class SGP_Bouncer : MonoBehaviour
 		{
 			Keyframe[] kf = new Keyframe[]
 			{
-								new (Mathf.Cos((-90)*Mathf.Deg2Rad),1),
+								new (Mathf.Cos((-45)*Mathf.Deg2Rad),1),
 								new (Mathf.Cos((0)*Mathf.Deg2Rad),0),
-								new (Mathf.Cos((90)*Mathf.Deg2Rad),1),
+								new (Mathf.Cos((45)*Mathf.Deg2Rad),1),
 			};
 			multCurve = new AnimationCurve(kf);
 		}
@@ -137,6 +137,7 @@ collision_energy_impact_timedelay,0.4,"Range(0, 1) Time in Seconds"
 			//HandleCarToCarCollisionImpact__Fv
 
 			Vector3 collisionDir = (transform.position - col.body.transform.position).normalized;
+			collisionDir = Vector3.ProjectOnPlane(collisionDir, Vector3.up);
 			collisionDir = (collisionDir + Vector3.up) / 2f;
 			float impactStrength = Mathf.Abs(Vector3.Dot(col.relativeVelocity, collisionDir));
 			ApplyShock(collisionDir, impactStrength);
@@ -148,6 +149,25 @@ collision_energy_impact_timedelay,0.4,"Range(0, 1) Time in Seconds"
 		else
 		{
 
+			// shooting bug
+			Vector3 norm = contacts[0].normal;
+			float upNormDot = Vector3.Dot(vp.tr.up, norm);
+
+			if (upNormDot < .1f && upNormDot > -.5f) // angle between 84d and 135d
+			{
+				if (col.impulse.magnitude < 30)
+					return;
+				if (Time.time - lastBounceTime < 0.3f)
+					return;
+
+				lastBounceTime = Time.time;
+				float mult = multCurve.Evaluate(Vector3.Dot(-norm, vp.tr.forward));
+				//Vector3 direction = Vector3.ProjectOnPlane(-collision.impulse, Vector3.up);
+				Vector3 direction = (vp.tr.forward + norm + vp.tr.up).normalized;
+				vp.rb.AddForceAtPosition(col.impulse.magnitude * mult * direction,
+				contacts[0].point,//vp.transform.position
+				ForceMode.VelocityChange);
+			}
 			//Vector3 collisionDir = (collisionNormal + Vector3.up) / 2f;
 			//float impactStrength = Mathf.Abs(Vector3.Dot(col.relativeVelocity, collisionDir));
 			//Debug.Log(impactStrength);

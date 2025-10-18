@@ -6,7 +6,7 @@ using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-public class ResultInfo
+public class Result
 {
 	public VehicleParent vp;
 	public bool finished;
@@ -40,12 +40,12 @@ public class ResultInfo
 		finished = !vp.raceBox.enabled;
 		//Debug.Log(string.Format("{0}, progress:{1}, score:{2}, ", name, progress, aeromiles));
 	}
-	public ResultInfo(VehicleParent vp)
+	public Result(VehicleParent vp)
 	{
 		id = vp.OwnerClientId;
 		Update(vp);
 	}
-	public ResultInfo()
+	public Result()
 	{
 	}
 	public string ToString(RecordType recordType)
@@ -90,9 +90,9 @@ public class ResultsView : MainMenuView
 	public GameObject medalPrefab;
 	public Sprite[] silverMedals; // race,lap,stunt,drift
 	public Sprite[] goldMedals;
-	readonly static List<ResultInfo> resultData = new();
+	readonly static List<Result> resultData = new();
 	public static bool playerDNF = false;
-	static int Pos(string carName, Comparison<ResultInfo> comp)
+	static int Pos(string carName, Comparison<Result> comp)
 	{
 		resultData.Sort(comp);
 		int index = resultData.FindIndex(pr => pr.name == carName);
@@ -106,7 +106,7 @@ public class ResultsView : MainMenuView
 	/// <summary>
 	/// Returns 1-10
 	/// </summary>
-	static int Pos(ulong id, Comparison<ResultInfo> comp)
+	static int Pos(ulong id, Comparison<Result> comp)
 	{
 		resultData.Sort(comp);
 		int index = resultData.FindIndex(pr => pr.id == id);
@@ -118,7 +118,7 @@ public class ResultsView : MainMenuView
 		return -1;
 	}
 
-	public static int CalculatePostraceReward(ResultInfo ri)
+	public static int CalculatePostraceReward(Result ri)
 	{
 		int finalScore = 0;
 		int finalPos = Pos(ri.id, ComparisonBasedOnRaceType()) - 1;
@@ -152,7 +152,7 @@ public class ResultsView : MainMenuView
 		Debug.Log(ri.name + string.Format("Reward: lap,stunt,drift = {0}, {1}, {2}, {3}, {4}", positionBonus, lapBonus, stuntBonus, driftBonus, aeroMeter));
 		return finalScore;
 	}
-	public static List<ResultInfo> SortedResultsByScore
+	public static List<Result> SortedResultsByScore
 	{
 		get
 		{
@@ -175,7 +175,7 @@ public class ResultsView : MainMenuView
 				}
 				teamScores.Sort((x, y) => y.score.CompareTo(x.score));
 
-				resultData.Sort((ResultInfo A, ResultInfo B) =>
+				resultData.Sort((Result A, Result B) =>
 				{
 					var teamScoreA = teamScores.Find(s => s.sponsor == A.sponsor).score;
 					var teamScoreB = teamScores.Find(s => s.sponsor == B.sponsor).score;
@@ -189,7 +189,7 @@ public class ResultsView : MainMenuView
 			return resultData;
 		}
 	}
-	public static List<ResultInfo> SortedResultsByFinishPos
+	public static List<Result> SortedResultsByFinishPos
 	{
 		get
 		{
@@ -198,7 +198,7 @@ public class ResultsView : MainMenuView
 			return resultData;
 		}
 	}
-	public static ResultInfo Get(VehicleParent vp)
+	public static Result Get(VehicleParent vp)
 	{
 		return resultData.FirstOrDefault(r => r.vp == vp);
 	}
@@ -226,7 +226,7 @@ public class ResultsView : MainMenuView
 		var entry = resultData.FirstOrDefault(RD => RD.vp == car);
 		if (entry == default)
 		{
-			resultData.Add(new ResultInfo(car));
+			resultData.Add(new Result(car));
 		}
 		else
 		{
@@ -250,12 +250,12 @@ public class ResultsView : MainMenuView
 	private int stuntBonus;
 	private int driftBonus;
 	private int aeroMeter;
-	public static readonly Comparison<ResultInfo> raceComp = new((ResultInfo x, ResultInfo y) => x.raceTime.TotalSeconds.CompareTo(y.raceTime.TotalSeconds));
-	public static readonly Comparison<ResultInfo> knockoutComp = new((ResultInfo x, ResultInfo y) => { return y.progress.CompareTo(x.progress); });
-	public static readonly Comparison<ResultInfo> stuntComp = new((ResultInfo x, ResultInfo y) => y.aeromiles.CompareTo(x.aeromiles));
-	public static readonly Comparison<ResultInfo> driftComp = new((ResultInfo x, ResultInfo y) => y.drift.CompareTo(x.drift));
-	public static readonly Comparison<ResultInfo> lapComp = new((ResultInfo x, ResultInfo y) => x.lap.TotalSeconds.CompareTo(y.lap.TotalSeconds));
-	public static readonly Comparison<ResultInfo> ScoreComp = new((ResultInfo x, ResultInfo y) => y.score.CompareTo(x.score));
+	public static readonly Comparison<Result> raceComp = new((Result x, Result y) => x.raceTime.TotalSeconds.CompareTo(y.raceTime.TotalSeconds));
+	public static readonly Comparison<Result> knockoutComp = new((Result x, Result y) => { return y.progress.CompareTo(x.progress); });
+	public static readonly Comparison<Result> stuntComp = new((Result x, Result y) => y.aeromiles.CompareTo(x.aeromiles));
+	public static readonly Comparison<Result> driftComp = new((Result x, Result y) => y.drift.CompareTo(x.drift));
+	public static readonly Comparison<Result> lapComp = new((Result x, Result y) => x.lap.TotalSeconds.CompareTo(y.lap.TotalSeconds));
+	public static readonly Comparison<Result> ScoreComp = new((Result x, Result y) => y.score.CompareTo(x.score));
 
 	public void OKButton()
 	{
@@ -302,7 +302,7 @@ public class ResultsView : MainMenuView
 			F.I.SaveArcadeProgress();
 
 			F.I.rankingView.SetRankingType(ScoringType.Championship, false, GameMode.Arcade);
-
+			
 			if (prizes != null && prizes.Count > 0)
 			{
 				prizeView.Prepare(prizes, continuationCheck);
@@ -404,7 +404,7 @@ public class ResultsView : MainMenuView
 		if (req == null)
 			return false;
 
-		ResultInfo playerResult;
+		Result playerResult;
 		var sortedPlayers = SortedResultsByFinishPos;
 		if (F.I.alwaysFirst)
 		{
@@ -442,7 +442,7 @@ public class ResultsView : MainMenuView
 				TimeSpan timeAtMostReq = TimeSpan.Parse(req.conditionArgument);
 				return playerResult.raceTime <= timeAtMostReq;
 			case ArcadeVariant.Prize.Condition.FastestLaptime:
-				resultData.Sort((ResultInfo A, ResultInfo B) =>
+				resultData.Sort((Result A, Result B) =>
 				{
 					return A.lap.CompareTo(B.lap);
 				});
@@ -484,7 +484,7 @@ public class ResultsView : MainMenuView
 		playerDNF = false;
 		base.OnDisable();
 	}
-	static Comparison<ResultInfo> ComparisonBasedOnRaceType()
+	static Comparison<Result> ComparisonBasedOnRaceType()
 	{
 		return F.I.s_raceType switch
 		{
@@ -730,10 +730,10 @@ public class ResultsView : MainMenuView
 	}
 	void ResultRandomizer()
 	{
-		resultData.AddRange(new ResultInfo[F.R(2, 11)]);
+		resultData.AddRange(new Result[F.R(2, 11)]);
 		for (int i = 0; i < resultData.Count; ++i)
 		{
-			resultData[i] = new ResultInfo()
+			resultData[i] = new Result()
 			{
 				drift = F.R(0, 100000),
 				lap = TimeSpan.FromMilliseconds(F.R(30 * 1000, 2 * 3600 * 1000)),

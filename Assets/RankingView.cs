@@ -25,9 +25,9 @@ public class RankingRowData
 		this.rounds = rounds;
 		this.moneyOrPerc = moneyOrPerc;
 	}
-	public RankingRowData(IEnumerable<ResultInfo> sortedPlayers)
+	public RankingRowData(IEnumerable<Result> sortedPlayers)
 	{
-		ResultInfo me;
+		Result me;
 		if(F.I.gameMode == GameMode.Multiplayer)
 		{
 			me = sortedPlayers.First(p => p.id == ServerC.I.networkManager.LocalClientId);
@@ -78,20 +78,6 @@ public class RankingRowData
 				break;
 		}
 	}
-	/// <summary>
-	/// The more rounds, the more win value
-	/// </summary>
-	[JsonIgnore]
-	public float WinValue
-	{
-		get
-		{
-			if (F.I.scoringType == ScoringType.Championship)
-				return moneyOrPerc;
-			else
-				return moneyOrPerc * rounds;
-		}
-	}
 }
 public class RankingView : MainMenuView
 {
@@ -111,7 +97,7 @@ public class RankingView : MainMenuView
 	private float scrollTarget;
 	private Transform selectedRow;
 	[NonSerialized]
-	public List<ResultInfo> sortedResults;
+	public List<Result> sortedResults;
 
 	GameMode showGameMode = GameMode.Multiplayer;
 	public void SetRankingType(ScoringType s, bool teams, GameMode gm)
@@ -176,7 +162,7 @@ public class RankingView : MainMenuView
 	protected override void OnEnable()
 	{
 		F.I.move2Ref.action.performed += Move;
-		List<ResultInfo> players = ResultsView.SortedResultsByFinishPos;
+		List<Result> players = ResultsView.SortedResultsByFinishPos;
 		RankingRowData newEntry = null;
 
 		if (players.Count > 0)
@@ -216,7 +202,12 @@ public class RankingView : MainMenuView
 
 		float newScore = 0;
 		if (newEntry != null)
-			newScore = newEntry.WinValue;
+		{
+			if (F.I.scoringType == ScoringType.Championship)
+				newScore = newEntry.moneyOrPerc;
+			else
+				newScore = newEntry.moneyOrPerc * newEntry.rounds;
+		}
 
 		while (rankingContent.childCount != 100)
 		{
@@ -229,7 +220,16 @@ public class RankingView : MainMenuView
 			var row = rankingContent.GetChild(i);
 			row.GetChild(0).GetComponent<TextMeshProUGUI>().text = (i + 1).ToString("D3");
 
-			if (newEntry != null && (curNode == null || newScore >= curNode.Value.WinValue))
+			float winValue = 0;
+			if (curNode != null)
+			{
+				if (F.I.scoringType == ScoringType.Championship)
+					winValue = curNode.Value.moneyOrPerc;
+				else
+					winValue = curNode.Value.moneyOrPerc * curNode.Value.rounds;
+			}
+
+			if (newEntry != null && (curNode == null || newScore >= winValue))
 			{ // add newEntry to data
 				if (curNode == null)
 					curNode = data.AddFirst(newEntry);

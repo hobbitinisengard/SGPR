@@ -42,7 +42,7 @@ namespace RVP
 		public float forwardTargetDot;
 		public float tSpeed;
 		public float lookAheadBase = 15;
-		const float radius = 30;
+		const float radius = 35;
 		private Vector4 tPos0;
 		public float stoppedTime;
 		public float reverseTime;
@@ -114,7 +114,7 @@ namespace RVP
 				if (Time.time - LapProgressPercentTime > .2f) // for better performance
 				{
 					LapProgressPercentTime = Time.time;
-					int universalPathProgress = GetDist(1 << F.I.universalPath.gameObject.layer);
+					int universalPathProgress = GetDist(1 << RaceManager.I.universalPath.gameObject.layer);
 					if (universalPathProgress > progress + 2 * radius || universalPathProgress < progress - 2 * radius)
 						universalPathProgress = progress;
 
@@ -123,7 +123,7 @@ namespace RVP
 						lapProgressPercent = 1;
 					}
 					else
-						lapProgressPercent = universalPathProgress / F.I.universalPath.path.length;
+						lapProgressPercent = universalPathProgress / RaceManager.I.universalPath.path.length;
 				}
 
 				return lapProgressPercent;

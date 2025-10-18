@@ -547,11 +547,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 61652248297472
-    m_Localized: "Wsch\xF3d"
+    m_Localized: Poranek
     m_Metadata:
       m_Items: []
   - m_Id: 61694916952064
-    m_Localized: "Zach\xF3d"
+    m_Localized: Zmierzch
     m_Metadata:
       m_Items: []
   - m_Id: 61990388891648

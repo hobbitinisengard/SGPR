@@ -21,6 +21,7 @@ public class SavePanelWorks : MonoBehaviour
 	}
 	private void OnEnable()
 	{
+		F.I.renderTextureCam.SetActive(true);
 		editorPanel.SetVisibleInPictureMode(false);
 		beigePlane.SetActive(true);
 		Physics.BoxCast(Vector3.zero + 2000 * Vector3.down, new Vector3(3000, 1, 3000), Vector3.up, out var hit, Quaternion.identity, Mathf.Infinity, 1 << F.I.roadLayer);
@@ -32,6 +33,7 @@ public class SavePanelWorks : MonoBehaviour
 	}
 	private void OnDisable()
 	{
+		F.I.renderTextureCam.SetActive(false);
 		beigePlane.SetActive(false);
 		//editorPanel.SetPylonVisibility(true);
 		SetFlyCamera(true);

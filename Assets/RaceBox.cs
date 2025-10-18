@@ -618,9 +618,6 @@ public class RaceBox : MonoBehaviour
 				stableLandingTimer = .5f;
 			}
 
-			if (stableLandingTimer != -1 && vp.velMag < 5)
-				DeclineStunt();
-
 			if (stableLandingTimer != -1 && stableLandingTimer <= 0)
 				AcceptStunt();
 
@@ -940,6 +937,10 @@ public class RaceBox : MonoBehaviour
 			}
 			else
 			{
+				if(vp.name == F.I.playerData.playerName)
+				{
+					vp.lastRoundScore = F.I.curArcadeScore;
+				}
 				ResultsView.Add(vp);
 			}
 			vp.followAI.selfDriving = true;
