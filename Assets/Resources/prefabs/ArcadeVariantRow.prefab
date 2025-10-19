@@ -287,6 +287,7 @@ GameObject:
   - component: {fileID: 2471856107663841539}
   - component: {fileID: 9021633944778890715}
   - component: {fileID: 6973676529641734657}
+  - component: {fileID: -942420611907309446}
   m_Layer: 0
   m_Name: ArcadeVariantRow
   m_TagString: Untagged
@@ -424,6 +425,18 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &-942420611907309446
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8519713698774964156}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 22e96e4c9169dc94fa6260db8af8d5e6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &8885033257143578758
 GameObject:
   m_ObjectHideFlags: 0

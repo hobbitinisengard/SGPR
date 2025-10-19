@@ -146,8 +146,8 @@ public class RaceBox : MonoBehaviour
 	private float smoothedDriftAngle;
 	public float driftingTime;
 	public float driftingTimer;
-	private float sidewinderLeftTimer;
-	private float sidewinderRightTimer;
+	public float sidewinderLeftTimer;
+	public float sidewinderRightTimer;
 	private float grindTimer;
 	private float grindTime;
 
@@ -617,6 +617,9 @@ public class RaceBox : MonoBehaviour
 				prevGroundedWheels0 = false;
 				stableLandingTimer = .5f;
 			}
+
+			if (stableLandingTimer != -1 && vp.velMag < 3)
+				DeclineStunt();
 
 			if (stableLandingTimer != -1 && stableLandingTimer <= 0)
 				AcceptStunt();

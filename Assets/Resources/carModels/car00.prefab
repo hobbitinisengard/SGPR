@@ -14235,7 +14235,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 1553044784
+  GlobalObjectIdHash: 2268397340
   InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
@@ -14344,7 +14344,7 @@ MonoBehaviour:
   - {fileID: 3596460534430659167}
   honkerAudio: {fileID: 2444645322435222741}
   sampleText: {fileID: 8180295954061042356}
-  carNumber: 1
+  carNumber: 0
   bodyObj: {fileID: 7136051627190437502}
   frontLights:
   - {fileID: 2712850293685523867}
@@ -14571,6 +14571,7 @@ MonoBehaviour:
   searchForPits: 0
   outOfTrackTime: 0
   outOfTrackRequiredTime: 2
+  lowSpeedTime: 0
   aiStuntingProc: 0
   targetSteer: 0
   maxDiff: 0.01
@@ -14669,10 +14670,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4004a853526701343b191aaf6c4b56c8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  shockScale: 0.05
-  maxShock: 10000
   lastBounceTime: 0
-  shockThreshold: 0.25
   bouncyCols:
   - {fileID: 301478497854231025}
 --- !u!1 &6192630529381075353

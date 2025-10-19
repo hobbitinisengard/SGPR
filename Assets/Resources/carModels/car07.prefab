@@ -7428,7 +7428,7 @@ Transform:
   m_GameObject: {fileID: 2761606385703896897}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.506, y: 0.027, z: -0.1}
+  m_LocalPosition: {x: -0.4, y: 0.027, z: -0.167}
   m_LocalScale: {x: 1, y: 1.31, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -7453,7 +7453,7 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.46
+  m_Radius: 0.43
   m_Height: 1.93
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
@@ -8223,7 +8223,7 @@ Transform:
   m_GameObject: {fileID: 4124598278269809154}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.5, y: 0.027, z: -0.1}
+  m_LocalPosition: {x: 0.4, y: 0.027, z: -0.167}
   m_LocalScale: {x: 1, y: 1.31, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -8248,7 +8248,7 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.46
+  m_Radius: 0.43
   m_Height: 1.93
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
@@ -9064,7 +9064,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 1453681297
+  GlobalObjectIdHash: 3879396144
   InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
@@ -9093,7 +9093,7 @@ MonoBehaviour:
   - {fileID: 3596460534430659167}
   honkerAudio: {fileID: 2797962445092014728}
   sampleText: {fileID: 5882570055664018235}
-  carNumber: 8
+  carNumber: 7
   bodyObj: {fileID: 7136051627190437502}
   frontLights:
   - {fileID: 2712850293685523867}
@@ -9399,6 +9399,7 @@ MonoBehaviour:
   searchForPits: 0
   outOfTrackTime: 0
   outOfTrackRequiredTime: 2
+  lowSpeedTime: 0
   aiStuntingProc: 0
   targetSteer: 0
   maxDiff: 0.01

@@ -100,7 +100,7 @@ namespace RVP
 		[NonSerialized]
 		public CarConfig carConfig;
 		/// <summary>
-		/// from 1 to 20
+		/// from 0 ti 19
 		/// </summary>
 		public int carNumber;
 		[NonSerialized]
@@ -186,7 +186,7 @@ namespace RVP
 							// pick random from unlocked liveries
 							var pickedLivery = F.I.unlockedLiveries.GetRandom();
 							if (pickedLivery == null || pickedLivery == Livery.Random)
-								value = F.I.cars[carNumber - 1].defaultLivery;
+								value = F.I.cars[carNumber].defaultLivery;
 							else
 								value = pickedLivery.Value;
 						}
@@ -657,7 +657,7 @@ namespace RVP
 
 			yield return new WaitForSeconds(.5f); // wait for all the components to load
 
-			carConfig = new CarConfig(F.I.cars[carNumber - 1].config);
+			carConfig = new CarConfig(F.I.cars[carNumber].config);
 			carConfig.Apply(this);
 
 			if (F.I.s_raceType == RaceType.TimeTrial)
@@ -680,7 +680,7 @@ namespace RVP
 			}
 			ResultsView.Add(this);
 			engine.ignition = true;
-			lightsInput = F.I.s_timeOfDay == TimeOfDay.Night || F.I.s_timeOfDay == TimeOfDay.Sunset || F.I.tracks[F.I.s_trackName].envir == Envir.FRA;
+			lightsInput = F.I.s_timeOfDay == TimeOfDay.Night || F.I.tracks[F.I.s_trackName].envir == Envir.FRA;
 			foreach (var l in frontLights)
 				l.SetActive(lightsInput);
 			foreach (var l in rearLights)

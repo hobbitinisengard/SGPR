@@ -39,7 +39,7 @@ public class Tile : MonoBehaviour
 		{
 			for (int i = 0; i < lightObj.transform.childCount; ++i)
 			{
-				lightObj.transform.GetChild(i).gameObject.SetActive(F.I.s_timeOfDay == TimeOfDay.Night || F.I.s_timeOfDay == TimeOfDay.Sunset);
+				lightObj.transform.GetChild(i).gameObject.SetActive(F.I.s_timeOfDay == TimeOfDay.Night);
 			}
 		}
 	}

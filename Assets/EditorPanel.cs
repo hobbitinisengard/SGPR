@@ -340,7 +340,7 @@ public class EditorPanel : MonoBehaviour
 			}
 			if (Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.N))
 			{
-				SwitchDayNight((TimeOfDay)F.Wraparound((int)F.I.s_timeOfDay + 1, (int)TimeOfDay.Day, (int)TimeOfDay.Night));
+				SwitchDayNight((TimeOfDay)F.Wraparound((int)F.I.s_timeOfDay + 1, 0, Info.TimeOfDays-1));
 			}
 		}
 		
@@ -1496,7 +1496,7 @@ public class EditorPanel : MonoBehaviour
 		float dist = 0;
 		if (pits == null)
 		{
-			biggestPitPitDistance = RaceManager.I.universalPath.path.length;
+			biggestPitPitDistance = RaceManager.I.racingPaths[0].path.length;
 		}
 		else
 		{

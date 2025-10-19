@@ -1495,6 +1495,14 @@ MonoBehaviour:
     m_Key: OBJECTIVES
     m_Metadata:
       m_Items: []
+  - m_Id: 60076925909524480
+    m_Key: Race with others on the same computer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 60077190968565760
+    m_Key: Select amount of local players
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

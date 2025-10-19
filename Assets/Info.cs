@@ -1,5 +1,4 @@
 using Newtonsoft.Json;
-using PathCreation;
 using RVP;
 using System;
 using System.Collections;
@@ -29,7 +28,7 @@ public enum PavementType { Arena, Volcano, Asphalt, Energy, Grid, Japan, Jungle,
 public enum GameMode { Exhibition, Multiplayer, Splitscreen, Arcade };
 public enum RaceType { Race, Knockout, Stunt, Drift, TimeTrial }
 public enum CpuLevel { Easy, Medium, Hard };
-public enum TimeOfDay { Day, Night, Sunrise, Sunset };
+public enum TimeOfDay { Day, Night };
 public enum Language { English, Polish };
 
 [Serializable]
@@ -64,6 +63,7 @@ public class RankingData
 
 public class Info : MonoBehaviour
 {
+	public const int TimeOfDays = 2;
 	StringTable localizedTable;
 	public GameObject renderTextureCam;
 	public LoadSelector loadSelector;
@@ -239,20 +239,17 @@ public class Info : MonoBehaviour
 		arcadeVariants = new List<ArcadeVariant>();
 		if (!Directory.Exists(arcadePath))
 			Directory.CreateDirectory(arcadePath);
-		string[] filepaths = Directory.GetFiles(arcadePath, "*.json", SearchOption.TopDirectoryOnly);
 
-		if (filepaths.Length == 0)
-		{
-			ArcadeVariant[] newVariants = ArcadeVariant.GenerateDefaultVariants();
-			foreach (var newVariant in newVariants)
-			{
-				string serializedVariant = JsonConvert.SerializeObject(newVariant, Formatting.Indented);
-				string filepath = Path.Combine(arcadePath, $"{newVariant.name}.json");
-				File.WriteAllText(filepath, serializedVariant);
-				playerData.currentArcadeVariant = newVariant.name;
-			}
-			filepaths = Directory.GetFiles(arcadePath, "*.json", SearchOption.TopDirectoryOnly);
-		}
+        ArcadeVariant[] newVariants = ArcadeVariant.GenerateDefaultVariants();
+        foreach (var newVariant in newVariants)
+        {
+            string serializedVariant = JsonConvert.SerializeObject(newVariant, Formatting.Indented);
+            string filepath = Path.Combine(arcadePath, $"{newVariant.name}.json");
+            File.WriteAllText(filepath, serializedVariant);
+            playerData.currentArcadeVariant = newVariant.name;
+        }
+
+        string[] filepaths = Directory.GetFiles(arcadePath, "*.json", SearchOption.TopDirectoryOnly);
 
 		foreach (var filepath in filepaths)
 		{
@@ -675,10 +672,6 @@ public class Info : MonoBehaviour
 				cars[i].config = new CarConfig("car" + i.ToString(), jsonText);
 			});
 		}
-	}
-	public void AddCar()
-	{
-		tracks["car" + (1 + Mathf.RoundToInt(19 * UnityEngine.Random.value)).ToString()].unlocked = true;
 	}
 	public void PopulateTrackData()
 	{

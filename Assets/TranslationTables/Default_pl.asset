@@ -487,7 +487,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 55983394783232
-    m_Localized: Nazwa
+    m_Localized: NAZWA
     m_Metadata:
       m_Items: []
   - m_Id: 56287515377664
@@ -1447,7 +1447,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 47500128618876928
-    m_Localized: Wybranie innego wariantu zmieni odblokowane auta i trasy
+    m_Localized: "Przejd\u017A wszystkie \u015Bcie\u017Cki by odblokowa\u0107 bonusy"
     m_Metadata:
       m_Items: []
   - m_Id: 47791721053753344
@@ -1527,6 +1527,14 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 57652508077395968
     m_Localized: CELE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 60076925909524480
+    m_Localized: "\u015Acigaj si\u0119 z innymi na tym samym komputerze"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 60077190968565760
+    m_Localized: "Wybierz ilo\u015B\u0107 graczy lokalnych"
     m_Metadata:
       m_Items: []
   references:

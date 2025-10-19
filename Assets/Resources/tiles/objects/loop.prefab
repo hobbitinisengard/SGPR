@@ -118,7 +118,7 @@ GameObject:
   - component: {fileID: 8609342579257266011}
   - component: {fileID: 1614069324693962731}
   m_Layer: 22
-  m_Name: Loop
+  m_Name: loop
   m_TagString: Loop
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -133,7 +133,7 @@ Transform:
   m_GameObject: {fileID: 3329386067582692872}
   serializedVersion: 2
   m_LocalRotation: {x: 0.7071068, y: -0, z: -0, w: 0.7071067}
-  m_LocalPosition: {x: 2.8, y: -0.1, z: 27.6}
+  m_LocalPosition: {x: 2.8, y: -0.1, z: 22.4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -166,7 +166,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 44.6, y: 17.07, z: 42.48}
+  m_Size: {x: 44.6, y: 30.7, z: 42.48}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!54 &8609342579257266011
 Rigidbody:
@@ -445,6 +445,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_TagString
       value: VisibleInPictureMode
+      objectReference: {fileID: 0}
+    - target: {fileID: 9181683226690783094, guid: 82f358c160fad31488395bd98bc72de5,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

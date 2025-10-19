@@ -490,7 +490,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 55983394783232
-    m_Localized: Name
+    m_Localized: NAME
     m_Metadata:
       m_Items: []
   - m_Id: 56287515377664
@@ -1448,7 +1448,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 47500128618876928
-    m_Localized: Picking different variant will change unlocked cars and tracks
+    m_Localized: Try to traverse all paths to unlock bonuses
     m_Metadata:
       m_Items: []
   - m_Id: 47791721053753344
@@ -1525,6 +1525,14 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 57652508077395968
     m_Localized: OBJECTIVES
+    m_Metadata:
+      m_Items: []
+  - m_Id: 60076925909524480
+    m_Localized: Race with others on the same computer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 60077190968565760
+    m_Localized: Select amount of local players
     m_Metadata:
       m_Items: []
   references:

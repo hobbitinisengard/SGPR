@@ -17,7 +17,7 @@ namespace RVP
 		public InputActionReference moveRef;
 		public InputActionReference changeCamRef;
 
-		readonly Vector2[] camerasLH = new Vector2[] {   new(4.5f, 2.3f), new(8.5f, 3), new(11, 4.5f)};
+		readonly Vector2[] camerasLH = new Vector2[] {   new(4f, 1.8f), new(8, 3), new(11, 4.5f)};
 		int curCameraLH = 0;
 		public enum Mode { Follow, Replay };
 		Mode _mode;
@@ -49,8 +49,8 @@ namespace RVP
 		VehicleParent vp;
 		Rigidbody targetBody;
 
-		float height = 4.5f;
-		float targetCamCarDistance = 2.3f;
+		public float height = 4.5f;
+		public float targetCamCarDistance = 2.3f;
 
 		public float xInput;
 		public float yInput;
@@ -88,17 +88,19 @@ namespace RVP
 		private Vector3 velocity = Vector3.zero;
 		private Vector3 fastVelocity = Vector3.zero;
 		public bool slowCamera = false;
+		private float slowCameraStartTime;
 		private float smoothDampRspnvns = 10f;
-		public float smoothTime = 1f;
+		float smoothTime = 0.5f;
 		private Vector3 newTrPos;
-		private float camStoppedSmoothTime = 4f;
-		private float camFollowSmoothTime = 1f;
-		private float smoothTimeSpeed = 2.5f;
-		public int maxPitch = 10;
-		public float cHeight = 2;
+		float camStoppedSmoothTime = 4f;
+		float camFollowSmoothTime = 0.5f;
 		float smoothRotCoeff = 0.01f;
+		float forwardLookCoeff = 14;
+		private float smoothTimeSpeed = 2.5f;
+		float maxSlowCameraTime = 0.3f;
+		public int maxPitch = 10;
+		float cHeight = 2;
 		float replayCamAgility = 1;
-		float forwardLookCoeff = 10;
 		float upLookCoeff = 1f;
 		Vector3 forward;
 		readonly AnimationCurve fovAtSpeed = AnimationCurve.Linear(50, 54, 83, 64);
@@ -124,7 +126,7 @@ namespace RVP
 		{
 			if (enabled && mode == Mode.Follow && !F.I.chat.texting)
 			{
-				height = camerasLH[curCameraLH].y + vp.cameraheightOffset;
+				height = camerasLH[curCameraLH].y;// + vp.cameraheightOffset;
 				targetCamCarDistance = camerasLH[curCameraLH].x;
 			}
 		}
@@ -158,7 +160,7 @@ namespace RVP
 				lookObj = lookTemp.transform;
 			}
 			vp = car;
-			height = camerasLH[curCameraLH].y + vp.cameraheightOffset;
+			height = camerasLH[curCameraLH].y;// vp.cameraheightOffset;
 			forwardLook = -vp.tr.up;
 			upLook = vp.tr.forward;
 			targetBody = vp.tr.GetComponent<Rigidbody>();
@@ -291,8 +293,8 @@ namespace RVP
 			smoothYRot = Mathf.Lerp(smoothYRot, smoothRotCoeff * vp.rb.angularVelocity.y, Time.fixedDeltaTime);
 			forward = Quaternion.AngleAxis(xInput * 90 + yInput * 180, vp.tr.up) * forward;
 			forward = Quaternion.AngleAxis(Time.fixedDeltaTime * smoothYRot * Mathf.Rad2Deg, vp.tr.up) * forward;
-			height = Mathf.InverseLerp(720, 0, vp.velMag) * (camerasLH[curCameraLH].y + vp.cameraheightOffset); // make the camera lower the faster you go
-			lookObj.position = vp.tr.position - forward * targetCamCarDistance + Vector3.up * height;
+			float speedHeight = Mathf.Lerp(1.5f, height /*+ vp.cameraheightOffset*/, Mathf.InverseLerp(100, 0, vp.velMag)); // make the camera lower the faster you go
+			lookObj.position = vp.tr.position - forward * targetCamCarDistance + Vector3.up * speedHeight;
 			lookObj.position += vp.rb.linearVelocity * Time.fixedDeltaTime;
 			//--------------
 			targetForward = vp.tr.position + cHeight * Vector3.up - lookObj.position;
@@ -329,10 +331,11 @@ namespace RVP
 				if (camOffsetDistance < 2)
 				{
 					slowCamera = true;
+					slowCameraStartTime = Time.time;
 				}
 				else
 				{
-					if (camOffsetDistance > .5f * carOffsetDistance)
+					if (Time.time - slowCameraStartTime > maxSlowCameraTime)
 						slowCamera = false;
 				}
 			}
@@ -379,7 +382,8 @@ namespace RVP
 						if (camOffsetDistance > carOffsetDistance)
 						{
 							lookObjVelCoeff = 1;
-							Quaternion cameraStoppedRotation = Quaternion.LookRotation(vp.tr.position - tr.position, rollUp);
+							//Quaternion cameraStoppedRotation = Quaternion.LookRotation(vp.tr.position - tr.position, rollUp);
+							Quaternion cameraStoppedRotation = Quaternion.LookRotation(vp.rb.linearVelocity, rollUp);
 							rotation = Quaternion.Lerp(tr.rotation, cameraStoppedRotation, 2 * Time.fixedDeltaTime);
 						}
 						else

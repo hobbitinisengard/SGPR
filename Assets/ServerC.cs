@@ -261,7 +261,7 @@ public class ServerC : MonoBehaviour
 			{
 				k_carName, new PlayerDataObject(
 					visibility: PlayerDataObject.VisibilityOptions.Member,
-					value: "car01")
+					value: "car00")
 			},
 			{
 				k_Name, new PlayerDataObject(
@@ -379,7 +379,6 @@ public class ServerC : MonoBehaviour
 			return lobby.Players.First(p => p.Id == lobby.HostId);
 		}
 	}
-
 
 	public bool ServerInRace
 	{

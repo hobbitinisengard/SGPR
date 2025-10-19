@@ -87,7 +87,7 @@ public class GreetingLogo : Sfxable
 								F.I.s_inEditor = false;
 								F.I.s_cpuLevel = CpuLevel.Medium;
 								F.I.s_trackName = track.Key;
-								F.I.s_timeOfDay = (TimeOfDay)UnityEngine.Random.Range((int)TimeOfDay.Day, (int)TimeOfDay.Sunset);
+								F.I.s_timeOfDay = (TimeOfDay)UnityEngine.Random.Range(0, Info.TimeOfDays);
 								F.I.s_laps = 9;
 								break;
 							}

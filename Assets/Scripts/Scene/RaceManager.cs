@@ -19,7 +19,6 @@ namespace RVP
 		public Light Sun;
 		public ViewSwitcher viewSwitcher;
 		public PathCreator[] racingPaths;
-		public PathCreator universalPath;
 		[Tooltip("Mask for what the wheels collide with")]
 		public LayerMask wheelCastMask;
 
@@ -241,20 +240,20 @@ namespace RVP
 					RenderSettings.ambientLight = new Color32(208, 208, 208, 1);
 					break;
 				case TimeOfDay.Night:
-					Sun.intensity = 4800;
+					Sun.intensity = 6500;
 					eulerX = 120;
 					RenderSettings.ambientLight = new Color32(52, 52, 52, 1);
 					break;
-				case TimeOfDay.Sunrise:
-					Sun.intensity = 130000;
-					eulerX = UnityEngine.Random.Range(8, 26);
-					RenderSettings.ambientLight = new Color32(208, 208, 208, 1);
-					break;
-				case TimeOfDay.Sunset:
-					Sun.intensity = 130000;
-					eulerX = UnityEngine.Random.Range(2, 8);
-					RenderSettings.ambientLight = new Color32(208, 208, 208, 1);
-					break;
+				//case TimeOfDay.Sunrise:
+				//	Sun.intensity = 130000;
+				//	eulerX = UnityEngine.Random.Range(8, 26);
+				//	RenderSettings.ambientLight = new Color32(208, 208, 208, 1);
+				//	break;
+				//case TimeOfDay.Sunset:
+				//	Sun.intensity = 130000;
+				//	eulerX = UnityEngine.Random.Range(2, 8);
+				//	RenderSettings.ambientLight = new Color32(208, 208, 208, 1);
+				//	break;
 				default:
 					break;
 			}
@@ -431,7 +430,7 @@ namespace RVP
 				Vector3 leftSide = startPos;
 				Vector3 rightSide = startPos;
 
-				for (int j = 0; j < 28; j += 2)//track width is around 30
+				for (int j = 2; j < 8; j += 2)//track width is around 30
 				{
 					if (Physics.Raycast(startPos + 5 * Vector3.up + rotDirVec * j, Vector3.down, out var hit, 10, 1 << F.I.roadLayer))
 					{
@@ -440,7 +439,7 @@ namespace RVP
 					else
 						break;
 				}
-				for (int j = 2; j < 28; j += 2)
+				for (int j = 2; j < 8; j += 2)
 				{
 					if (Physics.Raycast(startPos + 5 * Vector3.up - rotDirVec * j, Vector3.down, out var hit, 10, 1 << F.I.roadLayer))
 					{
@@ -449,7 +448,7 @@ namespace RVP
 					else
 						break;
 				}
-				startPos = Vector3.Lerp(leftSide, rightSide, (cp.position % 2 == 0) ? .286f : .714f);
+				startPos = Vector3.Lerp(leftSide, rightSide, (cp.position % 2 == 0) ? 0 : 1);
 				var position = new Vector3(startPos.x, startPos.y + 3, startPos.z);
 				var rotation = Quaternion.LookRotation(dirVec);
 

@@ -291,7 +291,7 @@ public class ArcadeSelector : TrackSelectorTemplate
 		F.I.s_roadType = node.pavementType;
 		F.I.randomPavement = false;
 		F.I.s_cpuLevel = CpuLevel.Hard;
-		F.I.s_timeOfDay = (TimeOfDay)Random.Range(0,4);
+		F.I.s_timeOfDay = (TimeOfDay)Random.Range(0,Info.TimeOfDays);
 		F.I.s_laps = node.laps;
 		F.I.s_raceType = node.raceType;
 		F.I.s_cpuRivals = node.cars.Length;

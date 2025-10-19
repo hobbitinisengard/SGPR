@@ -1,8 +1,13 @@
-﻿using UnityEngine.UI;
+﻿using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
-internal class ServerListRowLobbyJoiner : Sfxable
+internal class ServerListRowLobbyJoiner : Sfxable, ISelectHandler
 {
 	ServerList serverlist;
+	public void OnSelect(BaseEventData eventData)
+	{
+		PlaySFX("fe-dialogmove");
+	}
 	public void Set(ServerList list, string joinCode, bool hasPassword, bool joinable)
 	{
 		

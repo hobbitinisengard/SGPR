@@ -112,10 +112,6 @@ collision_energy_impact_timedelay,0.4,"Range(0, 1) Time in Seconds"
 	{
 		Bounce(col);
 	}
-	private void OnCollisionStay(Collision col)
-	{
-		Bounce(col);
-	}
 	void Bounce(Collision col)
 	{
 		int contactsNr = col.GetContacts(contacts);
@@ -123,34 +119,27 @@ collision_energy_impact_timedelay,0.4,"Range(0, 1) Time in Seconds"
 			return;
 		if (CountDownSeq.Countdown > 0)
 			return;
-		Vector3 collisionNormal = Vector3.zero;
-		for (int i = 0; i < contactsNr; i++)
-		{
-			collisionNormal += contacts[i].normal;
-		}
-		collisionNormal /= contactsNr;
-		
-		//collisionNormal = (vp.rb.worldCenterOfMass - collisionNormal).normalized;
-
+		Vector3 norm = contacts[0].normal;
 		if (contacts[0].otherCollider.gameObject.layer == F.I.carCarCollisionLayer)
 		{
 			//HandleCarToCarCollisionImpact__Fv
 
-			Vector3 collisionDir = (transform.position - col.body.transform.position).normalized;
-			collisionDir = Vector3.ProjectOnPlane(collisionDir, Vector3.up);
-			collisionDir = (collisionDir + Vector3.up) / 2f;
-			float impactStrength = Mathf.Abs(Vector3.Dot(col.relativeVelocity, collisionDir));
-			ApplyShock(collisionDir, impactStrength);
+			//Vector3 collisionDir = (transform.position - col.body.transform.position).normalized;
+			//collisionDir = Vector3.ProjectOnPlane(collisionDir, Vector3.up);
+			Vector3 dir = (vp.tr.forward + norm + vp.tr.up).normalized;
+			float impactStrength = Mathf.Abs(Vector3.Dot(col.relativeVelocity, dir));
+			impactStrength = Mathf.Clamp(impactStrength, 0.25f, 1.5f);
+			ApplyShock(dir, impactStrength);
 
 			// rotational impulse
 			float rotationalImpulse = Mathf.Min(impactStrength * rotationalFrictionScale, maxRotShock);
-			vp.rb.AddTorque(-collisionNormal * rotationalImpulse, ForceMode.VelocityChange);
+			vp.rb.AddTorque(-norm * rotationalImpulse, ForceMode.VelocityChange);
 		}
 		else
 		{
 
 			// shooting bug
-			Vector3 norm = contacts[0].normal;
+			
 			float upNormDot = Vector3.Dot(vp.tr.up, norm);
 
 			if (upNormDot < .1f && upNormDot > -.5f) // angle between 84d and 135d

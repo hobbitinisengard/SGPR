@@ -8,7 +8,7 @@ public class OKButtonGoTo : MonoBehaviour
 	public MainMenuView onMultiplayerGoToThis;
 	public MainMenuView onSplitscreenGoToThis;
 	public MainMenuView onArcadeGoToThis;
-	private void OnEnable()
+	private void Start()
 	{
 		GetComponent<Button>().onClick.AddListener(GoToView);	
 	}

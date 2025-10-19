@@ -85,14 +85,15 @@ public class PrizeView : MainMenuView
 	{
 		if(++currentUnlockIndex >= unlocksParent.childCount)
 		{
-			if (continuationCheck)
+			if (continuationCheck && F.I.targetNode.connections?.Length > 0) // go back to arcade selector
 			{
 				ResultsView.Clear();
 				F.I.arcadeSelector.MoveNodeForward();
 				GoToView(F.I.arcadeSelector.thisView);
 			}
 			else
-			{
+			{ // go to winners view
+
 				winnersView.PrepareUsingArcade(continuationCheck);
 				GoToView(winnersView);
 			}
