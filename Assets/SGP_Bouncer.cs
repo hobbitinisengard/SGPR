@@ -6,8 +6,8 @@ public class SGP_Bouncer : MonoBehaviour
 {
 	float shockScale = 0.02f;
 	float rotationalFrictionScale = 0.15f;
-	float minShock = 0.25f;
-	float maxShock = 0.5f;
+	float minShock = 1f;
+	float maxShock = 4f;
 	float maxRotShock = 1;
 	ContactPoint[] contacts = new ContactPoint[20];
 	VehicleParent vp;
@@ -75,7 +75,7 @@ public class SGP_Bouncer : MonoBehaviour
 			{
 				if (pair.contactCount > 0)
 				{
-					pair.SetPoint(0, carRbs[pair.otherBodyInstanceID].worldCOM);
+					pair.SetPoint(0, (carRbs[pair.otherBodyInstanceID].worldCOM + carRbs[pair.bodyInstanceID].worldCOM) / 2f);
 					//pair.SetNormal(0, (pair.GetNormal(0) + Vector3.up) / 2f);
 					for (int i = 1; i < pair.contactCount; ++i)
 					{
@@ -100,7 +100,7 @@ collision_energy_impact_timedelay,0.4,"Range(0, 1) Time in Seconds"
 	{
 		float shockMagnitude = Mathf.Max(minShock, Mathf.Min(impactStrength * shockScale * impactStrength * shockScale, maxShock));
 		Vector3 shockForce = direction * shockMagnitude;
-		vp.rb.AddForce(shockForce * 4, ForceMode.VelocityChange);
+		vp.rb.AddForce(shockForce, ForceMode.VelocityChange);
 	}
 	float GetRestitution(float impactStrength01)
 	{
@@ -126,20 +126,19 @@ collision_energy_impact_timedelay,0.4,"Range(0, 1) Time in Seconds"
 
 			//Vector3 collisionDir = (transform.position - col.body.transform.position).normalized;
 			//collisionDir = Vector3.ProjectOnPlane(collisionDir, Vector3.up);
-			Vector3 dir = (vp.tr.forward + norm + vp.tr.up).normalized;
-			float impactStrength = Mathf.Abs(Vector3.Dot(col.relativeVelocity, dir));
-			impactStrength = Mathf.Clamp(impactStrength, 0.25f, 1.5f);
+			//Vector3 dir = (vp.tr.forward + norm + vp.tr.up).normalized;
+			Vector3 dir = Vector3.up;
+			//float impactStrength = Mathf.Abs(Vector3.Dot(col.relativeVelocity, dir));
+			float impactStrength = Mathf.Clamp(col.relativeVelocity.magnitude, minShock, maxShock);
 			ApplyShock(dir, impactStrength);
 
 			// rotational impulse
 			float rotationalImpulse = Mathf.Min(impactStrength * rotationalFrictionScale, maxRotShock);
-			vp.rb.AddTorque(-norm * rotationalImpulse, ForceMode.VelocityChange);
+			vp.rb.AddTorque(-norm * rotationalImpulse, ForceMode.Acceleration);
 		}
 		else
 		{
-
 			// shooting bug
-			
 			float upNormDot = Vector3.Dot(vp.tr.up, norm);
 
 			if (upNormDot < .1f && upNormDot > -.5f) // angle between 84d and 135d
