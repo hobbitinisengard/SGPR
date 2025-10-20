@@ -157,8 +157,6 @@ namespace RVP
 					targetRPM = actualAccel * (limit2kRPM) * 1000;
 				}
 
-				
-
 				currentkRPM = targetDrive.feedbackRPM / 1000f;
 
 				accSign = ((targetRPM > targetDrive.rpm) ? 1 : -1);
@@ -190,6 +188,7 @@ namespace RVP
 					else
 						engineSmoke.Stop(true, ParticleSystemStopBehavior.StopEmitting);
 				}
+				
 
 				if (currentkRPM < limit2kRPM)
 				{
@@ -237,7 +236,7 @@ namespace RVP
 				targetDrive.rpm = 0;
 				targetDrive.torque = 0;
 				//targetDrive.feedbackRPM = 0;
-
+				
 				if (outputDrives.Length > 0)
 				{
 					foreach (DriveForce curOutput in outputDrives)
@@ -255,6 +254,11 @@ namespace RVP
 				airPitch = (vp.groundedWheels > 0 || actualAccel != 0) ? 1 : Mathf.Lerp(airPitch, 0, 0.5f * Time.deltaTime);
 
 				targetPitch = Mathf.Abs(currentkRPM / limit2kRPM);
+			}
+			else
+			{
+				engineSmoke.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+				targetPitch = 0;
 			}
 		}
 

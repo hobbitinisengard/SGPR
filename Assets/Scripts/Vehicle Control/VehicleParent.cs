@@ -679,7 +679,6 @@ namespace RVP
 				ServerC.I.UpdatePlayerData();
 			}
 			ResultsView.Add(this);
-			engine.ignition = true;
 			lightsInput = F.I.s_timeOfDay == TimeOfDay.Night || F.I.tracks[F.I.s_trackName].envir == Envir.FRA;
 			foreach (var l in frontLights)
 				l.SetActive(lightsInput);
@@ -856,6 +855,8 @@ namespace RVP
 
 			if (energyRemaining > 0 && (!followAI.IsCPU || F.I.s_cpuLevel == CpuLevel.Easy))
 				energyRemaining -= accelInput * engine.fuelConsumption * Time.deltaTime;
+
+			engine.ignition = energyRemaining > 0;
 		}
 
 		// Set brake input

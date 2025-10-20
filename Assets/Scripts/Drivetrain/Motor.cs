@@ -132,17 +132,10 @@ namespace RVP
 		}
 		protected virtual void Update()
 		{
-			// Set engine sound properties
-			if (!ignition)
-			{
-				targetPitch = 0;
-			}
-
 			if (engineAudio)
 			{
-				if (ignition && health > 0)
+				if (health > 0)
 				{
-					engineAudio.enabled = true;					
 					engineAudio.pitch = Mathf.LerpUnclamped(engineAudio.pitch, Mathf.LerpUnclamped(minPitch, maxPitch, targetPitch),
 						20 * Time.deltaTime) + Mathf.Sin(Time.time * 200 * (1 - health)) * (1 - health) * 0.1f * damagePitchWiggle;
 					idlingEngineAudio.pitch = engineAudio.pitch;
@@ -150,10 +143,6 @@ namespace RVP
 					float blendPoint = 0.4f;
 					idlingEngineAudio.volume = idlingEngineAudioCurve.Evaluate(1 / (2*blendPoint) * targetPitch);
 					engineAudio.volume = 1 - idlingEngineAudio.volume;
-				}
-				else
-				{
-					engineAudio.enabled = false;
 				}
 			}
 
