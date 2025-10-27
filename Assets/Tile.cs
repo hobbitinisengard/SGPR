@@ -87,53 +87,57 @@ public class Tile : MonoBehaviour
 						Endings = endings.ToArray();
 				}
 			}
-		}
-		mc.enabled = true;
-		mc.hasModifiableContacts = true;
-
-		if (F.I.s_roadType == PavementType.Random)
-		{
-			Debug.LogError("PavementType is random");
-		}
-		else if (F.I.s_roadType != PavementType.Arena)
-		{
-			var mr = mc.transform.GetComponent<MeshRenderer>();
-			string replacementStr = "0" + ((int)F.I.s_roadType).ToString();
-			var materials = mr.materials;
-			for (int i = 0; i < materials.Length; ++i)
+			else
 			{
-				if (materials[i].name.Contains("00"))
-				{
-					var newName = materials[i].name.Replace("00", replacementStr).Split(' ')[0];
-					materials[i] = Resources.Load<Material>("materials/" + newName);
-				}
+				mc = gameObject.AddComponent<MeshCollider>();
+				type = Type.NotRoad;
 			}
-			mr.materials = materials;
-		}
+			mc.enabled = true;
+			mc.hasModifiableContacts = true;
 
-		for (int i = 1; i < transform.childCount; ++i)
-		{
-			var connector = transform.GetChild(i).gameObject;
-			var col = connector.AddComponent<SphereCollider>();
-			col.radius = 3;
-			col.isTrigger = true;
-			var rb = connector.AddComponent<Rigidbody>();
-			rb.useGravity = false;
-			rb.isKinematic = true;
-			connector.AddComponent<Connector>();
-			connector.layer = F.I.connectorLayer;
-			var mf = connector.AddComponent<MeshFilter>();
-			var mr = connector.AddComponent<MeshRenderer>();
-			mf.mesh = F.I.sphereMesh;
-			mr.enabled = true;
-			mr.material = Connector.blue;
+			if (F.I.s_roadType == PavementType.Random)
+			{
+				Debug.LogError("PavementType is random");
+			}
+			else if (F.I.s_roadType != PavementType.Arena)
+			{
+				var mr = mc.transform.GetComponent<MeshRenderer>();
+				string replacementStr = "0" + ((int)F.I.s_roadType).ToString();
+				var materials = mr.materials;
+				for (int i = 0; i < materials.Length; ++i)
+				{
+					if (materials[i].name.Contains("00"))
+					{
+						var newName = materials[i].name.Replace("00", replacementStr).Split(' ')[0];
+						materials[i] = Resources.Load<Material>("materials/" + newName);
+					}
+				}
+				mr.materials = materials;
+			}
+
+			for (int i = 1; i < transform.childCount; ++i)
+			{
+				var connector = transform.GetChild(i).gameObject;
+				var col = connector.AddComponent<SphereCollider>();
+				col.radius = 3;
+				col.isTrigger = true;
+				var rb = connector.AddComponent<Rigidbody>();
+				rb.useGravity = false;
+				rb.isKinematic = true;
+				connector.AddComponent<Connector>();
+				connector.layer = F.I.connectorLayer;
+				var mf = connector.AddComponent<MeshFilter>();
+				var mr = connector.AddComponent<MeshRenderer>();
+				mf.mesh = F.I.sphereMesh;
+				mr.enabled = true;
+				mr.material = Connector.blue;
+			}
 		}
 	}
-
 	internal void SetPlaced()
 	{
 		placed = true;
-		if(type == Type.Road)
+		if (type == Type.Road)
 			mc.gameObject.layer = F.I.roadLayer;
 		if (name.Contains("dirt")) //= mud
 			mc.gameObject.AddComponent<GroundSurfaceInstance>().surfaceType = 1;

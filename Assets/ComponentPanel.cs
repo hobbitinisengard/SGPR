@@ -1132,10 +1132,10 @@ public class BmsSavable : PartSavable
 		bms.autoSteerDrift = autoSteerDrift == 1;
 		bms.driftPush = (F.I.s_raceType == RaceType.Drift) ? Mathf.Max(driftPush, 1) : driftPush;
 		bms.downforce = (F.I.s_raceType == RaceType.Drift) ? 0 : downforce;
-		vp.wheels[0].suspensionParent.brakeForce = frontBrakeForce;
-		vp.wheels[1].suspensionParent.brakeForce = frontBrakeForce;
-		vp.wheels[2].suspensionParent.brakeForce = rearBrakeForce;
-		vp.wheels[3].suspensionParent.brakeForce = rearBrakeForce;
+		vp.wheels[0].susParent.brakeForce = frontBrakeForce;
+		vp.wheels[1].susParent.brakeForce = frontBrakeForce;
+		vp.wheels[2].susParent.brakeForce = rearBrakeForce;
+		vp.wheels[3].susParent.brakeForce = rearBrakeForce;
 	}
 	public override void InitializeFromCar(VehicleParent vp)
 	{
@@ -1147,8 +1147,8 @@ public class BmsSavable : PartSavable
 		autoSteerDrift = bms.autoSteerDrift ? 1 : 0;
 		driftPush = bms.driftPush;
 		downforce = bms.downforce;
-		frontBrakeForce = vp.wheels[0].suspensionParent.brakeForce;
-		rearBrakeForce = vp.wheels[3].suspensionParent.brakeForce;
+		frontBrakeForce = vp.wheels[0].susParent.brakeForce;
+		rearBrakeForce = vp.wheels[3].susParent.brakeForce;
 	}
 }
 [Serializable]
@@ -1197,35 +1197,35 @@ public class SuspensionSavable : PartSavable
 		{
 			if (i < 2)
 			{
-				w.suspensionParent.steerRangeMax = frontSteerRangeDegs;
-				w.suspensionParent.steerRangeMin = -frontSteerRangeDegs;
-				w.suspensionParent.suspensionDistance = frontSpringDistance;
-				w.suspensionParent.springForce = frontSpringForce;
-				w.suspensionParent.springExponent = frontSpringExponent;
-				w.suspensionParent.springDampening = frontSpringDampening;
+				w.susParent.steerRangeMax = frontSteerRangeDegs;
+				w.susParent.steerRangeMin = -frontSteerRangeDegs;
+				w.susParent.suspensionDistance = frontSpringDistance;
+				w.susParent.springForce = frontSpringForce;
+				w.susParent.springExponent = frontSpringExponent;
+				w.susParent.springDampening = frontSpringDampening;
 			}
 			else
 			{
-				w.suspensionParent.suspensionDistance = RearSpringDistance;
-				w.suspensionParent.springForce = RearSpringForce;
-				w.suspensionParent.springExponent = RearSpringExponent;
-				w.suspensionParent.springDampening = RearSpringDampening;
+				w.susParent.suspensionDistance = RearSpringDistance;
+				w.susParent.springForce = RearSpringForce;
+				w.susParent.springExponent = RearSpringExponent;
+				w.susParent.springDampening = RearSpringDampening;
 			}
 			i++;
 		}
 	}
 	public override void InitializeFromCar(VehicleParent vp)
 	{
-		frontSteerRangeDegs = vp.wheels[0].suspensionParent.steerRangeMax;
-		frontSpringDistance = vp.wheels[0].suspensionParent.suspensionDistance;
-		frontSpringForce = vp.wheels[0].suspensionParent.springForce;
-		frontSpringExponent = vp.wheels[0].suspensionParent.springExponent;
-		frontSpringDampening = vp.wheels[0].suspensionParent.springDampening;
+		frontSteerRangeDegs = vp.wheels[0].susParent.steerRangeMax;
+		frontSpringDistance = vp.wheels[0].susParent.suspensionDistance;
+		frontSpringForce = vp.wheels[0].susParent.springForce;
+		frontSpringExponent = vp.wheels[0].susParent.springExponent;
+		frontSpringDampening = vp.wheels[0].susParent.springDampening;
 
-		RearSpringDistance = vp.wheels[3].suspensionParent.suspensionDistance;
-		RearSpringForce = vp.wheels[3].suspensionParent.springForce;
-		RearSpringExponent = vp.wheels[3].suspensionParent.springExponent;
-		RearSpringDampening = vp.wheels[3].suspensionParent.springDampening;
+		RearSpringDistance = vp.wheels[3].susParent.suspensionDistance;
+		RearSpringForce = vp.wheels[3].susParent.springForce;
+		RearSpringExponent = vp.wheels[3].susParent.springExponent;
+		RearSpringDampening = vp.wheels[3].susParent.springDampening;
 	}
 }
 

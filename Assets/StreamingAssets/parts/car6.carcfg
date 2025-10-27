@@ -36,7 +36,7 @@
       "rearBrakeForce": 0.5
     },
     "battery": {
-      "capacity": 1400.0,
+      "capacity": 1000.0,
       "chargingSpeed": 350.0,
       "lowBatPercent": 0.2,
       "evoBountyPercent": 0.15

@@ -182,7 +182,7 @@ namespace RVP
 					
 					if (wheel.isFront)
 					{ // prevent sticking to walls by aligning front suspension hard colliders with rear ones
-						var rearSus = wheel.isLeft ? vp.wheels[2].suspensionParent : vp.wheels[3].suspensionParent;
+						var rearSus = wheel.isLeft ? vp.wheels[2].susParent : vp.wheels[3].susParent;
 						compressTr.localPosition = (Math.Abs(rearSus.tr.localPosition.x - tr.localPosition.x) + rearSus.wheel.tireRadius / 2 - wheel.tireRadius / 2) * Vector3.forward;
 					}
 					else

@@ -36,7 +36,7 @@
       "rearBrakeForce": 1.0
     },
     "battery": {
-      "capacity": 1700.0,
+      "capacity": 1400.0,
       "chargingSpeed": 400.0,
       "lowBatPercent": 0.2,
       "evoBountyPercent": 0.2
@@ -57,14 +57,14 @@
     "engine": {
       "audioMaxPitch": 2.4,
       "audioMinPitch": 1.0,
-      "fuelConsumption": 5.0,
+      "fuelConsumption": 7.0,
       "audioType": 4.0,
-      "inertia": 50.0,
-      "inertiaAcc": 5.0,
+      "inertia": 1.0,
+      "inertiaAcc": 1.0,
       "torque": 1.0,
       "torqueCurveType": 3.0,
-      "redlineKRPM": 10.34,
-      "cutoffKRPM": 10.36
+      "redlineKRPM": 10.0,
+      "cutoffKRPM": 10.5
     },
     "chassis": {
       "mass": 2.0,

@@ -1,1 +1,22 @@
-{"lap":{"playerName":"VIA","secondsOrPts":26.96,"requiredSecondsOrPts":35999.0},"race":{"playerName":"VIA","secondsOrPts":89.1315155,"requiredSecondsOrPts":0.0},"stunt":{"playerName":"VIA","secondsOrPts":3003.848,"requiredSecondsOrPts":0.0},"drift":{"playerName":"VIA","secondsOrPts":350.0,"requiredSecondsOrPts":0.0}}
+{
+  "lap": {
+    "playerName": null,
+    "secondsOrPts": 35999.0,
+    "requiredSecondsOrPts": 35999.0
+  },
+  "race": {
+    "playerName": null,
+    "secondsOrPts": 0.0,
+    "requiredSecondsOrPts": 0.0
+  },
+  "stunt": {
+    "playerName": null,
+    "secondsOrPts": 0.0,
+    "requiredSecondsOrPts": 0.0
+  },
+  "drift": {
+    "playerName": null,
+    "secondsOrPts": 0.0,
+    "requiredSecondsOrPts": 0.0
+  }
+}

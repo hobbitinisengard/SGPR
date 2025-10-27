@@ -21,7 +21,7 @@ namespace RVP
 		[System.NonSerialized]
 		public VehicleParent vp;
 		[System.NonSerialized]
-		public Suspension suspensionParent;
+		public Suspension susParent;
 		[System.NonSerialized]
 		public Transform rim;
 		Transform tire;
@@ -239,7 +239,7 @@ namespace RVP
 		private void Awake()
 		{
 			tr = transform;
-			suspensionParent = tr.parent.GetComponent<Suspension>();
+			susParent = tr.parent.GetComponent<Suspension>();
 		}
 		void Start()
 		{
@@ -249,7 +249,7 @@ namespace RVP
 			forwardFrictionCurve ??= new AnimationCurve(new Keyframe[] { new(0, 0f), new(.2f, 1, 0, 0), new(1, .8f, 0, 0) });
 			sidewaysFrictionCurve ??= AnimationCurve.Linear(0, 0, .1f, 1);//new AnimationCurve(new Keyframe[] { new(0, 0f), new(.1f, 1f)});
 			
-			travelDist = suspensionParent.targetCompression;
+			travelDist = susParent.targetCompression;
 			canDetach = detachForce < Mathf.Infinity && Application.isPlaying;
 			initialTirePressure = tirePressure;
 
@@ -346,8 +346,8 @@ namespace RVP
 			localVel = rb.GetPointVelocity(forceApplicationPoint);
 
 			// Get proper inputs
-			actualEbrake = suspensionParent.ebrakeEnabled ? suspensionParent.brakeForce/3f : 0;
-			actualTargetRPM = targetDrive.active ? targetDrive.rpm * (suspensionParent.driveInverted ? -1 : 1) : rawRPM;
+			actualEbrake = susParent.ebrakeEnabled ? susParent.brakeForce/3f : 0;
+			actualTargetRPM = targetDrive.active ? targetDrive.rpm * (susParent.driveInverted ? -1 : 1) : rawRPM;
 			actualTorque = targetDrive.active ? targetDrive.torque : 0;
 
 			if (getContact)
@@ -377,8 +377,8 @@ namespace RVP
 			}
 
 			// Get travel distance
-			travelDist = (suspensionParent.compression < travelDist || grounded) ? suspensionParent.compression
-				: Mathf.Lerp(travelDist, suspensionParent.compression, suspensionParent.extendSpeed * Time.fixedDeltaTime);
+			travelDist = (susParent.compression < travelDist || grounded) ? susParent.compression
+				: Mathf.Lerp(travelDist, susParent.compression, susParent.extendSpeed * Time.fixedDeltaTime);
 
 			PositionWheel();
 
@@ -466,18 +466,18 @@ namespace RVP
 		// Use raycasting to find the current contact point for the wheel
 		void GetWheelContact()
 		{
-			float castDist = Mathf.Max(suspensionParent.suspensionDistance * 
-				Mathf.Max(0.001f, suspensionParent.targetCompression) + actualRadius, 0.001f);
+			float castDist = Mathf.Max(susParent.suspensionDistance * 
+				Mathf.Max(0.001f, susParent.targetCompression) + actualRadius, 0.001f);
 			//RaycastHit[] wheelHits = Physics.RaycastAll(transform.position, suspensionParent.springDirection, castDist, RaceManager.I.wheelCastMask);
 			//bool validHit = Physics.SphereCast(transform.position, actualRadius, suspensionParent.springDirection, out RaycastHit hit, castDist, RaceManager.I.wheelCastMask);
 
 			//Debug.DrawRay(transform.position, suspensionParent.springDirection, Color.yellow);
 			//Debug.DrawRay(rim.position, vp.tr.forward, Color.yellow);
 
-			bool validHit = Physics.Raycast(transform.position, suspensionParent.springDirection, out RaycastHit hit, castDist, RaceManager.I.wheelCastMask);
+			bool validHit = Physics.Raycast(transform.position, susParent.springDirection, out RaycastHit hit, castDist, RaceManager.I.wheelCastMask);
 			if(!validHit)
 			{
-				Vector3 rotAxis = Vector3.Cross(suspensionParent.springDirection, vp.forwardDir);
+				Vector3 rotAxis = Vector3.Cross(susParent.springDirection, vp.forwardDir);
 				Vector3 rayDir = vp.forwardDir;
 				var q = Quaternion.AngleAxis(-90 / 3, rotAxis);
 				for(int i=0; i<7 && !validHit; ++i)
@@ -580,7 +580,7 @@ namespace RVP
 
 				grounded = false;
 				groundedReally = false;
-				contactPoint.distance = suspensionParent.suspensionDistance;
+				contactPoint.distance = susParent.suspensionDistance;
 				contactPoint.point = Vector3.zero;
 				contactPoint.grounded = false;
 				contactPoint.normal = upDir;
@@ -599,11 +599,11 @@ namespace RVP
 		{
 			if (grounded)
 			{
-				rawRPM = -suspensionParent.flippedSideFactor * contactPoint.relativeVelocity.x * 60 / circumference;// (contactPoint.relativeVelocity.magnitude / circumference) * (Mathf.PI * 100) ;
+				rawRPM = -susParent.flippedSideFactor * contactPoint.relativeVelocity.x * 60 / circumference;// (contactPoint.relativeVelocity.magnitude / circumference) * (Mathf.PI * 100) ;
 			}
 			else
 			{
-				rawRPM = Mathf.Lerp(rawRPM, actualTargetRPM, (actualTorque + suspensionParent.brakeForce * vp.brakeInput + actualEbrake * vp.ebrakeInput) * Time.timeScale);
+				rawRPM = Mathf.Lerp(rawRPM, actualTargetRPM, (actualTorque + susParent.brakeForce * vp.brakeInput + actualEbrake * vp.ebrakeInput) * Time.timeScale);
 			}
 		}
 
@@ -623,14 +623,14 @@ namespace RVP
 				float wheelFriction = contactPoint.surfaceFriction;
 				float targetForceX = forwardFrictionCurve.Evaluate(Mathf.Abs(forwardSlipFactor))
 					* -Math.Sign(forwardSlip) * (popped ? forwardRimFriction : forwardFriction)
-					* forwardSlipDependenceFactor * -suspensionParent.flippedSideFactor;
+					* forwardSlipDependenceFactor * -susParent.flippedSideFactor;
 				d_targetForce = targetForceX;
 				float targetForceZ = wheelFriction * sidewaysFrictionCurve.Evaluate(Mathf.Abs(sidewaysSlipFactor))
 					* -Math.Sign(sidewaysSlip) * (popped ? sidewaysRimFriction : sidewaysFriction)
 					* sidewaysSlipDependenceFactor * normalFrictionCurve.Evaluate(Mathf.Clamp01(Vector3.Dot(contactPoint.normal, RaceManager.worldUpDir)));
 				Vector3 targetForce = tr.TransformDirection(targetForceX, 0, targetForceZ);
-				float targetForceMultiplier = ((1 - compressionFrictionFactor) + (1 - suspensionParent.compression) * compressionFrictionFactor
-					 * Mathf.Clamp01(Mathf.Abs(suspensionParent.tr.InverseTransformDirection(localVel).z) * 2));
+				float targetForceMultiplier = ((1 - compressionFrictionFactor) + (1 - susParent.compression) * compressionFrictionFactor
+					 * Mathf.Clamp01(Mathf.Abs(susParent.tr.InverseTransformDirection(localVel).z) * 2));
 				frictionForce = Vector3.Lerp(frictionForce, targetForce * targetForceMultiplier, 1 - frictionSmoothness);
 				rb.AddForceAtPosition(frictionForce, forceApplicationPoint, vp.wheelForceMode);
 
@@ -653,22 +653,22 @@ namespace RVP
 			{
 				if (brakeCheckValue > 0)
 				{
-					brakeForce = suspensionParent.brakeForce * vp.brakeInput;
+					brakeForce = susParent.brakeForce * vp.brakeInput;
 				}
 				else if (brakeCheckValue <= 0)
 				{
-					brakeForce = suspensionParent.brakeForce * Mathf.Clamp01(vp.accelInput);
+					brakeForce = susParent.brakeForce * Mathf.Clamp01(vp.accelInput);
 				}
 			}
 			else
 			{
-				brakeForce = suspensionParent.brakeForce * vp.brakeInput;
+				brakeForce = susParent.brakeForce * vp.brakeInput;
 			}
 
 			brakeForce += axleFriction;
 
 			// Set final RPM
-			if (!suspensionParent.jammed && connected)
+			if (!susParent.jammed && connected)
 			{
 				/// 0 = rawRPM, full grip, wheel is sticked to the road
 				/// 1 = maxRPM, no grip, wheel is sliding
@@ -743,12 +743,12 @@ namespace RVP
 		// Visual wheel positioning
 		void PositionWheel()
 		{
-			if (suspensionParent)
+			if (susParent)
 			{
-				rim.position = suspensionParent.maxCompressPoint + suspensionParent.springDirection * suspensionParent.suspensionDistance * (Application.isPlaying ? travelDist : suspensionParent.targetCompression) +
-					 suspensionParent.upDir * Mathf.Pow(Mathf.Max(Mathf.Abs(Mathf.Sin(suspensionParent.sideAngle * Mathf.Deg2Rad)), Mathf.Abs(Mathf.Sin(suspensionParent.casterAngle * Mathf.Deg2Rad))), 2) * actualRadius +
-					 suspensionParent.pivotOffset * suspensionParent.tr.TransformDirection(Mathf.Sin(tr.localEulerAngles.y * Mathf.Deg2Rad), 0, Mathf.Cos(tr.localEulerAngles.y * Mathf.Deg2Rad))
-					 - suspensionParent.pivotOffset * (Application.isPlaying ? suspensionParent.forwardDir : suspensionParent.tr.forward);
+				rim.position = susParent.maxCompressPoint + susParent.springDirection * susParent.suspensionDistance * (Application.isPlaying ? travelDist : susParent.targetCompression) +
+					 susParent.upDir * Mathf.Pow(Mathf.Max(Mathf.Abs(Mathf.Sin(susParent.sideAngle * Mathf.Deg2Rad)), Mathf.Abs(Mathf.Sin(susParent.casterAngle * Mathf.Deg2Rad))), 2) * actualRadius +
+					 susParent.pivotOffset * susParent.tr.TransformDirection(Mathf.Sin(tr.localEulerAngles.y * Mathf.Deg2Rad), 0, Mathf.Cos(tr.localEulerAngles.y * Mathf.Deg2Rad))
+					 - susParent.pivotOffset * (Application.isPlaying ? susParent.forwardDir : susParent.tr.forward);
 			}
 
 			if (Application.isPlaying && generateHardCollider && connected)
@@ -762,19 +762,19 @@ namespace RVP
 		// Visual wheel rotation
 		void RotateWheel()
 		{
-			if (tr && suspensionParent)
+			if (tr && susParent)
 			{
-				float ackermannVal = Mathf.Sign(suspensionParent.steerAngle) == suspensionParent.flippedSideFactor ? 1 + suspensionParent.ackermannFactor : 1 - suspensionParent.ackermannFactor;
+				float ackermannVal = Mathf.Sign(susParent.steerAngle) == susParent.flippedSideFactor ? 1 + susParent.ackermannFactor : 1 - susParent.ackermannFactor;
 
 				tr.localEulerAngles = new Vector3(
-			 suspensionParent.camberAngle + suspensionParent.casterAngle * suspensionParent.steerAngle * suspensionParent.flippedSideFactor,
-			 -suspensionParent.toeAngle * suspensionParent.flippedSideFactor + suspensionParent.steerDegrees * ackermannVal,
+			 susParent.camberAngle + susParent.casterAngle * susParent.steerAngle * susParent.flippedSideFactor,
+			 -susParent.toeAngle * susParent.flippedSideFactor + susParent.steerDegrees * ackermannVal,
 			 0);
 			}
 
 			if (Application.isPlaying)
 			{
-				rim.Rotate(Vector3.forward, currentRPM / 60 * 360 * suspensionParent.flippedSideFactor * Time.deltaTime);
+				rim.Rotate(Vector3.forward, currentRPM / 60 * 360 * susParent.flippedSideFactor * Time.deltaTime);
 
 				if (damage > 0)
 				{

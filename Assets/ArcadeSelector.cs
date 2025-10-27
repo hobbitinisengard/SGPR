@@ -5,7 +5,6 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
-using UnityEngine.UI.Extensions.EasingCore;
 
 public class ArcadeSelector : TrackSelectorTemplate
 {
@@ -298,42 +297,24 @@ public class ArcadeSelector : TrackSelectorTemplate
 		F.I.s_trackName = node.trackName;
 		F.I.catchup = false;
 		F.I.s_PlayerCarSponsor = F.I.cars[F.I.s_playerCarIdx].defaultLivery;
+
+		foreach(var conds in node.prizeReqs)
+		{
+			if(conds.condition == ArcadeVariant.Prize.Condition.ExactStunts)
+			{
+				var split = conds.conditionArgument.Split(',');
+				F.I.arcadeObjectiveStunts = new (string, int)[split.Length / 2];
+				for (int i = 0; i < split.Length / 2; i++)
+				{
+					F.I.arcadeObjectiveStunts[i] = (split[2*i], int.Parse(split[2*i + 1]));
+				}
+			}
+		}
 	}
 	void WriteContinuationText()
 	{
 		var req = F.I.curNode.continuationReq;
-		switch (req.condition)
-		{
-			case ArcadeVariant.Prize.Condition.PositionAtLeast:
-				arcadeReqText.text = F.I.LocStr("Finish at least ") + F.I.LocStr(F.PosSuffix(int.Parse(req.conditionArgument)-1));
-				break;
-			case ArcadeVariant.Prize.Condition.LapAtMost:
-				arcadeReqText.text = string.Format(F.I.LocStr("Do a lap faster than {0}"), req.conditionArgument);
-				break;
-			case ArcadeVariant.Prize.Condition.AeroStarsAtLeast:
-				arcadeReqText.text = string.Format(F.I.LocStr("Get at least {0} aero stars"), req.conditionArgument);
-				break;
-			case ArcadeVariant.Prize.Condition.StuntAtLeast:
-				arcadeReqText.text = string.Format(F.I.LocStr("Get at least {0} aeromiles"), req.conditionArgument);
-				break;
-			case ArcadeVariant.Prize.Condition.DriftsAtLeast:
-				arcadeReqText.text = string.Format(F.I.LocStr("Get at least {0} drift points"), req.conditionArgument);
-				break;
-			case ArcadeVariant.Prize.Condition.TimeAtMost:
-				arcadeReqText.text = string.Format(F.I.LocStr("Finish the race in less than {0}"), req.conditionArgument);
-				break;
-			case ArcadeVariant.Prize.Condition.FastestLaptime:
-				arcadeReqText.text = F.I.LocStr("Set the fastest lap time");
-				break;
-			case ArcadeVariant.Prize.Condition.AlwaysFirst:
-				arcadeReqText.text = F.I.LocStr("Always finish in first place");
-				break;
-			case ArcadeVariant.Prize.Condition.AllPathsFound:
-				arcadeReqText.text = F.I.LocStr("Find all hidden paths");
-				break;
-			default:
-				break;
-		}
+		arcadeReqText.text = GetObjectiveText(req);
 	}
 	string GetObjectiveText(ArcadeVariant.Prize req)
 	{
@@ -346,7 +327,7 @@ public class ArcadeSelector : TrackSelectorTemplate
 			case ArcadeVariant.Prize.Condition.LapAtMost:
 				text = string.Format(F.I.LocStr("Do a lap faster than {0}"), req.conditionArgument);
 				break;
-			case ArcadeVariant.Prize.Condition.AeroStarsAtLeast:
+			case ArcadeVariant.Prize.Condition.StarsAtLeast:
 				text = string.Format(F.I.LocStr("Get at least {0} aero stars"), req.conditionArgument);
 				break;
 			case ArcadeVariant.Prize.Condition.StuntAtLeast:
@@ -367,8 +348,18 @@ public class ArcadeSelector : TrackSelectorTemplate
 			case ArcadeVariant.Prize.Condition.AllPathsFound:
 				text = F.I.LocStr("Find all hidden paths");
 				break;
+			case ArcadeVariant.Prize.Condition.ExactStunts:
+				{
+					var split = req.conditionArgument.Split(',');
+					text = string.Format(F.I.LocStr("Perform {0} at least {1} times"), F.I.LocStr(split[0]), split[1]);
+					for (int i = 2; i < split.Length; i += 2)
+					{
+						text += string.Format(", {0} - {1}x", F.I.LocStr(split[i]), split[i+1]);
+					}
+				}
+				break;
 			default:
-				text = "Bottom text";
+				text = "";
 				break;
 		}
 		return text;

@@ -31,6 +31,7 @@ public enum CpuLevel { Easy, Medium, Hard };
 public enum TimeOfDay { Day, Night };
 public enum Language { English, Polish };
 
+
 [Serializable]
 public class PlayerSettingsData
 {
@@ -93,6 +94,9 @@ public class Info : MonoBehaviour
 	[NonSerialized]
 	public int curArcadeScore = 0;
 	public ArcadeSelector arcadeSelector;
+	/// <summary> number of remaining stunts to complete the objective </summary>
+	public (string,int)[] arcadeObjectiveStunts;
+
 	public const string TranslationTableName = "Default";
 	public MultiPlayerSelector mpSelectorInitializer;
 	public Text versionText;

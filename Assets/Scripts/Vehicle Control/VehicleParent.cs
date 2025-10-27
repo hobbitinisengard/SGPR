@@ -214,10 +214,6 @@ namespace RVP
 				}
 			}
 		}
-		public static bool InFreeroam
-		{
-			get { return F.I.s_inEditor && F.I.s_cpuRivals == 0; }
-		}
 		[System.NonSerialized]
 		public bool SGPlockbutton;
 		[System.NonSerialized]
@@ -241,6 +237,7 @@ namespace RVP
 
 		Material rearLightsLighter;
 		Material rearLightsDarker;
+		Material frontLightsLighter;
 		private float wheelbase;
 		[Tooltip("Accel axis is used for brake input")]
 		public bool accelAxisIsBrake;
@@ -465,11 +462,14 @@ namespace RVP
 			newMat.name = matName;
 			newMat.mainTexture = ImgPathToTexture2D(F.I.documentsSGPRpath + "textures/" + matName + ".jpg");
 
-			rearLightsLighter = new(rearLightsLighter);
 			rearLightsLighter.mainTexture = newMat.mainTexture;
 			//rearLightsBrakeMaterial.color = new(1, 18/255f, 0);
-			rearLightsDarker = new(rearLightsDarker);
 			rearLightsDarker.mainTexture = newMat.mainTexture;
+			foreach(var f in frontLights)
+			{
+				var flmr = f.transform.GetComponent<MeshRenderer>();
+				flmr.sharedMaterial = frontLightsLighter;
+			}
 			//rearLightsOnMaterial.color = new(178/255f, 0, 0);
 
 			// assign to body
@@ -605,8 +605,9 @@ namespace RVP
 
 			F.I.s_cars.Add(this);
 
-			rearLightsLighter = F.I.emissiveRearLighter;
-			rearLightsDarker = F.I.emissiveRearDarker;
+			rearLightsLighter = Resources.Load<Material>($"materials/rearlights/lighter/cars_car{carNumber+1}_b{carNumber+1}grid1l");
+			rearLightsDarker = Resources.Load<Material>($"materials/rearlights/darker/cars_car{carNumber + 1}_b{carNumber + 1}grid1d");
+			frontLightsLighter = Resources.Load<Material>($"materials/frontlights/cars_car{carNumber + 1}_b{carNumber + 1}grid1f");
 			wheelbase = Vector3.Distance(wheels[0].transform.position, wheels[2].transform.position);
 		}
 		public override void OnNetworkSpawn()
@@ -745,8 +746,7 @@ namespace RVP
 				foreach (var l in rearLights)
 				{
 					l.SetActive(true);
-					l.GetComponent<MeshRenderer>().sharedMaterials =
-						 new Material[] { l.GetComponent<MeshRenderer>().sharedMaterials[0], rearLightsLighter };
+					l.GetComponent<MeshRenderer>().sharedMaterial = rearLightsLighter;
 					l.transform.GetChild(0).GetComponent<Light>().range = 10;
 				}
 			}
@@ -756,8 +756,7 @@ namespace RVP
 				foreach (var l in rearLights)
 				{
 					l.SetActive(lightsInput);
-					l.GetComponent<MeshRenderer>().sharedMaterials =
-						 new Material[] { l.GetComponent<MeshRenderer>().sharedMaterials[0], rearLightsDarker };
+					l.GetComponent<MeshRenderer>().sharedMaterial = rearLightsDarker;
 					l.transform.GetChild(0).GetComponent<Light>().range = 2;
 				}
 			}
@@ -812,7 +811,7 @@ namespace RVP
 
 				//float radius = wheelbase / Mathf.Sin(wheels[0].suspensionParent.steerRangeMax * Mathf.Deg2Rad * wheels[0].suspensionParent.steerAngle);
 				//rb.AddTorque(twistGain * Mathf.Pow(velMag, 2) / radius * forwardDir, ForceMode.Acceleration);
-				float coeff = (wheels[1].suspensionParent.appliedSuspensionForce.magnitude - wheels[0].suspensionParent.appliedSuspensionForce.magnitude) / (wheels[0].suspensionParent.springForce);
+				float coeff = (wheels[1].susParent.appliedSuspensionForce.magnitude - wheels[0].susParent.appliedSuspensionForce.magnitude) / (wheels[0].susParent.springForce);
 				rb.AddTorque(twistGain * coeff * forwardDir, ForceMode.Acceleration);
 			}
 		}
@@ -838,7 +837,7 @@ namespace RVP
 		// Set accel input
 		public void SetAccel(float f)
 		{
-			if (InFreeroam || !raceBox.enabled || F.I.s_raceType == RaceType.TimeTrial)
+			if (F.I.s_inEditor || !raceBox.enabled || F.I.s_raceType == RaceType.TimeTrial)
 				energyRemaining = batteryCapacity;
 			else if (BatteryPercent <= 0 && Time.time - lastNoBatteryMessage > 60)
 			{

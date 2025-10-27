@@ -113,10 +113,10 @@ namespace RVP
                 }
                 else if (solidAxle && wheel1 && wheel2) {
                     // Transformations for solid axles
-                    if (wheel1.rim && wheel2.rim && wheel1.suspensionParent && wheel2.suspensionParent) {
+                    if (wheel1.rim && wheel2.rim && wheel1.susParent && wheel2.susParent) {
                         parentUpDir = tr.parent.up;
-                        wheelConnect1 = wheel1.rim.TransformPoint(0, 0, -wheel1.suspensionParent.pivotOffset);
-                        wheelConnect2 = wheel2.rim.TransformPoint(0, 0, -wheel2.suspensionParent.pivotOffset);
+                        wheelConnect1 = wheel1.rim.TransformPoint(0, 0, -wheel1.susParent.pivotOffset);
+                        wheelConnect2 = wheel2.rim.TransformPoint(0, 0, -wheel2.susParent.pivotOffset);
                         tr.rotation = Quaternion.LookRotation((((wheelConnect1 + wheelConnect2) * 0.5f) - tr.position).normalized, parentUpDir);
                         tr.localEulerAngles = new Vector3(
                             tr.localEulerAngles.x,
@@ -140,9 +140,9 @@ namespace RVP
                 Gizmos.DrawSphere(localConnectPoint, 0.01f);
             }
             else if (solidAxle && wheel1 && wheel2) {
-                if (wheel1.rim && wheel2.rim && wheel1.suspensionParent && wheel2.suspensionParent) {
-                    wheelConnect1 = wheel1.rim.TransformPoint(0, 0, -wheel1.suspensionParent.pivotOffset);
-                    wheelConnect2 = wheel2.rim.TransformPoint(0, 0, -wheel2.suspensionParent.pivotOffset);
+                if (wheel1.rim && wheel2.rim && wheel1.susParent && wheel2.susParent) {
+                    wheelConnect1 = wheel1.rim.TransformPoint(0, 0, -wheel1.susParent.pivotOffset);
+                    wheelConnect2 = wheel2.rim.TransformPoint(0, 0, -wheel2.susParent.pivotOffset);
                     Gizmos.DrawLine(wheelConnect1, wheelConnect2);
                     Gizmos.DrawWireSphere(wheelConnect1, 0.01f);
                     Gizmos.DrawWireSphere(wheelConnect2, 0.01f);

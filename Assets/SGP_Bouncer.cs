@@ -1,11 +1,13 @@
 using RVP;
+using System.Collections;
 using System.Collections.Generic;
 using Unity.Collections;
 using UnityEngine;
+using UnityEngine.UIElements.Experimental;
 public class SGP_Bouncer : MonoBehaviour
 {
 	float shockScale = 0.02f;
-	float rotationalFrictionScale = 0.15f;
+	float rotationalFrictionScale = 0.01f;
 	float minShock = 1f;
 	float maxShock = 4f;
 	float maxRotShock = 1;
@@ -17,28 +19,11 @@ public class SGP_Bouncer : MonoBehaviour
 	int rbId;
 	static AnimationCurve multCurve;
 	public Collider[] bouncyCols;
-
+	Coroutine rotEffectCo;
 	readonly static Dictionary<int, VehicleParent> carRbs = new(10);
 	static bool OnContactModifyRegistered = false;
-	readonly static float[] colRestitutionTable = new float[] {
-				 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f, 0.000000f,
-				 0.000000f, 0.000567f, 0.001135f, 0.001702f, 0.002270f, 0.002837f, 0.003405f, 0.003972f,
-				 0.004539f, 0.007853f, 0.011166f, 0.014479f, 0.017793f, 0.021106f, 0.024419f, 0.027733f,
-				 0.031046f, 0.044842f, 0.058639f, 0.072435f, 0.086232f, 0.100029f, 0.113825f, 0.127622f,
-				 0.141418f, 0.168396f, 0.195375f, 0.222353f, 0.249331f, 0.276310f, 0.303288f, 0.330266f,
-				 0.357244f, 0.386774f, 0.416303f, 0.445833f, 0.475362f, 0.498690f, 0.522018f, 0.545346f,
-				 0.568673f, 0.587365f, 0.606056f, 0.624748f, 0.643439f, 0.662131f, 0.680822f, 0.699514f,
-				 0.718205f, 0.733274f, 0.748342f, 0.763410f, 0.778478f, 0.793546f, 0.808615f, 0.823683f,
-				 0.838751f, 0.850874f, 0.862996f, 0.875119f, 0.887242f, 0.894770f, 0.902297f, 0.909825f,
-				 0.917353f, 0.924881f, 0.932408f, 0.939936f, 0.947464f, 0.951480f, 0.955497f, 0.959514f,
-				 0.963531f, 0.967547f, 0.971564f, 0.975581f, 0.979597f, 0.984698f, 0.989799f, 0.994899f,
-				 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f,
-				 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f,
-				 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f,
-				 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f,
-				 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f,
-		}; // from GAME\CONFIG\LEVELS\DEFAULT.CFG
-
+	float widthLengthAvg = 0;
+	bool rotEffectPlaying = false;
 	void Awake()
 	{
 		vp = GetComponent<VehicleParent>();
@@ -65,6 +50,11 @@ public class SGP_Bouncer : MonoBehaviour
 			OnContactModifyRegistered = true;
 			Physics.ContactModifyEvent += OnContactModify;
 		}
+	}
+	private void Start()
+	{
+		widthLengthAvg = (Vector3.Distance(vp.wheels[0].transform.position, vp.wheels[2].transform.position)
+			+ Vector3.Distance(vp.wheels[2].transform.position, vp.wheels[3].transform.position)) / 2f;
 	}
 	static void OnContactModify(PhysicsScene scene, NativeArray<ModifiableContactPair> pairs)
 	{
@@ -102,12 +92,7 @@ collision_energy_impact_timedelay,0.4,"Range(0, 1) Time in Seconds"
 		Vector3 shockForce = direction * shockMagnitude;
 		vp.rb.AddForce(shockForce, ForceMode.VelocityChange);
 	}
-	float GetRestitution(float impactStrength01)
-	{
-		int tableSize = colRestitutionTable.Length;
-		int index = Mathf.Clamp(Mathf.RoundToInt(Mathf.Abs(impactStrength01) * (tableSize - 1)), 0, tableSize - 1);
-		return colRestitutionTable[index];
-	}
+
 	private void OnCollisionEnter(Collision col)
 	{
 		Bounce(col);
@@ -133,8 +118,10 @@ collision_energy_impact_timedelay,0.4,"Range(0, 1) Time in Seconds"
 			ApplyShock(dir, impactStrength);
 
 			// rotational impulse
-			float rotationalImpulse = Mathf.Min(impactStrength * rotationalFrictionScale, maxRotShock);
-			vp.rb.AddTorque(-norm * rotationalImpulse, ForceMode.Acceleration);
+			//float rotationalImpulse = Mathf.Min(impactStrength * rotationalFrictionScale, maxRotShock);
+			//vp.rb.AddTorque(-norm * rotationalImpulse, ForceMode.VelocityChange);
+			if(!rotEffectPlaying)
+				rotEffectCo = StartCoroutine(RotEffect(contacts[0].point));
 		}
 		else
 		{
@@ -198,7 +185,33 @@ collision_energy_impact_timedelay,0.4,"Range(0, 1) Time in Seconds"
 		}
 		vp.colliding = true;
 	}
+	IEnumerator RotEffect(Vector3 colPoint)
+	{
+		rotEffectPlaying = true;
+		float timer = 0.5f;
+		float totalTime = timer;
+		SuspensionSavable sus = (SuspensionSavable)vp.carConfig.GetPartReadonly(PartType.Suspension);
 
+		while (timer > 0)
+		{
+			//float step = Easing.OutCubic(timer);
+			foreach(var w in vp.wheels)
+			{
+				float d = Vector3.Distance(colPoint, w.transform.position);
+				if (d > widthLengthAvg)
+					d = widthLengthAvg;
+				w.susParent.springForce = sus.RearSpringForce + timer / totalTime * sus.RearSpringForce * (widthLengthAvg - 2*d) / widthLengthAvg;
+				w.susParent.springForce = Mathf.Clamp(w.susParent.springForce, 0.1f * sus.RearSpringForce, 2*sus.RearSpringForce);
+			}
+			timer -= Time.fixedDeltaTime;
+			yield return null;
+		}
+		vp.wheels[0].susParent.springForce = sus.frontSpringForce;
+		vp.wheels[1].susParent.springForce = sus.frontSpringForce;
+		vp.wheels[2].susParent.springForce = sus.RearSpringForce;
+		vp.wheels[3].susParent.springForce = sus.RearSpringForce;
+		rotEffectPlaying = false;
+	}
 	private void OnCollisionExit(Collision collision)
 	{
 		vp.colliding = false;

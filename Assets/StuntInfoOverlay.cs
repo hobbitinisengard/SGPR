@@ -1,18 +1,21 @@
 using UnityEngine.UI;
 using UnityEngine;
 using RVP;
+using System;
 
 public class StuntInfoOverlay : MonoBehaviour
 {
 	static float animationTime = .5f;
 	GameObject stuntObj;
-	Text stuntObjText;
+	[NonSerialized]
+	public Text stuntObjText;
 	Text postfixObjText;
 	GameObject postfixObj;
 	RectTransform rt;
 	float postfixObjAnimStartTime;
 	float stuntObjAnimStartTime;
 	int originalPostfixFontSize;
+	// LEFT FLIP 360 x2
 	private void Initialize()
 	{
 		postfixObj = transform.GetChild(0).GetChild(0).gameObject;
@@ -70,8 +73,8 @@ public class StuntInfoOverlay : MonoBehaviour
 	{
 		Initialize();
 		stuntObjAnimStartTime = Time.time;
-		stuntObjText.text = stunt.overlayName;
-		name = stunt.overlayName;
+		stuntObjText.text = stunt.OverlayName();
+		name = stunt.Ident();
 		UpdatePostfix(stunt);
 	}
 	public void DimTexts(float opaqueness)

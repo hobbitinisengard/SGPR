@@ -20,10 +20,9 @@ public class Result
 	public int maxAeroStars;
 	public int score { get; private set; }
 	public Livery sponsor;
-
 	public void SetPostRaceScore(int finalScore)
 	{
-		Debug.Log(name + " " + score.ToString() + " " + finalScore);
+		//Debug.Log(name + " " + score.ToString() + " " + finalScore);
 		score = finalScore;
 	}
 	public void Update(VehicleParent vp)
@@ -57,7 +56,7 @@ public class Result
 			case RecordType.RaceTime:
 				return raceTime.ToLaptimeStr();
 			case RecordType.StuntScore:
-				return ((int)(aeromiles)).ToString();
+				return ((int)aeromiles).ToString();
 			case RecordType.DriftScore:
 				return drift.ToString("F0");
 			default:
@@ -425,7 +424,7 @@ public class ResultsView : MainMenuView
 				playerResult = resultData.First(p => p.name == F.I.playerData.playerName);
 				TimeSpan requiredLap = TimeSpan.Parse(req.conditionArgument);
 				return playerResult.lap <= requiredLap;
-			case ArcadeVariant.Prize.Condition.AeroStarsAtLeast:
+			case ArcadeVariant.Prize.Condition.StarsAtLeast:
 				playerResult = resultData.First(p => p.name == F.I.playerData.playerName);
 				int starsReq = int.Parse(req.conditionArgument);
 				return playerResult.maxAeroStars >= starsReq;
@@ -458,6 +457,12 @@ public class ResultsView : MainMenuView
 					unlockedPaths += F.I.curVariant.progress.pathsDone[i].Count;
 				}
 				return unlockedPaths == allPaths;
+			case ArcadeVariant.Prize.Condition.ExactStunts:
+				{
+					bool ret = F.I.arcadeObjectiveStunts.All(s => s.Item2 <= 0);
+					F.I.arcadeObjectiveStunts = null;
+					return ret;
+				}
 			default:
 				Debug.Log("null");
 				return false;
@@ -570,8 +575,7 @@ public class ResultsView : MainMenuView
 			default:
 				break;
 		}
-		Debug.Log(resultData[finalPosition].name + string.Format("OnEnable. lap,stunt,drift = {0}, {1}, {2}, {3}, {4}",
-			positionBonus, lapBonus, stuntBonus, driftBonus, aeroMeter));
+		//Debug.Log(resultData[finalPosition].name + string.Format(" OnEnable. lap,stunt,drift = {0}, {1}, {2}, {3}, {4}", positionBonus, lapBonus, stuntBonus, driftBonus, aeroMeter));
 
 		if (F.I.gameMode == GameMode.Multiplayer)
 		{

@@ -1,13 +1,13 @@
 {
   "author": "Team17",
-  "localizedNames":[
-	"WIDE WALL CHASE",
-	"GONITWA NA MUR",
-	],
   "localizedDescriptions": [
-	"A very fast track where you can use the burns for overtaking",
-	"Bardzo szybka, krótka trasa - dopalanie i wyprzedzanie.",
-	],
+    "A very fast track where you can use the burns for overtaking",
+    "Bardzo szybka, krótka trasa - dopalanie i wyprzedzanie."
+  ],
+  "localizedNames": [
+    "WIDE WALL CHASE",
+    "GONITWA NA MUR"
+  ],
   "valid": true,
   "envir": "SPN",
   "preferredCarClass": "Aero",
@@ -16,7 +16,5 @@
   "icons": [
     0,
     2
-  ],
-  "TrackOrigin": 0,
-  "IsOriginal": true
+  ]
 }

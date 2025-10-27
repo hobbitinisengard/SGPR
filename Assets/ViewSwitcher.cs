@@ -119,7 +119,6 @@ public class ViewSwitcher : MonoBehaviour
 				if (F.I.gameMode == GameMode.Arcade)
 				{
 					arcadeMapView.SetActive(false);
-
 					resultsView.SetActive(true);
 				}
 				else if (F.I.gameMode == GameMode.Multiplayer && ResultsView.Count > 1)
@@ -127,6 +126,8 @@ public class ViewSwitcher : MonoBehaviour
 					lobbyView.SetActive(false);
 					resultsView.SetActive(true);
 				}
+				menuMusic.clip = resultsView.GetComponent<ResultsView>().music;
+				menuMusic.Play();
 			}
 		}));
 	}

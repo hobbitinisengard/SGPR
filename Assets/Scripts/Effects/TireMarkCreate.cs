@@ -119,8 +119,8 @@ namespace RVP
 				if (curMark)
 				{
 					Vector3 pointDir = Quaternion.AngleAxis(90, w.contactPoint.normal) * tr.right * (w.popped ? w.rimWidth : w.tireWidth);
-					leftPoint = curMarkTr.InverseTransformPoint(w.contactPoint.point + Mathf.Sign(w.rawRPM) * w.suspensionParent.flippedSideFactor * pointDir + w.contactPoint.normal * RaceManager.I.tireMarkHeight);
-					rightPoint = curMarkTr.InverseTransformPoint(w.contactPoint.point - Mathf.Sign(w.rawRPM) * w.suspensionParent.flippedSideFactor * pointDir + w.contactPoint.normal * RaceManager.I.tireMarkHeight);
+					leftPoint = curMarkTr.InverseTransformPoint(w.contactPoint.point + Mathf.Sign(w.rawRPM) * w.susParent.flippedSideFactor * pointDir + w.contactPoint.normal * RaceManager.I.tireMarkHeight);
+					rightPoint = curMarkTr.InverseTransformPoint(w.contactPoint.point - Mathf.Sign(w.rawRPM) * w.susParent.flippedSideFactor * pointDir + w.contactPoint.normal * RaceManager.I.tireMarkHeight);
 				}
 			}
 			else if (creatingMark)

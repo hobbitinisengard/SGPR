@@ -54,14 +54,14 @@ namespace RVP
 				switch (drive)
 				{
 					case DriveType.FWD:
-						outputDrives = new DriveForce[] { vp.wheels[0].suspensionParent.targetDrive, vp.wheels[1].suspensionParent.targetDrive };
+						outputDrives = new DriveForce[] { vp.wheels[0].susParent.targetDrive, vp.wheels[1].susParent.targetDrive };
 						break;
 					case DriveType.RWD:
-						outputDrives = new DriveForce[] { vp.wheels[2].suspensionParent.targetDrive, vp.wheels[3].suspensionParent.targetDrive };
+						outputDrives = new DriveForce[] { vp.wheels[2].susParent.targetDrive, vp.wheels[3].susParent.targetDrive };
 						break;
 					case DriveType.AWD:
-						outputDrives = new DriveForce[] { vp.wheels[0].suspensionParent.targetDrive, vp.wheels[1].suspensionParent.targetDrive,
-																 vp.wheels[2].suspensionParent.targetDrive, vp.wheels[3].suspensionParent.targetDrive };
+						outputDrives = new DriveForce[] { vp.wheels[0].susParent.targetDrive, vp.wheels[1].susParent.targetDrive,
+																 vp.wheels[2].susParent.targetDrive, vp.wheels[3].susParent.targetDrive };
 						break;
 					default:
 						break;

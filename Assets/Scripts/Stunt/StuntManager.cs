@@ -51,7 +51,7 @@ namespace RVP
 		public bool updateOverlay = false;
 		[System.NonSerialized]
 		public float positiveProgress;
-		public string overlayName;
+		public string frontendName;
 		public static bool Parallel(in Vector3 norm_a, in Vector3 norm_b)
 		{
 			return Mathf.Abs(Vector3.Dot(norm_a, norm_b)) >= 0.9f;// angle is 0 deg +- 25deg
@@ -69,22 +69,29 @@ namespace RVP
 		public Stunt(Stunt s)
 		{
 			name = F.I.LocStr(s.name);
-			overlayName = name;
+			frontendName = F.I.LocStr(s.name);
 			score = s.score;
 		}
 		public Stunt(string name, float score)
 		{
 			this.name = F.I.LocStr(name);
-			overlayName = this.name;
+			frontendName = F.I.LocStr(name);
 			this.score = score;
+		}
+		public virtual string OverlayName()
+		{
+			return frontendName;
+		}
+		public virtual string Ident() // used for checking if player performed given stunt for arcade mode
+		{
+			return frontendName + "," + doneTimes.ToString();
 		}
 	}
 	[System.Serializable]
 	public class Drift : Stunt
 	{
 		public Drift(string name, float score) : base(name, score)
-		{
-		}
+		{}
 		public override string PostfixText()
 		{
 			string progressStr = (positiveProgress == 0) ? "" : positiveProgress.ToString("F0");
@@ -104,15 +111,18 @@ namespace RVP
 		[SerializeField]
 		private EndStuntReqParallelAlignment endStuntReqParallelAlignment = EndStuntReqParallelAlignment.None;
 		public float angleThreshold;
-		[System.NonSerialized]
+		[NonSerialized]
 		public float negativeProgress;
 		public string halfFirstPositiveName;
 		public string halfFirstNegativeName;
 		bool lastWriteWasPositive;
-		bool isHalfRotation;
+		[NonSerialized]
+		public bool isHalfRotation;
 		public bool canBeReverse { get; private set; }
 		[NonSerialized]
 		public bool isReverse;
+		[NonSerialized]
+		public bool isNatural;
 		[NonSerialized]
 		public Vector3 w;
 
@@ -134,16 +144,7 @@ namespace RVP
 			canBeReverse = rs.canBeReverse;
 			w = rs.w;
 		}
-
-		//public Vector3 w;
-
-		//public RotationStunt(RotationStunt oldStunt) { // copy ctor
-		//    name = oldStunt.name;
-		//    rotationAxis = oldStunt.rotationAxis;
-		//    score = oldStunt.score;
-		//    angleThreshold = oldStunt.angleThreshold;
-		//    doneTimes = oldStunt.doneTimes;
-		//}
+		
 		public bool StuntingCarAlignmentConditionFulfilled(in VehicleParent vp)
 		{
 			switch (req_carAlignment)
@@ -186,48 +187,51 @@ namespace RVP
 			Debug.LogError("Shouldn't come here");
 			return false;
 		}
-		public void WriteHalfOverlayName()
+		public override string OverlayName()
 		{
-			isHalfRotation = true;
-			if (lastWriteWasPositive)
-				overlayName = halfFirstNegativeName; // first .x/.y/.z lA < 0
+			if (isHalfRotation)
+			{
+				if (lastWriteWasPositive)
+					return halfFirstNegativeName; // first .x/.y/.z lA < 0
+				else
+					return halfFirstPositiveName; // first .x/.y/.z lA > 0
+			}
 			else
-				overlayName = halfFirstPositiveName; // first .x/.y/.z lA > 0
-		}
-		public void WriteOverlayName(bool natural)
-		{
-			isHalfRotation = false;
-			string prefix, direction;
-			prefix = F.I.LocStr(natural ? "NATURAL" : "");
-			if (isReverse)
-				prefix += " " + F.I.LocStr("REVERSE");
-			if (rotationAxis.x != 0)
 			{
-				if (lastWriteWasPositive)
-					direction = F.I.LocStr("FRONT");
-				else
-					direction = F.I.LocStr("BACK");
-			}
-			else if (rotationAxis.y != 0)
-			{
-				if (lastWriteWasPositive)
-					direction = F.I.LocStr("RIGHT");
-				else
-					direction = F.I.LocStr("LEFT");
-			}
-			else //if (rotationAxis.z != 0)
-			{
-				if (lastWriteWasPositive)
-					direction = F.I.LocStr("LEFT");
-				else
-					direction = F.I.LocStr("RIGHT");
-			}
+				isHalfRotation = false;
+				string prefix, direction;
+				prefix = F.I.LocStr(isNatural ? "NATURAL" : "");
+				if (isReverse)
+					prefix += " " + F.I.LocStr("REVERSE");
+				if (rotationAxis.x != 0)
+				{
+					if (lastWriteWasPositive)
+						direction = F.I.LocStr("FRONT");
+					else
+						direction = F.I.LocStr("BACK");
+				}
+				else if (rotationAxis.y != 0)
+				{
+					if (lastWriteWasPositive)
+						direction = F.I.LocStr("RIGHT");
+					else
+						direction = F.I.LocStr("LEFT");
+				}
+				else //if (rotationAxis.z != 0)
+				{
+					if (lastWriteWasPositive)
+						direction = F.I.LocStr("LEFT");
+					else
+						direction = F.I.LocStr("RIGHT");
+				}
 
-			if (F.I.playerData.language == Language.Polish)
-				overlayName = (prefix.Length > 0 ? prefix + " " : "") + name + " " + direction;
-			else
-				overlayName = (prefix.Length > 0 ? prefix + " " : "") + direction + " " + name;
+				if (F.I.playerData.language == Language.Polish)
+					return (prefix.Length > 0 ? prefix + " " : "") + name + " " + direction;
+				else
+					return (prefix.Length > 0 ? prefix + " " : "") + direction + " " + name;
+			}
 		}
+
 		public override string PostfixText()
 		{
 			if (isHalfRotation)// is null when halfoverlay was written

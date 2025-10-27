@@ -956,7 +956,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0.60525334, y: -0.35068947, z: -0.3367515, w: -0.6303045}
   m_LocalPosition: {x: -0.0049, y: 0.1117, z: -0.385}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 2, y: 2, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 7649606519252868887}
@@ -13952,7 +13952,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 952889309
+  GlobalObjectIdHash: 1645386339
   InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
@@ -14162,6 +14162,8 @@ MonoBehaviour:
   d_effectiveTurnAngle: 0
   driftingTime: 0
   driftingTimer: 0
+  sidewinderLeftTimer: 0
+  sidewinderRightTimer: 0
 --- !u!114 &8045125721435560817
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17939,7 +17941,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0.4197212, y: -0.577422, z: -0.4559763, w: 0.53151065}
   m_LocalPosition: {x: -0.034, y: 0.099, z: -0.379}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 2, y: 2, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8635357605157632709}

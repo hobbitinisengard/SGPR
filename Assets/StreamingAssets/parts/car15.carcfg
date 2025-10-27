@@ -57,7 +57,7 @@
     "engine": {
       "audioMaxPitch": 7.0,
       "audioMinPitch": 1.0,
-      "fuelConsumption": 10.0,
+      "fuelConsumption": 20.0,
       "audioType": 4.0,
       "inertia": 100.0,
       "inertiaAcc": 20.0,

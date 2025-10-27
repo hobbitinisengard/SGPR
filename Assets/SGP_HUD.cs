@@ -103,63 +103,7 @@ public class SGP_HUD : MonoBehaviour
 	/// </summary>
 	const float dimmingStuntTableTime = 1;
 
-	public void UpdateStuntSeqTable(in StuntsData sData)
-	{
-		if (sData == null)
-			return;
-
-		// if previous stunt table hasn't ended dimming yet
-		if (dimStuntTableTimer > 0)
-		{
-			Debug.Log("prev hasn't stopped dimming");
-			dimStuntTableTimer = 0;
-			ClearStuntInfo();
-		}
-		foreach (Stunt stunt in sData)
-		{
-			if (stunt.updateOverlay)
-			{
-				int stuntEntriesCount = StuntInfo.transform.childCount;
-				if (stuntEntriesCount == 1) // if no elements; first element is just a template
-				{
-					AddStunt(stunt);
-				}
-				else // at least one element
-				{
-					StuntInfoOverlay lastElement = StuntInfo.transform
-						.GetChild(stuntEntriesCount - 1).GetComponent<StuntInfoOverlay>();
-					if (lastElement.name == stunt.overlayName)
-					{
-						lastElement.UpdatePostfix(stunt);
-					}
-					else
-					{
-						if (stuntEntriesCount == 7)
-							Destroy(StuntInfo.transform.GetChild(1).gameObject);
-						AddStunt(stunt);
-					}
-				}
-			}
-			stunt.updateOverlay = false;
-		}
-		if (StuntInfo.transform.childCount > ((F.I.s_raceType == RaceType.Drift) ? 1 : 2))
-			StuntInfo.SetActive(true);
-	}
-	public void AddStunt(in Stunt stunt)
-	{
-		//if(!vp.followAI.isCPU)
-		//	Debug.Log("addElement");
-		GameObject stuntEntry = Instantiate(stuntTemplate, StuntInfo.transform);
-		stuntEntry.GetComponent<StuntInfoOverlay>().WriteStuntName(stunt);
-		stuntEntry.SetActive(true);
-	}
-	void ClearStuntInfo()
-	{
-		for (int i = 1; i < StuntInfo.transform.childCount; ++i)
-		{
-			Destroy(StuntInfo.transform.GetChild(i).gameObject);
-		}
-	}
+	
 	public void Disconnect()
 	{
 		vp = null;
@@ -261,6 +205,63 @@ public class SGP_HUD : MonoBehaviour
 			pauseMenu.gameObject.SetActive(!pauseMenu.gameObject.activeSelf);
 		}
 	}
+	public void UpdateStuntSeqTable(in StuntsData sData)
+	{
+		if (sData == null)
+			return;
+
+		// if previous stunt table hasn't ended dimming yet
+		if (dimStuntTableTimer > 0)
+		{
+			Debug.Log("prev hasn't stopped dimming");
+			dimStuntTableTimer = 0;
+			ClearStuntInfo();
+		}
+		foreach (Stunt stunt in sData)
+		{
+			if (stunt.updateOverlay)
+			{
+				int stuntEntriesCount = StuntInfo.transform.childCount;
+				if (stuntEntriesCount == 1) // if no elements; first element is just a template
+				{
+					AddStunt(stunt);
+				}
+				else // at least one element
+				{
+					StuntInfoOverlay lastElement = StuntInfo.transform
+						.GetChild(stuntEntriesCount - 1).GetComponent<StuntInfoOverlay>();
+					if (lastElement.stuntObjText.text == stunt.OverlayName())
+					{
+						lastElement.UpdatePostfix(stunt);
+					}
+					else
+					{
+						if (stuntEntriesCount == 7)
+							Destroy(StuntInfo.transform.GetChild(1).gameObject);
+						AddStunt(stunt);
+					}
+				}
+			}
+			stunt.updateOverlay = false;
+		}
+		if (StuntInfo.transform.childCount > ((F.I.s_raceType == RaceType.Drift) ? 1 : 2))
+			StuntInfo.SetActive(true);
+	}
+	public void AddStunt(in Stunt stunt)
+	{
+		//if(!vp.followAI.isCPU)
+		//	Debug.Log("addElement");
+		GameObject stuntEntry = Instantiate(stuntTemplate, StuntInfo.transform);
+		stuntEntry.GetComponent<StuntInfoOverlay>().WriteStuntName(stunt);
+		stuntEntry.SetActive(true);
+	}
+	void ClearStuntInfo()
+	{
+		for (int i = 1; i < StuntInfo.transform.childCount; ++i)
+		{
+			Destroy(StuntInfo.transform.GetChild(i).gameObject);
+		}
+	}
 	private void Update()
 	{
 		if (Input.GetKeyDown(KeyCode.F3) && !pauseMenu.gameObject.activeSelf 
@@ -340,6 +341,26 @@ public class SGP_HUD : MonoBehaviour
 					s.positiveProgress = 0;
 					s.doneTimes = 0;
 				}
+				if(F.I.gameMode == GameMode.Arcade && F.I.arcadeObjectiveStunts != null)
+				{
+					// add performed stunts to resultsInfo table
+					for(int i=1; i<StuntInfo.transform.childCount; i++)
+					{
+						var split = StuntInfo.transform.GetChild(i).GetComponent<StuntInfoOverlay>().name.Split(',');
+						for(int j=0; j<F.I.arcadeObjectiveStunts.Length; j++)
+						{
+							if (F.I.arcadeObjectiveStunts[j].Item1 == split[0])
+							{
+								if(F.I.arcadeObjectiveStunts[j].Item2 > 0)
+								{
+									F.I.arcadeObjectiveStunts[j].Item2 -= int.Parse(split[1]);
+								}
+								Debug.Log(F.I.arcadeObjectiveStunts[j].Item1 + " " + F.I.arcadeObjectiveStunts[j].Item2);
+								break;
+							}
+						}
+					}
+				}
 			}
 		}
 		if (vp.raceBox.GetStuntSeq(ref stuntData))
@@ -351,7 +372,7 @@ public class SGP_HUD : MonoBehaviour
 		Vector3 hudPos = rt.anchoredPosition;
 		if (vp.wheels != null)
 		{
-			compression = Mathf.Min(vp.wheels[0].suspensionParent.compression, vp.wheels[1].suspensionParent.compression);
+			compression = Mathf.Min(vp.wheels[0].susParent.compression, vp.wheels[1].susParent.compression);
 		}
 			
 		float target = Mathf.Lerp(hudPos0, hudHeight - hudPos0, compression);

@@ -79,7 +79,7 @@
     },
     "boost": {
       "maxBoost": 2.0,
-      "batteryConsumption": 20.0
+      "batteryConsumption": 35.0
     },
     "tyre": {
       "forwardFriction": 9.0,

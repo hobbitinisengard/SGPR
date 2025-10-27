@@ -1741,7 +1741,7 @@ public class EditorPanel : MonoBehaviour
 			DisplayMessageFor(F.I.LocStr("No racingline defined"), 3);
 		}
 
-		string trackName = tHeader.localizedNames[(int)F.I.playerData.language];
+		string trackName = tHeader.localizedNames[0];
 		string JsonContent = JsonConvert.SerializeObject(tHeader, Formatting.Indented);
 		string path = Path.Combine(F.I.tracksPath, trackName + ".track"); // .TRACK 
 		File.WriteAllText(path, JsonContent);

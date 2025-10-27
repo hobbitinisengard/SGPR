@@ -1537,6 +1537,10 @@ MonoBehaviour:
     m_Localized: "Wybierz ilo\u015B\u0107 graczy lokalnych"
     m_Metadata:
       m_Items: []
+  - m_Id: 63452409415667712
+    m_Localized: "Zr\xF3b ewol. {0} {1} razy"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

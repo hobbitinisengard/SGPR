@@ -267,7 +267,7 @@ public class RaceBox : MonoBehaviour
 		else
 			overlayName = F.I.LocStr("MASTER DRIFT!");
 
-		drift.overlayName = overlayName;
+		drift.frontendName = overlayName;
 
 		if (addProgress > 0 || addCombo)
 		{
@@ -584,8 +584,8 @@ public class RaceBox : MonoBehaviour
 						stuntsData.availableForFrontend = true;
 						stunt.ResetProgress();
 						stunt.updateOverlay = true;
-
-						stunt.WriteHalfOverlayName();
+						stunt.isHalfRotation = true;
+						//stunt.WriteHalfOverlayName();
 						stuntPai.level++;
 						stuntPai.score += (int)((starLevel + 1) * 1.5f * stunt.score * (stunt.isReverse ? 2 : 1) * (!evoModule.stunting ? 2 : 1));
 					}
@@ -596,7 +596,9 @@ public class RaceBox : MonoBehaviour
 						stuntsData.availableForFrontend = true;
 						stunt.doneTimes++;
 						stunt.updateOverlay = true;
-						stunt.WriteOverlayName(!evoModule.stunting);
+						stunt.isNatural = !evoModule.stunting;
+						stunt.isHalfRotation = false;
+						//stunt.WriteFullOverlayName();
 						stunt.ResetProgress();
 						stuntPai.level++;
 						stuntPai.score += (int)((starLevel + 1) * stunt.score * (stunt.isReverse ? 2 : 1) * (!evoModule.stunting ? 2 : 1));
@@ -681,6 +683,11 @@ public class RaceBox : MonoBehaviour
 	{
 		if (F.I.s_laps > 0)
 		{
+			grindTime = 0;
+			wheelieTimer = 0;
+			handstandTimer = 0;
+			sidewinderLeftTimer = 0;
+			sidewinderRightTimer = 0;
 			DeclineStunt();
 			evoModule.Reset();
 			grantedComboTime = 0;

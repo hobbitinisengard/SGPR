@@ -7,12 +7,10 @@ using System.IO;
 using System.Collections.Generic;
 using Unity.Services.Lobbies.Models;
 using Unity.Netcode;
-using System.Linq;
 
 namespace RVP
 {
 	[DisallowMultipleComponent]
-
 	public class RaceManager : MonoBehaviour
 	{
 		AudioSource musicPlayer;
@@ -563,7 +561,7 @@ namespace RVP
 			else
 			{
 				Debug.Log("back to menu");
-				BackToMenu(applyScoring: true);
+				BackToMenu(applyScoring: F.I.gameMode != GameMode.Exhibition);
 			}
 		}
 		public void TimeForRaceEnded()
