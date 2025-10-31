@@ -110,12 +110,16 @@ namespace RVP
 		{
 			get
 			{
-				float lapProgress = target.dist;
+				float lapProgress = target.dist - reqDist;
 
 				if(lapProgress < 0)
 					lapProgress = 0;
 
 				float newLapProgress = lapProgress / RaceManager.I.racingPaths[1].path.length;
+
+				if(Mathf.Abs(newLapProgress - lapProgressPercent) > 0.3f)
+					return lapProgressPercent;
+
 				if (newLapProgress > lapProgressPercent)
 					lapProgressPercent = newLapProgress;
 

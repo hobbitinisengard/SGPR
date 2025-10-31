@@ -107,6 +107,10 @@ public class GreetingLogo : Sfxable
 						goingUpSeq = false;
 					}
 				}
+				else
+				{
+					F.I.s_spectator = false;
+				}
 				//else
 				//	view.GoToView(nextMenu);
 			}

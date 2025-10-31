@@ -64,6 +64,9 @@ public class RankingData
 
 public class Info : MonoBehaviour
 {
+	public const string stringFormatWithoutHours = @"mm\:ss\.ff";
+	public const string stringFormatWithHours = @"h\.mm\:ss\.ff";
+
 	public const int TimeOfDays = 2;
 	StringTable localizedTable;
 	public GameObject renderTextureCam;
@@ -315,7 +318,7 @@ public class Info : MonoBehaviour
 			foreach (var i in s.allowedCarsIdxs)
 				cars[i].starter = true;
 
-		if(playerData.playerName == "HAX")
+		if(playerData.playerName == "HAXOR")
 			return;// unlock all for testing 
 
 		List<string> prizeNamesToBeLocked = new();

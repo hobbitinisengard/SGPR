@@ -422,7 +422,7 @@ public class ResultsView : MainMenuView
 				return false;
 			case ArcadeVariant.Prize.Condition.LapAtMost:
 				playerResult = resultData.First(p => p.name == F.I.playerData.playerName);
-				TimeSpan requiredLap = TimeSpan.Parse(req.conditionArgument);
+				TimeSpan requiredLap = TimeSpan.ParseExact(req.conditionArgument,Info.stringFormatWithoutHours,null);
 				return playerResult.lap <= requiredLap;
 			case ArcadeVariant.Prize.Condition.StarsAtLeast:
 				playerResult = resultData.First(p => p.name == F.I.playerData.playerName);

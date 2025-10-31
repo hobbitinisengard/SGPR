@@ -102,7 +102,7 @@
       "gripAdd": 5.0,
       "gripComebackSpeed": 0.9,
       "steerLimitAt0": 1.0,
-      "steerLimitAt200": 0.15,
+      "steerLimitAt200": 0.1,
       "steerLimitAt300": 0.1,
       "steerComebackAt0": 1.0,
       "steerComebackAt200": 5.0

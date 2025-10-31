@@ -594,8 +594,11 @@ public class RaceBox : MonoBehaviour
 						&& stunt.CarAlignmentConditionFulfilled(vp))
 					{ // done full rotation
 						stuntsData.availableForFrontend = true;
-						stunt.doneTimes++;
-						stunt.updateOverlay = true;
+						if (stunt.positiveProgress * Mathf.Rad2Deg >= stunt.angleThreshold)
+							stunt.doneTimes++;
+						else
+							stunt.negativeDoneTimes++;
+							stunt.updateOverlay = true;
 						stunt.isNatural = !evoModule.stunting;
 						stunt.isHalfRotation = false;
 						//stunt.WriteFullOverlayName();
@@ -615,6 +618,7 @@ public class RaceBox : MonoBehaviour
 					stunt.positiveProgress = 0;
 					stunt.negativeProgress = 0;
 					stunt.doneTimes = 0;
+					stunt.negativeDoneTimes = 0;
 				}
 				prevGroundedWheels0 = false;
 				stableLandingTimer = .5f;
@@ -683,6 +687,7 @@ public class RaceBox : MonoBehaviour
 	{
 		if (F.I.s_laps > 0)
 		{
+			driftingTimer = 0;
 			grindTime = 0;
 			wheelieTimer = 0;
 			handstandTimer = 0;

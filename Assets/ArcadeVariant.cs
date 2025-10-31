@@ -135,7 +135,7 @@ public class ArcadeVariant
 						size = 1,
 						coords = new Vector2(5,6),
 						trackName = "BOLD STRAIGHTS",
-						laps = 4,
+						laps = 2,
 						cars = new CarPlacement[]
 						{
 										new() { name = "CP1", carIdx = 7, livery = Livery.Caltex,  },
@@ -224,18 +224,14 @@ public class ArcadeVariant
 						size = 1,
 						coords = new Vector2(7.5f,5),
 						trackName = "THE HEIST",
-						laps = 4,
+						laps = 1,
 						cars = new CarPlacement[]
 						{
-										new() { name = "CP1", carIdx = 01, livery = (Livery)2,  },
-										new() { name = "CP2", carIdx = 12, livery = (Livery)3,  },
-										new() { name = "CP3", carIdx = 12, livery = (Livery)4,  },
-										new() { name = "CP4", carIdx = 06, livery = (Livery)5,  },
-										new() { name = "CP5", carIdx = 10, livery = (Livery)6,  },
 						},
-						continuationReq = new Prize(){condition = Prize.Condition.FastestLaptime,conditionArgument = "1"},
-						prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "THE HEIST" } },
+						continuationReq = new Prize(){condition = Prize.Condition.DriftsAtLeast,conditionArgument = "5000"},
+						prizeReqs = new Prize[] { new() { condition = Prize.Condition.DriftsAtLeast, conditionArgument = "10000", name = "THE HEIST" } },
 						pavementType = (PavementType)5,
+						raceType = RaceType.Drift,
 				},
 				new()
 				{
@@ -1065,29 +1061,47 @@ public class ArcadeVariant
 				},
 			nodes = new Node[]
 				{
-				new() {
+					new() {
 						id = 15,
 						connections = new int[] { 11, 12 },
 						color = F.I.orange,
 						size = 1,
 						coords = new Vector2(3,0),
 						trackName = "DUST BUSTER",
-						laps = 4,
+						laps = 1,
 						cars = new CarPlacement[]
 						{
-										new() { name = "CP1", carIdx = 10, livery = Livery.Titan,  },
-										new() { name = "CP2", carIdx = 09, livery = Livery.Rline,  },
-										new() { name = "CP3", carIdx = 06, livery = Livery.Mysuko,  },
-										new() { name = "CP4", carIdx = 05, livery = Livery.Caltex,  },
-										new() { name = "CP5", carIdx = 01, livery = Livery.Titan,  },
 						},
-						continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
-						prizeReqs = new Prize[] { 
-							new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "DUST BUSTER" },
-							
+						continuationReq = new Prize(){condition = Prize.Condition.DriftsAtLeast,conditionArgument = "3500"},
+						prizeReqs = new Prize[] {
+							new() { condition = Prize.Condition.DriftsAtLeast, conditionArgument = "3500", name = "DUST BUSTER" },
 						},
 						pavementType = (PavementType)5,
+						raceType = RaceType.Drift
 				},
+				//new() {
+				//		id = 15,
+				//		connections = new int[] { 11, 12 },
+				//		color = F.I.orange,
+				//		size = 1,
+				//		coords = new Vector2(3,0),
+				//		trackName = "DUST BUSTER",
+				//		laps = 4,
+				//		cars = new CarPlacement[]
+				//		{
+				//						new() { name = "CP1", carIdx = 10, livery = Livery.Titan,  },
+				//						new() { name = "CP2", carIdx = 09, livery = Livery.Rline,  },
+				//						new() { name = "CP3", carIdx = 06, livery = Livery.Mysuko,  },
+				//						new() { name = "CP4", carIdx = 05, livery = Livery.Caltex,  },
+				//						new() { name = "CP5", carIdx = 01, livery = Livery.Titan,  },
+				//		},
+				//		continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
+				//		prizeReqs = new Prize[] { 
+				//			new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "DUST BUSTER" },
+							
+				//		},
+				//		pavementType = (PavementType)5,
+				//},
 				new() {
 						id = 16,
 						connections = new int[] { 12, 13 },

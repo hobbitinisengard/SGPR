@@ -79,6 +79,7 @@ public class InfoText : MonoBehaviour
 			}
 			curMsgInQueue = null;
 		}
+		SetBottomTextPos(msgHiddenPos);
 		showing = false;
 	}
 	
@@ -113,9 +114,7 @@ public class InfoText : MonoBehaviour
 	public void SetBottomTextPos(float posy)
 	{
 		Vector2 position = infoText_rt.anchoredPosition;
-
 		position.y = posy;
-
 		infoText_rt.anchoredPosition = position;
 	}
 }

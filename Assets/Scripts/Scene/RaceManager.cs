@@ -369,7 +369,7 @@ namespace RVP
 
 				if (F.I.gameMode == GameMode.Arcade)
 				{
-					for (int i = 0; i < F.I.curNode.cars.Length; ++i)
+					for (int i = 0; i < F.I.targetNode.cars.Length; ++i)
 					{
 						carPlacements[i] = F.I.targetNode.cars[i];
 						carPlacements[i].position = i;

@@ -3,12 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Collections;
 using UnityEngine;
-using UnityEngine.UIElements.Experimental;
 public class SGP_Bouncer : MonoBehaviour
 {
 	float shockScale = 0.02f;
-	float rotationalFrictionScale = 0.01f;
-	float minShock = 1f;
+	public float rotationalFrictionScale = 0.01f;
+	public float minShock = 1f;
 	float maxShock = 4f;
 	float maxRotShock = 1;
 	ContactPoint[] contacts = new ContactPoint[20];
@@ -118,9 +117,10 @@ collision_energy_impact_timedelay,0.4,"Range(0, 1) Time in Seconds"
 			ApplyShock(dir, impactStrength);
 
 			// rotational impulse
-			//float rotationalImpulse = Mathf.Min(impactStrength * rotationalFrictionScale, maxRotShock);
+			//float rotationalImpulse = Mathf.Max(col.impulse.magnitude * rotationalFrictionScale, minShock);
 			//vp.rb.AddTorque(-norm * rotationalImpulse, ForceMode.VelocityChange);
-			if(!rotEffectPlaying)
+
+			if (!rotEffectPlaying)
 				rotEffectCo = StartCoroutine(RotEffect(contacts[0].point));
 		}
 		else
@@ -142,6 +142,7 @@ collision_energy_impact_timedelay,0.4,"Range(0, 1) Time in Seconds"
 				vp.rb.AddForceAtPosition(col.impulse.magnitude * mult * direction,
 				contacts[0].point,//vp.transform.position
 				ForceMode.VelocityChange);
+
 			}
 			//Vector3 collisionDir = (collisionNormal + Vector3.up) / 2f;
 			//float impactStrength = Mathf.Abs(Vector3.Dot(col.relativeVelocity, collisionDir));

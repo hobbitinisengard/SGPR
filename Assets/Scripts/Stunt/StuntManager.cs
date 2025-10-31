@@ -113,6 +113,8 @@ namespace RVP
 		public float angleThreshold;
 		[NonSerialized]
 		public float negativeProgress;
+		[NonSerialized]
+		public int negativeDoneTimes;
 		public string halfFirstPositiveName;
 		public string halfFirstNegativeName;
 		bool lastWriteWasPositive;
@@ -240,7 +242,10 @@ namespace RVP
 					return " x" + doneTimes.ToString();
 				return "";
 			}
-			return (360 * doneTimes).ToString();
+			if(lastWriteWasPositive)
+				return (360 * doneTimes).ToString();
+			else
+				return (360 * negativeDoneTimes).ToString();
 		}
 		public void ResetProgress()
 		{
