@@ -708,7 +708,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 964890581532672
-    m_Key: Names or descriptions are too short
+    m_Key: Texts are too short or not translated
     m_Metadata:
       m_Items: []
   - m_Id: 601241874595840

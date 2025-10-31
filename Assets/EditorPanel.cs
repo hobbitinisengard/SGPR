@@ -1606,7 +1606,7 @@ public class EditorPanel : MonoBehaviour
 	{
 		if (savePanel.localizedNames.Any(n => n.Length < 3))
 		{
-			DisplayMessageFor(F.I.LocStr("Names or descriptions are too short"), 3);
+			DisplayMessageFor(F.I.LocStr("Texts are too short or not translated"), 3);
 			return;
 		}
 
