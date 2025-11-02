@@ -313,7 +313,7 @@ public class ArcadeSelector : TrackSelectorTemplate
 	}
 	void WriteContinuationText()
 	{
-		var req = F.I.curNode.continuationReq;
+		var req = F.I.targetNode.continuationReq;
 		arcadeReqText.text = GetObjectiveText(req);
 	}
 	string GetObjectiveText(ArcadeVariant.Prize req)

@@ -1069,7 +1069,7 @@ public class ArcadeVariant
 						size = 1,
 						coords = new Vector2(3,0),
 						trackName = "DUST BUSTER",
-						laps = 4,
+						laps = 3,
 						cars = new CarPlacement[]
 						{
 										new() { name = "CP1", carIdx = 10, livery = Livery.Titan,  },
@@ -1092,7 +1092,7 @@ public class ArcadeVariant
 						size = 1,
 						coords = new Vector2(5,0),
 						trackName = "SECRET SIX",
-						laps = 4,
+						laps = 3,
 						cars = new CarPlacement[]
 						{
 										new() { name = "CP1", carIdx = 14, livery = Livery.TGR,  },
@@ -1102,7 +1102,7 @@ public class ArcadeVariant
 										new() { name = "CP5", carIdx = 03, livery = Livery.Titan,  },
 						},
 						continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "4"},
-						prizeReqs = new Prize[]{new Prize(){condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "DUST BUSTER" } },
+						prizeReqs = new Prize[]{new Prize(){condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "SECRET SIX" } },
 						pavementType = (PavementType)6,
 				},
 				new() {
@@ -1112,7 +1112,7 @@ public class ArcadeVariant
 						size = 1,
 						coords = new Vector2(7,0),
 						trackName = "BANK JOB",
-						laps = 4,
+						laps = 3,
 						cars = new CarPlacement[]
 						{
 										new() { name = "CP1", carIdx = 08, livery = Livery.TGR,  },
@@ -1212,7 +1212,7 @@ public class ArcadeVariant
 						size = 1,
 						coords = new Vector2(1,2),
 						trackName = "SUNKEN SIGHTS",
-						laps = 4,
+						laps = 5,
 						cars = new CarPlacement[]
 						{
 										new() { name = "CP1", carIdx = 10, livery = (Livery)7,  },

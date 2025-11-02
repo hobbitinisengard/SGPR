@@ -523,6 +523,7 @@ namespace RVP
 							var newTargetSteer = Vector2.SignedAngle(targetDir, (vp.rb.linearVelocity.normalized.Flat() + tr.forward.Flat()) / 2f);
 							newTargetSteer = F.Sign(newTargetSteer) * Mathf.InverseLerp(0, maxPhysicalSteerAngle, Mathf.Abs(newTargetSteer));
 							newTargetSteer *= (reverseTime == 0) ? 1 : -1;
+							newTargetSteer = Mathf.Clamp(newTargetSteer, -3*vp.steeringControl.steerLimit, 3*vp.steeringControl.steerLimit);
 							vp.SetSteer(newTargetSteer);
 						}
 

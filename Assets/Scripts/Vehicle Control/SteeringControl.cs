@@ -18,8 +18,8 @@ namespace RVP
 		public Suspension[] steeredWheels;
 		[Range(0, 1f)]
 		public float holdDuration = 0;
-        [Range(0, 1f)]
-        public float gripDuration = 0;
+    [Range(0, 1f)]
+    public float gripDuration = 0;
 		public float steerLimit;
 		public float maxDegreesRotation;
 		static AnimationCurve keyboardInputCurve;

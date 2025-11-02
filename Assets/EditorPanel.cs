@@ -962,16 +962,10 @@ public class EditorPanel : MonoBehaviour
 							points = cur.PathsExtra()
 						});
 					}
-					try
-					{
-						cur.Paths(out var lpath, out var rpath);
-						Lpath.AddRange(lpath);
-						Rpath.AddRange(rpath);
-					}
-					catch
-					{
 
-					}
+					cur.Paths(out var lpath, out var rpath);
+					Lpath.AddRange(lpath);
+					Rpath.AddRange(rpath);
 					
 					cur.Colorize(Connector.green);
 					connectors.Add(cur);
@@ -1999,21 +1993,22 @@ public class EditorPanel : MonoBehaviour
 					continue;
 				for (int j = 0; j < TRACK.tiles[i].connectors.Length; ++j)
 				{
-					var c = tile.GetChild(1 + j).GetComponent<Connector>();
-
-					c.isStuntZone = TRACK.tiles[i].connectors[j].isStuntZone;
-
-					if (TRACK.tiles[i].connectors[j].cameraID != -1)
+					if(tile.GetChild(1 + j).TryGetComponent<Connector>(out var c))
 					{
-						c.SetCamera(replayCamerasContainer.transform.
-								GetChild(TRACK.tiles[i].connectors[j].cameraID).GetComponent<TrackCamera>());
-					}
+						c.isStuntZone = TRACK.tiles[i].connectors[j].isStuntZone;
 
-					if (TRACK.tiles[i].connectors[j].connectionData != Vector2Int.zero)
-					{
-						var cData = TRACK.tiles[i].connectors[j].connectionData;
-						c.connection = placedTilesContainer.transform.GetChild(cData.x).GetChild(cData.y).GetComponent<Connector>();
-						c.DisableCollider();
+						if (TRACK.tiles[i].connectors[j].cameraID != -1)
+						{
+							c.SetCamera(replayCamerasContainer.transform.
+									GetChild(TRACK.tiles[i].connectors[j].cameraID).GetComponent<TrackCamera>());
+						}
+
+						if (TRACK.tiles[i].connectors[j].connectionData != Vector2Int.zero)
+						{
+							var cData = TRACK.tiles[i].connectors[j].connectionData;
+							c.connection = placedTilesContainer.transform.GetChild(cData.x).GetChild(cData.y).GetComponent<Connector>();
+							c.DisableCollider();
+						}
 					}
 				}
 			}
