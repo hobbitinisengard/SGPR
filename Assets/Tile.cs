@@ -115,22 +115,25 @@ public class Tile : MonoBehaviour
 				mr.materials = materials;
 			}
 
-			for (int i = 1; i < transform.childCount; ++i)
-			{
-				var connector = transform.GetChild(i).gameObject;
-				var col = connector.AddComponent<SphereCollider>();
-				col.radius = 3;
-				col.isTrigger = true;
-				var rb = connector.AddComponent<Rigidbody>();
-				rb.useGravity = false;
-				rb.isKinematic = true;
-				connector.AddComponent<Connector>();
-				connector.layer = F.I.connectorLayer;
-				var mf = connector.AddComponent<MeshFilter>();
-				var mr = connector.AddComponent<MeshRenderer>();
-				mf.mesh = F.I.sphereMesh;
-				mr.enabled = true;
-				mr.material = Connector.blue;
+			if(type == Type.Road)
+			{ 
+				for (int i = 1; i < transform.childCount; ++i)
+				{
+					var connector = transform.GetChild(i).gameObject;
+					var col = connector.AddComponent<SphereCollider>();
+					col.radius = 3;
+					col.isTrigger = true;
+					var rb = connector.AddComponent<Rigidbody>();
+					rb.useGravity = false;
+					rb.isKinematic = true;
+					connector.AddComponent<Connector>();
+					connector.layer = F.I.connectorLayer;
+					var mf = connector.AddComponent<MeshFilter>();
+					var mr = connector.AddComponent<MeshRenderer>();
+					mf.mesh = F.I.sphereMesh;
+					mr.enabled = true;
+					mr.material = Connector.blue;
+				}
 			}
 		}
 	}

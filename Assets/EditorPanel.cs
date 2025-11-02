@@ -962,9 +962,17 @@ public class EditorPanel : MonoBehaviour
 							points = cur.PathsExtra()
 						});
 					}
-					cur.Paths(out var lpath, out var rpath);
-					Lpath.AddRange(lpath);
-					Rpath.AddRange(rpath);
+					try
+					{
+						cur.Paths(out var lpath, out var rpath);
+						Lpath.AddRange(lpath);
+						Rpath.AddRange(rpath);
+					}
+					catch
+					{
+
+					}
+					
 					cur.Colorize(Connector.green);
 					connectors.Add(cur);
 					cur = cur.Opposite(); // now on the opposite side of the tile
@@ -1667,7 +1675,7 @@ public class EditorPanel : MonoBehaviour
 				tSavable.length = tile.Length();
 				tSavable.url = tile.url;
 				tSavable.mirrored = tile.mirrored;
-				if (tile.transform.childCount > 1)
+				if (tile.transform.childCount > 1 && tile.type == Tile.Type.Road)
 				{ // set up connectors
 					tSavable.connectors = new ConnectorSavable[tile.transform.childCount - 1];
 					for (int j = 1; j < tile.transform.childCount; ++j)

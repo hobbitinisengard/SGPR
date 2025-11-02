@@ -647,7 +647,7 @@ namespace RVP
 		}
 		public IEnumerator ResetOnTrack()
 		{
-			if (!vp.Owner)
+			if (!vp.Owner || F.I.s_inEditor)
 				yield break;
 
 			vp.customCam = null;

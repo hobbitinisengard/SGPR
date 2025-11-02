@@ -421,9 +421,19 @@ public class ResultsView : MainMenuView
 				}
 				return false;
 			case ArcadeVariant.Prize.Condition.LapAtMost:
-				playerResult = resultData.First(p => p.name == F.I.playerData.playerName);
-				TimeSpan requiredLap = TimeSpan.ParseExact(req.conditionArgument,Info.stringFormatWithoutHours,null);
-				return playerResult.lap <= requiredLap;
+				{
+					playerResult = resultData.First(p => p.name == F.I.playerData.playerName);
+					TimeSpan requiredLap = TimeSpan.Zero;
+					try
+					{
+						requiredLap = TimeSpan.ParseExact(req.conditionArgument, Info.stringFormatWithoutHours, null);
+					}
+					catch
+					{
+						requiredLap = TimeSpan.ParseExact(req.conditionArgument, Info.stringFormatWithHours, null);
+					}
+					return playerResult.lap <= requiredLap;
+				}
 			case ArcadeVariant.Prize.Condition.StarsAtLeast:
 				playerResult = resultData.First(p => p.name == F.I.playerData.playerName);
 				int starsReq = int.Parse(req.conditionArgument);
