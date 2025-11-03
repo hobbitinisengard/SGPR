@@ -109,7 +109,7 @@ public class Info : MonoBehaviour
 	public Material emissiveRearDarker;
 	public Mesh sphereMesh;
 	public AudioMixer mainAudioMixer;
-	public const string VERSION = "0.5";
+	public const string VERSION = "0.5.1";
 	public bool minimized { get; private set; }
 	[DllImport("user32.dll")]
 	static extern bool SetCursorPos(int X, int Y);

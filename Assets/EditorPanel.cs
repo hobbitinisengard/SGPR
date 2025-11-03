@@ -329,6 +329,37 @@ public class EditorPanel : MonoBehaviour
 			placedTilesContainer.transform.GetChild(i).GetComponent<Tile>().UpdateLights();
 		}
 	}
+	void ResetPath()
+	{
+		SetPathClosed(false);
+
+		for (int i = 0; i< placedTilesContainer.transform.childCount; ++i)
+		{
+			Tile t = placedTilesContainer.transform.GetChild(i).GetComponent<Tile>();
+			if(t.type == Tile.Type.Road)
+			{
+				for(int j=1; j< t.transform.childCount; ++j)
+				{
+					var c = t.transform.GetChild(j).GetComponent<Connector>();
+					c.connection = null;
+				}
+			}
+		}
+		SwitchTo(Mode.Build);
+
+		for (int i = 0; i < placedTilesContainer.transform.childCount; ++i)
+		{
+			Tile t = placedTilesContainer.transform.GetChild(i).GetComponent<Tile>();
+			if (t.type == Tile.Type.Road)
+			{
+				for (int j = 1; j < t.transform.childCount; ++j)
+				{
+					var c = t.transform.GetChild(j).GetComponent<Connector>();
+					c.GetComponent<Collider>().enabled = true;
+				}
+			}
+		}
+	}
 
 	void Update()
 	{
@@ -337,6 +368,10 @@ public class EditorPanel : MonoBehaviour
 			if (Input.GetKeyDown(KeyCode.E))
 			{
 				SwitchAngleSnapping();
+			}
+			if (Input.GetKeyDown(KeyCode.R))
+			{
+				ResetPath();
 			}
 			if (Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.N))
 			{
@@ -980,7 +1015,7 @@ public class EditorPanel : MonoBehaviour
 
 			if (i >= 10000 || i < 2)
 			{
-				//Debug.Log("elements traversed: " + i);
+				DisplayMessageFor("Bad racingpath. Press R to reset it",5);
 				loadingTrack = false;
 				yield break;
 			}
