@@ -1541,6 +1541,10 @@ MonoBehaviour:
     m_Localized: "Zr\xF3b ewol. {0} {1} razy"
     m_Metadata:
       m_Items: []
+  - m_Id: 66363235515293696
+    m_Localized: "B\u0142\u0119dna \u015Bcie\u017Cka. Wci\u015Bnij R by zresetowa\u0107"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

@@ -1015,7 +1015,7 @@ public class EditorPanel : MonoBehaviour
 
 			if (i >= 10000 || i < 2)
 			{
-				DisplayMessageFor("Bad racingpath. Press R to reset it",5);
+				DisplayMessageFor(F.I.LocStr("Bad racingpath. Press R to reset it"),5);
 				loadingTrack = false;
 				yield break;
 			}

@@ -1507,6 +1507,10 @@ MonoBehaviour:
     m_Key: Perform {0} at least {1} times
     m_Metadata:
       m_Items: []
+  - m_Id: 66363235515293696
+    m_Key: Bad racingpath. Press R to reset it
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
