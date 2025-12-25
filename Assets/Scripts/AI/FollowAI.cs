@@ -110,18 +110,18 @@ namespace RVP
 		{
 			get
 			{
-				float lapProgress = target.dist - reqDist;
+				float lapProgress = progress;
 
 				if(lapProgress < 0)
 					lapProgress = 0;
 
-				float newLapProgress = lapProgress / RaceManager.I.racingPaths[1].path.length;
+				lapProgress = lapProgress / RaceManager.I.racingPaths[1].path.length;
 
-				if(Mathf.Abs(newLapProgress - lapProgressPercent) > 0.3f)
+				if(Mathf.Abs(lapProgress - lapProgressPercent) > 0.3f)
 					return lapProgressPercent;
 
-				if (newLapProgress > lapProgressPercent)
-					lapProgressPercent = newLapProgress;
+				if (lapProgress > lapProgressPercent)
+					lapProgressPercent = lapProgress;
 
 				return lapProgressPercent;
 			}
@@ -523,7 +523,6 @@ namespace RVP
 							var newTargetSteer = Vector2.SignedAngle(targetDir, (vp.rb.linearVelocity.normalized.Flat() + tr.forward.Flat()) / 2f);
 							newTargetSteer = F.Sign(newTargetSteer) * Mathf.InverseLerp(0, maxPhysicalSteerAngle, Mathf.Abs(newTargetSteer));
 							newTargetSteer *= (reverseTime == 0) ? 1 : -1;
-							newTargetSteer = Mathf.Clamp(newTargetSteer, -3*vp.steeringControl.steerLimit, 3*vp.steeringControl.steerLimit);
 							vp.SetSteer(newTargetSteer);
 						}
 

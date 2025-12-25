@@ -846,8 +846,14 @@ namespace RVP
 			}
 			f = Mathf.Clamp(f, -1, 1);
 
-			if ((F.I.s_cpuLevel != CpuLevel.Hard && BatteryPercent <= 0 && velMag > 30) || (F.I.s_cpuLevel == CpuLevel.Hard && BatteryPercent <= 0 && velMag > 0))
+			if (BatteryPercent <= 0 && velMag > 30)
 				f = 0;
+			
+			if(F.I.s_cpuLevel == CpuLevel.Hard && BatteryPercent <= 0)
+			{
+				f = 0;
+				engine.ignition = false;
+			}
 
 			if (Owner)
 				accelInput = f;
@@ -855,7 +861,7 @@ namespace RVP
 			if (energyRemaining > 0 && (!followAI.IsCPU || F.I.s_cpuLevel == CpuLevel.Easy))
 				energyRemaining -= accelInput * engine.fuelConsumption * Time.deltaTime;
 
-			engine.ignition = energyRemaining > 0;
+			
 		}
 
 		// Set brake input

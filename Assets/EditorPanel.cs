@@ -369,7 +369,7 @@ public class EditorPanel : MonoBehaviour
 			{
 				SwitchAngleSnapping();
 			}
-			if (Input.GetKeyDown(KeyCode.R))
+			if (Input.GetKeyDown(KeyCode.R) && !Input.GetKey(KeyCode.LeftControl))
 			{
 				ResetPath();
 			}

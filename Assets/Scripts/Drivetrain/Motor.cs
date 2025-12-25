@@ -8,7 +8,7 @@ namespace RVP
 	{
 		protected VehicleParent vp;
 		[NonSerialized]
-		public bool ignition = false;
+		public bool ignition = true;
 
 		[Tooltip("Throttle curve, x-axis = input, y-axis = output")]
 		public AnimationCurve inputCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);

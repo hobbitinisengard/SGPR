@@ -1058,7 +1058,7 @@ public class ArcadeVariant
 				{
 								new() { node = 15, allowedCarsIdxs = new int[]{6,09,10 } },
 								new() { node = 16, allowedCarsIdxs = new int[]{3,14 } },
-								new() { node = 17, allowedCarsIdxs = new int[]{0,7,8 } },
+								new() { node = 17, allowedCarsIdxs = new int[]{0,8 } },
 				},
 			nodes = new Node[]
 				{
