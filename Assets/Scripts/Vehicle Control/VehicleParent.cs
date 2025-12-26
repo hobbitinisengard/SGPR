@@ -849,10 +849,11 @@ namespace RVP
 			if (BatteryPercent <= 0 && velMag > 30)
 				f = 0;
 			
-			if(F.I.s_cpuLevel == CpuLevel.Hard && BatteryPercent <= 0)
+			if(F.I.s_cpuLevel == CpuLevel.Hard)
 			{
-				f = 0;
-				engine.ignition = false;
+				engine.ignition = BatteryPercent > 0;
+				if(!engine.ignition)
+					f = 0;
 			}
 
 			if (Owner)
