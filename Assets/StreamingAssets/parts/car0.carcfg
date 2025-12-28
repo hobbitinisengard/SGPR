@@ -22,7 +22,7 @@
       "RearSpringDistance": 0.3,
       "RearSpringForce": 10.0,
       "RearSpringExponent": 1.0,
-      "RearSpringDampening": 0.2
+      "RearSpringDampening": 0.1
     },
     "bms": {
       "driftSpinAssist": 12.0,
@@ -83,9 +83,9 @@
     },
     "tyre": {
       "forwardFriction": 10.0,
-      "sideFriction": 12.0,
+      "sideFriction": 17.0,
       "forwardFrictionStretch": 10.0,
-      "sideFrictionStretch": 10.0,
+      "sideFrictionStretch": 15.0,
       "shiftRearFriction": 12.0,
       "squeakSlipThreshold": 0.5,
       "slipDependence": 0.0,

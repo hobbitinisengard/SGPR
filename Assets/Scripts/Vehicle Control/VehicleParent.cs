@@ -181,7 +181,7 @@ namespace RVP
 				{
 					if (value == Livery.Random)
 					{
-						if(name == F.I.playerData.playerName)
+						if (name == F.I.playerData.playerName)
 						{
 							// pick random from unlocked liveries
 							var pickedLivery = F.I.unlockedLiveries.GetRandom();
@@ -191,7 +191,7 @@ namespace RVP
 								value = pickedLivery.Value;
 						}
 						else
-								value = F.RandomLivery();
+							value = F.RandomLivery();
 					}
 					_sponsor.Value = value;
 				}
@@ -255,7 +255,7 @@ namespace RVP
 		[Range(0, 0.9f)]
 		public float burnoutSmoothness = 0.5f;
 		public GasMotor engine;
-		public ParticleSystem[] batteryLoadingParticleSystems;
+		public Transform batteryLoadingParticleSystemParent;
 
 		public float energyRemaining = 1000;
 		public float batteryCapacity = 1000;
@@ -465,7 +465,7 @@ namespace RVP
 			rearLightsLighter.mainTexture = newMat.mainTexture;
 			//rearLightsBrakeMaterial.color = new(1, 18/255f, 0);
 			rearLightsDarker.mainTexture = newMat.mainTexture;
-			foreach(var f in frontLights)
+			foreach (var f in frontLights)
 			{
 				var flmr = f.transform.GetComponent<MeshRenderer>();
 				flmr.sharedMaterial = frontLightsLighter;
@@ -502,17 +502,17 @@ namespace RVP
 						//	//mf.mesh.SetUVs(0, uvs);
 						//}
 						//else
-							mats[i] = wheelMat;
+						mats[i] = wheelMat;
 					}
 				}
 				wmr.materials = mats;
-				
+
 			}
 			// assign to antennas
 			var anchor = bodyObj.transform.GetChild(0);
-			for(int i=0; i<anchor.childCount; i++)
+			for (int i = 0; i < anchor.childCount; i++)
 			{
-				if(anchor.GetChild(i).TryGetComponent<MeshRenderer>(out var amr))
+				if (anchor.GetChild(i).TryGetComponent<MeshRenderer>(out var amr))
 				{
 					var mats = amr.materials;
 					for (int j = 0; j < mats.Length; j++)
@@ -564,18 +564,17 @@ namespace RVP
 
 		public void PlayBatteryLoadingFXs(bool status)
 		{
-			foreach (var ps in batteryLoadingParticleSystems)
+			if (status)
 			{
-				if (status)
-				{
-					batteryLoadingSnd.Play();
-					ps.Play();
-				}
-				else
-				{
-					batteryLoadingSnd.Stop();
-					ps.Stop();
-				}
+				batteryLoadingParticleSystemParent.GetComponent<ParticleSystem>().Play();
+				batteryLoadingParticleSystemParent.GetChild(0).GetComponent<ParticleSystem>().Play();
+				batteryLoadingSnd.Play();
+			}
+			else
+			{
+				batteryLoadingSnd.Stop();
+				batteryLoadingParticleSystemParent.GetComponent<ParticleSystem>().Stop();
+				batteryLoadingParticleSystemParent.GetChild(0).GetComponent<ParticleSystem>().Stop();
 			}
 		}
 		AnimationCurve GenerateBrakeCurve()
@@ -605,7 +604,7 @@ namespace RVP
 
 			F.I.s_cars.Add(this);
 
-			rearLightsLighter = Resources.Load<Material>($"materials/rearlights/lighter/cars_car{carNumber+1}_b{carNumber+1}grid1l");
+			rearLightsLighter = Resources.Load<Material>($"materials/rearlights/lighter/cars_car{carNumber + 1}_b{carNumber + 1}grid1l");
 			rearLightsDarker = Resources.Load<Material>($"materials/rearlights/darker/cars_car{carNumber + 1}_b{carNumber + 1}grid1d");
 			frontLightsLighter = Resources.Load<Material>($"materials/frontlights/cars_car{carNumber + 1}_b{carNumber + 1}grid1f");
 			wheelbase = Vector3.Distance(wheels[0].transform.position, wheels[2].transform.position);
@@ -632,7 +631,7 @@ namespace RVP
 			brakeCurve ??= GenerateBrakeCurve();
 
 			// Create normal orientation object
-			GameObject normTemp = new (tr.name + "'s Normal");
+			GameObject normTemp = new(tr.name + "'s Normal");
 			norm = normTemp.transform;
 
 			if (F.I.s_spectator)
@@ -650,7 +649,7 @@ namespace RVP
 			{ // sending sponsor info may come from the server after a while
 				yield return null;
 			}
-			
+
 			OnNameChanged();
 			OnSponsorChanged();
 
@@ -760,7 +759,7 @@ namespace RVP
 					l.transform.GetChild(0).GetComponent<Light>().range = 2;
 				}
 			}
-			
+
 			// Norm orientation visualizing
 			// Debug.DrawRay(norm.position, norm.forward, Color.blue);
 			// Debug.DrawRay(norm.position, norm.up, Color.green);
@@ -806,7 +805,7 @@ namespace RVP
 					reversing = false;
 			}
 
-			if(reallyGroundedWheels == 4)
+			if (reallyGroundedWheels == 4)
 			{
 
 				//float radius = wheelbase / Mathf.Sin(wheels[0].suspensionParent.steerRangeMax * Mathf.Deg2Rad * wheels[0].suspensionParent.steerAngle);
@@ -848,11 +847,11 @@ namespace RVP
 
 			if (BatteryPercent <= 0 && velMag > 30)
 				f = 0;
-			
-			if(F.I.s_cpuLevel == CpuLevel.Hard)
+
+			if (F.I.s_cpuLevel == CpuLevel.Hard)
 			{
 				engine.ignition = BatteryPercent > 0;
-				if(!engine.ignition)
+				if (!engine.ignition)
 					f = 0;
 			}
 
@@ -862,7 +861,7 @@ namespace RVP
 			if (energyRemaining > 0 && (!followAI.IsCPU || F.I.s_cpuLevel == CpuLevel.Easy))
 				energyRemaining -= accelInput * engine.fuelConsumption * Time.deltaTime;
 
-			
+
 		}
 
 		// Set brake input
@@ -903,9 +902,9 @@ namespace RVP
 		}
 		public void SetBunnyhop(int f)
 		{
-			if(f > 0)
+			if (f > 0)
 			{
-				if(reallyGroundedWheels > 2)
+				if (reallyGroundedWheels > 2)
 				{
 					bunnyhopInput = 1;
 					rb.AddForce(40 * bunnyhopInput * originalMass * -upDir);
@@ -915,7 +914,7 @@ namespace RVP
 			{
 				if (bunnyhopInput > 0)
 				{
-					if(reallyGroundedWheels > 2)
+					if (reallyGroundedWheels > 2)
 					{
 						// perform bunnyhop
 						rb.AddForce(10 * bunnyhopInput * upDir, ForceMode.VelocityChange);
@@ -1005,7 +1004,7 @@ namespace RVP
 		{
 			downshiftHold = f;
 		}
-		
+
 		// Get the number of grounded wheels and the normals and velocities of surfaces they're sitting on
 		void GetGroundedWheels()
 		{
@@ -1027,7 +1026,7 @@ namespace RVP
 				}
 			}
 		}
-		
+
 		public void PlaySparks(Collision c)
 		{
 			sparks.transform.position = c.GetContact(0).point;
@@ -1049,7 +1048,7 @@ namespace RVP
 				{
 					if (curCol.thisCollider.gameObject.layer != RaceManager.ignoreWheelCastLayer)
 					{
-						if (Mathf.Abs(Vector3.Dot(curCol.normal, col.relativeVelocity.normalized)) > 0.1f 
+						if (Mathf.Abs(Vector3.Dot(curCol.normal, col.relativeVelocity.normalized)) > 0.1f
 							&& col.relativeVelocity.magnitude > 10)
 						{
 							crashSnd.PlayOneShot(crashClips[UnityEngine.Random.Range(0, crashClips.Length)],
