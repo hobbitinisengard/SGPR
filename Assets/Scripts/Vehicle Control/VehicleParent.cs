@@ -237,8 +237,6 @@ namespace RVP
 
 		Material rearLightsLighter;
 		Material rearLightsDarker;
-		Material frontLightsLighter;
-		private float wheelbase;
 		[Tooltip("Accel axis is used for brake input")]
 		public bool accelAxisIsBrake;
 
@@ -362,7 +360,7 @@ namespace RVP
 				RpcTarget.Single(ps.Receive.SenderClientId, RpcTargetUse.Temp));
 		}
 		[Rpc(SendTo.SpecifiedInParams)]
-		public void SynchRaceboxValuesRpc(bool enabled, int lastRoundScore, int curLap, int dist, int progress, float aero, float drift,
+		public void SynchRaceboxValuesRpc(bool enabled, int lastRoundScore, int curLap, float dist, float progress, float aero, float drift,
 			float bestLapSecs, float raceTimeSecs, RpcParams ps)
 		{
 			this.lastRoundScore = lastRoundScore;
@@ -386,6 +384,7 @@ namespace RVP
 		public float bunnyhopInput;
 		[NonSerialized]
 		public float twistGain = 0.25f;
+		float colDetectionTimer;
 
 		public void SetBattery(float capacity, float chargingSpeed, float lowBatPercent, float evoBountyPercent)
 		{
@@ -463,14 +462,13 @@ namespace RVP
 			newMat.mainTexture = ImgPathToTexture2D(F.I.documentsSGPRpath + "textures/" + matName + ".jpg");
 
 			rearLightsLighter.mainTexture = newMat.mainTexture;
+			rearLightsLighter.SetTexture("_EmissionMap", newMat.mainTexture);
+			rearLightsLighter.SetColor("_EmissionColor", Color.red);
 			//rearLightsBrakeMaterial.color = new(1, 18/255f, 0);
 			rearLightsDarker.mainTexture = newMat.mainTexture;
-			foreach (var f in frontLights)
-			{
-				var flmr = f.transform.GetComponent<MeshRenderer>();
-				flmr.sharedMaterial = frontLightsLighter;
-			}
-			//rearLightsOnMaterial.color = new(178/255f, 0, 0);
+			// set emission texture
+			rearLightsDarker.SetTexture("_EmissionMap", newMat.mainTexture);
+			rearLightsDarker.SetColor("_EmissionColor", Color.gray);
 
 			// assign to body
 			mr.material = newMat;
@@ -604,10 +602,8 @@ namespace RVP
 
 			F.I.s_cars.Add(this);
 
-			rearLightsLighter = Resources.Load<Material>($"materials/rearlights/lighter/cars_car{carNumber + 1}_b{carNumber + 1}grid1l");
-			rearLightsDarker = Resources.Load<Material>($"materials/rearlights/darker/cars_car{carNumber + 1}_b{carNumber + 1}grid1d");
-			frontLightsLighter = Resources.Load<Material>($"materials/frontlights/cars_car{carNumber + 1}_b{carNumber + 1}grid1f");
-			wheelbase = Vector3.Distance(wheels[0].transform.position, wheels[2].transform.position);
+			rearLightsLighter = new Material(Resources.Load<Material>($"materials/rearlights/lighter/cars_car{carNumber + 1}_b{carNumber + 1}grid1l"));
+			rearLightsDarker = new Material(Resources.Load<Material>($"materials/rearlights/darker/cars_car{carNumber + 1}_b{carNumber + 1}grid1d"));
 		}
 		public override void OnNetworkSpawn()
 		{
@@ -679,7 +675,7 @@ namespace RVP
 				ServerC.I.UpdatePlayerData();
 			}
 			ResultsView.Add(this);
-			lightsInput = F.I.s_timeOfDay == TimeOfDay.Night || F.I.tracks[F.I.s_trackName].envir == Envir.FRA;
+			lightsInput = F.I.s_timeOfDay == TimeOfDay.Night;
 			foreach (var l in frontLights)
 				l.SetActive(lightsInput);
 			foreach (var l in rearLights)
@@ -737,7 +733,8 @@ namespace RVP
 				roadNoiseSnd.clip = GroundSurfaceMaster.surfaceTypesStatic[roadSurfaceType].roadNoise;
 			}
 			roadNoiseSnd.gameObject.SetActive((!F.I.gamePaused && reallyGroundedWheels > 0));
-			roadNoiseSnd.volume = Mathf.InverseLerp(0, 80, velMag);// (1 + 80 * 2 / 3f * Mathf.Log10(volume)); 
+			roadNoiseSnd.volume = Mathf.InverseLerp(0, 80, 
+				(GroundSurfaceMaster.surfaceTypesStatic[roadSurfaceType].alwaysScrape ? 10 : 1) * velMag);// (1 + 80 * 2 / 3f * Mathf.Log10(volume)); 
 
 			if (brakeInput > 0 && !reversing)
 			{
@@ -746,7 +743,7 @@ namespace RVP
 				{
 					l.SetActive(true);
 					l.GetComponent<MeshRenderer>().sharedMaterial = rearLightsLighter;
-					l.transform.GetChild(0).GetComponent<Light>().range = 10;
+					//l.transform.GetChild(0).GetComponent<Light>().range = 10;
 				}
 			}
 			else if (brakeInput == 0)
@@ -756,7 +753,7 @@ namespace RVP
 				{
 					l.SetActive(lightsInput);
 					l.GetComponent<MeshRenderer>().sharedMaterial = rearLightsDarker;
-					l.transform.GetChild(0).GetComponent<Light>().range = 2;
+					//l.transform.GetChild(0).GetComponent<Light>().range = 2;
 				}
 			}
 
@@ -771,6 +768,20 @@ namespace RVP
 			//{
 			//	InheritInput();
 			//}
+
+			// Dynamically switch CCD mode based on air time
+			if(reallyGroundedWheels == 0)
+			{
+				colDetectionTimer = Mathf.Clamp(colDetectionTimer + Time.fixedDeltaTime, 0, 0.5f);
+				if (colDetectionTimer == 0.5f && velMag > 58)
+					rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+			}
+			else if (reallyGroundedWheels == 4)
+			{
+				colDetectionTimer = Mathf.Clamp(colDetectionTimer - Time.fixedDeltaTime, 0, 0.5f);
+				if (colDetectionTimer == 0)
+					rb.collisionDetectionMode = CollisionDetectionMode.Discrete;
+			}
 
 			if (wheelLoopDone && wheelGroups.Length > 0)
 			{
@@ -957,11 +968,11 @@ namespace RVP
 		}
 		public void Switchlights()
 		{
-			lightsInput = !lightsInput;
-			foreach (var l in frontLights)
-				l.SetActive(lightsInput);
-			foreach (var l in rearLights)
-				l.SetActive(lightsInput);
+				lightsInput = !lightsInput;
+				foreach (var l in frontLights)
+					l.SetActive(lightsInput);
+				foreach (var l in rearLights)
+					l.SetActive(lightsInput);
 		}
 		// turned off
 		public void SetPitch(float f)

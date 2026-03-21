@@ -9,7 +9,6 @@ public class SGP_Bouncer : MonoBehaviour
 	public float rotationalFrictionScale = 0.01f;
 	public float minShock = 1f;
 	float maxShock = 4f;
-	float maxRotShock = 1;
 	ContactPoint[] contacts = new ContactPoint[20];
 	VehicleParent vp;
 	public float lastBounceTime;

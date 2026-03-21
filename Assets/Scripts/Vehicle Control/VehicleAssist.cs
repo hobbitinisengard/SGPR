@@ -18,7 +18,6 @@ namespace RVP
 		[Tooltip("Variables are multiplied based on the number of wheels grounded out of the total number of wheels")]
 		public bool basedOnWheelsGrounded;
 		float groundedFactor;
-		private float angDragTime;
 		[Tooltip("How much to assist with spinning while drifting")]
 		public float driftSpinAssist;
 		public float driftSpinSpeed;
@@ -41,7 +40,6 @@ namespace RVP
 		[Header("Downforce")]
 		public float downforce = 1;
 		public bool invertDownforceInReverse;
-		bool applyDownforceInAir = true;
 
 		[Tooltip("X-axis = speed, y-axis = force")]
 		public AnimationCurve downforceCurve = AnimationCurve.Linear(0, 0, 20, 1);
@@ -94,7 +92,6 @@ namespace RVP
 			{
 				groundedFactor = basedOnWheelsGrounded ? vp.reallyGroundedWheels / vp.wheels.Length : 1;
 
-				angDragTime = .5f;
 				rb.angularDamping = initialAngularDrag;
 
 				if (driftSpinAssist > 0)

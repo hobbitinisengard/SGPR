@@ -8,18 +8,25 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: startline
-  m_Shader: {fileID: 4800000, guid: 6e4ae4064600d784cac1e41a9e6f2e59, type: 3}
+  m_Shader: {fileID: 4800000, guid: ed04895971c00fc498c346df2ac0e9b4, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
+  - _SOURCE_SPECULARALPHA
+  m_InvalidKeywords:
+  - _BLENDMAINNORMAL_ON
+  - _DETAILSOURCE_SPECULARALPHA
   - _DISABLE_SSR_TRANSPARENT
   - _DOUBLESIDED_ON
+  - _ENABLETRIPLANARPROJECTION_ON
   - _NORMALMAP_TANGENT_SPACE
-  m_InvalidKeywords: []
+  - _TRIPLANARSPACEPROJECTION_OBJECTSPACE
+  - _USEAOFROMMAINPROPERTIES_ON
+  - _USEEMISSIONFROMMAINPROPERTIES_ON
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 1
-  m_CustomRenderQueue: 2225
+  m_CustomRenderQueue: -1
   stringTagMap: {}
   disabledShaderPasses:
   - TransparentDepthPrepass
@@ -68,6 +75,10 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _DetailNormalMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DetailSpecGlossMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -187,6 +198,7 @@ Material:
     - _AoIntensity: 1
     - _BlendMainNormal: 1
     - _BlendMode: 0
+    - _BlendmodeOverlay: 0
     - _Brightness: 1
     - _BumpScale: 1
     - _CoatMask: 0
@@ -198,10 +210,13 @@ Material:
     - _DepthOffsetEnable: 0
     - _DetailAlbedoScale: 1
     - _DetailBrightness: 1
+    - _DetailGlossiness: 0.5
     - _DetailNormalMapScale: 1
     - _DetailNormalScale: 1
     - _DetailSaturation: 0
     - _DetailSmoothnessScale: 1
+    - _DetailSource: 0
+    - _DetailSpecularIntensity: 0.2
     - _DiffusionProfile: 0
     - _DiffusionProfileHash: 0
     - _DisplacementLockObjectScale: 1
@@ -221,6 +236,7 @@ Material:
     - _EnableDetailMask: 0
     - _EnableFogOnTransparent: 1
     - _EnableGeometricSpecularAA: 0
+    - _EnableTriplanarProjection: 1
     - _EnergyConservingSpecularColor: 1
     - _GlossMapScale: 1
     - _Glossiness: 0
@@ -301,10 +317,14 @@ Material:
     - _TransparentSortPriority: 0
     - _TransparentWritingMotionVec: 0
     - _TransparentZWrite: 0
+    - _TriplanarFalloff: 20
+    - _TriplanarSpaceProjection: 0
     - _UVBase: 0
     - _UVDetail: 0
     - _UVEmissive: 0
     - _UVSec: 0
+    - _UseAoFromMainProperties: 1
+    - _UseEmissionFromMainProperties: 1
     - _UseEmissiveIntensity: 0
     - _UseShadowThreshold: 0
     - _VisualizeMask: 0
@@ -318,10 +338,11 @@ Material:
     - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
     - _BaseColorMap_MipInfo: {r: 0, g: 0, b: 0, a: 0}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
-    - _DetailColor: {r: 1, g: 1, b: 1, a: 0}
+    - _DetailColor: {r: 0, g: 0, b: 0, a: 0}
+    - _DetailSpecularColor: {r: 1, g: 1, b: 1, a: 0}
     - _DiffusionProfileAsset: {r: 0, g: 0, b: 0, a: 0}
     - _DoubleSidedConstants: {r: 1, g: 1, b: -1, a: 0}
-    - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}
+    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _EmissiveColor: {r: 0, g: 0, b: 0, a: 1}
     - _EmissiveColorLDR: {r: 0, g: 0, b: 0, a: 1}
     - _GlobalXYTilingXYZWOffsetXY: {r: 1, g: 1, b: 0, a: 0}
@@ -330,6 +351,7 @@ Material:
     - _SpecularColor: {r: 1, g: 1, b: 1, a: 0}
     - _ThicknessRemap: {r: 0, g: 1, b: 0, a: 0}
     - _TransmittanceColor: {r: 1, g: 1, b: 1, a: 1}
+    - _TriplanarXYTilingXYZWOffsetXY: {r: 1, g: 1, b: 0, a: 0}
     - _UVDetailsMappingMask: {r: 1, g: 0, b: 0, a: 0}
     - _UVMappingMask: {r: 1, g: 0, b: 0, a: 0}
     - _UVMappingMaskEmissive: {r: 1, g: 0, b: 0, a: 0}

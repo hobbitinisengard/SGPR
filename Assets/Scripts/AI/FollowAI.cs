@@ -13,14 +13,6 @@ namespace RVP
 	// Class for following AI
 	public class FollowAI : MonoBehaviour
 	{
-		[Serializable]
-		public class FollowTarget
-		{
-			[NonSerialized]
-			public Vector3 pos;
-			public float dist;
-
-		}
 		List<int> stuntPoints;
 		public List<ReplayCam> replayCams { get; private set; }
 		public PathCreator trackPathCreator { get; private set; }
@@ -47,21 +39,18 @@ namespace RVP
 		public float reverseTime;
 		public float brakeTime;
 
-		public int progress = 0;
+		public float progress = 0;
 		public float pitsProgress = 0;
-		public int dist = 0;
+
+		public float dist = 0;
 		public float speedLimit = 999;
 		public float speedLimitDist = 0;
 		public float hardCornerDot = 0.7f;
 		public float slowingCoeff = 1;
 		float maxPhysicalSteerAngle = 5;
 
-		float reqDist;
 		const float steerMinDist = 10;
-		// CPU settings
-		//float tyreMult = 1;
-		//float lowSpeed = 30;
-		public FollowTarget target = new();
+
 		[Tooltip("Time limit in seconds which the vehicle is stuck before attempting to reverse")]
 		public float stopTimeReverse = 5;
 
@@ -97,12 +86,10 @@ namespace RVP
 		public bool Pitting { get { return pitsPathCreator != null; } }
 		public ReplayCam currentCam { get { return replayCams[curReplayPointIdx]; } }
 
-		public float lapProgressPercent;
-		float pitsDist;
+		public float univProgress;
+		public float univDist;
 		Vector3 distPoint;
 		Vector3 progressPoint;
-		float distLastTime;
-		float LapProgressPercentTime;
 		private float lastOutOfTrackTime;
 		internal bool looping;
 
@@ -110,20 +97,7 @@ namespace RVP
 		{
 			get
 			{
-				float lapProgress = progress;
-
-				if(lapProgress < 0)
-					lapProgress = 0;
-
-				lapProgress = lapProgress / RaceManager.I.racingPaths[1].path.length;
-
-				if(Mathf.Abs(lapProgress - lapProgressPercent) > 0.3f)
-					return lapProgressPercent;
-
-				if (lapProgress > lapProgressPercent)
-					lapProgressPercent = lapProgress;
-
-				return lapProgressPercent;
+				return univProgress / RaceManager.I.racingPaths[1].path.length;
 			}
 		}
 		private bool NextStuntpointIn(float distanceOffset)
@@ -136,12 +110,11 @@ namespace RVP
 		}
 		public void NextLap()
 		{
+			univDist = 1;
+			univProgress = 1;
 			progress = 1;
 			dist = 1;
-			lapProgressPercent = 0;
 			trackPathCreator = RaceManager.I.racingPaths.GetRandom();
-			target.dist = progress;
-			target.pos = trackPathCreator.path.GetPointAtDistance(target.dist);
 			curStuntpointIdx = 0;
 			ResetCurCameraIdx();
 			speedLimitDist = -1;
@@ -166,6 +139,9 @@ namespace RVP
 		}
 		private void Start()
 		{
+			dist = trackPathCreator.path.GetClosestDistanceAlongPath(transform.position);
+			progress = dist;
+			univProgress = dist;
 			StartCoroutine(Prepare());
 		}
 		IEnumerator Prepare()
@@ -173,49 +149,55 @@ namespace RVP
 			yield return null; // wait till other components initialize
 
 			maxPhysicalSteerAngle = vp.steeringControl.steeredWheels[0].steerRangeMax;
-			dist = GetDist(1 << trackPathCreator.gameObject.layer);
 
-			if (progress == 0) // progress could be synched earlier so set progress when it's not been set
+			if (!vp.IsOwner && progress == 0) // progress could be synched earlier so set progress when it's not been set
 			{
 				progress = dist;
+				univProgress = dist;
 			}
-			target.dist = dist;
-			target.pos = trackPathCreator.path.GetPointAtDistance(dist);
 		}
-		int GetDist(int layer)
+		float GetDist(PathCreator p)
 		{
-			float dist = 0;
-			string closestLen = null;
-			float min = 3 * radius;
-
-			var racingPathHits = Physics.CapsuleCastAll(transform.position + Vector3.up,
-				transform.position + .5f * Vector3.up, radius, Vector3.down, Mathf.Infinity, layer);
-
-
-
-			foreach (var hit in racingPathHits)
-			{
-				dist = Vector3.Distance(transform.position, hit.transform.position);
-				if (dist < min && !Physics.Linecast(transform.position + Vector3.up,
-					hit.transform.position + 3 * Vector3.up, 1 | 1 << F.I.roadLayer | 1 << F.I.terrainLayer))
-				{
-					min = dist;
-					distPoint = hit.point;
-					closestLen = hit.transform.name;
-				}
-			}
-			if (closestLen != null)
-			{
-				try
-				{
-					dist = int.Parse(closestLen);
-				}
-				catch
-				{
-				}
-			}
-			return (int)dist;
+			return p.path.GetClosestPointOnPath(transform.position, Mathf.Max(0, univProgress - 100), univProgress + 200);
 		}
+		float GetDist(PathCreator p, float progress)
+		{
+			return p.path.GetClosestPointOnPath(transform.position, Mathf.Max(0,progress - 100), progress + 200);
+		}
+		//int GetDist(int layer)
+		//{
+		//	float dist = 0;
+		//	string closestLen = null;
+		//	float min = 3 * radius;
+
+		//	var racingPathHits = Physics.CapsuleCastAll(transform.position + Vector3.up,
+		//		transform.position + .5f * Vector3.up, radius, Vector3.down, Mathf.Infinity, layer);
+
+
+
+		//	foreach (var hit in racingPathHits)
+		//	{
+		//		dist = Vector3.Distance(transform.position, hit.transform.position);
+		//		if (dist < min && !Physics.Linecast(transform.position + Vector3.up,
+		//			hit.transform.position + 3 * Vector3.up, 1 | 1 << F.I.roadLayer | 1 << F.I.terrainLayer))
+		//		{
+		//			min = dist;
+		//			distPoint = hit.point;
+		//			closestLen = hit.transform.name;
+		//		}
+		//	}
+		//	if (closestLen != null)
+		//	{
+		//		try
+		//		{
+		//			dist = int.Parse(closestLen);
+		//		}
+		//		catch
+		//		{
+		//		}
+		//	}
+		//	return (int)dist;
+		//}
 		void OutOfPits(bool resetProgress = true)
 		{
 			if (pitsPathCreator)
@@ -225,9 +207,12 @@ namespace RVP
 				speedLimitDist = -1;
 				if (resetProgress)
 				{
-					var newDist = GetDist(1 << trackPathCreator.gameObject.layer) + 40;
+					var newDist = GetDist(trackPathCreator) + 40;
 					if (newDist < progress + 300)
+					{
 						progress = newDist;
+						univProgress = newDist;
+					}
 				}
 				pitsProgress = 0;
 				pitsPathCreator = null;
@@ -268,7 +253,6 @@ namespace RVP
 				if (pitsPathHits.Length > 0)
 				{
 					pitsPathCreator = pitsPathHits[0].transform.parent.GetComponent<PathCreator>();
-					pitsDist = 0;
 					pitsProgress = 0;
 					searchForPits = false;
 					inPitsTime = Time.time;
@@ -307,7 +291,7 @@ namespace RVP
 
 			if (!pitsPathCreator)
 			{
-				
+
 
 				if ((!overRoad) // out of track
 					 || (vp.velMag > 10 && vp.groundedWheels > 2 && Vector3.Dot(vp.forwardDir, trackPathCreator.path.GetDirectionAtDistance(dist)) < -0.5f
@@ -329,8 +313,6 @@ namespace RVP
 				}
 			}
 
-
-			pitsDist = 0;
 			if (pitsPathCreator)
 			{
 				if (Time.time - inPitsTime > 13)
@@ -339,31 +321,26 @@ namespace RVP
 					StartCoroutine(ResetOnTrack());
 					return;
 				}
-				if (Time.time - LapProgressPercentTime > .2f) // for better performance
-				{
-					LapProgressPercentTime = Time.time;
-					pitsDist = GetDist(1 << F.I.pitsLineLayer); // pitsDist
-				}
 
-				if (pitsDist < pitsProgress)
-					pitsDist = pitsProgress;
-				pitsProgress = pitsDist;         //pitsProgress
+				pitsProgress = GetDist(pitsPathCreator,pitsProgress);
 
-				if (pitsDist + lookAheadBase > pitsPathCreator.path.length)
+				if (pitsProgress + lookAheadBase > pitsPathCreator.path.length)
 				{
 					OutOfPits();
 				}
 			}
 			else
 			{
-				if (Time.time - distLastTime > .2f) // for better performance
-				{
-					dist = GetDist(1 << trackPathCreator.gameObject.layer);
-					distLastTime = Time.time;
-				}
+				float newUnivProgress = GetDist(RaceManager.I.racingPaths[1]);
+				if (newUnivProgress - univProgress > -200 && newUnivProgress - univProgress < 200)
+					univProgress = newUnivProgress;
+
+				dist = GetDist(trackPathCreator);
+
 
 				if (dist != 1 && (dist < progress || dist > progress + 2 * radius))
 					outOfTrackTime += Time.fixedDeltaTime;
+
 
 				if (dist < progress)
 					dist = progress;
@@ -375,7 +352,6 @@ namespace RVP
 					progressPoint = distPoint;
 
 					progress = dist;
-					pitsProgress = 0;
 				}
 				else if (progress == 1)
 				{
@@ -391,14 +367,13 @@ namespace RVP
 					++curReplayPointIdx;
 				}
 			}
-			UpdateFollowTarget();
+			//UpdateFollowTarget();
 
 			if (vp.Owner)
 			{
 				if (selfDriving)
 				{
-
-
+					//Vector3 targetPos;
 					if (vp.velMag < 5)
 					{
 						lowSpeedTime += Time.fixedDeltaTime;
@@ -418,12 +393,14 @@ namespace RVP
 					}
 					if (pitsPathCreator)
 					{
-						tPos0 = pitsPathCreator.path.GetPointAtDistance(pitsDist, EndOfPathInstruction.Stop);
-						tPos = pitsPathCreator.path.GetPointAtDistance(pitsDist + 15, EndOfPathInstruction.Stop);
-						tPos2 = pitsPathCreator.path.GetPointAtDistance(pitsDist + 30, EndOfPathInstruction.Stop);
+					 // targetPos = trackPathCreator.path.GetPointAtDistance(progress + reqDist);
+						tPos0 = pitsPathCreator.path.GetPointAtDistance(pitsProgress, EndOfPathInstruction.Stop);
+						tPos = pitsPathCreator.path.GetPointAtDistance(pitsProgress + 15, EndOfPathInstruction.Stop);
+						tPos2 = pitsPathCreator.path.GetPointAtDistance(pitsProgress + 30, EndOfPathInstruction.Stop);
 					}
 					else if (trackPathCreator)
 					{
+						//targetPos = trackPathCreator.path.GetPointAtDistance(progress + reqDist);
 						if (stuntPoints.Count > 0 && stuntPoints[curStuntpointIdx] < progress)
 						{
 							if (curStuntpointIdx < stuntPoints.Count - 1)
@@ -441,7 +418,7 @@ namespace RVP
 					//Debug.DrawLine((Vector3)tPos, (Vector3)tPos + 100 * Vector3.up, Color.magenta);
 					//Debug.DrawLine((Vector3)tPos2, (Vector3)tPos2 + 100 * Vector3.up, Color.red);
 
-
+					
 					if (pitsPathCreator)
 					{
 						if (pitsProgress > 0)
@@ -500,8 +477,10 @@ namespace RVP
 					if (!vp.raceBox.evoModule.stunting)
 					{
 						//UpdateFollowTarget();
-
-						Debug.DrawRay(target.pos, Vector3.up * 3, Color.yellow);
+						float reqDist = lookAheadSteerCurve.Evaluate(vp.velMag) * steerMinDist;
+						
+						Debug.DrawLine(transform.position, RaceManager.I.racingPaths[1].path.GetPointAtDistance(univProgress), Color.yellow);
+						//Debug.DrawRay(targetPos, Vector3.up * 3, Color.yellow);
 						Vector2 targetDir;
 						if (pitsPathCreator)
 							targetDir = ((Vector3)tPos - vp.tr.position).Flat();
@@ -513,7 +492,7 @@ namespace RVP
 						}
 						else
 						{
-							targetDir = F.Flat(target.pos - vp.tr.position);
+							targetDir = F.Flat((Vector3)tPos - vp.tr.position);
 						}
 
 						if (looping || vp.reallyGroundedWheels <= 2)
@@ -569,34 +548,6 @@ namespace RVP
 						}
 					}
 				}
-				else
-				{
-					//UpdateFollowTarget();
-				}
-			}
-		}
-		void UpdateFollowTarget()
-		{
-			reqDist = lookAheadSteerCurve.Evaluate(vp.velMag) * steerMinDist;
-
-			float dTargetCar = F.FlatDistance(target.pos, vp.tr.position);
-			if (Mathf.Abs(target.dist - dist) > 2 * reqDist || target.dist < dist)
-			{ // reset target
-				target.dist = dist + reqDist;
-				target.pos = trackPathCreator.path.GetPointAtDistance(target.dist);
-			}
-			Vector2 targetPosOrientation = trackPathCreator.path.GetDirectionAtDistance(target.dist).Flat().normalized;
-
-			if (dTargetCar < .75f * reqDist
-				|| (vp.reallyGroundedWheels > 3 && Mathf.Abs(Vector2.Dot(targetPosOrientation, vp.tr.forward.Flat().normalized)) < .5f))
-			{ // car catching up OR angle between racing line and car exceedes 60 degs
-				target.dist += 2 * vp.velMag * Time.fixedDeltaTime;
-				target.pos = trackPathCreator.path.GetPointAtDistance(target.dist);
-			}
-			if (dTargetCar < reqDist) // go on
-			{
-				target.dist += vp.velMag * Time.fixedDeltaTime;
-				target.pos = trackPathCreator.path.GetPointAtDistance(target.dist);
 			}
 		}
 		public IEnumerator AIStuntingProc()
@@ -692,7 +643,7 @@ namespace RVP
 				progress = (int)(trackPathCreator.path.length - 5);
 
 			dist = progress;
-
+			univProgress = progress;
 			vp.ghost.StartGhostResetting();
 			rb.isKinematic = true;
 			tr.position = resetPos + Vector3.up + resetDir;
@@ -702,9 +653,6 @@ namespace RVP
 			//rb.angularVelocity = Vector3.zero;
 			//rb.velocity = Vector3.zero;
 			tr.rotation = Quaternion.LookRotation(trackPathCreator.path.GetDirectionAtDistance(progress));
-
-			target.dist = dist + reqDist;
-			target.pos = trackPathCreator.path.GetPointAtDistance(target.dist);
 
 			OutOfPits(resetProgress: false);
 			rb.isKinematic = false;

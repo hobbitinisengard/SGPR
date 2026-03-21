@@ -219,6 +219,7 @@ namespace RVP
 				{
 					var eliminatedCar = F.I.s_cars[i];
 					eliminatedCar.KnockoutMe();
+					hud.infoText.AddMessage(new(eliminatedCar.name + " " + F.I.LocStr("ELIMINATED!"), BottomInfoType.ELIMINATED));
 				}
 			}
 		}
@@ -233,12 +234,12 @@ namespace RVP
 			switch (F.I.s_timeOfDay)
 			{
 				case TimeOfDay.Day:
-					Sun.intensity = 130000;
+					Sun.intensity = 1;
 					eulerX = UnityEngine.Random.Range(26, 143);
 					RenderSettings.ambientLight = new Color32(208, 208, 208, 1);
 					break;
 				case TimeOfDay.Night:
-					Sun.intensity = 10500;
+					Sun.intensity = 0.2f;
 					eulerX = 120;
 					RenderSettings.ambientLight = new Color32(52, 52, 52, 1);
 					break;

@@ -8,21 +8,22 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: level7_redflower64
-  m_Shader: {fileID: 4800000, guid: 6e4ae4064600d784cac1e41a9e6f2e59, type: 3}
+  m_Shader: {fileID: 4800000, guid: 0e0019510d6142644b412d07db9dee4e, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
+  - _SOURCE_SPECULARALPHA
+  m_InvalidKeywords:
   - _ALPHATEST_ON
   - _DISABLE_SSR_TRANSPARENT
   - _DOUBLESIDED_ON
   - _NORMALMAP_TANGENT_SPACE
-  m_InvalidKeywords: []
+  - _USEBASECOLORALPHA_ON
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 1
-  m_CustomRenderQueue: 2475
-  stringTagMap:
-    RenderType: TransparentCutout
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
   disabledShaderPasses:
   - TransparentDepthPrepass
   - TransparentDepthPostpass
@@ -249,6 +250,7 @@ Material:
     - _HeightPoMAmplitude: 2
     - _HeightTessAmplitude: 2
     - _HeightTessCenter: 0.5
+    - _IntensityCutoutMap: 0.5
     - _IntensityMask: 1
     - _InvTilingScale: 1
     - _InvertABaseColor: 0
@@ -286,6 +288,7 @@ Material:
     - _SmoothnessRemapMin: 0
     - _SmoothnessTextureChannel: 0
     - _Source: 0
+    - _SourceMask: 0
     - _SpecularAAScreenSpaceVariance: 0.1
     - _SpecularAAThreshold: 0.2
     - _SpecularHighlights: 1
@@ -342,7 +345,7 @@ Material:
     - _DetailSpecularColor: {r: 1, g: 1, b: 1, a: 0}
     - _DiffusionProfileAsset: {r: 0, g: 0, b: 0, a: 0}
     - _DoubleSidedConstants: {r: 1, g: 1, b: -1, a: 0}
-    - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}
+    - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _EmissiveColor: {r: 0, g: 0, b: 0, a: 1}
     - _EmissiveColorLDR: {r: 0, g: 0, b: 0, a: 1}
     - _GlobalXYTilingXYZWOffsetXY: {r: 1, g: 1, b: 0, a: 0}

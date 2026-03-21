@@ -34,7 +34,8 @@ namespace RVP
 						offset = new Vector2(val - 1, 0);
 						break;
 				}
-				mr.materials[i].SetTextureOffset("_BaseColorMap", offset);
+				mr.materials[i].mainTextureOffset = offset;
+				//mr.materials[i].SetTextureOffset("_BaseColorMap", offset);
 			}
 		}
 	}

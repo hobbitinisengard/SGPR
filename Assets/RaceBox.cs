@@ -806,7 +806,7 @@ public class RaceBox : MonoBehaviour
 	{
 		if (F.I.s_laps > 0)
 		{
-			if (curLap == 0 || vp.followAI.LapProgressPercent > 0.9f || vp.followAI.pitsProgress > 0)
+			if (curLap == 0 || vp.followAI.LapProgressPercent > 0.9f)
 			{
 				vp.followAI.NextLap();
 
@@ -964,7 +964,7 @@ public class RaceBox : MonoBehaviour
 		}
 	}
 
-	public void UpdateValues(bool enabled, int curLap, int dist, int progress, float aero, float drift, 
+	public void UpdateValues(bool enabled, int curLap, float dist, float progress, float aero, float drift, 
 		float bestLapSecs, float raceTimeSecs)
 	{
 		this.aero = aero;

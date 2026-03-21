@@ -28,30 +28,43 @@ public class Ghost : NetworkBehaviour
 				c.gameObject.layer = isHittable ? F.I.carCarCollisionLayer : F.I.ghostLayer;
 			}
 		}
+		if (vp.rearLights.Length > 0)
+			foreach(var rl in vp.rearLights)
+				rl.GetComponent<MeshRenderer>().enabled = isHittable;
+
 		foreach (var r in ghostableParts)
 		{
-			for(int i=0; i<r.materials.Length; ++i)
+			var materials = r.materials;
+			for (int i = 0; i < materials.Length; ++i)
 			{
 				if (r.materials[i].name.Contains("reflect"))
 					continue;
-				//var tex = r.materials[i].mainTexture;
+				
+				// copy mainTexture of material
+				var tex = materials[i].mainTexture;
 				if (isHittable)
 				{
+					//r.materials[i].SetColor("_BaseColor", Color.white);
+
 					// Set Surface Type to Opaque
-					//r.materials[i] = F.I.opaqueMaterial;
-					r.materials[i].SetColor("_BaseColor", Color.white);
+					materials[i] = new Material(F.I.opaqueMaterial);
+
 					// Enable Opaque-related keywords
-					//r.materials[i].EnableKeyword("_SURFACE_TYPE_OPAQUE");
-					//r.materials[i].DisableKeyword("_SURFACE_TYPE_TRANSPARENT");
+					materials[i].EnableKeyword("_SURFACE_TYPE_OPAQUE");
+					materials[i].DisableKeyword("_SURFACE_TYPE_TRANSPARENT");
 				}
 				else
 				{
-					//r.materials[i] = F.I.transpMaterial;
-					r.materials[i].SetColor("_BaseColor", new Color(1,1,1,.4f));
+					materials[i] = new Material(F.I.transpMaterial);
+					materials[i].SetColor("_BaseColor", new Color(1,1,1,.4f));
+					
 				}
-				//r.materials[i].mainTexture = tex;
+				materials[i].mainTexture = tex;
 			}
+			
+			r.materials = materials;
 		}
+		
 	}
 
 	public void SetGhostPermanently()

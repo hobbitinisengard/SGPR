@@ -390,7 +390,7 @@ namespace RVP
 						{// camera right behind car
 							lookObjVelCoeff = Mathf.Lerp(lookObjVelCoeff, 10, Time.fixedDeltaTime);
 							rotation = Quaternion.Lerp(tr.rotation, lookObj.rotation,
-							 (vp.reallyGroundedWheels > 1 ? 12f : 3f) * lookObjVelCoeff * Time.fixedDeltaTime);//TU
+							 (vp.reallyGroundedWheels > 1 ? 9f : 12f) * lookObjVelCoeff * Time.fixedDeltaTime);//TU
 						}
 					}
 				}

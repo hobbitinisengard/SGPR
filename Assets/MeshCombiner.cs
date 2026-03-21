@@ -14,8 +14,6 @@ public class MeshCombiner
     [SerializeField]
     private string folderPath = "Prefabs/CombinedMeshes";
     [SerializeField]
-    [Tooltip("MeshFilters with Meshes which we don't want to combine into one Mesh.")]
-    private MeshFilter[] meshFiltersToSkip = null;
 
     public bool CreateMultiMaterialMesh { get { return createMultiMaterialMesh; } set { createMultiMaterialMesh = value; } }
     public bool CombineInactiveChildren { get { return combineInactiveChildren; } set { combineInactiveChildren = value; } }

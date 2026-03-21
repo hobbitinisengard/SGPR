@@ -73,6 +73,20 @@ namespace RVP
 		}
 		protected virtual void FixedUpdate()
 		{
+			if (engineAudio)
+			{
+				if (health > 0)
+				{
+					engineAudio.pitch = Mathf.LerpUnclamped(engineAudio.pitch, Mathf.LerpUnclamped(minPitch, maxPitch, targetPitch),
+						20 * Time.fixedDeltaTime) + Mathf.Sin(Time.time * 200 * (1 - health)) * (1 - health) * 0.1f * damagePitchWiggle;
+					idlingEngineAudio.pitch = engineAudio.pitch;
+					// blend idling engine audio with revving audio
+					float blendPoint = 0.4f;
+					idlingEngineAudio.volume = idlingEngineAudioCurve.Evaluate(1 / (2 * blendPoint) * targetPitch);
+					engineAudio.volume = 1 - idlingEngineAudio.volume;
+				}
+			}
+
 			health = Mathf.Clamp01(health);
 			if (canBoost && ignition && vp.ebrakeInput == 0)
 			{
@@ -116,7 +130,7 @@ namespace RVP
 					{
 						jet.transform.localScale = (1 + 0.1f * sine) * baseJetScale * Vector3.one;
 						jet.SetActive(true);
-						jet.GetComponent<MeshRenderer>().material.SetVector("_Offset", new Vector2(0, Mathf.Sin(sinArg / 30f)));
+						jet.GetComponent<MeshRenderer>().material.SetVector("_GlobalXYTilingXYZWOffsetXY", new Vector4(1,1,0, Mathf.Sin(sinArg / 30f)));
 					}
 				}
 				else
@@ -132,19 +146,7 @@ namespace RVP
 		}
 		protected virtual void Update()
 		{
-			if (engineAudio)
-			{
-				if (health > 0)
-				{
-					engineAudio.pitch = Mathf.LerpUnclamped(engineAudio.pitch, Mathf.LerpUnclamped(minPitch, maxPitch, targetPitch),
-						20 * Time.deltaTime) + Mathf.Sin(Time.time * 200 * (1 - health)) * (1 - health) * 0.1f * damagePitchWiggle;
-					idlingEngineAudio.pitch = engineAudio.pitch;
-					// blend idling engine audio with revving audio
-					float blendPoint = 0.4f;
-					idlingEngineAudio.volume = idlingEngineAudioCurve.Evaluate(1 / (2*blendPoint) * targetPitch);
-					engineAudio.volume = 1 - idlingEngineAudio.volume;
-				}
-			}
+			
 
 			// Play boost particles
 			if (boostParticles.Length > 0)

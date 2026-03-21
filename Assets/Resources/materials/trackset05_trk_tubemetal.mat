@@ -24,23 +24,27 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: trackset05_trk_tubemetal
-  m_Shader: {fileID: 4800000, guid: 6e4ae4064600d784cac1e41a9e6f2e59, type: 3}
+  m_Shader: {fileID: 46, guid: 0000000000000000f000000000000000, type: 0}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
+  - _GLOSSYREFLECTIONS_OFF
+  - _NORMALMAP
+  - _PARALLAXMAP
+  - _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
+  - _SPECULARHIGHLIGHTS_OFF
+  m_InvalidKeywords:
   - _DISABLE_SSR
   - _DISABLE_SSR_TRANSPARENT
   - _DISPLACEMENT_LOCK_TILING_SCALE
   - _MASKMAP
-  - _NORMALMAP
   - _NORMALMAP_TANGENT_SPACE
   - _PIXEL_DISPLACEMENT
   - _PIXEL_DISPLACEMENT_LOCK_OBJECT_SCALE
-  m_InvalidKeywords: []
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: 2225
+  m_CustomRenderQueue: -1
   stringTagMap: {}
   disabledShaderPasses:
   - TransparentDepthPrepass
@@ -94,7 +98,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     - _EmissionMap:
         m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
+        m_Scale: {x: 0, y: 0}
         m_Offset: {x: 0, y: 0}
     - _EmissiveColorMap:
         m_Texture: {fileID: 0}
@@ -114,14 +118,14 @@ Material:
         m_Offset: {x: 0, y: 0}
     - _MainTex:
         m_Texture: {fileID: 2800000, guid: 70b60cdb32cb6dd49873e67cb672b242, type: 3}
-        m_Scale: {x: 1, y: 1}
+        m_Scale: {x: 0, y: 0}
         m_Offset: {x: 0, y: 0}
     - _MaskMap:
         m_Texture: {fileID: 2800000, guid: 58d7ada82ba4bd84aa01b6a186c752ec, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
-        m_Texture: {fileID: 2800000, guid: bc721e563bc5d4b4fbf2b35fff7c53fa, type: 3}
+        m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _Metalness:
@@ -141,7 +145,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _OcclusionMap:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 2800000, guid: 58d7ada82ba4bd84aa01b6a186c752ec, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _ParallaxMap:
@@ -254,9 +258,9 @@ Material:
     - _EnableFogOnTransparent: 1
     - _EnableGeometricSpecularAA: 0
     - _EnergyConservingSpecularColor: 1
-    - _GlossMapScale: 0.373
-    - _Glossiness: 0.5
-    - _GlossyReflections: 1
+    - _GlossMapScale: 0
+    - _Glossiness: 0
+    - _GlossyReflections: 0
     - _HeightAmplitude: 0.00041
     - _HeightCenter: 1
     - _HeightMapParametrization: 0
@@ -275,7 +279,7 @@ Material:
     - _IridescenceThickness: 1
     - _LinkDetailsWithBase: 0
     - _MaterialID: 1
-    - _Metallic: 1
+    - _Metallic: 0
     - _MetallicRemapMax: 1
     - _MetallicRemapMin: 1
     - _Mode: 0
@@ -283,14 +287,14 @@ Material:
     - _NormalScale: 1
     - _ObjectSpaceUVMapping: 0
     - _ObjectSpaceUVMappingEmissive: 0
-    - _OcclusionStrength: 0.276
+    - _OcclusionStrength: 0
     - _OpaqueCullMode: 2
     - _PPDLodThreshold: 5
     - _PPDMaxSamples: 15
     - _PPDMinSamples: 5
     - _PPDPrimitiveLength: 1
     - _PPDPrimitiveWidth: 1
-    - _Parallax: 0.0205
+    - _Parallax: 0.005
     - _PerPixelSorting: 0
     - _RayTracing: 0
     - _ReceivesSSR: 0
@@ -301,12 +305,12 @@ Material:
     - _Smoothness: 0
     - _SmoothnessRemapMax: 1
     - _SmoothnessRemapMin: 0
-    - _SmoothnessTextureChannel: 0
+    - _SmoothnessTextureChannel: 1
     - _Source: 0
     - _SourceMask: 0
     - _SpecularAAScreenSpaceVariance: 0.1
     - _SpecularAAThreshold: 0.2
-    - _SpecularHighlights: 1
+    - _SpecularHighlights: 0
     - _SpecularIntensity: 0.2
     - _SpecularOcclusionMode: 1
     - _SpreadDetailMap: 0

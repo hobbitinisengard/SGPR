@@ -601,11 +601,15 @@ public class ArcadeVariant
 										new() { name = "CP3", carIdx = 15, livery = Livery.Team,  },
 										new() { name = "CP4", carIdx = 15, livery = Livery.Rline,  },
 										new() { name = "CP5", carIdx = 15, livery = Livery.Team,  },
+										new() { name = "CP6", carIdx = 15, livery = Livery.Rline,  },
+										new() { name = "CP7", carIdx = 15, livery = Livery.Team,  },
+										new() { name = "CP8", carIdx = 15, livery = Livery.Rline,  },
+										new() { name = "CP9", carIdx = 15, livery = Livery.Team,  },
 						},
 						continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
 						prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "spn1,car18,WHIRLWIND" } },
 						pavementType = (PavementType)1,
-						raceType = RaceType.Knockout,
+						raceType = RaceType.Race,
 				},
 			}
 		};

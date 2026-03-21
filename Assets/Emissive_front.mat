@@ -8,15 +8,17 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Emissive_front
-  m_Shader: {fileID: 4800000, guid: c4edd00ff2db5b24391a4fcb1762e459, type: 3}
+  m_Shader: {fileID: 46, guid: 0000000000000000f000000000000000, type: 0}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
-  - _ENABLE_FOG_ON_TRANSPARENT
-  - _SURFACE_TYPE_TRANSPARENT
+  - _ALPHAPREMULTIPLY_ON
+  - _EMISSION
   m_InvalidKeywords:
   - _DISABLE_SSR_TRANSPARENT
+  - _ENABLE_FOG_ON_TRANSPARENT
   - _NORMALMAP_TANGENT_SPACE
+  - _SURFACE_TYPE_TRANSPARENT
   m_LightmapFlags: 1
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -318,7 +320,7 @@ Material:
     - _Color: {r: 1, g: 0.9814815, b: 0.75, a: 1}
     - _DiffusionProfileAsset: {r: 0, g: 0, b: 0, a: 0}
     - _DoubleSidedConstants: {r: 1, g: 1, b: -1, a: 0}
-    - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}
+    - _EmissionColor: {r: 1, g: 0.9559735, b: 0.5209957, a: 1}
     - _EmissiveColor: {r: 1, g: 0.89626956, b: 0.1094617, a: 1}
     - _EmissiveColorLDR: {r: 1, g: 0.95294124, b: 0.3647059, a: 1}
     - _InvPrimScale: {r: 1, g: 1, b: 0, a: 0}
