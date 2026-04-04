@@ -621,7 +621,7 @@ public class ArcadeVariant
 		{
 			name = "Prototype",
 			globalPrizes = new Prize[] { new() { name = "car16,car17,AZTEC", condition = Prize.Condition.AllPathsFound},
-								new() {name = "car18,car19", condition = Prize.Condition.AlwaysFirst} },
+								new() {name = "car12,car18,car19", condition = Prize.Condition.AlwaysFirst} },
 			starts = new StartPos[]
 				{
 								new() {node = 0, allowedCarsIdxs = new int[]{ 0,1 } },
@@ -745,7 +745,7 @@ public class ArcadeVariant
 										new() { name = "CP5", carIdx = 11, livery = (Livery)6,  },
 						},
 						continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
-						prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "BANK JOB REVERSE" } },
+						prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "car08,BANK JOB REVERSE" } },
 						pavementType = (PavementType)1,
 				},
 				new() {
@@ -805,7 +805,7 @@ public class ArcadeVariant
 										new() { name = "CP5", carIdx = 4, livery = (Livery)6,  },
 						},
 						continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
-						prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "INTERSECTOR BETA" } },
+						prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "car04,INTERSECTOR BETA" } },
 						pavementType = (PavementType)4,
 				},
 				new() {
@@ -825,7 +825,7 @@ public class ArcadeVariant
 										new() { name = "CP5", carIdx = 11, livery = (Livery)6,  },
 						},
 						continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
-						prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "SANDWINDER REVERSE" } },
+						prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "car05,SANDWINDER REVERSE" } },
 						pavementType = (PavementType)5,
 				},
 				new() {
@@ -925,7 +925,7 @@ public class ArcadeVariant
 										new() { name = "CP5", carIdx = 11, livery = (Livery)6,  },
 						},
 						continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
-						prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "CURB CITY CIRCUIT II" }},
+						prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "car15,CURB CITY CIRCUIT II" }},
 						pavementType = (PavementType)3,
 				},
 				new() {
@@ -945,7 +945,7 @@ public class ArcadeVariant
 										new() { name = "CP5", carIdx = 11, livery = (Livery)6,  },
 						},
 						continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
-						prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "THE XING" } },
+						prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "car02,THE XING" } },
 						pavementType = (PavementType)4,
 				},
 				new() {
@@ -985,7 +985,7 @@ public class ArcadeVariant
 										new() { name = "CP5", carIdx = 7, livery = (Livery)5,  },
 						},
 						continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
-						prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "HIGH ROLLER REVERSE" } },
+						prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "car13,HIGH ROLLER REVERSE" } },
 						pavementType = (PavementType)6
 				},
 				new() {
@@ -1045,7 +1045,7 @@ public class ArcadeVariant
 										new() { name = "CP5", carIdx = 11, livery = (Livery)5,  },
 						},
 						continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
-						prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "FREEFALL FREEWAY REVERSE" } },
+						prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "car11,FREEFALL FREEWAY REVERSE" } },
 						pavementType = (PavementType)2
 				}
 				}
@@ -1057,7 +1057,7 @@ public class ArcadeVariant
 		ArcadeVariant defaultVariant = new()
 		{
 			name = "Original",
-			globalPrizes = new Prize[] { new() { name = "car12,car13,car17", condition = Prize.Condition.AllPathsFound } },
+			globalPrizes = new Prize[] { new() { name = "car11,car12,car16,car17,car18,car19", condition = Prize.Condition.AllPathsFound } },
 			starts = new StartPos[]
 				{
 								new() { node = 15, allowedCarsIdxs = new int[]{6,09,10 } },
@@ -1326,7 +1326,7 @@ public class ArcadeVariant
 										new() { name = "CP5", carIdx = 01, livery = (Livery)6,  },
 						},
 						continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
-						prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "car01,ROUGHDUST FLATS" } },
+						prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "car05,ROUGHDUST FLATS" } },
 						pavementType = (PavementType)1,
 				},
 				new() {
@@ -1386,7 +1386,7 @@ public class ArcadeVariant
 										new() { name = "CP5", carIdx = 11, livery = (Livery)6,  },
 						},
 						continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
-						prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "car13,TWIN LOOP CIRCUIT" } },
+						prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "car07,TWIN LOOP CIRCUIT" } },
 						pavementType = (PavementType)5,
 				},
 				new() {
@@ -1426,7 +1426,7 @@ public class ArcadeVariant
 										new() { name = "CP5", carIdx = 7, livery = (Livery)5,  },
 						},
 						continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
-						prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "car15,INTERSECTOR" } },
+						prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "car13,INTERSECTOR" } },
 						pavementType = (PavementType)6
 				}
 				}

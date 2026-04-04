@@ -98,7 +98,7 @@ public class Info : MonoBehaviour
 	public int curArcadeScore = 0;
 	public ArcadeSelector arcadeSelector;
 	/// <summary> number of remaining stunts to complete the objective </summary>
-	public (string,int)[] arcadeObjectiveStunts;
+	public (string, int)[] arcadeObjectiveStunts;
 
 	public const string TranslationTableName = "Default";
 	public MultiPlayerSelector mpSelectorInitializer;
@@ -109,7 +109,7 @@ public class Info : MonoBehaviour
 	public Material emissiveRearDarker;
 	public Mesh sphereMesh;
 	public AudioMixer mainAudioMixer;
-	public const string VERSION = "0.5.3";
+	public const string VERSION = "0.5.4";
 	public bool minimized { get; private set; }
 	[DllImport("user32.dll")]
 	static extern bool SetCursorPos(int X, int Y);
@@ -159,6 +159,7 @@ public class Info : MonoBehaviour
 
 		Application.targetFrameRate = playerData.fpsLimit;
 		QualitySettings.vSyncCount = playerData.vSync ? 1 : 0;
+		ReadSettingsDataFromJson();
 		PopulateSFXData();
 		ReloadCarsData();
 		PopulateTrackData();
@@ -245,18 +246,19 @@ public class Info : MonoBehaviour
 		// iterate over all files in arcadePath
 		arcadeVariants = new List<ArcadeVariant>();
 		if (!Directory.Exists(arcadePath))
+		{
 			Directory.CreateDirectory(arcadePath);
+		}
 
-        ArcadeVariant[] newVariants = ArcadeVariant.GenerateDefaultVariants();
-        foreach (var newVariant in newVariants)
-        {
-            string serializedVariant = JsonConvert.SerializeObject(newVariant, Formatting.Indented);
-            string filepath = Path.Combine(arcadePath, $"{newVariant.name}.json");
-            File.WriteAllText(filepath, serializedVariant);
-            playerData.currentArcadeVariant = newVariant.name;
-        }
+		ArcadeVariant[] newVariants = ArcadeVariant.GenerateDefaultVariants();
+		foreach (var newVariant in newVariants)
+		{
+			string serializedVariant = JsonConvert.SerializeObject(newVariant, Formatting.Indented);
+			string filepath = Path.Combine(arcadePath, $"{newVariant.name}.json");
+			File.WriteAllText(filepath, serializedVariant);
+		}
 
-        string[] filepaths = Directory.GetFiles(arcadePath, "*.json", SearchOption.TopDirectoryOnly);
+		string[] filepaths = Directory.GetFiles(arcadePath, "*.json", SearchOption.TopDirectoryOnly);
 
 		foreach (var filepath in filepaths)
 		{
@@ -308,7 +310,6 @@ public class Info : MonoBehaviour
 				track.Value.unlocked = true;
 		}
 
-
 		foreach (var car in cars)
 		{
 			car.starter = false;
@@ -318,8 +319,10 @@ public class Info : MonoBehaviour
 			foreach (var i in s.allowedCarsIdxs)
 				cars[i].starter = true;
 
-		if(playerData.playerName == "HAXOR")
+		if (playerData.playerName == "HAXOR")
 			return;// unlock all for testing 
+
+		playerData.currentArcadeVariant = curVariant.name;
 
 		List<string> prizeNamesToBeLocked = new();
 		foreach (var variant in F.I.arcadeVariants)
@@ -351,23 +354,26 @@ public class Info : MonoBehaviour
 					}
 				}
 			}
-		}
 
-		foreach (var prizeName in prizeNamesToBeLocked)
-		{
-			if (prizeName.StartsWith("car"))
+			foreach (var prizeName in prizeNamesToBeLocked)
 			{
-				F.I.cars[int.Parse(prizeName[3..])].unlocked = false;
+				if (prizeName.StartsWith("car"))
+				{
+					if (variant.name == curVariant.name) 
+						F.I.Car(prizeName).unlocked = false;
+				}
+				else if (prizeName.StartsWith("spn"))
+				{
+					int liveryIdx = int.Parse(prizeName[3..]);
+					unlockedLiveries[liveryIdx] = null;
+				}
+				else
+				{
+					tracks[prizeName].unlocked = false;
+				}
 			}
-			else if (prizeName.StartsWith("spn"))
-			{
-				int liveryIdx = int.Parse(prizeName[3..]);
-				unlockedLiveries[liveryIdx] = null;
-			}
-			else
-			{
-				tracks[prizeName].unlocked = false;
-			}
+
+			prizeNamesToBeLocked.Clear();
 		}
 	}
 

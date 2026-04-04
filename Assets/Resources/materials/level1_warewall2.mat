@@ -283,7 +283,7 @@ Material:
     - _SpecularAAScreenSpaceVariance: 0.1
     - _SpecularAAThreshold: 0.2
     - _SpecularHighlights: 1
-    - _SpecularIntensity: 0.2
+    - _SpecularIntensity: 0
     - _SpecularOcclusionMode: 1
     - _SpreadDetailMap: 0
     - _SrcBlend: 1
