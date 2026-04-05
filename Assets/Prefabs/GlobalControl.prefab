@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 11405504}
   - component: {fileID: 11469076}
   - component: {fileID: 11430476}
-  - component: {fileID: 1461308774}
   m_Layer: 0
   m_Name: GlobalControl
   m_TagString: Untagged
@@ -27,13 +26,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 121460}
+  serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 2.5998, y: 2.5998, z: 2.5998}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &11405504
 MonoBehaviour:
@@ -48,8 +47,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Sun: {fileID: 0}
-  nightTimeLights: {fileID: 0}
-  quickRestart: 1
+  viewSwitcher: {fileID: 0}
+  racingPaths: []
   wheelCastMask:
     serializedVersion: 2
     m_Bits: 4294965961
@@ -64,7 +63,15 @@ MonoBehaviour:
   tireMarkGap: 0.1
   tireMarkHeight: 0.02
   tireFadeTime: 10
-  pod: 0
+  networkManager: {fileID: 0}
+  hud: {fileID: 0}
+  editorPanel: {fileID: 0}
+  cam: {fileID: 0}
+  countDownSeq: {fileID: 0}
+  resultsSeq: {fileID: 0}
+  sfxButton: {fileID: 0}
+  musicButton: {fileID: 0}
+  DemoSGPLogo: {fileID: 0}
 --- !u!114 &11469076
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -84,40 +91,35 @@ MonoBehaviour:
     alwaysScrape: 0
     leaveSparks: 1
     tireSnd: {fileID: 8300000, guid: 0debe53a9c4cef54f95b55f393937edf, type: 3}
-    rimSnd: {fileID: 8300000, guid: ed5fa181564244d48b0e4b4f6a897c21, type: 3}
-    tireRimSnd: {fileID: 8300000, guid: 30020ec91f100f7468b59064ef91e3dd, type: 3}
+    roadNoise: {fileID: 0}
   - name: Mud
     useColliderFriction: 0
     friction: 0.5
     alwaysScrape: 1
     leaveSparks: 0
     tireSnd: {fileID: 8300000, guid: 31d07849cf81bdc40b958347a8bc3d55, type: 3}
-    rimSnd: {fileID: 8300000, guid: 31d07849cf81bdc40b958347a8bc3d55, type: 3}
-    tireRimSnd: {fileID: 8300000, guid: 31d07849cf81bdc40b958347a8bc3d55, type: 3}
+    roadNoise: {fileID: 0}
   - name: Dirt
     useColliderFriction: 0
     friction: 0.8
     alwaysScrape: 1
     leaveSparks: 0
     tireSnd: {fileID: 8300000, guid: 4bb9e24bfe112de4a85ee3ffb091fe0f, type: 3}
-    rimSnd: {fileID: 8300000, guid: 4bb9e24bfe112de4a85ee3ffb091fe0f, type: 3}
-    tireRimSnd: {fileID: 8300000, guid: 4bb9e24bfe112de4a85ee3ffb091fe0f, type: 3}
+    roadNoise: {fileID: 0}
   - name: Ice
     useColliderFriction: 0
     friction: 0.2
     alwaysScrape: 0
     leaveSparks: 0
     tireSnd: {fileID: 8300000, guid: c1a7cd2fe64977c40bedaee5dc6a0aee, type: 3}
-    rimSnd: {fileID: 8300000, guid: e2a3cbfed9c05754f8d5c08a18079807, type: 3}
-    tireRimSnd: {fileID: 8300000, guid: 44823a766a5530d45a27cd2d7d833e32, type: 3}
+    roadNoise: {fileID: 0}
   - name: Wall
     useColliderFriction: 0
     friction: 0
     alwaysScrape: 0
     leaveSparks: 0
     tireSnd: {fileID: 8300000, guid: 0debe53a9c4cef54f95b55f393937edf, type: 3}
-    rimSnd: {fileID: 8300000, guid: ed5fa181564244d48b0e4b4f6a897c21, type: 3}
-    tireRimSnd: {fileID: 8300000, guid: 30020ec91f100f7468b59064ef91e3dd, type: 3}
+    roadNoise: {fileID: 0}
 --- !u!114 &11430476
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -138,44 +140,49 @@ MonoBehaviour:
   allPossibleFlips:
   - name: FRONT FLIP
     score: 200
+    frontendName: 
+    allowHalfs: 0
+    req_carAlignment: 0
     req_w_and_Angular_relation: 0
     req_globalY_and_Angular_relation: 0
     rotationAxis: {x: 0, y: 0, z: 0}
     endStuntReqParallelAlignment: 0
     angleThreshold: 0
+    halfFirstPositiveName: 
+    halfFirstNegativeName: 
   - name: BACK FLIP
     score: 0
+    frontendName: 
+    allowHalfs: 0
+    req_carAlignment: 0
     req_w_and_Angular_relation: 0
     req_globalY_and_Angular_relation: 0
     rotationAxis: {x: 0, y: 0, z: 0}
     endStuntReqParallelAlignment: 0
     angleThreshold: 0
+    halfFirstPositiveName: 
+    halfFirstNegativeName: 
   - name: LEFT
     score: 0
+    frontendName: 
+    allowHalfs: 0
+    req_carAlignment: 0
     req_w_and_Angular_relation: 0
     req_globalY_and_Angular_relation: 0
     rotationAxis: {x: 0, y: 0, z: 0}
     endStuntReqParallelAlignment: 0
     angleThreshold: 0
+    halfFirstPositiveName: 
+    halfFirstNegativeName: 
   - name: RIGHT
     score: 0
+    frontendName: 
+    allowHalfs: 0
+    req_carAlignment: 0
     req_w_and_Angular_relation: 0
     req_globalY_and_Angular_relation: 0
     rotationAxis: {x: 0, y: 0, z: 0}
     endStuntReqParallelAlignment: 0
     angleThreshold: 0
---- !u!114 &1461308774
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 121460}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a494dbc16b68745418f660dd61c1b36d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  cars: []
-  trackDistance: 1000
-  hud: {fileID: 0}
+    halfFirstPositiveName: 
+    halfFirstNegativeName: 

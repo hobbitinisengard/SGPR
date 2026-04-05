@@ -61,7 +61,7 @@ public class NewServerDetailsView : MainMenuView
 		prevViewForbidden = true;
 		OkbuttonText.text = F.I.LocStr("WAIT");
 		F.I.SaveSettingsDataToJson();
-		F.I.s_trackName = F.I.tracks.First(kv => kv.Value.valid).Key;
+		F.I.s_trackName = "CIRCLE";//F.I.tracks.First(kv => kv.Value.valid).Key;
 		string sha = F.I.SHA(F.I.tracksPath + F.I.s_trackName + ".data");
 		Debug.Log("CreateLobby start" + F.I.s_trackName + " " + sha);
 		try
