@@ -1,12 +1,13 @@
-﻿using System;
-using UnityEngine;
+﻿using Newtonsoft.Json;
 using PathCreation;
+using Smooth;
+using System;
 using System.Collections;
-using Newtonsoft.Json;
-using System.IO;
 using System.Collections.Generic;
-using Unity.Services.Lobbies.Models;
+using System.IO;
 using Unity.Netcode;
+using Unity.Services.Lobbies.Models;
+using UnityEngine;
 
 namespace RVP
 {
@@ -79,15 +80,26 @@ namespace RVP
 			{
 				for (int i = 0; i < F.I.s_cars.Count; i++)
 				{
-					if (F.I.s_cars[i].Owner) // cars remove themselves from I.s_cars array on destroy
+					if (F.I.s_cars[i].Owner)
 						Destroy(F.I.s_cars[i].gameObject);
 				}
 			}
 			else
 			{
-				playerCar?.RelinquishRpc(playerCar.RpcTarget.Server);
+				if(playerCar != null)
+				{
+					//Debug.Log("Relinquish rpc");
+					playerCar.RelinquishRpc(playerCar.RpcTarget.Server);
+				}
 			}
 		}
+		//public void TurnOffSmoothSyncForEveryCar()
+		//{
+		//	foreach (var car in F.I.s_cars)
+		//	{
+		//		car.GetComponent<SmoothSyncNetcode>().enabled = false;
+		//	}
+		//}
 		public void BackToMenu(bool applyScoring)
 		{
 			Time.timeScale = 0;

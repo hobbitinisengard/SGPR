@@ -87,7 +87,6 @@ namespace RVP
 		public ReplayCam currentCam { get { return replayCams[curReplayPointIdx]; } }
 
 		public float univProgress;
-		public float univDist;
 		Vector3 distPoint;
 		Vector3 progressPoint;
 		private float lastOutOfTrackTime;
@@ -110,7 +109,6 @@ namespace RVP
 		}
 		public void NextLap()
 		{
-			univDist = 1;
 			univProgress = 1;
 			progress = 1;
 			dist = 1;

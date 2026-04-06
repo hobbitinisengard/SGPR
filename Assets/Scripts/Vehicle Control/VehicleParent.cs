@@ -3,6 +3,7 @@ using System.Collections;
 using System;
 using Unity.Netcode;
 using Unity.Collections;
+using Smooth;
 
 namespace RVP
 {
@@ -733,7 +734,7 @@ namespace RVP
 				roadNoiseSnd.clip = GroundSurfaceMaster.surfaceTypesStatic[roadSurfaceType].roadNoise;
 			}
 			roadNoiseSnd.gameObject.SetActive((!F.I.gamePaused && reallyGroundedWheels > 0));
-			roadNoiseSnd.volume = Mathf.InverseLerp(0, 80, 
+			roadNoiseSnd.volume = Mathf.InverseLerp(0, 80,
 				(GroundSurfaceMaster.surfaceTypesStatic[roadSurfaceType].alwaysScrape ? 10 : 1) * velMag);// (1 + 80 * 2 / 3f * Mathf.Log10(volume)); 
 
 			if (brakeInput > 0 && !reversing)
@@ -770,7 +771,7 @@ namespace RVP
 			//}
 
 			// Dynamically switch CCD mode based on air time
-			if(reallyGroundedWheels == 0)
+			if (reallyGroundedWheels == 0)
 			{
 				colDetectionTimer = Mathf.Clamp(colDetectionTimer + Time.fixedDeltaTime, 0, 0.5f);
 				if (colDetectionTimer == 0.5f && velMag > 58)
@@ -968,11 +969,11 @@ namespace RVP
 		}
 		public void Switchlights()
 		{
-				lightsInput = !lightsInput;
-				foreach (var l in frontLights)
-					l.SetActive(lightsInput);
-				foreach (var l in rearLights)
-					l.SetActive(lightsInput);
+			lightsInput = !lightsInput;
+			foreach (var l in frontLights)
+				l.SetActive(lightsInput);
+			foreach (var l in rearLights)
+				l.SetActive(lightsInput);
 		}
 		// turned off
 		public void SetPitch(float f)
@@ -1119,7 +1120,7 @@ namespace RVP
 		public override void OnDestroy()
 		{
 			F.I.s_cars.Remove(this);
-			SGP_HUD.I.RemoveFromProgressBar(this);
+			SGP_HUD.I?.RemoveFromProgressBar(this);
 			if (norm)
 			{
 				Destroy(norm.gameObject);

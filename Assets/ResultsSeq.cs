@@ -57,6 +57,7 @@ public class ResultsSeq : MonoBehaviour
 	}
 	private void OnEnterClicked(UnityEngine.InputSystem.InputAction.CallbackContext obj)
 	{
+		//RaceManager.I.TurnOffSmoothSyncForEveryCar();
 		submitFlag = true;
 	}
 	IEnumerator EnableSeq()
