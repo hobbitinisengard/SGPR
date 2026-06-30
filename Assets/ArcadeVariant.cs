@@ -102,8 +102,8 @@ public class ArcadeVariant
 			globalPrizes = new Prize[] { new() { name = "car18,car19", condition = Prize.Condition.AllPathsFound } },
 			starts = new StartPos[]
 				{
-					new(){node = 0, allowedCarsIdxs = new int[]{8}},
-					new(){node = 1, allowedCarsIdxs = new int[]{1,6}},
+					new(){node = 0, allowedCarsIdxs = new int[]{1,8,14}},
+					new(){node = 1, allowedCarsIdxs = new int[]{1,6,14}},
 				},
 			nodes = new Node[]
 				{
@@ -114,7 +114,7 @@ public class ArcadeVariant
 					color = Color.blue,
 					size = 1,
 					coords = new Vector2(5,0),
-					trackName = "WAREHOUSE ROCK",
+					trackName = "SPECTACULAR STEPS",
 					laps = 3,
 					cars = new CarPlacement[]
 					{
@@ -125,7 +125,7 @@ public class ArcadeVariant
 						new() { name = "CP5", carIdx = 01, livery = Livery.Titan, },
 					},
 					continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
-					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "WAREHOUSE ROCK" } },//new Prize[]{ },
+					prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "SPECTACULAR STEPS" } },//new Prize[]{ },
 	        pavementType = (PavementType)0,
 				},
 				new()
@@ -392,7 +392,7 @@ public class ArcadeVariant
 						color = Color.blue,
 						size = 1,
 						coords = new Vector2(9,4.5f),
-						trackName = "SPECTACULAR STEPS",
+						trackName = "WAREHOUSE ROCK",
 						laps = 3,
 						cars = new CarPlacement[]
 						{
@@ -403,7 +403,7 @@ public class ArcadeVariant
 										new() { name = "CP5", carIdx = 4, livery = (Livery)6,  },
 						},
 						continuationReq = new Prize(){condition = Prize.Condition.PositionAtLeast,conditionArgument = "1"},
-						prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "car09,SPECTACULAR STEPS" } },
+						prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "car09,WAREHOUSE ROCK" } },
 						pavementType = (PavementType)6,
 				},
 				new()
@@ -624,7 +624,7 @@ public class ArcadeVariant
 								new() {name = "car12,car18,car19", condition = Prize.Condition.AlwaysFirst} },
 			starts = new StartPos[]
 				{
-								new() {node = 0, allowedCarsIdxs = new int[]{ 0,1 } },
+						new() {node = 0, allowedCarsIdxs = new int[]{ 0,1 } },
 				},
 			nodes = new Node[]
 				{
@@ -1436,7 +1436,7 @@ public class ArcadeVariant
 
 	internal static ArcadeVariant[] GenerateDefaultVariants()
 	{
-		ArcadeVariant[] newVariants = new ArcadeVariant[] { GenerateCommunityVariant(), GenerateOriginalVariant(), GenerateProtoVariant() };
+		ArcadeVariant[] newVariants = new ArcadeVariant[] { GenerateOriginalVariant(), GenerateCommunityVariant(),  GenerateProtoVariant() };
 		return newVariants;
 	}
 }

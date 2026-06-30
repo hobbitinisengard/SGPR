@@ -109,7 +109,7 @@ public class Info : MonoBehaviour
 	public Material emissiveRearDarker;
 	public Mesh sphereMesh;
 	public AudioMixer mainAudioMixer;
-	public const string VERSION = "0.5.6";
+	public const string VERSION = "0.5.7";
 	public bool minimized { get; private set; }
 	[DllImport("user32.dll")]
 	static extern bool SetCursorPos(int X, int Y);
@@ -611,8 +611,11 @@ public class Info : MonoBehaviour
 	public const string usersManualURL = "https://docs.google.com/document/d/1PNb95xUi0pdOjPetwu-MNLeIwpVN6t8rxAmukKEpB2E/";
 	public readonly int maxConcurrentUsers = 30;
 
+	/// <summary>
+	/// // i.e. car05
+	/// </summary>
 	public Car Car(string name)
-	{ // i.e. car05
+	{ 
 		try
 		{
 			int i = int.Parse(name[3..]);
@@ -645,26 +648,26 @@ public class Info : MonoBehaviour
 		{
 			cars = new Car[]
 			{
-				new ("car00",0,CarGroup.Speed, Livery.Itex, "MEAN STREAK","Fast, light and agile, this racer offers much for those who wish to modify their vehicle."),
-				new ("car01",45000,CarGroup.Wild,Livery.Caltex, "THE HUSTLER","Sturdy 4x4 pick-up truck with an eye for the outrageous!"),
-				new ("car02",50000,CarGroup.Aero, Livery.Mysuko, "TWIN EAGLE","Take flight with this light and speedy stuntcar."),
-				new ("car03",0,CarGroup.Aero, Livery.TGR, "SKY HAWK","Get airborne with this very versatile stunt car."),
-				new ("car04",30000,CarGroup.Speed, Livery.Rline, "THE PHANTOM","Fast, sleek and tough to handle."),
-				new ("car05",30000,CarGroup.Wild, Livery.Titan, "ROAD HOG","Rock and Roll with the rough ridin' road hog."),
-				new ("car06",0,CarGroup.Wild, Livery.Itex, "DUNE RAT","Defy the laws of physics in this buggy."),
-				new ("car07",50000,CarGroup.Speed, Livery.Titan, "LIGHTNIN'","Supercharged super speed. Easy does it!"),
-				new ("car08",30000,CarGroup.Speed, Livery.Caltex, "ALLEY KAT","Sleek and powerful, this cat is ready to roar."),
-				new ("car09",40000,CarGroup.Wild, Livery.Itex, "SAND SHARK","This beachcomber is at home on any stunt circuit."),
-				new ("car10",45000,CarGroup.Wild, Livery.TGR, "THE BRUTE","Unleash the Brute for no-nonsense on the road!"),
-				new ("car11",70000,CarGroup.Aero, Livery.Titan,"WILD DART","Fly fast and true with this stuntcar."),
-				new ("car12",65000,CarGroup.Wild, Livery.Mysuko, "RAGING BULL","Powerful and fast, this streetwise 4x4 is incredible."),
-				new ("car13",15000,CarGroup.Aero, Livery.Caltex, "FLYING MANTIS","Super light and very fast."),
-				new ("car14",35000,CarGroup.Aero, Livery.Rline, "STUNT MONKEY","Monkey see, monkey do! Go bananas with this wild ride!"),
-				new ("car15",50000,CarGroup.Speed, Livery.Titan, "INFERNO","This speed demon is on fire!"),
-				new ("car16",35000,CarGroup.Team, Livery.Team, "FORK","Despite its looks, it moves like fork lightning!"),
-				new ("car17",55000,CarGroup.Team, Livery.Team, "WORM MOBILE","Super Speedy Buggy!"),
-				new ("car18",100000,CarGroup.Team, Livery.Itex, "FORMULA 17","Incredibly fast racing car."),
-				new ("car19",90000,CarGroup.Team, Livery.Team, "TEAM MACHINE","The ultimate, hugely versatile stock car.")
+				new ("car00",0,5,5,5,CarGroup.Speed, Livery.Itex, "MEAN STREAK","Fast, light and agile, this racer offers much for those who wish to modify their vehicle."),
+				new ("car01",45000,1,8,2,CarGroup.Wild,Livery.Caltex, "THE HUSTLER","Sturdy 4x4 pick-up truck with an eye for the outrageous!"),
+				new ("car02",50000,8,3,6,CarGroup.Aero, Livery.Mysuko, "TWIN EAGLE","Take flight with this light and speedy stuntcar."),
+				new ("car03",0,8,5,6,CarGroup.Aero, Livery.TGR, "SKY HAWK","Get airborne with this very versatile stunt car."),
+				new ("car04",30000,4,7,7,CarGroup.Speed, Livery.Rline, "THE PHANTOM","Fast, sleek and tough to handle."),
+				new ("car05",30000,1,8,3,CarGroup.Wild, Livery.Titan, "ROAD HOG","Rock and Roll with the rough ridin' road hog."),
+				new ("car06",0,6,4,5,CarGroup.Wild, Livery.Itex, "DUNE RAT","Defy the laws of physics in this buggy."),
+				new ("car07",50000,3,10,9,CarGroup.Speed, Livery.Titan, "LIGHTNIN'","Supercharged super speed. Easy does it!"),
+				new ("car08",30000,5,4,5,CarGroup.Speed, Livery.Caltex, "ALLEY KAT","Sleek and powerful, this cat is ready to roar."),
+				new ("car09",40000,6,3,2,CarGroup.Wild, Livery.Itex, "SAND SHARK","This beachcomber is at home on any stunt circuit."),
+				new ("car10",45000,1,5,3,CarGroup.Wild, Livery.TGR, "THE BRUTE","Unleash the Brute for no-nonsense on the road!"),
+				new ("car11",70000,10,9,8,CarGroup.Aero, Livery.Titan,"WILD DART","Fly fast and true with this stuntcar."),
+				new ("car12",65000,5,8,7,CarGroup.Wild, Livery.Mysuko, "RAGING BULL","Powerful and fast, this streetwise 4x4 is incredible."),
+				new ("car13",15000,10,7,5,CarGroup.Aero, Livery.Caltex, "FLYING MANTIS","Super light and very fast."),
+				new ("car14",35000,10,1,4,CarGroup.Aero, Livery.Rline, "STUNT MONKEY","Monkey see, monkey do! Go bananas with this wild ride!"),
+				new ("car15",50000,5,5,9,CarGroup.Speed, Livery.Titan, "INFERNO","This speed demon is on fire!"),
+				new ("car16",35000,5,10,9,CarGroup.Team, Livery.Team, "FORK","Despite its looks, it moves like fork lightning!"),
+				new ("car17",55000,4,9,7,CarGroup.Team, Livery.Team, "WORM MOBILE","Super Speedy Buggy!"),
+				new ("car18",100000,3,10,7,CarGroup.Team, Livery.Itex, "FORMULA 17","Incredibly fast racing car."),
+				new ("car19",90000,5,7,7,CarGroup.Team, Livery.Team, "TEAM MACHINE","The ultimate, hugely versatile stock car.")
 			};
 		}
 		ReloadCarConfigs();
@@ -1092,7 +1095,13 @@ public class Car
 	public bool unlocked = false;
 	public bool starter = false;
 	public Livery defaultLivery { get; private set; } = Livery.TGR;
-	public Car(string internalName, int price, CarGroup carClass, Livery defaultLivery, string name, string desc, int rooster = 0)
+
+	public float stunt{ get; private set; }
+	public float grip { get; private set; }
+	public float power { get; private set; }
+
+	public Car(string internalName, int price, float Stunt, float Grip, float Power, CarGroup carClass, Livery defaultLivery, string name, string desc,
+	 int rooster = 0)
 	{
 		this.internalName = internalName;
 		this.desc = desc;
@@ -1101,6 +1110,9 @@ public class Car
 		this.price = price;
 		this.rooster = rooster;
 		this.defaultLivery = defaultLivery;
+		this.stunt = Stunt;
+		this.grip = Grip;
+		this.power = Power;
 	}
 	public static int Name2Index(string name)
 	{ // i.e. car05

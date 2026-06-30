@@ -156,11 +156,11 @@ namespace RVP
 		}
 		float GetDist(PathCreator p)
 		{
-			return p.path.GetClosestPointOnPath(transform.position, Mathf.Max(0, univProgress - 100), univProgress + 200);
+			return p.path.GetClosestTimeOnPath(transform.position) * p.path.length;
 		}
 		float GetDist(PathCreator p, float progress)
 		{
-			return p.path.GetClosestPointOnPath(transform.position, Mathf.Max(0,progress - 100), progress + 200);
+			return p.path.GetClosestPointOnPath(transform.position, Mathf.Max(0,progress - 100), progress + 300);
 		}
 		//int GetDist(int layer)
 		//{
@@ -205,11 +205,11 @@ namespace RVP
 				speedLimitDist = -1;
 				if (resetProgress)
 				{
-					var newDist = GetDist(trackPathCreator) + 40;
+					var newDist = GetDist(trackPathCreator,progress) + 40;
 					if (newDist < progress + 300)
 					{
 						progress = newDist;
-						univProgress = newDist;
+						univProgress = GetDist(RaceManager.I.racingPaths[1]);
 					}
 				}
 				pitsProgress = 0;
@@ -329,11 +329,11 @@ namespace RVP
 			}
 			else
 			{
-				float newUnivProgress = GetDist(RaceManager.I.racingPaths[1]);
+				float newUnivProgress = GetDist(RaceManager.I.racingPaths[1], univProgress);
 				if (newUnivProgress - univProgress > -200 && newUnivProgress - univProgress < 200)
 					univProgress = newUnivProgress;
 
-				dist = GetDist(trackPathCreator);
+				dist = GetDist(trackPathCreator, progress);
 
 
 				if (dist != 1 && (dist < progress || dist > progress + 2 * radius))
@@ -641,7 +641,7 @@ namespace RVP
 				progress = (int)(trackPathCreator.path.length - 5);
 
 			dist = progress;
-			univProgress = progress;
+			univProgress = GetDist(RaceManager.I.racingPaths[1]);
 			vp.ghost.StartGhostResetting();
 			rb.isKinematic = true;
 			tr.position = resetPos + Vector3.up + resetDir;

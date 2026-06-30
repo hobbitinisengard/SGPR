@@ -420,29 +420,37 @@ public class CarConfig
 	[JsonIgnore]
 	public float[] SGP
 	{
-		get
-		{
-			PartSavable Part(PartType type)
-			{
-				if (externalParts[(int)type] != null)
-					return F.I.carParts[externalParts[(int)type]];
-				else
-					return customParts[type];
-			}
+	//get based on vehicle
+	get
+	{
 			float C01(float min, float max, float val)
 			{
 				return Mathf.Clamp(Mathf.InverseLerp(min, max, val), .15f, 1);
 			}
 
-			var chassis = (ChassisSavable)Part(PartType.Chassis);
-			var tyre = (TyreSavable)Part(PartType.Tyre);
-			var engine = (EngineSavable)Part(PartType.Engine);
-			float S = C01(400, 1200, chassis.staticEvoMaxSpeed);
-			float G = C01(2, 0, (tyre.sideFriction - tyre.shiftRearFriction) / chassis.mass);
-			float P = (C01(0.025f, .2f, engine.torque / chassis.mass) + C01(4,10,tyre.forwardFriction / chassis.mass))/2f;
-			return new float[] { S, G, P };
-		}
+			return new float[] {C01(1,10,F.I.Car(name).stunt), C01(1,10,F.I.Car(name).grip), C01(1,10,F.I.Car(name).power) };
 	}
+	// get based on PartSavable
+	//get
+	//{
+	//	PartSavable Part(PartType type)
+	//	{
+	//		if (externalParts[(int)type] != null)
+	//			return F.I.carParts[externalParts[(int)type]];
+	//		else
+	//			return customParts[type];
+	//	}
+	
+
+	//	var chassis = (ChassisSavable)Part(PartType.Chassis);
+	//	var tyre = (TyreSavable)Part(PartType.Tyre);
+	//	var engine = (EngineSavable)Part(PartType.Engine);
+	//	float S = C01(400, 1200, chassis.staticEvoMaxSpeed);
+	//	float G = C01(2, 0, (tyre.sideFriction - tyre.shiftRearFriction) / chassis.mass);
+	//	float P = (C01(0.025f, .2f, engine.torque / chassis.mass) + C01(4,10,tyre.forwardFriction / chassis.mass))/2f;
+	//	return new float[] { S, G, P };
+	//}
+}
 	[NonSerialized]
 	public static readonly string extension = "carcfg";
 	[NonSerialized]

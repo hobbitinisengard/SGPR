@@ -3,7 +3,6 @@ using System.Collections;
 using System;
 using Unity.Netcode;
 using Unity.Collections;
-using Smooth;
 
 namespace RVP
 {
@@ -354,7 +353,7 @@ namespace RVP
 			Destroy(gameObject);
 		}
 		[Rpc(SendTo.SpecifiedInParams)]
-		void RequestRaceboxValuesRpc(RpcParams ps)
+		public void RequestRaceboxValuesRpc(RpcParams ps)
 		{
 			SynchRaceboxValuesRpc(raceBox.enabled, ServerC.I.PlayerMe.ScoreGet(), raceBox.curLap, followAI.dist, followAI.progress, raceBox.Aero, raceBox.Drift,
 				(float)raceBox.bestLapTime.TotalSeconds, (float)raceBox.raceTime.TotalSeconds,

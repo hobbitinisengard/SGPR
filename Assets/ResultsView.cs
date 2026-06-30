@@ -37,7 +37,7 @@ public class Result
 		score = vp.lastRoundScore;
 		sponsor = vp.sponsor;
 		finished = !vp.raceBox.enabled;
-		//Debug.Log(string.Format("{0}, progress:{1}, score:{2}, ", name, progress, aeromiles));
+		Debug.Log(string.Format("{0}, RaceProgressLaps:{1}, score:{2}, ", name, progress, aeromiles));
 	}
 	public Result(VehicleParent vp)
 	{

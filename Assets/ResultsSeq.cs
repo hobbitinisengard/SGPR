@@ -53,6 +53,7 @@ public class ResultsSeq : MonoBehaviour
 			StopCoroutine(dimCo);
 		if (showTableCo != null)
 			StopCoroutine(showTableCo);
+
 		seq = StartCoroutine(EnableSeq());
 	}
 	private void OnEnterClicked(UnityEngine.InputSystem.InputAction.CallbackContext obj)
@@ -78,10 +79,8 @@ public class ResultsSeq : MonoBehaviour
 		}
 		cosArg = 0;
 
-		while (!ResultsView.Get(RaceManager.I.playerCar).finished)
-		{
-			yield return new WaitForSeconds(.25f);
-		}
+		
+
 
 		int playerResultPosition = ResultsView.SortedResultsByFinishPos.FindIndex(ri => ri.vp == RaceManager.I.playerCar);
 

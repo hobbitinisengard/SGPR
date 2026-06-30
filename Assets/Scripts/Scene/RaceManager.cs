@@ -86,7 +86,7 @@ namespace RVP
 			}
 			else
 			{
-				if(playerCar != null)
+				if (playerCar != null)
 				{
 					//Debug.Log("Relinquish rpc");
 					playerCar.RelinquishRpc(playerCar.RpcTarget.Server);
@@ -152,7 +152,7 @@ namespace RVP
 			}
 			else
 			{
-				if(F.I.gameMode == GameMode.Arcade)
+				if (F.I.gameMode == GameMode.Arcade)
 				{
 					ResultsView.playerDNF = true;
 					BackToMenu(applyScoring: true);
@@ -546,12 +546,36 @@ namespace RVP
 				Online.I.raceAlreadyStarted.Value = false;
 
 			musicPlayer.Stop();
+
+			// ask all cars to synchronize race results
+			// this is needed as cars synchronize their racebox values only when they finish
+			foreach (var c in F.I.s_cars)
+			{
+				if (c == playerCar)
+					continue;
+
+				if (F.I.gameMode == GameMode.Multiplayer)
+				{
+						c.RequestRaceboxValuesRpc(c.RpcTarget.Owner);
+				}
+				else
+				{
+						ResultsView.Add(c);
+				}
+			}
+
 			if (F.I.gameMode == GameMode.Multiplayer)
 				yield return new WaitForSeconds(1);
 			resultsSeq.gameObject.SetActive(true);
 			cam.mode = CameraControl.Mode.Replay;
 			foreach (var c in F.I.s_cars)
 				c.sampleText.gameObject.SetActive(false);
+
+			while (!ResultsView.Get(playerCar).finished)
+			{
+				yield return new WaitForSeconds(.25f);
+			}
+
 			do
 			{
 				yield return null;
