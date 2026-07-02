@@ -160,7 +160,7 @@ namespace RVP
 		}
 		float GetDist(PathCreator p, float progress)
 		{
-			return p.path.GetClosestPointOnPath(transform.position, Mathf.Max(0,progress - 100), progress + 300);
+			return p.path.GetClosestPointOnPath(transform.position, Mathf.Max(0,progress - 100), progress + 200);
 		}
 		//int GetDist(int layer)
 		//{
