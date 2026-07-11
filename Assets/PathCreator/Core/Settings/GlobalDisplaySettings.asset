@@ -32,5 +32,5 @@ MonoBehaviour:
   bounds: {r: 1, g: 1, b: 1, a: 0.4}
   segmentBounds: {r: 1, g: 1, b: 1, a: 0.4}
   vertexPath: {r: 0, g: 1, b: 0.012152195, a: 1}
-  normals: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  normals: {r: 1, g: 0.019385919, b: 0, a: 1}
   normalsLength: 0.198

@@ -5,7 +5,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public enum BottomInfoType { NEW_LEADER, NO_BATT, PIT_OUT, PIT_IN, STUNT, CAR_WINS, ELIMINATED, NEW_CAMERA_TARGET };
+public enum BottomInfoType { 
+	NEW_LEADER, NO_BATT, PIT_OUT, PIT_IN, STUNT, CAR_WINS, ELIMINATED, NEW_CAMERA_TARGET, NEW_LAPRECORD,
+	FINAL_LAP, HIGHEST_AEROMILES_COMBO
+};
 
 
 public class SGP_HUD : MonoBehaviour
@@ -36,9 +39,9 @@ public class SGP_HUD : MonoBehaviour
 	public Sprite[] gearsSprites;
 	public Image currentGear;
 	public Transform rpmIndicator;
-	public Transform batteryLack;
-	readonly int minBatteryLack = 198;
-	readonly int maxBatteryLack = 46;
+	public RectTransform batteryLack;
+	readonly int minBatteryLack = 192;
+	readonly int maxBatteryLack = 35;
 	// 0,1,2,3,4,5,6,7,8,9
 	public Sprite[] speedoSprites;
 	// Hundreds, Tens, Ones
@@ -100,63 +103,7 @@ public class SGP_HUD : MonoBehaviour
 	/// </summary>
 	const float dimmingStuntTableTime = 1;
 
-	public void UpdateStuntSeqTable(in StuntsData sData)
-	{
-		if (sData == null)
-			return;
-
-		// if previous stunt table hasn't ended dimming yet
-		if (dimStuntTableTimer > 0)
-		{
-			Debug.Log("prev hasn't stopped dimming");
-			dimStuntTableTimer = 0;
-			ClearStuntInfo();
-		}
-		foreach (Stunt stunt in sData)
-		{
-			if (stunt.updateOverlay)
-			{
-				int stuntEntriesCount = StuntInfo.transform.childCount;
-				if (stuntEntriesCount == 1) // if no elements; first element is just a template
-				{
-					AddStunt(stunt);
-				}
-				else // at least one element
-				{
-					StuntInfoOverlay lastElement = StuntInfo.transform
-						.GetChild(stuntEntriesCount - 1).GetComponent<StuntInfoOverlay>();
-					if (lastElement.name == stunt.overlayName)
-					{
-						lastElement.UpdatePostfix(stunt);
-					}
-					else
-					{
-						if (stuntEntriesCount == 7)
-							Destroy(StuntInfo.transform.GetChild(1).gameObject);
-						AddStunt(stunt);
-					}
-				}
-			}
-			stunt.updateOverlay = false;
-		}
-		if (StuntInfo.transform.childCount > ((F.I.s_raceType == RaceType.Drift) ? 1 : 2))
-			StuntInfo.SetActive(true);
-	}
-	public void AddStunt(in Stunt stunt)
-	{
-		//if(!vp.followAI.isCPU)
-		//	Debug.Log("addElement");
-		GameObject stuntEntry = Instantiate(stuntTemplate, StuntInfo.transform);
-		stuntEntry.GetComponent<StuntInfoOverlay>().WriteStuntName(stunt);
-		stuntEntry.SetActive(true);
-	}
-	void ClearStuntInfo()
-	{
-		for (int i = 1; i < StuntInfo.transform.childCount; ++i)
-		{
-			Destroy(StuntInfo.transform.GetChild(i).gameObject);
-		}
-	}
+	
 	public void Disconnect()
 	{
 		vp = null;
@@ -258,10 +205,67 @@ public class SGP_HUD : MonoBehaviour
 			pauseMenu.gameObject.SetActive(!pauseMenu.gameObject.activeSelf);
 		}
 	}
+	public void UpdateStuntSeqTable(in StuntsData sData)
+	{
+		if (sData == null)
+			return;
+
+		// if previous stunt table hasn't ended dimming yet
+		if (dimStuntTableTimer > 0)
+		{
+			Debug.Log("prev hasn't stopped dimming");
+			dimStuntTableTimer = 0;
+			ClearStuntInfo();
+		}
+		foreach (Stunt stunt in sData)
+		{
+			if (stunt.updateOverlay)
+			{
+				int stuntEntriesCount = StuntInfo.transform.childCount;
+				if (stuntEntriesCount == 1) // if no elements; first element is just a template
+				{
+					AddStunt(stunt);
+				}
+				else // at least one element
+				{
+					StuntInfoOverlay lastElement = StuntInfo.transform
+						.GetChild(stuntEntriesCount - 1).GetComponent<StuntInfoOverlay>();
+					if (lastElement.stuntObjText.text == stunt.OverlayName())
+					{
+						lastElement.UpdatePostfix(stunt);
+					}
+					else
+					{
+						if (stuntEntriesCount == 7)
+							Destroy(StuntInfo.transform.GetChild(1).gameObject);
+						AddStunt(stunt);
+					}
+				}
+			}
+			stunt.updateOverlay = false;
+		}
+		if (StuntInfo.transform.childCount > ((F.I.s_raceType == RaceType.Drift) ? 1 : 2))
+			StuntInfo.SetActive(true);
+	}
+	public void AddStunt(in Stunt stunt)
+	{
+		//if(!vp.followAI.isCPU)
+		//	Debug.Log("addElement");
+		GameObject stuntEntry = Instantiate(stuntTemplate, StuntInfo.transform);
+		stuntEntry.GetComponent<StuntInfoOverlay>().WriteStuntName(stunt);
+		stuntEntry.SetActive(true);
+	}
+	void ClearStuntInfo()
+	{
+		for (int i = 1; i < StuntInfo.transform.childCount; ++i)
+		{
+			Destroy(StuntInfo.transform.GetChild(i).gameObject);
+		}
+	}
 	private void Update()
 	{
 		if (Input.GetKeyDown(KeyCode.F3) && !pauseMenu.gameObject.activeSelf 
-			&& F.I.gameMode == MultiMode.Singleplayer && F.I.s_cpuRivals == 0)
+			&& F.I.gameMode == GameMode.Exhibition && F.I.s_cpuRivals == 0)
 		{
 			componentPanel.gameObject.SetActive(!componentPanel.gameObject.activeSelf);
 		}
@@ -337,6 +341,26 @@ public class SGP_HUD : MonoBehaviour
 					s.positiveProgress = 0;
 					s.doneTimes = 0;
 				}
+				if(F.I.gameMode == GameMode.Arcade && F.I.arcadeObjectiveStunts != null)
+				{
+					// add performed stunts to resultsInfo table
+					for(int i=1; i<StuntInfo.transform.childCount; i++)
+					{
+						var split = StuntInfo.transform.GetChild(i).GetComponent<StuntInfoOverlay>().name.Split(',');
+						for(int j=0; j<F.I.arcadeObjectiveStunts.Length; j++)
+						{
+							if (F.I.arcadeObjectiveStunts[j].Item1 == split[0])
+							{
+								if(F.I.arcadeObjectiveStunts[j].Item2 > 0)
+								{
+									F.I.arcadeObjectiveStunts[j].Item2 -= int.Parse(split[1]);
+								}
+								Debug.Log(F.I.arcadeObjectiveStunts[j].Item1 + " " + F.I.arcadeObjectiveStunts[j].Item2);
+								break;
+							}
+						}
+					}
+				}
 			}
 		}
 		if (vp.raceBox.GetStuntSeq(ref stuntData))
@@ -348,7 +372,7 @@ public class SGP_HUD : MonoBehaviour
 		Vector3 hudPos = rt.anchoredPosition;
 		if (vp.wheels != null)
 		{
-			compression = Mathf.Min(vp.wheels[0].suspensionParent.compression, vp.wheels[1].suspensionParent.compression);
+			compression = Mathf.Min(vp.wheels[0].susParent.compression, vp.wheels[1].susParent.compression);
 		}
 			
 		float target = Mathf.Lerp(hudPos0, hudHeight - hudPos0, compression);
@@ -383,7 +407,7 @@ public class SGP_HUD : MonoBehaviour
 			speed /= 10;
 		}
 		// Update battery level
-		Vector3 batteryLackPosition = batteryLack.GetComponent<RectTransform>().anchoredPosition;
+		Vector3 batteryLackPosition = batteryLack.anchoredPosition;
 		if (vp.BatteryPercent < vp.lowBatteryLevel)
 		{  // low battery level blink
 			if (batteryCutOffTimer == 0 || Time.time - batteryCutOffTimer > 1)
@@ -396,7 +420,7 @@ public class SGP_HUD : MonoBehaviour
 		}
 		else
 			batteryLackPosition.x = Mathf.Lerp(maxBatteryLack, minBatteryLack, vp.BatteryPercent);
-		batteryLack.GetComponent<RectTransform>().anchoredPosition = batteryLackPosition;
+		batteryLack.anchoredPosition = batteryLackPosition;
 
 
 		if (positionDisplay.activeSelf)
@@ -462,7 +486,7 @@ public class SGP_HUD : MonoBehaviour
 			carStarLevel = vp.raceBox.starLevel;
 
 			// Original AERO movement
-			float score = (F.I.s_raceType == RaceType.Drift) ? vp.raceBox.drift : vp.raceBox.Aero;
+			float score = (F.I.s_raceType == RaceType.Drift) ? vp.raceBox.Drift : vp.raceBox.Aero;
 			for (int i = 6; i >= 0; --i)
 			{
 				mainRollers[i].SetFrac(score % 10f / 10f);
@@ -499,10 +523,10 @@ public class SGP_HUD : MonoBehaviour
 			if (F.I.s_cars.Count > 1 && Time.time - progressBarUpdateTime > .5f)
 			{
 				progressBarUpdateTime = Time.time;
-				float playerDistance = vp.raceBox.curLap + vp.followAI.LapProgressPercent;
+				float playerDistance = vp.raceBox.RaceProgressLaps;
 				foreach (var car in F.I.s_cars)
 				{
-					float distance = car.raceBox.curLap + car.followAI.LapProgressPercent;
+					float distance = car.raceBox.RaceProgressLaps;
 					float diff = Mathf.Clamp(distance - playerDistance, -1, 1);
 					//if (F.I.s_catchup)
 					//{

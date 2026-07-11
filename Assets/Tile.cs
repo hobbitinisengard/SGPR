@@ -5,9 +5,17 @@ using System.IO;
 using System.Linq;
 using UnityEngine;
 
+
+
 [DisallowMultipleComponent]
 public class Tile : MonoBehaviour
 {
+	public enum Type
+	{
+		NotRoad = 0,
+		NotRoadWithLights = 1,
+		Road = 2,
+	}
 	[NonSerialized]
 	public EditorPanel panel;
 	/// <summary>
@@ -23,14 +31,15 @@ public class Tile : MonoBehaviour
 	GameObject lightObj;
 
 	public MeshCollider[] Endings { get; private set; }
+	public Type type { get; private set; } = Type.NotRoad;
 
 	public void UpdateLights()
 	{
-		if(lightObj)
+		if (lightObj)
 		{
 			for (int i = 0; i < lightObj.transform.childCount; ++i)
 			{
-				lightObj.transform.GetChild(i).gameObject.SetActive(F.I.s_isNight);
+				lightObj.transform.GetChild(i).gameObject.SetActive(F.I.s_timeOfDay == TimeOfDay.Night);
 			}
 		}
 	}
@@ -38,22 +47,31 @@ public class Tile : MonoBehaviour
 	{
 		// add mesh collider to 'main' mesh 
 		if (transform.childCount == 0) // tile isn't a road
+		{
 			mc = gameObject.AddComponent<MeshCollider>();
+			type = Type.NotRoad;
+		}
 		else
-		{ // tile is a road
+		{
 			var childObj = transform.GetChild(0);
+
 			if (childObj.name == "lights")
 			{
+				type = Type.NotRoadWithLights;
 				mc = gameObject.AddComponent<MeshCollider>();
 
 				lightObj = childObj.gameObject;
 				UpdateLights();
 			}
-			else
+			else if (childObj.name != "extra")
 			{
+				// some of the ad tiles have moving parts. they are not roads, but they have mesh colliders
+				if (childObj.name != "obrot")
+					type = Type.Road;
+
 				mc = childObj.gameObject.AddComponent<MeshCollider>();
 
-				if(childObj.childCount > 0)
+				if (childObj.childCount > 0)
 				{
 					List<MeshCollider> endings = new();
 					for (int i = 0; i < childObj.childCount; ++i)
@@ -65,55 +83,65 @@ public class Tile : MonoBehaviour
 							endings.Add(ending);
 						}
 					}
-					if(endings.Count > 0)
+					if (endings.Count > 0)
 						Endings = endings.ToArray();
 				}
 			}
-		}
-		mc.enabled = true;
-		if(F.I.s_roadType == PavementType.Random)
-		{
-			Debug.LogError("PavementType is random");
-		}
-		else if(F.I.s_roadType != PavementType.Arena)
-		{
-			var mr = mc.transform.GetComponent<MeshRenderer>();
-			string replacementStr = "0" + ((int)F.I.s_roadType).ToString();
-			var materials = mr.materials;
-			for (int i = 0; i < materials.Length; ++i)
+			else
 			{
-				if (materials[i].name.Contains("00"))
+				mc = gameObject.AddComponent<MeshCollider>();
+				type = Type.NotRoad;
+			}
+			mc.enabled = true;
+			mc.hasModifiableContacts = true;
+
+			if (F.I.s_roadType == PavementType.Random)
+			{
+				Debug.LogError("PavementType is random");
+			}
+			else if (F.I.s_roadType != PavementType.Arena)
+			{
+				var mr = mc.transform.GetComponent<MeshRenderer>();
+				string replacementStr = "0" + ((int)F.I.s_roadType).ToString();
+				var materials = mr.materials;
+				for (int i = 0; i < materials.Length; ++i)
 				{
-					var newName = materials[i].name.Replace("00", replacementStr).Split(' ')[0];
-					materials[i] = Resources.Load<Material>("materials/" + newName);
+					if (materials[i].name.Contains("00"))
+					{
+						var newName = materials[i].name.Replace("00", replacementStr).Split(' ')[0];
+						materials[i] = Resources.Load<Material>("materials/" + newName);
+					}
+				}
+				mr.materials = materials;
+			}
+
+			if(type == Type.Road)
+			{ 
+				for (int i = 1; i < transform.childCount; ++i)
+				{
+					var connector = transform.GetChild(i).gameObject;
+					var col = connector.AddComponent<SphereCollider>();
+					col.radius = 3;
+					col.isTrigger = true;
+					var rb = connector.AddComponent<Rigidbody>();
+					rb.useGravity = false;
+					rb.isKinematic = true;
+					connector.AddComponent<Connector>();
+					connector.layer = F.I.connectorLayer;
+					var mf = connector.AddComponent<MeshFilter>();
+					var mr = connector.AddComponent<MeshRenderer>();
+					mf.mesh = F.I.sphereMesh;
+					mr.enabled = true;
+					mr.material = Connector.blue;
 				}
 			}
-			mr.materials = materials;
-		}
-
-		for (int i = 1; i < transform.childCount; ++i)
-		{
-			var connector = transform.GetChild(i).gameObject;
-			var col = connector.AddComponent<SphereCollider>();
-			col.radius = 3;
-			col.isTrigger = true;
-			var rb = connector.AddComponent<Rigidbody>();
-			rb.useGravity = false;
-			rb.isKinematic = true;
-			connector.AddComponent<Connector>();
-			connector.layer = F.I.connectorLayer;
-			var mf = connector.AddComponent<MeshFilter>();
-			var mr = connector.AddComponent<MeshRenderer>();
-			mf.mesh = Resources.Load<Mesh>("sphere");
-			mr.enabled = true;
-			mr.material = Connector.blue;
 		}
 	}
-
 	internal void SetPlaced()
 	{
 		placed = true;
-		mc.gameObject.layer = F.I.roadLayer;
+		if (type == Type.Road)
+			mc.gameObject.layer = F.I.roadLayer;
 		if (name.Contains("dirt")) //= mud
 			mc.gameObject.AddComponent<GroundSurfaceInstance>().surfaceType = 1;
 		else if (name.Contains("sand")) // =dust
@@ -150,13 +178,13 @@ public class Tile : MonoBehaviour
 			return false;
 
 		mirrored = !mirrored;
-		
+
 		var mf = mc.transform.GetComponent<MeshFilter>();
 		mf.mesh = MirrorMesh(mf.mesh);
 		if (mc)
 			mc.sharedMesh = mf.mesh;
 
-		if(Endings != null)
+		if (Endings != null)
 		{
 			foreach (MeshCollider end in Endings)
 			{ // mirror endings
@@ -166,43 +194,43 @@ public class Tile : MonoBehaviour
 			}
 		}
 
-		if(transform.childCount>0)
+		if (transform.childCount > 0)
 		{
-			if(transform.GetChild(0).name == "lights")
-			{
-				var lightsObj = transform.GetChild(0);
-				for (int i=0; i< lightsObj.childCount; ++i)
-				{
-					var light = lightsObj.GetChild(i);
-					Vector3 a = transform.InverseTransformPoint(light.position);
-					a.x = -a.x;
-					light.position = transform.TransformPoint(a);
+			//if(transform.GetChild(0).name == "lights")
+			//{
+			//	var lightsObj = transform.GetChild(0);
+			//	for (int i=0; i< lightsObj.childCount; ++i)
+			//	{
+			//		var light = lightsObj.GetChild(i);
+			//		Vector3 a = transform.InverseTransformPoint(light.position);
+			//		a.x = -a.x;
+			//		light.position = transform.TransformPoint(a);
 
-					var lookVector = light.forward;
-					lookVector.x = -lookVector.x;
-					light.rotation = Quaternion.LookRotation(lookVector);
-				}
-			}
+			//		var lookVector = light.forward;
+			//		lookVector = transform.InverseTransformVector(lookVector);
+			//		lookVector.x = -lookVector.x;
+			//		lookVector = transform.TransformVector(lookVector);
+			//		light.rotation = Quaternion.LookRotation(lookVector);
+			//	}
+			//}
+
 			var mainMeshTr = transform.GetChild(0);
-			if (mainMeshTr.childCount > 0)
+			for (int i = 0; i < mainMeshTr.childCount; ++i)
 			{
-				for (int i = 0; i < mainMeshTr.childCount; ++i)
-				{
-					var pos = mainMeshTr.GetChild(i).transform.localPosition;
-					pos.x = -pos.x;
-					mainMeshTr.GetChild(i).transform.localPosition = pos;
-					var euler = mainMeshTr.GetChild(i).transform.localEulerAngles;
-					euler.y = -euler.y;
-					euler.z = -euler.z;
-					mainMeshTr.GetChild(i).transform.localRotation = Quaternion.Euler(euler);
-				}
+				var pos = mainMeshTr.GetChild(i).transform.localPosition;
+				pos.x = -pos.x;
+				mainMeshTr.GetChild(i).transform.localPosition = pos;
+				var euler = mainMeshTr.GetChild(i).transform.localEulerAngles;
+				euler.y = -euler.y;
+				euler.z = -euler.z;
+				mainMeshTr.GetChild(i).transform.localRotation = Quaternion.Euler(euler);
 			}
 		}
-		
+
 		for (int i = 1; i < transform.childCount; ++i)
 		{
 			Transform connector = transform.GetChild(i);
-			
+
 			// mirror path positions relative to connector
 			Transform[] paths = new Transform[connector.childCount];
 
@@ -231,7 +259,7 @@ public class Tile : MonoBehaviour
 			foreach (var c in paths)
 			{
 				if (c != null)
-					c.SetParent(connector,true);
+					c.SetParent(connector, true);
 			}
 		}
 		return mirrored;
@@ -246,18 +274,9 @@ public class Tile : MonoBehaviour
 			return;
 		var mf = mc.transform.GetComponent<MeshFilter>();
 
-		//if(scaled)
-		//{
-		//	if(!original)
-		//	{
-		//		Debug.LogError("No original UVs");
-		//		return;
-		//	}
-		//	mf.mesh.uv = original.transform.GetChild(0).GetComponent<MeshFilter>().mesh.uv;
-		//}
-		//scaled = true;
-
 		float scale = distance / mf.mesh.bounds.size.y;
+		if (scale == 1)
+			return;
 		transform.localScale = new Vector3(1, 1, scale);
 		{ // adjust UVs
 			Vector2[] uvs = mf.mesh.uv;
@@ -274,10 +293,12 @@ public class Tile : MonoBehaviour
 					if (uvs[triangles[j]].y < minUVY)
 						minUVY = uvs[triangles[j]].y;
 				}
+				float newMaxUVY = Mathf.LerpUnclamped(minUVY, maxUVY, scale);
+				newMaxUVY += 0.5f - newMaxUVY % 0.5f;
 				for (int j = 0; j < triangles.Length; ++j)
 				{
 					if (uvs[triangles[j]].y == maxUVY)
-						uvs[triangles[j]].y = Mathf.LerpUnclamped(minUVY, maxUVY, scale);
+						uvs[triangles[j]].y = newMaxUVY;
 				}
 			}
 			mf.mesh.uv = uvs;
@@ -287,11 +308,11 @@ public class Tile : MonoBehaviour
 		for (int i = 1; i < transform.childCount; ++i)
 		{
 			var connector = transform.GetChild(i);
-			
+
 			if (connector.childCount > 0)
 			{
 				GameObject[] children = new GameObject[connector.childCount];
-				for(int j = 0; j< children.Length; ++j)
+				for (int j = 0; j < children.Length; ++j)
 				{ // every time you change parent of a prev child, you pick 0th child 
 					children[j] = connector.GetChild(0).gameObject;
 					children[j].transform.parent = connector.parent;

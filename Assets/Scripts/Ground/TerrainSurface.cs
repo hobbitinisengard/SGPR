@@ -30,7 +30,7 @@ namespace RVP
 
                     for (int i = 0; i < frictions.Length; i++) {
                         if (GroundSurfaceMaster.surfaceTypesStatic[surfaceTypes[i]].useColliderFriction) {
-                            PhysicMaterial sharedMat = GetComponent<Collider>().sharedMaterial;
+                            PhysicsMaterial sharedMat = GetComponent<Collider>().sharedMaterial;
                             frictions[i] = sharedMat != null ? sharedMat.dynamicFriction * 2 : 1.0f;
                         }
                         else {

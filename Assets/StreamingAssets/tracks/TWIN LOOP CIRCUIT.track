@@ -1,0 +1,22 @@
+{
+  "author": "Team17",
+  "localizedNames":[
+	"TWINLOOP CIRCUIT",
+	"PODWÓJNA PĘTELKA",
+	],
+  "localizedDescriptions": [
+	"Two huge climbs and a double loop make this a formidable track",
+	"Dwa potężne podjazdy i podwójna pętla - tej trasy na pewno nie zapomnisz.",
+	],
+  "valid": true,
+  "envir": "GER",
+  "preferredCarClass": "Team",
+  "difficulty": 9,
+  "unlocked": true,
+  "icons": [
+    1,
+    2
+  ],
+  "TrackOrigin": 0,
+  "IsOriginal": true
+}

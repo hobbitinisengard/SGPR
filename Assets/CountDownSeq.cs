@@ -5,12 +5,11 @@ using UnityEngine.UI;
 
 public class CountDownSeq : Sfxable
 {
-	public static event Action RaceStarted;
 	public Sprite[] countdownSprites;
 	Image img;
 	Coroutine seq;
 	public const float startRaceCountdownSecs = 5;
-
+	public static event Action OnRaceStarted;
 	static float timer;
 	/// <summary>
 	/// raceStart countdown
@@ -46,7 +45,16 @@ public class CountDownSeq : Sfxable
 				{
 					lastTime = Mathf.FloorToInt(timer);
 					img.sprite = countdownSprites[lastTime];
-					PlaySFX((Mathf.FloorToInt(timer) == 0) ? "start2" : "start1");
+					if (Mathf.FloorToInt(timer) == 0)
+					{
+						PlaySFX("start2");
+						OnRaceStarted?.Invoke();
+					}
+						
+					else
+					{
+						PlaySFX("start1");
+					}
 				}
 			}
 			timer -= Time.deltaTime;
@@ -57,7 +65,10 @@ public class CountDownSeq : Sfxable
 
 		if(ServerC.I.AmHost)
 			Online.I.raceAlreadyStarted.Value = true;
-
-		RaceStarted?.Invoke();
+		else
+		{
+			yield return new WaitForSeconds(5);
+			Online.I.AskHostForRacestartdate();
+		}
 	}
 }

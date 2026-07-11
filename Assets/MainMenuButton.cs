@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using TMPro;
+using UnityEngine.Localization;
 
 public class MainMenuButton : Sfxable, ISelectHandler, IDeselectHandler, ISubmitHandler
 {
@@ -10,6 +11,7 @@ public class MainMenuButton : Sfxable, ISelectHandler, IDeselectHandler, ISubmit
 	static Color32 selectedColor = new Color32(255, 255, 255, 255);
 	public Sprite dyndakSpriteOnSelect;
 	public string BottomTextOnSelect;
+	public LocalizedString bottomTextStr;
 	TMP_Text text;
 	MainMenuView mainMenuView;
 	[System.NonSerialized]
@@ -21,7 +23,7 @@ public class MainMenuButton : Sfxable, ISelectHandler, IDeselectHandler, ISubmit
 			text = transform.GetChild(0).GetComponent<TMP_InputField>().textComponent;
 		text.color = deselectedColor;
 		buttonComponent = GetComponent<Button>();
-		mainMenuView = transform.FindParentComponent<MainMenuView>();
+		mainMenuView = transform.GetParentComponent<MainMenuView>();
 	}
 	private void OnDisable()
 	{
@@ -47,7 +49,7 @@ public class MainMenuButton : Sfxable, ISelectHandler, IDeselectHandler, ISubmit
 		}
 		if (!string.IsNullOrEmpty(BottomTextOnSelect))
 		{
-			mainMenuView.bottomText.text = BottomTextOnSelect;
+			mainMenuView.bottomText.text = bottomTextStr.GetLocalizedString();
 		}
 	}
 	public void Select()

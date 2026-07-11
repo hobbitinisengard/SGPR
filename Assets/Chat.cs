@@ -80,7 +80,7 @@ public class Chat : NetworkBehaviour
 	}
 	public void SetVisibility(bool enabled)
 	{
-		if (F.I.gameMode == MultiMode.Multiplayer)
+		if (F.I.gameMode == GameMode.Multiplayer)
 		{
 			inputFields[1].gameObject.SetActive(enabled);
 			scrollRects[1].gameObject.SetActive(enabled);
@@ -88,12 +88,12 @@ public class Chat : NetworkBehaviour
 	}
 	private void buttonPressed(InputAction.CallbackContext obj)
 	{
-		if(F.I.gameMode == MultiMode.Multiplayer && !texting)
+		if(F.I.gameMode == GameMode.Multiplayer && !texting)
 			StartCoroutine(ButtonPressedSeq());
 	}
 	private void QuickMessagePressed(InputAction.CallbackContext obj)
 	{
-		if(F.I.gameMode == MultiMode.Multiplayer && F.I.actionHappening == ActionHappening.InRace && !texting)
+		if(F.I.gameMode == GameMode.Multiplayer && F.I.actionHappening == ActionHappening.InRace && !texting)
 		{
 			int msgIndex = (int)obj.ReadValue<float>(); // returns 1 - 10
 			string msg = F.GetQuickMessage(msgIndex - 1);
@@ -123,11 +123,12 @@ public class Chat : NetworkBehaviour
 		while (texting)
 			yield return null;
 		SetVisibility(false);
+		F.Deselect();
 	}
 	
 	public void PlayerLeft(Player p)
 	{
-		AddChatRowLocally(p.NameGet(), "has left the server", Color.white, Color.grey);
+		AddChatRowLocally(p.NameGet(), F.I.LocStr("has left the server"), Color.white, Color.grey);
 	}
 	public void AddChatRowAsServer(string msg)
 	{

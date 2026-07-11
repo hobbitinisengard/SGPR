@@ -46,6 +46,7 @@ public class GreetingLogo : Sfxable
 	}
 	private void OnDisable()
 	{
+		bottomText.color = Color.white;
 		submitRef.action.performed -= SubmitPressed;
 	}
 	private void OnEnable()
@@ -61,7 +62,7 @@ public class GreetingLogo : Sfxable
 		goingUpSeq = false;
 		startButton.Select();
 		submitRef.action.performed += SubmitPressed;
-		F.I.gameMode = MultiMode.Singleplayer;
+		F.I.gameMode = GameMode.Exhibition;
 	}
 
 	void Update()
@@ -84,10 +85,11 @@ public class GreetingLogo : Sfxable
 								F.I.s_spectator = true;
 								F.I.s_cpuRivals = 5;
 								F.I.s_inEditor = false;
-								F.I.s_cpuLevel = CpuLevel.Normal;
+								F.I.s_cpuLevel = CpuLevel.Medium;
 								F.I.s_trackName = track.Key;
-								F.I.s_isNight = UnityEngine.Random.value > 0.5f;
+								F.I.s_timeOfDay = (TimeOfDay)UnityEngine.Random.Range(0, Info.TimeOfDays);
 								F.I.s_laps = 9;
+								cantFind = false;
 								break;
 							}
 							else
@@ -105,6 +107,10 @@ public class GreetingLogo : Sfxable
 						toDemo = false;
 						goingUpSeq = false;
 					}
+				}
+				else
+				{
+					F.I.s_spectator = false;
 				}
 				//else
 				//	view.GoToView(nextMenu);
@@ -155,7 +161,7 @@ public class GreetingLogo : Sfxable
 
 			timer += Time.deltaTime;
 			rt.localPosition = pos;
-			if (jumps == 8)//80 or 8
+			if (jumps == 24)//80 or 8
 			{ // up move
 				goingUpSeq = true;
 				toDemo = true;

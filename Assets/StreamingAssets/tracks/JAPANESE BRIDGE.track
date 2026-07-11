@@ -1,0 +1,20 @@
+{
+  "author": "Arkhnen & Viatrufka",
+  "localizedDescriptions": [
+    "One of the dangers of this two-level track is a double crossing.",
+    "Jednym z niebezpieczeństw tej dwupoziomowej trasy jest podwójne skrzyżowanie."
+  ],
+  "localizedNames": [
+    "JAPANESE BRIDGE",
+    "JAPOŃSKI MOST"
+  ],
+  "valid": true,
+  "envir": "JAP",
+  "preferredCarClass": "Speed",
+  "difficulty": 6,
+  "unlocked": true,
+  "icons": [
+    0,
+    2
+  ]
+}

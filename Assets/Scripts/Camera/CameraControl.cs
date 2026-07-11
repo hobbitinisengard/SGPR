@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Linq;
+﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -14,10 +12,12 @@ namespace RVP
 	// Class for controlling the camera
 	public class CameraControl : MonoBehaviour
 	{
+		GameObject waterObj;
+		float waterObjHeight;
 		public InputActionReference moveRef;
 		public InputActionReference changeCamRef;
 
-		readonly Vector2[] camerasLH = new Vector2[] { new(8.5f, 3.5f), new(4.5f, 2), new(11, 4) };
+		readonly Vector2[] camerasLH = new Vector2[] {   new(4f, 1.8f), new(8, 3), new(11, 4.5f)};
 		int curCameraLH = 0;
 		public enum Mode { Follow, Replay };
 		Mode _mode;
@@ -49,8 +49,8 @@ namespace RVP
 		VehicleParent vp;
 		Rigidbody targetBody;
 
-		public float height;
-		public float targetCamCarDistance;
+		public float height = 4.5f;
+		public float targetCamCarDistance = 2.3f;
 
 		public float xInput;
 		public float yInput;
@@ -62,7 +62,7 @@ namespace RVP
 		Vector3 upLook;
 		Vector3 targetForward;
 		Vector3 targetUp;
-
+		Quaternion rotation;
 		[Tooltip("Mask for which objects will be checked in between the camera and target vehicle")]
 		public LayerMask castMask;
 
@@ -88,20 +88,22 @@ namespace RVP
 		private Vector3 velocity = Vector3.zero;
 		private Vector3 fastVelocity = Vector3.zero;
 		public bool slowCamera = false;
+		private float slowCameraStartTime;
 		private float smoothDampRspnvns = 10f;
-		public float smoothTime = 1f;
+		float smoothTime = 0.5f;
 		private Vector3 newTrPos;
-		private float camStoppedSmoothTime = 4f;
-		private float camFollowSmoothTime = 1f;
+		float camStoppedSmoothTime = 4f;
+		float camFollowSmoothTime = 0.5f;
+		float smoothRotCoeff = 0.01f;
+		float forwardLookCoeff = 14;
 		private float smoothTimeSpeed = 2.5f;
+		float maxSlowCameraTime = 0.3f;
 		public int maxPitch = 10;
-		public float cHeight = 2;
-		public float smoothRotCoeff = 0.01f;
-		public float replayCamAgility = 1;
-		float forwardLookCoeff = 10;
+		float cHeight = 2;
+		float replayCamAgility = 1;
 		float upLookCoeff = 1f;
 		Vector3 forward;
-		public float xyInputCamSpeedCoeff = 5;
+		readonly AnimationCurve fovAtSpeed = AnimationCurve.Linear(50, 54, 83, 64);
 		/// <summary>
 		/// used for smooth change between cam rotation by velocity to cam rotation by lookObj 
 		/// </summary>
@@ -114,24 +116,29 @@ namespace RVP
 			cam.depthTextureMode |= DepthTextureMode.Depth;
 			changeCamRef.action.performed += ChangeFollowCamera;
 		}
-
 		private void ChangeFollowCamera(InputAction.CallbackContext obj)
+		{
+			curCameraLH++;
+			curCameraLH %= camerasLH.Length;
+			UpdateLH();
+		}
+		public void UpdateLH()
 		{
 			if (enabled && mode == Mode.Follow && !F.I.chat.texting)
 			{
-				curCameraLH++;
-				curCameraLH %= camerasLH.Length;
-				height = camerasLH[curCameraLH].y + vp.cameraHeightChange;
-				targetCamCarDistance = camerasLH[curCameraLH].x + vp.cameraDistanceChange;
+				height = camerasLH[curCameraLH].y;// + vp.cameraheightOffset;
+				targetCamCarDistance = camerasLH[curCameraLH].x;
 			}
 		}
-
 		private void OnEnable()
 		{
 			StartCoroutine(AllowChangingTarget());
 		}
 		IEnumerator AllowChangingTarget()
 		{
+			waterObj = GameObject.Find("Water");
+			if (waterObj)
+				waterObjHeight = waterObj.transform.position.y + 2;
 			yield return new WaitForSeconds(1);
 			moveRef.action.performed += SwitchTarget;
 		}
@@ -145,7 +152,7 @@ namespace RVP
 			vp = null;
 			enabled = false;
 		}
-		public void Connect(VehicleParent car, Mode mode = Mode.Follow)
+		public void Connect(VehicleParent car=null, Mode mode = Mode.Follow)
 		{
 			if (!lookObj)
 			{// lookObj is an object used to help position and rotate the camera
@@ -153,8 +160,7 @@ namespace RVP
 				lookObj = lookTemp.transform;
 			}
 			vp = car;
-			targetCamCarDistance += vp.cameraDistanceChange;
-			height += vp.cameraHeightChange;
+			height = camerasLH[curCameraLH].y;// vp.cameraheightOffset;
 			forwardLook = -vp.tr.up;
 			upLook = vp.tr.forward;
 			targetBody = vp.tr.GetComponent<Rigidbody>();
@@ -175,6 +181,13 @@ namespace RVP
 				degs -= 360;
 			return degs;
 		}
+		private void Update()
+		{
+			if(waterObj != null)
+			{
+				waterObj.SetActive(tr.position.y > waterObjHeight);
+			}
+		}
 		void FixedUpdate()
 		{
 			if (vp && targetBody)
@@ -191,7 +204,7 @@ namespace RVP
 		}
 		private void SwitchTarget(InputAction.CallbackContext context)
 		{
-			if (F.I.gameMode == MultiMode.Multiplayer && vp && RaceManager.I.playerCar != null 
+			if (F.I.gameMode == GameMode.Multiplayer && RaceManager.I.playerCar != null 
 				&& !RaceManager.I.playerCar.raceBox.enabled && !F.I.chat.texting)
 			{
 				Vector2 move = moveRef.action.ReadValue<Vector2>();
@@ -213,11 +226,12 @@ namespace RVP
 		void ReplayCam()
 		{
 			tr.position = vp.followAI.currentCam.cam.transform.position;
-			Vector3 camTarget = vp.tr.position - replayCamAgility * Time.fixedDeltaTime * vp.rb.velocity;
+			Vector3 camTarget = vp.tr.position - replayCamAgility * Time.fixedDeltaTime * vp.rb.linearVelocity;
 			tr.rotation = Quaternion.LookRotation(camTarget - tr.position);
 		}
 		void FollowCam()
 		{
+			cam.fieldOfView = fovAtSpeed.Evaluate(vp.velMag);
 			pitchAngle = WrapAround180Degs(vp.tr.localEulerAngles.x);
 			
 			bool pitchLocked = false;
@@ -239,7 +253,7 @@ namespace RVP
 			else
 			{
 				targetUp = vp.wheels[2].contactPoint.normal;
-				targetForward = targetBody.velocity;
+				targetForward = targetBody.linearVelocity;
 			}
 
 			// ROLL: camera rolls proportional to car's effective angle and speed
@@ -247,7 +261,7 @@ namespace RVP
 			{
 				Vector2 forward = Vector2.up;
 				Vector2 vel = vp.localVelocity.Flat();
-				effectiveTurnAngle = Vector2.SignedAngle(forward, vel);
+				effectiveTurnAngle = 2*Vector2.SignedAngle(forward, vel);
 
 				effectiveTurnAngle = Mathf.Clamp(effectiveTurnAngle, -maxEffectiveRollTurnAngle, maxEffectiveRollTurnAngle);
 				scaledTurnAngle = effectiveTurnAngle / maxEffectiveRollTurnAngle;
@@ -264,27 +278,29 @@ namespace RVP
 			//Debug.DrawRay(vp.tr.position + Vector3.up * 3, targetUp, Color.white);
 			//camera look-position
 			// cos(45d) = 0.7f cos(0d) = 1 cos(90deg) = 0
-			if (vp.rb.velocity.magnitude < 1)
+			if (vp.rb.linearVelocity.magnitude < 1)
 				forward = vp.tr.forward;
 			else
 				forward = (vp.reallyGroundedWheels > 0)
-				 ? vp.tr.forward : vp.rb.velocity.normalized;
+				 ? vp.tr.forward : vp.rb.linearVelocity.normalized;
 
 			if(!F.I.chat.texting)
 			{
-				xInput = vp.basicInput.lookAxisInput.action.ReadValue<float>();
-				yInput = -vp.basicInput.lookBackInput.action.ReadValue<float>();
+				xInput = F.I.lookAxisInput.action.ReadValue<float>();
+				yInput = -F.I.lookBackInput.action.ReadValue<float>();
 			}
 
 			smoothYRot = Mathf.Lerp(smoothYRot, smoothRotCoeff * vp.rb.angularVelocity.y, Time.fixedDeltaTime);
 			forward = Quaternion.AngleAxis(xInput * 90 + yInput * 180, vp.tr.up) * forward;
 			forward = Quaternion.AngleAxis(Time.fixedDeltaTime * smoothYRot * Mathf.Rad2Deg, vp.tr.up) * forward;
-			lookObj.position = vp.tr.position - forward * targetCamCarDistance + Vector3.up * height;
+			float speedHeight = Mathf.Lerp(1.5f, height /*+ vp.cameraheightOffset*/, Mathf.InverseLerp(100, 0, vp.velMag)); // make the camera lower the faster you go
+			lookObj.position = vp.tr.position - forward * targetCamCarDistance + Vector3.up * speedHeight;
+			lookObj.position += vp.rb.linearVelocity * Time.fixedDeltaTime;
 			//--------------
-
 			targetForward = vp.tr.position + cHeight * Vector3.up - lookObj.position;
 			forwardLook = Vector3.Lerp(forwardLook, targetForward, forwardLookCoeff * Time.fixedDeltaTime);
-			if (vp.reallyGroundedWheels > 0 && Physics.Raycast(vp.tr.position + vp.tr.up, -targetUp, out RaycastHit hit, Mathf.Infinity, castMask))
+			if (vp.reallyGroundedWheels > 0 
+				&& Physics.Raycast(vp.tr.position + vp.tr.up, -targetUp, out RaycastHit hit, Mathf.Infinity, castMask))
 			{
 				float dot = Vector3.Dot(targetUp, hit.normal);
 				// 0.9848 = cos(15d)
@@ -292,7 +308,6 @@ namespace RVP
 					 upLook, (dot < 0.9848077 && pitchLocked) ? targetUp : hit.normal, upLookCoeff * Time.fixedDeltaTime);
 				//Debug.DrawRay(vp.tr.position + Vector3.up * 3, targetUp, Color.red);
 				//Debug.DrawRay(vp.tr.position + Vector3.up * 3, hit.normal, Color.blue);
-
 			}
 			lookObj.rotation = Quaternion.LookRotation(forwardLook, upLook + rollUp);
 			//-------------
@@ -316,10 +331,11 @@ namespace RVP
 				if (camOffsetDistance < 2)
 				{
 					slowCamera = true;
+					slowCameraStartTime = Time.time;
 				}
 				else
 				{
-					if (camOffsetDistance > .5f * carOffsetDistance)
+					if (Time.time - slowCameraStartTime > maxSlowCameraTime)
 						slowCamera = false;
 				}
 			}
@@ -336,41 +352,51 @@ namespace RVP
 			Vector3 target;
 			if (badpos && !vp.customCam)
 			{ //Check if there is an object between the camera and target vehicle and move the camera in front of it
+
 				target = hit.point + (vp.tr.position + cHeight * Vector3.up - newTrPos).normalized * (cam.nearClipPlane + 1);
 			}
 			else
 				target = lookObj.position;
 
-			newTrPos = Vector3.SmoothDamp(tr.position, target, ref velocity, smoothTime, catchUpCamSpeed, 
-				(yInput == 0 && xInput == 0) ? (Time.fixedDeltaTime * smoothDampRspnvns) 
-					: (xyInputCamSpeedCoeff * Time.fixedDeltaTime * smoothDampRspnvns));
-			
+			if (yInput == 0 && xInput == 0)
+				newTrPos = Vector3.SmoothDamp(tr.position, target, ref velocity, smoothTime, catchUpCamSpeed, Time.fixedDeltaTime * smoothDampRspnvns);
+			else
+				newTrPos = target;
+
 			smoothTime = Mathf.Lerp(smoothTime, slowCamera ? camStoppedSmoothTime : camFollowSmoothTime
 				, (slowCamera ? 1 : 2) * Time.fixedDeltaTime * smoothTimeSpeed);
 
-			Quaternion rotation;
+			
 			if (!vp.customCam)
 			{
-				if (slowCamera)
-				{ // cam lets car go ahead
-					lookObjVelCoeff = 1;
-					Quaternion cameraStoppedRotation = Quaternion.LookRotation(vp.tr.position - tr.position, rollUp);
-					rotation = Quaternion.Lerp(tr.rotation, cameraStoppedRotation, 2 * Time.fixedDeltaTime);
-				}
-				else
+				if(xInput == 0 && yInput == 0)
 				{
-					if (camOffsetDistance > carOffsetDistance)
-					{
+					if (slowCamera)
+					{ // cam lets car go ahead
 						lookObjVelCoeff = 1;
 						Quaternion cameraStoppedRotation = Quaternion.LookRotation(vp.tr.position - tr.position, rollUp);
 						rotation = Quaternion.Lerp(tr.rotation, cameraStoppedRotation, 2 * Time.fixedDeltaTime);
 					}
 					else
-					{// camera right behind car
-						lookObjVelCoeff = Mathf.Lerp(lookObjVelCoeff, 10, Time.fixedDeltaTime);
-						rotation = Quaternion.Lerp(tr.rotation, lookObj.rotation,
-						 (vp.reallyGroundedWheels > 1 ? 12f : 3f) * lookObjVelCoeff * Time.fixedDeltaTime);//TU
+					{
+						if (camOffsetDistance > carOffsetDistance)
+						{
+							lookObjVelCoeff = 1;
+							//Quaternion cameraStoppedRotation = Quaternion.LookRotation(vp.tr.position - tr.position, rollUp);
+							Quaternion cameraStoppedRotation = Quaternion.LookRotation(vp.rb.linearVelocity, rollUp);
+							rotation = Quaternion.Lerp(tr.rotation, cameraStoppedRotation, 2 * Time.fixedDeltaTime);
+						}
+						else
+						{// camera right behind car
+							lookObjVelCoeff = Mathf.Lerp(lookObjVelCoeff, 10, Time.fixedDeltaTime);
+							rotation = Quaternion.Lerp(tr.rotation, lookObj.rotation,
+							 (vp.reallyGroundedWheels > 1 ? 9f : 12f) * lookObjVelCoeff * Time.fixedDeltaTime);//TU
+						}
 					}
+				}
+				else
+				{
+					rotation = lookObj.rotation;
 				}
 			}
 			else

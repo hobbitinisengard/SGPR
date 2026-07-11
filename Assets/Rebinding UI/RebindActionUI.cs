@@ -239,6 +239,10 @@ namespace UnityEngine.InputSystem.Samples.RebindUI
 			if (!ResolveActionAndBinding(out var action, out var bindingIndex))
 				return;
 
+			//debouncing workaround
+			if (Time.time - lastRebindTime < .2f)
+				return;
+
 			// If the binding is a composite, we need to rebind each part in turn.
 			if (action.bindings[bindingIndex].isComposite)
 			{
@@ -260,6 +264,7 @@ namespace UnityEngine.InputSystem.Samples.RebindUI
 			{
 				m_RebindOperation?.Dispose();
 				m_RebindOperation = null;
+				lastRebindTime = Time.time;
 				action.Enable();
 			}
 			// not disabling it causes error
@@ -412,6 +417,7 @@ namespace UnityEngine.InputSystem.Samples.RebindUI
 		private InputActionRebindingExtensions.RebindingOperation m_RebindOperation;
 
 		private static List<RebindActionUI> s_RebindActionUIs;
+		static float lastRebindTime;
 
 		// We want the label for the action name to update in edit mode, too, so
 		// we kick that off from here.

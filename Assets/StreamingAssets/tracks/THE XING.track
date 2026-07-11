@@ -1,0 +1,21 @@
+{
+  "author": "Team17",
+  "localizedDescriptions": [
+    "This unreleased test track contains unique trackpieces",
+    "Ta niewydana trasa testowa zawiera unikalne elementy."
+  ],
+  "localizedNames": [
+    "THE XING",
+    "SKRZYŻOWANIE"
+  ],
+  "valid": true,
+  "envir": "JAP",
+  "preferredCarClass": "Team",
+  "difficulty": 7,
+  "unlocked": true,
+  "icons": [
+    0,
+    3,
+    6
+  ]
+}

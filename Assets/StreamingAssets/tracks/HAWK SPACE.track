@@ -1,0 +1,21 @@
+{
+  "author": "Arkhnen & Viatrufka",
+  "localizedDescriptions": [
+    "To fly in the air like a hawk and then nosedive back to the ground. Turns out RC cars do that as well!",
+    "Jak jastrząb wzbijać się w niebo, by potem pikować do ziemi. Zdaje się, że zdalnie sterowane autka też to potrafią!"
+  ],
+  "localizedNames": [
+    "HAWK SPACE",
+    "JASTRZĘBIA PRZESTRZEŃ"
+  ],
+  "valid": true,
+  "envir": "USA",
+  "preferredCarClass": "Speed",
+  "difficulty": 7,
+  "unlocked": true,
+  "icons": [
+    0,
+    2,
+    3
+  ]
+}

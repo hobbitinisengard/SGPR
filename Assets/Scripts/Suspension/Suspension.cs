@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
 using System;
 
@@ -27,7 +26,7 @@ namespace RVP
 		public Quaternion initialRotation;
 
 		public Wheel wheel;
-		CapsuleCollider compressCol; // The hard collider
+		SphereCollider compressCol; // The hard collider // capsuleCollider
 
 		[Tooltip("Generate a capsule collider for hard compressions")]
 		public bool generateHardCollider = true;
@@ -40,7 +39,6 @@ namespace RVP
 
 		[Header("Brakes and Steering")]
 		public float brakeForce;
-		public float ebrakeForce;
 
 		[Range(-180, 180)]
 		public float steerRangeMin;
@@ -155,10 +153,12 @@ namespace RVP
 		[System.NonSerialized]
 		public bool jammed;
 		public Vector3 appliedSuspensionForce;
-
-		void Start()
+		private void Awake()
 		{
 			tr = transform;
+		}
+		void Start()
+		{
 			rb = tr.GetTopmostParentComponent<Rigidbody>();
 			vp = tr.GetTopmostParentComponent<VehicleParent>();
 			targetDrive = GetComponent<DriveForce>();
@@ -175,9 +175,20 @@ namespace RVP
 				{
 					GameObject cap = new GameObject("Compress Collider");
 					cap.layer = RaceManager.ignoreWheelCastLayer;
+					
 					compressTr = cap.transform;
 					compressTr.parent = tr;
-					compressTr.localPosition = Vector3.zero;
+					
+					
+					if (wheel.isFront)
+					{ // prevent sticking to walls by aligning front suspension hard colliders with rear ones
+						var rearSus = wheel.isLeft ? vp.wheels[2].susParent : vp.wheels[3].susParent;
+						compressTr.localPosition = (Math.Abs(rearSus.tr.localPosition.x - tr.localPosition.x) + rearSus.wheel.tireRadius / 2 - wheel.tireRadius / 2) * Vector3.forward;
+					}
+					else
+					{
+						compressTr.localPosition = Math.Abs(wheel.tireRadius / 2 - wheel.tireWidth / 2) * -Vector3.forward;
+					}
 					compressTr.localEulerAngles = new Vector3(camberAngle, 0, -casterAngle * flippedSideFactor);
 
 					setHardColliderRadiusFactor = hardColliderRadiusFactor;
@@ -187,15 +198,21 @@ namespace RVP
 					//compressCol.sharedMesh = wheel.tr.GetChild(0).GetComponent<MeshFilter>().mesh;
 					//compressCol.convex = true;
 
-					compressCol = cap.AddComponent<CapsuleCollider>();
-					compressCol.direction = 1;
-					compressCol.radius = 0;// wheel.rimWidth * hardColliderRadiusFactor;
-					compressCol.height = (wheel.popped ? wheel.rimRadius : Mathf.Lerp(wheel.rimRadius, wheel.tireRadius, wheel.tirePressure)) * 2;
+					compressCol = cap.AddComponent<SphereCollider>();
+					compressCol.radius = wheel.tireRadius;
+					//compressCol = cap.AddComponent<CapsuleCollider>();
+					//compressCol.direction = 1;
+					//compressCol.radius = 0;// wheel.rimWidth;// * hardColliderRadiusFactor;
+					//compressCol.height = (wheel.popped ? wheel.rimRadius : Mathf.Lerp(wheel.rimRadius, wheel.tireRadius, wheel.tirePressure)) * 2;
 
-					compressCol.sharedMaterial = RaceManager.frictionlessMatStatic;
+					compressCol.sharedMaterial = RaceManager.I.frictionlessMat;
+				}
+				else
+				{
+					Debug.LogWarning("Not generate hard collider selected");
 				}
 
-				steerRangeMax = Mathf.Max(steerRangeMin, steerRangeMax);
+					steerRangeMax = Mathf.Max(steerRangeMin, steerRangeMax);
 
 				properties = GetComponent<SuspensionPropertyToggle>();
 				if (properties)
@@ -206,10 +223,6 @@ namespace RVP
 		}
 
 		void FixedUpdate()
-		{
-			Work(Time.fixedDeltaTime);
-		}
-		public void Work(float deltaTime)
 		{
 			upDir = tr.up;
 			forwardDir = tr.forward;
@@ -232,7 +245,7 @@ namespace RVP
 
 			if (targetCompression > 0)
 			{
-				ApplySuspensionForce(deltaTime);
+				ApplySuspensionForce();
 			}
 
 			// Set hard collider size if it is changed during play mode
@@ -287,7 +300,7 @@ namespace RVP
 		}
 
 		// Apply suspension forces to support vehicles
-		void ApplySuspensionForce(float deltaTime)
+		void ApplySuspensionForce()
 		{
 			if (wheel.grounded && wheel.connected)
 			{
@@ -296,7 +309,7 @@ namespace RVP
 				Vector3 groundVel = Vector3.zero;
 				if (groundBody)
 				{
-					groundVel = groundBody.velocity;
+					groundVel = groundBody.linearVelocity;
 				}
 
 				// Get the local vertical velocity
@@ -332,8 +345,8 @@ namespace RVP
 				if (compression == 0 && !generateHardCollider && applyHardContactForce)
 				{
 					rb.AddForceAtPosition(
-						 -vp.norm.TransformDirection(0, 0, Mathf.Clamp(travelVel, -hardContactSensitivity * .01f / deltaTime, 0)
-						 + penetration) * hardContactForce * Mathf.Clamp01(.01f / deltaTime),
+						 -vp.norm.TransformDirection(0, 0, Mathf.Clamp(travelVel, -hardContactSensitivity * .01f / Time.fixedDeltaTime, 0)
+						 + penetration) * hardContactForce * Mathf.Clamp01(.01f / Time.fixedDeltaTime),
 						 applyForceAtGroundContact ? wheel.contactPoint.point : wheel.tr.position,
 						 vp.suspensionForceMode);
 				}

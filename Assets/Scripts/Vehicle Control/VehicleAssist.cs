@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using System.Collections;
+using static SlideInOut;
 
 namespace RVP
 {
@@ -13,13 +13,11 @@ namespace RVP
 		Transform tr;
 		Rigidbody rb;
 		VehicleParent vp;
-
 		[Header("Drift")]
 
 		[Tooltip("Variables are multiplied based on the number of wheels grounded out of the total number of wheels")]
 		public bool basedOnWheelsGrounded;
 		float groundedFactor;
-
 		[Tooltip("How much to assist with spinning while drifting")]
 		public float driftSpinAssist;
 		public float driftSpinSpeed;
@@ -42,7 +40,6 @@ namespace RVP
 		[Header("Downforce")]
 		public float downforce = 1;
 		public bool invertDownforceInReverse;
-		public bool applyDownforceInAir;
 
 		[Tooltip("X-axis = speed, y-axis = force")]
 		public AnimationCurve downforceCurve = AnimationCurve.Linear(0, 0, 20, 1);
@@ -69,34 +66,33 @@ namespace RVP
 
 		//[Tooltip("Increase angular drag immediately after jumping")]
 		//public bool angularDragOnJump;
-		//float initialAngularDrag;
+		public float initialAngularDrag;
 		//float angDragTime = 0;
 
 		public float fallSpeedLimit = Mathf.Infinity;
 		public bool applyFallLimitUpwards;
+
+		public float X = .1f;
+		public float Z = .1f;
 
 		void Start()
 		{
 			tr = transform;
 			rb = GetComponent<Rigidbody>();
 			vp = GetComponent<VehicleParent>();
-			//initialAngularDrag = rb.angularDrag;
-			if (!vp.Owner)
-				enabled = false;
+			initialAngularDrag = rb.angularDamping;
+			if (F.I.s_raceType == RaceType.Drift)
+				if (!vp.Owner)
+					enabled = false;
 		}
 
 		void FixedUpdate()
-		{
-			FixedUpdateWorks(Time.fixedDeltaTime);
-		}
-		public void FixedUpdateWorks(float deltaTime)
 		{
 			if (vp.reallyGroundedWheels > 0)
 			{
 				groundedFactor = basedOnWheelsGrounded ? vp.reallyGroundedWheels / vp.wheels.Length : 1;
 
-				//angDragTime = 20;
-				//rb.angularDrag = initialAngularDrag;
+				rb.angularDamping = initialAngularDrag;
 
 				if (driftSpinAssist > 0)
 				{
@@ -110,11 +106,31 @@ namespace RVP
 			}
 			else
 			{
-				//if (angularDragOnJump)
-				//{
-				//	angDragTime = Mathf.Max(0, angDragTime - deltaTime);
-				//	rb.angularDrag = angDragTime > 0 && vp.upDot > 0.5 ? 10 : initialAngularDrag;
-				//}
+				if (!vp.crashing && !vp.raceBox.evoModule.stunting && vp.raceBox.curLap > 0)
+				{
+
+					//if (angularDragOnJump)
+					//{
+					//	angDragTime = Mathf.Max(0, angDragTime - Time.fixedDeltaTime);
+					//	rb.angularDamping = (angDragTime > 0 && vp.upDot > 0.5) ? 1 : initialAngularDrag;
+					//}
+
+					// aircontrol
+					vp.rb.AddForce(vp.steerInput * 5 * vp.tr.right, ForceMode.Acceleration);
+					Vector3 targetForce = vp.tr.TransformDirection(vp.steerInput, 0, 0);
+					targetForce = Vector3.ProjectOnPlane(targetForce, Vector3.up);
+					var targetAnchor = (vp.wheels[0].tr.position + vp.wheels[1].tr.position) / 2f;
+					vp.rb.AddForceAtPosition(targetForce, targetAnchor, ForceMode.Acceleration);
+
+					// max front alignment to road below
+					var detected = Physics.Raycast(tr.position, Vector3.down, out var hit);
+					if (detected && hit.collider.gameObject.layer == F.I.roadLayer)
+					{
+						//vp.upDir hit.normal;
+						//Vector3 torque = Vector3.right * torqueSpeed;
+						//rb.AddRelativeTorque(torque, ForceMode.Acceleration);
+					}
+				}
 			}
 
 			if (downforce > 0)
@@ -162,7 +178,7 @@ namespace RVP
 				 new Vector3(0, (targetTurnSpeed - vp.localAngularVel.y) * driftSpinAssist * driftSpinCurve.Evaluate(Mathf.Abs(Mathf.Pow(vp.localVelocity.x, driftSpinExponent))) * groundedFactor, 0),
 				 ForceMode.Acceleration);
 
-			float rightVelDot = Vector3.Dot(tr.right, rb.velocity.normalized);
+			float rightVelDot = Vector3.Dot(tr.right, rb.linearVelocity.normalized);
 
 			if (straightenAssist && vp.steerInput == 0 && Mathf.Abs(rightVelDot) < 0.1f && vp.sqrVelMag > 5)
 			{
@@ -175,22 +191,42 @@ namespace RVP
 		// Apply downforce
 		void ApplyDownforce()
 		{
-			if (vp.reallyGroundedWheels > 0 || applyDownforceInAir)
+			//if (vp.reallyGroundedWheels > 0 || applyDownforceInAir)
 			{
-				rb.AddRelativeForce(
-					 new Vector3(0, downforceCurve.Evaluate(Mathf.Abs(vp.localVelocity.z)) * -downforce * (applyDownforceInAir ? 1 : groundedFactor) * (invertDownforceInReverse ? Mathf.Sign(vp.localVelocity.z) : 1), 0),
-					 ForceMode.Acceleration);
+				//rb.AddRelativeForce(
+				//	 new Vector3(0, downforceCurve.Evaluate(Mathf.Abs(vp.localVelocity.z)) * -downforce * (applyDownforceInAir ? 1 : groundedFactor) * (invertDownforceInReverse ? Mathf.Sign(vp.localVelocity.z) : 1), 0),
+				//	 ForceMode.Acceleration);
+				float downforceCurveVal = .001f * downforce * vp.localVelocity.z * vp.localVelocity.z;
+				Vector3 force = new(0, -downforceCurveVal, 0);
+				rb.AddForceAtPosition(vp.tr.TransformVector(force), rb.worldCenterOfMass, ForceMode.Acceleration);
 
 				// Reverse downforce
-				if (invertDownforceInReverse && vp.localVelocity.z < 0)
-				{
-					rb.AddRelativeTorque(
-						 new Vector3(downforceCurve.Evaluate(Mathf.Abs(vp.localVelocity.z)) * downforce * (applyDownforceInAir ? 1 : groundedFactor), 0, 0),
-						 ForceMode.Acceleration);
-				}
+				//if (invertDownforceInReverse && vp.localVelocity.z < 0)
+				//{
+				//	rb.AddRelativeTorque(
+				//		 new Vector3(downforceCurve.Evaluate(Mathf.Abs(vp.localVelocity.z)) * downforce * (applyDownforceInAir ? 1 : groundedFactor), 0, 0),
+				//		 ForceMode.Acceleration);
+				//}
 			}
 		}
 
+		public void StabilizeRail(float dot)
+		{
+			if (vp.IsOwner)
+			{
+				if (vp.velMag < 30)
+					vp.rb.AddForce(vp.rb.linearVelocity * vp.rb.mass);
+
+				rb.AddForce(40 * vp.rb.mass * -vp.upDir);
+
+				if (dot > 0.86f) // stabilize along Z axis (railgrind)
+				{
+					rb.AddRelativeTorque(new Vector3(0, 0, -Mathf.Sign(vp.rightDot) * rollOverForce), ForceMode.Acceleration);
+				}
+				else if (Mathf.Abs(dot) < .34f) // stabilize along X axis (side railgrind)
+					rb.AddRelativeTorque(new Vector3(-Mathf.Sign(vp.forwardDot) * rollOverForce, 0, 0), ForceMode.Acceleration);
+			}
+		}
 		// Assist with rolling back over if upside down or on side
 		void RollOver()
 		{
@@ -199,9 +235,9 @@ namespace RVP
 			// Check if rolled over
 			rolledOver = vp.reallyGroundedWheels == 0 && vp.colliding;
 			//if (vp.reallyGroundedWheels == 0 && vp.velMag < rollSpeedThreshold && vp.upDot < 0.8 && rollCheckDistance > 0) {
-			//    if (Physics.Raycast(tr.position, vp.upDir, out rollHit, rollCheckDistance, RaceManager.groundMaskStatic)
-			//        || Physics.Raycast(tr.position, vp.rightDir, out rollHit, rollCheckDistance, RaceManager.groundMaskStatic)
-			//        || Physics.Raycast(tr.position, -vp.rightDir, out rollHit, rollCheckDistance, RaceManager.groundMaskStatic)) {
+			//    if (Physics.Raycast(tr.position, vp.upDir, out rollHit, rollCheckDistance, RaceManager.I.groundMask)
+			//        || Physics.Raycast(tr.position, vp.rightDir, out rollHit, rollCheckDistance, RaceManager.I.groundMask)
+			//        || Physics.Raycast(tr.position, -vp.rightDir, out rollHit, rollCheckDistance, RaceManager.I.groundMask)) {
 			//        rolledOver = true;
 			//    }
 			//    else {
@@ -233,11 +269,11 @@ namespace RVP
 		// Assist for accelerating while drifting
 		void ApplyDriftPush()
 		{
-			float pushFactor = (vp.accelAxisIsBrake ? vp.accelInput : vp.accelInput - vp.brakeInput) * Mathf.Abs(vp.localVelocity.x) * driftPush * groundedFactor * (1 - Mathf.Abs(Vector3.Dot(vp.forwardDir, rb.velocity.normalized)));
+			float pushFactor = (vp.accelAxisIsBrake ? vp.accelInput : vp.accelInput - vp.brakeInput) * Mathf.Abs(vp.localVelocity.x) * driftPush * groundedFactor * (1 - Mathf.Abs(Vector3.Dot(vp.forwardDir, rb.linearVelocity.normalized)));
 
-			rb.AddForce(
-				 vp.norm.TransformDirection(new Vector3(Mathf.Abs(pushFactor) * Mathf.Sign(vp.localVelocity.x), Mathf.Abs(pushFactor) * Mathf.Sign(vp.localVelocity.z), 0)),
-				 ForceMode.Acceleration);
+			rb.AddForce(vp.norm.TransformDirection(new Vector3(Mathf.Abs(pushFactor) * Mathf.Sign(vp.localVelocity.x),
+					 Mathf.Abs(pushFactor) * Mathf.Sign(vp.localVelocity.z), 0)),
+					 ForceMode.Acceleration);
 		}
 	}
 }

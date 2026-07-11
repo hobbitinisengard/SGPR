@@ -1,0 +1,20 @@
+{
+  "author": "Team17",
+  "localizedDescriptions": [
+    "Two huge jumps and a mighty climb feature in this evening excursion.",
+    "Dwie wielkie skocznie i potężny podjazd - oto dzisiejsza wycieczka."
+  ],
+  "localizedNames": [
+    "FREEFALL FREEWAY REVERSE",
+    "OPADAJĄCA AUTOSTRADA REWERS"
+  ],
+  "valid": true,
+  "envir": "SPN",
+  "preferredCarClass": "Team",
+  "difficulty": 8,
+  "unlocked": true,
+  "icons": [
+    2,
+    3
+  ]
+}

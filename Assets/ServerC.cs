@@ -14,7 +14,6 @@ using System.Linq;
 using System;
 using Random = UnityEngine.Random;
 using System.Collections.Concurrent;
-using UnityEditor;
 using RVP;
 class SponsorScore
 {
@@ -48,6 +47,7 @@ public class ServerC : MonoBehaviour
 	public const string k_relayCode = "RelayJoinCode";
 	public const string k_actionHappening = "ah";
 	public const string k_lobbyCode = "lc";
+	public const string k_gameVer = "gv";
 	public NetworkManager networkManager;
 	public LobbyEventCallbacks callbacks = new();
 	string callbacksLobbyId = "";
@@ -261,7 +261,7 @@ public class ServerC : MonoBehaviour
 			{
 				k_carName, new PlayerDataObject(
 					visibility: PlayerDataObject.VisibilityOptions.Member,
-					value: "car01")
+					value: "car00")
 			},
 			{
 				k_Name, new PlayerDataObject(
@@ -323,18 +323,54 @@ public class ServerC : MonoBehaviour
 			+ (F.I.randomTracks ? "1" : "0")
 			+ ((int)F.I.s_raceType).ToString()
 			+ (F.I.s_laps).ToString("D2")
-			+ (F.I.s_isNight ? "1" : "0")
+			+ ((int)F.I.s_timeOfDay).ToString()
 			+ ((int)F.I.s_cpuLevel).ToString()
-			+ "0" // "0" - cpuCars
+			+ F.I.s_cpuRivals
 			+ ((int)F.I.s_roadType).ToString()
-			+ (F.I.teams ? "1" : "0");
+			+ (F.I.teams ? "1" : "0")
+			+ (F.I.catchup ? "1" : "0");
 
-		if (ServerC.I.AnyClientsStillInRace)
+		if (AnyClientsStillInRace)
 			encodeConfig += GetCurRound().ToString("D2") + GetRounds().ToString("D2");
 		else
 			encodeConfig += F.I.CurRound.ToString("D2") + F.I.Rounds.ToString("D2");
 
 		return encodeConfig;
+	}
+	public void DecodeConfig(string data)
+	{
+		if (F.I.scoringType != (ScoringType)(data[0] - '0')) // char to int
+		{
+			F.I.scoringType = (ScoringType)(data[0] - '0');
+			ScoreSet(0);
+		}
+
+		F.I.randomCars = data[1] == '1';
+		F.I.randomTracks = data[2] == '1';
+		F.I.s_raceType = (RaceType)(data[3] - '0');
+		F.I.s_laps = int.Parse(data[4..6]);
+		F.I.s_timeOfDay = (TimeOfDay)(data[6] - '0');
+		F.I.s_cpuLevel = (CpuLevel)(data[7] - '0');
+		F.I.s_cpuRivals = data[8] - '0';
+		F.I.s_roadType = (PavementType)(data[9] - '0');
+		F.I.catchup = false;
+		F.I.teams = data[10] == '1';
+		F.I.catchup = data[11] == '1';
+
+		if (!AmHost)
+		{
+			F.I.CurRound = (byte)GetCurRound(data);
+			var nRounds = (byte)GetRounds(data);
+
+			if (F.I.Rounds != nRounds)
+				ScoreSet(0);
+			F.I.Rounds = nRounds;
+		}
+
+		if (!F.I.teams)
+			F.I.s_PlayerCarSponsor = Livery.Random;
+		if (F.I.teams && F.I.s_PlayerCarSponsor == Livery.Random)
+			F.I.s_PlayerCarSponsor = Livery.TGR;
 	}
 	public Player Host
 	{
@@ -343,7 +379,6 @@ public class ServerC : MonoBehaviour
 			return lobby.Players.First(p => p.Id == lobby.HostId);
 		}
 	}
-
 
 	public bool ServerInRace
 	{
@@ -409,7 +444,7 @@ public class ServerC : MonoBehaviour
 	{
 		get
 		{
-			return F.I.gameMode == MultiMode.Singleplayer || networkManager.IsHost;
+			return F.I.gameMode != GameMode.Multiplayer || networkManager.IsHost;
 		}
 	}
 	public ActionHappening ActionHappening
@@ -467,6 +502,10 @@ public class ServerC : MonoBehaviour
 				Player = new Player(id: AuthenticationService.Instance.PlayerId, data: InitializePlayerData()),
 				Data = new()
 				{
+					{  k_gameVer, new DataObject(
+						visibility:DataObject.VisibilityOptions.Public,
+						value:Info.VERSION)
+					},
 					{  k_relayCode, new DataObject(
 						visibility:DataObject.VisibilityOptions.Public,
 						value:relayJoinCode)
@@ -520,13 +559,21 @@ public class ServerC : MonoBehaviour
 	{
 		return lobby.Data[k_raceConfig].Value[10] == '1';
 	}
+	public int GetCurRound(string serverConfig)
+	{
+		return byte.Parse(serverConfig[12..14]);
+	}
 	public int GetCurRound()
 	{
-		return byte.Parse(lobby.Data[k_raceConfig].Value[11..13]);
+		return GetCurRound(lobby.Data[k_raceConfig].Value);
+	}
+	public int GetRounds(string serverConfig)
+	{
+		return byte.Parse(serverConfig[14..16]);
 	}
 	public int GetRounds()
 	{
-		return byte.Parse(lobby.Data[k_raceConfig].Value[13..15]);
+		return GetRounds(lobby.Data[k_raceConfig].Value);
 	}
 	public Livery GetSponsor()
 	{
@@ -578,9 +625,9 @@ public class ServerC : MonoBehaviour
 	}
 	public void CarNameSet()
 	{
-		if (PlayerMe.Data[ServerC.k_carName].Value != F.I.s_playerCarName)
+		if (PlayerMe.Data[ServerC.k_carName].Value != F.I.cars[F.I.s_playerCarIdx].internalName)
 		{
-			PlayerMe.Data[ServerC.k_carName].Value = F.I.s_playerCarName;
+			PlayerMe.Data[ServerC.k_carName].Value = F.I.cars[F.I.s_playerCarIdx].internalName;
 			playerChanged = true;
 		}
 	}

@@ -1,16 +1,22 @@
 {
   "author": "luckygoose",
-  "desc": "This extremely long and twisting track featuring angled bridges, grass sections, jumps and many more surprises will keep you on your toes.",
+  "localizedDescriptions": [
+    "This extremely long and twisting track featuring angled bridges, grass sections, jumps and many more surprises will keep you on your toes.",
+    "Ta ekstremalnie długa i kręta trasa zawierająca pochylone mosty, sekcje trawiaste, skoki i wiele więcej niespodzianek, utrzyma cię w nieustannej czujności!"
+  ],
+  "localizedNames": [
+    "WHIRLWIND",
+    "ZAWIERUCHA"
+  ],
   "valid": true,
   "envir": "JAP",
-  "preferredCarClass": "Wild",
-  "difficulty": 6,
+  "preferredCarClass": "Speed",
+  "difficulty": 12,
   "unlocked": true,
   "icons": [
     0,
+    2,
     3,
     9
-  ],
-  "TrackOrigin": 1,
-  "IsOriginal": false
+  ]
 }

@@ -2,12 +2,13 @@
 %TAG !u! tag:unity3d.com,2011:
 --- !u!78 &1
 TagManager:
-  serializedVersion: 2
+  serializedVersion: 3
   tags:
   - Pop Tire
   - Underside
   - carBody
   - VisibleInPictureMode
+  - walked
   layers:
   - Default
   - TransparentFX
@@ -25,7 +26,7 @@ TagManager:
   - Terrain
   - TrackCamera
   - Flag
-  - Racingline
+  - Racingline0
   - PitsLine
   - PitsZone
   - AeroTunnel
@@ -34,14 +35,34 @@ TagManager:
   - VehicleTrigger
   - Surface
   - Ghost
-  - Racingline2
+  - Racingline1
   - CarCarCollision
-  - Background
-  - 
-  - 
-  - 
+  - Racingline2
+  - Racingline3
+  - Pylon
+  - PostProcessing
   - 
   m_SortingLayers:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: NewSL
+    uniqueID: 888351357
+    locked: 0
+  m_RenderingLayers:
+  - Default
+  - Light Layer 1
+  - Light Layer 2
+  - Light Layer 3
+  - Light Layer 4
+  - Light Layer 5
+  - Light Layer 6
+  - Light Layer 7
+  - Decal Layer default
+  - Decal Layer 1
+  - Decal Layer 2
+  - Decal Layer 3
+  - Decal Layer 4
+  - Decal Layer 5
+  - Decal Layer 6
+  - Decal Layer 7

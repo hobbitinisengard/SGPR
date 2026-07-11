@@ -1,0 +1,20 @@
+{
+  "author": "Team17",
+  "localizedDescriptions": [
+    "A long, high track that is best navigated by hugging the racing line..",
+    "Trzymaj się trasy - będzie Ci to potrzebne!"
+  ],
+  "localizedNames": [
+    "CURBED HEIGHTS REVERSE",
+    "ZNOJE I WYBOJE REWERS"
+  ],
+  "valid": true,
+  "envir": "FRA",
+  "preferredCarClass": "Aero",
+  "difficulty": 6,
+  "unlocked": true,
+  "icons": [
+    2,
+    3
+  ]
+}

@@ -3,8 +3,6 @@ using System.Collections;
 using System;
 using Unity.Netcode;
 using Unity.Collections;
-using System.Linq;
-using UnityEngine.InputSystem.HID;
 
 namespace RVP
 {
@@ -63,7 +61,7 @@ namespace RVP
 	//		roll = Mathf.FloatToHalf(vp.rollInput);
 	//		honkBoostShift = (byte)(vp.honkInput | vp.boostButton << 1 | vp.SGPshiftbutton << 2);
 	//		this.tick = tick;
-			
+
 	//	}
 	//	public void NetworkSerialize<T>(BufferSerializer<T> s) where T : IReaderWriter
 	//	{
@@ -74,23 +72,26 @@ namespace RVP
 	//			s.SerializeValue(ref steer);
 	//			s.SerializeValue(ref brake);
 	//			s.SerializeValue(ref roll);
-				
+
 	//			s.SerializeValue(ref tick);
 	//		}
 	//	}
 	//}
 
 	public enum CatchupStatus { NoCatchup, Speeding, Slowing };
-	
+
 	[RequireComponent(typeof(Rigidbody))]
 	[DisallowMultipleComponent]
 	[AddComponentMenu("RVP/Vehicle Controllers/Vehicle Parent", 0)]
-	
+
 	// Vehicle root class
 	public class VehicleParent : NetworkBehaviour
 	{
+		//public Transform roadColParent;
+		public VehicleAssist va { get; private set; }
 		public Renderer antennaFlag;
-		public GameObject carReflectionPrefab;
+		[NonSerialized]
+		public Antenna antenna;
 		public MeshRenderer[] springRenderers;
 		public AudioSource honkerAudio;
 		public SampleText sampleText;
@@ -99,7 +100,7 @@ namespace RVP
 		[NonSerialized]
 		public CarConfig carConfig;
 		/// <summary>
-		/// from 1 to 20
+		/// from 0 ti 19
 		/// </summary>
 		public int carNumber;
 		[NonSerialized]
@@ -142,6 +143,7 @@ namespace RVP
 		public float rollInput;
 		[NonSerialized]
 		public float resetOnTrackTime = 0;
+		public Vector3 worldCOM { get; private set; }
 
 		//NetworkVariable<float> _accelInput = new(writePerm: NetworkVariableWritePermission.Owner);
 		//public float accelInput { get { return _accelInput.Value; } set { _accelInput.Value = value; } }
@@ -167,31 +169,43 @@ namespace RVP
 		//NetworkVariable<int> _rollButton = new(writePerm: NetworkVariableWritePermission.Owner);
 		//public int rollInput { get { return _boostButton.Value; } set { _boostButton.Value = value; } }
 
-		public Livery sponsor 
-		{ 
-			get 
+		public Livery sponsor
+		{
+			get
 			{
 				return _sponsor.Value;
-			} 
-			set 
-			{ 
-				if(ServerC.I.AmHost)
+			}
+			set
+			{
+				if (ServerC.I.AmHost)
 				{
 					if (value == Livery.Random)
-						value = F.RandomLivery();
+					{
+						if (name == F.I.playerData.playerName)
+						{
+							// pick random from unlocked liveries
+							var pickedLivery = F.I.unlockedLiveries.GetRandom();
+							if (pickedLivery == null || pickedLivery == Livery.Random)
+								value = F.I.cars[carNumber].defaultLivery;
+							else
+								value = pickedLivery.Value;
+						}
+						else
+							value = F.RandomLivery();
+					}
 					_sponsor.Value = value;
 				}
-			} 
+			}
 		}
 
 		NetworkVariable<FixedString32Bytes> _name = new(); // SERVER
-		public new string name 
-		{ 
+		public new string name
+		{
 			get
-			{ 
-				return _name.Value.ToString(); 
-			} 
-			set 
+			{
+				return _name.Value.ToString();
+			}
+			set
 			{
 				if (ServerC.I.AmHost)
 				{
@@ -199,10 +213,6 @@ namespace RVP
 					_name.Value = value;
 				}
 			}
-		}
-		public static bool InFreeroam
-		{
-			get { return F.I.s_inEditor && F.I.s_cpuRivals == 0; }
 		}
 		[System.NonSerialized]
 		public bool SGPlockbutton;
@@ -220,13 +230,13 @@ namespace RVP
 		public float pitchInput;
 		[System.NonSerialized]
 		public float yawInput;
-		
+
 
 		public GameObject[] frontLights;
 		public GameObject[] rearLights;
-		public Material rearLightsBrakeMaterial;
-		public Material rearLightsOnMaterial;
 
+		Material rearLightsLighter;
+		Material rearLightsDarker;
 		[Tooltip("Accel axis is used for brake input")]
 		public bool accelAxisIsBrake;
 
@@ -243,7 +253,7 @@ namespace RVP
 		[Range(0, 0.9f)]
 		public float burnoutSmoothness = 0.5f;
 		public GasMotor engine;
-		public ParticleSystem[] batteryLoadingParticleSystems;
+		public Transform batteryLoadingParticleSystemParent;
 
 		public float energyRemaining = 1000;
 		public float batteryCapacity = 1000;
@@ -307,8 +317,6 @@ namespace RVP
 		public VehicleParent inputInherit; // Vehicle which to inherit input from
 
 		[Header("Crashing")]
-
-		public bool canCrash = true;
 		public AudioSource roadNoiseSnd;
 		public AudioSource crashSnd;
 		public AudioSource scrapeSnd;
@@ -321,9 +329,7 @@ namespace RVP
 		public bool playCrashSparks = true;
 
 		[Header("Camera")]
-
-		public float cameraDistanceChange;
-		public float cameraHeightChange;
+		public float cameraheightOffset;
 
 		[Header("Steering wheel")]
 		public SteeringControl steeringControl;
@@ -332,11 +338,12 @@ namespace RVP
 		/// touching anything
 		/// </summary>
 		public bool colliding;
+		private Coroutine colCo;
 		public bool crashing; // serious impact
 		[NonSerialized]
 		public GameObject customCam;
 		private float lastNoBatteryMessage;
-		public bool Owner { get { return IsOwner || F.I.gameMode == MultiMode.Singleplayer; } }
+		public bool Owner { get { return IsOwner || F.I.gameMode != GameMode.Multiplayer; } }
 		[NonSerialized]
 		public int lastRoundScore;
 		[Rpc(SendTo.SpecifiedInParams)]
@@ -346,14 +353,14 @@ namespace RVP
 			Destroy(gameObject);
 		}
 		[Rpc(SendTo.SpecifiedInParams)]
-		void RequestRaceboxValuesRpc(RpcParams ps)
+		public void RequestRaceboxValuesRpc(RpcParams ps)
 		{
-			SynchRaceboxValuesRpc(raceBox.enabled, ServerC.I.PlayerMe.ScoreGet(), raceBox.curLap, followAI.dist, followAI.progress, raceBox.Aero, raceBox.drift, 
+			SynchRaceboxValuesRpc(raceBox.enabled, ServerC.I.PlayerMe.ScoreGet(), raceBox.curLap, followAI.dist, followAI.progress, raceBox.Aero, raceBox.Drift,
 				(float)raceBox.bestLapTime.TotalSeconds, (float)raceBox.raceTime.TotalSeconds,
 				RpcTarget.Single(ps.Receive.SenderClientId, RpcTargetUse.Temp));
 		}
 		[Rpc(SendTo.SpecifiedInParams)]
-		public void SynchRaceboxValuesRpc(bool enabled, int lastRoundScore, int curLap, int dist, int progress, float aero, float drift, 
+		public void SynchRaceboxValuesRpc(bool enabled, int lastRoundScore, int curLap, float dist, float progress, float aero, float drift,
 			float bestLapSecs, float raceTimeSecs, RpcParams ps)
 		{
 			this.lastRoundScore = lastRoundScore;
@@ -367,12 +374,17 @@ namespace RVP
 		int roadSurfaceType;
 		[NonSerialized]
 		public float tyresOffroad;
-		private float timeWhenInAir;
 
 		public CatchupStatus catchupStatus { get; private set; }
-		public float AngularDrag { get { return rb.angularDrag; } }
 
 		bool collisionDetectionChangerActive;
+		private float lastCrashingTime;
+		private Vector3 originalCOM;
+		[NonSerialized]
+		public float bunnyhopInput;
+		[NonSerialized]
+		public float twistGain = 0.25f;
+		float colDetectionTimer;
 
 		public void SetBattery(float capacity, float chargingSpeed, float lowBatPercent, float evoBountyPercent)
 		{
@@ -385,7 +397,7 @@ namespace RVP
 
 		public void SetCatchup(CatchupStatus newStatus)
 		{
-			if (F.I.s_catchup)
+			if (F.I.catchup)
 			{
 				switch (newStatus)
 				{
@@ -442,16 +454,89 @@ namespace RVP
 		{
 			var mr = bodyObj.GetComponent<MeshRenderer>();
 			string matName = mr.sharedMaterial.name;
-			if (matName.Contains("Instance"))
+			if (matName.Contains("Variant"))
 				matName = matName[..matName.IndexOf(' ')];
 			matName = matName[..^1] + ((int)sponsor).ToString();
 			Material newMat = Resources.Load<Material>("materials/" + matName);
 			newMat.name = matName;
+			newMat.mainTexture = ImgPathToTexture2D(F.I.documentsSGPRpath + "textures/" + matName + ".jpg");
+
+			rearLightsLighter.mainTexture = newMat.mainTexture;
+			rearLightsLighter.SetTexture("_EmissionMap", newMat.mainTexture);
+			rearLightsLighter.SetColor("_EmissionColor", Color.red);
+			//rearLightsBrakeMaterial.color = new(1, 18/255f, 0);
+			rearLightsDarker.mainTexture = newMat.mainTexture;
+			// set emission texture
+			rearLightsDarker.SetTexture("_EmissionMap", newMat.mainTexture);
+			rearLightsDarker.SetColor("_EmissionColor", Color.gray);
+
+			// assign to body
 			mr.material = newMat;
-			if(antennaFlag != null)
+			var wheelMat = Resources.Load<Material>("materials/carModels/Materials/cars_misc_tyre" + UnityEngine.Random.Range(1, 12).ToString());
+			//var wheelMatInv = new Material(wheelMat);
+			//wheelMatInv.name += "Inv";
+			//wheelMatInv.mainTextureScale = -Vector2.one;
+			// assign to wheels
+			foreach (var w in wheels)
+			{
+				var wmr = w.transform.GetChild(0).GetComponent<MeshRenderer>();
+				var mats = wmr.materials;
+				// by convention first material is liverable, second is tyre texture
+				for (int i = 0; i < mats.Length; i++)
+				{
+					if (mats[i].name.Contains("grid"))
+					{
+						mats[i] = newMat;
+					}
+					if (mats[i].name.Contains("tyre"))
+					{
+						//if (!w.isLeft)
+						//{
+						//	mats[i] = wheelMatInv;
+						//	//var mf = w.transform.GetChild(0).GetComponent<MeshFilter>();
+						//	//var uvs = mf.mesh.uv;
+						//	//for (int i = 0; i < uvs.Length; ++i)
+						//	//	uvs[i] *= -1;
+						//	//mf.mesh.SetUVs(0, uvs);
+						//}
+						//else
+						mats[i] = wheelMat;
+					}
+				}
+				wmr.materials = mats;
+
+			}
+			// assign to antennas
+			var anchor = bodyObj.transform.GetChild(0);
+			for (int i = 0; i < anchor.childCount; i++)
+			{
+				if (anchor.GetChild(i).TryGetComponent<MeshRenderer>(out var amr))
+				{
+					var mats = amr.materials;
+					for (int j = 0; j < mats.Length; j++)
+					{
+						if (mats[j].name.Contains("grid"))
+						{
+							mats[j] = newMat;
+						}
+					}
+					amr.materials = mats;
+				}
+			}
+
+			// assign to flag
+			if (antennaFlag != null)
 				antennaFlag.material = newMat;
+
 			RaceManager.I.hud.AddToProgressBar(this);
 			sampleText.textMesh.color = F.ReadColor(sponsor);
+		}
+		private Texture2D ImgPathToTexture2D(string imgPath)
+		{
+			byte[] pngBytes = System.IO.File.ReadAllBytes(imgPath);
+			Texture2D tex = new Texture2D(1024, 1024);
+			tex.LoadImage(pngBytes);
+			return tex;
 		}
 		void OnNameChanged()
 		{
@@ -460,40 +545,34 @@ namespace RVP
 			if (name == F.I.playerData.playerName && Owner)
 			{
 				RaceManager.I.playerCar = this;
-				
+
 				RaceManager.I.cam.Connect(this);
 				RaceManager.I.hud.Connect(this);
 
-				var reflectionProbe = Instantiate(carReflectionPrefab, transform);
-				reflectionProbe.transform.localPosition = Vector3.up;
-
 				NetworkManager.OnTransportFailure += NetworkManager_OnTransportFailure;
 				//newCar.followAI.SetCPU(true); // CPU drives player's car
-
-				
 			}
-			sampleText.gameObject.SetActive(!F.I.s_spectator && F.I.gameMode == MultiMode.Multiplayer && RaceManager.I.playerCar != this);
+			sampleText.gameObject.SetActive(!F.I.s_spectator && F.I.gameMode == GameMode.Multiplayer && RaceManager.I.playerCar != this);
 		}
 
 		private void NetworkManager_OnTransportFailure()
-		{ 
+		{
 			RaceManager.I.ExitButton();
 		}
 
-		public void SetBatteryLoading(bool status)
+		public void PlayBatteryLoadingFXs(bool status)
 		{
-			foreach (var ps in batteryLoadingParticleSystems)
+			if (status)
 			{
-				if (status)
-				{
-					batteryLoadingSnd.Play();
-					ps.Play();
-				}
-				else
-				{
-					batteryLoadingSnd.Stop();
-					ps.Stop();
-				}
+				batteryLoadingParticleSystemParent.GetComponent<ParticleSystem>().Play();
+				batteryLoadingParticleSystemParent.GetChild(0).GetComponent<ParticleSystem>().Play();
+				batteryLoadingSnd.Play();
+			}
+			else
+			{
+				batteryLoadingSnd.Stop();
+				batteryLoadingParticleSystemParent.GetComponent<ParticleSystem>().Stop();
+				batteryLoadingParticleSystemParent.GetChild(0).GetComponent<ParticleSystem>().Stop();
 			}
 		}
 		AnimationCurve GenerateBrakeCurve()
@@ -502,7 +581,7 @@ namespace RVP
 			Keyframe[] keys = new Keyframe[digitalBrakeInputEnv.Length];
 			for (int i = 0; i < keys.Length; i++)
 			{
-				keys[i].time = (float)i / keys.Length;
+				keys[i].time = .5f * (float)i / keys.Length;
 				keys[i].value = (float)digitalBrakeInputEnv[i];
 			}
 			return new AnimationCurve(keys);
@@ -512,38 +591,44 @@ namespace RVP
 			ghost = GetComponent<Ghost>();
 			followAI = GetComponent<FollowAI>();
 			raceBox = GetComponent<RaceBox>();
+			va = GetComponent<VehicleAssist>();
 			tr = transform;
 			rb = GetComponent<Rigidbody>();
-			originalDrag = rb.drag;
+			originalDrag = rb.linearDamping;
 			originalMass = rb.mass;
+			rb.collisionDetectionMode = CollisionDetectionMode.Discrete;
+			//for (int i = 0; i < roadColParent.childCount; i++)
+			//	roadColParent.GetChild(i).GetComponent<CapsuleCollider>().hasModifiableContacts = true;
+
 			F.I.s_cars.Add(this);
+
+			rearLightsLighter = new Material(Resources.Load<Material>($"materials/rearlights/lighter/cars_car{carNumber + 1}_b{carNumber + 1}grid1l"));
+			rearLightsDarker = new Material(Resources.Load<Material>($"materials/rearlights/darker/cars_car{carNumber + 1}_b{carNumber + 1}grid1d"));
 		}
 		public override void OnNetworkSpawn()
 		{
 			base.OnNetworkSpawn();
 			Initialize();
 		}
-		
+
 		private void Start()
 		{
-			if(F.I.gameMode == MultiMode.Singleplayer)
+			if (F.I.gameMode != GameMode.Multiplayer)
 				Initialize();
 		}
-		
+
 		void Initialize()
 		{
-			
+
 			Color c = F.RandomColor();
-			foreach(var s in springRenderers)
+			foreach (var s in springRenderers)
 				s.material.color = c;
 
 			brakeCurve ??= GenerateBrakeCurve();
 
 			// Create normal orientation object
-			GameObject normTemp = new GameObject(tr.name + "'s Normal Orientation");
+			GameObject normTemp = new(tr.name + "'s Normal");
 			norm = normTemp.transform;
-
-			followAI.SetCPU(F.I.gameMode == MultiMode.Singleplayer && char.IsDigit(name[2]));
 
 			if (F.I.s_spectator)
 			{
@@ -551,28 +636,26 @@ namespace RVP
 					RaceManager.I.cam.Connect(this, CameraControl.Mode.Replay);
 			}
 
-			lightsInput = F.I.s_isNight;
-			foreach (var l in frontLights)
-				l.SetActive(lightsInput);
-			foreach (var l in rearLights)
-				l.SetActive(lightsInput);
-
 			StartCoroutine(ApplySetup());
 		}
-		
+
 		IEnumerator ApplySetup()
 		{
 			while (sponsor == Livery.Random)
 			{ // sending sponsor info may come from the server after a while
 				yield return null;
 			}
+
 			OnNameChanged();
 			OnSponsorChanged();
-			
+
+			followAI.SetCPU(char.IsDigit(name[2]));
+
 			yield return new WaitForSeconds(.5f); // wait for all the components to load
-			carConfig = new CarConfig(F.I.cars[carNumber - 1].config);
+
+			carConfig = new CarConfig(F.I.cars[carNumber].config);
 			carConfig.Apply(this);
-			
+
 			if (F.I.s_raceType == RaceType.TimeTrial)
 				ghost.SetGhostPermanently();
 
@@ -586,13 +669,17 @@ namespace RVP
 					RequestRaceboxValuesRpc(RpcTarget.Owner);
 				}
 			}
-			else if (F.I.gameMode == MultiMode.Multiplayer)
+			else if (F.I.gameMode == GameMode.Multiplayer)
 			{
 				ServerC.I.ReadySet(PlayerState.InRace);
 				ServerC.I.UpdatePlayerData();
 			}
 			ResultsView.Add(this);
-			engine.ignition = true;
+			lightsInput = F.I.s_timeOfDay == TimeOfDay.Night;
+			foreach (var l in frontLights)
+				l.SetActive(lightsInput);
+			foreach (var l in rearLights)
+				l.SetActive(lightsInput);
 		}
 
 
@@ -603,24 +690,15 @@ namespace RVP
 		}
 		void Update()
 		{
-			// we need continous collisions for fast flying cars
-			// but still we need discrete collisions for driving (car physics requirement)
-			//if (reallyGroundedWheels == 0)
-			//{
-			//	rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
-			//}
-			//else
-			//{
-			//	if (rb.collisionDetectionMode == CollisionDetectionMode.Continuous && !collisionDetectionChangerActive)
-			//		rb.collisionDetectionMode = CollisionDetectionMode.Discrete;
-			//}
 
-			if (Physics.OverlapBox(tr.position, Vector3.one, Quaternion.identity, 1 << F.I.aeroTunnel).Length > 0)
+			if (reallyGroundedWheels == 0 && !colliding && !crashing)
+				rb.linearDamping = 0;
+			else if (Physics.OverlapBox(tr.position, Vector3.one, Quaternion.identity, 1 << F.I.aeroTunnel).Length > 1)
 			{ // aerodynamic tunnel
-				rb.drag = 0;
+				rb.linearDamping = 0.8f * originalDrag;
 			}
 			else
-				rb.drag = originalDrag;
+				rb.linearDamping = originalDrag;
 			// Shift single frame pressing logic
 			if (stopUpshift)
 			{
@@ -644,10 +722,10 @@ namespace RVP
 				stopDownShift = true;
 			}
 
-			if (inputInherit)
-			{
-				InheritInputOneShot();
-			}
+			//if (inputInherit)
+			//{
+			//	InheritInputOneShot();
+			//}
 
 			if (wheels[2].curSurfaceType != roadSurfaceType)
 			{
@@ -655,7 +733,8 @@ namespace RVP
 				roadNoiseSnd.clip = GroundSurfaceMaster.surfaceTypesStatic[roadSurfaceType].roadNoise;
 			}
 			roadNoiseSnd.gameObject.SetActive((!F.I.gamePaused && reallyGroundedWheels > 0));
-			roadNoiseSnd.volume = Mathf.InverseLerp(0, 80, velMag);// (1 + 80 * 2 / 3f * Mathf.Log10(volume)); 
+			roadNoiseSnd.volume = Mathf.InverseLerp(0, 80,
+				(GroundSurfaceMaster.surfaceTypesStatic[roadSurfaceType].alwaysScrape ? 10 : 1) * velMag);// (1 + 80 * 2 / 3f * Mathf.Log10(volume)); 
 
 			if (brakeInput > 0 && !reversing)
 			{
@@ -663,9 +742,8 @@ namespace RVP
 				foreach (var l in rearLights)
 				{
 					l.SetActive(true);
-					l.GetComponent<MeshRenderer>().sharedMaterials =
-						 new Material[] { l.GetComponent<MeshRenderer>().sharedMaterials[0], rearLightsBrakeMaterial };
-					l.transform.GetChild(0).GetComponent<Light>().range = 10;
+					l.GetComponent<MeshRenderer>().sharedMaterial = rearLightsLighter;
+					//l.transform.GetChild(0).GetComponent<Light>().range = 10;
 				}
 			}
 			else if (brakeInput == 0)
@@ -674,11 +752,11 @@ namespace RVP
 				foreach (var l in rearLights)
 				{
 					l.SetActive(lightsInput);
-					l.GetComponent<MeshRenderer>().sharedMaterials =
-						 new Material[] { l.GetComponent<MeshRenderer>().sharedMaterials[0], rearLightsOnMaterial };
-					l.transform.GetChild(0).GetComponent<Light>().range = 2;
+					l.GetComponent<MeshRenderer>().sharedMaterial = rearLightsDarker;
+					//l.transform.GetChild(0).GetComponent<Light>().range = 2;
 				}
 			}
+
 			// Norm orientation visualizing
 			// Debug.DrawRay(norm.position, norm.forward, Color.blue);
 			// Debug.DrawRay(norm.position, norm.up, Color.green);
@@ -686,9 +764,23 @@ namespace RVP
 		}
 		public void FixedUpdate()
 		{
-			if (inputInherit)
+			//if (inputInherit)
+			//{
+			//	InheritInput();
+			//}
+
+			// Dynamically switch CCD mode based on air time
+			if (reallyGroundedWheels == 0)
 			{
-				InheritInput();
+				colDetectionTimer = Mathf.Clamp(colDetectionTimer + Time.fixedDeltaTime, 0, 0.5f);
+				if (colDetectionTimer == 0.5f && velMag > 58)
+					rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+			}
+			else if (reallyGroundedWheels == 4)
+			{
+				colDetectionTimer = Mathf.Clamp(colDetectionTimer - Time.fixedDeltaTime, 0, 0.5f);
+				if (colDetectionTimer == 0)
+					rb.collisionDetectionMode = CollisionDetectionMode.Discrete;
 			}
 
 			if (wheelLoopDone && wheelGroups.Length > 0)
@@ -700,31 +792,38 @@ namespace RVP
 			GetGroundedWheels();
 
 			prevVel = localVelocity;
-			localVelocity = tr.InverseTransformDirection(rb.velocity - wheelContactsVelocity);
+			localVelocity = tr.InverseTransformDirection(rb.linearVelocity - wheelContactsVelocity);
 			acceleration = localVelocity - prevVel;
 
 			localAngularVel = tr.InverseTransformDirection(rb.angularVelocity);
-			
-			velMag = rb.velocity.magnitude;
 
-			
+			velMag = rb.linearVelocity.magnitude;
 
-			sqrVelMag = rb.velocity.sqrMagnitude;
+			sqrVelMag = rb.linearVelocity.sqrMagnitude;
 			forwardDir = tr.forward;
 			rightDir = tr.right;
 			upDir = tr.up;
 			forwardDot = Vector3.Dot(forwardDir, RaceManager.worldUpDir);
 			rightDot = Vector3.Dot(rightDir, RaceManager.worldUpDir);
 			upDot = Vector3.Dot(upDir, RaceManager.worldUpDir);
-			norm.transform.position = tr.position;
-			norm.transform.rotation = Quaternion.LookRotation(reallyGroundedWheels == 0 ? upDir : wheelNormalAverage, forwardDir);
+			worldCOM = rb.worldCenterOfMass;
+			norm.transform.SetPositionAndRotation(tr.position, Quaternion.LookRotation(reallyGroundedWheels == 0 ? upDir : wheelNormalAverage, forwardDir));
+			if (brakeIsReverse)
+			{
+				if (brakeInput > 0 && localVelocity.z < 3)
+					reversing = true;
+				if (accelInput > 0 && localVelocity.z > -3)
+					reversing = false;
+			}
 
-			
+			if (reallyGroundedWheels == 4)
+			{
 
-			if (brakeIsReverse && brakeInput > 0 && localVelocity.z < 1)
-				reversing = true;
-			else if (localVelocity.z >= 0 || burnout > 0)
-				reversing = false;
+				//float radius = wheelbase / Mathf.Sin(wheels[0].suspensionParent.steerRangeMax * Mathf.Deg2Rad * wheels[0].suspensionParent.steerAngle);
+				//rb.AddTorque(twistGain * Mathf.Pow(velMag, 2) / radius * forwardDir, ForceMode.Acceleration);
+				float coeff = (wheels[1].susParent.appliedSuspensionForce.magnitude - wheels[0].susParent.appliedSuspensionForce.magnitude) / (wheels[0].susParent.springForce);
+				rb.AddTorque(twistGain * coeff * forwardDir, ForceMode.Acceleration);
+			}
 		}
 		public void SetHonkerInput(int f)
 		{
@@ -748,20 +847,32 @@ namespace RVP
 		// Set accel input
 		public void SetAccel(float f)
 		{
-			if (InFreeroam || !raceBox.enabled || F.I.s_raceType == RaceType.TimeTrial)
+			if (F.I.s_inEditor || !raceBox.enabled || F.I.s_raceType == RaceType.TimeTrial)
 				energyRemaining = batteryCapacity;
 			else if (BatteryPercent <= 0 && Time.time - lastNoBatteryMessage > 60)
 			{
-				RaceManager.I.hud.infoText.AddMessage(new Message(name + " IS OUT OF BATTERY!", BottomInfoType.NO_BATT));
+				RaceManager.I.hud.infoText.AddMessage(new Message(name + " " + F.I.LocStr("IS OUT OF BATTERY!"), BottomInfoType.NO_BATT));
 				lastNoBatteryMessage = Time.time;
 			}
-			f = Mathf.Clamp(f, -1, (BatteryPercent <= 0) ? 0.67f : 1);
+			f = Mathf.Clamp(f, -1, 1);
 
-			if(Owner)
+			if (BatteryPercent <= 0 && velMag > 30)
+				f = 0;
+
+			if (F.I.s_cpuLevel == CpuLevel.Hard)
+			{
+				engine.ignition = BatteryPercent > 0;
+				if (!engine.ignition)
+					f = 0;
+			}
+
+			if (Owner)
 				accelInput = f;
 
-			if (energyRemaining > 0)
+			if (energyRemaining > 0 && (!followAI.IsCPU || F.I.s_cpuLevel == CpuLevel.Easy))
 				energyRemaining -= accelInput * engine.fuelConsumption * Time.deltaTime;
+
+
 		}
 
 		// Set brake input
@@ -781,7 +892,10 @@ namespace RVP
 				else
 				{
 					if (brakeIsReverse && reversing)
-						brakeInput = 1;
+					{
+						if (!(F.I.s_cpuLevel == CpuLevel.Hard && BatteryPercent <= 0))
+							brakeInput = 1;
+					}
 					else
 					{
 						if (brakeStart == 0)
@@ -796,6 +910,29 @@ namespace RVP
 		public void SetSteer(float f)
 		{
 			steerInput = Mathf.Clamp(f, -1, 1);
+		}
+		public void SetBunnyhop(int f)
+		{
+			if (f > 0)
+			{
+				if (reallyGroundedWheels > 2)
+				{
+					bunnyhopInput = 1;
+					rb.AddForce(40 * bunnyhopInput * originalMass * -upDir);
+				}
+			}
+			else
+			{
+				if (bunnyhopInput > 0)
+				{
+					if (reallyGroundedWheels > 2)
+					{
+						// perform bunnyhop
+						rb.AddForce(10 * bunnyhopInput * upDir, ForceMode.VelocityChange);
+					}
+					bunnyhopInput = 0;
+				}
+			}
 		}
 
 		// Set ebrake input
@@ -879,24 +1016,6 @@ namespace RVP
 			downshiftHold = f;
 		}
 
-		// Copy input from other vehicle
-		void InheritInput()
-		{
-			accelInput = inputInherit.accelInput;
-			brakeInput = inputInherit.brakeInput;
-			steerInput = inputInherit.steerInput;
-			ebrakeInput = inputInherit.ebrakeInput;
-			pitchInput = inputInherit.pitchInput;
-			yawInput = inputInherit.yawInput;
-			rollInput = inputInherit.rollInput;
-		}
-
-		// Copy single-frame input from other vehicle
-		void InheritInputOneShot()
-		{
-			upshiftPressed = inputInherit.upshiftPressed;
-			downshiftPressed = inputInherit.downshiftPressed;
-		}
 		// Get the number of grounded wheels and the normals and velocities of surfaces they're sitting on
 		void GetGroundedWheels()
 		{
@@ -919,29 +1038,41 @@ namespace RVP
 			}
 		}
 
+		public void PlaySparks(Collision c)
+		{
+			sparks.transform.position = c.GetContact(0).point;
+			sparks.transform.rotation = Quaternion.LookRotation(c.relativeVelocity.normalized, c.GetContact(0).normal);
+			sparks.Play();
+		}
+		public void StopSparks()
+		{
+			sparks.Stop();
+		}
 		// Check for crashes and play collision sounds
 		void OnCollisionEnter(Collision col)
 		{
+			raceBox.evoModule.Reset();
+
 			if (col.contacts.Length > 0)
 			{
 				foreach (ContactPoint curCol in col.contacts)
 				{
 					if (curCol.thisCollider.gameObject.layer != RaceManager.ignoreWheelCastLayer)
 					{
-						if (Mathf.Abs(Vector3.Dot(curCol.normal, col.relativeVelocity.normalized)) > 0.1f && col.relativeVelocity.magnitude > 10)
+						if (Mathf.Abs(Vector3.Dot(curCol.normal, col.relativeVelocity.normalized)) > 0.1f
+							&& col.relativeVelocity.magnitude > 10)
 						{
 							crashSnd.PlayOneShot(crashClips[UnityEngine.Random.Range(0, crashClips.Length)],
 								Mathf.Clamp01(col.relativeVelocity.magnitude * 0.1f));
-							crashing = canCrash;
+							crashing = true;
+							if (crashing)
+								lastCrashingTime = Time.time;
 						}
 
-						if (sparks && playCrashSparks)
-						{
-							// play sparks
-							sparks.transform.position = curCol.point;
-							sparks.transform.rotation = Quaternion.LookRotation(col.relativeVelocity.normalized, curCol.normal);
-							sparks.Play();
-						}
+						//if (sparks && playCrashSparks)
+						//{
+						//	PlaySparks(col);
+						//}
 					}
 				}
 			}
@@ -957,29 +1088,38 @@ namespace RVP
 					if (!curCol.thisCollider.CompareTag("Underside")
 						&& curCol.thisCollider.gameObject.layer != RaceManager.ignoreWheelCastLayer)
 					{
-						nowCrashing = canCrash;
+						nowCrashing = true;
 
-						//if (reallyGroundedWheels >= 2)
-						{
-							if (!scrapeSnd.isPlaying)
-								scrapeSnd.Play();
-							// play sparks
-							sparks.transform.position = curCol.point;
-							sparks.transform.rotation = Quaternion.LookRotation(col.relativeVelocity.normalized, curCol.normal);
-							if (!sparks.isPlaying)
-								sparks.Play();
-						}
+						if (!scrapeSnd.isPlaying)
+							scrapeSnd.Play();
+						//play sparks
+						sparks.transform.position = curCol.point;
+						sparks.transform.rotation = Quaternion.LookRotation(col.relativeVelocity.normalized, curCol.normal);
+						if (!sparks.isPlaying)
+							sparks.Play();
 					}
 				}
 			}
 			crashing = nowCrashing;
+			if (crashing)
+				lastCrashingTime = Time.time;
 			if (!(colliding || crashing))
 				scrapeSnd.Stop();
+		}
+		//IEnumerator Bla()
+		//{
+		//	yield return new WaitForSeconds(0.1f);
+		//}
+		void OnCollisionExit(Collision col)
+		{
+			//colCo = StartCoroutine(Bla());
+			crashing = false;
+			scrapeSnd.Stop();
 		}
 		public override void OnDestroy()
 		{
 			F.I.s_cars.Remove(this);
-			SGP_HUD.I.RemoveFromProgressBar(this);
+			SGP_HUD.I?.RemoveFromProgressBar(this);
 			if (norm)
 			{
 				Destroy(norm.gameObject);
@@ -1033,21 +1173,21 @@ namespace RVP
 		{
 			energyRemaining = Mathf.Clamp(energyRemaining + batteryCapacity * batteryStuntIncreasePercent, 0, batteryCapacity);
 		}
-		public void ResetOnTrackBatteryPenalty()
+		public void ApplyBatteryPenalty()
 		{
-			energyRemaining = Mathf.Clamp(energyRemaining - batteryCapacity * 0.5f * batteryStuntIncreasePercent, 0, batteryCapacity);
+			float penalty = (followAI.IsCPU ? 0 : 1) * 0.5f * batteryStuntIncreasePercent;
+
+			energyRemaining = Mathf.Clamp(energyRemaining - batteryCapacity * penalty, 0, batteryCapacity);
 		}
 		public void KnockoutMe()
 		{
-			if (F.I.gameMode == MultiMode.Multiplayer)
+			if (F.I.gameMode == GameMode.Multiplayer)
 				KnockoutMeRpc();
 			else
 				KnockoutMeInternal();
 		}
 		void KnockoutMeInternal()
 		{
-			followAI.SetCPU(false);
-			followAI.selfDriving = false;
 			SetAccel(0);
 			SetBrake(0);
 			SetSteer(0);
@@ -1057,16 +1197,20 @@ namespace RVP
 		void KnockoutMeRpc()
 		{
 			KnockoutMeInternal();
-			SGP_HUD.I.infoText.AddMessage(new(tr.name + " ELIMINATED!", BottomInfoType.ELIMINATED));
+			SGP_HUD.I.infoText.AddMessage(new(tr.name + " " + F.I.LocStr("ELIMINATED!"), BottomInfoType.ELIMINATED));
 		}
 
-		public void SetChassis(float mass, float drag, float angularDrag)
+		public void SetChassis(float mass, float drag, float angularDrag, Vector3 com, float twistGain)
 		{
+			this.twistGain = twistGain;
+			originalCOM = com;
+			rb.centerOfMass = com;
 			originalMass = mass;
 			rb.mass = mass;
 			originalDrag = drag;
-			rb.drag = drag;
-			rb.angularDrag = angularDrag;
+			rb.linearDamping = drag;
+			rb.angularDamping = angularDrag;
+			va.initialAngularDrag = angularDrag;
 		}
 	}
 

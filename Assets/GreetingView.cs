@@ -13,7 +13,7 @@ public class GreetingView : MonoBehaviour
 	{
 		RaceManager.I = raceManager;
 		F.I.eventSystem = eventSystem;
-		F.I.ReadSettingsDataFromJson();
+		
 		F.I.SetMixerLevelLog("sfxVol", F.I.playerData.sfxVol, masterMixer);
 		F.I.SetMixerLevelLog("musicVol", F.I.playerData.musicVol, masterMixer);
 	}

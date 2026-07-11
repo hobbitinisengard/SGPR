@@ -64,13 +64,14 @@ public static class F
 		//Copy all the files & Replaces any files with the same name
 		foreach (string newPath in Directory.GetFiles(sourcePath, "*.*", SearchOption.AllDirectories))
 		{
-			if (Path.GetExtension(newPath) == ".meta" /*|| Path.GetExtension(newPath) == ".carcfg"*/)
+			string ext = Path.GetExtension(newPath);
+			if (ext == ".meta" || ext == ".rec")
 				continue;
 
 			string copyToPath = newPath.Replace(sourcePath, targetPath);
 
-			// don't overwrite userdata.json and ranking.json; original parts and tracks are overwritten
-			if (Path.GetExtension(newPath) != ".json" || !File.Exists(copyToPath))
+			// don't overwrite textures and userdata.json and ranking.json; original parts and tracks are overwritten
+			if ((ext != ".jpg" && ext != ".json") || !File.Exists(copyToPath))
 				File.Copy(newPath, copyToPath, overwrite: true);
 		}
 	}
@@ -131,7 +132,7 @@ public static class F
 		{
 			switch (livery)
 			{
-				case Livery.Special:
+				case Livery.Team:
 					return Color.yellow;
 				case Livery.TGR:
 					return new Color(1, 165 / 255f, 0); // orange
@@ -156,6 +157,10 @@ public static class F
 	{
 		return 1 - Mathf.Pow(1 - x, 5);
 	}
+	public static float EasingInQuint(float x)
+	{
+		return Mathf.Pow(x, 5);
+	}
 	public static int R(int min, int max)
 	{
 		return UnityEngine.Random.Range(min, max);
@@ -168,7 +173,7 @@ public static class F
 			value = minInclusive;
 		return value;
 	}
-	public static float Wraparound(float value, float min, float max)
+    public static float Wraparound(float value, float min, float max)
 	{
 		if (value < min)
 			value = max;
@@ -191,6 +196,22 @@ public static class F
 	public static T GetRandom<T>(this IList<T> collection)
 	{
 		return collection[UnityEngine.Random.Range(0, collection.Count)];
+	}
+	public static bool GetRandom<T>(this IList<T> collection, bool[] mask, out T picked)
+	{
+		picked = default;
+		if (collection.Count != mask.Length)
+			throw new ArgumentException("collection and mask must have the same length");
+		List<T> filtered = new List<T>();
+		for (int i = 0; i < collection.Count; ++i)
+		{
+			if (mask[i])
+				filtered.Add(collection[i]);
+		}
+		if (filtered.Count == 0)
+			return false;
+		picked = filtered[UnityEngine.Random.Range(0, filtered.Count)];
+		return true;
 	}
 	public static byte ToByte(this bool val)
 	{
@@ -283,8 +304,11 @@ public static class F
 		}
 		return null;
 	}
-	public static T FindParentComponent<T>(this Transform tr) where T : Component
+	public static T GetParentComponent<T>(this Transform tr) where T : Component
 	{
+		if(tr.GetComponent<T>() != null)
+			return tr.GetComponent<T>();
+
 		while (tr.parent != null)
 		{
 			if (tr.parent.GetComponent<T>() != null)
@@ -294,6 +318,28 @@ public static class F
 			tr = tr.parent;
 		}
 		return null;
+	}
+	public static int GetSiblingIndexInActive(this Transform tr)
+	{
+		if (tr == null || tr.parent == null)
+			return -1;
+
+		Transform parent = tr.parent;
+		int index = 0;
+
+		for (int i = 0; i < parent.childCount; i++)
+		{
+			Transform child = parent.GetChild(i);
+			if (!child.gameObject.activeSelf)
+				continue;
+
+			if (child == tr)
+				return index;
+
+			index++;
+		}
+
+		return -1;
 	}
 	public static void PlaySlideOutOnChildren(Transform node)
 	{
@@ -312,11 +358,38 @@ public static class F
 			}
 		}
 	}
+	public static string PosSuffix(int i)
+	{
+		string s;
+		switch (i)
+		{
+			case 0:
+				s = "1-st";
+				break;
+			case 1:
+				s = "2-nd";
+				break;
+			case 2:
+				s = "3-rd";
+				break;
+			default:
+				s = (i + 1).ToString() + "-th";
+				break;
+		}
+		return F.I.LocStr(s);
+	}
 	public static void DestroyAllChildren(this Transform tr)
 	{
 		for(int i=0; i<tr.childCount; ++i)
 		{
 			GameObject.Destroy(tr.GetChild(i).gameObject);
+		}
+	}
+	public static void DestroyImmediateAllChildren(this Transform tr)
+	{
+		for (int i = 0; i < tr.childCount; ++i)
+		{
+			GameObject.DestroyImmediate(tr.GetChild(i).gameObject);
 		}
 	}
 	/// <param name="group">search children of this transform</param>
@@ -392,7 +465,12 @@ public static class F
 	}
 	public static void Deselect()
 	{
-		F.I.eventSystem.SetSelectedGameObject(null);
+		if(!I.eventSystem.alreadySelecting)
+			F.I.eventSystem.SetSelectedGameObject(null);
+	}
+	public static float FlatDistance(Vector3 a, Vector3 b)
+	{
+		return Mathf.Sqrt((a.x - b.x) * (a.x - b.x) + (a.z - b.z) * (a.z - b.z));
 	}
 #if UNITY_EDITOR
 	// Returns whether the given object is part of a prefab (meant to be used with selected objects in the inspector)

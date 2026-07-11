@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using UnityEngine.UIElements.Experimental;
 
-public enum GarageType { Unlocked, Earned, Wild, Aero, Speed, Specials }
+public enum GarageType { Unlocked, Earned, Arcade }
 public class CarSelector : Sfxable
 {
 	public RectTransform[] bars;
@@ -44,7 +44,7 @@ public class CarSelector : Sfxable
 	{ // in unity, 
 		F.I.move2Ref.action.performed -= CalculateTargetToSelect;
 		persistentSelectedCar = selectedCar.name;
-		F.I.s_playerCarName = selectedCar.name;
+		F.I.s_playerCarIdx = Car.Name2Index(selectedCar.name);
 	}
 	private void OnEnable()
 	{
@@ -60,17 +60,11 @@ public class CarSelector : Sfxable
 		switch (type)
 		{
 			case GarageType.Unlocked:
-				return c.price != -1;
+				return c.price != -1 && (c.unlocked || c.starter);
 			case GarageType.Earned:
 				return c.price != -1 && c.price <= playerMoney;
-			case GarageType.Aero:
-				return c.price != -1 && c.category == CarGroup.Aero;
-			case GarageType.Wild:
-				return c.price != -1 && c.category == CarGroup.Wild;
-			case GarageType.Speed:
-				return c.price != -1 && c.category == CarGroup.Speed;
-			case GarageType.Specials:
-				return c.price != -1 && c.category == CarGroup.Team;
+			case GarageType.Arcade:
+				return c.price != -1 && c.starter;
 			default:
 				return false;
 		}
@@ -100,7 +94,7 @@ public class CarSelector : Sfxable
 				if (ShowCar(car))
 				{
 					var newcar = Instantiate(carImageTemplate, carContent.GetChild((int)car.category));
-					newcar.name = "car" + (i + 1).ToString("D2");
+					newcar.name = "car" + i.ToString("D2");
 					newcar.GetComponent<Image>().sprite = Resources.Load<Sprite>(F.I.carImagesPath + newcar.name);
 					newcar.SetActive(true);
 					menuButtons[(int)car.category] = true;
@@ -108,7 +102,10 @@ public class CarSelector : Sfxable
 						selectedCar = newcar.transform;
 				}
 			}
-			Debug.Log(menuButtons[0] + " " + menuButtons[1] + " " + menuButtons[2] + " " + menuButtons[3]);
+			for (int i = 0; i < buttonsContainer.childCount; ++i)
+			{// turn off all carclass buttons temporarily
+				buttonsContainer.GetChild(i).gameObject.SetActive(false);
+			}
 
 			yield return null; // wait for one frame for active objects to refresh
 
@@ -124,25 +121,24 @@ public class CarSelector : Sfxable
 				// disable car classes without children (required for sliders to work)
 				carContent.GetChild(i).gameObject.SetActive(menuButtons[i]);
 			}
-			
 		}
 		if (selectedCar == null)
 		{
-			carDescText.text = "No cars available lulz";
+			carDescText.text = "No cars available lol";
 		}
 		else
 		{
 			buttonsContainer.GetChild(selectedCar.parent.GetSiblingIndex()).GetComponent<MainMenuButton>().Select();
-			carDescText.text = F.I.Car(selectedCar.name).name + "\n\n" + F.I.Car(selectedCar.name).desc;
+			carDescText.text = F.I.LocStr(F.I.Car(selectedCar.name).name) + "\n\n" + F.I.LocStr(selectedCar.name + "d");
 		}
 		radial.gameObject.SetActive(selectedCar);
 		containerCo = StartCoroutine(MoveToCar());
 		radial.SetChildrenActive(carContent);
-		
+
 		if (barsAndRadialCo != null)
 			StopCoroutine(barsAndRadialCo);
 		barsAndRadialCo = StartCoroutine(SetPerformanceBarsAndRadial());
-		Debug.Log(selectedCar);
+		//Debug.Log(selectedCar);
 		loadCo = false;
 	}
 
@@ -163,7 +159,7 @@ public class CarSelector : Sfxable
 			if (posy >= 0 && posy <= 3 && posx >= 0)
 			{
 				Transform tempSelectedCar = null;
-				for (int i = posy; i < carContent.childCount && i >= 0;	i = (y > 0) ? (i + 1) : (i - 1))
+				for (int i = posy; i < carContent.childCount && i >= 0; i = (y > 0) ? (i + 1) : (i - 1))
 				{
 					Transform selectedClass = carContent.GetChild(i);
 
@@ -172,21 +168,21 @@ public class CarSelector : Sfxable
 						if (posx >= selectedClass.childCount)
 							posx = selectedClass.childCount - 1;
 						tempSelectedCar = selectedClass.GetChild(posx);
-						Debug.Log(tempSelectedCar);
+						//Debug.Log(tempSelectedCar);
 						break;
 					}
 				}
 				if (tempSelectedCar != null && tempSelectedCar != selectedCar)
 				{
 					selectedCar = tempSelectedCar;
-					F.I.s_playerCarName = selectedCar.name;
+					F.I.s_playerCarIdx = Car.Name2Index(selectedCar.name);
 					buttonsContainer.GetChild(selectedCar.parent.GetSiblingIndex()).GetComponent<MainMenuButton>().Select();
 					PlaySFX("fe-bitmapscroll");
 				}
 				// new car has been selected
 				// set description
 				var car = F.I.Car(selectedCar.name);
-				carDescText.text = car.name + "\n\n" + car.desc;
+				carDescText.text = F.I.LocStr(car.name) + "\n\n" + F.I.LocStr(selectedCar.name + "d");
 				// set bars
 				if (barsAndRadialCo != null)
 					StopCoroutine(barsAndRadialCo);

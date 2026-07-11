@@ -6,9 +6,10 @@ using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-public class ResultInfo
+public class Result
 {
 	public VehicleParent vp;
+	public bool finished;
 	public ulong id;
 	public string name;
 	public TimeSpan lap;
@@ -16,42 +17,35 @@ public class ResultInfo
 	public float progress;
 	public float drift;
 	public float aeromiles;
+	public int maxAeroStars;
 	public int score { get; private set; }
 	public Livery sponsor;
-
 	public void SetPostRaceScore(int finalScore)
 	{
-		Debug.Log(name + " " + score.ToString() + " " + finalScore);
+		//Debug.Log(name + " " + score.ToString() + " " + finalScore);
 		score = finalScore;
-	}
-	public bool Finished
-	{
-		get
-		{
-			if (vp == null)
-				return true;
-			return !vp.raceBox.enabled;
-		}
 	}
 	public void Update(VehicleParent vp)
 	{
 		this.vp = vp;
-		drift = vp.raceBox.drift;
+		drift = vp.raceBox.Drift;
 		lap = vp.raceBox.bestLapTime;
-		progress = vp.raceBox.curLap + vp.followAI.LapProgressPercent;
+		progress = vp.raceBox.RaceProgressLaps;
 		aeromiles = vp.raceBox.Aero;
 		raceTime = vp.raceBox.raceTime;
 		name = vp.transform.name;
 		score = vp.lastRoundScore;
 		sponsor = vp.sponsor;
-		//Debug.Log(string.Format("{0}, progress:{1}, score:{2}, ", name, progress, aeromiles));
+		finished = !vp.raceBox.enabled;
+		maxAeroStars = vp.raceBox.maxAeroStars;
+		//Debug.Log(string.Format("{0}, RaceProgressLaps:{1}, score:{2}, ", name, progress, aeromiles));
 	}
-	public ResultInfo(VehicleParent vp)
+	public Result(VehicleParent vp)
 	{
 		id = vp.OwnerClientId;
 		Update(vp);
 	}
-	public ResultInfo()
+	public Result()
 	{
 	}
 	public string ToString(RecordType recordType)
@@ -63,7 +57,7 @@ public class ResultInfo
 			case RecordType.RaceTime:
 				return raceTime.ToLaptimeStr();
 			case RecordType.StuntScore:
-				return ((int)(aeromiles)).ToString();
+				return ((int)aeromiles).ToString();
 			case RecordType.DriftScore:
 				return drift.ToString("F0");
 			default:
@@ -82,6 +76,7 @@ public class ResultsView : MainMenuView
 	int finalPosition;
 	AudioSource tickSnd;
 	public WinnersView winnersView;
+	public PrizeView prizeView;
 	public Button OKbutton;
 	public GridLayoutGroup gridTable;
 	public GameObject grandScore0;
@@ -95,12 +90,23 @@ public class ResultsView : MainMenuView
 	public GameObject medalPrefab;
 	public Sprite[] silverMedals; // race,lap,stunt,drift
 	public Sprite[] goldMedals;
-	readonly static List<ResultInfo> resultData = new();
-
+	readonly static List<Result> resultData = new();
+	public static bool playerDNF = false;
+	static int Pos(string carName, Comparison<Result> comp)
+	{
+		resultData.Sort(comp);
+		int index = resultData.FindIndex(pr => pr.name == carName);
+		if (index != -1)
+		{
+			return index + 1;
+		}
+		Debug.LogError("PlayerName not found in resultData");
+		return -1;
+	}
 	/// <summary>
 	/// Returns 1-10
 	/// </summary>
-	static int Pos(ulong id, Comparison<ResultInfo> comp)
+	static int Pos(ulong id, Comparison<Result> comp)
 	{
 		resultData.Sort(comp);
 		int index = resultData.FindIndex(pr => pr.id == id);
@@ -112,7 +118,7 @@ public class ResultsView : MainMenuView
 		return -1;
 	}
 
-	public static int CalculatePostraceReward(ResultInfo ri)
+	public static int CalculatePostraceReward(Result ri)
 	{
 		int finalScore = 0;
 		int finalPos = Pos(ri.id, ComparisonBasedOnRaceType()) - 1;
@@ -146,7 +152,7 @@ public class ResultsView : MainMenuView
 		Debug.Log(ri.name + string.Format("Reward: lap,stunt,drift = {0}, {1}, {2}, {3}, {4}", positionBonus, lapBonus, stuntBonus, driftBonus, aeroMeter));
 		return finalScore;
 	}
-	public static List<ResultInfo> SortedResultsByScore
+	public static List<Result> SortedResultsByScore
 	{
 		get
 		{
@@ -169,7 +175,7 @@ public class ResultsView : MainMenuView
 				}
 				teamScores.Sort((x, y) => y.score.CompareTo(x.score));
 
-				resultData.Sort((ResultInfo A, ResultInfo B) =>
+				resultData.Sort((Result A, Result B) =>
 				{
 					var teamScoreA = teamScores.Find(s => s.sponsor == A.sponsor).score;
 					var teamScoreB = teamScores.Find(s => s.sponsor == B.sponsor).score;
@@ -183,7 +189,7 @@ public class ResultsView : MainMenuView
 			return resultData;
 		}
 	}
-	public static List<ResultInfo> SortedResultsByFinishPos
+	public static List<Result> SortedResultsByFinishPos
 	{
 		get
 		{
@@ -192,7 +198,7 @@ public class ResultsView : MainMenuView
 			return resultData;
 		}
 	}
-	public static ResultInfo Get(VehicleParent vp)
+	public static Result Get(VehicleParent vp)
 	{
 		return resultData.FirstOrDefault(r => r.vp == vp);
 	}
@@ -203,7 +209,7 @@ public class ResultsView : MainMenuView
 	}
 	public static int FinishedPlayers
 	{
-		get { return resultData.Count(r => r.Finished); }
+		get { return resultData.Count(r => r.finished); }
 	}
 	public static int Count
 	{
@@ -220,7 +226,7 @@ public class ResultsView : MainMenuView
 		var entry = resultData.FirstOrDefault(RD => RD.vp == car);
 		if (entry == default)
 		{
-			resultData.Add(new ResultInfo(car));
+			resultData.Add(new Result(car));
 		}
 		else
 		{
@@ -244,28 +250,233 @@ public class ResultsView : MainMenuView
 	private int stuntBonus;
 	private int driftBonus;
 	private int aeroMeter;
-	public static readonly Comparison<ResultInfo> raceComp = new((ResultInfo x, ResultInfo y) => x.raceTime.TotalSeconds.CompareTo(y.raceTime.TotalSeconds));
-	public static readonly Comparison<ResultInfo> knockoutComp = new((ResultInfo x, ResultInfo y) => y.progress.CompareTo(x.progress));
-	public static readonly Comparison<ResultInfo> stuntComp = new((ResultInfo x, ResultInfo y) => y.aeromiles.CompareTo(x.aeromiles));
-	public static readonly Comparison<ResultInfo> driftComp = new((ResultInfo x, ResultInfo y) => y.drift.CompareTo(x.drift));
-	public static readonly Comparison<ResultInfo> lapComp = new((ResultInfo x, ResultInfo y) => x.lap.TotalSeconds.CompareTo(y.lap.TotalSeconds));
-	public static readonly Comparison<ResultInfo> ScoreComp = new((ResultInfo x, ResultInfo y) => y.score.CompareTo(x.score));
+	public static readonly Comparison<Result> raceComp = new((Result x, Result y) => x.raceTime.TotalSeconds.CompareTo(y.raceTime.TotalSeconds));
+	public static readonly Comparison<Result> knockoutComp = new((Result x, Result y) => { return y.progress.CompareTo(x.progress); });
+	public static readonly Comparison<Result> stuntComp = new((Result x, Result y) => y.aeromiles.CompareTo(x.aeromiles));
+	public static readonly Comparison<Result> driftComp = new((Result x, Result y) => y.drift.CompareTo(x.drift));
+	public static readonly Comparison<Result> lapComp = new((Result x, Result y) => x.lap.TotalSeconds.CompareTo(y.lap.TotalSeconds));
+	public static readonly Comparison<Result> ScoreComp = new((Result x, Result y) => y.score.CompareTo(x.score));
 
 	public void OKButton()
 	{
-		if (F.I.Rounds > 0 && F.I.CurRound > F.I.Rounds)
+		if (F.I.gameMode == GameMode.Multiplayer)
+		{
+			if (F.I.Rounds > 0 && F.I.CurRound > F.I.Rounds)
+			{
+				for (int i = 0; i < resultData.Count; ++i)
+				{
+					resultData[i].SetPostRaceScore(resultData[i].score + CalculatePostraceReward(resultData[i]));
+				}
+				winnersView.PrepareViewUsingMultiplayer();
+				GoToView(winnersView);
+			}
+			else
+			{
+				Clear();
+				GoToView(MultiPlayerSelector.I.thisView);
+			}
+		}
+		else if (F.I.gameMode == GameMode.Arcade)
 		{
 			for (int i = 0; i < resultData.Count; ++i)
 			{
-				resultData[i].SetPostRaceScore(resultData[i].score + ResultsView.CalculatePostraceReward(resultData[i]));
+				if (playerDNF)
+					resultData[i].SetPostRaceScore(resultData[i].score);
+				else
+					resultData[i].SetPostRaceScore(resultData[i].score + CalculatePostraceReward(resultData[i]));
 			}
-			winnersView.PrepareView();
-			GoToView(winnersView);
+
+			bool continuationCheck = CheckArcadeCondition(F.I.targetNode.continuationReq);
+			List<string> prizes = GetActualPrizeListAndMarkPrizesInProgress();
+
+			if (continuationCheck)
+			{ // update unlocked paths
+				if (F.I.curArcadeNodeID >= 0)
+				{
+					if (!F.I.curVariant.progress.pathsDone[F.I.curArcadeNodeID].Any(nodeID => nodeID == F.I.targetArcadeNodeID))
+					{
+						F.I.curVariant.progress.pathsDone[F.I.curArcadeNodeID].Add(F.I.targetArcadeNodeID);
+					}
+				}
+			}
+			F.I.SaveArcadeProgress();
+
+			F.I.rankingView.SetRankingType(ScoringType.Championship, false, GameMode.Arcade);
+			
+			if (prizes != null && prizes.Count > 0)
+			{
+				prizeView.Prepare(prizes, continuationCheck);
+				GoToView(prizeView);
+			}
+			else
+			{
+				if (continuationCheck && F.I.targetNode.connections?.Length > 0) // go back to arcade selector
+				{
+					Clear();
+					F.I.arcadeSelector.MoveNodeForward();
+					GoToView(F.I.arcadeSelector.thisView);
+				}
+				else
+				{ // go to winners view
+
+					winnersView.PrepareUsingArcade(continuationCheck);
+					GoToView(winnersView);
+				}
+			}
 		}
-		else
+	}
+	enum ArcadeResult
+	{
+		Failed,
+		Succeeded,
+		Continue
+	}
+	List<string> GetActualPrizeListAndMarkPrizesInProgress()
+	{
+		List<string> prizes = new();
+
+		for (int i = 0; i < F.I.curVariant.globalPrizes.Length; ++i)
 		{
-			Clear();
-			GoToView(MultiPlayerSelector.I.thisView);
+			var gprize = F.I.curVariant.globalPrizes[i];
+			if (gprize.condition == ArcadeVariant.Prize.Condition.AlwaysFirst)
+			{
+				if (F.I.alwaysFirst && F.I.targetNode.connections.Length == 0)
+				{
+					F.I.curVariant.progress.globalPrizesCompleted.SetBits(i, true);
+					prizes.AddRange(F.I.curVariant.globalPrizes[i].name.Split(","));
+				}
+			}
+			else if (gprize.condition == ArcadeVariant.Prize.Condition.AllPathsFound)
+			{
+				if (F.I.curVariant.progress.pathsDone.Sum(p => p.Count) == F.I.curVariant.nodes.Sum(n => n.connections == null ? 0 : n.connections.Length))
+				{
+					F.I.curVariant.progress.globalPrizesCompleted.SetBits(i, true);
+					prizes.AddRange(F.I.curVariant.globalPrizes[i].name.Split(","));
+				}
+			}
+		}
+
+		for (int j = 0; j < F.I.targetNode.prizeReqs.Length; ++j)
+		{
+			if (CheckArcadeCondition(F.I.targetNode.prizeReqs[j]))
+			{
+				F.I.curVariant.progress.prizesCompleted[F.I.targetArcadeNodeID].SetBits(j, true);
+				prizes.AddRange(F.I.targetNode.prizeReqs[j].name.Split(','));
+			}
+		}
+
+		for (int i = prizes.Count - 1; i >= 0; i--)
+		{
+			string prizeStr = prizes[i];
+			if (prizes[i].StartsWith("car")) // unlock car
+			{
+				if (F.I.Car(prizes[i]).unlocked)
+				{
+					prizes.RemoveAt(prizes.Count - 1);
+				}
+				F.I.Car(prizeStr).unlocked = true;
+			}
+			else if (prizes[i].Contains("spn")) // unlock livery
+			{
+				int liveryNr = int.Parse(prizes[i][3..]);
+				if (F.I.unlockedLiveries.Contains((Livery)liveryNr))
+				{
+					prizes.RemoveAt(prizes.Count - 1);
+				}
+				F.I.unlockedLiveries[liveryNr] = (Livery)liveryNr;
+			}
+			else
+			{
+				string trackName = prizes[i];
+
+				if (F.I.tracks[prizes[i]].unlocked)
+				{
+					prizes.RemoveAt(prizes.Count - 1);
+				}
+				F.I.tracks[trackName].unlocked = true;
+			}
+		}
+
+		return prizes;
+	}
+	bool CheckArcadeCondition(ArcadeVariant.Prize req)
+	{
+		if (req == null)
+			return false;
+
+		Result playerResult;
+		var sortedPlayers = SortedResultsByFinishPos;
+		if (F.I.alwaysFirst)
+		{
+			F.I.alwaysFirst = sortedPlayers[0].name == F.I.playerData.playerName;
+		}
+
+		switch (req.condition)
+		{
+			case ArcadeVariant.Prize.Condition.PositionAtLeast:
+				int minimumPosition = int.Parse(req.conditionArgument);
+				for (int i = 0; i < minimumPosition; ++i)
+				{
+					if (sortedPlayers[i].name == F.I.playerData.playerName)
+						return true;
+				}
+				return false;
+			case ArcadeVariant.Prize.Condition.LapAtMost:
+				{
+					playerResult = resultData.First(p => p.name == F.I.playerData.playerName);
+					TimeSpan requiredLap = TimeSpan.Zero;
+					try
+					{
+						requiredLap = TimeSpan.ParseExact(req.conditionArgument, Info.stringFormatWithoutHours, null);
+					}
+					catch
+					{
+						requiredLap = TimeSpan.ParseExact(req.conditionArgument, Info.stringFormatWithHours, null);
+					}
+					return playerResult.lap <= requiredLap;
+				}
+			case ArcadeVariant.Prize.Condition.StarsAtLeast:
+				playerResult = resultData.First(p => p.name == F.I.playerData.playerName);
+				int starsReq = int.Parse(req.conditionArgument);
+				return playerResult.maxAeroStars >= starsReq;
+			case ArcadeVariant.Prize.Condition.StuntAtLeast:
+				playerResult = resultData.First(p => p.name == F.I.playerData.playerName);
+				float aeromilesReq = float.Parse(req.conditionArgument);
+				return playerResult.aeromiles >= aeromilesReq;
+			case ArcadeVariant.Prize.Condition.DriftsAtLeast:
+				playerResult = resultData.First(p => p.name == F.I.playerData.playerName);
+				float driftsReq = float.Parse(req.conditionArgument);
+				return playerResult.drift >= driftsReq;
+			case ArcadeVariant.Prize.Condition.TimeAtMost:
+				playerResult = resultData.First(p => p.name == F.I.playerData.playerName);
+				TimeSpan timeAtMostReq = TimeSpan.Parse(req.conditionArgument);
+				return playerResult.raceTime <= timeAtMostReq;
+			case ArcadeVariant.Prize.Condition.FastestLaptime:
+				resultData.Sort((Result A, Result B) =>
+				{
+					return A.lap.CompareTo(B.lap);
+				});
+				return resultData[0].name == F.I.playerData.playerName;
+			case ArcadeVariant.Prize.Condition.AlwaysFirst:
+				return F.I.alwaysFirst;
+			case ArcadeVariant.Prize.Condition.AllPathsFound:
+				// sum of all unlocked paths in all nodes
+				int allPaths = F.I.curVariant.nodes.Sum(n => n.connections.Length);
+				int unlockedPaths = 0;
+				for (int i = 0; i < F.I.curVariant.progress.pathsDone.Count; i++)
+				{
+					unlockedPaths += F.I.curVariant.progress.pathsDone[i].Count;
+				}
+				return unlockedPaths == allPaths;
+			case ArcadeVariant.Prize.Condition.ExactStunts:
+				{
+					bool ret = F.I.arcadeObjectiveStunts.All(s => s.Item2 <= 0);
+					F.I.arcadeObjectiveStunts = null;
+					return ret;
+				}
+			default:
+				Debug.Log("null");
+				return false;
 		}
 	}
 	new void Awake()
@@ -286,10 +497,10 @@ public class ResultsView : MainMenuView
 		grandScore1.SetActive(false);
 		addingScore.SetActive(false);
 		medalsTable.gameObject.SetActive(false);
-
+		playerDNF = false;
 		base.OnDisable();
 	}
-	static Comparison<ResultInfo> ComparisonBasedOnRaceType()
+	static Comparison<Result> ComparisonBasedOnRaceType()
 	{
 		return F.I.s_raceType switch
 		{
@@ -304,6 +515,9 @@ public class ResultsView : MainMenuView
 
 	protected override void OnEnable()
 	{
+		if (playerDNF)
+			MakePlayerResultWorst();
+
 		F.I.CurRound++;
 		//ResultRandomizer(); // for testing 
 		grandScoreMoving = 0;
@@ -312,23 +526,41 @@ public class ResultsView : MainMenuView
 		cellSize.y = Mathf.Clamp(gridTableTr.rect.height / (1 + resultData.Count), 0, maxRowHeight);
 		gridTable.cellSize = cellSize;
 		resultData.Sort(ComparisonBasedOnRaceType());
+
 		// grid has 5 rows and max 11 cols
 		for (int i = 0; i < 10; i++)
 		{
 			bool visible = i < resultData.Count;
-			bool highlight = visible && ServerC.I.networkManager.LocalClientId == resultData[i].id;
+			bool highlight = visible && ((F.I.gameMode == GameMode.Arcade && resultData[i].name == F.I.playerData.playerName) ||
+				(F.I.gameMode == GameMode.Multiplayer && ServerC.I.networkManager.LocalClientId == resultData[i].id));
 			if (highlight)
 				finalPosition = i;
-			SetText(gridTableTr.GetChild(cols + cols * i + 0), visible ? Pos(i) : null, highlight);
-			SetText(gridTableTr.GetChild(cols + cols * i + 1), visible ? resultData[i].name : null, highlight);
-			SetText(gridTableTr.GetChild(cols + cols * i + 2), visible ? resultData[i].lap.ToLaptimeStr() : null, highlight);
-			SetText(gridTableTr.GetChild(cols + cols * i + 3), visible ? resultData[i].aeromiles.ToString("N0") : null, highlight);
-			SetText(gridTableTr.GetChild(cols + cols * i + 4), visible ? resultData[i].drift.ToString("N0") : null, highlight);
+			SetText(gridTableTr.GetChild(cols + cols * i + 0), visible ? F.PosSuffix(i) : "", highlight);
+			SetText(gridTableTr.GetChild(cols + cols * i + 1), visible ? resultData[i].name : "", highlight);
+			SetText(gridTableTr.GetChild(cols + cols * i + 2), visible ? resultData[i].lap.ToLaptimeStr() : "", highlight);
+			SetText(gridTableTr.GetChild(cols + cols * i + 3), visible ? resultData[i].aeromiles.ToString("N0") : "", highlight);
+			SetText(gridTableTr.GetChild(cols + cols * i + 4), visible ? resultData[i].drift.ToString("N0") : "", highlight);
 		}
 
-		lapPos = Pos(ServerC.I.networkManager.LocalClientId, lapComp);
-		stuntPos = Pos(ServerC.I.networkManager.LocalClientId, stuntComp);
-		driftPos = Pos(ServerC.I.networkManager.LocalClientId, driftComp);
+		if (F.I.gameMode == GameMode.Multiplayer)
+		{
+			lapPos = Pos(ServerC.I.networkManager.LocalClientId, lapComp);
+			stuntPos = Pos(ServerC.I.networkManager.LocalClientId, stuntComp);
+			driftPos = Pos(ServerC.I.networkManager.LocalClientId, driftComp);
+		}
+		else
+		{
+			if(playerDNF)
+			{
+				lapPos = stuntPos = driftPos = 9;
+			}
+			else
+			{
+				lapPos = Pos(F.I.playerData.playerName, lapComp);
+				stuntPos = Pos(F.I.playerData.playerName, stuntComp);
+				driftPos = Pos(F.I.playerData.playerName, driftComp);
+			}
+		}
 
 		positionPerc = (resultData.Count - finalPosition) / (float)resultData.Count;
 		positionBonus = 0;
@@ -354,10 +586,18 @@ public class ResultsView : MainMenuView
 			default:
 				break;
 		}
-		Debug.Log(resultData[finalPosition].name + string.Format("OnEnable. lap,stunt,drift = {0}, {1}, {2}, {3}, {4}",
-			positionBonus, lapBonus, stuntBonus, driftBonus, aeroMeter));
-		ServerC.I.ScoreSet(ServerC.I.PlayerMe.ScoreGet() + grandScoreFinal);
-		ServerC.I.UpdatePlayerData();
+		//Debug.Log(resultData[finalPosition].name + string.Format(" OnEnable. lap,stunt,drift = {0}, {1}, {2}, {3}, {4}", positionBonus, lapBonus, stuntBonus, driftBonus, aeroMeter));
+
+		if (F.I.gameMode == GameMode.Multiplayer)
+		{
+			ServerC.I.ScoreSet(ServerC.I.PlayerMe.ScoreGet() + grandScoreFinal);
+			ServerC.I.UpdatePlayerData();
+		}
+		else
+		{
+			F.I.curArcadeScore += grandScoreFinal;
+		}
+
 
 		if (payoutCo != null)
 			StopCoroutine(payoutCo);
@@ -365,16 +605,7 @@ public class ResultsView : MainMenuView
 
 		base.OnEnable();
 	}
-	string Pos(int i)
-	{
-		return i switch
-		{
-			0 => "1-st",
-			1 => "2-nd",
-			2 => "3-rd",
-			_ => (i + 1).ToString() + "-th"
-		};
-	}
+
 	void SetText(Transform tr, string content, bool highlight)
 	{
 		if (content != null)
@@ -383,9 +614,8 @@ public class ResultsView : MainMenuView
 			ugui.text = content;
 			ugui.color = highlight ? Color.white : Color.gray;
 		}
-		tr.gameObject.SetActive(content != null);
+		tr.gameObject.SetActive(content != "");
 	}
-
 
 	IEnumerator PayoutSeq()
 	{
@@ -407,7 +637,7 @@ public class ResultsView : MainMenuView
 		};
 
 		isAddingScore = true;
-		addingScoreCo = StartCoroutine(AddingScoreSeq("POSITION:", positionBonus, medal));
+		addingScoreCo = StartCoroutine(AddingScoreSeq(F.I.LocStr("POSITION") + ":", positionBonus, medal));
 
 		while (isAddingScore)
 			yield return null;
@@ -424,7 +654,7 @@ public class ResultsView : MainMenuView
 				};
 
 				isAddingScore = true;
-				addingScoreCo = StartCoroutine(AddingScoreSeq("LAP-TIME:", lapBonus, medal));
+				addingScoreCo = StartCoroutine(AddingScoreSeq(F.I.LocStr("LAPTIME") + ":", lapBonus, medal));
 
 				while (isAddingScore)
 					yield return null;
@@ -439,7 +669,7 @@ public class ResultsView : MainMenuView
 					_ => null,
 				};
 				isAddingScore = true;
-				addingScoreCo = StartCoroutine(AddingScoreSeq("STUNTS:", stuntBonus, medal));
+				addingScoreCo = StartCoroutine(AddingScoreSeq(F.I.LocStr("STUNTS") + ":", stuntBonus, medal));
 
 				while (isAddingScore)
 					yield return null;
@@ -454,14 +684,14 @@ public class ResultsView : MainMenuView
 					_ => null,
 				};
 				isAddingScore = true;
-				addingScoreCo = StartCoroutine(AddingScoreSeq("DRIFT:", driftBonus, medal));
+				addingScoreCo = StartCoroutine(AddingScoreSeq(F.I.LocStr("DRIFT") + ":", driftBonus, medal));
 
 				while (isAddingScore)
 					yield return null;
 			}
 
 			isAddingScore = true;
-			addingScoreCo = StartCoroutine(AddingScoreSeq("AEROMETER:", aeroMeter, null));
+			addingScoreCo = StartCoroutine(AddingScoreSeq(F.I.LocStr("AEROMILES") + ":", aeroMeter, null));
 
 			while (isAddingScore)
 				yield return null;
@@ -515,10 +745,10 @@ public class ResultsView : MainMenuView
 	}
 	void ResultRandomizer()
 	{
-		resultData.AddRange(new ResultInfo[F.R(2, 11)]);
+		resultData.AddRange(new Result[F.R(2, 11)]);
 		for (int i = 0; i < resultData.Count; ++i)
 		{
-			resultData[i] = new ResultInfo()
+			resultData[i] = new Result()
 			{
 				drift = F.R(0, 100000),
 				lap = TimeSpan.FromMilliseconds(F.R(30 * 1000, 2 * 3600 * 1000)),
@@ -528,5 +758,30 @@ public class ResultsView : MainMenuView
 		}
 		int x = F.R(0, resultData.Count);
 		resultData[x].name = F.I.playerData.playerName;
+	}
+
+	public static void MakePlayerResultWorst()
+	{
+		var p = resultData.FirstOrDefault(p => p.name == F.I.playerData.playerName);
+		switch (F.I.s_raceType)
+		{
+			case RaceType.Race:
+				p.raceTime = TimeSpan.FromHours(24);
+				break;
+			case RaceType.Knockout:
+				p.progress = -1000;
+				break;
+			case RaceType.Stunt:
+				p.aeromiles = -1000;
+				break;
+			case RaceType.Drift:
+				p.drift = -1000;
+				break;
+			case RaceType.TimeTrial:
+				p.lap = TimeSpan.FromHours(24);
+				break;
+			default:
+				break;
+		}
 	}
 }

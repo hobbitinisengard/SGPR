@@ -1,0 +1,20 @@
+{
+  "author": "Team17",
+  "localizedDescriptions": [
+    "Only one ramp and no recharging tunnel. But your car has enough battery capacity, right? RIGHT?",
+    "Tylko jedna rampa i brak tunelu ładującego, ale twój wóz ma wystarczająco baterii prawda? PRAWDA?"
+  ],
+  "localizedNames": [
+    "BANK JOB BETA",
+    "ODSKOK BETA"
+  ],
+  "valid": true,
+  "envir": "JAP",
+  "preferredCarClass": "Team",
+  "difficulty": 11,
+  "unlocked": true,
+  "icons": [
+    3,
+    5
+  ]
+}

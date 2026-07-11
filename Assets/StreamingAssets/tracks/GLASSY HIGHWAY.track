@@ -1,0 +1,20 @@
+{
+  "author": "Arkhnen & Viatrufka",
+  "localizedDescriptions": [
+    "The highlight of this demanding track are slippy glassy surfaces.",
+    "Atrakcją tej wymagającej tresy są śliskie szklane powierzchnie."
+  ],
+  "localizedNames": [
+    "GLASSY HIGHWAY",
+    "SZKLANA AUTOSTRADA"
+  ],
+  "valid": true,
+  "envir": "JAP",
+  "preferredCarClass": "Speed",
+  "difficulty": 9,
+  "unlocked": true,
+  "icons": [
+    2,
+    3
+  ]
+}

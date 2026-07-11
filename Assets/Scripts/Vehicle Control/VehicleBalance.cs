@@ -40,7 +40,7 @@ namespace RVP
         public float pitchExponent;
 
         [Tooltip("How much to lean when sliding sideways")]
-        public float slideLeanFactor = 1;
+        public float slideLeanFactor = 2;
 
         void Start() {
             tr = transform;

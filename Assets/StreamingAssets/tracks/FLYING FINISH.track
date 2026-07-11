@@ -1,1 +1,20 @@
-{"author":"Team17","desc":"A short, tough and dramatic track with a huge jump over the finish line!","valid":true,"envir":"ITA","preferredCarClass":"Aero","difficulty":4,"unlocked":true,"icons":[3],"TrackOrigin":0,"IsOriginal":true}
+{
+  "author": "Team17",
+  "localizedDescriptions": [
+    "A short, tough and dramatic track with a huge jump over the finish line!",
+    "Krótka, ale efektowna trasa kończąca się skokiem na linię mety!"
+  ],
+  "localizedNames": [
+    "FLYING FINISH",
+    "KOŃCOWY ODLOT"
+  ],
+  "valid": true,
+  "envir": "ITA",
+  "preferredCarClass": "Speed",
+  "difficulty": 5,
+  "unlocked": true,
+  "icons": [
+    2,
+    3
+  ]
+}

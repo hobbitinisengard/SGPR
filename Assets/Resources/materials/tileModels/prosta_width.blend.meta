@@ -12,6 +12,11 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: trackset00_trk_c1_straight
+    second: {fileID: 2100000, guid: fd5ad228bd999764d81ca3c178e79faf, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: trackset00_trk_sidewall_grass
     second: {fileID: 2100000, guid: 696e48a6ffb260b468f3dafe57081903, type: 2}
   - first:
@@ -31,8 +36,6 @@ ModelImporter:
     optimizeGameObjects: 0
     removeConstantScaleCurves: 1
     motionNodeName: 
-    rigImportErrors: 
-    rigImportWarnings: 
     animationImportErrors: 
     animationImportWarnings: 
     animationRetargetingWarnings: 

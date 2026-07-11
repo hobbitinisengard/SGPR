@@ -62,12 +62,12 @@ namespace RVP
                 tr.parent = null;
                 rb = gameObject.AddComponent<Rigidbody>();
                 rb.mass = mass;
-                rb.drag = drag;
-                rb.angularDrag = angularDrag;
+                rb.linearDamping = drag;
+                rb.angularDamping = angularDrag;
 
                 if (parentBody) {
                     parentBody.mass -= mass;
-                    rb.velocity = parentBody.GetPointVelocity(tr.position);
+                    rb.linearVelocity = parentBody.GetPointVelocity(tr.position);
                     rb.angularVelocity = parentBody.angularVelocity;
 
                     // Pick a random hinge joint to use

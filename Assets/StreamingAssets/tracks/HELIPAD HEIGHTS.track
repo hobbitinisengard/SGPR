@@ -1,1 +1,20 @@
-{"author":"Team17","desc":"This interior and exterior track features a spectacular leap across a skyline!","valid":true,"envir":"USA","preferredCarClass":"Aero","difficulty":2,"unlocked":true,"icons":[3],"TrackOrigin":0,"IsOriginal":true}
+{
+  "author": "Team17",
+  "localizedDescriptions": [
+    "This interior and exterior track features a spectacular leap across a skyline!",
+    "Na tej trasie przeskoczysz horyzont!"
+  ],
+  "localizedNames": [
+    "HELIPAD HEIGHTS",
+    "LOTNICZE ODLOTY"
+  ],
+  "valid": true,
+  "envir": "USA",
+  "preferredCarClass": "Aero",
+  "difficulty": 6,
+  "unlocked": true,
+  "icons": [
+    2,
+    3
+  ]
+}

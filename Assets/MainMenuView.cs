@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using System;
 using TMPro;
 using UnityEngine.InputSystem;
+using UnityEngine.EventSystems;
 
 public class MainMenuView : Sfxable
 {
@@ -21,7 +22,7 @@ public class MainMenuView : Sfxable
 		base.Awake();
 
 		if (dimmer == null)
-			dimmer = transform.FindParentComponent<ViewSwitcher>();
+			dimmer = transform.GetParentComponent<ViewSwitcher>();
 	}
 	private void Start()
 	{
@@ -61,6 +62,10 @@ public class MainMenuView : Sfxable
 			youSureDialog.gameObject.SetActive(true);
 		}
 	}
+	public void OpenUsersManual()
+	{
+		Application.OpenURL(F.I.usersManualLinks[(int)F.I.playerData.language]);
+	}
 	/// <summary>
 	/// Go forward
 	/// </summary>
@@ -85,6 +90,8 @@ public class MainMenuView : Sfxable
 	protected virtual void OnDisable()
 	{
 		F.I.escRef.action.started -= CancelPressed;
+		// get current selection and save it 
+		firstButtonToBeSelected = EventSystem.current.currentSelectedGameObject?.GetComponent<Button>() ?? firstButtonToBeSelected;
 	}
 	protected virtual void OnEnable()
 	{

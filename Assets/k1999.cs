@@ -11,23 +11,26 @@ public class K1999
 	float[] tLane;
 	float[] tRInverse;
 	int Divs = 0;
-	readonly RacingPathParams data;
-	//readonly float SecurityR = 2f;     // Security radius
-	//readonly float SideDistExt = 1f;  // Security distance wrt outside
-	//readonly float SideDistInt = 1f;  // Security distance wrt inside
-	//readonly int Iterations = 500;    // Number of smoothing operations
-	public K1999(RacingPathParams data)
+	readonly float SecurityR = 2f;     // Security radius
+	readonly float SideDistExt = 1f;  // Security distance wrt outside
+	readonly float SideDistInt = 1f;  // Security distance wrt inside
+	readonly int Iterations = 500;    // Number of smoothing operations
+
+	public K1999(int Iterations = 50, float SecurityR=10, float SideDistExt=0, float SideDistInt=0)
 	{
-		this.data = data;
-	}
-	//public K1999(float SecurityR, float SideDistExt, float SideDistInt, int iterations)
-	//{
-	//	this.SecurityR = SecurityR;
-	//	this.SideDistExt = SideDistExt;
-	//	this.SideDistInt = SideDistInt;
-	//	this.Iterations = iterations;
-	//}
-	void UpdateTxTy(int i)
+		this.SecurityR = SecurityR;
+		this.SideDistExt = SideDistExt;
+		this.SideDistInt = SideDistInt;
+		this.Iterations = Iterations;
+    }
+    //public K1999(float SecurityR, float SideDistExt, float SideDistInt, int iterations)
+    //{
+    //	this.SecurityR = SecurityR;
+    //	this.SideDistExt = SideDistExt;
+    //	this.SideDistInt = SideDistInt;
+    //	this.Iterations = iterations;
+    //}
+    void UpdateTxTy(int i)
 	{
 		tx[i] = tLane[i] * txRight[i] + (1 - tLane[i]) * txLeft[i];
 		ty[i] = tLane[i] * tyRight[i] + (1 - tLane[i]) * tyLeft[i];
@@ -110,8 +113,8 @@ public class K1999
 		{
 			tLane[i] += (dLane / dRInverse) * TargetRInverse;
 
-			float ExtLane = (data.SideDistExt + Security) / Width;
-			float IntLane = (data.SideDistInt + Security) / Width;
+			float ExtLane = (SideDistExt + Security) / Width;
+			float IntLane = (SideDistInt + Security) / Width;
 			if (ExtLane > 0.5)
 				ExtLane = 0.5f;
 			if (IntLane > 0.5)
@@ -169,7 +172,7 @@ public class K1999
 
 			float TargetRInverse = (lNext * ri0 + lPrev * ri1) / (lNext + lPrev);
 
-			float Security = lPrev * lNext / (8 * data.SecurityR);
+			float Security = lPrev * lNext / (8 * SecurityR);
 			AdjustRadius(prev, i, next, TargetRInverse, Security);
 
 			prevprev = prev;
@@ -225,7 +228,7 @@ public class K1999
 		// Smoothing loop
 		for (int Step = stepsize; (Step /= 2) > 0;)
 		{
-			for (int i = data.Iterations * ((int)Mathf.Sqrt(Step)); --i >= 0;)
+			for (int i = Iterations * ((int)Mathf.Sqrt(Step)); --i >= 0;)
 				Smooth(Step);
 			Interpolate(Step);
 		}
@@ -264,7 +267,7 @@ public class K1999
 		}
 		return racingLine;
 	}
-	public void LoadData(in List<Vector3> leftLimits, in List<Vector3> rightLimits)//const RoadStrip & road)
+	public void LoadData(in IList<Vector3> leftLimits, in IList<Vector3> rightLimits)//const RoadStrip & road)
 	{
 		Divs = leftLimits.Count;
 		tx = new float[Divs];

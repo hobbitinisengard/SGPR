@@ -1,0 +1,1552 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: Default_en
+  m_EditorClassIdentifier: 
+  m_LocaleId:
+    m_Code: en
+  m_SharedData: {fileID: 11400000, guid: 0a6030b51386fcc41b3d83e8a5929166, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 323084877824
+    m_Localized: SINGLE PLAYER
+    m_Metadata:
+      m_Items: []
+  - m_Id: 607039258624
+    m_Localized: MULTI PLAYER
+    m_Metadata:
+      m_Items: []
+  - m_Id: 669446307840
+    m_Localized: PLAYER'S MANUAL
+    m_Metadata:
+      m_Items: []
+  - m_Id: 860580741120
+    m_Localized: RECORDS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 905560457216
+    m_Localized: OPTIONS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 945041440768
+    m_Localized: EXIT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7614202904576
+    m_Localized: PRESS ENTER
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7678107320320
+    m_Localized: Yes
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7741118349312
+    m_Localized: No
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8191913754624
+    m_Localized: 'STUNT GP REMASTERED
+
+      Stunt GP and Team 17 are registered
+      trademarks of Team17 Software Limited.
+
+      Stunt GP Remastered is an unofficial
+      remake of Stunt GP.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 8785990778880
+    m_Localized: MAIN MENU
+    m_Metadata:
+      m_Items: []
+  - m_Id: 9849905348608
+    m_Localized: Select a single player game
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10063009546240
+    m_Localized: Start splitscreen or an online multiplayer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10285001474048
+    m_Localized: View the Stunt GPR user's manual
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10403113074688
+    m_Localized: View your records
+    m_Metadata:
+      m_Items: []
+  - m_Id: 10581798813696
+    m_Localized: Quit Stunt GPR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 11048763260928
+    m_Localized: Configure Stunt GP options
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17647040987136
+    m_Localized: Wins TOP 100
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17736107032576
+    m_Localized: Points TOP 100
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17814204973056
+    m_Localized: Championships TOP 100
+    m_Metadata:
+      m_Items: []
+  - m_Id: 17924557111296
+    m_Localized: Team wins TOP 100
+    m_Metadata:
+      m_Items: []
+  - m_Id: 18027086872576
+    m_Localized: Team championships TOP 100
+    m_Metadata:
+      m_Items: []
+  - m_Id: 18171958132736
+    m_Localized: Team points TOP 100
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19958601613312
+    m_Localized: ARCADE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 19966491099136
+    m_Localized: EXHIBITION
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20069574508544
+    m_Localized: TIME TRIAL
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20075589140480
+    m_Localized: SKATE PARK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20139082514432
+    m_Localized: CHAMPIONSHIPS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 20169092759552
+    m_Localized: EDITOR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21319934279680
+    m_Localized: Unlock cars & tracks in ever harder challenges
+    m_Metadata:
+      m_Items: []
+  - m_Id: 21488641769472
+    m_Localized: Races in which you determine the conditions
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22066021269504
+    m_Localized: Show off your stunt skills on a stunt arena
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22373761548288
+    m_Localized: Take part in an entire SGP season
+    m_Metadata:
+      m_Items: []
+  - m_Id: 22584969920512
+    m_Localized: Create and edit tracks
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23460790927360
+    m_Localized: REMAP CONTROLLER
+    m_Metadata:
+      m_Items: []
+  - m_Id: 23780929568768
+    m_Localized: MULTIPLAYER SETTINGS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24202255794176
+    m_Localized: GAME SETTINGS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24337685676032
+    m_Localized: CREDITS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24823847452672
+    m_Localized: Switch Vsync
+    m_Metadata:
+      m_Items: []
+  - m_Id: 24916629651456
+    m_Localized: Switch aerodynamic trail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 25058606841856
+    m_Localized: Switch language
+    m_Metadata:
+      m_Items: []
+  - m_Id: 25168451469312
+    m_Localized: Language
+    m_Metadata:
+      m_Items: []
+  - m_Id: 25824813907968
+    m_Localized: Vsync
+    m_Metadata:
+      m_Items: []
+  - m_Id: 25938286608384
+    m_Localized: Aerodynamic trail
+    m_Metadata:
+      m_Items: []
+  - m_Id: 27610790494208
+    m_Localized: FPS limiter
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28282818658304
+    m_Localized: Quick messages are written to chat when pressing keyboard buttons
+      0-9
+    m_Metadata:
+      m_Items: []
+  - m_Id: 28767185272832
+    m_Localized: Quick message
+    m_Metadata:
+      m_Items: []
+  - m_Id: 30297254789120
+    m_Localized: Register brakes by pushing stick down. Accelerator is automatically
+      on stick up
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31217090822144
+    m_Localized: BRAKE AXIS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31406203600896
+    m_Localized: Move stick right to register steer right input. Steer left will
+      be on the same axis
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31799994220544
+    m_Localized: STEER AXIS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 31932731359232
+    m_Localized: Jet
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32046300528640
+    m_Localized: BOOST
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32231219003392
+    m_Localized: Perform stunt / handbrake
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32455110950912
+    m_Localized: STUNTS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32651203051520
+    m_Localized: Used to look around your car
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32802156052480
+    m_Localized: LOOK BACK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 32962080669696
+    m_Localized: LOOK LEFT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33040572874752
+    m_Localized: LOOK RIGHT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33207963353088
+    m_Localized: ROLL LEFT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33408870514688
+    m_Localized: ROLL RIGHT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33552093413376
+    m_Localized: Extra button for doing barrelrolls stunts
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33879534338048
+    m_Localized: TOGGLE CAMERA
+    m_Metadata:
+      m_Items: []
+  - m_Id: 33981845995520
+    m_Localized: Change camera
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34127711305728
+    m_Localized: RESET ON TRACK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34243113385984
+    m_Localized: Beep beep :)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34424500256768
+    m_Localized: HORN
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34593245495296
+    m_Localized: Button for navigating menu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34667568562176
+    m_Localized: UI UP
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34818588672000
+    m_Localized: UI DOWN
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34898922176512
+    m_Localized: UI LEFT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 34933957197824
+    m_Localized: UI RIGHT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 35246063747072
+    m_Localized: UI ENTER
+    m_Metadata:
+      m_Items: []
+  - m_Id: 35318721675264
+    m_Localized: UI BACK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 35368357068800
+    m_Localized: UI HORIZONTAL AXIS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 35484086304768
+    m_Localized: UI VERTICAL AXIS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 35537223942144
+    m_Localized: UI SHIFT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 35598737604608
+    m_Localized: UI CTRL
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45386905157632
+    m_Localized: Axis for navigating track selection
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45587250282496
+    m_Localized: Modifier used with 'UI ENTER' to reduce the number of laps by 3
+      in menus
+    m_Metadata:
+      m_Items: []
+  - m_Id: 46129997414400
+    m_Localized: Modifier used with 'UI ENTER' to reduce the number of laps by 1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 46500530618368
+    m_Localized: Modifier used with 'UI ENTER' to increase the number of laps by
+      1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 46743628283904
+    m_Localized: UI ALT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 46986130358272
+    m_Localized: WAITING FOR INPUT ...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47612792930304
+    m_Localized: CREATE A NEW TRACK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47712244072448
+    m_Localized: Create completely new track from scratch
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47915260968960
+    m_Localized: Load or remove any existing track
+    m_Metadata:
+      m_Items: []
+  - m_Id: 48173298745344
+    m_Localized: LOAD TRACK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 48563280936960
+    m_Localized: Sorted by difficulty
+    m_Metadata:
+      m_Items: []
+  - m_Id: 48647049576448
+    m_Localized: Sorted by name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 48863903481856
+    m_Localized: "LOAD\t"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 49023677104128
+    m_Localized: DELETE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 49441526251520
+    m_Localized: Tex
+    m_Metadata:
+      m_Items: []
+  - m_Id: 49493950857216
+    m_Localized: Random
+    m_Metadata:
+      m_Items: []
+  - m_Id: 49859950018560
+    m_Localized: LAP
+    m_Metadata:
+      m_Items: []
+  - m_Id: 49891310829568
+    m_Localized: RACE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 49930355605504
+    m_Localized: STUNT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 49985640726528
+    m_Localized: Original
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50751705186304
+    m_Localized: Community
+    m_Metadata:
+      m_Items: []
+  - m_Id: 51519850020864
+    m_Localized: ENTER YOUR NAME
+    m_Metadata:
+      m_Items: []
+  - m_Id: 51916786368512
+    m_Localized: SELECT ENVIRONMENT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 52091248443392
+    m_Localized: SELECT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 52413027057664
+    m_Localized: SELECT CAR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 52967866368000
+    m_Localized: GRIP
+    m_Metadata:
+      m_Items: []
+  - m_Id: 53556436271104
+    m_Localized: POWER
+    m_Metadata:
+      m_Items: []
+  - m_Id: 53832828321792
+    m_Localized: WILD WHEELS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 53951506153472
+    m_Localized: AERO BLASTERS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 54117642534912
+    m_Localized: SPEED DEMONS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 54285888651264
+    m_Localized: TEAM SPECIALS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 54689061928960
+    m_Localized: SERVER LIST
+    m_Metadata:
+      m_Items: []
+  - m_Id: 54979148382208
+    m_Localized: Refresh server list
+    m_Metadata:
+      m_Items: []
+  - m_Id: 55151899181056
+    m_Localized: REFRESH
+    m_Metadata:
+      m_Items: []
+  - m_Id: 55256932941824
+    m_Localized: Host your own game
+    m_Metadata:
+      m_Items: []
+  - m_Id: 55394770354176
+    m_Localized: START A SERVER
+    m_Metadata:
+      m_Items: []
+  - m_Id: 55728926359552
+    m_Localized: SERVER SETTINGS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 55983394783232
+    m_Localized: NAME
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56287515377664
+    m_Localized: Max players
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56551219658752
+    m_Localized: Password (empty or more than 8 chars)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 56946205655040
+    m_Localized: SELECT TRACK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 58433099005952
+    m_Localized: Roster
+    m_Metadata:
+      m_Items: []
+  - m_Id: 59241395912704
+    m_Localized: Select number of opponents of this car
+    m_Metadata:
+      m_Items: []
+  - m_Id: 59935712608256
+    m_Localized: Reset roster
+    m_Metadata:
+      m_Items: []
+  - m_Id: 60106060070912
+    m_Localized: RESET
+    m_Metadata:
+      m_Items: []
+  - m_Id: 60611503063040
+    m_Localized: PLAYER
+    m_Metadata:
+      m_Items: []
+  - m_Id: 60913451008000
+    m_Localized: CAR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 61089779548160
+    m_Localized: SCORE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 61383661846528
+    m_Localized: READY
+    m_Metadata:
+      m_Items: []
+  - m_Id: 61514993893376
+    m_Localized: Garage
+    m_Metadata:
+      m_Items: []
+  - m_Id: 61583004532736
+    m_Localized: Day
+    m_Metadata:
+      m_Items: []
+  - m_Id: 61628621783040
+    m_Localized: Night
+    m_Metadata:
+      m_Items: []
+  - m_Id: 61652248297472
+    m_Localized: Sunrise
+    m_Metadata:
+      m_Items: []
+  - m_Id: 61694916952064
+    m_Localized: Sunset
+    m_Metadata:
+      m_Items: []
+  - m_Id: 61990388891648
+    m_Localized: Catchup
+    m_Metadata:
+      m_Items: []
+  - m_Id: 62391175610368
+    m_Localized: You sure?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 62877173809152
+    m_Localized: Chat
+    m_Metadata:
+      m_Items: []
+  - m_Id: 63027099205632
+    m_Localized: RESULTS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 63312634839040
+    m_Localized: POSITION
+    m_Metadata:
+      m_Items: []
+  - m_Id: 63684845764608
+    m_Localized: BEST LAP
+    m_Metadata:
+      m_Items: []
+  - m_Id: 63966233231360
+    m_Localized: AEROMILES
+    m_Metadata:
+      m_Items: []
+  - m_Id: 64051687981056
+    m_Localized: DRIFT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 64196605378560
+    m_Localized: 1-st
+    m_Metadata:
+      m_Items: []
+  - m_Id: 64245213167616
+    m_Localized: 2-nd
+    m_Metadata:
+      m_Items: []
+  - m_Id: 64297121873920
+    m_Localized: 3-rd
+    m_Metadata:
+      m_Items: []
+  - m_Id: 64355041017856
+    m_Localized: 4-th
+    m_Metadata:
+      m_Items: []
+  - m_Id: 64395650269184
+    m_Localized: 5-th
+    m_Metadata:
+      m_Items: []
+  - m_Id: 64426713284608
+    m_Localized: 6-th
+    m_Metadata:
+      m_Items: []
+  - m_Id: 64467838435328
+    m_Localized: 7-th
+    m_Metadata:
+      m_Items: []
+  - m_Id: 64509567565824
+    m_Localized: 8-th
+    m_Metadata:
+      m_Items: []
+  - m_Id: 64540538306560
+    m_Localized: 9-th
+    m_Metadata:
+      m_Items: []
+  - m_Id: 64571769094144
+    m_Localized: 10-th
+    m_Metadata:
+      m_Items: []
+  - m_Id: 64578404483072
+    m_Localized: 'SCORE:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 70863850045440
+    m_Localized: STUNT GP REMASTERED\n\nProgramming  - @viatrufka\nmusic here & tracks
+      - DJ Mistone (@luckygoose)\ntracks - @Arkhnen\n\nSPECIAL THANKS\n\n martin
+      (forum.xen-tax.com) - for format .PMD v.1.82 and tools \n\n@Halamix2, @TushkaN
+      - for format .PMD v.1.62\n\nJustin Couch for Randomation Vehicle Physics -
+      free vehicle physics library
+    m_Metadata:
+      m_Items: []
+  - m_Id: 71441426677760
+    m_Localized: RANKING
+    m_Metadata:
+      m_Items: []
+  - m_Id: 284628038189056
+    m_Localized: POINTS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 284661080915968
+    m_Localized: VICTORIES
+    m_Metadata:
+      m_Items: []
+  - m_Id: 285368081186816
+    m_Localized: TEAMS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 285564097789952
+    m_Localized: Round
+    m_Metadata:
+      m_Items: []
+  - m_Id: 287137964228608
+    m_Localized: LAPTIME
+    m_Metadata:
+      m_Items: []
+  - m_Id: 288486017728512
+    m_Localized: WINS THE GAME!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 288555311824896
+    m_Localized: WIN THE GAME!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 289947137081344
+    m_Localized: No cars available lol
+    m_Metadata:
+      m_Items: []
+  - m_Id: 291063086186496
+    m_Localized: MEAN STREAK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 291092727332864
+    m_Localized: Fast, light and agile, this racer offers much for those who wish
+      to modify their vehicle.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 293901384286208
+    m_Localized: THE HUSTLER
+    m_Metadata:
+      m_Items: []
+  - m_Id: 293946057818112
+    m_Localized: Sturdy 4x4 pick-up truck with an eye for the outrageous!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 294072901959680
+    m_Localized: TWIN EAGLE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 294114169716736
+    m_Localized: SKY HAWK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 294209984397312
+    m_Localized: THE PHANTOM
+    m_Metadata:
+      m_Items: []
+  - m_Id: 294282180952064
+    m_Localized: ROAD HOG
+    m_Metadata:
+      m_Items: []
+  - m_Id: 294324832829440
+    m_Localized: DUNE RAT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 294348484509696
+    m_Localized: LIGHTNIN'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 294401093664768
+    m_Localized: ALLEY KAT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 294442617274368
+    m_Localized: SAND SHARK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 294471230816256
+    m_Localized: THE BRUTE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 294506882400256
+    m_Localized: WILD DART
+    m_Metadata:
+      m_Items: []
+  - m_Id: 294579997507584
+    m_Localized: RAGING BULL
+    m_Metadata:
+      m_Items: []
+  - m_Id: 294637925040128
+    m_Localized: FLYING MANTIS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 294690718744576
+    m_Localized: STUNT MONKEY
+    m_Metadata:
+      m_Items: []
+  - m_Id: 294723040051200
+    m_Localized: INFERNO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 294752924467200
+    m_Localized: FORK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 294788483776512
+    m_Localized: WORM MOBILE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 294890162094080
+    m_Localized: FORMULA 17
+    m_Metadata:
+      m_Items: []
+  - m_Id: 294954540466176
+    m_Localized: TEAM MACHINE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 295151232352256
+    m_Localized: Take flight with this light and speedy stuntcar.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 295283629752320
+    m_Localized: Get airborne with this very versatile stunt car.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 295372007931904
+    m_Localized: Fast, sleek and tough to handle.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 295438915469312
+    m_Localized: Rock and Roll with the rough ridin' road hog.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 295548877537280
+    m_Localized: Defy the laws of physics in this buggy.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 295618981134336
+    m_Localized: Supercharged super speed. Easy does it!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 298206963171328
+    m_Localized: Sleek and powerful, this cat is ready to roar.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 298303369248768
+    m_Localized: This beachcomber is at home on any stunt circuit.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 298403818635264
+    m_Localized: Unleash the Brute for no-nonsense on the road!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 298478489829376
+    m_Localized: Fly fast and true with this stuntcar.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 298528146194432
+    m_Localized: Powerful and fast, this streetwise 4x4 is incredible.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 298610115477504
+    m_Localized: Super light and very fast.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 298667858460672
+    m_Localized: Monkey see, monkey do! Go bananas with this wild ride!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 298774418948096
+    m_Localized: This speed demon is on fire!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 298840118525952
+    m_Localized: Despite its looks, it moves like fork lightning!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 298965389803520
+    m_Localized: Super Speedy Buggy!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 299068322217984
+    m_Localized: Incredibly fast racing car.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 299164162064384
+    m_Localized: The ultimate, hugely versatile stock car.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 299809069858816
+    m_Localized: has left the server
+    m_Metadata:
+      m_Items: []
+  - m_Id: 300248343511040
+    m_Localized: Select configuration file..
+    m_Metadata:
+      m_Items: []
+  - m_Id: 300464043982848
+    m_Localized: SGPR car components configuration files
+    m_Metadata:
+      m_Items: []
+  - m_Id: 301069810532352
+    m_Localized: SAVE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 301387789107200
+    m_Localized: Save car config file..
+    m_Metadata:
+      m_Items: []
+  - m_Id: 301518139686912
+    m_Localized: Save part file..
+    m_Metadata:
+      m_Items: []
+  - m_Id: 302311790084096
+    m_Localized: Custom
+    m_Metadata:
+      m_Items: []
+  - m_Id: 302905649004544
+    m_Localized: Untitled
+    m_Metadata:
+      m_Items: []
+  - m_Id: 303048955789312
+    m_Localized: No racingline defined
+    m_Metadata:
+      m_Items: []
+  - m_Id: 303434231971840
+    m_Localized: Select track..
+    m_Metadata:
+      m_Items: []
+  - m_Id: 303617799880704
+    m_Localized: Save track!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 303635902496768
+    m_Localized: Racingline isn't closed!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 303904539279360
+    m_Localized: IS RECHARGING!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 304453825331200
+    m_Localized: Golden
+    m_Metadata:
+      m_Items: []
+  - m_Id: 304757304197120
+    m_Localized: Championship
+    m_Metadata:
+      m_Items: []
+  - m_Id: 304786785959936
+    m_Localized: Points
+    m_Metadata:
+      m_Items: []
+  - m_Id: 304835657990144
+    m_Localized: Victories
+    m_Metadata:
+      m_Items: []
+  - m_Id: 304877320011776
+    m_Localized: Arena
+    m_Metadata:
+      m_Items: []
+  - m_Id: 304945376788480
+    m_Localized: Volcano
+    m_Metadata:
+      m_Items: []
+  - m_Id: 305068731269120
+    m_Localized: Asphalt
+    m_Metadata:
+      m_Items: []
+  - m_Id: 305240286691328
+    m_Localized: Energy
+    m_Metadata:
+      m_Items: []
+  - m_Id: 305269130919936
+    m_Localized: Grid
+    m_Metadata:
+      m_Items: []
+  - m_Id: 305307479441408
+    m_Localized: Japan
+    m_Metadata:
+      m_Items: []
+  - m_Id: 305334104883200
+    m_Localized: Jungle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 305400622350336
+    m_Localized: Race
+    m_Metadata:
+      m_Items: []
+  - m_Id: 305484365824000
+    m_Localized: Knockout
+    m_Metadata:
+      m_Items: []
+  - m_Id: 305525985902592
+    m_Localized: Time trial
+    m_Metadata:
+      m_Items: []
+  - m_Id: 305628939288576
+    m_Localized: Easy
+    m_Metadata:
+      m_Items: []
+  - m_Id: 305683930808320
+    m_Localized: Medium
+    m_Metadata:
+      m_Items: []
+  - m_Id: 305707674763264
+    m_Localized: Hard
+    m_Metadata:
+      m_Items: []
+  - m_Id: 305736355414016
+    m_Localized: English
+    m_Metadata:
+      m_Items: []
+  - m_Id: 305796816306176
+    m_Localized: Polish
+    m_Metadata:
+      m_Items: []
+  - m_Id: 306601686466560
+    m_Localized: has joined the server
+    m_Metadata:
+      m_Items: []
+  - m_Id: 306913755267072
+    m_Localized: Select
+    m_Metadata:
+      m_Items: []
+  - m_Id: 307170027241472
+    m_Localized: Tracks
+    m_Metadata:
+      m_Items: []
+  - m_Id: 307511187734528
+    m_Localized: A new player is synching right now...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 307683875618816
+    m_Localized: No synchronization. Try again or reconnect
+    m_Metadata:
+      m_Items: []
+  - m_Id: 307788619972608
+    m_Localized: Some players haven't come back to lobby yet
+    m_Metadata:
+      m_Items: []
+  - m_Id: 308235195908096
+    m_Localized: HOST
+    m_Metadata:
+      m_Items: []
+  - m_Id: 308259388653568
+    m_Localized: No limit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 309045736767488
+    m_Localized: You need at least two teams
+    m_Metadata:
+      m_Items: []
+  - m_Id: 309372426911744
+    m_Localized: WAIT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 310166576431104
+    m_Localized: SLIDE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 310188718161920
+    m_Localized: TRICKSTART
+    m_Metadata:
+      m_Items: []
+  - m_Id: 310221769277440
+    m_Localized: WHEELIE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 310933475557376
+    m_Localized: HANDSTAND
+    m_Metadata:
+      m_Items: []
+  - m_Id: 310986235707392
+    m_Localized: GRIND
+    m_Metadata:
+      m_Items: []
+  - m_Id: 311000408260608
+    m_Localized: SUPER LOOPER
+    m_Metadata:
+      m_Items: []
+  - m_Id: 311052132417536
+    m_Localized: WHEELIE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 311279342059520
+    m_Localized: POWERSLIDE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 311303111180288
+    m_Localized: SIDEWINDER LEFT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 311414109241344
+    m_Localized: SIDEWINDER RIGHT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 311478613442560
+    m_Localized: RAILGRIND
+    m_Metadata:
+      m_Items: []
+  - m_Id: 311690685841408
+    m_Localized: SIDE RAILGRIND
+    m_Metadata:
+      m_Items: []
+  - m_Id: 312093548740608
+    m_Localized: MEGASLIDE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 312677890785280
+    m_Localized: MASTERSLIDE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 313194402545664
+    m_Localized: FINAL LAP
+    m_Metadata:
+      m_Items: []
+  - m_Id: 313341819748352
+    m_Localized: COMPLETES LAP WITH 10 AERO STARS!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 313494840541184
+    m_Localized: 'SETS NEW LAP RECORD: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 313742182842368
+    m_Localized: WINS!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 314266147880960
+    m_Localized: RACE TIME
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315481980141568
+    m_Localized: Whoops.. No tracks available
+    m_Metadata:
+      m_Items: []
+  - m_Id: 315523994484736
+    m_Localized: Servers are overloaded. Try again later
+    m_Metadata:
+      m_Items: []
+  - m_Id: 358153021292544
+    m_Localized: Laps
+    m_Metadata:
+      m_Items: []
+  - m_Id: 360476808314880
+    m_Localized: Bots
+    m_Metadata:
+      m_Items: []
+  - m_Id: 361268797767680
+    m_Localized: CPU
+    m_Metadata:
+      m_Items: []
+  - m_Id: 361506572861440
+    m_Localized: Rivals
+    m_Metadata:
+      m_Items: []
+  - m_Id: 361898186637312
+    m_Localized: Sponsor
+    m_Metadata:
+      m_Items: []
+  - m_Id: 362587340144640
+    m_Localized: Voted for RESTART.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 362635411062784
+    m_Localized: Voted for END.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 362918396559360
+    m_Localized: All votes expired.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 412376752717824
+    m_Localized: Terrain editor
+    m_Metadata:
+      m_Items: []
+  - m_Id: 412616905981952
+    m_Localized: Radius
+    m_Metadata:
+      m_Items: []
+  - m_Id: 412643795664896
+    m_Localized: Speed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 412937334030336
+    m_Localized: Raise/Lower
+    m_Metadata:
+      m_Items: []
+  - m_Id: 413116929933312
+    m_Localized: Flatten
+    m_Metadata:
+      m_Items: []
+  - m_Id: 413146491387904
+    m_Localized: Smoothen
+    m_Metadata:
+      m_Items: []
+  - m_Id: 413387257020416
+    m_Localized: '- Mousewheel - change area\n- Mousewheel + shift - change strength\nHold
+      Shift in Raise/Lower to lower terrain\n- Ctrl + R -reset terrain'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 413979912175616
+    m_Localized: ADD
+    m_Metadata:
+      m_Items: []
+  - m_Id: 414188285198336
+    m_Localized: Track rotation
+    m_Metadata:
+      m_Items: []
+  - m_Id: 414248532180992
+    m_Localized: Show trackpiece X-axis
+    m_Metadata:
+      m_Items: []
+  - m_Id: 414505580101632
+    m_Localized: Wind x-axis
+    m_Metadata:
+      m_Items: []
+  - m_Id: 414594419654656
+    m_Localized: Wind z-axis
+    m_Metadata:
+      m_Items: []
+  - m_Id: 414984951300096
+    m_Localized: Random wind x-axis
+    m_Metadata:
+      m_Items: []
+  - m_Id: 415048394342400
+    m_Localized: Random wind z-axis
+    m_Metadata:
+      m_Items: []
+  - m_Id: 597760497418240
+    m_Localized: RETURNS ON TRACK!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 601241874595840
+    m_Localized: NATURAL
+    m_Metadata:
+      m_Items: []
+  - m_Id: 601267371769856
+    m_Localized: REVERSE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 601331804667904
+    m_Localized: FRONT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 601479192510464
+    m_Localized: BACK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 601871942942720
+    m_Localized: RIGHT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 601914422853632
+    m_Localized: LEFT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 603098785251328
+    m_Localized: FLIP
+    m_Metadata:
+      m_Items: []
+  - m_Id: 603166619729920
+    m_Localized: TWIST
+    m_Metadata:
+      m_Items: []
+  - m_Id: 603273196994560
+    m_Localized: ROLL
+    m_Metadata:
+      m_Items: []
+  - m_Id: 604006684295168
+    m_Localized: ROLLINGSTONE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 605413562908672
+    m_Localized: TORNADO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 605434790281216
+    m_Localized: CORKSCREW
+    m_Metadata:
+      m_Items: []
+  - m_Id: 605554986450944
+    m_Localized: SHURIKEN
+    m_Metadata:
+      m_Items: []
+  - m_Id: 605701669650432
+    m_Localized: UFO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 605722217545728
+    m_Localized: STAR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 605743910486016
+    m_Localized: WINDMILL
+    m_Metadata:
+      m_Items: []
+  - m_Id: 605796955848704
+    m_Localized: RODEO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 605816971067392
+    m_Localized: SPINNING CHAOS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 605920402604032
+    m_Localized: FLAT ATTACK
+    m_Metadata:
+      m_Items: []
+  - m_Id: 605958113591296
+    m_Localized: METEOR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 606022928171008
+    m_Localized: RIGHT HALF TWISTER
+    m_Metadata:
+      m_Items: []
+  - m_Id: 606059355701248
+    m_Localized: LEFT HALF TWISTER
+    m_Metadata:
+      m_Items: []
+  - m_Id: 608751083847680
+    m_Localized: '*  RESUME'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 608971393859584
+    m_Localized: '*  RESTART'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 609079833395200
+    m_Localized: '*  VOTE ON END'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 609128969666560
+    m_Localized: '*  EXIT'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 609328136192000
+    m_Localized: '*  SOUND EFFECTS VOL'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 609376790118400
+    m_Localized: '* MUSIC VOL'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 609601248296960
+    m_Localized: '* STEERING DEADZONE'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 609891733209088
+    m_Localized: 'Suspension:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 609937199464448
+    m_Localized: 'BMS:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 609966840610816
+    m_Localized: 'Battery:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 610000764141568
+    m_Localized: 'Gearbox:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 610053390073856
+    m_Localized: 'Chassis:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 610093642809344
+    m_Localized: 'Engine:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 610124840042496
+    m_Localized: 'Boost:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 610157161349120
+    m_Localized: 'Tyres:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 610188887064576
+    m_Localized: 'Drive:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 610222869315584
+    m_Localized: 'Honk:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 612559939698688
+    m_Localized: GERMANY\n\nLoud crowd cheering and powerful spotlights..This german
+      arena is really a place to show off.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 612961032601600
+    m_Localized: JAPAN\n\nHere in this calm japanese dojo placed on the outskirts
+      of Kyoto you can meditate or organize a race!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 613466748223488
+    m_Localized: 'SPAIN\n\nBeaches like this usually ooze holidays. This is not an
+      exception: warm sand, palms, and sun.. What could people possibly want more?
+      Maybe a RC car race :)'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 614066437226496
+    m_Localized: FRANCE\n\nThis shadowy warehouse is full of boxes, forklifts and
+      machinery. There are some really dark places here.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 614504834269184
+    m_Localized: ENGLAND\n\nEnglish go-kart track is a good location to test your
+      driving skills. This place has a reputation for great races.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 614920951169024
+    m_Localized: USA\n\nAre you looking for an intense experience? Racing on top
+      of a multistorey parking lot located in the heart of New York will be a bombastic
+      idea!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 615367665516544
+    m_Localized: 'ITALY\n\nFeeling mediterranean? This italian coast is very scenic,
+      especially at night. There are two dangers here to look out however: staircase
+      descent and water!'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 616094777475072
+    m_Localized: MEXICO\n\nOnly some people are in a possession of info that there's
+      this ancient place located in the middle of an unknown mexican forest, where
+      aztecs used to race RC-cars. However no-one really knows how to get there.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 619262177443840
+    m_Localized: GOOD
+    m_Metadata:
+      m_Items: []
+  - m_Id: 619327709249536
+    m_Localized: GREAT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 619361607614464
+    m_Localized: MASTER DRIFT!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 619828383318016
+    m_Localized: IS ELIMINATED!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 620015688351744
+    m_Localized: IS OUT OF BATTERY!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 624074302423040
+    m_Localized: Exactly 1 startline needed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 625142658760704
+    m_Localized: TAKES THE LEAD!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 964890581532672
+    m_Localized: Texts are too short or not translated
+    m_Metadata:
+      m_Items: []
+  - m_Id: 965317620400128
+    m_Localized: Empty
+    m_Metadata:
+      m_Items: []
+  - m_Id: 981524369113088
+    m_Localized: Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 981667046752256
+    m_Localized: Author
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38262869724815360
+    m_Localized: Music volume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 38262940063293440
+    m_Localized: SFX Volume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45342225111781376
+    m_Localized: ONLINE GAME
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45342315754885120
+    m_Localized: SPLIT SCREEN PLAYERS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45342737819308032
+    m_Localized: SPLIT SCREEN
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47500128618876928
+    m_Localized: Try to traverse all paths to unlock bonuses
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47791721053753344
+    m_Localized: SELECT ARCADE VARIANT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50016945589522432
+    m_Localized: TRACKS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 50017676967088128
+    m_Localized: PROGRESS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 51147302351212544
+    m_Localized: 'Finish at least '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 51147750902665216
+    m_Localized: Do a lap faster than {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 51147988979748864
+    m_Localized: Get at least {0} aero stars
+    m_Metadata:
+      m_Items: []
+  - m_Id: 51148071712395264
+    m_Localized: Get at least {0} aeromiles
+    m_Metadata:
+      m_Items: []
+  - m_Id: 51148241250357248
+    m_Localized: Get at least {0} drift points
+    m_Metadata:
+      m_Items: []
+  - m_Id: 51148376172728320
+    m_Localized: Finish the race in less than {0}
+    m_Metadata:
+      m_Items: []
+  - m_Id: 51148493227364352
+    m_Localized: Set the fastest lap time
+    m_Metadata:
+      m_Items: []
+  - m_Id: 51148632834772992
+    m_Localized: Always finish in first place
+    m_Metadata:
+      m_Items: []
+  - m_Id: 51148676208070656
+    m_Localized: Always get the highest stunt points!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 51149075795218432
+    m_Localized: Find all hidden paths
+    m_Metadata:
+      m_Items: []
+  - m_Id: 51158714318393344
+    m_Localized: QUIT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 52216372991430656
+    m_Localized: UNLOCKED
+    m_Metadata:
+      m_Items: []
+  - m_Id: 52421218851950592
+    m_Localized: Congratulations! You've unlocked car {0} in Exhibition Mode!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 52421961499611136
+    m_Localized: Congratulations! You've unlocked track {0} in Exhibition Mode!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 52422051018641408
+    m_Localized: Congratulations! You've unlocked livery {0} in Exhibition Mode!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 57652508077395968
+    m_Localized: OBJECTIVES
+    m_Metadata:
+      m_Items: []
+  - m_Id: 60076925909524480
+    m_Localized: Race with others on the same computer
+    m_Metadata:
+      m_Items: []
+  - m_Id: 60077190968565760
+    m_Localized: Select amount of local players
+    m_Metadata:
+      m_Items: []
+  - m_Id: 63452409415667712
+    m_Localized: Perform {0} at least {1} times
+    m_Metadata:
+      m_Items: []
+  - m_Id: 66363235515293696
+    m_Localized: Bad racingpath. Press R to reset it
+    m_Metadata:
+      m_Items: []
+  - m_Id: 121623786990133248
+    m_Localized: Rounds
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []

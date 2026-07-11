@@ -4,7 +4,6 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Audio;
@@ -123,7 +122,8 @@ public class ComponentPanel : MonoBehaviour
 		// Load file/folder: file, Allow multiple selection: true
 		// Initial path: default (Documents), Initial filename: empty
 		// Title: "Load File", Submit button text: "Load"
-		yield return FileBrowser.WaitForLoadDialog(FileBrowser.PickMode.Files, false, F.I.partsPath, null, "Select configuration file..", "Load");
+		yield return FileBrowser.WaitForLoadDialog(FileBrowser.PickMode.Files, false, F.I.partsPath, null, 
+			F.I.LocStr("Select configuration file.."), F.I.LocStr("LOAD"));
 
 		// Dialog is closed
 		Debug.Log(FileBrowser.Success); // (FileBrowser.Success) - whether the user has selected some files or cancelled the operation 
@@ -138,7 +138,7 @@ public class ComponentPanel : MonoBehaviour
 		{
 			string[] extensions = F.I.partInfos.Select(i => i.fileExtension).ToArray();
 			var extensionFilter = new[] {
-			 new FileBrowser.Filter("SGPR car parts configuration files", extensions)};
+			 new FileBrowser.Filter(F.I.LocStr("SGPR car components configuration files"), extensions)};
 			FileBrowser.SetFilters(true, extensionFilter);
 			StartCoroutine(ShowLoadDialogCoroutine());
 		}
@@ -251,7 +251,7 @@ public class ComponentPanel : MonoBehaviour
 				var extensionFilter = new[] { new FileBrowser.Filter("SGPR car config file", CarConfig.extension) };
 				FileBrowser.SetFilters(false, extensionFilter);
 
-				yield return FileBrowser.WaitForSaveDialog(FileBrowser.PickMode.Files, false, F.I.partsPath, vp.carConfig.name, "Save car config file..", "Save");
+				yield return FileBrowser.WaitForSaveDialog(FileBrowser.PickMode.Files, false, F.I.partsPath, vp.carConfig.name, F.I.LocStr("Save car config file.."), F.I.LocStr("SAVE"));
 
 				if (FileBrowser.Success)
 				{
@@ -274,7 +274,7 @@ public class ComponentPanel : MonoBehaviour
 				var extensionFilter = new[] { new FileBrowser.Filter("SGPR Car part", F.I.partInfos[(int)selectedPart].fileExtension) };
 				FileBrowser.SetFilters(false, extensionFilter);
 
-				yield return FileBrowser.WaitForSaveDialog(FileBrowser.PickMode.Files, false, F.I.partsPath, vp.carConfig.GetPartName(selectedPart), "Save part file..", "Save");
+				yield return FileBrowser.WaitForSaveDialog(FileBrowser.PickMode.Files, false, F.I.partsPath, vp.carConfig.GetPartName(selectedPart), F.I.LocStr("Save part file.."), F.I.LocStr("SAVE"));
 				if (FileBrowser.Success)
 				{
 					string filepath = FileBrowser.Result[0];
@@ -420,29 +420,37 @@ public class CarConfig
 	[JsonIgnore]
 	public float[] SGP
 	{
-		get
-		{
-			PartSavable Part(PartType type)
-			{
-				if (externalParts[(int)type] != null)
-					return F.I.carParts[externalParts[(int)type]];
-				else
-					return customParts[type];
-			}
+	//get based on vehicle
+	get
+	{
 			float C01(float min, float max, float val)
 			{
 				return Mathf.Clamp(Mathf.InverseLerp(min, max, val), .15f, 1);
 			}
 
-			var chassis = (ChassisSavable)Part(PartType.Chassis);
-			var tyre = (TyreSavable)Part(PartType.Tyre);
-			var engine = (EngineSavable)Part(PartType.Engine);
-			float S = C01(400, 1200, chassis.staticEvoMaxSpeed);
-			float G = C01(2, 0, (tyre.sideFriction - tyre.shiftRearFriction) / chassis.mass);
-			float P = (C01(0.025f, .2f, engine.torque / chassis.mass) + C01(4,10,tyre.forwardFriction / chassis.mass))/2f;
-			return new float[] { S, G, P };
-		}
+			return new float[] {C01(1,10,F.I.Car(name).stunt), C01(1,10,F.I.Car(name).grip), C01(1,10,F.I.Car(name).power) };
 	}
+	// get based on PartSavable
+	//get
+	//{
+	//	PartSavable Part(PartType type)
+	//	{
+	//		if (externalParts[(int)type] != null)
+	//			return F.I.carParts[externalParts[(int)type]];
+	//		else
+	//			return customParts[type];
+	//	}
+	
+
+	//	var chassis = (ChassisSavable)Part(PartType.Chassis);
+	//	var tyre = (TyreSavable)Part(PartType.Tyre);
+	//	var engine = (EngineSavable)Part(PartType.Engine);
+	//	float S = C01(400, 1200, chassis.staticEvoMaxSpeed);
+	//	float G = C01(2, 0, (tyre.sideFriction - tyre.shiftRearFriction) / chassis.mass);
+	//	float P = (C01(0.025f, .2f, engine.torque / chassis.mass) + C01(4,10,tyre.forwardFriction / chassis.mass))/2f;
+	//	return new float[] { S, G, P };
+	//}
+}
 	[NonSerialized]
 	public static readonly string extension = "carcfg";
 	[NonSerialized]
@@ -614,10 +622,14 @@ public class DriveSavable : PartSavable
 	public float driveType;
 	public float steerAdd;
 	public float holdComebackSpeed;
-	public float steerLimitAt0;
+    public float gripAdd;
+	public float gripComebackSpeed;
+    public float steerLimitAt0;
 	public float steerLimitAt200;
+	public float steerLimitAt300;
 	public float steerComebackAt0;
 	public float steerComebackAt200;
+	
 	public DriveSavable()
 	{
 	}
@@ -629,8 +641,11 @@ public class DriveSavable : PartSavable
 	{
 		steerAdd = original.steerAdd;
 		holdComebackSpeed = original.holdComebackSpeed;
+        gripAdd = original.gripAdd;
+        gripComebackSpeed = original.gripComebackSpeed;
 		steerLimitAt0 = original.steerLimitAt0;
 		steerLimitAt200 = original.steerLimitAt200;
+		steerLimitAt300 = original.steerLimitAt300;
 		steerComebackAt0 = original.steerComebackAt0;
 		steerComebackAt200 = original.steerComebackAt200;
 	}
@@ -643,8 +658,11 @@ public class DriveSavable : PartSavable
 	{
 		steerAdd = vp.steeringControl.steerAdd;
 		holdComebackSpeed = vp.steeringControl.holdComebackSpeed;
-		steerLimitAt0 = vp.steeringControl.steerLimitCurve.keys[0].value;
+		gripAdd = vp.steeringControl.gripComebackSpeed;
+		gripComebackSpeed = vp.steeringControl.gripComebackSpeed;
+        steerLimitAt0 = vp.steeringControl.steerLimitCurve.keys[0].value;
 		steerLimitAt200 = vp.steeringControl.steerLimitCurve.keys[1].value;
+		steerLimitAt300 = vp.steeringControl.steerLimitCurve.keys[2].value;
 		
 		steerComebackAt0 = vp.steeringControl.steerComebackCurve.keys[0].value;
 		steerComebackAt200 = vp.steeringControl.steerComebackCurve.keys[1].value;
@@ -658,11 +676,14 @@ public class DriveSavable : PartSavable
 
 		vp.steeringControl.steerAdd = steerAdd;
 		vp.steeringControl.holdComebackSpeed = holdComebackSpeed;
+		vp.steeringControl.gripAdd = gripAdd;
+		vp.steeringControl.gripComebackSpeed = 0.8f;//gripComebackSpeed;
 
 		//vp.steeringControl.steerLimitCurve = AnimationCurve.Linear(0, steerLimitAt0, 83, steerLimitAt200);
 		vp.steeringControl.steerLimitCurve = new AnimationCurve(new Keyframe[] {
 			new (0, steerLimitAt0, 0, -0.03f),
-			new (56, steerLimitAt200, -0.0012f, 0)
+			new (56, steerLimitAt200, -0.0012f, 0),
+			new (83, steerLimitAt300, 0, 0)
 		});
 
 		vp.steeringControl.steerComebackCurve = AnimationCurve.Linear(0, steerComebackAt0, 56, steerComebackAt200);
@@ -673,8 +694,8 @@ public class TyreSavable : PartSavable
 {
 	public float forwardFriction;
 	public float sideFriction;
-	public float frontFrictionStretch;
-	public float rearFrictionStretch;
+	public float forwardFrictionStretch;
+	public float sideFrictionStretch;
 	public float shiftRearFriction;
 	public float squeakSlipThreshold;
 	public float slipDependence;
@@ -682,7 +703,7 @@ public class TyreSavable : PartSavable
 	public float offroadTread;
 	public float driftRearFriction;
 	public float driftRearFrictionInit;
-	public float torqueThreshold;
+	public float rpmBiasCurveLimit;
 	public TyreSavable()
 	{
 	}
@@ -694,8 +715,8 @@ public class TyreSavable : PartSavable
 	{
 		forwardFriction = original.forwardFriction;
 		sideFriction = original.sideFriction;
-		frontFrictionStretch = original.frontFrictionStretch;
-		rearFrictionStretch = original.rearFrictionStretch;
+		forwardFrictionStretch = original.forwardFrictionStretch;
+		sideFrictionStretch = original.sideFrictionStretch;
 		shiftRearFriction = original.shiftRearFriction;
 		squeakSlipThreshold = original.squeakSlipThreshold;
 		slipDependence = original.slipDependence;
@@ -703,7 +724,7 @@ public class TyreSavable : PartSavable
 		offroadTread = original.offroadTread;
 		driftRearFriction = original.driftRearFriction;
 		driftRearFrictionInit = original.driftRearFrictionInit;
-		torqueThreshold = original.torqueThreshold;
+		rpmBiasCurveLimit = original.rpmBiasCurveLimit;
 	}
 	public override PartSavable Clone()
 	{
@@ -717,15 +738,14 @@ public class TyreSavable : PartSavable
 		offroadTread = vp.tyresOffroad;
 		forwardFriction = front.sidewaysFriction;
 		sideFriction = rear.sidewaysFriction;
-		frontFrictionStretch = front.sidewaysCurveStretch;
-		rearFrictionStretch = rear.sidewaysCurveStretch;
+		forwardFrictionStretch = front.sidewaysCurveStretch;
+		sideFrictionStretch = rear.sidewaysCurveStretch;
 		shiftRearFriction = vp.steeringControl.shiftRearFriction;
 		driftRearFriction = vp.steeringControl.driftRearFriction;
-		driftRearFrictionInit = vp.steeringControl.driftRearFrictionInit;
-		squeakSlipThreshold = rear.slipThreshold;
+		squeakSlipThreshold = rear.slipThres;
 		slipDependence = 2;
 		axleFriction = rear.axleFriction;
-		torqueThreshold = vp.wheels[2].torqueThreshold;
+		rpmBiasCurveLimit = vp.wheels[2].rpmBiasCurveLimit;
 	}
 
 	public override void Apply(VehicleParent vp)
@@ -733,18 +753,22 @@ public class TyreSavable : PartSavable
 		vp.tyresOffroad = offroadTread;
 		vp.steeringControl.shiftRearFriction = shiftRearFriction;
 		vp.steeringControl.driftRearFriction = driftRearFriction;
-		vp.steeringControl.driftRearFrictionInit = driftRearFrictionInit;
 		for (int i = 0; i < 4; ++i)
 		{
 			var w = vp.wheels[i];
 
-			w.SetInitFrictions(forwardFriction, (F.I.s_raceType == RaceType.Drift) ? driftRearFrictionInit : sideFriction, (i < 2) ? frontFrictionStretch : rearFrictionStretch);
-
-			w.slipThreshold = squeakSlipThreshold;
+			float rearFriction = (F.I.s_raceType == RaceType.Drift) ? driftRearFrictionInit : sideFriction;
+			w.initForwardFriction = forwardFriction;
+			w.forwardFriction = w.initForwardFriction;
+			w.initSidewaysFriction = (vp.followAI.IsCPU ? 2 : 1) * sideFriction;
+			w.sidewaysFriction = (vp.followAI.IsCPU ? 2 : 1) * sideFriction;
+			w.forwardStretch = forwardFrictionStretch;
+			w.sidewaysCurveStretch = sideFrictionStretch;
+			w.slipThres = squeakSlipThreshold;
 			w.slipDependence = (F.I.s_raceType == RaceType.Drift) ? 
-				Wheel.SlipDependenceMode.independent : Wheel.SlipDependenceMode.independent;
+				Wheel.SlipDependenceMode.independent : Wheel.SlipDependenceMode.sideways;
 			w.axleFriction = axleFriction;
-			w.torqueThreshold = torqueThreshold;
+			w.rpmBiasCurveLimit = rpmBiasCurveLimit;
 			// update materials
 			//var mr = w.transform.GetChild(0).GetComponent<MeshRenderer>();
 			//// [..^1] = from beginning to last - 1. |         tier+1 cause tyres are named from 1
@@ -792,7 +816,6 @@ public class BoostSavable : PartSavable
 [Serializable]
 public class GearboxSavable : PartSavable
 {
-	// tier >=2 -> quick gear reducing
 	public float shiftDelaySeconds;
 	public float reverseGearRatio;
 	public float Gear1Ratio;
@@ -803,6 +826,7 @@ public class GearboxSavable : PartSavable
 	public float Gear6Ratio;
 	public float Gear7Ratio;
 	public float Gear8Ratio;
+	public float FinalRatio;
 	public GearboxSavable()
 	{
 	}
@@ -822,11 +846,13 @@ public class GearboxSavable : PartSavable
 		Gear6Ratio = original.Gear6Ratio;
 		Gear7Ratio = original.Gear7Ratio;
 		Gear8Ratio = original.Gear8Ratio;
+		FinalRatio = original.FinalRatio;
 	}
 	public override PartSavable Clone()
 	{
 		return new GearboxSavable(this);
 	}
+	[JsonIgnore]
 	public int NumberOfGears
 	{
 		get
@@ -857,6 +883,7 @@ public class GearboxSavable : PartSavable
 		shiftDelaySeconds = vp.engine.transmission.shiftDelaySeconds;
 		var gearStructs = vp.engine.transmission.Gears;
 		int gears = vp.engine.transmission.Gears.Length - 2; // without R and N
+		FinalRatio = vp.engine.transmission.finalRatio;
 		reverseGearRatio = gearStructs[0].ratio;
 		Gear1Ratio = gearStructs[2].ratio;
 		if (gears >= 2)
@@ -877,6 +904,7 @@ public class GearboxSavable : PartSavable
 	public override void Apply(VehicleParent vp)
 	{
 		vp.engine.transmission.shiftDelaySeconds = shiftDelaySeconds;
+		vp.engine.transmission.finalRatio = FinalRatio;
 		int gears = NumberOfGears;
 		Gear[] gearStructs = new Gear[gears + 2];
 		for (int i = 0; i < gears + 2; ++i)
@@ -916,7 +944,8 @@ public class ChassisSavable : PartSavable
 	public float evoSmoothTime;
 	public float staticEvoMaxSpeed;
 	public float evoAcceleration;
-	public float dragsterEffect;
+	public float twistGain = 0.25f;
+	//public float cameraHeight;
 	public ChassisSavable()
 	{
 	}
@@ -934,7 +963,8 @@ public class ChassisSavable : PartSavable
 		evoSmoothTime = original.evoSmoothTime;
 		staticEvoMaxSpeed = original.staticEvoMaxSpeed;
 		evoAcceleration = original.evoAcceleration;
-		dragsterEffect = original.dragsterEffect;
+		twistGain = original.twistGain;
+		//cameraHeight = original.cameraHeight;
 	}
 	public override PartSavable Clone()
 	{
@@ -942,21 +972,23 @@ public class ChassisSavable : PartSavable
 	}
 	public override void Apply(VehicleParent vp)
 	{
-		vp.rb.centerOfMass = new Vector3(0, verticalCOM, (F.I.s_raceType == RaceType.Drift) ? 0 : longtitunalCOM);
-		vp.SetChassis(mass, drag, angularDrag);
+		//vp.cameraheightOffset = cameraHeight;
+		Vector3 COM = new Vector3(0, verticalCOM, (F.I.s_raceType == RaceType.Drift) ? 0 : longtitunalCOM);
+		vp.SetChassis(mass, drag, angularDrag, COM, twistGain);
 		vp.raceBox.evoModule.SetStuntCoeffs(evoSmoothTime, staticEvoMaxSpeed, evoAcceleration);
-		vp.GetComponent<SGP_DragsterEffect>().COM_Movement = vp.followAI.isCPU ? 0 : -dragsterEffect;
+		RaceManager.I.cam.UpdateLH();
 	}
 	public override void InitializeFromCar(VehicleParent vp)
 	{
+		//cameraHeight = vp.cameraheightOffset;
+		twistGain = vp.twistGain;
 		mass = vp.originalMass;
 		drag = vp.originalDrag;
 		var com = vp.rb.centerOfMass;
 		longtitunalCOM = com.z;
 		verticalCOM = com.y;
-		angularDrag = vp.AngularDrag;
+		angularDrag = vp.va.initialAngularDrag;
 		vp.raceBox.evoModule.GetStuntCoeffs(ref evoSmoothTime, ref staticEvoMaxSpeed, ref evoAcceleration);
-		dragsterEffect = -vp.GetComponent<SGP_DragsterEffect>().COM_Movement;
 	}
 }
 [Serializable]
@@ -967,6 +999,7 @@ public class EngineSavable : PartSavable
 	public float fuelConsumption;
 	public float audioType;
 	public float inertia;
+	public float inertiaAcc;
 	public float torque;
 	public float torqueCurveType;
 	public float redlineKRPM;
@@ -989,6 +1022,7 @@ public class EngineSavable : PartSavable
 		torqueCurveType = original.torqueCurveType;
 		redlineKRPM = original.redlineKRPM;
 		cutoffKRPM = original.cutoffKRPM;
+		inertiaAcc = original.inertiaAcc;
 	}
 	public override PartSavable Clone()
 	{
@@ -1003,6 +1037,7 @@ public class EngineSavable : PartSavable
 		vp.engine.maxTorque = (F.I.s_raceType == RaceType.Drift) ? Mathf.Max(torque, vp.originalMass/2f) : torque;
 		vp.engine.limitkRPM = redlineKRPM;
 		vp.engine.limit2kRPM = cutoffKRPM;
+		vp.engine.inertiaAcc = inertiaAcc;
 		vp.engine.torqueCurve = vp.engine.GenerateTorqueCurve((int)torqueCurveType);
 		vp.engine.SetEngineAudioClip((int)audioType);
 		vp.engine.GetMaxRPM();
@@ -1018,6 +1053,7 @@ public class EngineSavable : PartSavable
 		redlineKRPM = vp.engine.limitkRPM;
 		cutoffKRPM = vp.engine.limit2kRPM;
 		vp.engine.torqueCurve = vp.engine.GenerateTorqueCurve((int)torqueCurveType);
+		inertiaAcc = vp.engine.inertiaAcc;
 		vp.engine.GetMaxRPM();
 		vp.engine.SetEngineAudioClip((int)audioType);
 	}
@@ -1104,10 +1140,10 @@ public class BmsSavable : PartSavable
 		bms.autoSteerDrift = autoSteerDrift == 1;
 		bms.driftPush = (F.I.s_raceType == RaceType.Drift) ? Mathf.Max(driftPush, 1) : driftPush;
 		bms.downforce = (F.I.s_raceType == RaceType.Drift) ? 0 : downforce;
-		vp.wheels[0].suspensionParent.brakeForce = frontBrakeForce;
-		vp.wheels[1].suspensionParent.brakeForce = frontBrakeForce;
-		vp.wheels[2].suspensionParent.brakeForce = rearBrakeForce;
-		vp.wheels[3].suspensionParent.brakeForce = rearBrakeForce;
+		vp.wheels[0].susParent.brakeForce = frontBrakeForce;
+		vp.wheels[1].susParent.brakeForce = frontBrakeForce;
+		vp.wheels[2].susParent.brakeForce = rearBrakeForce;
+		vp.wheels[3].susParent.brakeForce = rearBrakeForce;
 	}
 	public override void InitializeFromCar(VehicleParent vp)
 	{
@@ -1119,8 +1155,8 @@ public class BmsSavable : PartSavable
 		autoSteerDrift = bms.autoSteerDrift ? 1 : 0;
 		driftPush = bms.driftPush;
 		downforce = bms.downforce;
-		frontBrakeForce = vp.wheels[0].suspensionParent.brakeForce;
-		rearBrakeForce = vp.wheels[3].suspensionParent.brakeForce;
+		frontBrakeForce = vp.wheels[0].susParent.brakeForce;
+		rearBrakeForce = vp.wheels[3].susParent.brakeForce;
 	}
 }
 [Serializable]
@@ -1169,35 +1205,35 @@ public class SuspensionSavable : PartSavable
 		{
 			if (i < 2)
 			{
-				w.suspensionParent.steerRangeMax = frontSteerRangeDegs;
-				w.suspensionParent.steerRangeMin = -frontSteerRangeDegs;
-				w.suspensionParent.suspensionDistance = frontSpringDistance;
-				w.suspensionParent.springForce = frontSpringForce;
-				w.suspensionParent.springExponent = frontSpringExponent;
-				w.suspensionParent.springDampening = frontSpringDampening;
+				w.susParent.steerRangeMax = frontSteerRangeDegs;
+				w.susParent.steerRangeMin = -frontSteerRangeDegs;
+				w.susParent.suspensionDistance = frontSpringDistance;
+				w.susParent.springForce = frontSpringForce;
+				w.susParent.springExponent = frontSpringExponent;
+				w.susParent.springDampening = frontSpringDampening;
 			}
 			else
 			{
-				w.suspensionParent.suspensionDistance = RearSpringDistance;
-				w.suspensionParent.springForce = RearSpringForce;
-				w.suspensionParent.springExponent = RearSpringExponent;
-				w.suspensionParent.springDampening = RearSpringDampening;
+				w.susParent.suspensionDistance = RearSpringDistance;
+				w.susParent.springForce = RearSpringForce;
+				w.susParent.springExponent = RearSpringExponent;
+				w.susParent.springDampening = RearSpringDampening;
 			}
 			i++;
 		}
 	}
 	public override void InitializeFromCar(VehicleParent vp)
 	{
-		frontSteerRangeDegs = vp.wheels[0].suspensionParent.steerRangeMax;
-		frontSpringDistance = vp.wheels[0].suspensionParent.suspensionDistance;
-		frontSpringForce = vp.wheels[0].suspensionParent.springForce;
-		frontSpringExponent = vp.wheels[0].suspensionParent.springExponent;
-		frontSpringDampening = vp.wheels[0].suspensionParent.springDampening;
+		frontSteerRangeDegs = vp.wheels[0].susParent.steerRangeMax;
+		frontSpringDistance = vp.wheels[0].susParent.suspensionDistance;
+		frontSpringForce = vp.wheels[0].susParent.springForce;
+		frontSpringExponent = vp.wheels[0].susParent.springExponent;
+		frontSpringDampening = vp.wheels[0].susParent.springDampening;
 
-		RearSpringDistance = vp.wheels[3].suspensionParent.suspensionDistance;
-		RearSpringForce = vp.wheels[3].suspensionParent.springForce;
-		RearSpringExponent = vp.wheels[3].suspensionParent.springExponent;
-		RearSpringDampening = vp.wheels[3].suspensionParent.springDampening;
+		RearSpringDistance = vp.wheels[3].susParent.suspensionDistance;
+		RearSpringForce = vp.wheels[3].susParent.springForce;
+		RearSpringExponent = vp.wheels[3].susParent.springExponent;
+		RearSpringDampening = vp.wheels[3].susParent.springDampening;
 	}
 }
 

@@ -1,1 +1,21 @@
-{"author":"Team17","desc":"More difficult version out of two unreleased variants.  ","valid":true,"envir":"USA","preferredCarClass":"Wild","difficulty":6,"unlocked":true,"icons":[3,5],"TrackOrigin":0,"IsOriginal":true}
+{
+  "author": "Team17",
+  "localizedDescriptions": [
+    "More difficult version out of two unreleased variants.",
+    "Trudniejszy wariant spośród dwóch niewydanych wersji."
+  ],
+  "localizedNames": [
+    "CURB CITY CIRCUIT I",
+    "WYBOISTE MIASTO I"
+  ],
+  "valid": true,
+  "envir": "USA",
+  "preferredCarClass": "Aero",
+  "difficulty": 9,
+  "unlocked": true,
+  "icons": [
+    2,
+    3,
+    5
+  ]
+}

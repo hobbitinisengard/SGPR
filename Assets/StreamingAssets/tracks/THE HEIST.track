@@ -1,1 +1,21 @@
-{"author":"Viatrufka","desc":"This track requires more of the car, as it combines well known turns with a long dirt sequence","valid":true,"envir":"JAP","preferredCarClass":"Wild","difficulty":2,"unlocked":true,"icons":[0,3,9],"TrackOrigin":1,"IsOriginal":false}
+{
+  "author": "Viatrufka",
+  "localizedDescriptions": [
+    "This track requires more of the car, as it combines well known turns with a long dirt sequence",
+    "Ten tor wymaga od auta więcej; łączy dobrze znane zakręty z długim szutrowym odcinkiem"
+  ],
+  "localizedNames": [
+    "THE HEIST",
+    "NAPAD"
+  ],
+  "valid": true,
+  "envir": "JAP",
+  "preferredCarClass": "Speed",
+  "difficulty": 6,
+  "unlocked": true,
+  "icons": [
+    0,
+    3,
+    9
+  ]
+}

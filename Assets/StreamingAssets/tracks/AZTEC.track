@@ -1,0 +1,19 @@
+{
+  "author": "Team17",
+  "localizedNames":[
+	"AZTEC JUNGLE",
+	"AZTECKA DŻUNGLA",
+	],
+  "localizedDescriptions": [
+	"An ancient, hidden and forgotten track",
+	"Starożytna, skryta i zapomniana przez wszystkich trasa.",
+	],
+  "valid": true,
+  "envir": "MEX",
+  "preferredCarClass": "Wild",
+  "difficulty": 17,
+  "unlocked": true,
+  "icons": [],
+  "TrackOrigin": 0,
+  "IsOriginal": true
+}

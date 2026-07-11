@@ -31,7 +31,7 @@ public class EnvirSelector : Sfxable
 		F.I.s_trackName = selectedEnvir.name;
 		if (containerCo != null)
 			StopCoroutine(containerCo);
-		envirDescText.text = F.I.EnvirDescs[selectedEnvir.GetSiblingIndex()];
+		envirDescText.text = F.I.LocStr("newTrackE" + selectedEnvir.GetSiblingIndex());
 		containerCo = StartCoroutine(MoveToEnvir());
 		F.I.s_inEditor = true;
 	}
@@ -69,7 +69,7 @@ public class EnvirSelector : Sfxable
 				}
 				// new track has been selected
 				// set description
-				envirDescText.text = F.I.EnvirDescs[selectedEnvir.GetSiblingIndex()];
+				envirDescText.text = F.I.LocStr("newTrackE" + selectedEnvir.GetSiblingIndex());
 				SetTile();
 				// focus on track
 				if (containerCo != null)

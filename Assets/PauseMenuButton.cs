@@ -25,11 +25,11 @@ public class PauseMenuButton : MonoBehaviour, ISelectHandler, IDeselectHandler
 		text = transform.GetChild(0).GetComponent<Text>();
 		if (transform.childCount > 1)
 		{
-			batteryMask = transform.GetChild(1).GetChild(0);
+			batteryMask = transform.GetChild(1);
 			if (audioMixer)
 				indicatorLevel = F.I.ReadMixerLevelLog(exposedParameter, audioMixer);
 			else
-				indicatorLevel = Mathf.InverseLerp(0,10,F.I.playerData.steerGamma);
+				indicatorLevel = Mathf.InverseLerp(0,10,F.I.playerData.deadzone);
 			SetBatteryGUI(indicatorLevel);
 		}
 	}
@@ -47,7 +47,7 @@ public class PauseMenuButton : MonoBehaviour, ISelectHandler, IDeselectHandler
 				F.I.SetMixerLevelLog(exposedParameter, indicatorLevel, audioMixer);
 			else
 			{
-				F.I.playerData.steerGamma = Mathf.Clamp(10*indicatorLevel, 1, 10);
+				F.I.playerData.deadzone = indicatorLevel;
 			}
 		}
 	}
@@ -73,7 +73,7 @@ public class PauseMenuButton : MonoBehaviour, ISelectHandler, IDeselectHandler
 	void SetBatteryGUI(float val01)
 	{
 		Vector3 pos = batteryMask.GetComponent<RectTransform>().anchoredPosition;
-		pos.x = Mathf.Lerp(0, 40, val01);
+		pos.x = Mathf.Lerp(163, 216, val01);
 		batteryMask.GetComponent<RectTransform>().anchoredPosition = pos;
 	}
 	public void OnSelect(BaseEventData eventData)

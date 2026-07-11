@@ -1,0 +1,20 @@
+{
+  "author": "Arkhnen & Viatrufka",
+  "localizedDescriptions": [
+    "Long straights, ramps, tubes, bridges - everything is here and waiting for some rubber-burning!",
+    "Długie proste, rampy, tuby, mosty - wszystko już czeka na palenie gumy!"
+  ],
+  "localizedNames": [
+    "SPECTACULAR STEPS",
+    "SPEKTAKULARNE SKOKI"
+  ],
+  "valid": true,
+  "envir": "ENG",
+  "preferredCarClass": "Speed",
+  "difficulty": 8,
+  "unlocked": true,
+  "icons": [
+    0,
+    2
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "author": "luckygoose",
+  "localizedDescriptions": [
+    "This quick, medium-short track features few narrow turns, a technical chicane, and high speed sections up in the clouds.",
+    "Ta szybka, średnio-długa trasa odznacza się paroma wąskimi skrętami, techniczną szykaną i prędkimi sekcjami położonymi wysoko w chmurach."
+  ],
+  "localizedNames": [
+    "ROUTE 45",
+    "MIĘDZYSTANOWA 45"
+  ],
+  "valid": true,
+  "envir": "USA",
+  "preferredCarClass": "Speed",
+  "difficulty": 6,
+  "unlocked": true,
+  "icons": [
+    0,
+    2,
+    3
+  ]
+}

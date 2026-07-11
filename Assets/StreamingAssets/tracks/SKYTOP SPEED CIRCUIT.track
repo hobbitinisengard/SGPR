@@ -1,1 +1,19 @@
-{"author":"Team17","desc":"A very small, fast track with a couple of jumps and high banks","valid":true,"envir":"USA","preferredCarClass":"Speed","difficulty":0,"unlocked":true,"icons":[0],"TrackOrigin":0,"IsOriginal":true}
+{
+  "author": "Team17",
+  "localizedDescriptions": [
+    "A very small, fast track with a couple of jumps and high banks",
+    "Bardzo szybka trasa - pełna ostrych zakrętów."
+  ],
+  "localizedNames": [
+    "SKYTOP SPEED CIRCUIT",
+    "DROGA DO NIEBA"
+  ],
+  "valid": true,
+  "envir": "USA",
+  "preferredCarClass": "Team",
+  "difficulty": 4,
+  "unlocked": true,
+  "icons": [
+    0
+  ]
+}

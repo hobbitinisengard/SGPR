@@ -1,4 +1,3 @@
-using RVP;
 using System;
 using UnityEngine;
 /* connectors act as:
@@ -79,9 +78,14 @@ public class Connector : MonoBehaviour
 		//		RightLine
 		//			waypoint1
 		//			waypoint2
-		// connectorD		<-- 3			(always no children) 
+		// connectorD		<-- 3			(always no children)
 		int nextIdx = NextConnectorIndex(transform.GetSiblingIndex());
-		return transform.parent.GetChild(nextIdx).GetComponent<Connector>();
+		var connector = transform.parent.GetChild(nextIdx).GetComponent<Connector>();
+		if(connector == null)
+		{
+
+		}
+		return connector;
 	}
 	int NextConnectorIndex(int siblingIdx)
 	{
@@ -176,7 +180,7 @@ public class Connector : MonoBehaviour
 			}
 			else
 			{
-				Tile otherTile = otherConnectorsCollider.transform.FindParentComponent<Tile>();
+				Tile otherTile = otherConnectorsCollider.transform.GetParentComponent<Tile>();
 				if (otherTile.placed)
 				{ // both connectors are placed, disable other one
 					otherConnectorsCollider.enabled = false;

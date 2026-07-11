@@ -84,12 +84,11 @@ namespace RVP
 		}
 		void Update()
 		{
-
 			// Check for continuous marking
-			if (w.grounded)
+			if (w.groundedReally)
 			{
 				alwaysScrape = GroundSurfaceMaster.surfaceTypesStatic[w.contactPoint.surfaceType].alwaysScrape ?
-					(w.slipThreshold + w.vp.engine.targetPitch) : 0;
+					(w.slipThres + w.vp.engine.targetPitch) : 0;
 			}
 			else
 			{
@@ -97,11 +96,11 @@ namespace RVP
 			}
 
 			// Create mark
-			if (w.grounded && (Mathf.Abs(F.MaxAbs(w.sidewaysSlip, w.forwardSlip / 25f)) > w.slipThreshold || alwaysScrape > 0) && w.connected)
+			if (w.groundedReally && (Mathf.Abs(F.MaxAbs(w.sidewaysSlip, w.forwardSlip)) > w.slipThres || alwaysScrape > 0) && w.connected)
 			{
 				w.sliding = true;
 				prevSurface = curSurface;
-				curSurface = w.grounded ? w.contactPoint.surfaceType : -1;
+				curSurface = w.groundedReally ? w.contactPoint.surfaceType : -1;
 
 				poppedPrev = popped;
 				popped = w.popped;
@@ -120,8 +119,8 @@ namespace RVP
 				if (curMark)
 				{
 					Vector3 pointDir = Quaternion.AngleAxis(90, w.contactPoint.normal) * tr.right * (w.popped ? w.rimWidth : w.tireWidth);
-					leftPoint = curMarkTr.InverseTransformPoint(w.contactPoint.point + pointDir * w.suspensionParent.flippedSideFactor * Mathf.Sign(w.rawRPM) + w.contactPoint.normal * RaceManager.tireMarkHeightStatic);
-					rightPoint = curMarkTr.InverseTransformPoint(w.contactPoint.point - pointDir * w.suspensionParent.flippedSideFactor * Mathf.Sign(w.rawRPM) + w.contactPoint.normal * RaceManager.tireMarkHeightStatic);
+					leftPoint = curMarkTr.InverseTransformPoint(w.contactPoint.point + Mathf.Sign(w.rawRPM) * w.susParent.flippedSideFactor * pointDir + w.contactPoint.normal * RaceManager.I.tireMarkHeight);
+					rightPoint = curMarkTr.InverseTransformPoint(w.contactPoint.point - Mathf.Sign(w.rawRPM) * w.susParent.flippedSideFactor * pointDir + w.contactPoint.normal * RaceManager.I.tireMarkHeight);
 				}
 			}
 			else if (creatingMark)
@@ -131,14 +130,14 @@ namespace RVP
 			}
 
 			// Update mark if it's short enough, otherwise end it
-			if (curEdge < RaceManager.tireMarkLengthStatic && creatingMark)
+			if(creatingMark)
 			{
-				UpdateMark();
+				if (curEdge < RaceManager.I.tireMarkLength)
+					UpdateMark();
+				else
+					EndMark();
 			}
-			else if (creatingMark)
-			{
-				EndMark();
-			}
+			
 
 			// Set particle emission rates
 			ParticleSystem.EmissionModule em;
@@ -157,14 +156,14 @@ namespace RVP
 							{
 								em = sparks.emission;
 								em.rateOverTime = new ParticleSystem.MinMaxCurve(initialEmissionRates[debrisParticles.Length] *
-									Mathf.Clamp01(Mathf.Abs(F.MaxAbs(w.sidewaysSlip, w.forwardSlip / 25f, alwaysScrape)) - w.slipThreshold));
+									Mathf.Clamp01(Mathf.Abs(F.MaxAbs(w.sidewaysSlip, w.forwardSlip, alwaysScrape)) - w.slipThres));
 							}
 						}
 						else
 						{
 							em = debrisParticles[ps].emission;
 							var v = initialEmissionRates[ps] *
-								Mathf.Clamp01(Mathf.Abs(F.MaxAbs(w.sidewaysSlip, w.forwardSlip/25f, alwaysScrape)) - w.slipThreshold);
+								Mathf.Clamp01(Mathf.Abs(F.MaxAbs(w.sidewaysSlip, w.forwardSlip, alwaysScrape)) - w.slipThres);
 							em.rateOverTime = new ParticleSystem.MinMaxCurve(v);
 
 							if (sparks)
@@ -218,8 +217,8 @@ namespace RVP
 
 			tempRend.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
 			mesh = curMark.AddComponent<MeshFilter>().mesh;
-			verts = new Vector3[RaceManager.tireMarkLengthStatic * 2];
-			tris = new int[RaceManager.tireMarkLengthStatic * 3];
+			verts = new Vector3[RaceManager.I.tireMarkLength * 2];
+			tris = new int[RaceManager.I.tireMarkLength * 3];
 
 			if (continueMark)
 			{
@@ -245,7 +244,7 @@ namespace RVP
 			colors[1].a = 0;
 
 			curEdge = 2;
-			gapDelay = RaceManager.tireMarkGapStatic;
+			gapDelay = RaceManager.I.tireMarkGap;
 		}
 
 		// Update mark currently being generated
@@ -253,11 +252,11 @@ namespace RVP
 		{
 			if (gapDelay == 0)
 			{
-				float alpha = (curEdge < RaceManager.tireMarkLengthStatic - 2 && curEdge > 5 ? 1 : 0) *
+				float alpha = (curEdge < RaceManager.I.tireMarkLength - 2 && curEdge > 5 ? 1 : 0) *
 					 UnityEngine.Random.Range(
-						  Mathf.Clamp01(F.MaxAbs(w.sidewaysCurveStretch * w.sidewaysSlip, w.forwardCurveStretch * w.forwardSlip, alwaysScrape) - w.slipThreshold),
-						  Mathf.Clamp01(F.MaxAbs(w.sidewaysCurveStretch * w.sidewaysSlip, w.forwardCurveStretch * w.forwardSlip, alwaysScrape) - w.slipThreshold));
-				gapDelay = RaceManager.tireMarkGapStatic;
+						  Mathf.Clamp01(F.MaxAbs(w.sidewaysCurveStretch * w.sidewaysSlip, w.forwardStretch * w.forwardSlip, alwaysScrape) - w.slipThres),
+						  Mathf.Clamp01(F.MaxAbs(w.sidewaysCurveStretch * w.sidewaysSlip, w.forwardStretch * w.forwardSlip, alwaysScrape) - w.slipThres));
+				gapDelay = RaceManager.I.tireMarkGap;
 				curEdge += 2;
 
 				verts[curEdge] = leftPoint;
@@ -312,19 +311,23 @@ namespace RVP
 		}
 
 		// Stop making mark
-		void EndMark()
+		public void EndMark()
 		{
-			creatingMark = false;
-			leftPointPrev = verts[Mathf.RoundToInt(verts.Length * 0.5f)];
-			rightPointPrev = verts[Mathf.RoundToInt(verts.Length * 0.5f + 1)];
-			continueMark = w.grounded;
+			if(curMark != null)
+			{
+				creatingMark = false;
+				leftPointPrev = verts[Mathf.RoundToInt(verts.Length * 0.5f)];
+				rightPointPrev = verts[Mathf.RoundToInt(verts.Length * 0.5f + 1)];
+				continueMark = false;//w.groundedReally;
 
-			curMark.GetComponent<TireMark>().fadeTime = RaceManager.tireFadeTimeStatic;
-			curMark.GetComponent<TireMark>().mesh = mesh;
-			curMark.GetComponent<TireMark>().colors = colors;
-			curMark = null;
-			curMarkTr = null;
-			mesh = null;
+				var tm = curMark.GetComponent<TireMark>();
+				tm.fadeTime = RaceManager.I.tireFadeTime;
+				tm.mesh = mesh;
+				tm.colors = colors;
+				curMark = null;
+				curMarkTr = null;
+				mesh = null;
+			}
 		}
 
 		// Clean up mark if destroyed while creating

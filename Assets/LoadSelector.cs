@@ -1,7 +1,13 @@
 using System.IO;
+using UnityEngine;
+using UnityEngine.UI;
 
 public class LoadSelector : TrackSelectorTemplate
 {
+	public void RefreshTrackImage()
+	{
+		selectedTrack.GetComponent<Image>().sprite = IMG2Sprite.LoadNewSprite(Path.Combine(F.I.tracksPath, selectedTrack.name + ".jpg"));
+	}
 	public void RemoveCurrentTrack()
 	{
 		if (selectedTrack == null || selectedTrack.parent.childCount == 1)
@@ -13,19 +19,22 @@ public class LoadSelector : TrackSelectorTemplate
 		string FolderNamePath = F.I.tracksPath + selectedTrack.name;
 		File.Delete(FolderNamePath + ".track");
 		File.Delete(FolderNamePath + ".data");
-		File.Delete(FolderNamePath + ".png");
+		File.Delete(FolderNamePath + ".jpg");
 		if (File.Exists(FolderNamePath + ".rec"))
 			File.Delete(FolderNamePath + ".rec");
 
 		F.I.tracks.Remove(selectedTrack.name);
 
-		int idx = selectedTrack.GetSiblingIndex();
-		Destroy(selectedTrack.gameObject);
-		selectedTrack = selectedTrack.parent.GetChild(idx-1);
+		int i = selectedTrack.GetSiblingIndex();
+		var tr = selectedTrack.parent;
+		DestroyImmediate(selectedTrack.gameObject);
+		i = Mathf.Max(0, i - 1);
+		selectedTrack = tr.GetChild(i);
 
 		StartCoroutine(Load(selectedTrack.name));
 		//containerCo = StartCoroutine(MoveToTrack());
 	}
+	
 	//bool[] PopulateContent()
 	//{
 	//	bool[] existingTrackClasses = new bool[2];

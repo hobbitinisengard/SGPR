@@ -73,6 +73,11 @@ PrefabInstance:
       propertyPath: m_TagString
       value: VisibleInPictureMode
       objectReference: {fileID: 0}
+    - target: {fileID: 2623589184915641800, guid: 9244807296c7bed4b8f2febb7469be94,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

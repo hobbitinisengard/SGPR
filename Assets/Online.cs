@@ -40,7 +40,7 @@ public class Online : NetworkBehaviour
 	}
 	public void ActivateEndraceTimer()
 	{
-		if(F.I.gameMode == MultiMode.Multiplayer)
+		if(F.I.gameMode == GameMode.Multiplayer)
 			CountdownTillForceEveryoneToResultsRpc();
 	}
 	[Rpc(SendTo.Everyone)]
@@ -73,5 +73,9 @@ public class Online : NetworkBehaviour
 	private void TellRacestartdateRpc(DateTime raceStartDate, RpcParams ps)
 	{
 		F.I.raceStartDate = raceStartDate;
+		if(F.I.raceStartDate == DateTime.MinValue)
+		{
+			RaceManager.I.ExitButton();
+		}
 	}
 }

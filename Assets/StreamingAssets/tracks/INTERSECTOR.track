@@ -1,0 +1,20 @@
+{
+  "author": "Team17",
+  "localizedDescriptions": [
+    "A long, fast track with a multitude of mad crossovers!",
+    "Szalone skrzyżowania na długiej i szybkiej trasie!"
+  ],
+  "localizedNames": [
+    "INTERSECTOR",
+    "KRZYŻOWY OGIEŃ"
+  ],
+  "valid": true,
+  "envir": "ENG",
+  "preferredCarClass": "Speed",
+  "difficulty": 8,
+  "unlocked": true,
+  "icons": [
+    2,
+    3
+  ]
+}

@@ -1,7 +1,4 @@
-﻿
-using NUnit.Framework;
-using System.Collections.Generic;
-using Unity.Services.Lobbies.Models;
+﻿using Unity.Services.Lobbies.Models;
 
 public class CarPlacement
 {
@@ -12,26 +9,26 @@ public class CarPlacement
 	/// <summary>
 	/// from 0 to 19
 	/// </summary>
-	public string carName;
+	public int carIdx;
 	public string name;
-	public Livery sponsor;
-	public static CarPlacement CPU(int pos, in List<int> preferredCars)
+	public Livery livery = Livery.Random;
+	public static CarPlacement CPU(int pos, int carIdx)
 	{
 		return new CarPlacement() {
-			carName = "car" + preferredCars.GetRandom().ToString("D2"),
+			carIdx = carIdx,
 			position = pos,
 			name = "CP" + (pos + 1).ToString(),
-			sponsor = F.RandomLivery(),
+			livery = (Livery)(((int)F.I.s_PlayerCarSponsor + pos + 1) % (F.I.Liveries - 1)), // avoid random
 		};
 	}
 	public static CarPlacement LocalPlayer()
 	{
 		return new CarPlacement()
 		{
-			carName = F.I.s_playerCarName,
+			carIdx = F.I.s_playerCarIdx,
 			position = F.I.s_cpuRivals,
 			name = F.I.playerData.playerName,
-			sponsor = F.I.s_PlayerCarSponsor,
+			livery = F.I.s_PlayerCarSponsor,
 		};
 	}
 	public static CarPlacement OnlinePlayer(int pos, Player p)
@@ -39,10 +36,10 @@ public class CarPlacement
 		var pIndex = pos - F.I.s_cpuRivals;
 		return new CarPlacement()
 		{
-			carName = p.carNameGet(),
+			carIdx = Car.Name2Index(p.carNameGet()),
 			position = (F.I.s_cpuRivals + pIndex),
 			name = p.NameGet(),
-			sponsor = p.SponsorGet(),
+			livery = p.SponsorGet(),
 		};
 	}
 }

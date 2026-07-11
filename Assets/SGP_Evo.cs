@@ -6,11 +6,12 @@ using UnityEngine;
 public enum Direction { ANTICLOCK = -1, CLOCK = 1 };
 public class RotationDampStruct
 {
+
 	public float evoSmoothTime = 0.07f;
 	public float staticEvoMaxSpeed = 1100; // 400 = hustler max speed. 1500 = dart max speed
 	public float evoAcceleration = 15; // 15 = hustler max acc.  57 = dart max acc
 
-	// increases when holding shift
+	// increases when holding shift and arrow
 	float evoMaxSpeed = 0;
 	float pos = 0;
 	public float targetPos = 0;
@@ -118,7 +119,7 @@ public class RotationDampStruct
 		pos = degs(pos);
 		prevSpeed = speed;
 		pos = Mathf.SmoothDamp(pos, targetPos, ref speed,
-				 evoSmoothTime, evoMaxSpeed, deltaTime);
+						 evoSmoothTime, evoMaxSpeed, deltaTime);
 	}
 	public void IncreaseEvoSpeed()
 	{
@@ -129,7 +130,10 @@ public class RotationDampStruct
 	public void DecreaseMaxEvoSpeed()
 	{
 		if (!Active)
+		{
+			speed -= evoAcceleration / 2f;
 			evoMaxSpeed = speed;
+		}
 	}
 	public void CloseAdvancedMode()
 	{
@@ -145,14 +149,14 @@ public class RotationDampStruct
 }
 public class SGP_Evo : MonoBehaviour
 {
+	public float angleThres = 15;
 	public AudioSource evoBloorp;
 	Rigidbody rb;
 	VehicleParent vp;
 	float shiftPressTime;
 	int prevSGPShiftButton;
-	public bool stunting = false;
-	public bool flippedWhenInitiated = false;
-	float maxTimeToInit = 1f;
+	public bool stunting { get; private set; }
+	const float maxTimeToInit = 1f;
 	RotationDampStruct[] r;
 	public float rX_delta;
 	public Vector3 euler;
@@ -172,7 +176,7 @@ public class SGP_Evo : MonoBehaviour
 	}
 	public void SetStuntCoeffs(float evoSmoothTime, float staticEvoMaxSpeed, float evoAcceleration)
 	{
-		foreach(var rds in r)
+		foreach (var rds in r)
 		{
 			rds.evoSmoothTime = evoSmoothTime;
 			rds.staticEvoMaxSpeed = staticEvoMaxSpeed;
@@ -185,60 +189,21 @@ public class SGP_Evo : MonoBehaviour
 		staticEvoMaxSpeed = r[0].staticEvoMaxSpeed;
 		evoAcceleration = r[0].evoAcceleration;
 	}
-	public bool IsStunting
-	{
-		get
-		{
-			return stunting;
-		}
-	}
-	public void OnCollide()
-	{
 
-	}
-	public void FixedUpdateWorks(float deltaTime)
+	public void FixedUpdate()
 	{
-		if (vp.SGPshiftbutton > 0)
-		{
-			if (!stunting && prevSGPShiftButton == 0)
-			{ // shift press before jump
-				if (vp.reallyGroundedWheels > 0 && !vp.crashing)
-				{
-					shiftPressTime = Time.time;
-					flippedWhenInitiated = false;
-				}
-				else if (vp.reallyGroundedWheels == 0 && vp.crashing)
-				{
-					shiftPressTime = Time.time;
-					flippedWhenInitiated = true;
-				}
-			}
-		}
-
-		if (!stunting && Time.time - shiftPressTime < maxTimeToInit && !vp.colliding && !vp.crashing && vp.reallyGroundedWheels == 0)
-		{
-			evoBloorp.Play();
-			stunting = true;
-			euler = vp.tr.rotation.eulerAngles;
-			r[0].Init(euler.x, Axis.X); //rX
-			r[1].Init(euler.y, Axis.Y); // rY
-			r[2].Init(euler.z, Axis.Z); // rZ
-		}
-
 		if (stunting)
 		{
-			if (!flippedWhenInitiated && (vp.rb.isKinematic || vp.crashing || vp.colliding || vp.reallyGroundedWheels > 0))
+			if (vp.rb.isKinematic || vp.crashing || vp.colliding || vp.reallyGroundedWheels > 0)
 			{
+				//Debug.Log("Crashed");
 				stunting = false;
 				return;
 			}
-
-			if (flippedWhenInitiated && !vp.crashing && !vp.colliding && vp.reallyGroundedWheels == 0)
-				flippedWhenInitiated = false;
-
 			if (vp.SGPshiftbutton > 0)
 			{
-				if (vp.accelInput > 0.5f)
+
+				if (vp.accelInput > .2f)
 				{ // backflip
 					r[0].UpdateTarget(Direction.ANTICLOCK);
 					r[0].IncreaseEvoSpeed();
@@ -249,28 +214,36 @@ public class SGP_Evo : MonoBehaviour
 					r[0].UpdateTarget(Direction.CLOCK);
 					r[0].IncreaseEvoSpeed();
 				}
-				if (vp.rollInput != 0)
+				else if (vp.rollInput != 0)
 				{
-					if (vp.rollInput > 0.5f)
+					if (vp.rollInput > .2f)
 					{ // right barrel roll
-						r[2].UpdateTarget(Direction.CLOCK);
-					}
-					else if (vp.rollInput < -0.5f)
-					{ // left barrel roll
 						r[2].UpdateTarget(Direction.ANTICLOCK);
+					}
+					else if (vp.rollInput < -.2f)
+					{ // left barrel roll
+						r[2].UpdateTarget(Direction.CLOCK);
 					}
 					r[2].IncreaseEvoSpeed();
 				}
-				if (vp.steerInput != 0)
+				else if (vp.steerInput != 0)
 				{ // rotation left/right 
-					if (vp.steerInput > 0.5f)
+					if (vp.steerInput > .2f)
 						r[1].UpdateTarget(Direction.CLOCK);
-					else if (vp.steerInput < -0.5f)
+					else if (vp.steerInput < -.2f)
 						r[1].UpdateTarget(Direction.ANTICLOCK);
 					r[1].IncreaseEvoSpeed();
 
 					int rest = (int)r[0].Pos % 90;
-					r[0].UpdateTargetToValue(90 * ((int)r[0].Pos / 90) + ((rest < 45) ? 0 : 90));
+					r[0].UpdateTargetToValue(90 * ((int)r[0].Pos / 90) + ((rest < angleThres) ? 0 : 90));
+				}
+				else
+				{
+					// if no input, just increase evo speed
+					foreach (RotationDampStruct rds in r)
+					{
+						rds.DecreaseMaxEvoSpeed();
+					}
 				}
 			}
 			else
@@ -285,12 +258,13 @@ public class SGP_Evo : MonoBehaviour
 			}
 
 			foreach (RotationDampStruct rds in r)
-				rds.SmoothDamp(deltaTime);
+				rds.SmoothDamp(Time.fixedDeltaTime);
 
 			if (r.Any(a => a.Active))
 			{
+				//rb.MoveRotation(Quaternion.Euler(r[0].Pos, r[1].Pos, r[2].Pos));
 				rb.rotation = Quaternion.Euler(r[0].Pos, r[1].Pos, r[2].Pos);
-				rb.angularVelocity = vp.transform.TransformDirection(Mathf.Deg2Rad * new Vector3(r[0].speed, r[1].speed, r[2].speed));
+				rb.angularVelocity = vp.tr.TransformDirection(Mathf.Deg2Rad * new Vector3(r[0].speed, r[1].speed, r[2].speed));
 			}
 
 			//rb.AddRelativeTorque(Mathf.Deg2Rad * new Vector3(r[0].Delta, r[1].Delta, r[2].Delta), ForceMode.VelocityChange);
@@ -305,11 +279,29 @@ public class SGP_Evo : MonoBehaviour
 
 			//}
 		}
+		else
+		{
+			if (vp.SGPshiftbutton > 0)
+			{
+				if (prevSGPShiftButton == 0 && (vp.reallyGroundedWheels == 4 || ((vp.crashing || vp.colliding))))
+				{ // shift press before jump
+					shiftPressTime = Time.time;
+					//Debug.Log("shiftPressTime");
+				}
+			}
+
+			if (vp.reallyGroundedWheels == 0 && !vp.colliding && !vp.crashing && (Time.time - shiftPressTime) < maxTimeToInit)
+			{
+				//Debug.Log("stunting");
+				evoBloorp.Play();
+				stunting = true;
+				euler = vp.tr.rotation.eulerAngles;
+				r[0].Init(euler.x, Axis.X); //rX
+				r[1].Init(euler.y, Axis.Y); // rY
+				r[2].Init(euler.z, Axis.Z); // rZ
+			}
+		}
 		prevSGPShiftButton = vp.SGPshiftbutton;
-	}
-	void FixedUpdate()
-	{
-		FixedUpdateWorks(Time.fixedDeltaTime);
 	}
 
 	internal void Reset()
@@ -317,4 +309,3 @@ public class SGP_Evo : MonoBehaviour
 		stunting = false;
 	}
 }
-

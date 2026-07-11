@@ -1,0 +1,19 @@
+{
+  "author": "Team17",
+  "localizedDescriptions": [
+    "This short, speedy circuit offers a number of stunt opportunities and high-banks for sneaky overtaking.",
+    "Krótka i szybka trasa dająca duże pole do popisu - i  wiele miejsc do wyprzedzania."
+  ],
+  "localizedNames": [
+    "BANK JOB REVERSE",
+    "ODSKOK REWERS"
+  ],
+  "valid": true,
+  "envir": "JAP",
+  "preferredCarClass": "Team",
+  "difficulty": 6,
+  "unlocked": true,
+  "icons": [
+    0
+  ]
+}

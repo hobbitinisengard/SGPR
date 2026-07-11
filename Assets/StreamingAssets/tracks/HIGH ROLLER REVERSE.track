@@ -1,0 +1,20 @@
+{
+  "author": "Team17",
+  "localizedDescriptions": [
+    "This complex, winding track has a number of high curved bends.",
+    "Złożona, kręta trasa z dużą ilością ostrych zakrętów."
+  ],
+  "localizedNames": [
+    "HIGH ROLLER REVERSE",
+    "ZROLOWANY REWERS"
+  ],
+  "valid": true,
+  "envir": "GER",
+  "preferredCarClass": "Team",
+  "difficulty": 9,
+  "unlocked": true,
+  "icons": [
+    2,
+    3
+  ]
+}

@@ -15,7 +15,8 @@ public class WormAntenna : Antenna
 	void Start()
 	{
 		vp = transform.GetTopmostParentComponent<VehicleParent>();
-		if (initLookNext == null)
+        vp.antenna = this;
+        if (initLookNext == null)
 		{
 			initLookNext = new Vector3[nodes];
 			initDists = new float[nodes - 1];

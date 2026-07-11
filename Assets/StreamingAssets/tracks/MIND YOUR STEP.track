@@ -1,0 +1,21 @@
+{
+  "author": "Arkhnen & Viatrufka",
+  "localizedDescriptions": [
+    "This long track will make you climb many stairs.",
+    "Na tej trasie wespniesz się na najdłuższe schody."
+  ],
+  "localizedNames": [
+    "MIND YOUR STEP",
+    "UWAGA STOPIEŃ"
+  ],
+  "valid": true,
+  "envir": "GER",
+  "preferredCarClass": "Speed",
+  "difficulty": 8,
+  "unlocked": true,
+  "icons": [
+    1,
+    2,
+    3
+  ]
+}

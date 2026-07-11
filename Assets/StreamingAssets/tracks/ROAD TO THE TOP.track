@@ -1,0 +1,21 @@
+{
+  "author": "Arkhnen",
+  "localizedDescriptions": [
+    "A long track with huge elevation changes and lots of places for stunting.",
+    "Długa trasa z ogromnymi różnicami terenu i mnóstwo miejsca do akrobacji."
+  ],
+  "localizedNames": [
+    "ROAD TO THE TOP",
+    "DROGA NA SZCZYT"
+  ],
+  "valid": true,
+  "envir": "SPN",
+  "preferredCarClass": "Aero",
+  "difficulty": 9,
+  "unlocked": true,
+  "icons": [
+    0,
+    2,
+    3
+  ]
+}

@@ -1,4 +1,3 @@
-using System;
 using UnityEngine.UI;
 using TMPro;
 
@@ -7,28 +6,30 @@ public class TrackSelector : TrackSelectorTemplate
 	public TextMeshProUGUI raceTypeButtonText;
 	public TextMeshProUGUI lapsButtonText;
 	public TextMeshProUGUI nightButtonText;
-	public TextMeshProUGUI CPULevelButtonText;
 	public TextMeshProUGUI rivalsButtonText;
-	
+	public TextMeshProUGUI catchupButtonText;
 	public TextMeshProUGUI sponsorButtonText;
-
+	public TextMeshProUGUI LevelButtonText;
+	
 	protected int maxCPURivals = 9;
 	protected override void OnEnable()
 	{
 		base.OnEnable();
 		ResetButtons();
 	}
-	public new void ResetButtons()
+	public void ResetButtons()
 	{
-		//SwitchCatchup(true);
+		SwitchRoadType(true);
+		SwitchCatchup(true);
 		SwitchCPULevel(true);
 		SwitchDayNight(true);
 		SwitchLaps(true);
 		SwitchRaceType(true);
 		SwitchRivals(true);
 		SwitchSponsor(true);
-		base.ResetButtons();
+		
 	}
+	
 	public void SwitchRaceType(bool init = false)
 	{
 		int dir = 0;
@@ -54,7 +55,7 @@ public class TrackSelector : TrackSelectorTemplate
 			rivalsButtonText.transform.parent.GetComponent<Button>().interactable = false;
 		}
 		
-		raceTypeButtonText.text = Enum.GetName(typeof(RaceType), F.I.s_raceType);
+		raceTypeButtonText.text = F.I.LocStr(F.I.s_raceType.ToString());
 	}
 	public void SwitchLaps(bool init = false)
 	{
@@ -73,13 +74,16 @@ public class TrackSelector : TrackSelectorTemplate
 			}
 		}
 		F.I.s_laps = F.Wraparound(F.I.s_laps, 1, 99);
-		lapsButtonText.text = "Laps: " + F.I.s_laps.ToString();
+		lapsButtonText.text = F.I.LocStr("Laps") + ": " + F.I.s_laps.ToString();
 	}
 	public void SwitchDayNight(bool init = false)
 	{
+		int dir = 0;
 		if (!init)
-			F.I.s_isNight = !F.I.s_isNight;
-		nightButtonText.text = F.I.s_isNight ? "Night" : "Day";
+			dir = F.I.shiftInputRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
+
+		F.I.s_timeOfDay = (TimeOfDay)F.Wraparound((int)F.I.s_timeOfDay + dir, 0, Info.TimeOfDays-1);
+		nightButtonText.text = F.I.LocStr(F.I.s_timeOfDay.ToString());
 	}
 	public void SwitchCPULevel(bool init = false)
 	{
@@ -87,12 +91,8 @@ public class TrackSelector : TrackSelectorTemplate
 		if (!init)
 			dir = F.I.shiftInputRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
 
-		F.I.s_cpuLevel = CpuLevel.Normal;//(CpuLevel)F.Wraparound((int)F.I.s_cpuLevel+dir, 0, 3);
-		string cpuLevelStr = F.I.s_cpuLevel switch
-		{
-			_ => "Normal",
-		};
-		CPULevelButtonText.text = "CPU: " + cpuLevelStr;
+		F.I.s_cpuLevel = (CpuLevel)F.Wraparound((int)F.I.s_cpuLevel+dir, 0, 2);
+		LevelButtonText.text = F.I.LocStr("CPU") + ": " + F.I.LocStr(F.I.s_cpuLevel.ToString());
 	}
 	public void SwitchRivals(bool init = false)
 	{
@@ -101,7 +101,7 @@ public class TrackSelector : TrackSelectorTemplate
 			dir = F.I.shiftInputRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
 
 		// disable CPU in multiplayer races to save bandwidth
-		F.I.s_cpuRivals = F.Wraparound(F.I.s_cpuRivals + dir, 0, (F.I.gameMode == MultiMode.Multiplayer) ? 0 : maxCPURivals);
+		F.I.s_cpuRivals = F.Wraparound(F.I.s_cpuRivals + dir, 0, (F.I.gameMode == GameMode.Multiplayer) ? 0 : maxCPURivals);
 
 		if (F.I.s_raceType == RaceType.Knockout && ServerC.I.AmHost)
 		{
@@ -111,25 +111,25 @@ public class TrackSelector : TrackSelectorTemplate
 			F.I.s_laps = F.I.maxCarsInRace - 1 - maxCPURivals + F.I.s_cpuRivals;
 			SwitchLaps(true);
 		}
-		rivalsButtonText.text = "Opponents: " + F.I.s_cpuRivals.ToString();
+		rivalsButtonText.text = F.I.LocStr("Rivals") + ": " + F.I.s_cpuRivals.ToString();
 	}
-	
-	
 	public void SwitchCatchup(bool init = false)
 	{
 		if (!init)
-			F.I.s_catchup = !F.I.s_catchup;
-		sponsorButtonText.text = "Catchup: " + (F.I.s_catchup ? "Yes" : "No");
+			F.I.catchup = !F.I.catchup;
+		catchupButtonText.text = F.I.LocStr("Catchup") + ": " + (F.I.catchup ? F.I.LocStr("Yes") : F.I.LocStr("No"));
 	}
 	public void SwitchSponsor(bool init = false)
 	{
 		if (!init)
 		{
 			int dir = F.I.shiftRef.action.ReadValue<float>() > 0.5f ? -1 : 1;
-			F.I.s_PlayerCarSponsor = (Livery)F.Wraparound((int)F.I.s_PlayerCarSponsor + dir, 
-				ServerC.I.AmHost ? 0 : 1, F.I.Liveries);
+			do
+			{
+				F.I.s_PlayerCarSponsor = (Livery)F.Wraparound((int)F.I.s_PlayerCarSponsor + dir,ServerC.I.AmHost ? 0 : 1, F.I.Liveries);
+			} while(F.I.unlockedLiveries[(int)F.I.s_PlayerCarSponsor] == null && F.I.gameMode != GameMode.Multiplayer);
 		}
 		F.I.teams = F.I.s_PlayerCarSponsor != Livery.Random;
-		sponsorButtonText.text = "Sponsor:" + F.I.s_PlayerCarSponsor.ToString();
+		sponsorButtonText.text = F.I.LocStr("Sponsor") + ": " + F.I.LocStr(F.I.s_PlayerCarSponsor.ToString());
 	}
 }

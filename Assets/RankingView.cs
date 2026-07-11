@@ -25,12 +25,22 @@ public class RankingRowData
 		this.rounds = rounds;
 		this.moneyOrPerc = moneyOrPerc;
 	}
-	public RankingRowData(IEnumerable<ResultInfo> sortedPlayers)
+	public RankingRowData(IEnumerable<Result> sortedPlayers)
 	{
-		ResultInfo me = sortedPlayers.First(p => p.id == ServerC.I.networkManager.LocalClientId);
-		
+		Result me;
+		if(F.I.gameMode == GameMode.Multiplayer)
+		{
+			me = sortedPlayers.First(p => p.id == ServerC.I.networkManager.LocalClientId);
+			rounds = F.I.Rounds;
+		}
+		else
+		{
+			me = sortedPlayers.First(p => p.name == F.I.playerData.playerName);
+			rounds = F.I.CurRound;
+		}
+
 		dateStr = DateTime.Now.ToString();
-		rounds = F.I.Rounds;
+	
 		float absoluteScore = 0;
 		if (F.I.teams)
 		{
@@ -41,7 +51,7 @@ public class RankingRowData
 				if (p.sponsor == me.sponsor)
 				{
 					absoluteScore += p.score;
-					if(p != me)
+					if (p != me)
 						name += " " + p.name;
 				}
 			}
@@ -51,7 +61,6 @@ public class RankingRowData
 			name = me.name;
 			absoluteScore = me.score;
 		}
-			
 
 		switch (F.I.scoringType)
 		{
@@ -69,25 +78,13 @@ public class RankingRowData
 				break;
 		}
 	}
-	/// <summary>
-	/// The more rounds, the more win value
-	/// </summary>
-	[JsonIgnore]
-	public float WinValue
-	{
-		get
-		{
-			if (F.I.scoringType == ScoringType.Championship)
-				return moneyOrPerc;
-			else
-				return moneyOrPerc * rounds;
-		}
-	}
 }
 public class RankingView : MainMenuView
 {
-   public TextMeshProUGUI upBarText;
-   public GameObject rankingRowPrefab;
+	public MainMenuView SinglePlayerView;
+	public MainMenuView recordsView;
+	public TextMeshProUGUI upBarText;
+	public GameObject rankingRowPrefab;
 	public Transform rankingContent;
 	public Scrollbar scrollbar;
 	Coroutine sinCo;
@@ -100,10 +97,34 @@ public class RankingView : MainMenuView
 	private float scrollTarget;
 	private Transform selectedRow;
 	[NonSerialized]
-	public List<ResultInfo> sortedResults;
+	public List<Result> sortedResults;
+
+	GameMode showGameMode = GameMode.Multiplayer;
+	public void SetRankingType(ScoringType s, bool teams, GameMode gm)
+	{
+		F.I.scoringType = s;
+		F.I.teams = teams;
+		showGameMode = gm;
+	}
+	public void SetRankingType(RankingType rt)
+	{
+		F.I.scoringType = rt.scoringType;
+		F.I.teams = rt.teams;
+		showGameMode = rt.showTypeOfGameMode;
+	}
 	public void OKButton()
 	{
-		GoToView(MultiPlayerSelector.I.thisView);
+		if (F.I.gameMode == GameMode.Arcade)
+		{
+			ResultsView.Clear();
+			GoToView(SinglePlayerView);
+		}
+		else if (F.I.gameMode == GameMode.Multiplayer)
+		{
+			GoToView(MultiPlayerSelector.I.thisView);
+		}
+		else
+			GoToView(recordsView);
 	}
 	protected override void Awake()
 	{
@@ -131,29 +152,44 @@ public class RankingView : MainMenuView
 		F.I.move2Ref.action.performed -= Move;
 		SetColorOfRow(selectedRow, Color.white);
 		F.I.SaveRanking();
-		ServerC.I.ScoreSet(0);
-		ServerC.I.UpdatePlayerData();
+		if (sortedResults?.Count > 0)
+		{
+			ServerC.I.ScoreSet(0);
+			ServerC.I.UpdatePlayerData();
+		}
+		ResultsView.Clear();
 	}
 	protected override void OnEnable()
 	{
 		F.I.move2Ref.action.performed += Move;
-		List<ResultInfo> players = ResultsView.SortedResultsByFinishPos;
-		RankingRowData newEntry = new RankingRowData(players);
+		List<Result> players = ResultsView.SortedResultsByFinishPos;
+		RankingRowData newEntry = null;
+
+		if (players.Count > 0)
+			newEntry = new RankingRowData(players);
 
 		string gameName;
 		LinkedList<RankingRowData> data;
 		switch (F.I.scoringType)
 		{
 			case ScoringType.Championship:
-				gameName = "CHAMPIONSHIPS";
-				data = F.I.teams ? F.I.rankingData.TeamChamp : F.I.rankingData.Champ;
+				if(showGameMode == GameMode.Arcade)
+				{
+					data = F.I.curVariant.progress.rankingRows;
+					gameName = F.I.LocStr("ARCADE");
+				}
+				else
+				{
+					gameName = F.I.LocStr("CHAMPIONSHIPS");
+					data = F.I.teams ? F.I.rankingData.TeamChamp : F.I.rankingData.Champ;
+				}
 				break;
 			case ScoringType.Points:
-				gameName = "POINTS";
+				gameName = F.I.LocStr("POINTS");
 				data = F.I.teams ? F.I.rankingData.TeamPts : F.I.rankingData.Pts;
 				break;
 			case ScoringType.Victory:
-				gameName = "VICTORY";
+				gameName = F.I.LocStr("VICTORIES");
 				data = F.I.teams ? F.I.rankingData.TeamVic : F.I.rankingData.Vic;
 				break;
 			default:
@@ -162,9 +198,16 @@ public class RankingView : MainMenuView
 				break;
 		}
 
-		upBarText.text = "MULTIPLAYER RANKING - " + (F.I.teams ? "TEAM " : "") + gameName + " - Top 100"; 
+		upBarText.text = F.I.LocStr("RANKING") + " - " + (F.I.teams ? F.I.LocStr("TEAMS") + " " : "") + gameName + " - Top 100";
 
-		var newScore = newEntry.WinValue;		
+		float newScore = 0;
+		if (newEntry != null)
+		{
+			if (F.I.scoringType == ScoringType.Championship)
+				newScore = newEntry.moneyOrPerc;
+			else
+				newScore = newEntry.moneyOrPerc * newEntry.rounds;
+		}
 
 		while (rankingContent.childCount != 100)
 		{
@@ -172,12 +215,21 @@ public class RankingView : MainMenuView
 		}
 
 		LinkedListNode<RankingRowData> curNode = data.First;
-		for (int i=0; i<rankingContent.childCount; ++i)
+		for (int i = 0; i < rankingContent.childCount; ++i)
 		{
 			var row = rankingContent.GetChild(i);
 			row.GetChild(0).GetComponent<TextMeshProUGUI>().text = (i + 1).ToString("D3");
 
-			if (newEntry != null && (curNode == null || newScore >= curNode.Value.WinValue))
+			float winValue = 0;
+			if (curNode != null)
+			{
+				if (F.I.scoringType == ScoringType.Championship)
+					winValue = curNode.Value.moneyOrPerc;
+				else
+					winValue = curNode.Value.moneyOrPerc * curNode.Value.rounds;
+			}
+
+			if (newEntry != null && (curNode == null || newScore >= winValue))
 			{ // add newEntry to data
 				if (curNode == null)
 					curNode = data.AddFirst(newEntry);
@@ -194,12 +246,12 @@ public class RankingView : MainMenuView
 			{
 				row.GetChild(1).GetComponent<TextMeshProUGUI>().text = curNode.Value.name;
 				row.GetChild(2).GetComponent<TextMeshProUGUI>().text = curNode.Value.dateStr;
-				row.GetChild(3).GetComponent<TextMeshProUGUI>().text = "Round " + curNode.Value.rounds.ToString();
+				row.GetChild(3).GetComponent<TextMeshProUGUI>().text = F.I.LocStr("Round") + " " + curNode.Value.rounds.ToString();
 				row.GetChild(4).GetComponent<TextMeshProUGUI>().text = F.I.scoringType switch
 				{
 					ScoringType.Championship => curNode.Value.moneyOrPerc.ToString("F0"),
-					ScoringType.Points => (100*curNode.Value.moneyOrPerc).ToString("F0"),
-					ScoringType.Victory => (100*curNode.Value.moneyOrPerc).ToString("F0"),
+					ScoringType.Points => (100 * curNode.Value.moneyOrPerc).ToString("F0"),
+					ScoringType.Victory => (100 * curNode.Value.moneyOrPerc).ToString("F0"),
 					_ => null,
 				};
 			}
@@ -219,7 +271,7 @@ public class RankingView : MainMenuView
 			StopCoroutine(sinCo);
 		sinCo = StartCoroutine(SinAnim());
 
-		while(data.Count > 100)
+		while (data.Count > 100)
 			data.RemoveLast();
 
 		base.OnEnable();
@@ -228,7 +280,7 @@ public class RankingView : MainMenuView
 	private void Move(UnityEngine.InputSystem.InputAction.CallbackContext input)
 	{
 		int dir = -(int)input.ReadValue<Vector2>().y;
-		if(dir != 0)
+		if (dir != 0)
 		{
 			scrollTarget = Mathf.Clamp01(scrollTarget - dir * 0.1f);
 			if (moveTableCo != null)
@@ -259,13 +311,13 @@ public class RankingView : MainMenuView
 		float sinSpeed = 10;
 		yield return null;
 
-		while(power > 0)
+		while (power > 0)
 		{
 			for (int i = 0; i < rankingContent.childCount; ++i)
 			{
 				var childRt = rankingContent.GetChild(i).GetComponent<RectTransform>();
 				var pos = childRt.anchoredPosition;
-				pos.x = 350 * power * Mathf.Sin((((i % 2) == 0) ? Mathf.PI/2f : 0) + sinArg);
+				pos.x = 350 * power * Mathf.Sin((((i % 2) == 0) ? Mathf.PI / 2f : 0) + sinArg);
 				childRt.anchoredPosition = pos;
 			}
 			power = Mathf.Clamp01(power - Time.deltaTime / animDurationSecs);
@@ -274,9 +326,11 @@ public class RankingView : MainMenuView
 			yield return null;
 		}
 	}
-	
+
 	void SetColorOfRow(Transform row, Color c)
 	{
+		if (row == null)
+			return;
 		for (int i = 0; i < row.childCount; ++i)
 			row.GetChild(i).GetComponent<TextMeshProUGUI>().color = c;
 	}

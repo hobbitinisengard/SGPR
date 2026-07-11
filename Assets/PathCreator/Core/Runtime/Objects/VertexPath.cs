@@ -1,6 +1,7 @@
-﻿using PathCreation.Utility;
+﻿using System;
+using PathCreation.Utility;
 using System.Threading.Tasks;
-using UnityEditor;
+using Unity.Collections;
 using UnityEngine;
 
 namespace PathCreation
@@ -15,8 +16,6 @@ namespace PathCreation
 
 	public class VertexPath
 	{
-		#region Fields
-
 		public readonly PathSpace space;
 		public readonly bool isClosedLoop;
 		public readonly Vector4[] localPoints;
@@ -39,10 +38,6 @@ namespace PathCreation
 		const float minVertexSpacing = .01f;
 
 		Transform transform;
-
-		#endregion
-
-		#region Constructors
 
 		/// <summary> Splits bezier path into array of vertices along the path.</summary>
 		///<param name="maxAngleError">How much can the angle of the path change before a vertex is added. This allows fewer vertices to be generated in straighter sections.</param>
@@ -81,7 +76,6 @@ namespace PathCreation
 			up = (bounds.size.z > bounds.size.y) ? Vector3.up : -Vector3.forward;
 			Vector3 lastRotationAxis = up;
 
-			
 			// Loop through the data and assign to arrays.
 			for (int i = 0; i < localPoints.Length; i++)
 			{
@@ -89,8 +83,6 @@ namespace PathCreation
 				localTangents[i] = pathSplitData.tangents[i];
 				cumulativeLengthAtEachVertex[i] = pathSplitData.cumulativeLength[i];
 				times[i] = cumulativeLengthAtEachVertex[i] / length;
-
-				
 
 				// Calculate normals
 				if (space == PathSpace.xyz)
@@ -172,10 +164,6 @@ namespace PathCreation
 			}
 		}
 
-		#endregion
-
-		#region Public methods and accessors
-
 		public void UpdateTransform(Transform transform)
 		{
 			this.transform = transform;
@@ -206,42 +194,36 @@ namespace PathCreation
 		{
 			return new Task<Vector4>(() => GetPointAtDistance(dst, endOfPathInstruction));
 		}
-		/// Gets point on path based on distance travelled.
 		public Vector4 GetPointAtDistance(float dst, EndOfPathInstruction endOfPathInstruction = EndOfPathInstruction.Loop)
 		{
 			float t = dst / length;
 			return GetPointAtTime(t, endOfPathInstruction);
 		}
 
-		/// Gets forward direction on path based on distance travelled.
 		public Vector3 GetDirectionAtDistance(float dst, EndOfPathInstruction endOfPathInstruction = EndOfPathInstruction.Loop)
 		{
 			float t = dst / length;
 			return GetDirection(t, endOfPathInstruction);
 		}
 
-		/// Gets normal vector on path based on distance travelled.
 		public Vector3 GetNormalAtDistance(float dst, EndOfPathInstruction endOfPathInstruction = EndOfPathInstruction.Loop)
 		{
 			float t = dst / length;
 			return GetNormal(t, endOfPathInstruction);
 		}
 
-		/// Gets a rotation that will orient an object in the direction of the path at this point, with local up point along the path's normal
 		public Quaternion GetRotationAtDistance(float dst, EndOfPathInstruction endOfPathInstruction = EndOfPathInstruction.Loop)
 		{
 			float t = dst / length;
 			return GetRotation(t, endOfPathInstruction);
 		}
 
-		/// Gets point on path based on 'time' (where 0 is start, and 1 is end of path).
 		public Vector4 GetPointAtTime(float t, EndOfPathInstruction endOfPathInstruction = EndOfPathInstruction.Loop)
 		{
 			var data = CalculatePercentOnPathData(t, endOfPathInstruction);
 			return Vector4.Lerp(GetPoint(data.previousIndex), GetPoint(data.nextIndex), data.percentBetweenIndices);
 		}
 
-		/// Gets forward direction on path based on 'time' (where 0 is start, and 1 is end of path).
 		public Vector3 GetDirection(float t, EndOfPathInstruction endOfPathInstruction = EndOfPathInstruction.Loop)
 		{
 			var data = CalculatePercentOnPathData(t, endOfPathInstruction);
@@ -249,7 +231,6 @@ namespace PathCreation
 			return MathUtility.TransformDirection(dir, transform, space);
 		}
 
-		/// Gets normal vector on path based on 'time' (where 0 is start, and 1 is end of path).
 		public Vector3 GetNormal(float t, EndOfPathInstruction endOfPathInstruction = EndOfPathInstruction.Loop)
 		{
 			var data = CalculatePercentOnPathData(t, endOfPathInstruction);
@@ -257,7 +238,6 @@ namespace PathCreation
 			return MathUtility.TransformDirection(normal, transform, space);
 		}
 
-		/// Gets a rotation that will orient an object in the direction of the path at this point, with local up point along the path's normal
 		public Quaternion GetRotation(float t, EndOfPathInstruction endOfPathInstruction = EndOfPathInstruction.Loop)
 		{
 			var data = CalculatePercentOnPathData(t, endOfPathInstruction);
@@ -266,40 +246,145 @@ namespace PathCreation
 			return Quaternion.LookRotation(MathUtility.TransformDirection(direction, transform, space), MathUtility.TransformDirection(normal, transform, space));
 		}
 
-		/// Finds the closest point on the path from any point in the world
 		public Vector3 GetClosestPointOnPath(Vector3 worldPoint)
 		{
 			TimeOnPathData data = CalculateClosestPointOnPathData(worldPoint);
 			return Vector3.Lerp(GetPoint(data.previousIndex), GetPoint(data.nextIndex), data.percentBetweenIndices);
 		}
 
-		/// Finds the 'time' (0=start of path, 1=end of path) along the path that is closest to the given point
+		public float GetClosestPointOnPath(Vector3 worldPoint, float start, float end)
+		{
+			// Clamp distances to path length
+			float s = Mathf.Clamp(start, 0f, length);
+			float e = Mathf.Clamp(end, 0f, length);
+
+			// If not closed loop and start > end, swap so the range is valid
+			if (!isClosedLoop && e < s)
+			{
+				float tmp = s; s = e; e = tmp;
+			}
+
+			// For closed loops, allow the range to wrap around the end by adding length to end
+			bool wrappedQuery = false;
+			if (isClosedLoop && e < s)
+			{
+				e += length;
+				wrappedQuery = true;
+			}
+
+			float minSqrDst = float.MaxValue;
+			int chosenA = -1;
+			int chosenB = -1;
+			Vector3 chosenPA = Vector3.zero;
+			Vector3 chosenPB = Vector3.zero;
+			float chosenShift = 0f;
+			Vector3 closestPoint = Vector3.zero;
+
+			for (int i = 0; i < localPoints.Length; i++)
+			{
+				int nextI = i + 1;
+				if (nextI >= localPoints.Length)
+				{
+					if (isClosedLoop)
+					{
+						nextI %= localPoints.Length;
+					}
+					else
+					{
+						break;
+					}
+				}
+
+				// Segment distance interval along the path
+				float segStart = cumulativeLengthAtEachVertex[i];
+				float segEnd = cumulativeLengthAtEachVertex[nextI];
+				if (segEnd < segStart)
+				{
+					segEnd += length; // wrapped segment
+				}
+
+				// Check intersection with query range [s,e]
+				bool intersects = (segEnd >= s && segStart <= e);
+				float shift = 0f;
+				if (!intersects && isClosedLoop)
+				{
+					// try shifted segment by +length
+					float segStartShift = segStart + length;
+					float segEndShift = segEnd + length;
+					if (segEndShift >= s && segStartShift <= e)
+					{
+						intersects = true;
+						shift = length;
+					}
+				}
+
+				if (!intersects)
+					continue;
+
+				// compute world-space endpoints once for the segment
+				Vector3 pA = (Vector3)GetPoint(i);
+				Vector3 pB = (Vector3)GetPoint(nextI);
+
+				Vector3 proj = MathUtility.ClosestPointOnLineSegment(worldPoint, pA, pB);
+				float sqrDst = (worldPoint - proj).sqrMagnitude;
+				if (sqrDst < minSqrDst)
+				{
+					minSqrDst = sqrDst;
+					closestPoint = proj;
+					chosenA = i;
+					chosenB = nextI;
+					chosenPA = pA;
+					chosenPB = pB;
+					chosenShift = shift;
+				}
+			}
+
+			// If nothing found in range, return the closer endpoint distance (start or end)
+			if (chosenA == -1)
+			{
+				// compare distance to point at start and point at end (wrap end back into [0,length])
+				Vector3 pStart = (Vector3)GetPointAtDistance(s, EndOfPathInstruction.Loop);
+				float eMod = e;
+				if (eMod > length) eMod -= length;
+				Vector3 pEnd = (Vector3)GetPointAtDistance(eMod, EndOfPathInstruction.Loop);
+				float ds = (worldPoint - pStart).sqrMagnitude;
+				float de = (worldPoint - pEnd).sqrMagnitude;
+				return (ds <= de) ? s : eMod;
+			}
+
+			// compute parameter along chosen segment
+			float segLen = (chosenPB - chosenPA).magnitude;
+			if (segLen == 0f)
+			{
+				float rawDist = cumulativeLengthAtEachVertex[chosenA] + chosenShift;
+				if (rawDist >= length) rawDist -= length;
+				return rawDist;
+			}
+
+			float tAlong = (closestPoint - chosenPA).magnitude / segLen;
+			float rawDistance = cumulativeLengthAtEachVertex[chosenA] + chosenShift + tAlong * segLen;
+			// fold back into [0,length)
+			if (rawDistance >= length) rawDistance -= length;
+			return rawDistance;
+		}
+
 		public float GetClosestTimeOnPath(Vector3 worldPoint)
 		{
 			TimeOnPathData data = CalculateClosestPointOnPathData(worldPoint);
 			return Mathf.Lerp(times[data.previousIndex], times[data.nextIndex], data.percentBetweenIndices);
 		}
 
-		/// Finds the distance along the path that is closest to the given point
 		public float GetClosestDistanceAlongPath(Vector3 worldPoint)
 		{
 			TimeOnPathData data = CalculateClosestPointOnPathData(worldPoint);
 			return Mathf.Lerp(cumulativeLengthAtEachVertex[data.previousIndex], cumulativeLengthAtEachVertex[data.nextIndex], data.percentBetweenIndices);
 		}
 
-		#endregion
-
-		#region Internal methods
-
-		/// For a given value 't' between 0 and 1, calculate the indices of the two vertices before and after t. 
-		/// Also calculate how far t is between those two vertices as a percentage between 0 and 1.
 		TimeOnPathData CalculatePercentOnPathData(float t, EndOfPathInstruction endOfPathInstruction)
 		{
-			// Constrain t based on the end of path instruction
 			switch (endOfPathInstruction)
 			{
 				case EndOfPathInstruction.Loop:
-					// If t is negative, make it the equivalent value between 0 and 1
 					if (t < 0)
 					{
 						t += Mathf.CeilToInt(Mathf.Abs(t));
@@ -316,18 +401,14 @@ namespace PathCreation
 
 			int prevIndex = 0;
 			int nextIndex = NumPoints - 1;
-			int i = Mathf.RoundToInt(t * (NumPoints - 1)); // starting guess
+			int i = Mathf.RoundToInt(t * (NumPoints - 1));
 
-			// Starts by looking at middle vertex and determines if t lies to the left or to the right of that vertex.
-			// Continues dividing in half until closest surrounding vertices have been found.
 			while (true)
 			{
-				// t lies to left
 				if (t <= times[i])
 				{
 					nextIndex = i;
 				}
-				// t lies to right
 				else
 				{
 					prevIndex = i;
@@ -344,7 +425,6 @@ namespace PathCreation
 			return new TimeOnPathData(prevIndex, nextIndex, abPercent);
 		}
 
-		/// Calculate time data for closest point on the path from given world point
 		TimeOnPathData CalculateClosestPointOnPathData(Vector3 worldPoint)
 		{
 			float minSqrDst = float.MaxValue;
@@ -379,6 +459,8 @@ namespace PathCreation
 
 			}
 			float closestSegmentLength = (GetPoint(closestSegmentIndexA) - GetPoint(closestSegmentIndexB)).magnitude;
+			if (closestSegmentLength == 0f)
+				return new TimeOnPathData(closestSegmentIndexA, closestSegmentIndexB, 0f);
 			float t = (closestPoint - (Vector3)GetPoint(closestSegmentIndexA)).magnitude / closestSegmentLength;
 			return new TimeOnPathData(closestSegmentIndexA, closestSegmentIndexB, t);
 		}
@@ -396,9 +478,71 @@ namespace PathCreation
 				this.percentBetweenIndices = percentBetweenIndices;
 			}
 		}
-
-		#endregion
-
 	}
 
+	/// <summary>
+	/// A blittable representation of a VertexPath suitable for use inside Unity Jobs.
+	/// Holds NativeArray buffers for path data. Remember to call Dispose() when finished.
+	/// </summary>
+	public struct VertexPathJobData : IDisposable
+	{
+		public NativeArray<Vector3> points;
+		public NativeArray<Vector3> tangents;
+		public NativeArray<Vector3> normals;
+		public NativeArray<float> times;
+		public NativeArray<float> cumulativeLengths;
+
+		public float length;
+		public int isClosedLoop; // 0 = false, 1 = true
+		public int space; // PathSpace stored as int
+		public Vector3 up;
+
+		public static VertexPathJobData CreateFrom(VertexPath path, Allocator allocator, bool worldSpace = true)
+		{
+			var d = new VertexPathJobData();
+			int n = path.NumPoints;
+
+			d.points = new NativeArray<Vector3>(n, allocator, NativeArrayOptions.UninitializedMemory);
+			d.tangents = new NativeArray<Vector3>(n, allocator, NativeArrayOptions.UninitializedMemory);
+			d.normals = new NativeArray<Vector3>(n, allocator, NativeArrayOptions.UninitializedMemory);
+			d.times = new NativeArray<float>(n, allocator, NativeArrayOptions.UninitializedMemory);
+			d.cumulativeLengths = new NativeArray<float>(n, allocator, NativeArrayOptions.UninitializedMemory);
+
+			d.length = path.length;
+			d.isClosedLoop = path.isClosedLoop ? 1 : 0;
+			d.space = (int)path.space;
+			d.up = path.up;
+
+			for (int i = 0; i < n; i++)
+			{
+				if (worldSpace)
+				{
+					Vector4 p4 = path.GetPoint(i);
+					d.points[i] = new Vector3(p4.x, p4.y, p4.z);
+					d.tangents[i] = path.GetTangent(i);
+					d.normals[i] = path.GetNormal(i);
+				}
+				else
+				{
+					d.points[i] = (Vector3)path.localPoints[i];
+					d.tangents[i] = path.localTangents[i];
+					d.normals[i] = path.localNormals[i];
+				}
+
+				d.times[i] = path.times[i];
+				d.cumulativeLengths[i] = path.cumulativeLengthAtEachVertex[i];
+			}
+
+			return d;
+		}
+
+		public void Dispose()
+		{
+			if (points.IsCreated) points.Dispose();
+			if (tangents.IsCreated) tangents.Dispose();
+			if (normals.IsCreated) normals.Dispose();
+			if (times.IsCreated) times.Dispose();
+			if (cumulativeLengths.IsCreated) cumulativeLengths.Dispose();
+		}
+	}
 }

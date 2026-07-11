@@ -17,6 +17,9 @@ public class ViewSwitcher : MonoBehaviour
 	public GameObject lobbyView;
 	public GameObject resultsView;
 
+	public GameObject arcadeMapView;
+	public GameObject SPView;
+
 	AudioSource menuMusic;
 
 	float timer = 0;
@@ -24,6 +27,7 @@ public class ViewSwitcher : MonoBehaviour
 	GameObject viewA;
 	GameObject viewB;
 	public event Action OnWorldMenuSwitch;
+	bool applyScoring = false;
 	private void Awake()
 	{
 		F.I.viewSwitcher = this;
@@ -31,21 +35,28 @@ public class ViewSwitcher : MonoBehaviour
 		duration = dimCurve.keys[dimCurve.length - 1].time;
 	}
 	public void SwitchBackgroundTo(in Sprite sprite) => background.SwitchBackgroundTo(sprite);
-	IEnumerator Transition(Action method = null)
+	IEnumerator Transition(bool cleanUp)
 	{
 		timer = 0;
 		// Action method can take place over multiple frames which can disrupt the transition
 		float delta = Mathf.Max(0.01f, Time.unscaledDeltaTime);
 		while (timer < duration)
 		{
+			timer += delta;
 			if (timer >= 0.5f * duration && viewA.activeSelf)
 			{
-				method?.Invoke();
+				if (cleanUp)
+				{
+					CleanUp();
+				}
 				viewA.SetActive(false);
 				viewB.SetActive(true);
+				SetBlacknessColor(1);
 			}
-			timer += delta;
-			SetBlacknessColor(dimCurve.Evaluate(timer));
+			else
+			{
+				SetBlacknessColor(dimCurve.Evaluate(timer));
+			}
 			blackness.gameObject.SetActive(true);
 			yield return null;
 		}
@@ -69,8 +80,7 @@ public class ViewSwitcher : MonoBehaviour
 			menuMusic.loop = menuMusic.clip.length > 30;
 			menuMusic.Play();
 		}
-		
-		StartCoroutine(Transition());
+		StartCoroutine(Transition(false));
 	}
 	/// <summary>
 	/// switch between world <---> menu
@@ -80,7 +90,7 @@ public class ViewSwitcher : MonoBehaviour
 		this.viewA = viewA;
 		this.viewB = viewB;
 		// switch music if
-		StartCoroutine(Transition());
+		StartCoroutine(Transition(false));
 	}
 	/// <summary>
 	/// Dims to targetVisibility. 0 = menu fully visible, 1 = blackness
@@ -91,7 +101,7 @@ public class ViewSwitcher : MonoBehaviour
 		menuMusic.Stop();
 		this.viewA = menu;
 		this.viewB = world;
-		StartCoroutine(Transition());
+		StartCoroutine(Transition(false));
 	}
 	public void PlayDimmerToMenu(bool applyScoring)
 	{
@@ -99,19 +109,30 @@ public class ViewSwitcher : MonoBehaviour
 		menuMusic.Stop();
 		this.viewA = world;
 		this.viewB = menu;
-		
-		StartCoroutine(Transition(() => 
-		{
-			RaceManager.I.editorPanel.gameObject.SetActive(true);
-			RaceManager.I.RemoveCars();
-			RaceManager.I.editorPanel.RemoveTrackLeftovers();
-			Time.timeScale = 1;
+		this.applyScoring = applyScoring;
+		StartCoroutine(Transition(true));
+	}
+	void CleanUp()
+	{
+		RaceManager.I.editorPanel.gameObject.SetActive(true);
+		RaceManager.I.RemoveCars();
+		RaceManager.I.editorPanel.RemoveTrackLeftovers();
+		Time.timeScale = 1;
 
-			if (applyScoring && F.I.gameMode == MultiMode.Multiplayer && ResultsView.Count > 1)
+		if (applyScoring)
+		{
+			if (F.I.gameMode == GameMode.Arcade)
+			{
+				arcadeMapView.SetActive(false);
+				resultsView.SetActive(true);
+			}
+			else if (F.I.gameMode == GameMode.Multiplayer && ResultsView.Count > 1)
 			{
 				lobbyView.SetActive(false);
 				resultsView.SetActive(true);
 			}
-		}));
+			menuMusic.clip = resultsView.GetComponent<ResultsView>().music;
+			menuMusic.Play();
+		}
 	}
 }

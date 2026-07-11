@@ -77,6 +77,13 @@ Shader "Ciconia Studio/CS_Standard/Builtin/Lite/Standard (Specular setup)/Transp
 			#define INTERNAL_DATA half3 internalSurfaceTtoW0; half3 internalSurfaceTtoW1; half3 internalSurfaceTtoW2;
 			#define WorldReflectionVector(data,normal) reflect (data.worldRefl, half3(dot(data.internalSurfaceTtoW0,normal), dot(data.internalSurfaceTtoW1,normal), dot(data.internalSurfaceTtoW2,normal)))
 			#define WorldNormalVector(data,normal) half3(dot(data.internalSurfaceTtoW0,normal), dot(data.internalSurfaceTtoW1,normal), dot(data.internalSurfaceTtoW2,normal))
+		#else
+			// For non-surface-shader passes (ForwardBase, ForwardAdd) INTERNAL_DATA
+			// is not injected by Unity, so provide an empty fallback so the Input
+			// struct below compiles without an "unrecognized identifier" error.
+			#ifndef INTERNAL_DATA
+				#define INTERNAL_DATA
+			#endif
 		#endif
 		struct Input
 		{
@@ -240,10 +247,218 @@ Shader "Ciconia Studio/CS_Standard/Builtin/Lite/Standard (Specular setup)/Transp
 		}
 
 		ENDCG
+
+		// ---------------------------------------------------------------
+		// Pass 1 (NEW): Back-face pre-pass
+		// Renders only back faces first so they appear beneath the front
+		// faces when both are blended. ZWrite Off prevents depth conflicts
+		// with the front-face pass that follows.
+		// ---------------------------------------------------------------
+		Pass
+		{
+			Name "TransparentBackFace"
+			Tags { "LightMode" = "ForwardBase" }
+			Cull Front
+			ZWrite Off
+			ZTest [_ZTest]
+			Blend SrcAlpha OneMinusSrcAlpha
+
+			CGPROGRAM
+			#pragma vertex vert
+			#pragma fragment frag
+			#pragma target 3.0
+			#pragma multi_compile_fwdbase
+			#pragma shader_feature_local _SOURCE_SPECULARALPHA _SOURCE_BASECOLORALPHA
+			#include "UnityCG.cginc"
+			#include "AutoLight.cginc"
+			#include "UnityPBSLighting.cginc"
+
+			struct appdata
+			{
+				float4 vertex   : POSITION;
+				float3 normal   : NORMAL;
+				float4 tangent  : TANGENT;
+				float2 texcoord : TEXCOORD0;
+				UNITY_VERTEX_INPUT_INSTANCE_ID
+			};
+
+			struct v2f
+			{
+				float4 pos          : SV_POSITION;
+				float2 uv           : TEXCOORD0;
+				float3 worldNormal  : TEXCOORD1;
+				float3 worldPos     : TEXCOORD2;
+				float3 viewDir      : TEXCOORD3;
+				UNITY_VERTEX_OUTPUT_STEREO
+			};
+
+			// Reuse uniforms already declared in CGINCLUDE above.
+
+			v2f vert(appdata v)
+			{
+				v2f o;
+				UNITY_SETUP_INSTANCE_ID(v);
+				UNITY_INITIALIZE_OUTPUT(v2f, o);
+				UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
+				o.pos        = UnityObjectToClipPos(v.vertex);
+				o.uv         = v.texcoord;
+				o.worldNormal = UnityObjectToWorldNormal(v.normal);
+				o.worldPos   = mul(unity_ObjectToWorld, v.vertex).xyz;
+				o.viewDir    = normalize(UnityWorldSpaceViewDir(o.worldPos));
+				return o;
+			}
+
+			half4 frag(v2f i) : SV_Target
+			{
+				// Sample base color and transparency mask.
+				float2 uv_MainTex = i.uv * _MainTex_ST.xy + _MainTex_ST.zw;
+				float GlobalTilingX11 = (_GlobalXYTilingXYZWOffsetXY.x - 1.0);
+				float GlobalTilingY8  = (_GlobalXYTilingXYZWOffsetXY.y - 1.0);
+				float GlobalOffsetX10 = _GlobalXYTilingXYZWOffsetXY.z;
+				float GlobalOffsetY9  = _GlobalXYTilingXYZWOffsetXY.w;
+				float2 breakUV = uv_MainTex;
+				float2 tiledUV = float2(breakUV.x * GlobalTilingX11, breakUV.y * GlobalTilingY8)
+				               + float2(breakUV.x + GlobalOffsetX10, breakUV.y + GlobalOffsetY9);
+
+				float4 baseColorSample = tex2D(_MainTex, tiledUV);
+				float  baseAlpha       = (_InvertABaseColor) ? (1.0 - baseColorSample.a) : baseColorSample.a;
+
+				float2 uv_TransparentMask = i.uv * _TransparentMask_ST.xy + _TransparentMask_ST.zw;
+				float4 transMaskSample    = tex2D(_TransparentMask, uv_TransparentMask);
+				float4 tempAlpha          = (_UseBaseColorAlpha) ? float4(baseAlpha, baseAlpha, baseAlpha, baseAlpha) : transMaskSample;
+				float4 invertedAlpha      = (_InvertTransparent) ? (1.0 - tempAlpha) : tempAlpha;
+				float4 clampedTrans       = clamp(CalculateContrast(_ContrastTransparentMap + 1.0, invertedAlpha) - _SpreadTransparentMap,
+				                                  float4(0,0,0,0), float4(1,0,0,0));
+				float  alpha              = (clampedTrans * (1.0 - _IntensityTransparentMap)).r;
+
+				// Simple unlit shading for the back-face pass (lighting from the
+				// front-face surface pass is sufficient for most use cases).
+				float3 albedo = _Color.rgb * baseColorSample.rgb * _Brightness;
+				return half4(albedo, alpha);
+			}
+			ENDCG
+		}
+
+		// ---------------------------------------------------------------
+		// Pass 2: Original forward-base surface pass (front faces).
+		// The CGPROGRAM block is kept identical to the original shader so
+		// all specular, normal, AO, emission, and detail features work.
+		// ---------------------------------------------------------------
 		CGPROGRAM
 		#pragma surface surf StandardSpecular keepalpha fullforwardshadows 
 
 		ENDCG
+
+		// ---------------------------------------------------------------
+		// Pass 3 (NEW): Additive front-face overlay pass
+		// A second front-face draw with additive blending accumulates the
+		// transparency contribution on top of the back-face result,
+		// making multiple overlapping transparent surfaces stack visibly
+		// rather than cancelling each other out.
+		// ---------------------------------------------------------------
+		Pass
+		{
+			Name "TransparentFrontFaceAdditive"
+			Tags { "LightMode" = "ForwardAdd" }
+			Cull Back
+			ZWrite Off
+			ZTest [_ZTest]
+			// Additive blend so each additional layer adds to the result.
+			Blend SrcAlpha One
+
+			CGPROGRAM
+			#pragma vertex vert
+			#pragma fragment frag
+			#pragma target 3.0
+			#pragma multi_compile_fwdadd_fullshadows
+			#pragma shader_feature_local _SOURCE_SPECULARALPHA _SOURCE_BASECOLORALPHA
+			#include "UnityCG.cginc"
+			#include "AutoLight.cginc"
+			#include "UnityPBSLighting.cginc"
+
+			struct appdata
+			{
+				float4 vertex   : POSITION;
+				float3 normal   : NORMAL;
+				float4 tangent  : TANGENT;
+				float2 texcoord : TEXCOORD0;
+				UNITY_VERTEX_INPUT_INSTANCE_ID
+			};
+
+			struct v2f
+			{
+				float4 pos         : SV_POSITION;
+				float2 uv          : TEXCOORD0;
+				float3 worldNormal : TEXCOORD1;
+				float3 worldPos    : TEXCOORD2;
+				float3 viewDir     : TEXCOORD3;
+				UNITY_VERTEX_OUTPUT_STEREO
+			};
+
+			v2f vert(appdata v)
+			{
+				v2f o;
+				UNITY_SETUP_INSTANCE_ID(v);
+				UNITY_INITIALIZE_OUTPUT(v2f, o);
+				UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
+				o.pos         = UnityObjectToClipPos(v.vertex);
+				o.uv          = v.texcoord;
+				o.worldNormal = UnityObjectToWorldNormal(v.normal);
+				o.worldPos    = mul(unity_ObjectToWorld, v.vertex).xyz;
+				o.viewDir     = normalize(UnityWorldSpaceViewDir(o.worldPos));
+				return o;
+			}
+
+			half4 frag(v2f i) : SV_Target
+			{
+				// Mirror the alpha computation from the main surface pass so
+				// the additive layer stays in sync with the base opacity.
+				float2 uv_MainTex = i.uv * _MainTex_ST.xy + _MainTex_ST.zw;
+				float GlobalTilingX11 = (_GlobalXYTilingXYZWOffsetXY.x - 1.0);
+				float GlobalTilingY8  = (_GlobalXYTilingXYZWOffsetXY.y - 1.0);
+				float GlobalOffsetX10 = _GlobalXYTilingXYZWOffsetXY.z;
+				float GlobalOffsetY9  = _GlobalXYTilingXYZWOffsetXY.w;
+				float2 breakUV = uv_MainTex;
+				float2 tiledUV = float2(breakUV.x * GlobalTilingX11, breakUV.y * GlobalTilingY8)
+				               + float2(breakUV.x + GlobalOffsetX10, breakUV.y + GlobalOffsetY9);
+
+				float4 baseColorSample = tex2D(_MainTex, tiledUV);
+				float  baseAlpha       = (_InvertABaseColor) ? (1.0 - baseColorSample.a) : baseColorSample.a;
+
+				float2 uv_TransparentMask = i.uv * _TransparentMask_ST.xy + _TransparentMask_ST.zw;
+				float4 transMaskSample    = tex2D(_TransparentMask, uv_TransparentMask);
+				float4 tempAlpha          = (_UseBaseColorAlpha) ? float4(baseAlpha, baseAlpha, baseAlpha, baseAlpha) : transMaskSample;
+				float4 invertedAlpha      = (_InvertTransparent) ? (1.0 - tempAlpha) : tempAlpha;
+				float4 clampedTrans       = clamp(CalculateContrast(_ContrastTransparentMap + 1.0, invertedAlpha) - _SpreadTransparentMap,
+				                                  float4(0,0,0,0), float4(1,0,0,0));
+				float  alpha              = (clampedTrans * (1.0 - _IntensityTransparentMap)).r;
+
+				// Sample specular for a lightweight specular highlight contribution.
+				float2 uv_SpecGlossMap = i.uv * _SpecGlossMap_ST.xy + _SpecGlossMap_ST.zw;
+				float2 breakSpec = uv_SpecGlossMap;
+				float2 tiledSpec = float2(breakSpec.x * GlobalTilingX11, breakSpec.y * GlobalTilingY8)
+				                 + float2(breakSpec.x + GlobalOffsetX10, breakSpec.y + GlobalOffsetY9);
+				float4 specSample  = tex2D(_SpecGlossMap, tiledSpec);
+				float3 specColor   = _SpecularColor.rgb * specSample.rgb * _SpecularIntensity;
+
+				// Light direction (works for both directional and point lights via
+				// the ForwardAdd variant macros).
+				float3 lightDir    = normalize(UnityWorldSpaceLightDir(i.worldPos));
+				float3 viewDir     = normalize(i.viewDir);
+				float3 halfDir     = normalize(lightDir + viewDir);
+				float3 worldNormal = normalize(i.worldNormal);
+				float  NdotH       = max(0.0, dot(worldNormal, halfDir));
+				float  smoothness  = specSample.a * _Glossiness;
+				float  specPow     = exp2(smoothness * 10.0 + 1.0);
+				float3 specular    = specColor * pow(NdotH, specPow);
+
+				// Keep the additive contribution subtle so it doesn't over-brighten.
+				float3 additiveColor = specular * _LightColor0.rgb;
+				return half4(additiveColor, alpha * 0.5);
+			}
+			ENDCG
+		}
+
 		Pass
 		{
 			Name "ShadowCaster"

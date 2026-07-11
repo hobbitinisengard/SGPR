@@ -1,1 +1,20 @@
-{"author":"Team17","desc":"A very fast track where you can use the burns for overtaking","valid":true,"envir":"SPN","preferredCarClass":"Aero","difficulty":1,"unlocked":true,"icons":[0],"TrackOrigin":0,"IsOriginal":true}
+{
+  "author": "Team17",
+  "localizedDescriptions": [
+    "A very fast track where you can use the burns for overtaking",
+    "Bardzo szybka, krótka trasa - dopalanie i wyprzedzanie."
+  ],
+  "localizedNames": [
+    "WIDE WALL CHASE",
+    "GONITWA NA MUR"
+  ],
+  "valid": true,
+  "envir": "SPN",
+  "preferredCarClass": "Aero",
+  "difficulty": 3,
+  "unlocked": true,
+  "icons": [
+    0,
+    2
+  ]
+}

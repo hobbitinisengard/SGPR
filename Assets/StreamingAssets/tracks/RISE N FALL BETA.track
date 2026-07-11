@@ -1,0 +1,20 @@
+{
+  "author": "Team17",
+  "localizedDescriptions": [
+    "This prototype track resembles a rollercoaster. Slow and steady drive followed by a sudden decline straight into a loop.",
+    "Ta prototypowa trasa przypomina rollercoaster. Powolna i spokojna jazda po której nagle spadasz w pętlę."
+  ],
+  "localizedNames": [
+    "RISE N FALL BETA",
+    "GÓRA CZY DÓŁ BETA"
+  ],
+  "valid": true,
+  "envir": "SPN",
+  "preferredCarClass": "Speed",
+  "difficulty": 4,
+  "unlocked": true,
+  "icons": [
+    0,
+    1
+  ]
+}

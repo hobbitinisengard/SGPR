@@ -11,9 +11,12 @@ public class Ghost : NetworkBehaviour
 	public Renderer[] ghostableParts;
 	VehicleParent vp;
 	Coroutine ghostCo;
+	static Shader opaqueShader;
 	private void Awake()
 	{
 		vp = GetComponent<VehicleParent>();
+		if (opaqueShader == null)
+			opaqueShader = Shader.Find("HDRP/Lit");
 	}
 	public void SetHittable(bool isHittable, bool updateColliders = true)
 	{
@@ -25,67 +28,48 @@ public class Ghost : NetworkBehaviour
 				c.gameObject.layer = isHittable ? F.I.carCarCollisionLayer : F.I.ghostLayer;
 			}
 		}
+		if (vp.rearLights.Length > 0)
+			foreach(var rl in vp.rearLights)
+				rl.GetComponent<MeshRenderer>().enabled = isHittable;
+
 		foreach (var r in ghostableParts)
 		{
-			for(int i=0; i<r.materials.Length; ++i)
+			var materials = r.materials;
+			for (int i = 0; i < materials.Length; ++i)
 			{
-				r.materials[i] = isHittable ? ToOpaqueMode(r.materials[i]) : ToFadeMode(r.materials[i]);
+				if (r.materials[i].name.Contains("reflect"))
+					continue;
+				
+				// copy mainTexture of material
+				var tex = materials[i].mainTexture;
+				if (isHittable)
+				{
+					//r.materials[i].SetColor("_BaseColor", Color.white);
+
+					// Set Surface Type to Opaque
+					materials[i] = new Material(F.I.opaqueMaterial);
+
+					// Enable Opaque-related keywords
+					materials[i].EnableKeyword("_SURFACE_TYPE_OPAQUE");
+					materials[i].DisableKeyword("_SURFACE_TYPE_TRANSPARENT");
+				}
+				else
+				{
+					materials[i] = new Material(F.I.transpMaterial);
+					materials[i].SetColor("_BaseColor", new Color(1,1,1,.4f));
+					
+				}
+				materials[i].mainTexture = tex;
 			}
+			
+			r.materials = materials;
 		}
-	}
-	public Material ToOpaqueMode(Material material)
-	{
-		float specularIntensity = material.GetFloat("_SpecularIntensity");
-		float smoothness = material.GetFloat("_Glossiness");
-		material.shader = F.I.opaqueShader;
-		material.SetInt("_ZWrite", 1);
-		material.SetFloat("_IntensityTransparentMap", material.name.Contains("Roof") ? 0.2f : 0);
-
-		material.SetFloat("_Glossiness", smoothness);
-		material.SetFloat("_SpecularIntensity", specularIntensity);
-		material.SetFloat("_Parallax", 0);
-		material.SetFloat("_Brightness", 1);
-		//material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.One);
-		//material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.Zero);
-		//material.SetInt("_ZWrite", 1);
-		//material.DisableKeyword("_ALPHATEST_ON");
-		//material.DisableKeyword("_ALPHABLEND_ON");
-		//material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
-		//material.renderQueue = -1; // Set it back to the default opaque render queue
-		return material;
-	}
-
-	public Material ToFadeMode(Material material)
-	{
-		float specularIntensity = material.GetFloat("_SpecularIntensity");
-		float smoothness = material.GetFloat("_Glossiness");
-		material.shader = F.I.transpShader;
-		material.SetInt("_ZWrite", 1);
-		material.SetFloat("_IntensityTransparentMap", 0.7f);
-
-		material.SetFloat("_Glossiness", smoothness);
-		material.SetFloat("_SpecularIntensity", specularIntensity);
-		material.SetFloat("_Parallax", 0);
-		material.SetFloat("_Brightness", 4);
-		//var c = material.color;
-		//c.a = 0.5f;
-		//material.color = c;
-
-		// Set the rendering mode to transparent
-		//material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-		//material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-		//material.SetInt("_ZWrite", 0);
-		//material.DisableKeyword("_ALPHATEST_ON");
-		//material.EnableKeyword("_ALPHABLEND_ON");
-		//material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
-		//material.renderQueue = 3500;
 		
-		return material;
 	}
 
 	public void SetGhostPermanently()
 	{
-		if (F.I.gameMode == MultiMode.Multiplayer && vp.Owner)
+		if (F.I.gameMode == GameMode.Multiplayer && vp.Owner)
 			SetHittableRpc(false, true);
 		else
 			SetHittable(false, true);
@@ -97,7 +81,7 @@ public class Ghost : NetworkBehaviour
 	}
 	public void StartGhostResetting()
 	{
-		if (F.I.gameMode == MultiMode.Multiplayer)
+		if (F.I.gameMode == GameMode.Multiplayer)
 			StartGhostResettingRpc();
 		else
 		{

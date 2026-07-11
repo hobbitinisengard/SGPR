@@ -1,29 +1,36 @@
 using Newtonsoft.Json;
 using RVP;
 using System;
+using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
+using Unity.Multiplayer.Playmode;
 using UnityEngine;
 using UnityEngine.Audio;
-using System.Security.Cryptography;
-using PathCreation;
 using UnityEngine.EventSystems;
-using Unity.Multiplayer.Playmode;
 using UnityEngine.InputSystem;
+using UnityEngine.Localization.Settings;
+using UnityEngine.Localization.Tables;
 using UnityEngine.UI;
-public enum PlayerState { InRace, InLobbyUnready, InLobbyReady};
+public enum PlayerState { InRace, InLobbyUnready, InLobbyReady };
 public enum Envir { GER, JAP, SPN, FRA, ENG, USA, ITA, MEX };
 public enum CarGroup { Wild, Aero, Speed, Team };
-public enum Livery { Random = 0, Special = 1, TGR, Rline, Itex, Caltex, Titan, Mysuko }
+public enum Livery { Random = 0, Team = 1, TGR = 2, Rline = 3, Itex = 4, Caltex = 5, Titan = 6, Mysuko = 7 }
 public enum RecordType { BestLap, RaceTime, StuntScore, DriftScore }
 public enum ScoringType { Championship, Points, Victory }
 public enum ActionHappening { InLobby, InRace }
 public enum PavementType { Arena, Volcano, Asphalt, Energy, Grid, Japan, Jungle, Random }
-public enum MultiMode { Singleplayer, Multiplayer };
+public enum GameMode { Exhibition, Multiplayer, Splitscreen, Arcade };
 public enum RaceType { Race, Knockout, Stunt, Drift, TimeTrial }
-public enum CpuLevel { Normal };
+public enum CpuLevel { Easy, Medium, Hard };
+public enum TimeOfDay { Day, Night };
+public enum Language { English, Polish };
+
 
 [Serializable]
 public class PlayerSettingsData
@@ -35,11 +42,14 @@ public class PlayerSettingsData
 	public int fpsLimit = 60;
 	public bool vSync = true;
 	public string playerName = "";
-	public float steerGamma = 0;
+	public float deadzone = 0;
 	public string serverName = "";
 	public string serverPassword = "";
 	public string serverMaxPlayers = "10";
 	public string[] quickMessages = new string[10];
+	public bool trail = false;
+	public string currentArcadeVariant = "Original";
+	public Language language = Language.English;
 }
 [Serializable]
 public class RankingData
@@ -54,22 +64,77 @@ public class RankingData
 
 public class Info : MonoBehaviour
 {
+	public const string stringFormatWithoutHours = @"mm\:ss\.ff";
+	public const string stringFormatWithHours = @"h\.mm\:ss\.ff";
+
+	public const int TimeOfDays = 2;
+	StringTable localizedTable;
+	public GameObject renderTextureCam;
+	public LoadSelector loadSelector;
+	public CarSelector carSelector;
+	[NonSerialized]
+	public ArcadeVariant curVariant;
+	public ArcadeVariant.Node curNode
+	{
+		get
+		{
+			if (curArcadeNodeID == -1)
+				return curVariant.nodes[targetArcadeNodeID];
+			return curVariant.nodes[curArcadeNodeID];
+		}
+	}
+	public ArcadeVariant.Node targetNode
+	{
+		get
+		{
+			return curVariant.nodes[targetArcadeNodeID];
+		}
+	}
+	[NonSerialized]
+	public int curArcadeNodeID = -1;
+	[NonSerialized]
+	public int targetArcadeNodeID = 0;
+	[NonSerialized]
+	public int curArcadeScore = 0;
+	public ArcadeSelector arcadeSelector;
+	/// <summary> number of remaining stunts to complete the objective </summary>
+	public (string, int)[] arcadeObjectiveStunts;
+
+	public const string TranslationTableName = "Default";
 	public MultiPlayerSelector mpSelectorInitializer;
-	public Shader transpShader;
-	public Shader opaqueShader;
 	public Text versionText;
-	public const string VERSION = "0.3.3";
-	public bool minimized { get; private set;  }
+	public Material transpMaterial;
+	public Material opaqueMaterial;
+	public Material emissiveRearLighter;
+	public Material emissiveRearDarker;
+	public Mesh sphereMesh;
+	public AudioMixer mainAudioMixer;
+	public const string VERSION = "0.5.8";
+	public bool minimized { get; private set; }
+	[DllImport("user32.dll")]
+	static extern bool SetCursorPos(int X, int Y);
 	void OnApplicationFocus(bool hasFocus)
 	{
 		minimized = !hasFocus;
+		//if (minimized)
+		//	F.I.enterRef.action.Disable();
+		//else
+		//	F.I.enterRef.action.Enable();
+	}
+	/// <summary>Retrieves localized string from loaded localization table</summary>
+	public string LocStr(string key)
+	{
+		var entry = localizedTable.GetEntry(key);
+		return entry == null ? key : entry.GetLocalizedString();
 	}
 	private void Awake()
 	{
 		F.I = this;
+		SetCursorPos(0, 0);
+		UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
 		MultiPlayerSelector.I = mpSelectorInitializer;
 		versionText.text = VERSION;
-		MPtags = CurrentPlayer.ReadOnlyTags().Count;
+		int MPtags = CurrentPlayer.ReadOnlyTags().Count();
 		switch (MPtags)
 		{
 			case 1:
@@ -94,13 +159,33 @@ public class Info : MonoBehaviour
 
 		Application.targetFrameRate = playerData.fpsLimit;
 		QualitySettings.vSyncCount = playerData.vSync ? 1 : 0;
+		ReadSettingsDataFromJson();
 		PopulateSFXData();
 		ReloadCarsData();
 		PopulateTrackData();
 		ReloadCarPartsData();
 		LoadRanking();
+		LoadArcade();
 		icons = Resources.LoadAll<Sprite>(trackImagesPath + "tiles");
+		LocalizationSettings.InitializeSynchronously = true;
 	}
+	private void Start()
+	{
+		UpdateLanguage(true);
+
+	}
+	public void UpdateLanguage(bool firstRun = false)
+	{
+		StartCoroutine(UpdateLanguageCo(firstRun));
+	}
+	IEnumerator UpdateLanguageCo(bool firstRun)
+	{
+		if (firstRun)
+			yield return LocalizationSettings.InitializationOperation.WaitForCompletion();
+		LocalizationSettings.SelectedLocale = LocalizationSettings.AvailableLocales.Locales[(int)playerData.language];
+		localizedTable = LocalizationSettings.StringDatabase.GetTable(TranslationTableName);
+	}
+
 	string _documentsSGPRpath;
 	public string documentsSGPRpath
 	{
@@ -111,14 +196,17 @@ public class Info : MonoBehaviour
 	public string tracksPath { get { return documentsSGPRpath + "tracks\\"; } }
 	public string userdataPath { get { return documentsSGPRpath + "userdata.json"; } }
 	public string rankingPath { get { return documentsSGPRpath + "ranking.json"; } }
+	public string arcadePath { get { return documentsSGPRpath + "arcade\\"; } }
 	public string lastPath { get { return documentsSGPRpath + "path.txt"; } }
 
-	public Livery s_PlayerCarSponsor = Livery.Special;
+	public const string arcadeProgressExtension = ".progress";
+	public const string alreadyWalkedTag = "walked";
 
-	int MPtags;
+	public Livery s_PlayerCarSponsor = Livery.TGR;
 
 	public readonly int maxCarsInRace = 10;
 
+	// menu inputs
 	public PlayerSettingsData playerData;
 	public InputActionReference shiftRef;
 	public InputActionReference escRef;
@@ -131,7 +219,164 @@ public class Info : MonoBehaviour
 	public InputActionReference altInputRef;
 	public InputActionReference pointRef;
 
+	// car steering inputs
+	public InputActionReference driveRef;
+	public InputActionReference boostInput;
+	public InputActionReference evoInput;
+	public InputActionReference honkInput;
+	public InputActionReference rollInput;
+	public InputActionReference resetOnTrackInput;
+	public InputActionReference bunnyhopInput;
+	public InputActionReference lookBackInput;
+	public InputActionReference lookAxisInput;
+
 	public RankingData rankingData;
+	[NonSerialized]
+	public List<ArcadeVariant> arcadeVariants;
+
+	[NonSerialized]
+	public bool alwaysFirst = true;
+	[NonSerialized]
+	public bool alwaysBestStuntScore = true;
+	[NonSerialized]
+	public Livery?[] unlockedLiveries = new Livery?[] { Livery.Random, null, null, null, null, null, null, null };
+
+	public void LoadArcade()
+	{
+		// iterate over all files in arcadePath
+		arcadeVariants = new List<ArcadeVariant>();
+		if (!Directory.Exists(arcadePath))
+		{
+			Directory.CreateDirectory(arcadePath);
+		}
+
+		ArcadeVariant[] newVariants = ArcadeVariant.GenerateDefaultVariants();
+		foreach (var newVariant in newVariants)
+		{
+			string serializedVariant = JsonConvert.SerializeObject(newVariant, Formatting.Indented);
+			string filepath = Path.Combine(arcadePath, $"{newVariant.name}.json");
+			File.WriteAllText(filepath, serializedVariant);
+		}
+
+		string[] filepaths = Directory.GetFiles(arcadePath, "*.json", SearchOption.TopDirectoryOnly);
+
+		foreach (var filepath in filepaths)
+		{
+			string jsonText = File.ReadAllText(filepath);
+			try
+			{
+				ArcadeVariant variant = JsonConvert.DeserializeObject<ArcadeVariant>(jsonText);
+				if (variant != null)
+					arcadeVariants.Add(variant);
+
+				string progressPath = Path.ChangeExtension(filepath, arcadeProgressExtension);
+				if (File.Exists(progressPath))
+				{
+					string progressText = File.ReadAllText(progressPath);
+					variant.progress = JsonConvert.DeserializeObject<ArcadeVariant.Progress>(progressText);
+					variant.progress.parent = variant;
+				}
+				else
+				{
+					variant.progress = new ArcadeVariant.Progress(variant);
+					//string serializedProgress = JsonConvert.SerializeObject(variant.progress, Formatting.Indented);
+					//await File.WriteAllTextAsync(progressPath, serializedProgress);
+				}
+			}
+			catch (Exception e)
+			{
+				Debug.LogError("Error loading arcade variant from " + filepath + ": " + e.Message);
+			}
+		}
+		SwitchArcadeVariant(playerData.currentArcadeVariant);
+	}
+	public void SaveArcadeProgress()
+	{
+		string jsonText = JsonConvert.SerializeObject(F.I.curVariant.progress);
+		File.WriteAllText(arcadePath + F.I.curVariant.name + arcadeProgressExtension, jsonText);
+	}
+	public void SwitchArcadeVariant(string newVariantName)
+	{
+		curVariant = arcadeVariants.FirstOrDefault(v => v.name == newVariantName);
+		// sort curVariant nodes by id to ensure correct order
+		Array.Sort(F.I.curVariant.nodes, (a, b) => a.id.CompareTo(b.id));
+
+		for (int i = 1; i < unlockedLiveries.Length; i++)
+			unlockedLiveries[i] = (Livery)i;
+
+		foreach (var track in tracks)
+		{
+			if (track.Key.Length > 3) // don't unlock default environment tracks
+				track.Value.unlocked = true;
+		}
+
+		foreach (var car in cars)
+		{
+			car.starter = false;
+			car.unlocked = true;
+		}
+		foreach (var s in F.I.curVariant.starts)
+			foreach (var i in s.allowedCarsIdxs)
+				cars[i].starter = true;
+
+		if (playerData.playerName == "HAXOR")
+			return;// unlock all for testing 
+
+		playerData.currentArcadeVariant = curVariant.name;
+
+		List<string> prizeNamesToBeLocked = new();
+		foreach (var variant in F.I.arcadeVariants)
+		{
+			for (int i = 0; i < variant.nodes.Length; ++i)// lock prizes for uncompleted prizes
+			{
+				for (int j = 0; j < variant.nodes[i].prizeReqs.Length; ++j)
+				{
+					if (variant.progress.prizesCompleted[i].GetBits(j) == 0)
+						prizeNamesToBeLocked.AddRange(variant.nodes[i].prizeReqs[j].name.Split(','));
+				}
+			}
+
+			for (int i = 0; i < variant.globalPrizes.Length; ++i)
+			{
+				var gprize = variant.globalPrizes[i];
+				if (gprize.condition == ArcadeVariant.Prize.Condition.AlwaysFirst)
+				{
+					if (variant.progress.globalPrizesCompleted.GetBits(i) == 0)
+					{
+						prizeNamesToBeLocked.AddRange(gprize.name.Split(","));
+					}
+				}
+				else if (gprize.condition == ArcadeVariant.Prize.Condition.AllPathsFound)
+				{
+					if (variant.progress.pathsDone.Sum(p => p.Count) != variant.nodes.Sum(n => n.connections.Length))
+					{
+						prizeNamesToBeLocked.AddRange(gprize.name.Split(","));
+					}
+				}
+			}
+
+			foreach (var prizeName in prizeNamesToBeLocked)
+			{
+				if (prizeName.StartsWith("car"))
+				{
+					if (variant.name == curVariant.name) 
+						F.I.Car(prizeName).unlocked = false;
+				}
+				else if (prizeName.StartsWith("spn"))
+				{
+					int liveryIdx = int.Parse(prizeName[3..]);
+					unlockedLiveries[liveryIdx] = null;
+				}
+				else
+				{
+					tracks[prizeName].unlocked = false;
+				}
+			}
+
+			prizeNamesToBeLocked.Clear();
+		}
+	}
+
 	public async void LoadRanking()
 	{
 		if (!File.Exists(rankingPath))
@@ -146,10 +391,12 @@ public class Info : MonoBehaviour
 			rankingData = JsonConvert.DeserializeObject<RankingData>(serializedRanking);
 		}
 	}
+
 	public async void SaveRanking()
 	{
 		string serializedRanking = JsonConvert.SerializeObject(rankingData);
 		await File.WriteAllTextAsync(rankingPath, serializedRanking);
+		F.I.SaveArcadeProgress();
 	}
 	public string SHA(string filePath)
 	{
@@ -183,10 +430,9 @@ public class Info : MonoBehaviour
 		}
 		else
 		{
-			Debug.Log(userdataPath);
+			//Debug.Log(userdataPath);
 			string playerSettings = File.ReadAllText(userdataPath);
 			playerData = JsonConvert.DeserializeObject<PlayerSettingsData>(playerSettings);
-			Debug.Log(playerData == null);
 		}
 	}
 	public void SaveSettingsDataToJson()
@@ -224,59 +470,74 @@ public class Info : MonoBehaviour
 	/// Number of track textures. Set pavementTypes+1 for random texture.
 	/// </summary>
 	public readonly int pavementTypes = 6;
-
-
 	public readonly int RaceTypes = 5;
 
 	public readonly Vector3[] invisibleLevelDimensions = new Vector3[]{
 		new (564, 1231,1), //ger
-		new (800, 800,1), //jap
+		new (800, 900,1),  //jap
 		new (1462, 2480,1),//spn
 		new (2170, 1560,1),//fra
-		new (1170, 817,1),//eng
-		new (739, 1060,1),//usa
+		new (1170, 817,1), //eng
+		new (739, 1060,1), //usa
 		new (1406, 1337,1),// ita
 		new (564, 1231,1), //mex
 	};
-	public readonly int[] skys = new int[] { 8, 2, 5, 1, 4, 3, 7, 9 };
+	public readonly int[] skys = new int[] {
+		8, //ger
+		2, //jap
+		5, //spn
+		1, //fra
+		4, //eng
+		3, //usa
+		7, // ita
+		8  //mex
+	};
 
 	public int Environments = 8;
 	public int Liveries = 7;
-
-	public readonly string[] EnvirDescs =
-	{
-		"GERMANY\n\nLoud crowd cheering and powerful spotlights..This german arena is really a place to show off.",
-		"JAPAN\n\nHere in this calm japanese dojo placed on the outskirts of Kyoto you can meditate or organize a race!",
-		"SPAIN\n\nBeaches like this usually ooze holidays. This is not an exception: warm sand, palms, and sun.. What could people possibly want more? Maybe a RC car race :)",
-		"FRANCE\n\nThis shadowy warehouse is full of boxes, forklifts and machinery. There are some really dark places here.",
-		"ENGLAND\n\nEnglish go-kart track is a good location to test your driving skills. This place has a reputation for great races.",
-		"USA\n\nAre you looking for an intense experience? Racing on top of a multistorey parking lot located in the heart of New York will be a bombastic idea!",
-		"ITALY\n\nFeeling mediterranean? This italian coast is very scenic, especially at night. There are two dangers here to look out however: staircase descent and water!",
-		"MEXICO\n\nOnly some people are in a possession of info that there's this ancient place located in the middle of an unknown mexican forest, where aztecs used to race RC-cars. However no-one really knows how to get there."
-	};
+	//public readonly string[] EnvirDescs =
+	//{
+	//	"GERMANY\n\nLoud crowd cheering and powerful spotlights..This german arena is really a place to show off.",
+	//	"JAPAN\n\nHere in this calm japanese dojo placed on the outskirts of Kyoto you can meditate or organize a race!",
+	//	"SPAIN\n\nBeaches like this usually ooze holidays. This is not an exception: warm sand, palms, and sun.. What could people possibly want more? Maybe a RC car race :)",
+	//	"FRANCE\n\nThis shadowy warehouse is full of boxes, forklifts and machinery. There are some really dark places here.",
+	//	"ENGLAND\n\nEnglish go-kart track is a good location to test your driving skills. This place has a reputation for great races.",
+	//	"USA\n\nAre you looking for an intense experience? Racing on top of a multistorey parking lot located in the heart of New York will be a bombastic idea!",
+	//	"ITALY\n\nFeeling mediterranean? This italian coast is very scenic, especially at night. There are two dangers here to look out however: staircase descent and water!",
+	//	"MEXICO\n\nOnly some people are in a possession of info that there's this ancient place located in the middle of an unknown mexican forest, where aztecs used to race RC-cars. However no-one really knows how to get there."
+	//};
 
 	public readonly string carPrefabsPath = "carModels/";
 	public readonly string carImagesPath = "carImages/";
 	public readonly string trackImagesPath = "trackImages/";
 	public readonly string editorTilesPath = "tiles/objects/";
+	public RankingView rankingView;
 	public ResultsView resultsView;
 	public ViewSwitcher viewSwitcher;
 	public Chat chat;
-	public PathCreator universalPath;
-
+	[NonSerialized]
 	public List<int> stuntpointsContainer = new();
+	[NonSerialized]
 	public List<ReplayCam> replayCams = new();
+	[NonSerialized]
 	public Vector3[] carSGPstats;
+	[NonSerialized]
 	public Car[] cars;
 	public ScoringType scoringType;
-	public MultiMode gameMode = MultiMode.Singleplayer;
+	public GameMode gameMode = GameMode.Exhibition;
 	public ActionHappening actionHappening = ActionHappening.InLobby;
+	[NonSerialized]
 	public Dictionary<string, PartSavable> carParts;
+	[NonSerialized]
 	public SortedDictionary<string, TrackHeader> tracks;
+	[NonSerialized]
 	public Dictionary<string, AudioClip> audioClips;
-
+	[NonSerialized]
 	public bool loaded = false;
+	[NonSerialized]
 	public int roadLayer = 6;
+	[NonSerialized]
+	public int pylonLayer = 9;
 
 	public string visibleInPictureModeTag = "VisibleInPictureMode";
 	public readonly int ignoreWheelCastLayer = 8;
@@ -286,15 +547,17 @@ public class Info : MonoBehaviour
 	public readonly int terrainLayer = 13;
 	public readonly int cameraLayer = 14;
 	public readonly int flagLayer = 15;
-	public readonly int racingLineLayer = 16;
+	public readonly int[] racingLineLayers = new[] { 16, 25, 27, 28 };
 	public readonly int pitsLineLayer = 17;
 	public readonly int pitsZoneLayer = 18;
 	public readonly int aeroTunnel = 19;
+	public readonly int vehicleTriggerLayer = 22;
 	public readonly int surfaceLayer = 23;
 	public readonly int ghostLayer = 24;
 	public readonly int carCarCollisionLayer = 26;
 
 	public readonly Color32 yellow = new(255, 223, 0, 255);
+	public readonly Color32 orange = new(255, 69, 0, 255);
 	public readonly Color32 red = new(255, 64, 64, 255);
 	/// <summary>
 	/// Only one object at the time can have this layer
@@ -309,7 +572,7 @@ public class Info : MonoBehaviour
 	/// <summary>
 	/// e.g car01
 	/// </summary>
-	public string s_playerCarName = "car01";
+	public int s_playerCarIdx = 0;
 	[NonSerialized]
 	public RaceType s_raceType = RaceType.Race;
 	/// <summary>
@@ -317,12 +580,12 @@ public class Info : MonoBehaviour
 	/// </summary>
 	public int s_laps = 3;
 	public bool s_inEditor = true;
-	public bool s_isNight = false;
-	public CpuLevel s_cpuLevel = CpuLevel.Normal;
+	public TimeOfDay s_timeOfDay = TimeOfDay.Day;
+	public CpuLevel s_cpuLevel = CpuLevel.Medium;
 	public int s_cpuRivals = 0; // 0-9
 	[NonSerialized]
 	public PavementType s_roadType = PavementType.Random;
-	public bool s_catchup = true;
+	public bool catchup = true;
 	public int s_resultPos = 3;
 	public bool teams = false;
 	public int ServerIdGenerator = 0;
@@ -338,7 +601,6 @@ public class Info : MonoBehaviour
 	internal bool randomTracks;
 	internal int hostId;
 	public int racingPathResolution = 10;
-	public readonly string version = "0.3";
 
 	public const int AfterMultiPlayerRaceWaitForPlayersSeconds = 30;
 
@@ -346,19 +608,26 @@ public class Info : MonoBehaviour
 	public DateTime raceStartDate = DateTime.MinValue;
 	public byte Rounds = 0;
 	public byte CurRound;
-	
+	public string[] usersManualLinks = new string[]
+	{
+		"https://docs.google.com/document/d/1PNb95xUi0pdOjPetwu-MNLeIwpVN6t8rxAmukKEpB2E/",
+		"https://docs.google.com/document/d/14PEdrIv2pKRA5bBgoyBFK_-WArmZ6AFeBQoZ4Xr_Wpg/"
+	};
 	public readonly int maxConcurrentUsers = 30;
 
+	/// <summary>
+	/// // i.e. car05
+	/// </summary>
 	public Car Car(string name)
-	{ // i.e. car05
+	{ 
 		try
 		{
 			int i = int.Parse(name[3..]);
-			return cars[i - 1];
+			return cars[i];
 		}
 		catch
 		{
-			Debug.Log(name);
+			Debug.LogError(name);
 			return cars[0];
 		}
 	}
@@ -383,26 +652,26 @@ public class Info : MonoBehaviour
 		{
 			cars = new Car[]
 			{
-				new (0,CarGroup.Speed, "MEAN STREAK","Fast, light and agile, this racer offers much for those who wish to modify their vehicle."),
-				new (45000,CarGroup.Wild, "THE HUSTLER","Sturdy 4x4 pick-up truck with an eye for the outrageous!"),
-				new (50000,CarGroup.Aero, "TWIN EAGLE","Take flight with this light and speedy stuntcar."),
-				new (0,CarGroup.Aero, "SKY HAWK","Get airborne with this very versatile stunt car."),
-				new (30000,CarGroup.Speed, "THE PHANTOM","Fast, sleek and tough to handle."),
-				new (30000,CarGroup.Wild, "ROAD HOG","Rock and Roll with the rough ridin' road hog."),
-				new (0,CarGroup.Wild, "DUNE RAT","Defy the laws of physics in this buggy."),
-				new (50000,CarGroup.Speed, "LIGHTNIN'","Supercharged super speed. Easy does it!"),
-				new (30000,CarGroup.Speed, "ALLEY KAT","Sleek and powerful, this cat is ready to roar."),
-				new (40000,CarGroup.Wild, "SAND SHARK","This beachcomber is at home on any stunt circuit."),
-				new (45000,CarGroup.Wild, "THE BRUTE","Unleash the Brute for no-nonsense on the road!"),
-				new (70000,CarGroup.Aero, "WILD DART","Fly fast and true with this stuntcar."),
-				new (65000,CarGroup.Wild, "RAGING BULL","Powerful and fast, this streetwise 4x4 is incredible."),
-				new (15000,CarGroup.Aero, "FLYING MANTIS","Super light and very fast."),
-				new (35000,CarGroup.Aero, "STUNT MONKEY","Monkey see, monkey do! Go bananas with this wild ride!"),
-				new (50000,CarGroup.Speed, "INFERNO","This speed demon is on fire!"),
-				new (35000,CarGroup.Team, "FORK","Despite its looks, it moves like fork lightning!"),
-				new (55000,CarGroup.Team, "WORM MOBILE","Super Speedy Buggy!"),
-				new (100000,CarGroup.Team, "FORMULA 17","Incredibly fast racing car."),
-				new (90000,CarGroup.Team, "TEAM MACHINE","The ultimate, hugely versatile stock car.")
+				new ("car00",0,5,5,5,CarGroup.Speed, Livery.Itex, "MEAN STREAK","Fast, light and agile, this racer offers much for those who wish to modify their vehicle."),
+				new ("car01",45000,1,8,2,CarGroup.Wild,Livery.Caltex, "THE HUSTLER","Sturdy 4x4 pick-up truck with an eye for the outrageous!"),
+				new ("car02",50000,8,3,6,CarGroup.Aero, Livery.Mysuko, "TWIN EAGLE","Take flight with this light and speedy stuntcar."),
+				new ("car03",0,8,5,6,CarGroup.Aero, Livery.TGR, "SKY HAWK","Get airborne with this very versatile stunt car."),
+				new ("car04",30000,4,7,7,CarGroup.Speed, Livery.Rline, "THE PHANTOM","Fast, sleek and tough to handle."),
+				new ("car05",30000,1,8,3,CarGroup.Wild, Livery.Titan, "ROAD HOG","Rock and Roll with the rough ridin' road hog."),
+				new ("car06",0,6,4,5,CarGroup.Wild, Livery.Itex, "DUNE RAT","Defy the laws of physics in this buggy."),
+				new ("car07",50000,3,10,9,CarGroup.Speed, Livery.Titan, "LIGHTNIN'","Supercharged super speed. Easy does it!"),
+				new ("car08",30000,5,4,5,CarGroup.Speed, Livery.Caltex, "ALLEY KAT","Sleek and powerful, this cat is ready to roar."),
+				new ("car09",40000,6,3,2,CarGroup.Wild, Livery.Itex, "SAND SHARK","This beachcomber is at home on any stunt circuit."),
+				new ("car10",45000,1,5,3,CarGroup.Wild, Livery.TGR, "THE BRUTE","Unleash the Brute for no-nonsense on the road!"),
+				new ("car11",70000,10,9,8,CarGroup.Aero, Livery.Titan,"WILD DART","Fly fast and true with this stuntcar."),
+				new ("car12",65000,5,8,7,CarGroup.Wild, Livery.Mysuko, "RAGING BULL","Powerful and fast, this streetwise 4x4 is incredible."),
+				new ("car13",15000,10,7,5,CarGroup.Aero, Livery.Caltex, "FLYING MANTIS","Super light and very fast."),
+				new ("car14",35000,10,1,4,CarGroup.Aero, Livery.Rline, "STUNT MONKEY","Monkey see, monkey do! Go bananas with this wild ride!"),
+				new ("car15",50000,5,5,9,CarGroup.Speed, Livery.Titan, "INFERNO","This speed demon is on fire!"),
+				new ("car16",35000,5,10,9,CarGroup.Team, Livery.Team, "FORK","Despite its looks, it moves like fork lightning!"),
+				new ("car17",55000,4,9,7,CarGroup.Team, Livery.Team, "WORM MOBILE","Super Speedy Buggy!"),
+				new ("car18",100000,3,10,7,CarGroup.Team, Livery.Itex, "FORMULA 17","Incredibly fast racing car."),
+				new ("car19",90000,5,7,7,CarGroup.Team, Livery.Team, "TEAM MACHINE","The ultimate, hugely versatile stock car.")
 			};
 		}
 		ReloadCarConfigs();
@@ -418,15 +687,11 @@ public class Info : MonoBehaviour
 		{
 			await Task.Run(() =>
 			{
-				string filepath = partsPath + "car" + (i + 1).ToString() + partInfos[^1].fileExtension;
+				string filepath = partsPath + "car" + i.ToString() + partInfos[^1].fileExtension;
 				string jsonText = File.ReadAllText(filepath);
-				cars[i].config = new CarConfig("car" + (i + 1).ToString(), jsonText);
+				cars[i].config = new CarConfig("car" + i.ToString(), jsonText);
 			});
 		}
-	}
-	public void AddCar()
-	{
-		tracks["car" + (1 + Mathf.RoundToInt(19 * UnityEngine.Random.value)).ToString()].unlocked = true;
 	}
 	public void PopulateTrackData()
 	{
@@ -437,14 +702,14 @@ public class Info : MonoBehaviour
 		// 0         1			2			3			4					5				6				7		8			9
 		//"stunty", "loop", "jumpy", "windy", "intersecting", "no_pit", "no_jumps", "icy", "sandy", "offroad"
 		//										unlock   preffered				   author            flags
-		tracks.Add("JAP", new TrackHeader(0, 0, 4, Envir.JAP, null, new int[] { }, null, false));
-		tracks.Add("GER", new TrackHeader(0, 0, 4, Envir.GER, null, new int[] { }, null, false));
-		tracks.Add("SPN", new TrackHeader(0, 0, 4, Envir.SPN, null, new int[] { }, null, false));
-		tracks.Add("FRA", new TrackHeader(0, 0, 4, Envir.FRA, null, new int[] { }, null, false));
-		tracks.Add("ENG", new TrackHeader(0, 0, 4, Envir.ENG, null, new int[] { }, null, false));
-		tracks.Add("USA", new TrackHeader(0, 0, 4, Envir.USA, null, new int[] { }, null, false));
-		tracks.Add("ITA", new TrackHeader(0, 0, 4, Envir.ITA, null, new int[] { }, null, false));
-		tracks.Add("MEX", new TrackHeader(0, 0, 4, Envir.MEX, null, new int[] { }, null, false));
+		tracks.Add("JAP", new TrackHeader(0, 0, 4, Envir.JAP, null, new int[] { }, null, null, false));
+		tracks.Add("GER", new TrackHeader(0, 0, 4, Envir.GER, null, new int[] { }, null, null, false));
+		tracks.Add("SPN", new TrackHeader(0, 0, 4, Envir.SPN, null, new int[] { }, null, null, false));
+		tracks.Add("FRA", new TrackHeader(0, 0, 4, Envir.FRA, null, new int[] { }, null, null, false));
+		tracks.Add("ENG", new TrackHeader(0, 0, 4, Envir.ENG, null, new int[] { }, null, null, false));
+		tracks.Add("USA", new TrackHeader(0, 0, 4, Envir.USA, null, new int[] { }, null, null, false));
+		tracks.Add("ITA", new TrackHeader(0, 0, 4, Envir.ITA, null, new int[] { }, null, null, false));
+		tracks.Add("MEX", new TrackHeader(0, 0, 4, Envir.MEX, null, new int[] { }, null, null, false));
 
 		//tracks.Add("track01", new TrackHeader(1, (CarGroup)2, 6, Envir.FRA, null, new int[] { 2 }, "CRAZY STRAIGHTS\n\nThis long speed track offers opportunity for a number of jump stunts."));
 		//tracks.Add("track02", new TrackHeader(1, (CarGroup)2, 4, Envir.JAP, null, new int[] { 0 }, "BANK JOB\n\nThis short, speedy circuit offers a number of stunt opportunities and high-banks for sneaky overtaking."));
@@ -487,6 +752,11 @@ public class Info : MonoBehaviour
 			string name = Path.GetFileNameWithoutExtension(path);
 			string recordsPath = path[..path.IndexOf('.')] + ".rec";
 			TrackHeader header = JsonConvert.DeserializeObject<TrackHeader>(trackJson);
+
+			if (header.localizedNames.Any(n => n == "")) // if importing old tracks with no localizations, at least write a name
+				for (int i = 0; i < header.localizedNames.Length; ++i)
+					header.localizedNames[i] = name;
+
 			tracks.Add(name, header);
 
 			if (File.Exists(recordsPath))
@@ -498,8 +768,6 @@ public class Info : MonoBehaviour
 			else
 			{
 				tracks[name].records = new();
-				string json = JsonConvert.SerializeObject(tracks[name].records);
-				File.WriteAllText(recordsPath, json);
 			}
 		}
 	}
@@ -513,7 +781,7 @@ public class Info : MonoBehaviour
 		float toLogLevel = 80 * 2 / 3f * Mathf.Log10(val01);
 		if (toLogLevel < -80)
 			toLogLevel = -80;
-		Debug.Log("set" + exposedParameter + " to level:" + toLogLevel.ToString());
+		//Debug.Log("set" + exposedParameter + " to level:" + toLogLevel.ToString());
 		mixer.SetFloat(exposedParameter, toLogLevel);
 	}
 	public float InGroupPos(Transform child)
@@ -566,6 +834,78 @@ public class Info : MonoBehaviour
 		w.WriteLine(path);
 		w.Close();
 	}
+
+	public static Mesh MergeVertices(Mesh combinedMesh, float threshold = 0.7f)
+	{
+		Vector3[] oldVerts = combinedMesh.vertices;
+		int[] oldTris = combinedMesh.triangles;
+
+		Vector3Int Quantize(Vector3 v) =>
+				new Vector3Int(
+						Mathf.RoundToInt(v.x / threshold),
+						Mathf.RoundToInt(v.y / threshold),
+						Mathf.RoundToInt(v.z / threshold)
+				);
+
+		var dict = new ConcurrentDictionary<Vector3Int, int>();
+		var verts = new List<Vector3>();
+		int[] map = new int[oldVerts.Length];
+		int counter = -1;
+		object lockObj = new object();
+
+		Parallel.For(0, oldVerts.Length, i =>
+		{
+			Vector3Int q = Quantize(oldVerts[i]);
+			int? assigned = null;
+
+			// Check 27 neighboring bins
+			for (int dx = -1; dx <= 1 && !assigned.HasValue; dx++)
+				for (int dy = -1; dy <= 1 && !assigned.HasValue; dy++)
+					for (int dz = -1; dz <= 1 && !assigned.HasValue; dz++)
+					{
+						Vector3Int neighbor = new Vector3Int(q.x + dx, q.y + dy, q.z + dz);
+						if (dict.TryGetValue(neighbor, out int idx))
+						{
+							Vector3 existing;
+							lock (lockObj) existing = verts[idx];
+							if (Vector3.Distance(existing, oldVerts[i]) < threshold)
+								assigned = idx;
+						}
+					}
+
+			if (!assigned.HasValue)
+			{
+				lock (lockObj)
+				{
+					// Double-check after entering lock to avoid duplicate rep
+					if (!dict.TryGetValue(q, out int idx2))
+					{
+						int newIndex = ++counter;
+						verts.Add(oldVerts[i]);
+						dict[q] = newIndex;
+						assigned = newIndex;
+					}
+					else
+					{
+						assigned = idx2;
+					}
+				}
+			}
+
+			map[i] = assigned.Value;
+		});
+
+		int[] newTris = new int[oldTris.Length];
+		for (int i = 0; i < oldTris.Length; i++)
+			newTris[i] = map[oldTris[i]];
+
+		Mesh weldedMesh = new Mesh();
+		weldedMesh.vertices = verts.ToArray();
+		weldedMesh.triangles = newTris;
+		weldedMesh.RecalculateNormals();
+		return weldedMesh;
+	}
+
 
 }
 [Serializable]
@@ -653,7 +993,10 @@ public class TrackRecords
 public class TrackHeader
 {
 	public string author;
-	public string desc;
+	/// <summary>Read from helper method instead of this field</summary>
+	public string[] localizedDescriptions;
+	/// <summary>Read from helper method instead of this field</summary>
+	public string[] localizedNames;
 	/// <summary>
 	/// whether the track can be raced on (has its path closed)
 	/// </summary>
@@ -663,21 +1006,22 @@ public class TrackHeader
 	/// <summary>
 	/// starts from 0 (sprites are from 4!)
 	/// </summary>
-	public int difficulty;//
-	public bool unlocked;//
+	public int difficulty;
+	public bool unlocked;
 	public int[] icons;
 	/// <summary>
 	/// lap, race, stunt, drift 
 	/// </summary>
 	[NonSerialized]
 	public TrackRecords records;
-
 	public TrackHeader()
 	{
 		records = new();
+		localizedDescriptions = EmptyLocStrArray("");
+		localizedNames = EmptyLocStrArray("");
 	}
 	public TrackHeader(int unlocked, CarGroup prefCarClass, int trackDifficulty,
-		Envir envir, string author, int[] icons, string desc, bool valid = true)
+		Envir envir, string author, int[] icons, string[] localizedDescriptions, string[] localizedNames, bool valid = true)
 		: this()
 	{
 		this.unlocked = unlocked > 0;
@@ -685,7 +1029,12 @@ public class TrackHeader
 		this.difficulty = trackDifficulty;
 		this.envir = envir;
 		this.author = author;
-		this.desc = desc;
+
+		localizedDescriptions ??= EmptyLocStrArray("----");
+		this.localizedDescriptions = localizedDescriptions;
+
+		localizedNames ??= EmptyLocStrArray("----");
+		this.localizedNames = localizedNames;
 		this.valid = valid;
 		this.icons = icons;
 	}
@@ -697,18 +1046,44 @@ public class TrackHeader
 		this.difficulty = h.difficulty;
 		this.envir = h.envir;
 		this.author = h.author;
-		this.desc = h.desc;
+		this.localizedDescriptions = h.localizedDescriptions;
+		this.localizedNames = h.localizedNames;
 		this.valid = h.valid;
 		this.icons = h.icons;
 	}
+	public static string[] EmptyLocStrArray(string str)
+	{
+		string[] descs = new string[LocalizationSettings.AvailableLocales.Locales.Count()];
+		for (int i = 0; i < descs.Length; i++)
+			descs[i] = str;
 
+		return descs;
+	}
+	[JsonIgnore]
 	public int TrackOrigin
 	{
 		get { return (author == "Team17") ? 0 : 1; }
 	}
+	[JsonIgnore]
 	public bool IsOriginal
 	{
 		get { return TrackOrigin == 0; }
+	}
+	[JsonIgnore]
+	public string LocalizedDesc
+	{
+		get
+		{
+			return localizedDescriptions[(int)F.I.playerData.language];
+		}
+	}
+	[JsonIgnore]
+	public string LocalizedName
+	{
+		get
+		{
+			return localizedNames[(int)F.I.playerData.language];
+		}
 	}
 }
 
@@ -719,12 +1094,42 @@ public class Car
 	public CarGroup category;
 	public CarConfig config;
 	public int price;
-	public Car(int price, CarGroup carClass, string name, string desc)
+	public int rooster;
+	public string internalName;
+	public bool unlocked = false;
+	public bool starter = false;
+	public Livery defaultLivery { get; private set; } = Livery.TGR;
+
+	public float stunt{ get; private set; }
+	public float grip { get; private set; }
+	public float power { get; private set; }
+
+	public Car(string internalName, int price, float Stunt, float Grip, float Power, CarGroup carClass, Livery defaultLivery, string name, string desc,
+	 int rooster = 0)
 	{
+		this.internalName = internalName;
 		this.desc = desc;
 		this.category = carClass;
 		this.name = name;
 		this.price = price;
+		this.rooster = rooster;
+		this.defaultLivery = defaultLivery;
+		this.stunt = Stunt;
+		this.grip = Grip;
+		this.power = Power;
+	}
+	public static int Name2Index(string name)
+	{ // i.e. car05
+		try
+		{
+			int i = int.Parse(name[3..]);
+			return i;
+		}
+		catch
+		{
+			Debug.Log(name);
+			return 0;
+		}
 	}
 }
 public struct PartInfo
@@ -747,13 +1152,19 @@ public static class IMG2Sprite
 
 	public static Sprite LoadNewSprite(string FilePath, float PixelsPerUnit = 100.0f, SpriteMeshType spriteType = SpriteMeshType.Tight)
 	{
+		Sprite sprite;
+		Texture2D tex;
+		if (File.Exists(FilePath))
+		{
+			tex = LoadTexture(FilePath);
+		}
+		else
+		{
+			tex = new Texture2D(1024, 1024);
+		}
 
-		// Load a PNG or JPG image from disk to a Texture2D, assign this texture to a new sprite and return its reference
-
-		Texture2D SpriteTexture = LoadTexture(FilePath);
-		Sprite NewSprite = Sprite.Create(SpriteTexture, new Rect(0, 0, SpriteTexture.width, SpriteTexture.height), new Vector2(0, 0), PixelsPerUnit, 0, spriteType);
-
-		return NewSprite;
+		sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0, 0), PixelsPerUnit, 0, spriteType);
+		return sprite;
 	}
 
 	public static Sprite ConvertTextureToSprite(Texture2D texture, float PixelsPerUnit = 100.0f, SpriteMeshType spriteType = SpriteMeshType.Tight)
@@ -783,5 +1194,6 @@ public static class IMG2Sprite
 		}
 		return null;                     // Return null if load failed
 	}
+
 }
 

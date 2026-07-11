@@ -25,7 +25,7 @@ Shader "Ciconia Studio/CS_Standard/Builtin/Lite/Standard (Specular setup)/Opaque
 		[Space(35)]_OcclusionMap("Ambient Occlusion Map", 2D) = "white" {}
 		_AoIntensity("Ao Intensity", Range( 0 , 2)) = 1
 		[HDR][Space(45)]_EmissionColor("Emission Color", Color) = (0,0,0,0)
-		_EmissionMap("Emission Map", 2D) = "white" {}
+		_EmissionMap("Emission Map", 2D) = "black" {}
 		_EmissionIntensity("Intensity", Range( 0 , 2)) = 1
 		[Space(35)][Header(Mask Properties)][Toggle]_EnableDetailMask("Enable", Float) = 0
 		[Space(15)][Toggle]_VisualizeMask("Visualize Mask", Float) = 0

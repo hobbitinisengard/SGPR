@@ -1,14 +1,20 @@
 {
   "author": "Team17",
-  "desc": "Two huge jumps and a mighty climb feature in this evening excursion.",
+  "localizedDescriptions": [
+    "Two huge jumps and a mighty climb feature in this evening excursion.",
+    "Dwie wielkie skocznie i potężny podjazd - oto dzisiejsza wycieczka."
+  ],
+  "localizedNames": [
+    "FREEFALL FREEWAY",
+    "OPADAJĄCA AUTOSTRADA"
+  ],
   "valid": true,
   "envir": "SPN",
-  "preferredCarClass": "Aero",
-  "difficulty": 3,
+  "preferredCarClass": "Team",
+  "difficulty": 8,
   "unlocked": true,
   "icons": [
+    2,
     3
-  ],
-  "TrackOrigin": 0,
-  "IsOriginal": true
+  ]
 }

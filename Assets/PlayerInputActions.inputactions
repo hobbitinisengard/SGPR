@@ -9,7 +9,7 @@
                     "name": "Submit",
                     "type": "Button",
                     "id": "fb7dbf1a-638f-49fc-8f22-d614b2c77412",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": true
@@ -27,7 +27,7 @@
                     "name": "Shift",
                     "type": "Button",
                     "id": "9bf9489c-fc3a-4ebe-baad-7b9a9d6bda07",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -36,7 +36,7 @@
                     "name": "Alt",
                     "type": "Button",
                     "id": "ec855edc-0dc9-40e8-9efa-3b150addee04",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -45,7 +45,7 @@
                     "name": "Move2",
                     "type": "Button",
                     "id": "bd8257b7-7196-4025-a946-25b06763fd66",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -81,7 +81,7 @@
                     "name": "Look Back",
                     "type": "Button",
                     "id": "17fd7747-f6af-42c6-98bd-bc8c3674bc73",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -99,7 +99,7 @@
                     "name": "Evo",
                     "type": "Button",
                     "id": "7bb59922-bfcf-4253-9817-5008be97a186",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -108,7 +108,7 @@
                     "name": "Boost",
                     "type": "Button",
                     "id": "37f0acc2-5f09-4821-b465-92df4c6b2175",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -117,7 +117,7 @@
                     "name": "Cancel",
                     "type": "Button",
                     "id": "f6635bc5-ec52-49e9-b66c-c2c79431c908",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -126,7 +126,7 @@
                     "name": "ChangeCamera",
                     "type": "Button",
                     "id": "c06b20e1-7e95-41b2-ac34-f6d66c8085bd",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -135,7 +135,7 @@
                     "name": "Left Click",
                     "type": "Value",
                     "id": "66290cd0-1730-4013-999c-bbb9d37b4846",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": true
@@ -162,7 +162,7 @@
                     "name": "Chat",
                     "type": "Button",
                     "id": "dda3f125-65bd-4e1a-aee1-17f404aace0c",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -171,7 +171,7 @@
                     "name": "ResetOnTrack",
                     "type": "Button",
                     "id": "0828dce5-e225-4e8f-af98-1e5e604d0ffe",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -180,7 +180,7 @@
                     "name": "QuickMessage",
                     "type": "Button",
                     "id": "ecbdae8c-35b0-486f-b728-96962b9131ba",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -639,6 +639,17 @@
                     "isPartOfComposite": true
                 },
                 {
+                    "name": "down",
+                    "id": "dd726a95-b679-4ead-a337-5cec3d1e1fb9",
+                    "path": "<HID::Logitech Logitech Dual Action>/rz",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Gamepad",
+                    "action": "Move2",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
                     "name": "right",
                     "id": "65b9a43e-f987-480a-bb5c-9df4e170c91e",
                     "path": "<HID::Logitech Logitech Dual Action>/z",
@@ -798,7 +809,7 @@
                     "path": "<Keyboard>/leftArrow",
                     "interactions": "",
                     "processors": "",
-                    "groups": "",
+                    "groups": ";Keyboard",
                     "action": "Drive",
                     "isComposite": false,
                     "isPartOfComposite": true
@@ -809,14 +820,14 @@
                     "path": "<Keyboard>/rightArrow",
                     "interactions": "",
                     "processors": "",
-                    "groups": "",
+                    "groups": ";Keyboard",
                     "action": "Drive",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
                 {
                     "name": "Gamepad",
-                    "id": "1b272e99-b967-4824-a084-52336ee2924c",
+                    "id": "4db823b3-6932-4b4f-bdf6-47cd9e282a10",
                     "path": "2DVector(mode=2)",
                     "interactions": "",
                     "processors": "",
@@ -826,23 +837,23 @@
                     "isPartOfComposite": false
                 },
                 {
-                    "name": "Down",
-                    "id": "42a7ea50-9c90-4f7c-9d8a-93a53a5c4c81",
+                    "name": "down",
+                    "id": "73e276ac-b15b-4684-b4e3-be1260586ac1",
                     "path": "<Gamepad>/rightStick/down",
                     "interactions": "",
                     "processors": "",
-                    "groups": "Gamepad",
+                    "groups": ";Gamepad",
                     "action": "Drive",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
                 {
-                    "name": "Right",
-                    "id": "15ec0e86-3120-47f7-80ea-1468051e5a81",
+                    "name": "right",
+                    "id": "9a13e49e-a282-43f1-8372-77314a4d77d4",
                     "path": "<Gamepad>/leftStick/right",
                     "interactions": "",
                     "processors": "",
-                    "groups": "Gamepad",
+                    "groups": ";Gamepad",
                     "action": "Drive",
                     "isComposite": false,
                     "isPartOfComposite": true
@@ -872,7 +883,7 @@
                 {
                     "name": "",
                     "id": "1cc3566b-2426-4bda-8f1d-bcf573b17c2b",
-                    "path": "<Keyboard>/#(B)",
+                    "path": "<Keyboard>/r",
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard",
@@ -883,7 +894,7 @@
                 {
                     "name": "",
                     "id": "f63ed39c-7857-4e83-a58d-f07015da621b",
-                    "path": "<Gamepad>/rightStick/right",
+                    "path": "<Gamepad>/buttonEast",
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",

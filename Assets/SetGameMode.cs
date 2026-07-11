@@ -2,7 +2,7 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public class SetGameMode : MonoBehaviour
 {
-   public MultiMode setGameModeToThis;
+   public GameMode setGameModeToThis;
    public void Set()
    {
       F.I.gameMode = setGameModeToThis;

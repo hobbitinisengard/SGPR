@@ -75,7 +75,7 @@ public class ZippedTrackDataObject : NetworkBehaviour
 		{
 			using ZipArchive zip = ZipFile.Open(zipPath, ZipArchiveMode.Create);
 			zip.CreateEntryFromFile(F.I.tracksPath + newTrackName + ".track", newTrackName + ".track");
-			zip.CreateEntryFromFile(F.I.tracksPath + newTrackName + ".png", newTrackName + ".png");
+			zip.CreateEntryFromFile(F.I.tracksPath + newTrackName + ".jpg", newTrackName + ".jpg");
 			zip.CreateEntryFromFile(F.I.tracksPath + newTrackName + ".data", newTrackName + ".data");
 		}
 		
@@ -114,19 +114,19 @@ public class ZippedTrackDataObject : NetworkBehaviour
 			for (int i = 1; i < 1000; ++i)
 			{
 				newName = trackName + i.ToString();
-				if (!File.Exists(F.I.tracksPath + newName + ".png"))
+				if (!File.Exists(F.I.tracksPath + newName + ".jpg"))
 				{
 					Debug.LogWarning($"Local track already exists. Saving as {newName}");
 					break;
 				}
 			}
-			File.Move(F.I.tracksPath + trackName + ".png", F.I.tracksPath + newName + ".png");
+			File.Move(F.I.tracksPath + trackName + ".jpg", F.I.tracksPath + newName + ".jpg");
 			File.Move(F.I.tracksPath + trackName + ".data", F.I.tracksPath + newName + ".data");
 			File.Move(F.I.tracksPath + trackName + ".track", F.I.tracksPath + newName + ".track");
 			var header = new TrackHeader(F.I.tracks[trackName]);
 			F.I.tracks.Add(newName, header);
 
-			File.Move(F.I.documentsSGPRpath + trackName + ".png", F.I.tracksPath + trackName + ".png");
+			File.Move(F.I.documentsSGPRpath + trackName + ".jpg", F.I.tracksPath + trackName + ".jpg");
 			File.Move(F.I.documentsSGPRpath + trackName + ".data", F.I.tracksPath + trackName + ".data");
 			File.Move(F.I.documentsSGPRpath + trackName + ".track", F.I.tracksPath + trackName + ".track");
 
@@ -137,7 +137,7 @@ public class ZippedTrackDataObject : NetworkBehaviour
 		else
 		{
 			Debug.Log($"Downloaded new track {trackName}");
-			File.Move(F.I.documentsSGPRpath + trackName + ".png", F.I.tracksPath + trackName + ".png");
+			File.Move(F.I.documentsSGPRpath + trackName + ".jpg", F.I.tracksPath + trackName + ".jpg");
 			File.Move(F.I.documentsSGPRpath + trackName + ".data", F.I.tracksPath + trackName + ".data");
 			File.Move(F.I.documentsSGPRpath + trackName + ".track", F.I.tracksPath + trackName + ".track");
 

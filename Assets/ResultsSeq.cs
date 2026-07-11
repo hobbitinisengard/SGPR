@@ -1,6 +1,5 @@
 using RVP;
 using System.Collections;
-using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -20,7 +19,7 @@ public class ResultsSeq : MonoBehaviour
 	public Image dimmer;
 	//AnimationCurve pulseCurve;
 	Color yellowDark = new (0.3607f, 0.3607f, 0);
-	string[] rightBoxLabels = new string[] { "BEST LAP", "RACE-TIME", "AEROMILES", "DRIFT"};
+	string[] rightBoxLabels;
 	int rightBoxLabelInt = 0;
 	Coroutine seq, dimCo,showResultCo, showTableCo;
 	AudioSource audioSource;
@@ -35,6 +34,7 @@ public class ResultsSeq : MonoBehaviour
 	private void Awake()
 	{
 		audioSource = GetComponent<AudioSource>();
+		
 	}
 	private void OnDisable()
 	{
@@ -44,6 +44,7 @@ public class ResultsSeq : MonoBehaviour
 	}
 	private void OnEnable()
 	{
+		rightBoxLabels = new string[] { F.I.LocStr("BEST LAP"), F.I.LocStr("RACE TIME"), F.I.LocStr("AEROMILES"), F.I.LocStr("DRIFT") };
 		if (showResultCo != null)
 			StopCoroutine(showResultCo);
 		if (seq != null)
@@ -52,10 +53,12 @@ public class ResultsSeq : MonoBehaviour
 			StopCoroutine(dimCo);
 		if (showTableCo != null)
 			StopCoroutine(showTableCo);
+
 		seq = StartCoroutine(EnableSeq());
 	}
 	private void OnEnterClicked(UnityEngine.InputSystem.InputAction.CallbackContext obj)
 	{
+		//RaceManager.I.TurnOffSmoothSyncForEveryCar();
 		submitFlag = true;
 	}
 	IEnumerator EnableSeq()
@@ -76,10 +79,8 @@ public class ResultsSeq : MonoBehaviour
 		}
 		cosArg = 0;
 
-		while (!ResultsView.Get(RaceManager.I.playerCar).Finished)
-		{
-			yield return new WaitForSeconds(.25f);
-		}
+		
+
 
 		int playerResultPosition = ResultsView.SortedResultsByFinishPos.FindIndex(ri => ri.vp == RaceManager.I.playerCar);
 
@@ -174,18 +175,18 @@ public class ResultsSeq : MonoBehaviour
 	{
 		while(true)
 		{
-			if (F.I.gameMode == MultiMode.Multiplayer && ResultsView.FinishedPlayers < ServerC.I.lobby.Players.Count)
+			if (F.I.gameMode == GameMode.Multiplayer && ResultsView.FinishedPlayers < ServerC.I.lobby.Players.Count)
 			{
-				pressEnterText.text = "WAITING";
+				pressEnterText.text = F.I.LocStr("WAIT");
 			}
 			else
 			{
-				if (F.I.gameMode == MultiMode.Multiplayer)
+				if (F.I.gameMode == GameMode.Multiplayer)
 				{
 					if (F.I.CurRound == F.I.Rounds)
 						lastRoundEndedTime = Time.time;
 				}
-				pressEnterText.text = "PRESS ENTER";
+				pressEnterText.text = F.I.LocStr("PRESS ENTER");
 				yield break;
 			}
 			yield return new WaitForSeconds(1);
@@ -204,11 +205,9 @@ public class ResultsSeq : MonoBehaviour
 		{
 			if (submitFlag && dimCo == null) // CLOSING SEQUENCE
 			{
-				if (F.I.gameMode == MultiMode.Singleplayer 
-					|| ResultsView.FinishedPlayers >= ServerC.I.lobby.Players.Count
-					|| Time.time - SGP_HUD.I.endraceTimer.timerDisabledTime > 3) // failsafe
+				if (F.I.gameMode != GameMode.Multiplayer 
+					|| ResultsView.FinishedPlayers >= ServerC.I.lobby.Players.Count)
 				{
-					
 					foreach (var b in boxes)
 						b.GetComponent<SlideInOut>().PlaySlideOut(true);
 

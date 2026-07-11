@@ -25,13 +25,21 @@ public class Antenna : MonoBehaviour
 		return pos + vp.tr.up * height;
 		//return new Vector3(pos.x, pos.y + height, pos.z);
 	}
-	protected void OnDestroy()
+    public void Reset()
+    {
+        follower_vel = Vector3.zero;
+		goal_vel = Vector3.zero;
+		goal_prevPos = goal_pos;
+        follower.position = goal.position;
+    }
+    protected void OnDestroy()
 	{
 		Destroy(follower.gameObject);
 	}
 	private void Start()
 	{
 		vp = transform.GetTopmostParentComponent<VehicleParent>();
+		vp.antenna = this;
 		nodes = transform.childCount;
 
 		nodes_y_heights = new float[nodes];
