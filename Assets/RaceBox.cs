@@ -120,7 +120,7 @@ public class RaceBox : MonoBehaviour
 	public int starLevel;
 	public float Drift;
 	public float grantedComboTime;
-
+	public int maxAeroStars;
 	public float topMeterSpeed = 0;
 	float aeroMeterResponsiveness = 1f;
 	bool prevGroundedWheels0;
@@ -406,6 +406,8 @@ public class RaceBox : MonoBehaviour
 				driftingTimer = 0;
 			}
 		}
+		if (starLevel > maxAeroStars)
+			maxAeroStars = starLevel;
 	}
 	void RailgrindDetector()
 	{

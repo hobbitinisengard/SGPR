@@ -37,6 +37,7 @@ public class Result
 		score = vp.lastRoundScore;
 		sponsor = vp.sponsor;
 		finished = !vp.raceBox.enabled;
+		maxAeroStars = vp.raceBox.maxAeroStars;
 		//Debug.Log(string.Format("{0}, RaceProgressLaps:{1}, score:{2}, ", name, progress, aeromiles));
 	}
 	public Result(VehicleParent vp)

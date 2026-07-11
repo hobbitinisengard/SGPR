@@ -168,7 +168,7 @@ public class ArcadeVariant
 						},
 						continuationReq = new Prize(){condition = Prize.Condition.StarsAtLeast,conditionArgument = "3"},
 						prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "JAPANESE BRIDGE" },
-						new() { condition = Prize.Condition.StarsAtLeast, conditionArgument = "6", name = "spn5"}
+						new() { condition = Prize.Condition.StarsAtLeast, conditionArgument = "3", name = "spn5"}
 						},
 						pavementType = (PavementType)2,
 				},
