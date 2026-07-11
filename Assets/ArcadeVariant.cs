@@ -166,7 +166,7 @@ public class ArcadeVariant
 										new() { name = "CP4", carIdx = 11, livery = Livery.Rline,  },
 										new() { name = "CP5", carIdx = 11, livery = Livery.Mysuko,  },
 						},
-						continuationReq = new Prize(){condition = Prize.Condition.StarsAtLeast,conditionArgument = "5"},
+						continuationReq = new Prize(){condition = Prize.Condition.StarsAtLeast,conditionArgument = "3"},
 						prizeReqs = new Prize[] { new() { condition = Prize.Condition.PositionAtLeast, conditionArgument = "1", name = "JAPANESE BRIDGE" },
 						new() { condition = Prize.Condition.StarsAtLeast, conditionArgument = "6", name = "spn5"}
 						},

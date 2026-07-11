@@ -64,7 +64,7 @@ public class MainMenuView : Sfxable
 	}
 	public void OpenUsersManual()
 	{
-		Application.OpenURL(Info.usersManualURL);
+		Application.OpenURL(F.I.usersManualLinks[(int)F.I.playerData.language]);
 	}
 	/// <summary>
 	/// Go forward

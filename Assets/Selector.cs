@@ -93,16 +93,11 @@ public class TrackSelectorTemplate : Sfxable
 	bool TrackCheckDependingOnGameMode(string trackName)
 	{
 		if (F.I.gameMode == GameMode.Arcade)
-		{
-			//foreach (var targetNodeID in F.I.curNode.connections)
-			//{
-			//	if (F.I.curVariant.nodes[targetNodeID].trackName == trackName)
-					return true;
-			//}
-		}
+			return true;
+		else if (F.I.gameMode == GameMode.Multiplayer && !ServerC.I.AmHost)
+			return ValidCheck(F.I.tracks[trackName].valid); // show even not unlocked tracks for clients
 		else
 			return F.I.tracks[trackName].unlocked && ValidCheck(F.I.tracks[trackName].valid);
-		//return false;
 	}
 	
 	protected IEnumerator Load(string specificTrackName = null, bool forceReload = false)

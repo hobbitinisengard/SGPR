@@ -641,7 +641,7 @@ namespace RVP
 				progress = (int)(trackPathCreator.path.length - 5);
 
 			dist = progress;
-			univProgress = GetDist(RaceManager.I.racingPaths[1]);
+			univProgress = Mathf.Min(GetDist(RaceManager.I.racingPaths[1]), trackPathCreator.path.length - 5);
 			vp.ghost.StartGhostResetting();
 			rb.isKinematic = true;
 			tr.position = resetPos + Vector3.up + resetDir;

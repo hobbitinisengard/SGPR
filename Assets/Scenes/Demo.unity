@@ -7152,6 +7152,9 @@ MonoBehaviour:
   eventSystem: {fileID: 67133001}
   Rounds: 0
   CurRound: 0
+  usersManualLinks:
+  - https://docs.google.com/document/d/1PNb95xUi0pdOjPetwu-MNLeIwpVN6t8rxAmukKEpB2E/
+  - https://docs.google.com/document/d/14PEdrIv2pKRA5bBgoyBFK_-WArmZ6AFeBQoZ4Xr_Wpg/
 --- !u!114 &67133007
 MonoBehaviour:
   m_ObjectHideFlags: 0
