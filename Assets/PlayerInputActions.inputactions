@@ -18,7 +18,7 @@
                     "name": "Ctrl",
                     "type": "Button",
                     "id": "183afd44-b1e5-409c-9391-fd0d23da0b59",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -234,7 +234,7 @@
                 {
                     "name": "",
                     "id": "bafa2a9f-66db-4e20-a8f2-bc5297eda4c2",
-                    "path": "<Keyboard>/leftCtrl",
+                    "path": "<Keyboard>/ctrl",
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard",
@@ -256,7 +256,7 @@
                 {
                     "name": "",
                     "id": "e62ccce9-ca3c-41a0-89dd-68ead9a75251",
-                    "path": "<Keyboard>/leftShift",
+                    "path": "<Keyboard>/shift",
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard",
@@ -663,7 +663,7 @@
                 {
                     "name": "",
                     "id": "0053f384-e02f-4169-907f-256a892b7d1a",
-                    "path": "<Keyboard>/leftShift",
+                    "path": "<Keyboard>/shift",
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard",
@@ -696,7 +696,7 @@
                 {
                     "name": "",
                     "id": "4ee58a8d-0e03-4b96-b1e7-3668a86392ec",
-                    "path": "<Keyboard>/leftCtrl",
+                    "path": "<Keyboard>/ctrl",
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard",
