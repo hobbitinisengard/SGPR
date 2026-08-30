@@ -78,7 +78,7 @@ public class EnterNameInputField : Sfxable
 		var newletter = Instantiate(letterTemplate, transform);
 		newletter.GetComponent<Image>().sprite = allowedKeysSprites[i];
 		newletter.SetActive(true);
-		newletter.name = allowedKeys[i].ToString();
+		newletter.name = KeyCodeToString(allowedKeys[i]);
 		selector.SetAsLastSibling();
 		len++;
 		selector.GetComponent<Image>().sprite = (len >= 3) ? endSprite : allowedKeysSprites[0];
@@ -86,6 +86,20 @@ public class EnterNameInputField : Sfxable
 		{
 			OKButton.transform.gameObject.SetActive(true);
 			OKButton.transform.GetComponent<Button>().Select();
+		}
+
+		static string KeyCodeToString(KeyCode key)
+		{
+			return key switch
+			{
+				KeyCode.Space => " ",
+				KeyCode.Equals => "=",
+				KeyCode.Colon => ":",
+				KeyCode.LeftBracket => "[",
+				KeyCode.RightBracket => "]",
+
+				_ => key.ToString()
+			};
 		}
 	}
 	//private void OnEnable()

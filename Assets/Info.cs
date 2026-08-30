@@ -109,7 +109,7 @@ public class Info : MonoBehaviour
 	public Material emissiveRearDarker;
 	public Mesh sphereMesh;
 	public AudioMixer mainAudioMixer;
-	public const string VERSION = "0.5.9";
+	public const string VERSION = "0.5.10";
 	public bool minimized { get; private set; }
 	[DllImport("user32.dll")]
 	static extern bool SetCursorPos(int X, int Y);
@@ -319,7 +319,7 @@ public class Info : MonoBehaviour
 			foreach (var i in s.allowedCarsIdxs)
 				cars[i].starter = true;
 
-		if (playerData.playerName == "HAXOR")
+		if (playerData.playerName == "SGPNOW")
 			return;// unlock all for testing 
 
 		playerData.currentArcadeVariant = curVariant.name;

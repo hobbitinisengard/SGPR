@@ -591,13 +591,13 @@ namespace RVP
 			countDownSeq.gameObject.SetActive(false);
 			if (F.I.s_inEditor)
 			{
-				Debug.Log("back to editor");
+				//Debug.Log("back to editor");
 				editorPanel.gameObject.SetActive(true);
 				RemoveCars();
 			}
 			else
 			{
-				Debug.Log("back to menu");
+				//Debug.Log("back to menu");
 				BackToMenu(applyScoring: F.I.gameMode != GameMode.Exhibition);
 			}
 		}

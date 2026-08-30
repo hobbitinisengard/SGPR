@@ -2,6 +2,7 @@ using RVP;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using TMPro;
 using UnityEngine;
@@ -125,7 +126,7 @@ public class ResultsView : MainMenuView
 		int lapPos = Pos(ri.id, lapComp);
 		int stuntPos = Pos(ri.id, stuntComp);
 		int driftPos = Pos(ri.id, driftComp);
-		Debug.Log(string.Format("lap,stunt,drift = {0}, {1}, {2}", lapPos, stuntPos, driftPos));
+		//Debug.Log(string.Format("lap,stunt,drift = {0}, {1}, {2}", lapPos, stuntPos, driftPos));
 		float positionPerc = (resultData.Count - finalPos) / (float)resultData.Count;
 		int lapBonus = (lapPos <= 2) ? (int)(5000f / lapPos) : 0;
 		int stuntBonus = (int)((stuntPos <= 2) ? 5000f / stuntPos : 0);
@@ -149,7 +150,7 @@ public class ResultsView : MainMenuView
 			default:
 				break;
 		}
-		Debug.Log(ri.name + string.Format("Reward: lap,stunt,drift = {0}, {1}, {2}, {3}, {4}", positionBonus, lapBonus, stuntBonus, driftBonus, aeroMeter));
+		//Debug.Log(ri.name + string.Format("Reward: lap,stunt,drift = {0}, {1}, {2}, {3}, {4}", positionBonus, lapBonus, stuntBonus, driftBonus, aeroMeter));
 		return finalScore;
 	}
 	public static List<Result> SortedResultsByScore
@@ -449,7 +450,7 @@ public class ResultsView : MainMenuView
 				return playerResult.drift >= driftsReq;
 			case ArcadeVariant.Prize.Condition.TimeAtMost:
 				playerResult = resultData.First(p => p.name == F.I.playerData.playerName);
-				TimeSpan timeAtMostReq = TimeSpan.Parse(req.conditionArgument);
+				TimeSpan timeAtMostReq = TimeSpan.ParseExact(req.conditionArgument, Info.stringFormatWithoutHours, null);
 				return playerResult.raceTime <= timeAtMostReq;
 			case ArcadeVariant.Prize.Condition.FastestLaptime:
 				resultData.Sort((Result A, Result B) =>
