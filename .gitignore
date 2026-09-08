@@ -41,4 +41,4 @@ sysinfo.txt
 *.unitypackage
 /Assets/New Terrain 2.asset
 /Assets/New Terrain 6.asset
-.codex/
+.codex*/
