@@ -246,12 +246,12 @@ namespace RVP
 			switch (F.I.s_timeOfDay)
 			{
 				case TimeOfDay.Day:
-					Sun.intensity = 1;
+					//Sun.intensity = 1;
 					eulerX = UnityEngine.Random.Range(26, 143);
 					RenderSettings.ambientLight = new Color32(208, 208, 208, 1);
 					break;
 				case TimeOfDay.Night:
-					Sun.intensity = 0.5f;
+					//Sun.intensity = 0.5f;
 					eulerX = 120;
 					RenderSettings.ambientLight = new Color32(52, 52, 52, 1);
 					break;
