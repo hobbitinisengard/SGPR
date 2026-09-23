@@ -29,7 +29,7 @@ namespace RVP
 				switch (value)
 				{
 					case Mode.Follow:
-						cam.fieldOfView = 54;
+						cam.fieldOfView = CameraFieldOfView;
 						if(vp)
 							tr.position = vp.tr.position;
 						_mode = value;
@@ -37,7 +37,7 @@ namespace RVP
 					case Mode.Replay:
 						if(vp.followAI.replayCams.Count > 0)
 						{
-							cam.fieldOfView = 24;
+							cam.fieldOfView = 14;
 							_mode = value;
 						}
 						break;
@@ -103,7 +103,10 @@ namespace RVP
 		float replayCamAgility = 1;
 		float upLookCoeff = 1f;
 		Vector3 forward;
-		readonly AnimationCurve fovAtSpeed = AnimationCurve.Linear(50, 54, 83, 64);
+		public int CameraFieldOfView = 54;
+		public int CameraFieldOfViewAtMaxSpeed = 64;
+		public int minSpeedForCameraFovFX = 54;
+		public int maxSpeedForCameraFovFX = 100;
 		/// <summary>
 		/// used for smooth change between cam rotation by velocity to cam rotation by lookObj 
 		/// </summary>
@@ -231,7 +234,8 @@ namespace RVP
 		}
 		void FollowCam()
 		{
-			cam.fieldOfView = fovAtSpeed.Evaluate(vp.velMag);
+			float velMag01ForCamFX = Mathf.InverseLerp(minSpeedForCameraFovFX, maxSpeedForCameraFovFX, vp.velMag);
+			cam.fieldOfView = CameraFieldOfView + (CameraFieldOfViewAtMaxSpeed - CameraFieldOfView) * velMag01ForCamFX;
 			pitchAngle = WrapAround180Degs(vp.tr.localEulerAngles.x);
 			
 			bool pitchLocked = false;
@@ -293,7 +297,7 @@ namespace RVP
 			smoothYRot = Mathf.Lerp(smoothYRot, smoothRotCoeff * vp.rb.angularVelocity.y, Time.fixedDeltaTime);
 			forward = Quaternion.AngleAxis(xInput * 90 + yInput * 180, vp.tr.up) * forward;
 			forward = Quaternion.AngleAxis(Time.fixedDeltaTime * smoothYRot * Mathf.Rad2Deg, vp.tr.up) * forward;
-			float speedHeight = Mathf.Lerp(1.5f, height /*+ vp.cameraheightOffset*/, Mathf.InverseLerp(100, 0, vp.velMag)); // make the camera lower the faster you go
+			float speedHeight = Mathf.Lerp(height, 1.5f, velMag01ForCamFX); // make the camera lower the faster you go
 			lookObj.position = vp.tr.position - forward * targetCamCarDistance + Vector3.up * speedHeight;
 			lookObj.position += vp.rb.linearVelocity * Time.fixedDeltaTime;
 			//--------------
