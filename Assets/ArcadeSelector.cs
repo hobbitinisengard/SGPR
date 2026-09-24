@@ -54,12 +54,12 @@ public class ArcadeSelector : TrackSelectorTemplate
 				pathGO.SetActive(pathGO.CompareTag(Info.alreadyWalkedTag));
 			}
 		}
-		
+
 		base.OnDisable();
 	}
 	public void MoveNodeForward()
 	{
-		if(F.I.targetNode.connections.Length > 0)
+		if (F.I.targetNode.connections.Length > 0)
 		{
 			if (F.I.curArcadeNodeID >= 0)
 				pathsRTs[F.I.curArcadeNodeID + "-" + F.I.targetArcadeNodeID].tag = Info.alreadyWalkedTag;
@@ -74,7 +74,10 @@ public class ArcadeSelector : TrackSelectorTemplate
 	{
 		if (F.I.curArcadeNodeID == -1) // when starting new arcade variant
 		{
-			F.I.targetArcadeNodeID = F.I.curVariant.starts.FirstOrDefault(s => s.allowedCarsIdxs.Any(carIdx => carIdx == F.I.s_playerCarIdx)).node;
+			var start = F.I.curVariant.starts.FirstOrDefault(s => s.allowedCarsIdxs.Any(carIdx => carIdx == F.I.s_playerCarIdx));
+			if (start == default)
+				start = F.I.curVariant.starts.GetRandom();
+			F.I.targetArcadeNodeID = start.node;
 			CreateNodeMap();
 		}
 		targetNodeRT = nodeParent.GetChild(F.I.targetArcadeNodeID).GetComponent<RectTransform>();
@@ -98,11 +101,11 @@ public class ArcadeSelector : TrackSelectorTemplate
 		StartCoroutine(Load(F.I.curVariant.nodes[F.I.curNode.connections[0]].trackName, forceReload: true));
 
 		WriteContinuationText();
-		
+
 	}
 	void UpdateObjectivesTable()
 	{
-		if(F.I.targetNode.prizeReqs.Length == 0)
+		if (F.I.targetNode.prizeReqs.Length == 0)
 		{
 			objectivesRecordsTitle.text = F.I.LocStr("RECORDS");
 			objectivesContainer.gameObject.SetActive(false);
@@ -162,9 +165,9 @@ public class ArcadeSelector : TrackSelectorTemplate
 		Vector2 target = new Vector2(newContentX, newContentY);
 		Vector2 beginPos = contentRT.anchoredPosition;
 		float timer = 0;
-		while(timer < 1)
+		while (timer < 1)
 		{
-			contentRT.anchoredPosition = Vector2.Lerp(beginPos,target,F.EasingOutQuint(timer));
+			contentRT.anchoredPosition = Vector2.Lerp(beginPos, target, F.EasingOutQuint(timer));
 			timer += Time.deltaTime;
 			yield return null;
 		}
@@ -181,13 +184,13 @@ public class ArcadeSelector : TrackSelectorTemplate
 	}
 	void ChangePath(int dir)
 	{
-		if(F.I.curArcadeNodeID == -1)
+		if (F.I.curArcadeNodeID == -1)
 		{
 			curPathConnectionIdx = 0;
 		}
 		else
 		{
-			
+
 			if (selectedPath != null)
 			{
 				selectedPath.color = Color.gray;
@@ -268,7 +271,7 @@ public class ArcadeSelector : TrackSelectorTemplate
 		}
 		for (int i = 0; i < F.I.curVariant.progress.prizesCompleted.Length; i++)
 		{ // make node square if locked
-			if(F.I.curVariant.nodes[i].prizeReqs != null)
+			if (F.I.curVariant.nodes[i].prizeReqs != null)
 			{
 				if (F.I.curVariant.progress.prizesCompleted[i].CountBits() < F.I.curVariant.nodes[i].prizeReqs.Length)
 				{
@@ -290,7 +293,7 @@ public class ArcadeSelector : TrackSelectorTemplate
 		F.I.s_roadType = node.pavementType;
 		F.I.randomPavement = false;
 		F.I.s_cpuLevel = CpuLevel.Hard;
-		F.I.s_timeOfDay = (TimeOfDay)Random.Range(0,Info.TimeOfDays);
+		F.I.s_timeOfDay = (TimeOfDay)Random.Range(0, Info.TimeOfDays);
 		F.I.s_laps = node.laps;
 		F.I.s_raceType = node.raceType;
 		F.I.s_cpuRivals = node.cars.Length;
@@ -298,15 +301,15 @@ public class ArcadeSelector : TrackSelectorTemplate
 		F.I.catchup = false;
 		F.I.s_PlayerCarSponsor = F.I.cars[F.I.s_playerCarIdx].defaultLivery;
 
-		foreach(var conds in node.prizeReqs)
+		foreach (var conds in node.prizeReqs)
 		{
-			if(conds.condition == ArcadeVariant.Prize.Condition.ExactStunts)
+			if (conds.condition == ArcadeVariant.Prize.Condition.ExactStunts)
 			{
 				var split = conds.conditionArgument.Split(',');
 				F.I.arcadeObjectiveStunts = new (string, int)[split.Length / 2];
 				for (int i = 0; i < split.Length / 2; i++)
 				{
-					F.I.arcadeObjectiveStunts[i] = (split[2*i], int.Parse(split[2*i + 1]));
+					F.I.arcadeObjectiveStunts[i] = (split[2 * i], int.Parse(split[2 * i + 1]));
 				}
 			}
 		}
@@ -322,7 +325,7 @@ public class ArcadeSelector : TrackSelectorTemplate
 		switch (req.condition)
 		{
 			case ArcadeVariant.Prize.Condition.PositionAtLeast:
-				text = F.I.LocStr("Finish at least ") + F.I.LocStr(F.PosSuffix(int.Parse(req.conditionArgument)-1));
+				text = F.I.LocStr("Finish at least ") + F.I.LocStr(F.PosSuffix(int.Parse(req.conditionArgument) - 1));
 				break;
 			case ArcadeVariant.Prize.Condition.LapAtMost:
 				text = string.Format(F.I.LocStr("Do a lap faster than {0}"), req.conditionArgument);
@@ -354,7 +357,7 @@ public class ArcadeSelector : TrackSelectorTemplate
 					text = string.Format(F.I.LocStr("Perform {0} at least {1} times"), F.I.LocStr(split[0]), split[1]);
 					for (int i = 2; i < split.Length; i += 2)
 					{
-						text += string.Format(", {0} - {1}x", F.I.LocStr(split[i]), split[i+1]);
+						text += string.Format(", {0} - {1}x", F.I.LocStr(split[i]), split[i + 1]);
 					}
 				}
 				break;

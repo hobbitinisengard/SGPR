@@ -60,11 +60,11 @@ public class CarSelector : Sfxable
 		switch (type)
 		{
 			case GarageType.Unlocked:
-				return c.price != -1 && (c.unlocked || c.starter);
+				return c.price != -1 && c.unlocked;
 			case GarageType.Earned:
 				return c.price != -1 && c.price <= playerMoney;
-			case GarageType.Arcade:
-				return c.price != -1 && c.starter;
+			case GarageType.Arcade: // I want to make visible all unlocked and starter cars, so arcade modes are more fun
+				return c.price != -1 && (c.unlocked || c.starter);
 			default:
 				return false;
 		}

@@ -457,7 +457,7 @@ public static class F
 	}
 	public static Livery RandomLivery()
 	{
-		return (Livery)UnityEngine.Random.Range(1, F.I.Liveries + 1);
+		return (Livery)UnityEngine.Random.Range(2, F.I.Liveries + 1);
 	}
 	public static PavementType RandomRoadType()
 	{
