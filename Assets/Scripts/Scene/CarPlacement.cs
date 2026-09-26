@@ -14,11 +14,12 @@ public class CarPlacement
 	public Livery livery = Livery.Random;
 	public static CarPlacement CPU(int pos, int carIdx)
 	{
-		return new CarPlacement() {
+		return new CarPlacement()
+		{
 			carIdx = carIdx,
 			position = pos,
 			name = "CP" + (pos + 1).ToString(),
-			livery = (Livery)(((int)F.I.s_PlayerCarSponsor + pos + 1) % (F.I.Liveries - 1)), // avoid random
+			livery = F.RandomLivery()
 		};
 	}
 	public static CarPlacement LocalPlayer()

@@ -456,7 +456,7 @@ public static class F
 			return -1;
 	}
 	public static Livery RandomLivery()
-	{
+	{ // random team livery is prohibited
 		return (Livery)UnityEngine.Random.Range(2, F.I.Liveries + 1);
 	}
 	public static PavementType RandomRoadType()

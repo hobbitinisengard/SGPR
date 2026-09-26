@@ -122,7 +122,7 @@ namespace RVP
 		/// <summary>
 		/// This can't be set to random.
 		/// </summary>
-		NetworkVariable<Livery> _sponsor = new();
+		NetworkVariable<Livery> _sponsor = new(Livery.Random);
 
 		[System.NonSerialized]
 		public float accelInput;
@@ -191,7 +191,9 @@ namespace RVP
 								value = pickedLivery.Value;
 						}
 						else
+						{
 							value = F.RandomLivery();
+						}
 					}
 					_sponsor.Value = value;
 				}
