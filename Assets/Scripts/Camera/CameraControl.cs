@@ -97,7 +97,7 @@ namespace RVP
 		float smoothRotCoeff = 0.01f;
 		float forwardLookCoeff = 14;
 		private float smoothTimeSpeed = 2.5f;
-		float maxSlowCameraTime = 0.3f;
+		public float maxSlowCameraTime = 0.5f;
 		public int maxPitch = 10;
 		float cHeight = 2;
 		float replayCamAgility = 1;
@@ -386,8 +386,8 @@ namespace RVP
 						if (camOffsetDistance > carOffsetDistance)
 						{
 							lookObjVelCoeff = 1;
-							//Quaternion cameraStoppedRotation = Quaternion.LookRotation(vp.tr.position - tr.position, rollUp);
-							Quaternion cameraStoppedRotation = Quaternion.LookRotation(vp.rb.linearVelocity, rollUp);
+							Quaternion cameraStoppedRotation = Quaternion.LookRotation(vp.tr.position - tr.position, rollUp);
+							//Quaternion cameraStoppedRotation = Quaternion.LookRotation(vp.rb.linearVelocity, rollUp);
 							rotation = Quaternion.Lerp(tr.rotation, cameraStoppedRotation, 2 * Time.fixedDeltaTime);
 						}
 						else

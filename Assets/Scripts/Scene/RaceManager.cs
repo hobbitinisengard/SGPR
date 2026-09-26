@@ -246,14 +246,17 @@ namespace RVP
 			switch (F.I.s_timeOfDay)
 			{
 				case TimeOfDay.Day:
-					Sun.intensity = 0;
-					eulerX = UnityEngine.Random.Range(26, 143);
-					RenderSettings.ambientLight = new Color32(208, 208, 208, 1);
+					if (F.I.s_inEditor)
+						Sun.intensity = 1;
+					else
+						Sun.intensity = 0f;
+					eulerX = 120;//UnityEngine.Random.Range(26, 143);
+					RenderSettings.ambientLight = new Color32(255,255,255, 1);
 					break;
 				case TimeOfDay.Night:
-					Sun.intensity = 1;
-					eulerX = 120;
-					RenderSettings.ambientLight = new Color32(52, 52, 52, 1);
+					Sun.intensity = 0;
+					//eulerX = 120;
+					RenderSettings.ambientLight = new Color32(100,100,100, 1);//new Color32(52, 52, 52, 1);
 					break;
 				//case TimeOfDay.Sunrise:
 				//	Sun.intensity = 130000;
@@ -372,7 +375,8 @@ namespace RVP
 			List<int> preferredCarsIdxs = new();
 			for (int i = 0; i < F.I.cars.Length; i++)
 			{
-				if (F.I.cars[i].category == F.I.tracks[F.I.s_trackName].preferredCarClass)
+				//if (F.I.cars[i].category == F.I.tracks[F.I.s_trackName].preferredCarClass)
+				if (F.I.cars[i].category == F.I.cars[F.I.s_playerCarIdx].category)
 					preferredCarsIdxs.Add(i);
 			}
 			CarPlacement[] carPlacements;

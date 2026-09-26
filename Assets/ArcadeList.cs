@@ -29,7 +29,7 @@ public class ArcadeList : MainMenuView
 				firstButtonToBeSelected = newRow.GetComponent<Button>();
 			}
 			newRow.GetComponent<Button>().onClick.AddListener(() => {
-				if (EventSystem.current.currentSelectedGameObject.name != F.I.curVariant.name)
+				//if (EventSystem.current.currentSelectedGameObject.name != F.I.curVariant.name)s
 				{
 					F.I.SwitchArcadeVariant(EventSystem.current.currentSelectedGameObject.name);
 				}
