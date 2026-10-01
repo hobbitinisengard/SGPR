@@ -367,8 +367,7 @@ namespace RVP
 			else
 				newTrPos = target;
 
-			smoothTime = Mathf.Lerp(smoothTime, slowCamera ? camStoppedSmoothTime : camFollowSmoothTime
-				, (slowCamera ? 1 : 2) * Time.fixedDeltaTime * smoothTimeSpeed);
+			smoothTime = Mathf.Lerp(smoothTime, slowCamera ? camStoppedSmoothTime : camFollowSmoothTime ,Time.fixedDeltaTime * smoothTimeSpeed);
 
 			
 			if (!vp.customCam)
