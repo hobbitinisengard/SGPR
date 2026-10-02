@@ -88,6 +88,10 @@ MonoBehaviour:
   - name: Default
     useColliderFriction: 0
     friction: 1
+    sourceGrip: 1
+    sourceFlags: 1
+    sourceRolling: 1
+    sourceRoughness: 0
     alwaysScrape: 0
     leaveSparks: 1
     tireSnd: {fileID: 8300000, guid: 0debe53a9c4cef54f95b55f393937edf, type: 3}
@@ -95,6 +99,10 @@ MonoBehaviour:
   - name: Mud
     useColliderFriction: 0
     friction: 0.5
+    sourceGrip: 0.796875
+    sourceFlags: 3
+    sourceRolling: 175
+    sourceRoughness: 80
     alwaysScrape: 1
     leaveSparks: 0
     tireSnd: {fileID: 8300000, guid: 31d07849cf81bdc40b958347a8bc3d55, type: 3}
@@ -102,6 +110,10 @@ MonoBehaviour:
   - name: Dirt
     useColliderFriction: 0
     friction: 0.8
+    sourceGrip: 0.796875
+    sourceFlags: 2
+    sourceRolling: 175
+    sourceRoughness: 80
     alwaysScrape: 1
     leaveSparks: 0
     tireSnd: {fileID: 8300000, guid: 4bb9e24bfe112de4a85ee3ffb091fe0f, type: 3}
@@ -109,6 +121,10 @@ MonoBehaviour:
   - name: Ice
     useColliderFriction: 0
     friction: 0.2
+    sourceGrip: -1
+    sourceFlags: -1
+    sourceRolling: -1
+    sourceRoughness: -1
     alwaysScrape: 0
     leaveSparks: 0
     tireSnd: {fileID: 8300000, guid: c1a7cd2fe64977c40bedaee5dc6a0aee, type: 3}
@@ -116,6 +132,10 @@ MonoBehaviour:
   - name: Wall
     useColliderFriction: 0
     friction: 0
+    sourceGrip: -1
+    sourceFlags: -1
+    sourceRolling: -1
+    sourceRoughness: -1
     alwaysScrape: 0
     leaveSparks: 0
     tireSnd: {fileID: 8300000, guid: 0debe53a9c4cef54f95b55f393937edf, type: 3}

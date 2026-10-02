@@ -88,6 +88,8 @@ namespace RVP
 
 		void FixedUpdate()
 		{
+			if (vp.UsesOriginalPhysics)
+				return;
 			if (vp.reallyGroundedWheels > 0)
 			{
 				groundedFactor = basedOnWheelsGrounded ? vp.reallyGroundedWheels / vp.wheels.Length : 1;

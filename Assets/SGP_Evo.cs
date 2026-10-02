@@ -192,6 +192,12 @@ public class SGP_Evo : MonoBehaviour
 
 	public void FixedUpdate()
 	{
+		// OriginalVehiclePhysics owns the source game's airborne stunt rotation.
+		// Running the remake's Euler-angle controller as well would overwrite the
+		// recovered vehicle orientation every fixed tick.
+		if (vp && vp.UsesOriginalPhysics)
+			return;
+
 		if (stunting)
 		{
 			if (vp.rb.isKinematic || vp.crashing || vp.colliding || vp.reallyGroundedWheels > 0)

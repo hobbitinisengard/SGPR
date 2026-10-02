@@ -69,6 +69,26 @@ namespace RVP
 			}
 		}
 		public int selectedGear { get; private set; }
+		public void SetOriginalGear(int gear, OriginalVehiclePhysicsConfig config)
+		{
+			if (config == null || config.ratios == null)
+				return;
+			if (gears == null || gears.Length != config.gearCount + 1)
+				gears = new Gear[config.gearCount + 1];
+			// The remake's default array often has the same length; length alone does
+			// not mean its ratios came from this car's original CFG.
+			for (int i = 0; i < gears.Length; i++)
+			{
+				float sourceRatio = i == 1 ? 0 : config.ratios[i];
+				if (gears[i] == null)
+					gears[i] = new Gear(sourceRatio);
+				else
+					gears[i].ratio = sourceRatio;
+			}
+			currentGear = Mathf.Clamp(gear, 0, gears.Length - 1);
+			selectedGear = currentGear;
+			finalRatio = config.finalDrive;
+		}
 		public bool IsShifting
 		{
 			get { return shiftTime > 0; }
@@ -93,6 +113,8 @@ namespace RVP
 		}
 		void Update()
 		{
+			if (vp.UsesOriginalPhysics)
+				return;
 			// Check for manual shift button presses
 			if (!automatic)
 			{
@@ -109,6 +131,8 @@ namespace RVP
 		}
 		void FixedUpdate()
 		{
+			if (vp.UsesOriginalPhysics)
+				return;
 			shiftTime = Mathf.Max(0, shiftTime - Time.timeScale * Time.fixedDeltaTime);
 			
 			if (shiftTime == 0 || currentGear < 2)

@@ -142,18 +142,50 @@ public class Tile : MonoBehaviour
 		placed = true;
 		if (type == Type.Road)
 			mc.gameObject.layer = F.I.roadLayer;
-		if (name.Contains("dirt")) //= mud
-			mc.gameObject.AddComponent<GroundSurfaceInstance>().surfaceType = 1;
-		else if (name.Contains("sand")) // =dust
-			mc.gameObject.AddComponent<GroundSurfaceInstance>().surfaceType = 2;
-		else if (name.Contains("ice"))
-			mc.gameObject.AddComponent<GroundSurfaceInstance>().surfaceType = 3;
-		else
-			mc.gameObject.AddComponent<GroundSurfaceInstance>().surfaceType = 0;
+		int surfaceType = GetGroundSurfaceType();
+		SetSourceSurface(mc, surfaceType);
+		if (Endings != null)
+			foreach (MeshCollider ending in Endings)
+				SetSourceSurface(ending, surfaceType);
 
 		var etp = GetComponent<EnergyTunnelPath>();
 		if (etp)
 			etp.CalculatePitsPath();
+	}
+	int GetGroundSurfaceType()
+	{
+		string surfaceName = "Default";
+		int fallbackIndex = 0;
+		string tileName = name.ToLowerInvariant();
+		// Preserve the track editor's existing tile categories, but resolve them by
+		// GroundSurfaceMaster name so reordering that list does not change physics.
+		if (tileName.Contains("dirt"))
+		{
+			surfaceName = "Mud";
+			fallbackIndex = 1;
+		}
+		else if (tileName.Contains("sand"))
+		{
+			surfaceName = "Dirt";
+			fallbackIndex = 2;
+		}
+		else if (tileName.Contains("ice"))
+		{
+			surfaceName = "Ice";
+			fallbackIndex = 3;
+		}
+
+		return GroundSurfaceMaster.FindSurfaceTypeIndex(surfaceName, fallbackIndex);
+	}
+
+	void SetSourceSurface(Collider surfaceCollider, int surfaceType)
+	{
+		GroundSurfaceInstance surface = surfaceCollider.GetComponent<GroundSurfaceInstance>();
+		if (!surface)
+			surface = surfaceCollider.gameObject.AddComponent<GroundSurfaceInstance>();
+		surface.surfaceType = surfaceType;
+		// Tile contact values come from GroundSurfaceMaster, not local overrides.
+		surface.UseGroundSurfaceMasterProfile();
 	}
 	Mesh MirrorMesh(Mesh mesh)
 	{

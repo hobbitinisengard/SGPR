@@ -43,6 +43,8 @@ namespace RVP
         }
 
         void FixedUpdate() {
+            if (vp.UsesOriginalPhysics)
+                return;
             if (vp.groundedWheels == 0 && (!vp.crashing || (vp.crashing && !disableDuringCrash))) {
                 velDir = Quaternion.LookRotation(RaceManager.worldUpDir, rb.linearVelocity);
 

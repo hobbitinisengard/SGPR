@@ -243,7 +243,7 @@ namespace RVP
 				penetration = 0;
 			}
 
-			if (targetCompression > 0)
+			if (targetCompression > 0 && !vp.UsesOriginalPhysics)
 			{
 				ApplySuspensionForce();
 			}
@@ -300,6 +300,40 @@ namespace RVP
 		}
 
 		// Apply suspension forces to support vehicles
+		public float ApplyOriginalSuspensionForce(OriginalTyrePhysicsConfig tyre, float travel,
+			float cornerWeight, Vector3 contactNormal)
+		{
+			appliedSuspensionForce = Vector3.zero;
+			if (!wheel.connected || !wheel.grounded ||
+				Vector3.Dot(contactNormal, vp.tr.up) <= 0.70710678f)
+				return 0;
+
+			float compression = Mathf.Clamp01(1 - wheel.contactPoint.distance / travel);
+			float sourceTravel = Mathf.Max(0.001f, tyre.travelIn + tyre.travelOut);
+			float restCompression = Mathf.Clamp(tyre.travelIn / sourceTravel, 0.1f, 0.9f);
+			float stiffness = compression >= restCompression ? tyre.stiffnessIn : tyre.stiffnessOut;
+			float springRate = cornerWeight / (restCompression * travel) *
+				(0.05f / Mathf.Max(0.001f, stiffness));
+			float springForce = springRate * compression * travel;
+			Rigidbody ground = wheel.contactPoint.col ? wheel.contactPoint.col.attachedRigidbody : null;
+			Vector3 groundVelocity = ground ? ground.GetPointVelocity(wheel.contactPoint.point) : Vector3.zero;
+			float travelVelocity = Vector3.Dot(rb.GetPointVelocity(wheel.tr.position) - groundVelocity, vp.tr.up);
+			float damping = compression >= restCompression ? tyre.dampingIn : tyre.dampingOut;
+			float damperRatio = Mathf.Max(0, 1 - damping) * 4;
+			float damper = -2 * Mathf.Sqrt(Mathf.Max(0, springRate * rb.mass * 0.25f)) *
+				damperRatio * travelVelocity;
+			float force = Mathf.Max(0, springForce + damper);
+			appliedSuspensionForce = contactNormal * force;
+			// The recovered vehicle model accumulates wheel support in its body
+			// velocity/contact solver and supplies rotation through wheel_rotation.
+			// Apply this Unity adapter's net support at the COM to avoid adding PhysX
+			// contact torque on top of that source rotation path.
+			rb.AddForce(appliedSuspensionForce, ForceMode.Force);
+			if (ground && ground != rb)
+				ground.AddForceAtPosition(-appliedSuspensionForce, wheel.contactPoint.point, ForceMode.Force);
+			return force;
+		}
+
 		void ApplySuspensionForce()
 		{
 			if (wheel.grounded && wheel.connected)

@@ -4046,7 +4046,6 @@ Transform:
   - {fileID: 6779875394764497534}
   - {fileID: 6779875395059661317}
   - {fileID: 2629108676709033793}
-  - {fileID: 308385472089571290}
   - {fileID: 1531201486}
   - {fileID: 499604297}
   - {fileID: 7903382958542739401}
@@ -4296,6 +4295,7 @@ MonoBehaviour:
   starLevel: 0
   Drift: 0
   grantedComboTime: 0
+  maxAeroStars: 0
   topMeterSpeed: 0
   lastTimeInAir: 0
   stableLandingTimer: -1
@@ -4436,7 +4436,6 @@ MonoBehaviour:
   targetSteer: 0
   maxDiff: 0.01
   univProgress: 0
-  univDist: 0
 --- !u!114 &8319369162350912230
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7521,6 +7520,7 @@ Transform:
   - {fileID: 5691781776089650816}
   - {fileID: 3935023955495481916}
   - {fileID: 1500989572602449976}
+  - {fileID: 308385472089571290}
   m_Father: {fileID: 6457121441695959639}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &7337640856822141018
@@ -9745,7 +9745,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 6457121441695959639}
+    m_TransformParent: {fileID: 8124181089221298307}
     m_Modifications:
     - target: {fileID: 4105597997623369684, guid: f300b2b32f46e3e4c887eacc114d2e3a,
         type: 3}
@@ -9796,6 +9796,16 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalPosition.z
       value: -1.256
+      objectReference: {fileID: 0}
+    - target: {fileID: 4376822998477129306, guid: f300b2b32f46e3e4c887eacc114d2e3a,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4376822998477129306, guid: f300b2b32f46e3e4c887eacc114d2e3a,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 4376822998477129306, guid: f300b2b32f46e3e4c887eacc114d2e3a,
         type: 3}

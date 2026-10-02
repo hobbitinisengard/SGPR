@@ -94,9 +94,26 @@ namespace RVP
 			{
 				alwaysScrape = 0;
 			}
+			bool sourcePhysics = w.vp.UsesOriginalPhysics;
+			int unityWheelIndex = Array.IndexOf(w.vp.wheels, w);
+			int sourceTireParticleCount = sourcePhysics
+				? w.vp.originalVehiclePhysics.ConsumeSourceTireParticleEvents(unityWheelIndex)
+				: 0;
+			bool sourceSkid = sourcePhysics &&
+				w.vp.originalVehiclePhysics.ShouldEmitSourceSkidStrip(unityWheelIndex);
+			bool remakeSkid = !sourcePhysics &&
+				(Mathf.Abs(F.MaxAbs(w.sidewaysSlip, w.forwardSlip)) > w.slipThres || alwaysScrape > 0);
+			if (sourcePhysics && sourceTireParticleCount > 0 &&
+				w.contactPoint.surfaceType >= 0 && w.contactPoint.surfaceType < debrisParticles.Length)
+			{
+				ParticleSystem sourceTireParticles = debrisParticles[w.contactPoint.surfaceType];
+				if (!sourceTireParticles.isPlaying)
+					sourceTireParticles.Play();
+				sourceTireParticles.Emit(sourceTireParticleCount);
+			}
 
 			// Create mark
-			if (w.groundedReally && (Mathf.Abs(F.MaxAbs(w.sidewaysSlip, w.forwardSlip)) > w.slipThres || alwaysScrape > 0) && w.connected)
+			if (w.groundedReally && (sourceSkid || remakeSkid) && (sourcePhysics || w.connected))
 			{
 				w.sliding = true;
 				prevSurface = curSurface;
@@ -143,6 +160,30 @@ namespace RVP
 			ParticleSystem.EmissionModule em;
 			for (int ps = 0; ps < debrisParticles.Length; ps++)
 			{
+				if (sourcePhysics)
+				{
+					em = debrisParticles[ps].emission;
+					em.rateOverTime = zeroEmission;
+					if (ps == w.contactPoint.surfaceType && w.connected &&
+						GroundSurfaceMaster.surfaceTypesStatic[w.contactPoint.surfaceType].leaveSparks && w.popped)
+					{
+						if (sparks)
+						{
+							em = sparks.emission;
+							float sparkSlip = w.vp.originalVehiclePhysics.CurrentSourceSpeed < 100
+								? Mathf.Clamp01((w.originalGripUsage - 3.5f) * 0.25f) : 0;
+							em.rateOverTime = new ParticleSystem.MinMaxCurve(
+								initialEmissionRates[debrisParticles.Length] * sparkSlip);
+						}
+					}
+					else if (sparks)
+					{
+						em = sparks.emission;
+						em.rateOverTime = zeroEmission;
+					}
+					continue;
+				}
+
 				if (w.connected)
 				{
 					if (ps == w.contactPoint.surfaceType)
@@ -155,15 +196,15 @@ namespace RVP
 							if (sparks)
 							{
 								em = sparks.emission;
-								em.rateOverTime = new ParticleSystem.MinMaxCurve(initialEmissionRates[debrisParticles.Length] *
-									Mathf.Clamp01(Mathf.Abs(F.MaxAbs(w.sidewaysSlip, w.forwardSlip, alwaysScrape)) - w.slipThres));
+								float sparkSlip = Mathf.Clamp01(Mathf.Abs(F.MaxAbs(w.sidewaysSlip, w.forwardSlip, alwaysScrape)) - w.slipThres);
+								em.rateOverTime = new ParticleSystem.MinMaxCurve(initialEmissionRates[debrisParticles.Length] * sparkSlip);
 							}
 						}
 						else
 						{
 							em = debrisParticles[ps].emission;
-							var v = initialEmissionRates[ps] *
-								Mathf.Clamp01(Mathf.Abs(F.MaxAbs(w.sidewaysSlip, w.forwardSlip, alwaysScrape)) - w.slipThres);
+							float debrisSlip = Mathf.Clamp01(Mathf.Abs(F.MaxAbs(w.sidewaysSlip, w.forwardSlip, alwaysScrape)) - w.slipThres);
+							var v = initialEmissionRates[ps] * debrisSlip;
 							em.rateOverTime = new ParticleSystem.MinMaxCurve(v);
 
 							if (sparks)

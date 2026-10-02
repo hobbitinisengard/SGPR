@@ -17,6 +17,8 @@ namespace RVP
 		public Transform tr;
 		[System.NonSerialized]
 		public bool sliding;
+		[System.NonSerialized]
+		public float originalGripUsage;
 		Rigidbody rb;
 		[System.NonSerialized]
 		public VehicleParent vp;
@@ -25,6 +27,8 @@ namespace RVP
 		[System.NonSerialized]
 		public Transform rim;
 		Transform tire;
+		MeshFilter[] visualWheelMeshes;
+		bool originalTireRadiusChecked;
 		Vector3 localVel;
 
 		[Tooltip("Generate a sphere collider to represent the wheel for side collisions")]
@@ -305,6 +309,15 @@ namespace RVP
 					}
 				}
 
+				// Measure the rendered wheel geometry because imported mesh scale can
+				// differ slightly from the radius serialized in the prefab.
+				visualWheelMeshes = rim.GetComponentsInChildren<MeshFilter>(true);
+				if (Application.isPlaying && vp.UsesOriginalPhysics)
+				{
+					MatchTireRadiusToVisualMesh();
+					originalTireRadiusChecked = true;
+				}
+
 				if (Application.isPlaying)
 				{
 					// Generate hard collider
@@ -341,6 +354,14 @@ namespace RVP
 		public void FixedUpdate()
 		{
 			upDir = tr.up;
+			// VehicleParent creates OriginalVehiclePhysics from its Start-time
+			// configuration load. Wheel.Start can run first, so retry once on the
+			// first physics tick after that initialization has completed.
+			if (vp.UsesOriginalPhysics && !originalTireRadiusChecked)
+			{
+				MatchTireRadiusToVisualMesh();
+				originalTireRadiusChecked = true;
+			}
 			actualRadius = popped ? rimRadius : Mathf.Lerp(rimRadius, tireRadius, tirePressure);
 			circumference = 2 * Mathf.PI * actualRadius;
 			localVel = rb.GetPointVelocity(forceApplicationPoint);
@@ -350,7 +371,11 @@ namespace RVP
 			actualTargetRPM = targetDrive.active ? targetDrive.rpm * (susParent.driveInverted ? -1 : 1) : rawRPM;
 			actualTorque = targetDrive.active ? targetDrive.torque : 0;
 
-			if (getContact)
+			if (vp.UsesOriginalPhysics && vp.originalVehiclePhysics != null)
+			{
+				vp.originalVehiclePhysics.UpdateWheelContact(this);
+			}
+			else if (getContact)
 			{
 				GetWheelContact();
 			}
@@ -367,7 +392,8 @@ namespace RVP
 			if (connected)
 			{
 				GetRawRPM();
-				ApplyDrive();
+				if (!vp.UsesOriginalPhysics)
+					ApplyDrive();
 			}
 			else
 			{
@@ -377,8 +403,15 @@ namespace RVP
 			}
 
 			// Get travel distance
-			travelDist = (susParent.compression < travelDist || grounded) ? susParent.compression
-				: Mathf.Lerp(travelDist, susParent.compression, susParent.extendSpeed * Time.fixedDeltaTime);
+			if (vp.UsesOriginalPhysics)
+			{
+				travelDist = vp.originalVehiclePhysics.GetWheelTravelDistance(this);
+			}
+			else
+			{
+				travelDist = (susParent.compression < travelDist || grounded) ? susParent.compression
+					: Mathf.Lerp(travelDist, susParent.compression, susParent.extendSpeed * Time.fixedDeltaTime);
+			}
 
 			PositionWheel();
 
@@ -414,8 +447,21 @@ namespace RVP
 					tirePressurePrev = setTirePressure;
 				}
 
-				GetSlip();
-				ApplyFriction();
+				if (vp.UsesOriginalPhysics)
+				{
+					if (vp.originalVehiclePhysics != null)
+					{
+						vp.originalVehiclePhysics.GetWheelSlip(Array.IndexOf(vp.wheels, this),
+							out forwardSlip, out sidewaysSlip);
+						originalGripUsage = vp.originalVehiclePhysics.GetWheelGripUsage(Array.IndexOf(vp.wheels, this));
+					}
+				}
+				else
+				{
+					originalGripUsage = 0;
+					GetSlip();
+					ApplyFriction();
+				}
 			}
 		}
 		void LateUpdate()
@@ -474,7 +520,8 @@ namespace RVP
 			//Debug.DrawRay(transform.position, suspensionParent.springDirection, Color.yellow);
 			//Debug.DrawRay(rim.position, vp.tr.forward, Color.yellow);
 
-			bool validHit = Physics.Raycast(transform.position, susParent.springDirection, out RaycastHit hit, castDist, RaceManager.I.wheelCastMask);
+			bool validHit = Physics.Raycast(transform.position, susParent.springDirection, out RaycastHit hit,
+				castDist, RaceManager.I.wheelCastMask);
 			if(!validHit)
 			{
 				Vector3 rotAxis = Vector3.Cross(susParent.springDirection, vp.forwardDir);
@@ -597,7 +644,13 @@ namespace RVP
 		// Calculate what the RPM of the wheel would be based purely on its velocity
 		void GetRawRPM()
 		{
-			if (grounded)
+			if (vp.UsesOriginalPhysics)
+			{
+				// The original vehicle model owns wheel rotation and never uses the
+				// remake's contact-point velocity estimate for wheel RPM.
+				rawRPM = currentRPM;
+			}
+			else if (grounded)
 			{
 				rawRPM = -susParent.flippedSideFactor * contactPoint.relativeVelocity.x * 60 / circumference;// (contactPoint.relativeVelocity.magnitude / circumference) * (Mathf.PI * 100) ;
 			}
@@ -605,6 +658,31 @@ namespace RVP
 			{
 				rawRPM = Mathf.Lerp(rawRPM, actualTargetRPM, (actualTorque + susParent.brakeForce * vp.brakeInput + actualEbrake * vp.ebrakeInput) * Time.timeScale);
 			}
+		}
+
+		internal void SetOriginalContact(bool sourceGrounded, bool sourceGroundedReally,
+			Vector3 point, Vector3 normal, Collider collider, Vector3 relativeVelocity,
+			float distance, int surfaceType)
+		{
+			if (!groundedReally && sourceGroundedReally && impactSnd &&
+				((tireHitClips.Length > 0 && !popped) || (rimHitClip && popped)))
+			{
+				impactSnd.PlayOneShot(popped ? rimHitClip : tireHitClips[
+					UnityEngine.Random.Range(0, tireHitClips.Length)], Mathf.Clamp01(airTime * airTime));
+				impactSnd.pitch = Mathf.Clamp(airTime * 0.2f + 0.8f, 0.8f, 1);
+			}
+
+			grounded = sourceGrounded;
+			groundedReally = sourceGroundedReally;
+			contactPoint.grounded = sourceGrounded;
+			contactPoint.point = point;
+			contactPoint.normal = normal;
+			contactPoint.col = collider;
+			contactPoint.relativeVelocity = relativeVelocity;
+			contactPoint.distance = distance;
+			contactPoint.surfaceType = surfaceType;
+			contactVelocity = Vector3.zero;
+			curSurfaceType = surfaceType;
 		}
 
 
@@ -759,6 +837,82 @@ namespace RVP
 			}
 		}
 
+		void MatchTireRadiusToVisualMesh()
+		{
+			if (!rim || visualWheelMeshes == null || visualWheelMeshes.Length == 0)
+				return;
+
+			Vector3 axle = rim.forward.normalized;
+			float meshRadius = 0;
+			bool foundMesh = false;
+			for (int i = 0; i < visualWheelMeshes.Length; i++)
+			{
+				MeshFilter meshFilter = visualWheelMeshes[i];
+				if (!meshFilter || !meshFilter.sharedMesh)
+					continue;
+
+				MeshRenderer meshRenderer = meshFilter.GetComponent<MeshRenderer>();
+				if (meshRenderer && !meshRenderer.enabled)
+					continue;
+
+				Mesh mesh = meshFilter.sharedMesh;
+				Transform meshTransform = meshFilter.transform;
+				if (mesh.isReadable)
+				{
+					Vector3[] vertices = mesh.vertices;
+					for (int vertexIndex = 0; vertexIndex < vertices.Length; vertexIndex++)
+						IncludeWheelRadius(meshTransform.TransformPoint(vertices[vertexIndex]), axle,
+							ref meshRadius, ref foundMesh);
+				}
+				else
+				{
+					// Mesh bounds provide a conservative fallback for imported models
+					// that are not readable at runtime. Project all eight corners
+					// around the actual axle instead of assuming a local orientation.
+					Bounds bounds = mesh.bounds;
+					for (int x = -1; x <= 1; x += 2)
+					for (int y = -1; y <= 1; y += 2)
+					for (int z = -1; z <= 1; z += 2)
+					{
+						Vector3 corner = bounds.center + Vector3.Scale(bounds.extents,
+							new Vector3(x, y, z));
+						IncludeWheelRadius(meshTransform.TransformPoint(corner), axle,
+							ref meshRadius, ref foundMesh);
+					}
+				}
+			}
+
+			if (!foundMesh)
+			{
+				Debug.LogWarning($"[Wheel] Could not measure visible tire radius: wheel={name}, " +
+					$"configured={tireRadius:F3}, meshCount={visualWheelMeshes.Length}", this);
+				return;
+			}
+
+			float previousRadius = tireRadius;
+			if (meshRadius <= previousRadius)
+			{
+				Debug.Log($"[Wheel] Visible tire radius check: wheel={name}, " +
+					$"configured={previousRadius:F3}, measured={meshRadius:F3}; no correction needed", this);
+				return;
+			}
+
+			// The serialized prefab radius can be smaller than its rendered tire.
+			// Keep a small clearance so the tire does not clip the track between
+			// source-probe updates.
+			tireRadius = meshRadius + 0.005f;
+			Debug.Log($"[Wheel] Corrected tireRadius from visible mesh: wheel={name}, " +
+				$"configured={previousRadius:F3}, meshRadius={meshRadius:F3}, tireRadius={tireRadius:F3}", this);
+		}
+
+		void IncludeWheelRadius(Vector3 worldVertex, Vector3 axle, ref float maxRadius, ref bool found)
+		{
+			Vector3 fromWheelCenter = worldVertex - rim.position;
+			Vector3 radialOffset = fromWheelCenter - Vector3.Dot(fromWheelCenter, axle) * axle;
+			maxRadius = Mathf.Max(maxRadius, radialOffset.magnitude);
+			found = true;
+		}
+
 		// Visual wheel rotation
 		void RotateWheel()
 		{
@@ -848,15 +1002,15 @@ namespace RVP
 		{
 			Mesh rimMesh = null;
 			Mesh tireMesh = null;
-			Mesh checker;
-			Transform scaler = transform;
+			Transform rimTransform = null;
+			Transform tireTransform = null;
 
 			if (transform.childCount > 0)
 			{
 				if (transform.GetChild(0).GetComponent<MeshFilter>())
 				{
 					rimMesh = transform.GetChild(0).GetComponent<MeshFilter>().sharedMesh;
-					scaler = transform.GetChild(0);
+					rimTransform = transform.GetChild(0);
 				}
 
 				if (transform.GetChild(0).childCount > 0)
@@ -864,49 +1018,23 @@ namespace RVP
 					if (transform.GetChild(0).GetChild(0).GetComponent<MeshFilter>())
 					{
 						tireMesh = transform.GetChild(0).GetChild(0).GetComponent<MeshFilter>().sharedMesh;
+						tireTransform = transform.GetChild(0).GetChild(0);
 					}
 				}
 
-				checker = tireMesh ? tireMesh : rimMesh;
+				Mesh checker = tireMesh ? tireMesh : rimMesh;
+				Transform checkerTransform = tireMesh ? tireTransform : rimTransform;
 
-				if (checker)
+				if (checker && checkerTransform)
 				{
-					float maxWidth = 0;
-					float maxRadius = 0;
-
-					foreach (Vector3 curVert in checker.vertices)
-					{
-						if (new Vector2(curVert.x * scaler.localScale.x, curVert.y * scaler.localScale.y).magnitude > maxRadius)
-						{
-							maxRadius = new Vector2(curVert.x * scaler.localScale.x, curVert.y * scaler.localScale.y).magnitude;
-						}
-
-						if (Mathf.Abs(curVert.z * scaler.localScale.z) > maxWidth)
-						{
-							maxWidth = Mathf.Abs(curVert.z * scaler.localScale.z);
-						}
-					}
+					GetMeshDimensions(checker, checkerTransform, out float maxRadius, out float maxWidth);
 
 					tireRadius = maxRadius + radiusMargin;
 					tireWidth = maxWidth + widthMargin;
 
-					if (tireMesh && rimMesh)
+					if (tireMesh && rimMesh && rimTransform)
 					{
-						maxWidth = 0;
-						maxRadius = 0;
-
-						foreach (Vector3 curVert in rimMesh.vertices)
-						{
-							if (new Vector2(curVert.x * scaler.localScale.x, curVert.y * scaler.localScale.y).magnitude > maxRadius)
-							{
-								maxRadius = new Vector2(curVert.x * scaler.localScale.x, curVert.y * scaler.localScale.y).magnitude;
-							}
-
-							if (Mathf.Abs(curVert.z * scaler.localScale.z) > maxWidth)
-							{
-								maxWidth = Mathf.Abs(curVert.z * scaler.localScale.z);
-							}
-						}
+						GetMeshDimensions(rimMesh, rimTransform, out maxRadius, out maxWidth);
 
 						rimRadius = maxRadius + radiusMargin;
 						rimWidth = maxWidth + widthMargin;
@@ -921,6 +1049,19 @@ namespace RVP
 				{
 					Debug.LogError("No rim or tire meshes found for getting wheel dimensions.", this);
 				}
+			}
+		}
+
+		static void GetMeshDimensions(Mesh mesh, Transform meshTransform, out float maxRadius, out float maxWidth)
+		{
+			maxRadius = 0;
+			maxWidth = 0;
+			foreach (Vector3 vertex in mesh.vertices)
+			{
+				Vector3 radialOffset = meshTransform.TransformVector(new Vector3(vertex.x, vertex.y, 0));
+				Vector3 widthOffset = meshTransform.TransformVector(new Vector3(0, 0, vertex.z));
+				maxRadius = Mathf.Max(maxRadius, radialOffset.magnitude);
+				maxWidth = Mathf.Max(maxWidth, widthOffset.magnitude);
 			}
 		}
 
@@ -1003,6 +1144,10 @@ namespace RVP
 		public Vector3 relativeVelocity; // Relative velocity between the wheel and the contact point object
 		public float distance; // Distance from the suspension to the contact point minus the wheel radius
 		public float surfaceFriction; // Friction of the contact surface
+		public float sourceGrip = 1; // Original PMD asphalt grip: raw grip byte 64 / 64
+		public int sourceFlags = 1; // Original PMD asphalt contact flags
+		public float sourceRolling = 1; // Original PMD asphalt rolling-resistance byte
+		public float sourceRoughness = 0; // Original PMD asphalt roughness byte
 		public int surfaceType; // The surface type identified by the surface types array of GroundSurfaceMaster
 	}
 }

@@ -20,6 +20,8 @@ namespace RVP
 
 		void Awake()
 		{
+			// The source vehicle simulation advances at 60 Hz; keep Unity's baseline
+			// fixed step aligned so its discrete physics ticks are not fractional.
 			initialFixedTime = Time.fixedDeltaTime;
 
 			if (!destroyOnLoad)

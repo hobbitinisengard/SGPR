@@ -459,6 +459,7 @@ public class CarConfig
 	string[] externalParts;
 	[SerializeField]
 	PartsArray customParts;
+	public OriginalVehiclePhysicsConfig originalPhysics;
 	public CarConfig()
 	{}
 	/// <summary>
@@ -468,6 +469,7 @@ public class CarConfig
 	public CarConfig(CarConfig cc)
 	{
 		name = cc.name;
+		originalPhysics = cc.originalPhysics;
 		externalParts = new string[10];
 		for (int i = 0; i < cc.externalParts.Length; i++)
 		{
@@ -492,6 +494,7 @@ public class CarConfig
 		var data = JsonConvert.DeserializeObject<CarConfig>(jsonText);
 		externalParts = data.externalParts;
 		customParts = data.customParts;
+		originalPhysics = data.originalPhysics;
 		Apply();
 	}
 	public void Apply(VehicleParent vp = null)
@@ -502,6 +505,7 @@ public class CarConfig
 			{
 				GetPart((PartType)i).Apply(vp);
 			}
+			vp.UseOriginalPhysics(originalPhysics);
 		}
 	}
 	/// <summary>

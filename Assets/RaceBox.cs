@@ -514,8 +514,9 @@ public class RaceBox : MonoBehaviour
 
 			if (stableLandingTimer == 2)
 			{
-				Vector3 normA = vp.rb.angularVelocity.normalized;
-				Vector3 lA = vp.transform.InverseTransformDirection(vp.rb.angularVelocity);
+				Vector3 angularVelocity = vp.WorldAngularVelocity;
+				Vector3 normA = angularVelocity.normalized;
+				Vector3 lA = vp.transform.InverseTransformDirection(angularVelocity);
 				Vector3 normlA = lA.normalized;
 				//Debug.DrawRay(vp.transform.position, lA, Color.red, 10);
 				Vector3 foundMoves = Vector3.zero;
@@ -813,7 +814,10 @@ public class RaceBox : MonoBehaviour
 				vp.followAI.NextLap();
 
 				if (F.I.s_raceType == RaceType.TimeTrial)
+				{
 					vp.energyRemaining = vp.batteryCapacity;
+					vp.originalVehiclePhysics?.SynchronizeSourceEnergyFromBattery();
+				}
 
 				if (curLap <= F.I.s_laps && enabled)
 				{

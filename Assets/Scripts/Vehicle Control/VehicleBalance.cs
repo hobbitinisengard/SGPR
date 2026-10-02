@@ -49,6 +49,8 @@ namespace RVP
         }
 
         void FixedUpdate() {
+            if (vp.UsesOriginalPhysics)
+                return;
             // Apply endo limit
             actualPitchInput = vp.wheels.Length == 1 ? 0 : Mathf.Clamp(vp.pitchInput, -1, vp.velMag > endoSpeedThreshold ? 0 : 1);
 

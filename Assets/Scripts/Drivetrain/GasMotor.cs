@@ -134,6 +134,11 @@ namespace RVP
 		protected override void FixedUpdate()
 		{
 			base.FixedUpdate();
+			if (vp.UsesOriginalPhysics)
+			{
+				targetPitch = Mathf.Clamp01(GetComponent<DriveForce>().rpm / Mathf.Max(1, vp.carConfig.originalPhysics.rpmLimit));
+				return;
+			}
 
 			actualAccel = (vp.brakeIsReverse && vp.reversing) ? vp.brakeInput : vp.accelInput;
 			actualInput = inputCurve.Evaluate(Mathf.Abs(actualAccel));
@@ -208,7 +213,7 @@ namespace RVP
 				else
 					actualInput = 0;
 
-				if (vp.reallyGroundedWheels == 4)
+				if (!vp.UsesOriginalPhysics && vp.reallyGroundedWheels == 4)
 					vp.rb.AddForce(Time.fixedDeltaTime * boostEval * vp.rb.linearVelocity.normalized);
 
 				targetDrive.torque = actualInput * maxTorque * torqueCurve.Evaluate(currentkRPM); // TORQUE

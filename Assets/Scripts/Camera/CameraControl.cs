@@ -31,7 +31,7 @@ namespace RVP
 					case Mode.Follow:
 						cam.fieldOfView = CameraFieldOfView;
 						if(vp)
-							tr.position = vp.tr.position;
+							tr.position = GetCameraTargetPosition();
 						_mode = value;
 						break;
 					case Mode.Replay:
@@ -167,8 +167,9 @@ namespace RVP
 			forwardLook = -vp.tr.up;
 			upLook = vp.tr.forward;
 			targetBody = vp.tr.GetComponent<Rigidbody>();
-			tr.SetPositionAndRotation(vp.tr.position, Quaternion.LookRotation(forwardLook, upLook));
-			dampOffset = vp.tr.position;
+			Vector3 cameraTargetPosition = GetCameraTargetPosition();
+			tr.SetPositionAndRotation(cameraTargetPosition, Quaternion.LookRotation(forwardLook, upLook));
+			dampOffset = cameraTargetPosition;
 			if (this.mode == Mode.Replay && vp.followAI.replayCams?.Count == 0)
 				this.mode = Mode.Follow;
 			vp.followAI.ResetCurCameraIdx();
@@ -183,6 +184,15 @@ namespace RVP
 			if (degs > 180)
 				degs -= 360;
 			return degs;
+		}
+		Vector3 GetCameraTargetPosition()
+		{
+			if (!vp)
+				return Vector3.zero;
+
+			// Follow the visible chassis pivot. It moves with the visual model alignment
+			// and body heave, while the Rigidbody root remains the physics reference.
+			return vp.bodyObj ? vp.bodyObj.transform.position : vp.tr.position;
 		}
 		private void Update()
 		{
@@ -229,11 +239,12 @@ namespace RVP
 		void ReplayCam()
 		{
 			tr.position = vp.followAI.currentCam.cam.transform.position;
-			Vector3 camTarget = vp.tr.position - replayCamAgility * Time.fixedDeltaTime * vp.rb.linearVelocity;
+			Vector3 camTarget = GetCameraTargetPosition() - replayCamAgility * Time.fixedDeltaTime * vp.rb.linearVelocity;
 			tr.rotation = Quaternion.LookRotation(camTarget - tr.position);
 		}
 		void FollowCam()
 		{
+			Vector3 cameraTargetPosition = GetCameraTargetPosition();
 			float velMag01ForCamFX = Mathf.InverseLerp(minSpeedForCameraFovFX, maxSpeedForCameraFovFX, vp.velMag);
 			cam.fieldOfView = CameraFieldOfView + (CameraFieldOfViewAtMaxSpeed - CameraFieldOfView) * velMag01ForCamFX;
 			pitchAngle = WrapAround180Degs(vp.tr.localEulerAngles.x);
@@ -294,17 +305,17 @@ namespace RVP
 				yInput = -F.I.lookBackInput.action.ReadValue<float>();
 			}
 
-			smoothYRot = Mathf.Lerp(smoothYRot, smoothRotCoeff * vp.rb.angularVelocity.y, Time.fixedDeltaTime);
+			smoothYRot = Mathf.Lerp(smoothYRot, smoothRotCoeff * vp.WorldAngularVelocity.y, Time.fixedDeltaTime);
 			forward = Quaternion.AngleAxis(xInput * 90 + yInput * 180, vp.tr.up) * forward;
 			forward = Quaternion.AngleAxis(Time.fixedDeltaTime * smoothYRot * Mathf.Rad2Deg, vp.tr.up) * forward;
 			float speedHeight = Mathf.Lerp(height, 1.5f, velMag01ForCamFX); // make the camera lower the faster you go
-			lookObj.position = vp.tr.position - forward * targetCamCarDistance + Vector3.up * speedHeight;
+			lookObj.position = cameraTargetPosition - forward * targetCamCarDistance + Vector3.up * speedHeight;
 			lookObj.position += vp.rb.linearVelocity * Time.fixedDeltaTime;
 			//--------------
-			targetForward = vp.tr.position + cHeight * Vector3.up - lookObj.position;
+			targetForward = cameraTargetPosition + cHeight * Vector3.up - lookObj.position;
 			forwardLook = Vector3.Lerp(forwardLook, targetForward, forwardLookCoeff * Time.fixedDeltaTime);
 			if (vp.reallyGroundedWheels > 0 
-				&& Physics.Raycast(vp.tr.position + vp.tr.up, -targetUp, out RaycastHit hit, Mathf.Infinity, castMask))
+				&& Physics.Raycast(cameraTargetPosition + vp.tr.up, -targetUp, out RaycastHit hit, Mathf.Infinity, castMask))
 			{
 				float dot = Vector3.Dot(targetUp, hit.normal);
 				// 0.9848 = cos(15d)
@@ -329,7 +340,7 @@ namespace RVP
 			}
 
 			camOffsetDistance = Vector3.Distance(tr.position, dampOffset);
-			carOffsetDistance = Vector3.Distance(dampOffset, vp.tr.position);
+			carOffsetDistance = Vector3.Distance(dampOffset, cameraTargetPosition);
 			if (vp.reallyGroundedWheels == 0) // when car airborne
 			{
 				if (camOffsetDistance < 2)
@@ -352,12 +363,12 @@ namespace RVP
 				lookObj.position = vp.customCam.transform.position;
 			}
 
-			bool badpos = Physics.Linecast(vp.tr.position + cHeight * Vector3.up, lookObj.position, out hit, castMask);
+			bool badpos = Physics.Linecast(cameraTargetPosition + cHeight * Vector3.up, lookObj.position, out hit, castMask);
 			Vector3 target;
 			if (badpos && !vp.customCam)
 			{ //Check if there is an object between the camera and target vehicle and move the camera in front of it
 
-				target = hit.point + (vp.tr.position + cHeight * Vector3.up - newTrPos).normalized * (cam.nearClipPlane + 1);
+				target = hit.point + (cameraTargetPosition + cHeight * Vector3.up - newTrPos).normalized * (cam.nearClipPlane + 1);
 			}
 			else
 				target = lookObj.position;
@@ -377,7 +388,7 @@ namespace RVP
 					if (slowCamera)
 					{ // cam lets car go ahead
 						lookObjVelCoeff = 1;
-						Quaternion cameraStoppedRotation = Quaternion.LookRotation(vp.tr.position - tr.position, rollUp);
+						Quaternion cameraStoppedRotation = Quaternion.LookRotation(cameraTargetPosition - tr.position, rollUp);
 						rotation = Quaternion.Lerp(tr.rotation, cameraStoppedRotation, 2 * Time.fixedDeltaTime);
 					}
 					else
@@ -385,7 +396,7 @@ namespace RVP
 						if (camOffsetDistance > carOffsetDistance)
 						{
 							lookObjVelCoeff = 1;
-							Quaternion cameraStoppedRotation = Quaternion.LookRotation(vp.tr.position - tr.position, rollUp);
+							Quaternion cameraStoppedRotation = Quaternion.LookRotation(cameraTargetPosition - tr.position, rollUp);
 							//Quaternion cameraStoppedRotation = Quaternion.LookRotation(vp.rb.linearVelocity, rollUp);
 							rotation = Quaternion.Lerp(tr.rotation, cameraStoppedRotation, 2 * Time.fixedDeltaTime);
 						}
@@ -403,7 +414,7 @@ namespace RVP
 				}
 			}
 			else
-				rotation = Quaternion.Lerp(tr.rotation, Quaternion.LookRotation(vp.tr.position - tr.position), 3 * Time.fixedDeltaTime);
+				rotation = Quaternion.Lerp(tr.rotation, Quaternion.LookRotation(cameraTargetPosition - tr.position), 3 * Time.fixedDeltaTime);
 
 			tr.SetPositionAndRotation(newTrPos, rotation);
 		}

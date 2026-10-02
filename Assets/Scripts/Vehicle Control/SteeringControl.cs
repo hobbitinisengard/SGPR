@@ -167,6 +167,12 @@ namespace RVP
 
 			foreach (Suspension curSus in steeredWheels)// Set steer angles in wheels
 			{
+				if (vp.UsesOriginalPhysics)
+				{
+					float range = vp.originalVehiclePhysics.SteeringDegreesFor(curSus) >= 0 ? curSus.steerRangeMax : -curSus.steerRangeMin;
+					curSus.steerAngle = Mathf.Clamp(vp.originalVehiclePhysics.SteeringDegreesFor(curSus) / Mathf.Max(0.001f, range), -1, 1);
+					continue;
+				}
 				float sign = F.Sign(vp.steerInput);
 				targetSteer = sign * Mathf.Min(holdCurveValue, absSteerInput) * steerLimit;
 				curSus.steerAngle = Mathf.Lerp(curSus.steerAngle,

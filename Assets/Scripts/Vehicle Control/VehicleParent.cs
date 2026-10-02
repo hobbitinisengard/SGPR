@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System;
 using Unity.Netcode;
@@ -99,6 +99,24 @@ namespace RVP
 		public BasicInput basicInput;
 		[NonSerialized]
 		public CarConfig carConfig;
+		[NonSerialized]
+		public OriginalVehiclePhysics originalVehiclePhysics;
+		readonly float[] prefabSuspensionTravel = new float[4];
+		bool wasKinematicBeforePhysicsSetup;
+		public float PrefabSuspensionTravel(int wheelIndex)
+		{
+			return wheelIndex >= 0 && wheelIndex < prefabSuspensionTravel.Length
+				? prefabSuspensionTravel[wheelIndex] : 0;
+		}
+		public bool UsesOriginalPhysics => originalVehiclePhysics != null;
+		public Vector3 WorldAngularVelocity => UsesOriginalPhysics
+			? originalVehiclePhysics.SourceAngularVelocity : rb.angularVelocity;
+		public void UseOriginalPhysics(OriginalVehiclePhysicsConfig config)
+		{
+			if (!OriginalVehiclePhysics.IsUsable(config))
+				throw new InvalidOperationException($"Missing or invalid original vehicle physics data: {config?.sourceConfig ?? carConfig?.name}");
+			originalVehiclePhysics = new OriginalVehiclePhysics(this, config);
+		}
 		/// <summary>
 		/// from 0 ti 19
 		/// </summary>
@@ -590,12 +608,24 @@ namespace RVP
 		}
 		private void Awake()
 		{
+			if (wheels != null)
+				for (int i = 0; i < prefabSuspensionTravel.Length && i < wheels.Length; i++)
+					if (wheels[i])
+					{
+						Suspension suspension = wheels[i].transform.parent.GetComponent<Suspension>();
+						if (suspension)
+							prefabSuspensionTravel[i] = suspension.suspensionDistance;
+					}
 			ghost = GetComponent<Ghost>();
 			followAI = GetComponent<FollowAI>();
 			raceBox = GetComponent<RaceBox>();
 			va = GetComponent<VehicleAssist>();
 			tr = transform;
 			rb = GetComponent<Rigidbody>();
+			wasKinematicBeforePhysicsSetup = rb.isKinematic;
+			// Do not let the remake's drivetrain or suspension move this car while
+			// its source vehicle config is still loading.
+			rb.isKinematic = true;
 			originalDrag = rb.linearDamping;
 			originalMass = rb.mass;
 			rb.collisionDetectionMode = CollisionDetectionMode.Discrete;
@@ -657,6 +687,7 @@ namespace RVP
 
 			carConfig = new CarConfig(F.I.cars[carNumber].config);
 			carConfig.Apply(this);
+			rb.isKinematic = wasKinematicBeforePhysicsSetup;
 
 			if (F.I.s_raceType == RaceType.TimeTrial)
 				ghost.SetGhostPermanently();
@@ -693,14 +724,17 @@ namespace RVP
 		void Update()
 		{
 
-			if (reallyGroundedWheels == 0 && !colliding && !crashing)
-				rb.linearDamping = 0;
-			else if (Physics.OverlapBox(tr.position, Vector3.one, Quaternion.identity, 1 << F.I.aeroTunnel).Length > 1)
-			{ // aerodynamic tunnel
-				rb.linearDamping = 0.8f * originalDrag;
+			if (!UsesOriginalPhysics)
+			{
+				if (reallyGroundedWheels == 0 && !colliding && !crashing)
+					rb.linearDamping = 0;
+				else if (Physics.OverlapBox(tr.position, Vector3.one, Quaternion.identity, 1 << F.I.aeroTunnel).Length > 1)
+				{ // aerodynamic tunnel
+					rb.linearDamping = 0.8f * originalDrag;
+				}
+				else
+					rb.linearDamping = originalDrag;
 			}
-			else
-				rb.linearDamping = originalDrag;
 			// Shift single frame pressing logic
 			if (stopUpshift)
 			{
@@ -771,18 +805,23 @@ namespace RVP
 			//	InheritInput();
 			//}
 
-			// Dynamically switch CCD mode based on air time
-			if (reallyGroundedWheels == 0)
+			// Legacy vehicles enable CCD only after spending half a second airborne.
+			// Original vehicles keep ContinuousDynamic so a fast landing cannot skip
+			// the track between physics steps.
+			if (!UsesOriginalPhysics)
 			{
-				colDetectionTimer = Mathf.Clamp(colDetectionTimer + Time.fixedDeltaTime, 0, 0.5f);
-				if (colDetectionTimer == 0.5f && velMag > 58)
-					rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
-			}
-			else if (reallyGroundedWheels == 4)
-			{
-				colDetectionTimer = Mathf.Clamp(colDetectionTimer - Time.fixedDeltaTime, 0, 0.5f);
-				if (colDetectionTimer == 0)
-					rb.collisionDetectionMode = CollisionDetectionMode.Discrete;
+				if (reallyGroundedWheels == 0)
+				{
+					colDetectionTimer = Mathf.Clamp(colDetectionTimer + Time.fixedDeltaTime, 0, 0.5f);
+					if (colDetectionTimer == 0.5f && velMag > 58)
+						rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+				}
+				else if (reallyGroundedWheels == 4)
+				{
+					colDetectionTimer = Mathf.Clamp(colDetectionTimer - Time.fixedDeltaTime, 0, 0.5f);
+					if (colDetectionTimer == 0)
+						rb.collisionDetectionMode = CollisionDetectionMode.Discrete;
+				}
 			}
 
 			if (wheelLoopDone && wheelGroups.Length > 0)
@@ -797,7 +836,7 @@ namespace RVP
 			localVelocity = tr.InverseTransformDirection(rb.linearVelocity - wheelContactsVelocity);
 			acceleration = localVelocity - prevVel;
 
-			localAngularVel = tr.InverseTransformDirection(rb.angularVelocity);
+			localAngularVel = tr.InverseTransformDirection(WorldAngularVelocity);
 
 			velMag = rb.linearVelocity.magnitude;
 
@@ -818,7 +857,7 @@ namespace RVP
 					reversing = false;
 			}
 
-			if (reallyGroundedWheels == 4)
+			if (!UsesOriginalPhysics && reallyGroundedWheels == 4)
 			{
 
 				//float radius = wheelbase / Mathf.Sin(wheels[0].suspensionParent.steerRangeMax * Mathf.Deg2Rad * wheels[0].suspensionParent.steerAngle);
@@ -826,6 +865,7 @@ namespace RVP
 				float coeff = (wheels[1].susParent.appliedSuspensionForce.magnitude - wheels[0].susParent.appliedSuspensionForce.magnitude) / (wheels[0].susParent.springForce);
 				rb.AddTorque(twistGain * coeff * forwardDir, ForceMode.Acceleration);
 			}
+			originalVehiclePhysics?.Step();
 		}
 		public void SetHonkerInput(int f)
 		{
@@ -849,7 +889,7 @@ namespace RVP
 		// Set accel input
 		public void SetAccel(float f)
 		{
-			if (F.I.s_inEditor || !raceBox.enabled || F.I.s_raceType == RaceType.TimeTrial)
+			if (!UsesOriginalPhysics && (F.I.s_inEditor || !raceBox.enabled || F.I.s_raceType == RaceType.TimeTrial))
 				energyRemaining = batteryCapacity;
 			else if (BatteryPercent <= 0 && Time.time - lastNoBatteryMessage > 60)
 			{
@@ -858,10 +898,10 @@ namespace RVP
 			}
 			f = Mathf.Clamp(f, -1, 1);
 
-			if (BatteryPercent <= 0 && velMag > 30)
+			if (!UsesOriginalPhysics && BatteryPercent <= 0 && velMag > 30)
 				f = 0;
 
-			if (F.I.s_cpuLevel == CpuLevel.Hard)
+			if (!UsesOriginalPhysics && F.I.s_cpuLevel == CpuLevel.Hard)
 			{
 				engine.ignition = BatteryPercent > 0;
 				if (!engine.ignition)
@@ -871,7 +911,7 @@ namespace RVP
 			if (Owner)
 				accelInput = f;
 
-			if (energyRemaining > 0 && (!followAI.IsCPU || F.I.s_cpuLevel == CpuLevel.Easy))
+			if (!UsesOriginalPhysics && energyRemaining > 0 && (!followAI.IsCPU || F.I.s_cpuLevel == CpuLevel.Easy))
 				energyRemaining -= accelInput * engine.fuelConsumption * Time.deltaTime;
 
 
@@ -915,6 +955,11 @@ namespace RVP
 		}
 		public void SetBunnyhop(int f)
 		{
+			if (UsesOriginalPhysics)
+			{
+				originalVehiclePhysics.SetStuntButton(f);
+				return;
+			}
 			if (f > 0)
 			{
 				if (reallyGroundedWheels > 2)
@@ -955,6 +1000,11 @@ namespace RVP
 		}
 		public void SetBoost(int b)
 		{
+			if (UsesOriginalPhysics)
+			{
+				boostButton = b;
+				return;
+			}
 			if (b == 1 && BatteryPercent > lowBatteryLevel)
 			{
 				energyRemaining -= Time.deltaTime * engine.jetConsumption;
@@ -1038,6 +1088,15 @@ namespace RVP
 					reallyGroundedWheels++;
 				}
 			}
+
+			if (UsesOriginalPhysics)
+			{
+				// Source contact grace counters define the original grounded class;
+				// wheel visuals can update a fixed step before or after this method.
+				groundedWheels = originalVehiclePhysics.GroundedWheelCount;
+				reallyGroundedWheels = originalVehiclePhysics.ReallyGroundedWheelCount;
+				wheelContactsVelocity = Vector3.zero;
+			}
 		}
 
 		public void PlaySparks(Collision c)
@@ -1053,6 +1112,7 @@ namespace RVP
 		// Check for crashes and play collision sounds
 		void OnCollisionEnter(Collision col)
 		{
+			originalVehiclePhysics?.ResolveBodyContact(col, true);
 			raceBox.evoModule.Reset();
 
 			if (col.contacts.Length > 0)
@@ -1082,6 +1142,7 @@ namespace RVP
 		// Continuous collision checking
 		void OnCollisionStay(Collision col)
 		{
+			originalVehiclePhysics?.ResolveBodyContact(col, false);
 			bool nowCrashing = false;
 			if (col.contacts.Length > 0)
 			{
@@ -1169,14 +1230,25 @@ namespace RVP
 				batteryLoadingSnd.Play();
 			}
 			energyRemaining = Mathf.Clamp(energyRemaining + batteryChargingSpeed * Time.deltaTime, 0, batteryCapacity);
+			originalVehiclePhysics?.SynchronizeSourceEnergyFromBattery();
 		}
 
 		public void ChargeBatteryByStunt()
 		{
+			if (UsesOriginalPhysics)
+			{
+				originalVehiclePhysics.AddSourceStuntEnergyAward();
+				return;
+			}
 			energyRemaining = Mathf.Clamp(energyRemaining + batteryCapacity * batteryStuntIncreasePercent, 0, batteryCapacity);
 		}
 		public void ApplyBatteryPenalty()
 		{
+			if (UsesOriginalPhysics)
+			{
+				originalVehiclePhysics.ApplySourceRespawnEnergyCost();
+				return;
+			}
 			float penalty = (followAI.IsCPU ? 0 : 1) * 0.5f * batteryStuntIncreasePercent;
 
 			energyRemaining = Mathf.Clamp(energyRemaining - batteryCapacity * penalty, 0, batteryCapacity);
@@ -1213,6 +1285,12 @@ namespace RVP
 			rb.linearDamping = drag;
 			rb.angularDamping = angularDrag;
 			va.initialAngularDrag = angularDrag;
+			if (UsesOriginalPhysics)
+			{
+				originalDrag = 0;
+				rb.linearDamping = 0;
+				rb.angularDamping = 0;
+			}
 		}
 	}
 
