@@ -232,6 +232,11 @@ public class RaceBox : MonoBehaviour
 		if (stableLandingTimer != -1 && vp.velMag < 14)
 			yield break;
 
+		AwardExtraStunt(name);
+		yield return null;
+	}
+	void AwardExtraStunt(StuntsData.ExtraName name)
+	{
 		var stunt = stuntsData.extraData[(int)name];
 		stunt.updateOverlay = true;
 		stunt.doneTimes++;
@@ -241,7 +246,6 @@ public class RaceBox : MonoBehaviour
 		stuntPai.score += (int)((starLevel + 1) * 1.5f * stunt.score);
 		stableLandingTimer = -1;
 		AcceptExtraStunt();
-		yield return null;
 		//stunt.doneTimes = 0;
 	}
 	public void AddLooper()
@@ -488,6 +492,13 @@ public class RaceBox : MonoBehaviour
 	public void DoTrickstart()
 	{
 		StartCoroutine(AddExtraStuntCo(StuntsData.ExtraName.Trikstart));
+	}
+	public void DoOriginalTrickstart()
+	{
+		// Retail awards trickstart at the successful launch tick. It does not wait
+		// for the car to reach the remake's generic extra-stunt speed threshold.
+		stableLandingTimer = -1;
+		AwardExtraStunt(StuntsData.ExtraName.Trikstart);
 	}
 	void FlipDetector(float deltaTime)
 	{

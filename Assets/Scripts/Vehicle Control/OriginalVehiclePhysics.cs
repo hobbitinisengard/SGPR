@@ -225,8 +225,14 @@ namespace RVP
 		float throttleSignal;
 		float pitchAcceleration;
 		float yawAcceleration;
+		float rollAcceleration;
 		float pitchSpeed;
 		float yawSpeed;
+		float rollSpeed;
+		float stuntRollProgress;
+		int stuntRollDirection;
+		bool stuntRollActive;
+		bool stuntRollInputArmed = true;
 		float sourceBodyRoll;
 		float sourceBodyPitch;
 		float sourceBodyHeave;
@@ -254,6 +260,8 @@ namespace RVP
 		bool sourceRotationDiagnosticLogged;
 		bool sourceSuspensionDiagnosticLogged;
 		int sourceSuspensionStableContactTicks;
+		readonly float[] sourceWheelProbeVerticalFitOffset = new float[4];
+		float sourceBodyProbeVerticalFitOffset;
 		float sourceContactCounter;
 		int sourceUnsafeContactTicks;
 		int sourceOpposingDirectionTicks;
@@ -422,6 +430,8 @@ namespace RVP
 			sourceSuspensionTickPhase = sourceTicks - sourceSuspensionTick;
 			ApplySourceDimensions();
 			ResetSourceProbeHistory();
+			FitSourceProbeHeightsToPrefabTires();
+			ResetSourceProbeHistory();
 			ResetSourceWakeHistory();
 			nextSourceTrackCollisionScan = 0;
 			if (vehicle.engine && vehicle.engine.transmission)
@@ -546,6 +556,84 @@ namespace RVP
 				for (int i = 4; i < sourceProbeCount; i++)
 					sourceProbeLocal[i] = sourceConfiguredProbeLocal[i] + wheelProbeOffset;
 			}
+
+			for (int i = 0; i < 4; i++)
+				sourceProbeLocal[i].y += sourceWheelProbeVerticalFitOffset[i];
+			for (int i = 4; i < sourceProbeCount; i++)
+				sourceProbeLocal[i].y += sourceBodyProbeVerticalFitOffset;
+		}
+
+		void FitSourceProbeHeightsToPrefabTires()
+		{
+			if (vehicle.wheels == null || vehicle.wheels.Length < 4 || !vehicle.rb || !vehicle.tr)
+				return;
+
+			UpdateSourceWheelProbeGeometry();
+			float totalOffset = 0;
+			int fittedWheelCount = 0;
+			string wheelFits = string.Empty;
+
+			for (int sourceIndex = 0; sourceIndex < 4; sourceIndex++)
+			{
+				Wheel wheel = vehicle.wheels[UnityWheelIndex[sourceIndex]];
+				if (!wheel || !wheel.connected || !wheel.rim || !wheel.susParent)
+					continue;
+				float tireRadius = wheel.actualRadius > 0 ? wheel.actualRadius : wheel.tireRadius;
+				if (tireRadius <= 0)
+					continue;
+
+				Suspension suspension = wheel.susParent;
+				Vector3 springDirection = suspension.springDirection.sqrMagnitude > 0.5f
+					? suspension.springDirection.normalized : -vehicle.tr.up;
+				Vector3 upDirection = suspension.upDir.sqrMagnitude > 0.5f
+					? suspension.upDir.normalized : vehicle.tr.up;
+				Vector3 maxCompressPoint = suspension.maxCompressPoint;
+				if ((maxCompressPoint - suspension.tr.position).sqrMagnitude > 0.25f)
+					maxCompressPoint = suspension.tr.position;
+
+				OriginalTyrePhysicsConfig tyre = parameters.tyres[sourceIndex];
+				float totalTravel = Mathf.Max(0.001f, tyre.travelIn + tyre.travelOut);
+				float sourceRestTravel = Mathf.Clamp01(tyre.travelIn / totalTravel);
+				float angleRadius = Mathf.Pow(Mathf.Max(
+					Mathf.Abs(Mathf.Sin(suspension.sideAngle * Mathf.Deg2Rad)),
+					Mathf.Abs(Mathf.Sin(suspension.casterAngle * Mathf.Deg2Rad))), 2);
+				Vector3 steeringDirection = suspension.tr.TransformDirection(
+					Mathf.Sin(wheel.tr.localEulerAngles.y * Mathf.Deg2Rad), 0,
+					Mathf.Cos(wheel.tr.localEulerAngles.y * Mathf.Deg2Rad));
+				Vector3 expectedRimPosition = maxCompressPoint +
+					springDirection * suspension.suspensionDistance * sourceRestTravel +
+					upDirection * angleRadius * tireRadius +
+					suspension.pivotOffset * steeringDirection -
+					suspension.pivotOffset * (suspension.forwardDir.sqrMagnitude > 0.5f
+						? suspension.forwardDir : suspension.tr.forward);
+
+				float rimHeight = Vector3.Dot(expectedRimPosition - vehicle.rb.position, vehicle.tr.up);
+				float probeHeight = Vector3.Dot(
+					vehicle.rb.rotation * (sourceProbeLocal[sourceIndex] * SourceLengthToMetres), vehicle.tr.up);
+				float probeRadius = sourceProbeRadius[sourceIndex] * SourceLengthToMetres;
+				float clearanceAtProbeContact = rimHeight - probeHeight + probeRadius - tireRadius;
+				if (float.IsNaN(clearanceAtProbeContact) || float.IsInfinity(clearanceAtProbeContact) ||
+					Mathf.Abs(clearanceAtProbeContact) > 0.75f)
+					continue;
+
+				sourceWheelProbeVerticalFitOffset[sourceIndex] =
+					clearanceAtProbeContact / SourceLengthToMetres;
+				totalOffset += sourceWheelProbeVerticalFitOffset[sourceIndex];
+				fittedWheelCount++;
+				wheelFits += $" w{sourceIndex}={clearanceAtProbeContact:F3}m";
+			}
+
+			if (fittedWheelCount == 0)
+				return;
+
+			// Keep the source body probes aligned with the wheel probes as the whole
+			// collision rig is raised relative to the prefab. This lets the source
+			// contact solver settle the complete Unity vehicle to tire height at spawn.
+			sourceBodyProbeVerticalFitOffset = totalOffset / fittedWheelCount;
+			Debug.Log($"[OriginalVehiclePhysics] Initial probe placement: " +
+				$"car={vehicle.carConfig?.name}, source={parameters.sourceConfig}, " +
+				$"probeOffsets={wheelFits}, bodyProbeOffset=" +
+				$"{sourceBodyProbeVerticalFitOffset * SourceLengthToMetres:F3}m.", vehicle);
 		}
 
 		Vector3 SourceProbeWorldPosition(int index)
@@ -1189,7 +1277,9 @@ namespace RVP
 				unsafeContact = true;
 				stuntActive = false;
 				airTicks = 0;
-				pitchAcceleration = yawAcceleration = pitchSpeed = yawSpeed = 0;
+				pitchAcceleration = yawAcceleration = 0;
+				pitchSpeed = yawSpeed = 0;
+				ResetSourceStuntRoll();
 				ResetSourceStuntPhaseHistory();
 			}
 			if ((flags & 0x20) != 0 && currentSourceSpeed < 1.6666666f)
@@ -1401,7 +1491,9 @@ namespace RVP
 				if (released && (sourceStuntPhaseIndex[0] >= SourceAiStuntStopAt[grade] ||
 					sourceStuntPhaseIndex[1] >= SourceAiStuntStopAt[grade]))
 				{
-					pitchAcceleration = yawAcceleration = pitchSpeed = yawSpeed = 0;
+					pitchAcceleration = yawAcceleration = 0;
+					pitchSpeed = yawSpeed = 0;
+					ResetSourceStuntRoll();
 				}
 				sourceAiStuntInputThisTick = !released && sourceAiStuntInputKind >= 0 &&
 					sourceAiStuntInputKind <= 3;
@@ -1549,6 +1641,7 @@ namespace RVP
 				return count;
 			}
 		}
+		public bool StuntActive => stuntActive;
 		public int ReallyGroundedWheelCount
 		{
 			get
@@ -1804,7 +1897,9 @@ namespace RVP
 			airTicks = 0;
 			stuntActive = stuntPressed = false;
 			stuntPressedAt = -1;
-			pitchAcceleration = yawAcceleration = pitchSpeed = yawSpeed = 0;
+			pitchAcceleration = yawAcceleration = 0;
+			pitchSpeed = yawSpeed = 0;
+			ResetSourceStuntRoll();
 			sourceBodyRoll = sourceBodyPitch = sourceBodyHeave = 0;
 			effectiveComHeight = parameters.comHeight;
 			sourceCom2628 = sourceCom262c = 0;
@@ -2024,6 +2119,14 @@ namespace RVP
 				stuntPressed = false;
 		}
 
+		void ResetSourceStuntRoll()
+		{
+			rollAcceleration = rollSpeed = stuntRollProgress = 0;
+			stuntRollDirection = 0;
+			stuntRollActive = false;
+			stuntRollInputArmed = true;
+		}
+
 		bool TryLaunchOnTakeoff(int tick)
 		{
 			float strength;
@@ -2120,7 +2223,10 @@ namespace RVP
 			vehicle.engine.transmission.SetOriginalGear(gear, parameters);
 			PrepareSourcePhysicalParameters();
 			UpdateSourceAIStunt(tick);
-			bool unityRailNear = TryFindSourceUnityRail(vehicle.rb.position,
+			// Spline proximity alone must not take control from a player. FollowAI's
+			// pit path is assigned only by an explicit pit-entry/auto-drive trigger.
+			PathCreator assignedPitPath = vehicle.followAI ? vehicle.followAI.PitsPathCreator : null;
+			bool unityRailNear = TryFindSourceUnityRail(vehicle.rb.position, assignedPitPath,
 				out EnergyTunnelPath unityRail, out _, out float unityRailDistanceSqr);
 			if (sourceRailCompletedPath && (unityRail != sourceRailCompletedPath || unityRailDistanceSqr > 36))
 				sourceRailCompletedPath = null;
@@ -2543,11 +2649,47 @@ namespace RVP
 			next = Mathf.Clamp(next, 0, Mathf.Min(parameters.gearCount, parameters.ratios.Length - 1));
 			if (next == gear)
 				return;
+			int previousGear = gear;
 			if (next < gear)
 				downshiftTicks = Mathf.Max(0, parameters.shiftTime * SourceTicksPerSecond);
 			gear = next;
 			clutch = 0;
 			vehicle.engine.transmission.SetOriginalGear(gear, parameters);
+			TrySourceTrickstartAtGearChange(previousGear, gear);
+		}
+
+		void TrySourceTrickstartAtGearChange(int previousGear, int nextGear)
+		{
+			// Source gear 1 is neutral and source gear 2 is first (displayed N -> 1).
+			if (previousGear != 1 || nextGear != 2)
+				return;
+
+			float countdown = CountDownSeq.Countdown;
+			if (F.I && F.I.s_raceType == RaceType.Stunt)
+			{
+				Debug.Log($"[Trickstart] Not activated: disabled in Stunt mode. car={vehicle.name}, " +
+					$"countdown={countdown:F3}s, rpm={rpm:F0}/{parameters.rpmMax:F0}.", vehicle);
+				return;
+			}
+
+			float rpmPercent = parameters.rpmMax > 0 ? rpm / parameters.rpmMax * 100 : 0;
+			if (rpm <= parameters.rpmMax * 0.6f || rpm >= parameters.rpmMax * 0.8f)
+			{
+				Debug.Log($"[Trickstart] Not activated: engine rpm is outside the 60-80% window. " +
+					$"car={vehicle.name}, track={F.I?.s_trackName ?? "<unknown>"}, " +
+					$"countdown={countdown:F3}s, rpm={rpm:F0}/{parameters.rpmMax:F0} ({rpmPercent:F1}%).", vehicle);
+				return;
+			}
+
+			startBoostTicks = 180;
+			rpm = parameters.rpmMax;
+			// The original suspension pose uses active turbo to add body pitch
+			// during acceleration; it does not apply a separate heave offset.
+			Debug.Log($"[Trickstart] Activated on N->1 shift. car={vehicle.name}, " +
+				$"track={F.I?.s_trackName ?? "<unknown>"}, countdown={countdown:F3}s, " +
+				$"triggerRpm={rpmPercent:F1}%.", vehicle);
+			if (vehicle.raceBox)
+				vehicle.raceBox.DoOriginalTrickstart();
 		}
 
 		void ShiftToNeutral()
@@ -2665,9 +2807,18 @@ namespace RVP
 				ApplySourceBrakingForce(analogForce);
 		}
 
-		static bool TryFindSourceUnityRail(Vector3 position, out EnergyTunnelPath nearestRail,
+		static bool TryFindSourceUnityRail(Vector3 position, PathCreator assignedPitPath,
+			out EnergyTunnelPath nearestRail,
 			out float nearestPathDistance, out float nearestDistanceSqr)
 		{
+			if (!assignedPitPath)
+			{
+				nearestRail = null;
+				nearestPathDistance = 0;
+				nearestDistanceSqr = float.PositiveInfinity;
+				return false;
+			}
+
 			if (Time.time >= nextSourceUnityRailPathScan)
 			{
 				sourceUnityRailPaths = Object.FindObjectsByType<EnergyTunnelPath>(FindObjectsSortMode.None);
@@ -2680,7 +2831,8 @@ namespace RVP
 			for (int i = 0; i < sourceUnityRailPaths.Length; i++)
 			{
 				EnergyTunnelPath candidate = sourceUnityRailPaths[i];
-				if (!candidate || !candidate.isActiveAndEnabled || !candidate.pitsPathCreator)
+				if (!candidate || !candidate.isActiveAndEnabled ||
+					candidate.pitsPathCreator != assignedPitPath)
 					continue;
 
 				var path = candidate.pitsPathCreator.path;
@@ -3015,6 +3167,7 @@ namespace RVP
 		void UpdateSourceStartBoost(float tickScale)
 		{
 			sourceStartBoostActiveThisTick = false;
+
 			// update_vehicle_start_boost exits for source race mode 3 (stunt).
 			// Time trial is source mode 4 and still uses the start boost.
 			if (F.I && F.I.s_raceType == RaceType.Stunt)
@@ -3033,17 +3186,6 @@ namespace RVP
 				sourceImpactEnergyLossThisTick = 0;
 				return;
 			}
-
-			// Retail race.start_countdown is a 60 Hz countdown and starts its
-			// boost window at 60 ticks. The remake exposes the same start time in
-			// seconds, so use the equivalent +/-9 tick window.
-			float countdown = CountDownSeq.Countdown;
-			if (countdown <= 0 || Mathf.Abs(countdown - 1f) >= 10f / SourceTicksPerSecond ||
-				controlFlags[0] != 0 || controlFlags[2] != 1 || rpm <= parameters.rpmMax * 0.2f)
-				return;
-
-			startBoostTicks = 180;
-			rpm = parameters.rpmMax;
 		}
 
 		bool SourceAiTurboForSpeed()
@@ -3729,8 +3871,14 @@ namespace RVP
 			float front = 0.5f * (sourceSuspension[2] + sourceSuspension[3]);
 			float pitch = -(rear - front) / Mathf.Max(0.001f, parameters.wheelbase);
 			if (sourceTurboActive && Mathf.Abs(sourceSpeed) < 50 && pitch < 0)
+			{
 				pitch *= (turboRpm * 16 / Mathf.Max(1, parameters.turboMax)) /
 					(sourceSpeed * 0.1f + 1);
+				// Keep normal turbo pitch at the retail scale. Trickstart's launch
+				// pose is otherwise too subtle on the remake's smaller car models.
+				if (sourceStartBoostActiveThisTick)
+					pitch *= 2f;
+			}
 			float pitchTarget = pitch * 2.375f;
 			sourceBodyPitch = Mathf.Clamp(pitchTarget + (sourceBodyPitch - pitchTarget) *
 				Mathf.Pow(0.95f, tickScale), -0.3f, 0.3f);
@@ -4063,7 +4211,9 @@ namespace RVP
 			{
 				airTicks = 0;
 				stuntActive = false;
-				pitchAcceleration = yawAcceleration = pitchSpeed = yawSpeed = 0;
+				pitchAcceleration = yawAcceleration = 0;
+				pitchSpeed = yawSpeed = 0;
+				ResetSourceStuntRoll();
 				ResetSourceStuntPhaseHistory();
 				return;
 			}
@@ -4089,47 +4239,84 @@ namespace RVP
 				? 0 : SourceAiAirThrottleInput;
 			float stuntSteeringInput = SourcePlayerControlsSuppressed
 				? 0 : SourceSteerInput;
+			float stuntRollInput = SourcePlayerControlsSuppressed ? 0 : vehicle.rollInput;
 
 			float mass = Mathf.Max(1, parameters.mass);
 			float pitchLimit = Mathf.Min(12, parameters.maxPitchSpeed / mass);
 			float yawLimit = Mathf.Min(12, parameters.maxYawSpeed / mass);
+			float rollLimit = pitchLimit;
+			bool pitchCommand = stuntBrakeInput > 0.5f || stuntThrottleInput > 0.5f;
+			bool rollCommand = vehicle.SGPshiftbutton > 0 && Mathf.Abs(stuntRollInput) > 0.2f;
+			if (!rollCommand && !stuntRollActive)
+				stuntRollInputArmed = true;
+			if (!pitchCommand && rollCommand && stuntRollInputArmed && !stuntRollActive)
+			{
+				stuntRollInputArmed = false;
+				stuntRollActive = true;
+				stuntRollDirection = stuntRollInput > 0 ? -1 : 1;
+				stuntRollProgress = 0;
+				rollAcceleration = rollSpeed = 0;
+			}
+
 			bool pitchProcessed = false;
+			bool rollProcessed = rollCommand || stuntRollActive;
 			bool yawProcessed = false;
-			if (!launchedThisTick && Mathf.Abs(yawSpeed) < 0.2f && stuntBrakeInput > 0.5f)
+			if (!launchedThisTick && pitchCommand && Mathf.Abs(yawSpeed) < 0.2f &&
+				stuntBrakeInput > 0.5f)
 			{
 				pitchAcceleration = Mathf.Min(0.8f, pitchAcceleration + 0.8f * tickScale);
 				pitchSpeed = Mathf.Min(pitchLimit, pitchSpeed + pitchAcceleration * tickScale);
 				pitchProcessed = true;
 			}
-			else if (!launchedThisTick && Mathf.Abs(yawSpeed) < 0.2f && stuntThrottleInput > 0.5f)
+			else if (!launchedThisTick && pitchCommand && Mathf.Abs(yawSpeed) < 0.2f &&
+				stuntThrottleInput > 0.5f)
 			{
 				pitchAcceleration = Mathf.Max(-0.8f, pitchAcceleration - 0.8f * tickScale);
 				pitchSpeed = Mathf.Max(-pitchLimit, pitchSpeed + pitchAcceleration * tickScale);
 				pitchProcessed = true;
 			}
-			if (!launchedThisTick && Mathf.Abs(pitchSpeed) < 0.2f && stuntSteeringInput < -0.5f)
+			if (!launchedThisTick && !pitchCommand && !rollCommand &&
+				Mathf.Abs(pitchSpeed) < 0.2f && stuntSteeringInput < -0.5f)
 			{
 				yawAcceleration = Mathf.Min(0.8f, yawAcceleration + 0.8f * tickScale);
 				yawSpeed = Mathf.Min(yawLimit, yawSpeed + yawAcceleration * tickScale);
 				yawProcessed = true;
 			}
-			else if (!launchedThisTick && Mathf.Abs(pitchSpeed) < 0.2f && stuntSteeringInput > 0.5f)
+			else if (!launchedThisTick && !pitchCommand && !rollCommand &&
+				Mathf.Abs(pitchSpeed) < 0.2f && stuntSteeringInput > 0.5f)
 			{
 				yawAcceleration = Mathf.Max(-0.8f, yawAcceleration - 0.8f * tickScale);
 				yawSpeed = Mathf.Max(-yawLimit, yawSpeed + yawAcceleration * tickScale);
 				yawProcessed = true;
 			}
-			if (!launchedThisTick && !pitchProcessed && !yawProcessed)
+			if (!launchedThisTick && !pitchProcessed && !rollProcessed && !yawProcessed)
 			{
-				pitchAcceleration = yawAcceleration = 0;
+				pitchAcceleration = yawAcceleration = rollAcceleration = 0;
 				AssistAirPitchAndYaw();
 			}
 
-			// The source axis matrices are left-handed relative to Unity's quaternion
-			// rotations, so convert both air-rotation axes by negating their angles.
+			float rollAngleThisTick = 0;
+			if (stuntRollActive && !launchedThisTick)
+			{
+				rollAcceleration = Mathf.Min(0.8f, rollAcceleration + 0.8f * tickScale);
+				rollSpeed = Mathf.Min(rollLimit, rollSpeed + rollAcceleration * tickScale);
+				float remainingRoll = Mathf.Max(0, 360 - stuntRollProgress);
+				float requestedRoll = Mathf.Min(remainingRoll, rollSpeed * tickScale);
+				rollAngleThisTick = stuntRollDirection * requestedRoll;
+				stuntRollProgress += requestedRoll;
+				if (stuntRollProgress >= 360)
+				{
+					stuntRollActive = false;
+					stuntRollDirection = 0;
+					rollAcceleration = rollSpeed = 0;
+				}
+			}
+
+			// Match SGP_Evo's pitch/roll signs; source steering yaw remains left-handed.
 			Quaternion rotation = stepRotation;
-			rotation *= Quaternion.AngleAxis(-pitchSpeed * tickScale, Vector3.right);
+			rotation *= Quaternion.AngleAxis(pitchSpeed * tickScale, Vector3.right);
 			rotation *= Quaternion.AngleAxis(-yawSpeed * tickScale, Vector3.up);
+			rotation *= Quaternion.AngleAxis(rollAngleThisTick, Vector3.forward);
 			stepRotation = rotation;
 			stepRotationChanged = true;
 		}

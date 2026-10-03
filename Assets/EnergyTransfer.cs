@@ -17,7 +17,10 @@ public class EnergyTransfer : MonoBehaviour
 		RaceManager.I.hud.infoText.AddMessage(new Message(vp.name + " " + F.I.LocStr("IS RECHARGING!"), BottomInfoType.PIT_IN));
 		vp.PlayBatteryLoadingFXs(true);
 		var pitsPathCreator = transform.parent.parent.GetComponent<EnergyTunnelPath>().pitsPathCreator;
-		vp.transform.GetComponent<FollowAI>().DriveThruPits(pitsPathCreator);
+		// The player keeps control through the charging trigger. Their autodrive
+		// starts at the dedicated PitsTriggerAutoDrive farther along the pit route.
+		if (vp != RaceManager.I.playerCar)
+			vp.followAI.DriveThruPits(pitsPathCreator);
 		pitsBuzzing.volume = 1;
 		vp.customCam = elecCam;
 	}

@@ -104,6 +104,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cameraPos: {fileID: 4758209406886637518}
+  allowPlayerAutoDrive: 0
 --- !u!1 &3172409261808702069
 GameObject:
   m_ObjectHideFlags: 0

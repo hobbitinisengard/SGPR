@@ -86,6 +86,7 @@ namespace RVP
 		public bool overRoad { get; private set; }
 
 		public bool Pitting { get { return pitsPathCreator != null; } }
+		public PathCreator PitsPathCreator { get { return pitsPathCreator; } }
 		public ReplayCam currentCam { get { return replayCams[curReplayPointIdx]; } }
 
 		public float univProgress;

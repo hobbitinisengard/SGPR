@@ -681,7 +681,11 @@ namespace RVP
 			OnNameChanged();
 			OnSponsorChanged();
 
-			followAI.SetCPU(char.IsDigit(name[2]));
+			bool isLocalPlayer = Owner && string.Equals(name,
+				F.I.playerData.playerName, StringComparison.Ordinal);
+			bool isCpuCar = !isLocalPlayer && name != null && name.Length > 2 &&
+				char.IsDigit(name[2]);
+			followAI.SetCPU(isCpuCar);
 
 			yield return new WaitForSeconds(.5f); // wait for all the components to load
 
@@ -920,6 +924,14 @@ namespace RVP
 		// Set brake input
 		public void SetBrake(float f)
 		{
+			if (UsesOriginalPhysics)
+			{
+				// Source-game stunt input is read directly by OriginalVehiclePhysics.
+				// Do not apply the remake's brake-pressure ramp to flips or braking.
+				brakeStart = 0;
+				brakeInput = Mathf.Clamp01(f);
+				return;
+			}
 			if (followAI.selfDriving)
 			{
 				brakeInput = f;
@@ -957,7 +969,8 @@ namespace RVP
 		{
 			if (UsesOriginalPhysics)
 			{
-				originalVehiclePhysics.SetStuntButton(f);
+				// Original stunt launch is armed by the SGP shift input below.
+				// Bunnyhop is a separate remake action and must not start flips.
 				return;
 			}
 			if (f > 0)
@@ -1017,6 +1030,8 @@ namespace RVP
 		public void SetSGPShift(int b)
 		{
 			SGPshiftbutton = b;
+			if (UsesOriginalPhysics)
+				originalVehiclePhysics.SetStuntButton(b);
 		}
 		public void Switchlights()
 		{
@@ -1041,7 +1056,7 @@ namespace RVP
 		// Set roll rotate input
 		public void SetRoll(float f)
 		{
-			rollInput = (int)Mathf.Clamp(f, -1, 1);
+			rollInput = Mathf.Clamp(f, -1, 1);
 		}
 
 		// Do upshift input

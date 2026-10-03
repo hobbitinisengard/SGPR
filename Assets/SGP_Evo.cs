@@ -155,7 +155,13 @@ public class SGP_Evo : MonoBehaviour
 	VehicleParent vp;
 	float shiftPressTime;
 	int prevSGPShiftButton;
-	public bool stunting { get; private set; }
+	bool legacyStunting;
+	public bool stunting
+	{
+		get => vp && vp.UsesOriginalPhysics && vp.originalVehiclePhysics != null
+			? vp.originalVehiclePhysics.StuntActive : legacyStunting;
+		private set => legacyStunting = value;
+	}
 	const float maxTimeToInit = 1f;
 	RotationDampStruct[] r;
 	public float rX_delta;
