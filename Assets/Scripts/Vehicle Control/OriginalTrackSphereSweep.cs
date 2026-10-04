@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Unity.Profiling;
 
 namespace RVP
 {
@@ -20,6 +21,14 @@ namespace RVP
 		static readonly HashSet<Mesh> UnreadableMeshes = new();
 		static readonly HashSet<int> ProcessedColliderIds = new();
 		static readonly List<int> CandidateTriangles = new();
+		static readonly List<SweepCollider> SweepColliders = new();
+		static readonly Dictionary<int, ColliderWorldMesh> ColliderWorldMeshes = new();
+		static readonly ProfilerMarker CandidateCollectionMarker =
+			new ProfilerMarker("RVP.OriginalPhysics.TrackMeshSweep.CandidateCollection");
+		static readonly ProfilerMarker ColliderFilteringMarker =
+			new ProfilerMarker("RVP.OriginalPhysics.TrackMeshSweep.ColliderFiltering");
+		static readonly ProfilerMarker TriangleTestMarker =
+			new ProfilerMarker("RVP.OriginalPhysics.TrackMeshSweep.TriangleTests");
 
 		struct Triangle
 		{
@@ -49,6 +58,22 @@ namespace RVP
 				this.triangles = triangles;
 				root = triangles.Length == 0 ? null : BuildNode(triangles, 0, triangles.Length);
 			}
+		}
+
+		sealed class ColliderWorldMesh
+		{
+			public Mesh mesh;
+			public Matrix4x4 localToWorld;
+			public Vector3[] vertices;
+		}
+
+		struct SweepCollider
+		{
+			public MeshCollider collider;
+			public MeshTree tree;
+			public Matrix4x4 worldToLocal;
+			public Vector3[] worldVertices;
+			public Vector3 localRadiusExpansion;
 		}
 
 		sealed class CenterComparer : IComparer<Triangle>
@@ -311,6 +336,36 @@ namespace RVP
 			}
 		}
 
+		static bool MatricesExactlyMatch(Matrix4x4 a, Matrix4x4 b)
+		{
+			for (int i = 0; i < 16; i++)
+				if (a[i] != b[i])
+					return false;
+			return true;
+		}
+
+		static Vector3[] GetWorldVertices(MeshCollider collider, MeshTree tree, Matrix4x4 localToWorld)
+		{
+			int colliderId = collider.GetInstanceID();
+			Mesh mesh = collider.sharedMesh;
+			if (!ColliderWorldMeshes.TryGetValue(colliderId, out ColliderWorldMesh cache) ||
+				cache.mesh != mesh || !MatricesExactlyMatch(cache.localToWorld, localToWorld))
+			{
+				Vector3[] worldVertices = new Vector3[tree.vertices.Length];
+				for (int i = 0; i < worldVertices.Length; i++)
+					worldVertices[i] = localToWorld.MultiplyPoint3x4(tree.vertices[i]);
+
+				if (cache == null)
+					cache = new ColliderWorldMesh();
+				cache.mesh = mesh;
+				cache.localToWorld = localToWorld;
+				cache.vertices = worldVertices;
+				ColliderWorldMeshes[colliderId] = cache;
+			}
+
+			return cache.vertices;
+		}
+
 		static Node BuildNode(Triangle[] triangles, int first, int count)
 		{
 			Bounds bounds = triangles[first].bounds;
@@ -380,15 +435,11 @@ namespace RVP
 				new Vector3(Mathf.Abs(movement.x), Mathf.Abs(movement.y), Mathf.Abs(movement.z)) +
 				Vector3.one * (2 * (radius + PlaneTolerance)));
 
-			for (int stepIndex = 1; stepIndex <= steps; stepIndex++)
+			// Filter track colliders once per complete sweep. The previous loop
+			// repeated collider state, layer, and bounds checks for every substep.
+			SweepColliders.Clear();
+			using (ColliderFilteringMarker.Auto())
 			{
-				Vector3 segmentStart = start + movement * ((stepIndex - 1f) / steps);
-				Vector3 segmentEnd = start + movement * (stepIndex / (float)steps);
-				float segmentLength = Vector3.Distance(segmentStart, segmentEnd);
-				float closestDistance = segmentLength;
-				Contact closestContact = default;
-				Collider closestCollider = null;
-
 				foreach (Collider candidate in colliders)
 				{
 					if (!candidate || candidate.isTrigger || !candidate.enabled ||
@@ -403,35 +454,65 @@ namespace RVP
 						continue;
 
 					Transform colliderTransform = candidate.transform;
-					float minScale = MinAbsoluteScale(colliderTransform.lossyScale);
-					if (minScale <= 0.000001f)
+					if (MinAbsoluteScale(colliderTransform.lossyScale) <= 0.000001f)
 						continue;
+
 					ProcessedColliderIds.Add(candidate.GetInstanceID());
 					Matrix4x4 worldToLocal = colliderTransform.worldToLocalMatrix;
-					Vector3 localStart = worldToLocal.MultiplyPoint3x4(segmentStart);
-					Vector3 localEnd = worldToLocal.MultiplyPoint3x4(segmentEnd);
+					Matrix4x4 localToWorld = colliderTransform.localToWorldMatrix;
+					SweepColliders.Add(new SweepCollider
+					{
+						collider = meshCollider,
+						tree = tree,
+						worldToLocal = worldToLocal,
+					worldVertices = GetWorldVertices(meshCollider, tree, localToWorld),
+					localRadiusExpansion = WorldRadiusInLocalBounds(worldToLocal, radius + PlaneTolerance) * 2
+					});
+				}
+			}
+
+			for (int stepIndex = 1; stepIndex <= steps; stepIndex++)
+			{
+				Vector3 segmentStart = start + movement * ((stepIndex - 1f) / steps);
+				Vector3 segmentEnd = start + movement * (stepIndex / (float)steps);
+				float segmentLength = Vector3.Distance(segmentStart, segmentEnd);
+				float closestDistance = segmentLength;
+				Contact closestContact = default;
+				Collider closestCollider = null;
+
+				foreach (SweepCollider sweepCollider in SweepColliders)
+				{
+					MeshCollider candidate = sweepCollider.collider;
+					MeshTree tree = sweepCollider.tree;
+					Vector3[] worldVertices = sweepCollider.worldVertices;
+					Vector3 localStart = sweepCollider.worldToLocal.MultiplyPoint3x4(segmentStart);
+					Vector3 localEnd = sweepCollider.worldToLocal.MultiplyPoint3x4(segmentEnd);
 					Bounds localQuery = new(localStart, Vector3.zero);
 					localQuery.Encapsulate(localEnd);
-					localQuery.Expand(WorldRadiusInLocalBounds(worldToLocal, radius + PlaneTolerance) * 2);
+					localQuery.Expand(sweepCollider.localRadiusExpansion);
 					CandidateTriangles.Clear();
-					Collect(tree.root, localQuery, CandidateTriangles);
+					using (CandidateCollectionMarker.Auto())
+						Collect(tree.root, localQuery, CandidateTriangles);
 
 					SegmentQuery query = new(segmentStart, segmentEnd, direction, radius);
-					foreach (int triangleSlot in CandidateTriangles)
+					using (TriangleTestMarker.Auto())
 					{
-						Triangle triangle = tree.triangles[triangleSlot];
-						Vector3 a = colliderTransform.TransformPoint(tree.vertices[triangle.a]);
-						Vector3 b = colliderTransform.TransformPoint(tree.vertices[triangle.b]);
-						Vector3 c = colliderTransform.TransformPoint(tree.vertices[triangle.c]);
-						if (!query.TestTriangle(a, b, c, triangle.sourceTriangleIndex, out Contact contact))
-							continue;
+						foreach (int triangleSlot in CandidateTriangles)
+						{
+							Triangle triangle = tree.triangles[triangleSlot];
+							Vector3 a = worldVertices[triangle.a];
+							Vector3 b = worldVertices[triangle.b];
+							Vector3 c = worldVertices[triangle.c];
+							if (!query.TestTriangle(a, b, c, triangle.sourceTriangleIndex, out Contact contact))
+								continue;
 
-						float projected = Vector3.Dot(direction, contact.center - segmentStart);
-						if (projected < -SourceDistanceTolerance || !(projected < closestDistance))
-							continue;
-						closestDistance = projected;
-						closestContact = contact;
-						closestCollider = candidate;
+							float projected = Vector3.Dot(direction, contact.center - segmentStart);
+							if (projected < -SourceDistanceTolerance || !(projected < closestDistance))
+								continue;
+							closestDistance = projected;
+							closestContact = contact;
+							closestCollider = candidate;
+						}
 					}
 				}
 

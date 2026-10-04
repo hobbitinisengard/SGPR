@@ -129,7 +129,7 @@ namespace RVP
 		{
 			if (enabled && mode == Mode.Follow && !F.I.chat.texting)
 			{
-				height = camerasLH[curCameraLH].y;// + vp.cameraheightOffset;
+				height = camerasLH[curCameraLH].y;
 				targetCamCarDistance = camerasLH[curCameraLH].x;
 			}
 		}
@@ -163,7 +163,8 @@ namespace RVP
 				lookObj = lookTemp.transform;
 			}
 			vp = car;
-			height = camerasLH[curCameraLH].y;// vp.cameraheightOffset;
+			height = camerasLH[curCameraLH].y;
+			targetCamCarDistance = camerasLH[curCameraLH].x;
 			forwardLook = -vp.tr.up;
 			upLook = vp.tr.forward;
 			targetBody = vp.tr.GetComponent<Rigidbody>();
@@ -190,9 +191,12 @@ namespace RVP
 			if (!vp)
 				return Vector3.zero;
 
-			// Follow the visible chassis pivot. It moves with the visual model alignment
-			// and body heave, while the Rigidbody root remains the physics reference.
-			return vp.bodyObj ? vp.bodyObj.transform.position : vp.tr.position;
+			// Keep scripted tunnel cameras aimed using their existing visible-body
+			// target. Normal driving follows the vehicle root, as before the physics
+			// body pose was separated from the root.
+			if (vp.customCam && vp.bodyObj)
+				return vp.bodyObj.transform.position;
+			return vp.tr.position;
 		}
 		private void Update()
 		{

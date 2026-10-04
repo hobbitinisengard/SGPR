@@ -1,29 +1,31 @@
 using Newtonsoft.Json;
 using RVP;
+using SimpleFileBrowser;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Audio;
-using SimpleFileBrowser;
-using System.Collections;
-using UnityEditor;
+
+// Keep these values aligned with ConfigEnumSelector values serialized in Demo.unity.
 public enum PartType
 {
 	Suspension,
-	Bms,
-	Battery,
-	Gears,
+	Brakes,
+	Fuel,
+	Gearbox,
 	Chassis,
 	Engine,
-	Boost,
-	Tyre,
-	Drive,
-	Honk,
+	Turbo,
+	Tyres,
+	Steering,
+	Launch,
 	None
 }
+
 public class ComponentPanel : MonoBehaviour
 {
 	VehicleParent vp;
@@ -31,27 +33,28 @@ public class ComponentPanel : MonoBehaviour
 	public GameObject mainMenu;
 	public AudioMixerSnapshot paused;
 	public AudioMixerSnapshot unPaused;
-	/// <summary>
-	/// shows component name or carConfig name if no component is selected
-	/// </summary>
 	public TextMeshProUGUI bottomNameText;
 	public GameObject YouSurePanel;
 	PartType selectedPart;
-	private void OnEnable()
+	readonly List<PhysicsValueBinding> activeBindings = new();
+
+	static readonly string[] GroupNames =
+	{
+		"Suspension", "Brakes", "Fuel", "Gearbox", "Chassis", "Engine", "Turbo", "Tyres", "Steering", "Launch"
+	};
+
+	void OnEnable()
 	{
 		F.I.escRef.action.performed += OnEscPressed;
 		Cursor.visible = true;
 		paused.TransitionTo(0);
 		Time.timeScale = 0;
 		F.I.gamePaused = true;
-		if(vp == null)
+		if (vp == null)
 			NewSetupButton();
 	}
 
-	void OnEscPressed(UnityEngine.InputSystem.InputAction.CallbackContext obj)
-	{
-		BackToComponentMenu();
-	}
+	void OnEscPressed(UnityEngine.InputSystem.InputAction.CallbackContext obj) => BackToComponentMenu();
 
 	void OnDisable()
 	{
@@ -68,333 +71,330 @@ public class ComponentPanel : MonoBehaviour
 		YouSurePanel.SetActive(false);
 		mainMenu.SetActive(true);
 		settersPanel.SetActive(false);
-		if (mainMenu.activeSelf)
-		{
-			bottomNameText.text = vp.carConfig.name;
-		}
+		bottomNameText.text = vp.carConfig.name;
 		PopulateCarConfigTable();
 	}
 
-	public static void AddPart(string filepath)
-	{
-		string jsonText = File.ReadAllText(filepath);
-		string partName = Path.GetFileNameWithoutExtension(filepath);
-		PartSavable part;
-		if (filepath.EndsWith("suscfg"))
-			part = JsonConvert.DeserializeObject<SuspensionSavable>(jsonText);
-		else if (filepath.EndsWith("bmscfg"))
-			part = JsonConvert.DeserializeObject<BmsSavable>(jsonText);
-		else if (filepath.EndsWith("batcfg"))
-			part = JsonConvert.DeserializeObject<BatterySavable>(jsonText);
-		else if (filepath.EndsWith("engcfg"))
-			part = JsonConvert.DeserializeObject<EngineSavable>(jsonText);
-		else if (filepath.EndsWith("chacfg"))
-			part = JsonConvert.DeserializeObject<ChassisSavable>(jsonText);
-		else if (filepath.EndsWith("grscfg"))
-			part = JsonConvert.DeserializeObject<GearboxSavable>(jsonText);
-		else if (filepath.EndsWith("jetcfg"))
-			part = JsonConvert.DeserializeObject<BoostSavable>(jsonText);
-		else if (filepath.EndsWith("tyrcfg"))
-			part = JsonConvert.DeserializeObject<TyreSavable>(jsonText);
-		else if (filepath.EndsWith("drvcfg"))
-			part = JsonConvert.DeserializeObject<DriveSavable>(jsonText);
-		else if (filepath.EndsWith("hnkcfg"))
-			part = JsonConvert.DeserializeObject<HonkSavable>(jsonText);
-		else
-			return;
-		F.I.carParts.Add(partName, part);
-	}
 	public void OpenComponentConfigMenu(ConfigEnumSelector type)
 	{
+		selectedPart = type.componentType;
 		mainMenu.SetActive(false);
 		settersPanel.SetActive(true);
-
-		// part can be custom or external
-		selectedPart = type.componentType;
-		bottomNameText.text = vp.carConfig.GetPartName(selectedPart);
-
+		bottomNameText.text = GroupName(selectedPart);
 		PopulatePropertyTable();
 	}
 
+	// Existing Unity button events pass the selected parameter group to LoadConfig.
+	public void LoadConfig(ConfigEnumSelector type) => OpenComponentConfigMenu(type);
+
 	IEnumerator ShowLoadDialogCoroutine()
 	{
-		// Show a load file dialog and wait for a response from user
-		// Load file/folder: file, Allow multiple selection: true
-		// Initial path: default (Documents), Initial filename: empty
-		// Title: "Load File", Submit button text: "Load"
-		yield return FileBrowser.WaitForLoadDialog(FileBrowser.PickMode.Files, false, F.I.partsPath, null, 
-			F.I.LocStr("Select configuration file.."), F.I.LocStr("LOAD"));
-
-		// Dialog is closed
-		Debug.Log(FileBrowser.Success); // (FileBrowser.Success) - whether the user has selected some files or cancelled the operation 
-
+		yield return FileBrowser.WaitForLoadDialog(FileBrowser.PickMode.Files, false,
+			F.I.partsPath, null, F.I.LocStr("Select car physics configuration.."), F.I.LocStr("LOAD"));
 		if (FileBrowser.Success)
 			LoadFromFile(FileBrowser.Result);
 	}
 
 	public void LoadFromFile()
 	{
-		if (!FileBrowser.IsOpen)
+		if (FileBrowser.IsOpen)
+			return;
+
+		FileBrowser.SetFilters(true, new[]
 		{
-			string[] extensions = F.I.partInfos.Select(i => i.fileExtension).ToArray();
-			var extensionFilter = new[] {
-			 new FileBrowser.Filter(F.I.LocStr("SGPR car components configuration files"), extensions)};
-			FileBrowser.SetFilters(true, extensionFilter);
-			StartCoroutine(ShowLoadDialogCoroutine());
-		}
+			new FileBrowser.Filter("Original vehicle physics configuration", "." + CarConfig.extension)
+		});
+		StartCoroutine(ShowLoadDialogCoroutine());
 	}
+
 	public void LoadFromFile(string[] filepaths)
 	{
+		if (filepaths == null || filepaths.Length == 0 || string.IsNullOrWhiteSpace(filepaths[0]))
+			return;
+
 		string filepath = filepaths[0];
-		if (filepath.Length > 0)
+		if (!filepath.EndsWith("." + CarConfig.extension, StringComparison.OrdinalIgnoreCase))
 		{
-			if (filepath.EndsWith("carcfg"))
-			{
-				// Load carcfg menu
-				if (filepath.Length > 0)
-				{
-					string jsonText = File.ReadAllText(filepath);
-					bottomNameText.text = Path.GetFileNameWithoutExtension(filepath);
-					vp.carConfig = new CarConfig(bottomNameText.text, jsonText);
-					vp.carConfig.Apply();
-					mainMenu.SetActive(true);
-					settersPanel.SetActive(false);
-
-					PopulateCarConfigTable();
-				}
-			}
-			else
-			{ // Load component menu
-				if (filepath.Length > 0)
-				{
-					selectedPart = PartType.None;
-					for (int i = 0; i < F.I.partInfos.Length - 1; ++i)
-					{
-						if (filepath.EndsWith(F.I.partInfos[i].fileExtension))
-						{
-							selectedPart = (PartType)i;
-							break;
-						}
-					}
-					if (selectedPart == PartType.None)
-					{
-						Debug.LogError("Didn't find componentType");
-						return;
-					}
-					bottomNameText.text = Path.GetFileNameWithoutExtension(filepath);
-					vp.carConfig.SetPartTo(selectedPart, bottomNameText.text);
-					mainMenu.SetActive(false);
-					settersPanel.SetActive(true);
-
-					PopulatePropertyTable();
-				}
-			}
+			Debug.LogWarning("Only original-physics .carcfg files can be loaded.", this);
+			return;
 		}
+
+		CarConfig loadedConfig = new(Path.GetFileNameWithoutExtension(filepath), File.ReadAllText(filepath));
+		if (!OriginalVehiclePhysics.IsUsable(loadedConfig.originalPhysics))
+		{
+			Debug.LogWarning("The selected .carcfg does not contain a complete original-physics configuration.", this);
+			return;
+		}
+
+		vp.carConfig = loadedConfig;
+		vp.carConfig.Apply(vp);
+		mainMenu.SetActive(true);
+		settersPanel.SetActive(false);
+		bottomNameText.text = vp.carConfig.name;
+		PopulateCarConfigTable();
 	}
-	private void PopulateCarConfigTable()
+
+	void PopulateCarConfigTable()
 	{
-		for (int i = 0; i < mainMenu.transform.childCount; ++i)
-		{ // dropdown has only external parts.
-			string[] files = Directory.GetFiles(
-				F.I.partsPath, "*." + F.I.partInfos[i].fileExtension);
+		if (!mainMenu)
+			return;
 
-			int choiceIdx = -1;
-			string selectedPartName = vp.carConfig.GetPartName((PartType)i);
-			for (int j = 0; j < files.Length; ++j)
-			{
-				files[j] = Path.GetFileNameWithoutExtension(files[j]);
-				if (choiceIdx == -1 && selectedPartName.Contains(files[j]))
-					choiceIdx = j;
-			}
-			mainMenu.transform.GetChild(i).GetComponent<ComponentSetter>()
-				.Initialize((PartType)i, files.ToList(), choiceIdx, EditCarConfigCallback);
+		int groupCount = Enum.GetValues(typeof(PartType)).Length - 1;
+		for (int i = 0; i < mainMenu.transform.childCount && i < groupCount; i++)
+		{
+			ComponentSetter setter = mainMenu.transform.GetChild(i).GetComponent<ComponentSetter>();
+			if (setter)
+				setter.InitializeOriginalPhysics(GroupName((PartType)i));
 		}
 	}
+
 	public void PopulatePropertyTable()
 	{
-		for (int i = 0; i < settersPanel.transform.childCount; ++i)
+		for (int i = settersPanel.transform.childCount - 1; i >= 0; i--)
 			Destroy(settersPanel.transform.GetChild(i).gameObject);
-		PartSavable curPart = vp.carConfig.GetPartReadonly(selectedPart);
-		var fields = curPart.GetType().GetFields();
-		GameObject propertySetter = Resources.Load<GameObject>("prefabs/SimpleSetter");
-		foreach (var field in fields)
+		activeBindings.Clear();
+
+		OriginalVehiclePhysicsConfig config = vp.carConfig?.originalPhysics;
+		if (!OriginalVehiclePhysics.IsUsable(config))
 		{
-			PropertySetter instantiatedSetter = Instantiate(propertySetter, settersPanel.transform).GetComponent<PropertySetter>();
-			float value = (float)field.GetValue(curPart);
-			instantiatedSetter.Initialize(field.Name, value, EditPartCallback);
+			Debug.LogError("The active car has no valid original-physics configuration.", this);
+			return;
 		}
+		BuildBindings(config, selectedPart);
+		GameObject propertySetter = Resources.Load<GameObject>("prefabs/SimpleSetter");
+		foreach (PhysicsValueBinding binding in activeBindings)
+		{
+			PropertySetter setter = Instantiate(propertySetter, settersPanel.transform).GetComponent<PropertySetter>();
+			setter.Initialize(binding.Name, binding.Read(), value => EditPhysicsValue(binding, value));
+		}
+	}
+
+	void BuildBindings(OriginalVehiclePhysicsConfig config, PartType group)
+	{
+		switch (group)
+		{
+			case PartType.Suspension:
+				AddRootField(config, "rideHeight");
+				AddTyreFields(config, "travelIn", "dampingIn", "stiffnessIn", "travelOut", "dampingOut", "stiffnessOut");
+				break;
+			case PartType.Brakes:
+				AddRootField(config, "brakeBias", "brakeAcceleration");
+				AddRootArray(config, "frictionCurve");
+				break;
+			case PartType.Fuel:
+				AddRootField(config, "fuelCapacity", "fuelUnitMass", "fuelConsumption", "refuelRate");
+				AddRootArray(config, "consumptionCurve");
+				break;
+			case PartType.Gearbox:
+				AddRootField(config, "driveMode", "gearCount", "finalDrive", "shiftTime", "efficiency", "powerSplit");
+				AddRootArray(config, "ratios");
+				break;
+			case PartType.Chassis:
+				AddRootField(config, "mass", "comA", "comB", "comHeight", "wheelbase", "trackFront", "trackRear",
+					"length", "width", "height", "dragCoefficient", "liftCoefficient", "frontalArea");
+				break;
+			case PartType.Engine:
+				AddRootField(config, "rpmIdle", "rpmLimit", "rpmMax", "engineDecay", "maxTorque");
+				AddRootMatrix(config, "torqueCurves");
+				break;
+			case PartType.Turbo:
+				AddRootField(config, "turboAcceleration", "turboMax", "turboDecay", "turboScale",
+					"turboConsumption", "turboEnergyThreshold");
+				AddRootArray(config, "turboCurve");
+				break;
+			case PartType.Tyres:
+				AddTyreFields(config, "radius", "pressure", "staticFriction", "kineticFriction");
+				break;
+			case PartType.Steering:
+				AddRootField(config, "steeringMax", "steeringSensitivity", "steeringAcceleration");
+				AddRootArray(config, "steeringCurve", "digitalSteering", "digitalBrake", "analogSteering",
+					"analogBrake", "velocitySteering");
+				break;
+			case PartType.Launch:
+				AddRootField(config, "launchTime", "launchTolerance", "launchSpeed", "maxPitchSpeed", "maxYawSpeed");
+				break;
+		}
+	}
+
+	void AddRootField(OriginalVehiclePhysicsConfig config, params string[] fieldNames)
+	{
+		foreach (string fieldName in fieldNames)
+			AddNumericField(config, typeof(OriginalVehiclePhysicsConfig).GetField(fieldName), Humanize(fieldName));
+	}
+
+	void AddRootArray(OriginalVehiclePhysicsConfig config, params string[] fieldNames)
+	{
+		foreach (string fieldName in fieldNames)
+		{
+			FieldInfo field = typeof(OriginalVehiclePhysicsConfig).GetField(fieldName);
+			if (field?.GetValue(config) is not float[] values)
+				continue;
+
+			for (int i = 0; i < values.Length; i++)
+			{
+				int index = i;
+				string label = ArrayValueName(fieldName, index);
+				activeBindings.Add(new PhysicsValueBinding(label, () => values[index], value => values[index] = value));
+			}
+		}
+	}
+
+	void AddRootMatrix(OriginalVehiclePhysicsConfig config, string fieldName)
+	{
+		FieldInfo field = typeof(OriginalVehiclePhysicsConfig).GetField(fieldName);
+		if (field?.GetValue(config) is not float[][] values)
+			return;
+
+		for (int curve = 0; curve < values.Length; curve++)
+		{
+			float[] samples = values[curve];
+			if (samples == null)
+				continue;
+			for (int sample = 0; sample < samples.Length; sample++)
+			{
+				int curveIndex = curve;
+				int sampleIndex = sample;
+				activeBindings.Add(new PhysicsValueBinding(
+					$"Torque curve {curveIndex} [{sampleIndex}]",
+					() => values[curveIndex][sampleIndex],
+					value => values[curveIndex][sampleIndex] = value));
+			}
+		}
+	}
+
+	void AddTyreFields(OriginalVehiclePhysicsConfig config, params string[] fieldNames)
+	{
+		if (config.tyres == null)
+			return;
+
+		string[] wheelNames = { "Rear left", "Rear right", "Front left", "Front right" };
+		for (int wheel = 0; wheel < config.tyres.Length && wheel < wheelNames.Length; wheel++)
+		{
+			OriginalTyrePhysicsConfig tyre = config.tyres[wheel];
+			if (tyre == null)
+				continue;
+			foreach (string fieldName in fieldNames)
+				AddNumericField(tyre, typeof(OriginalTyrePhysicsConfig).GetField(fieldName),
+					$"{wheelNames[wheel]} {Humanize(fieldName)}");
+		}
+	}
+
+	void AddNumericField(object target, FieldInfo field, string label)
+	{
+		if (target == null || field == null)
+			return;
+
+		if (field.FieldType == typeof(float))
+		{
+			activeBindings.Add(new PhysicsValueBinding(label,
+				() => (float)field.GetValue(target), value => field.SetValue(target, value)));
+		}
+		else if (field.FieldType == typeof(int))
+		{
+			activeBindings.Add(new PhysicsValueBinding(label,
+				() => (int)field.GetValue(target), value => field.SetValue(target, Mathf.RoundToInt(value))));
+		}
+	}
+
+	void EditPhysicsValue(PhysicsValueBinding binding, float value)
+	{
+		binding.Write(value);
+		vp.carConfig.MarkModified();
+		vp.RefreshOriginalPhysicsParameters();
+		bottomNameText.text = "*" + vp.carConfig.name;
 	}
 
 	public void BackToComponentMenu()
 	{
 		if (mainMenu.activeSelf)
 			return;
-		F.I.ReloadCarPartsData();
+
 		PopulateCarConfigTable();
 		bottomNameText.text = (vp.carConfig.Modified ? "*" : "") + vp.carConfig.name;
 		settersPanel.SetActive(false);
 		mainMenu.SetActive(true);
-
-		for (int i = 0; i < settersPanel.transform.childCount; ++i)
+		activeBindings.Clear();
+		for (int i = settersPanel.transform.childCount - 1; i >= 0; i--)
 			Destroy(settersPanel.transform.GetChild(i).gameObject);
 	}
-	public void SaveConfig()
-	{
-		StartCoroutine(SaveConfigCo());
-	}
+
+	public void SaveConfig() => StartCoroutine(SaveConfigCo());
+
 	IEnumerator SaveConfigCo()
 	{
-		if (!FileBrowser.IsOpen)
+		if (FileBrowser.IsOpen)
+			yield break;
+
+		FileBrowser.SetFilters(false, new[]
 		{
-			if (mainMenu.activeSelf)
-			{ // saving car configuration
-				var extensionFilter = new[] { new FileBrowser.Filter("SGPR car config file", CarConfig.extension) };
-				FileBrowser.SetFilters(false, extensionFilter);
+			new FileBrowser.Filter("Original vehicle physics configuration", "." + CarConfig.extension)
+		});
+		yield return FileBrowser.WaitForSaveDialog(FileBrowser.PickMode.Files, false,
+			F.I.partsPath, vp.carConfig.name, F.I.LocStr("Save car config file.."), F.I.LocStr("SAVE"));
 
-				yield return FileBrowser.WaitForSaveDialog(FileBrowser.PickMode.Files, false, F.I.partsPath, vp.carConfig.name, F.I.LocStr("Save car config file.."), F.I.LocStr("SAVE"));
+		if (!FileBrowser.Success || FileBrowser.Result == null || FileBrowser.Result.Length == 0)
+			yield break;
 
-				if (FileBrowser.Success)
-				{
-					string filepath = FileBrowser.Result[0];
-					if (filepath.Length > 3)
-					{
-						vp.carConfig.PrepareForSave();
-						string serializedJson = JsonConvert.SerializeObject(vp.carConfig, Formatting.Indented);
-						File.WriteAllText(filepath, serializedJson);
+		string filepath = FileBrowser.Result[0];
+		if (string.IsNullOrWhiteSpace(filepath))
+			yield break;
+		if (!filepath.EndsWith("." + CarConfig.extension, StringComparison.OrdinalIgnoreCase))
+			filepath += "." + CarConfig.extension;
 
-						bottomNameText.text = Path.GetFileNameWithoutExtension(filepath);
-						vp.carConfig.name = bottomNameText.text;
-						if (bottomNameText.text.Contains("car"))
-							F.I.ReloadCarConfigs();
-					}
-				}
-			}
-			else
-			{ // saving part
-				var extensionFilter = new[] { new FileBrowser.Filter("SGPR Car part", F.I.partInfos[(int)selectedPart].fileExtension) };
-				FileBrowser.SetFilters(false, extensionFilter);
-
-				yield return FileBrowser.WaitForSaveDialog(FileBrowser.PickMode.Files, false, F.I.partsPath, vp.carConfig.GetPartName(selectedPart), F.I.LocStr("Save part file.."), F.I.LocStr("SAVE"));
-				if (FileBrowser.Success)
-				{
-					string filepath = FileBrowser.Result[0];
-					if (filepath.Length > 3)
-					{
-						var curPart = vp.carConfig.GetPart(selectedPart);
-						string serializedJson = JsonConvert.SerializeObject(curPart, Formatting.Indented);
-						File.WriteAllText(filepath, serializedJson);
-						if (!File.Exists(filepath))
-							F.I.carParts.Add(bottomNameText.text, curPart);
-
-						bottomNameText.text = Path.GetFileNameWithoutExtension(filepath);
-						vp.carConfig.SetPartTo(selectedPart, bottomNameText.text);
-					}
-				}
-			}
-		}
+		vp.carConfig.name = Path.GetFileNameWithoutExtension(filepath);
+		vp.carConfig.PrepareForSave();
+		File.WriteAllText(filepath, JsonConvert.SerializeObject(vp.carConfig, Formatting.Indented));
+		bottomNameText.text = vp.carConfig.name;
+		if (bottomNameText.text.StartsWith("car", StringComparison.OrdinalIgnoreCase))
+			F.I.ReloadCarConfigs();
 	}
-	void EditCarConfigCallback(PartType newPartType, string partName)
+
+	static string GroupName(PartType group)
 	{
-		if (vp.carConfig != null)
-		{
-			if (!vp.carConfig.Modified)
-			{
-				bottomNameText.text = "*" + bottomNameText.text;
-			}
-			selectedPart = newPartType;
-			vp.carConfig.SetPartTo(newPartType, partName);
-		}
+		int index = (int)group;
+		return index >= 0 && index < GroupNames.Length ? GroupNames[index] : "Original physics";
 	}
-	void EditPartCallback()
+
+	static string Humanize(string fieldName)
 	{
-		if (bottomNameText.text[0] != '*')
+		if (string.IsNullOrEmpty(fieldName))
+			return fieldName;
+		System.Text.StringBuilder result = new();
+		result.Append(char.ToUpperInvariant(fieldName[0]));
+		for (int i = 1; i < fieldName.Length; i++)
 		{
-			bottomNameText.text = "*" + bottomNameText.text;
-			vp.carConfig.MarkModified(selectedPart);
+			if (char.IsUpper(fieldName[i]) && !char.IsUpper(fieldName[i - 1]))
+				result.Append(' ');
+			result.Append(fieldName[i]);
 		}
-		var curPart = vp.carConfig.GetPart(selectedPart);
-		var fields = curPart.GetType().GetFields();
-		int j = 0;
-		foreach (FieldInfo field in fields)
-		{
-			field.SetValue(curPart, settersPanel.transform.GetChild(j).GetComponent<PropertySetter>().value);
-			j++;
-		}
-		curPart.Apply(RaceManager.I.hud.vp);
+		return result.ToString();
 	}
-}
-[Serializable]
-public class PartsArray
-{
-	public SuspensionSavable sus;
-	public BmsSavable bms;
-	public BatterySavable battery;
-	public GearboxSavable gearbox;
-	public EngineSavable engine;
-	public ChassisSavable chassis;
-	public BoostSavable boost;
-	public TyreSavable tyre;
-	public DriveSavable drive;
-	public HonkSavable honk;
-	public PartSavable this[PartType key]
+
+	static string ArrayValueName(string fieldName, int index)
 	{
-		get
+		if (fieldName == "ratios")
 		{
-			return key switch
-			{
-				PartType.Suspension => sus,
-				PartType.Bms => bms,
-				PartType.Battery => battery,
-				PartType.Engine => engine,
-				PartType.Chassis => chassis,
-				PartType.Gears => gearbox,
-				PartType.Boost => boost,
-				PartType.Tyre => tyre,
-				PartType.Drive => drive,
-				PartType.Honk => honk,
-				_ => null,
-			};
+			if (index == 0) return "Reverse ratio";
+			if (index == 1) return "Neutral ratio";
+			return $"Gear {index - 1} ratio";
 		}
-		set
+		return $"{Humanize(fieldName)} [{index}]";
+	}
+
+	sealed class PhysicsValueBinding
+	{
+		public readonly string Name;
+		readonly Func<float> read;
+		public readonly Action<float> Write;
+
+		public PhysicsValueBinding(string name, Func<float> read, Action<float> write)
 		{
-			switch (key)
-			{
-				case PartType.Suspension:
-					sus = (SuspensionSavable)value;
-					break;
-				case PartType.Bms:
-					bms = (BmsSavable)value;
-					break;
-				case PartType.Battery:
-					battery = (BatterySavable)value;
-					break;
-				case PartType.Engine:
-					engine = (EngineSavable)value;
-					break;
-				case PartType.Chassis:
-					chassis = (ChassisSavable)value;
-					break;
-				case PartType.Gears:
-					gearbox = (GearboxSavable)value;
-					break;
-				case PartType.Boost:
-					boost = (BoostSavable)value;
-					break;
-				case PartType.Tyre:
-					tyre = (TyreSavable)value;
-					break;
-				case PartType.Drive:
-					drive = (DriveSavable)value;
-					break;
-				case PartType.Honk:
-					honk = (HonkSavable)value;
-					break;
-				case PartType.None:
-					break;
-				default:
-					break;
-			}
+			Name = name;
+			this.read = read;
+			Write = write;
 		}
+
+		public float Read() => read();
 	}
 }
 
@@ -404,840 +404,230 @@ public class CarConfig
 	[NonSerialized]
 	public string name;
 	[JsonIgnore]
-	bool carConfigModified;
+	bool modified;
 	[JsonIgnore]
-	public bool Modified
-	{
-		get
-		{
-			return carConfigModified || modifiedParts.Any(p => p);
-		}
-	}
-	/// <summary>
-	/// Returns Stunt, Grip, Power coefficients in range <0;1>
-	/// </summary>
-	/// 
+	public bool Modified => modified;
 	[JsonIgnore]
 	public float[] SGP
 	{
-	//get based on vehicle
-	get
-	{
-			float C01(float min, float max, float val)
-			{
-				return Mathf.Clamp(Mathf.InverseLerp(min, max, val), .15f, 1);
-			}
-
-			return new float[] {C01(1,10,F.I.Car(name).stunt), C01(1,10,F.I.Car(name).grip), C01(1,10,F.I.Car(name).power) };
+		get
+		{
+			float C01(float min, float max, float val) => Mathf.Clamp(Mathf.InverseLerp(min, max, val), .15f, 1);
+			return new[] { C01(1, 10, F.I.Car(name).stunt), C01(1, 10, F.I.Car(name).grip), C01(1, 10, F.I.Car(name).power) };
+		}
 	}
-	// get based on PartSavable
-	//get
-	//{
-	//	PartSavable Part(PartType type)
-	//	{
-	//		if (externalParts[(int)type] != null)
-	//			return F.I.carParts[externalParts[(int)type]];
-	//		else
-	//			return customParts[type];
-	//	}
-	
 
-	//	var chassis = (ChassisSavable)Part(PartType.Chassis);
-	//	var tyre = (TyreSavable)Part(PartType.Tyre);
-	//	var engine = (EngineSavable)Part(PartType.Engine);
-	//	float S = C01(400, 1200, chassis.staticEvoMaxSpeed);
-	//	float G = C01(2, 0, (tyre.sideFriction - tyre.shiftRearFriction) / chassis.mass);
-	//	float P = (C01(0.025f, .2f, engine.torque / chassis.mass) + C01(4,10,tyre.forwardFriction / chassis.mass))/2f;
-	//	return new float[] { S, G, P };
-	//}
-}
 	[NonSerialized]
 	public static readonly string extension = "carcfg";
-	[NonSerialized]
-	bool[] modifiedParts = new bool[10];
-	[SerializeField]
-	string[] externalParts;
-	[SerializeField]
-	PartsArray customParts;
 	public OriginalVehiclePhysicsConfig originalPhysics;
-	public CarConfig()
-	{}
-	/// <summary>
-	/// Initialize from car's config
-	/// </summary>
-	/// <param name="vp"></param>
-	public CarConfig(CarConfig cc)
+	public OriginalVehicleCarSetup originalParts;
+
+	public CarConfig() { }
+
+	public CarConfig(CarConfig source)
 	{
-		name = cc.name;
-		originalPhysics = cc.originalPhysics;
-		externalParts = new string[10];
-		for (int i = 0; i < cc.externalParts.Length; i++)
-		{
-			externalParts[i] = cc.externalParts[i];
-		}
-		customParts = new PartsArray();
-		customParts[PartType.Suspension] = new SuspensionSavable((SuspensionSavable)cc.customParts[PartType.Suspension]);
-		customParts[PartType.Bms] = new BmsSavable((BmsSavable)cc.customParts[PartType.Bms]);
-		customParts[PartType.Battery] = new BatterySavable((BatterySavable)cc.customParts[PartType.Battery]);
-		customParts[PartType.Engine] = new EngineSavable((EngineSavable)cc.customParts[PartType.Engine]);
-		customParts[PartType.Gears] = new GearboxSavable((GearboxSavable)cc.customParts[PartType.Gears]);
-		customParts[PartType.Chassis] = new ChassisSavable((ChassisSavable)cc.customParts[PartType.Chassis]);
-		customParts[PartType.Boost] = new BoostSavable((BoostSavable)cc.customParts[PartType.Boost]);
-		customParts[PartType.Tyre] = new TyreSavable((TyreSavable)cc.customParts[PartType.Tyre]);
-		customParts[PartType.Drive] = new DriveSavable((DriveSavable)cc.customParts[PartType.Drive]);
-		customParts[PartType.Honk] = new HonkSavable((HonkSavable)cc.customParts[PartType.Honk]);
-		Apply();
+		name = source.name;
+		originalPhysics = source.originalPhysics == null ? null :
+			JsonConvert.DeserializeObject<OriginalVehiclePhysicsConfig>(
+				JsonConvert.SerializeObject(source.originalPhysics));
+		originalParts = source.originalParts?.Clone();
 	}
+
 	public CarConfig(string name, string jsonText)
 	{
 		this.name = name;
-		var data = JsonConvert.DeserializeObject<CarConfig>(jsonText);
-		externalParts = data.externalParts;
-		customParts = data.customParts;
-		originalPhysics = data.originalPhysics;
-		Apply();
+		CarConfig data = JsonConvert.DeserializeObject<CarConfig>(jsonText);
+		originalPhysics = data?.originalPhysics;
+		originalParts = data?.originalParts?.Clone();
 	}
-	public void Apply(VehicleParent vp = null)
+
+	public void EnsureOriginalParts(OriginalVehicleCarSetup defaultSetup)
 	{
-		if (vp)
+		if (originalParts == null)
+			originalParts = defaultSetup?.Clone();
+	}
+
+	public void Apply(VehicleParent vehicle = null)
+	{
+		if (vehicle)
 		{
-			for (int i = 0; i < externalParts.Length; ++i)
+			if (originalParts == null)
+				originalParts = F.I?.GetDefaultOriginalVehicleSetup(vehicle.carNumber);
+			OriginalVehiclePhysicsConfig runtimePhysics = CreateRuntimePhysicsConfig(originalPhysics, originalParts);
+			// Temporary diagnostic: run Formula 17 with car 17's fully assembled
+			// original-physics setup while retaining Formula 17's source identity and
+			// model dimensions. Remove this block after the suspension comparison.
+			if (vehicle.carNumber == 18 && F.I?.cars != null && F.I.cars.Length > 17)
 			{
-				GetPart((PartType)i).Apply(vp);
+				CarConfig donor = F.I.cars[17].config;
+				OriginalVehicleCarSetup donorParts = donor?.originalParts ??
+					F.I.GetDefaultOriginalVehicleSetup(17);
+				OriginalVehiclePhysicsConfig donorPhysics = donor == null ? null :
+					CreateRuntimePhysicsConfig(donor.originalPhysics, donorParts);
+				if (OriginalVehiclePhysics.IsUsable(runtimePhysics) &&
+					OriginalVehiclePhysics.IsUsable(donorPhysics))
+				{
+					donorPhysics.sourceConfig = runtimePhysics.sourceConfig;
+					donorPhysics.wheelbase = runtimePhysics.wheelbase;
+					donorPhysics.trackFront = runtimePhysics.trackFront;
+					donorPhysics.trackRear = runtimePhysics.trackRear;
+					donorPhysics.length = runtimePhysics.length;
+					donorPhysics.width = runtimePhysics.width;
+					donorPhysics.height = runtimePhysics.height;
+					if (runtimePhysics.tyres != null && donorPhysics.tyres != null)
+						for (int i = 0; i < Mathf.Min(runtimePhysics.tyres.Length, donorPhysics.tyres.Length); i++)
+							donorPhysics.tyres[i].radius = runtimePhysics.tyres[i].radius;
+
+					runtimePhysics = donorPhysics;
+					Debug.LogWarning($"[OriginalVehicleParts] Formula 17 diagnostic: using car17 physics " +
+						$"with Formula 17 dimensions. mass={runtimePhysics.mass:F1}, " +
+						$"comHeight={runtimePhysics.comHeight:F1}, " +
+						$"springIn={runtimePhysics.tyres[0].stiffnessIn:F3}/" +
+						$"{runtimePhysics.tyres[2].stiffnessIn:F3}, " +
+						$"springOut={runtimePhysics.tyres[0].stiffnessOut:F3}/" +
+						$"{runtimePhysics.tyres[2].stiffnessOut:F3}, " +
+						$"travelOut={runtimePhysics.tyres[0].travelOut:F1}/" +
+						$"{runtimePhysics.tyres[2].travelOut:F1}.", vehicle);
+				}
+				else
+					Debug.LogError("[OriginalVehicleParts] Formula 17 diagnostic could not load valid car17 physics; " +
+						"Formula 17 is using its own configuration.", vehicle);
 			}
-			vp.UseOriginalPhysics(originalPhysics);
-		}
-	}
-	/// <summary>
-	/// Use this only to read it
-	/// </summary>
-	public PartSavable GetPartReadonly(PartType type)
-	{
-		if (customParts[type] == null)
-			return F.I.carParts[externalParts[(int)type]];
-		return customParts[type];
-	}
-	/// <summary>
-	/// Use this if you want to read and modify it
-	/// </summary>
-	/// <param name="type"></param>
-	/// <returns></returns>
-	public PartSavable GetPart(PartType type)
-	{
-		if (customParts[type] == null)
-			customParts[type] = F.I.carParts[externalParts[(int)type]].Clone();
-		return customParts[type];
-	}
-	/// <param name="partName">set to null, to set as custom</param>
-	public void SetPartTo(PartType type, string partName)
-	{
-		if (partName == null)
+			vehicle.UseOriginalPhysics(runtimePhysics);
+			vehicle.originalPartsSetup = originalParts?.Clone();
+
+			OriginalVehiclePartSlot gearsSlot = originalParts?.GetSlot(OriginalVehiclePartType.Gears);
+			OriginalVehiclePartDefinition gearsPart = gearsSlot == null
+				? null
+				: F.I?.GetOriginalVehiclePart(OriginalVehiclePartType.Gears, gearsSlot.selectedIndex);
+		if (runtimePhysics != null)
 		{
-			if (externalParts[(int)type] != null)
-			{// set part as custom
-				carConfigModified = true;
-				customParts[type] = F.I.carParts[externalParts[(int)type]].Clone();
-				externalParts[(int)type] = null;
+			string selectedParts = string.Empty;
+			for (int i = 0; i < (originalParts?.slots?.Length ?? 0); i++)
+			{
+				string partId = originalParts.slots[i]?.SelectedPartId;
+				if (!string.IsNullOrEmpty(partId))
+					selectedParts += (selectedParts.Length == 0 ? string.Empty : ",") + partId;
 			}
+			int topGearIndex = runtimePhysics.ratios == null || runtimePhysics.ratios.Length == 0
+				? -1
+				: Mathf.Clamp(runtimePhysics.gearCount, 0, runtimePhysics.ratios.Length - 1);
+			float topGearRatio = topGearIndex >= 0 ? runtimePhysics.ratios[topGearIndex] : 0;
+			float theoreticalTopSpeed = topGearRatio > 0 && runtimePhysics.tyres != null && runtimePhysics.tyres.Length > 0
+				? runtimePhysics.rpmLimit * (runtimePhysics.tyres[0].radius * 0.01f * 2 * Mathf.PI) * 60 /
+					(topGearRatio * runtimePhysics.finalDrive * 1000)
+				: 0;
+			//Debug.Log($"[OriginalVehicleParts] car={name}, source={originalParts?.sourceCarId ?? "<none>"}, " +
+			//	$"parts=[{selectedParts}], mass={runtimePhysics.mass:F1}, rpmLimit={runtimePhysics.rpmLimit:F0}, " +
+			//	$"maxTorque={runtimePhysics.maxTorque:F1}, gears={Mathf.Max(0, runtimePhysics.gearCount - 1)}, " +
+			//	$"topRatio={topGearRatio:F3}, theoreticalTop={theoreticalTopSpeed:F1}km/h.", vehicle);
 		}
-		else
-		{  // set external part
-			carConfigModified = true;
-			modifiedParts[(int)type] = false;
-			externalParts[(int)type] = partName;
-			customParts[type] = null;
 		}
 	}
-	public string GetPartName(PartType type)
+
+	static OriginalVehiclePhysicsConfig CreateRuntimePhysicsConfig(OriginalVehiclePhysicsConfig source, OriginalVehicleCarSetup parts)
 	{
-		if (customParts[type] != null)
+		if (source == null)
+			return null;
+
+		var runtime = JsonConvert.DeserializeObject<OriginalVehiclePhysicsConfig>(JsonConvert.SerializeObject(source));
+		OriginalVehiclePartCatalog catalog = F.I?.originalVehiclePartCatalog;
+		if (catalog == null || parts == null)
+			return runtime;
+
+		bool Try(string parameter, out float value, int occurrence = 0) =>
+			catalog.TryGetEffectiveParameter(parts, parameter, occurrence, out value);
+		void Set(string parameter, System.Action<float> assign, int occurrence = 0)
 		{
-			if (externalParts[(int)type] != null)
-				return (modifiedParts[(int)type] ? "*" : "") + externalParts[(int)type];
-			else
-				return (modifiedParts[(int)type] ? "*" : "") + "Custom";
+			if (Try(parameter, out float value, occurrence))
+				assign(value);
 		}
-		else
+
+		// The retail setup block starts from the car's dynamics.csv row and overlays
+		// every selected part. Additive Mass is summed by the catalog; other fields
+		// use the last selected part that provides a value.
+		if (Try("Base Mass", out float baseMass) && Try("Additive Mass", out float additiveMass))
+			runtime.mass = baseMass + additiveMass;
+		Set("Com A", value => runtime.comA = value);
+		Set("Com B", value => runtime.comB = value);
+		Set("Com H", value => runtime.comHeight = value);
+		Set("Ride Height", value => runtime.rideHeight = value);
+		Set("Cm", value => runtime.engineDecay = value);
+		Set("Rpm Idle", value => runtime.rpmIdle = value);
+		Set("Rpm Limit", value => runtime.rpmLimit = value);
+		Set("Rpm Max", value => runtime.rpmMax = value);
+		Set("Max Torque", value => runtime.maxTorque = value);
+		Set("Torque Env", value => runtime.torqueCurveIndex = Mathf.RoundToInt(value));
+		Set("Drive Mode", value => runtime.driveMode = Mathf.RoundToInt(value));
+		Set("Final Drive", value => runtime.finalDrive = value);
+		Set("Gears", value => runtime.gearCount = Mathf.RoundToInt(value) + 1);
+		Set("Shift", value => runtime.shiftTime = value);
+		Set("Efficiency", value => runtime.efficiency = value);
+		Set("4WD Split", value => runtime.powerSplit = value);
+
+		for (int cog = 1; cog <= 8 && runtime.ratios != null; cog++)
 		{
-			if (externalParts[(int)type] == null)
-				Debug.LogError("both custom and external don't exist");
-			return externalParts[(int)type];
+			int ratioIndex = cog + 1;
+			if (ratioIndex >= runtime.ratios.Length)
+				break;
+			int selectedCog = cog;
+			Set("GearCog" + selectedCog, value => runtime.ratios[ratioIndex] = value);
 		}
-	}
-	public bool IsPartModified(PartType curPartType)
-	{
-		return externalParts[(int)curPartType] != null && customParts[curPartType] != null;
-	}
 
-	internal void PrepareForSave()
-	{
-		for (int i = 0; i < externalParts.Length; ++i)
+		Set("Brake Bias", value => runtime.brakeBias = value);
+		Set("Brake Accel.", value => runtime.brakeAcceleration = value);
+		// The retail tuning block stores one grip/suspension value per part and
+		// copies it into all four tyre states. Keep radius and pressure from the
+		// per-wheel vehicle cfg, as the original tuner does.
+		Set("Cs", value =>
 		{
-			if (IsPartModified((PartType)i))
-				externalParts[i] = null;
-			modifiedParts[i] = false;
-		}
-		carConfigModified = false;
-	}
-
-	public void MarkModified(PartType selectedPart)
-	{
-		modifiedParts[(int)selectedPart] = true;
-	}
-}
-
-[Serializable]
-public abstract class PartSavable
-{
-	public abstract void Apply(VehicleParent vp);
-	public abstract void InitializeFromCar(VehicleParent vp);
-	public abstract PartSavable Clone();
-}
-
-[Serializable]
-public class HonkSavable : PartSavable
-{
-	public float honkType;
-	public HonkSavable()
-	{
-	}
-	public override void Apply(VehicleParent vp)
-	{
-		vp.SetHonkerAudio((int)honkType);
-	}
-	public HonkSavable(HonkSavable original)
-	{
-		honkType = original.honkType;
-	}
-	public override PartSavable Clone()
-	{
-		return new HonkSavable(this);
-	}
-
-	public override void InitializeFromCar(VehicleParent vp)
-	{
-		float.TryParse(vp.honkerAudio.clip.name[^1..], out honkType);
-	}
-}
-[Serializable]
-public class DriveSavable : PartSavable
-{
-	// tier 0=RWD, 1=FWD, 2=AWD
-	public float driveType;
-	public float steerAdd;
-	public float holdComebackSpeed;
-    public float gripAdd;
-	public float gripComebackSpeed;
-    public float steerLimitAt0;
-	public float steerLimitAt200;
-	public float steerLimitAt300;
-	public float steerComebackAt0;
-	public float steerComebackAt200;
-	
-	public DriveSavable()
-	{
-	}
-	public DriveSavable(VehicleParent vp)
-	{
-		InitializeFromCar(vp);
-	}
-	public DriveSavable(DriveSavable original)
-	{
-		steerAdd = original.steerAdd;
-		holdComebackSpeed = original.holdComebackSpeed;
-        gripAdd = original.gripAdd;
-        gripComebackSpeed = original.gripComebackSpeed;
-		steerLimitAt0 = original.steerLimitAt0;
-		steerLimitAt200 = original.steerLimitAt200;
-		steerLimitAt300 = original.steerLimitAt300;
-		steerComebackAt0 = original.steerComebackAt0;
-		steerComebackAt200 = original.steerComebackAt200;
-	}
-	public override PartSavable Clone()
-	{
-		return new DriveSavable(this);
-	}
-
-	public override void InitializeFromCar(VehicleParent vp)
-	{
-		steerAdd = vp.steeringControl.steerAdd;
-		holdComebackSpeed = vp.steeringControl.holdComebackSpeed;
-		gripAdd = vp.steeringControl.gripComebackSpeed;
-		gripComebackSpeed = vp.steeringControl.gripComebackSpeed;
-        steerLimitAt0 = vp.steeringControl.steerLimitCurve.keys[0].value;
-		steerLimitAt200 = vp.steeringControl.steerLimitCurve.keys[1].value;
-		steerLimitAt300 = vp.steeringControl.steerLimitCurve.keys[2].value;
-		
-		steerComebackAt0 = vp.steeringControl.steerComebackCurve.keys[0].value;
-		steerComebackAt200 = vp.steeringControl.steerComebackCurve.keys[1].value;
-	}
-	public override void Apply(VehicleParent vp)
-	{
-		if (vp.wheels[0].tireWidth < vp.wheels[2].tireWidth)
-			vp.engine.transmission.Drive = GearboxTransmission.DriveType.RWD;
-		else
-			vp.engine.transmission.Drive = (GearboxTransmission.DriveType)driveType;
-
-		vp.steeringControl.steerAdd = steerAdd;
-		vp.steeringControl.holdComebackSpeed = holdComebackSpeed;
-		vp.steeringControl.gripAdd = gripAdd;
-		vp.steeringControl.gripComebackSpeed = 0.8f;//gripComebackSpeed;
-
-		//vp.steeringControl.steerLimitCurve = AnimationCurve.Linear(0, steerLimitAt0, 83, steerLimitAt200);
-		vp.steeringControl.steerLimitCurve = new AnimationCurve(new Keyframe[] {
-			new (0, steerLimitAt0, 0, -0.03f),
-			new (56, steerLimitAt200, -0.0012f, 0),
-			new (83, steerLimitAt300, 0, 0)
+			for (int i = 0; runtime.tyres != null && i < runtime.tyres.Length; i++)
+				runtime.tyres[i].staticFriction = value;
 		});
-
-		vp.steeringControl.steerComebackCurve = AnimationCurve.Linear(0, steerComebackAt0, 56, steerComebackAt200);
-	}
-}
-[Serializable]
-public class TyreSavable : PartSavable
-{
-	public float forwardFriction;
-	public float sideFriction;
-	public float forwardFrictionStretch;
-	public float sideFrictionStretch;
-	public float shiftRearFriction;
-	public float squeakSlipThreshold;
-	public float slipDependence;
-	public float axleFriction;
-	public float offroadTread;
-	public float driftRearFriction;
-	public float driftRearFrictionInit;
-	public float rpmBiasCurveLimit;
-	public TyreSavable()
-	{
-	}
-	public TyreSavable(VehicleParent vp)
-	{
-		InitializeFromCar(vp);
-	}
-	public TyreSavable(TyreSavable original)
-	{
-		forwardFriction = original.forwardFriction;
-		sideFriction = original.sideFriction;
-		forwardFrictionStretch = original.forwardFrictionStretch;
-		sideFrictionStretch = original.sideFrictionStretch;
-		shiftRearFriction = original.shiftRearFriction;
-		squeakSlipThreshold = original.squeakSlipThreshold;
-		slipDependence = original.slipDependence;
-		axleFriction = original.axleFriction;
-		offroadTread = original.offroadTread;
-		driftRearFriction = original.driftRearFriction;
-		driftRearFrictionInit = original.driftRearFrictionInit;
-		rpmBiasCurveLimit = original.rpmBiasCurveLimit;
-	}
-	public override PartSavable Clone()
-	{
-		return new TyreSavable(this);
-	}
-	public override void InitializeFromCar(VehicleParent vp)
-	{
-		// get data from RL tyre
-		var rear = vp.wheels[2];
-		var front = vp.wheels[0];
-		offroadTread = vp.tyresOffroad;
-		forwardFriction = front.sidewaysFriction;
-		sideFriction = rear.sidewaysFriction;
-		forwardFrictionStretch = front.sidewaysCurveStretch;
-		sideFrictionStretch = rear.sidewaysCurveStretch;
-		shiftRearFriction = vp.steeringControl.shiftRearFriction;
-		driftRearFriction = vp.steeringControl.driftRearFriction;
-		squeakSlipThreshold = rear.slipThres;
-		slipDependence = 2;
-		axleFriction = rear.axleFriction;
-		rpmBiasCurveLimit = vp.wheels[2].rpmBiasCurveLimit;
-	}
-
-	public override void Apply(VehicleParent vp)
-	{
-		vp.tyresOffroad = offroadTread;
-		vp.steeringControl.shiftRearFriction = shiftRearFriction;
-		vp.steeringControl.driftRearFriction = driftRearFriction;
-		for (int i = 0; i < 4; ++i)
+		Set("Ck", value =>
 		{
-			var w = vp.wheels[i];
+			for (int i = 0; runtime.tyres != null && i < runtime.tyres.Length; i++)
+				runtime.tyres[i].kineticFriction = value;
+		});
+		Set("Travel in", value => SetTyreValues(runtime, tyre => tyre.travelIn = value));
+		Set("Damping in", value => SetTyreValues(runtime, tyre => tyre.dampingIn = value));
+		Set("Stiffness in", value => SetTyreValues(runtime, tyre => tyre.stiffnessIn = value));
+		Set("Max Travel", value => SetTyreValues(runtime, tyre => tyre.travelOut = value));
+		Set("Max Damp.", value => SetTyreValues(runtime, tyre => tyre.dampingOut = value));
+		Set("Max Stiff.", value => SetTyreValues(runtime, tyre => tyre.stiffnessOut = value));
+		Set("Cd", value => runtime.dragCoefficient = value);
+		Set("Cl", value => runtime.liftCoefficient = value);
+		Set("Steering angle", value => runtime.steeringMax = value);
+		Set("Sensitivity", value => runtime.steeringSensitivity = value);
+		Set("Acceleration", value => runtime.steeringAcceleration = value);
+		Set("Max Fuel", value => runtime.fuelCapacity = value);
+		Set("Fuel Consumpt", value => runtime.fuelConsumption = value);
+		Set("Refuel Rate", value => runtime.refuelRate = value);
+		Set("Rpm Acc", value => runtime.turboAcceleration = value);
+		Set("Rpm Max", value => runtime.turboMax = value, 1);
+		Set("Cm", value => runtime.turboDecay = value, 1);
+		Set("Power Mult", value => runtime.turboScale = value);
+		Set("Max Consump", value => runtime.turboConsumption = value);
+		Set("Fuel Cut Off", value => runtime.turboEnergyThreshold = value);
+		Set("Launchtime", value => runtime.launchTime = value);
+		Set("Launch Tolerance", value => runtime.launchTolerance = value);
+		Set("Launch Speed", value => runtime.launchSpeed = value);
+		Set("Mat Rot Speed X", value => runtime.maxPitchSpeed = value);
+		Set("Mat Rot Speed Y", value => runtime.maxYawSpeed = value);
 
-			float rearFriction = (F.I.s_raceType == RaceType.Drift) ? driftRearFrictionInit : sideFriction;
-			w.initForwardFriction = forwardFriction;
-			w.forwardFriction = w.initForwardFriction;
-			w.initSidewaysFriction = (vp.followAI.IsCPU ? 2 : 1) * sideFriction;
-			w.sidewaysFriction = (vp.followAI.IsCPU ? 2 : 1) * sideFriction;
-			w.forwardStretch = forwardFrictionStretch;
-			w.sidewaysCurveStretch = sideFrictionStretch;
-			w.slipThres = squeakSlipThreshold;
-			w.slipDependence = (F.I.s_raceType == RaceType.Drift) ? 
-				Wheel.SlipDependenceMode.independent : Wheel.SlipDependenceMode.sideways;
-			w.axleFriction = axleFriction;
-			w.rpmBiasCurveLimit = rpmBiasCurveLimit;
-			// update materials
-			//var mr = w.transform.GetChild(0).GetComponent<MeshRenderer>();
-			//// [..^1] = from beginning to last - 1. |         tier+1 cause tyres are named from 1
-			//string name = mr.sharedMaterials[0].name[..^1] + (tier+1).ToString();
-			//Material tyreMat = Resources.Load<Material>("materials/" + name);
-			//Material[] mats = mr.materials;
-			//mats[0] = tyreMat;
-			//mr.materials = mats;
-		}
-	}
-}
-[Serializable]
-public class BoostSavable : PartSavable
-{
-	public float maxBoost;
-	public float batteryConsumption;
-	public BoostSavable()
-	{
-	}
-	public BoostSavable(VehicleParent vp)
-	{
-		InitializeFromCar(vp);
-	}
-	public BoostSavable(BoostSavable original)
-	{
-		maxBoost = original.maxBoost;
-		batteryConsumption = original.batteryConsumption;
-	}
-	public override PartSavable Clone()
-	{
-		return new BoostSavable(this);
+		return runtime;
 	}
 
-	public override void Apply(VehicleParent vp)
+	static void SetTyreValues(OriginalVehiclePhysicsConfig config, System.Action<OriginalTyrePhysicsConfig> assign)
 	{
-		vp.engine.maxBoost = maxBoost;
-		vp.engine.jetConsumption = batteryConsumption;
-	}
-	public override void InitializeFromCar(VehicleParent vp)
-	{
-		maxBoost = vp.engine.maxBoost;
-		batteryConsumption = vp.engine.jetConsumption;
-	}
-}
-[Serializable]
-public class GearboxSavable : PartSavable
-{
-	public float shiftDelaySeconds;
-	public float reverseGearRatio;
-	public float Gear1Ratio;
-	public float Gear2Ratio;
-	public float Gear3Ratio;
-	public float Gear4Ratio;
-	public float Gear5Ratio;
-	public float Gear6Ratio;
-	public float Gear7Ratio;
-	public float Gear8Ratio;
-	public float FinalRatio;
-	public GearboxSavable()
-	{
-	}
-	public GearboxSavable(VehicleParent vp)
-	{
-		InitializeFromCar(vp);
-	}
-	public GearboxSavable(GearboxSavable original)
-	{
-		shiftDelaySeconds = original.shiftDelaySeconds;
-		reverseGearRatio = original.reverseGearRatio;
-		Gear1Ratio = original.Gear1Ratio;
-		Gear2Ratio = original.Gear2Ratio;
-		Gear3Ratio = original.Gear3Ratio;
-		Gear4Ratio = original.Gear4Ratio;
-		Gear5Ratio = original.Gear5Ratio;
-		Gear6Ratio = original.Gear6Ratio;
-		Gear7Ratio = original.Gear7Ratio;
-		Gear8Ratio = original.Gear8Ratio;
-		FinalRatio = original.FinalRatio;
-	}
-	public override PartSavable Clone()
-	{
-		return new GearboxSavable(this);
-	}
-	[JsonIgnore]
-	public int NumberOfGears
-	{
-		get
-		{
-			int gears;
-			if (Gear8Ratio != 0)
-				gears = 8;
-			else if (Gear7Ratio != 0)
-				gears = 7;
-			else if (Gear6Ratio != 0)
-				gears = 6;
-			else if (Gear5Ratio != 0)
-				gears = 5;
-			else if (Gear4Ratio != 0)
-				gears = 4;
-			else if (Gear3Ratio != 0)
-				gears = 3;
-			else if (Gear2Ratio != 0)
-				gears = 2;
-			else
-				gears = 1;
-			return gears;
-		}
+		if (config?.tyres == null)
+			return;
+		for (int i = 0; i < config.tyres.Length; i++)
+			if (config.tyres[i] != null)
+				assign(config.tyres[i]);
 	}
 
-	public override void InitializeFromCar(VehicleParent vp)
-	{
-		shiftDelaySeconds = vp.engine.transmission.shiftDelaySeconds;
-		var gearStructs = vp.engine.transmission.Gears;
-		int gears = vp.engine.transmission.Gears.Length - 2; // without R and N
-		FinalRatio = vp.engine.transmission.finalRatio;
-		reverseGearRatio = gearStructs[0].ratio;
-		Gear1Ratio = gearStructs[2].ratio;
-		if (gears >= 2)
-			Gear2Ratio = gearStructs[3].ratio;
-		if (gears >= 3)
-			Gear3Ratio = gearStructs[4].ratio;
-		if (gears >= 4)
-			Gear4Ratio = gearStructs[5].ratio;
-		if (gears >= 5)
-			Gear5Ratio = gearStructs[6].ratio;
-		if (gears >= 6)
-			Gear6Ratio = gearStructs[7].ratio;
-		if (gears >= 7)
-			Gear7Ratio = gearStructs[8].ratio;
-		if (gears >= 8)
-			Gear8Ratio = gearStructs[9].ratio;
-	}
-	public override void Apply(VehicleParent vp)
-	{
-		vp.engine.transmission.shiftDelaySeconds = shiftDelaySeconds;
-		vp.engine.transmission.finalRatio = FinalRatio;
-		int gears = NumberOfGears;
-		Gear[] gearStructs = new Gear[gears + 2];
-		for (int i = 0; i < gears + 2; ++i)
-		{
-			gearStructs[i] = new Gear(0);
-		}
-		gearStructs[0].ratio = reverseGearRatio;
-		gearStructs[1].ratio = 0;
-		gearStructs[2].ratio = Gear1Ratio; // 1st gear
-		if (gears >= 2)
-			gearStructs[3].ratio = Gear2Ratio;
-		if (gears >= 3)
-			gearStructs[4].ratio = Gear3Ratio;
-		if (gears >= 4)
-			gearStructs[5].ratio = Gear4Ratio;
-		if (gears >= 5)
-			gearStructs[6].ratio = Gear5Ratio;
-		if (gears >= 6)
-			gearStructs[7].ratio = Gear6Ratio;
-		if (gears >= 7)
-			gearStructs[8].ratio = Gear7Ratio;
-		if (gears >= 8)
-			gearStructs[9].ratio = Gear8Ratio;
+	public void MarkModified() => modified = true;
 
-		vp.engine.transmission.Gears = gearStructs;
-		vp.engine.transmission.skipNeutral = shiftDelaySeconds > 0.5f;
-	}
+	internal void PrepareForSave() => modified = false;
 }
-[Serializable]
-public class ChassisSavable : PartSavable
-{
-	public float mass;
-	public float longtitunalCOM;
-	public float verticalCOM;
-	public float drag;
-	public float angularDrag;
-	public float evoSmoothTime;
-	public float staticEvoMaxSpeed;
-	public float evoAcceleration;
-	public float twistGain = 0.25f;
-	//public float cameraHeight;
-	public ChassisSavable()
-	{
-	}
-	public ChassisSavable(VehicleParent vp)
-	{
-		InitializeFromCar(vp);
-	}
-	public ChassisSavable(ChassisSavable original)
-	{
-		mass = original.mass;
-		longtitunalCOM = original.longtitunalCOM;
-		verticalCOM = original.verticalCOM;
-		drag = original.drag;
-		angularDrag = original.angularDrag;
-		evoSmoothTime = original.evoSmoothTime;
-		staticEvoMaxSpeed = original.staticEvoMaxSpeed;
-		evoAcceleration = original.evoAcceleration;
-		twistGain = original.twistGain;
-		//cameraHeight = original.cameraHeight;
-	}
-	public override PartSavable Clone()
-	{
-		return new ChassisSavable(this);
-	}
-	public override void Apply(VehicleParent vp)
-	{
-		//vp.cameraheightOffset = cameraHeight;
-		Vector3 COM = new Vector3(0, verticalCOM, (F.I.s_raceType == RaceType.Drift) ? 0 : longtitunalCOM);
-		vp.SetChassis(mass, drag, angularDrag, COM, twistGain);
-		vp.raceBox.evoModule.SetStuntCoeffs(evoSmoothTime, staticEvoMaxSpeed, evoAcceleration);
-		RaceManager.I.cam.UpdateLH();
-	}
-	public override void InitializeFromCar(VehicleParent vp)
-	{
-		//cameraHeight = vp.cameraheightOffset;
-		twistGain = vp.twistGain;
-		mass = vp.originalMass;
-		drag = vp.originalDrag;
-		var com = vp.rb.centerOfMass;
-		longtitunalCOM = com.z;
-		verticalCOM = com.y;
-		angularDrag = vp.va.initialAngularDrag;
-		vp.raceBox.evoModule.GetStuntCoeffs(ref evoSmoothTime, ref staticEvoMaxSpeed, ref evoAcceleration);
-	}
-}
-[Serializable]
-public class EngineSavable : PartSavable
-{
-	public float audioMaxPitch;
-	public float audioMinPitch;
-	public float fuelConsumption;
-	public float audioType;
-	public float inertia;
-	public float inertiaAcc;
-	public float torque;
-	public float torqueCurveType;
-	public float redlineKRPM;
-	public float cutoffKRPM;
-	public EngineSavable()
-	{
-	}
-	public EngineSavable(VehicleParent vp)
-	{
-		InitializeFromCar(vp);
-	}
-	public EngineSavable(EngineSavable original)
-	{
-		fuelConsumption = original.fuelConsumption;
-		audioMaxPitch = original.audioMaxPitch;
-		audioMinPitch = original.audioMinPitch;
-		audioType = original.audioType;
-		inertia = original.inertia;
-		torque = original.torque;
-		torqueCurveType = original.torqueCurveType;
-		redlineKRPM = original.redlineKRPM;
-		cutoffKRPM = original.cutoffKRPM;
-		inertiaAcc = original.inertiaAcc;
-	}
-	public override PartSavable Clone()
-	{
-		return new EngineSavable(this);
-	}
-	public override void Apply(VehicleParent vp)
-	{
-		vp.engine.fuelConsumption = fuelConsumption;
-		vp.engine.maxPitch = audioMaxPitch;
-		vp.engine.minPitch = audioMinPitch;
-		vp.engine.inertia = inertia;
-		vp.engine.maxTorque = (F.I.s_raceType == RaceType.Drift) ? Mathf.Max(torque, vp.originalMass/2f) : torque;
-		vp.engine.limitkRPM = redlineKRPM;
-		vp.engine.limit2kRPM = cutoffKRPM;
-		vp.engine.inertiaAcc = inertiaAcc;
-		vp.engine.torqueCurve = vp.engine.GenerateTorqueCurve((int)torqueCurveType);
-		vp.engine.SetEngineAudioClip((int)audioType);
-		vp.engine.GetMaxRPM();
-
-	}
-	public override void InitializeFromCar(VehicleParent vp)
-	{
-		fuelConsumption = vp.engine.fuelConsumption;
-		audioMaxPitch = vp.engine.maxPitch;
-		audioMinPitch = vp.engine.minPitch;
-		inertia = vp.engine.inertia;
-		torque = vp.engine.maxTorque;
-		redlineKRPM = vp.engine.limitkRPM;
-		cutoffKRPM = vp.engine.limit2kRPM;
-		vp.engine.torqueCurve = vp.engine.GenerateTorqueCurve((int)torqueCurveType);
-		inertiaAcc = vp.engine.inertiaAcc;
-		vp.engine.GetMaxRPM();
-		vp.engine.SetEngineAudioClip((int)audioType);
-	}
-}
-[Serializable]
-public class BatterySavable : PartSavable
-{
-	public float capacity;
-	public float chargingSpeed;
-	public float lowBatPercent;
-	public float evoBountyPercent;
-	public BatterySavable()
-	{
-	}
-	public BatterySavable(VehicleParent vp)
-	{
-		InitializeFromCar(vp);
-	}
-	public BatterySavable(BatterySavable original)
-	{
-		capacity = original.capacity;
-		chargingSpeed = original.chargingSpeed;
-		lowBatPercent = original.lowBatPercent;
-		evoBountyPercent = original.evoBountyPercent;
-	}
-	public override PartSavable Clone()
-	{
-		return new BatterySavable(this);
-	}
-	public override void Apply(VehicleParent vp)
-	{
-		vp.SetBattery(capacity, chargingSpeed, lowBatPercent, evoBountyPercent);
-	}
-	public override void InitializeFromCar(VehicleParent vp)
-	{
-		capacity = vp.batteryCapacity;
-		chargingSpeed = vp.batteryChargingSpeed;
-		lowBatPercent = vp.lowBatteryLevel;
-		evoBountyPercent = vp.batteryStuntIncreasePercent;
-	}
-}
-[Serializable]
-public class BmsSavable : PartSavable
-{
-	public float driftSpinAssist;
-	public float driftSpinSpeed;
-	public float driftSpinExponent;
-	public float maxDriftAngle;
-	public float autoSteerDrift;
-	public float driftPush;
-	public float downforce;
-	public float frontBrakeForce;
-	public float rearBrakeForce;
-	public BmsSavable()
-	{
-	}
-	public BmsSavable(VehicleParent vp)
-	{
-		InitializeFromCar(vp);
-	}
-	public BmsSavable(BmsSavable original)
-	{
-		driftSpinAssist = original.driftSpinAssist;
-		driftSpinSpeed = original.driftSpinSpeed;
-		driftSpinExponent = original.driftSpinExponent;
-		maxDriftAngle = original.maxDriftAngle;
-		autoSteerDrift = original.autoSteerDrift;
-		driftPush = original.driftPush;
-		downforce = original.downforce;
-		frontBrakeForce = original.frontBrakeForce;
-		rearBrakeForce = original.rearBrakeForce;
-	}
-	public override PartSavable Clone()
-	{
-		return new BmsSavable(this);
-	}
-	public override void Apply(VehicleParent vp)
-	{
-		var bms = vp.transform.GetComponent<VehicleAssist>();
-		bms.driftSpinAssist = driftSpinAssist;
-		bms.driftSpinSpeed = driftSpinSpeed;
-		bms.driftSpinExponent = driftSpinExponent;
-		bms.maxDriftAngle = maxDriftAngle;
-		bms.autoSteerDrift = autoSteerDrift == 1;
-		bms.driftPush = (F.I.s_raceType == RaceType.Drift) ? Mathf.Max(driftPush, 1) : driftPush;
-		bms.downforce = (F.I.s_raceType == RaceType.Drift) ? 0 : downforce;
-		vp.wheels[0].susParent.brakeForce = frontBrakeForce;
-		vp.wheels[1].susParent.brakeForce = frontBrakeForce;
-		vp.wheels[2].susParent.brakeForce = rearBrakeForce;
-		vp.wheels[3].susParent.brakeForce = rearBrakeForce;
-	}
-	public override void InitializeFromCar(VehicleParent vp)
-	{
-		var bms = vp.transform.GetComponent<VehicleAssist>();
-		driftSpinAssist = bms.driftSpinAssist;
-		driftSpinSpeed = bms.driftSpinSpeed;
-		driftSpinExponent = bms.driftSpinExponent;
-		maxDriftAngle = bms.maxDriftAngle;
-		autoSteerDrift = bms.autoSteerDrift ? 1 : 0;
-		driftPush = bms.driftPush;
-		downforce = bms.downforce;
-		frontBrakeForce = vp.wheels[0].susParent.brakeForce;
-		rearBrakeForce = vp.wheels[3].susParent.brakeForce;
-	}
-}
-[Serializable]
-public class SuspensionSavable : PartSavable
-{
-	//front
-	public float frontSteerRangeDegs;
-	public float frontSpringDistance;
-	public float frontSpringForce;
-	public float frontSpringExponent;
-	public float frontSpringDampening;
-	//rear
-	public float RearSteerRangeDegs;
-	public float RearSpringDistance;
-	public float RearSpringForce;
-	public float RearSpringExponent;
-	public float RearSpringDampening;
-	public SuspensionSavable()
-	{
-	}
-	public SuspensionSavable(VehicleParent vp)
-	{
-		InitializeFromCar(vp);
-	}
-	public SuspensionSavable(SuspensionSavable original)
-	{
-		frontSteerRangeDegs = original.frontSteerRangeDegs;
-		frontSpringDistance = original.frontSpringDistance;
-		frontSpringForce = original.frontSpringForce;
-		frontSpringExponent = original.frontSpringExponent;
-		frontSpringDampening = original.frontSpringDampening;
-		RearSpringDistance = original.RearSpringDistance;
-		RearSpringForce = original.RearSpringForce;
-		RearSpringExponent = original.RearSpringExponent;
-		RearSpringDampening = original.RearSpringDampening;
-	}
-	public override PartSavable Clone()
-	{
-		return new SuspensionSavable(this);
-	}
-
-	public override void Apply(VehicleParent vp)
-	{
-		int i = 0;
-		foreach (var w in vp.wheels)
-		{
-			if (i < 2)
-			{
-				w.susParent.steerRangeMax = frontSteerRangeDegs;
-				w.susParent.steerRangeMin = -frontSteerRangeDegs;
-				w.susParent.suspensionDistance = frontSpringDistance;
-				w.susParent.springForce = frontSpringForce;
-				w.susParent.springExponent = frontSpringExponent;
-				w.susParent.springDampening = frontSpringDampening;
-			}
-			else
-			{
-				w.susParent.suspensionDistance = RearSpringDistance;
-				w.susParent.springForce = RearSpringForce;
-				w.susParent.springExponent = RearSpringExponent;
-				w.susParent.springDampening = RearSpringDampening;
-			}
-			i++;
-		}
-	}
-	public override void InitializeFromCar(VehicleParent vp)
-	{
-		frontSteerRangeDegs = vp.wheels[0].susParent.steerRangeMax;
-		frontSpringDistance = vp.wheels[0].susParent.suspensionDistance;
-		frontSpringForce = vp.wheels[0].susParent.springForce;
-		frontSpringExponent = vp.wheels[0].susParent.springExponent;
-		frontSpringDampening = vp.wheels[0].susParent.springDampening;
-
-		RearSpringDistance = vp.wheels[3].susParent.suspensionDistance;
-		RearSpringForce = vp.wheels[3].susParent.springForce;
-		RearSpringExponent = vp.wheels[3].susParent.springExponent;
-		RearSpringDampening = vp.wheels[3].susParent.springDampening;
-	}
-}
-

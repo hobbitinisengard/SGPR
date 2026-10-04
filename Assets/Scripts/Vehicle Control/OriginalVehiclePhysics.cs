@@ -1,5 +1,6 @@
 using PathCreation;
 using UnityEngine;
+using Unity.Profiling;
 
 namespace RVP
 {
@@ -65,15 +66,26 @@ namespace RVP
 	/// </summary>
 	public sealed class OriginalVehiclePhysics
 	{
+		static readonly ProfilerMarker SourceCollisionExclusionMarker =
+			new ProfilerMarker("RVP.OriginalPhysics.CollisionExclusions");
+		static readonly ProfilerMarker SourceVehiclePairMarker =
+			new ProfilerMarker("RVP.OriginalPhysics.VehiclePairs");
+		static readonly ProfilerMarker SourceWheelContactMarker =
+			new ProfilerMarker("RVP.OriginalPhysics.WheelContacts");
+		static readonly ProfilerMarker SourceTrackMeshSweepMarker =
+			new ProfilerMarker("RVP.OriginalPhysics.TrackMeshSweep");
+		static readonly ProfilerMarker SourcePowertrainMarker =
+			new ProfilerMarker("RVP.OriginalPhysics.Powertrain");
+		static readonly ProfilerMarker SourceTyreMarker =
+			new ProfilerMarker("RVP.OriginalPhysics.Tyres");
+		static readonly ProfilerMarker SourceSuspensionMarker =
+			new ProfilerMarker("RVP.OriginalPhysics.Suspension");
+		static readonly ProfilerMarker SourceAirMotionMarker =
+			new ProfilerMarker("RVP.OriginalPhysics.AirMotion");
 		const float SourceSpeedToMetresPerSecond = 0.6f;
 		const float SourceMassToKilograms = 0.001f;
 		const float SourceLengthToMetres = 0.01f;
 		const float SourceTicksPerSecond = 60f;
-		// The source suspension integrates load * stiffness every 60 Hz tick; in
-		// that equation a lower stiffness coefficient is a firmer spring. Keep the
-		// recovered cfg values intact and apply a remake-wide calibration that
-		// quarters their compliance to reduce chassis sag under contact loads.
-		const float SourceSuspensionComplianceScale = 0.25f;
 		const float SourceEnergyCapacity = 1000f;
 		const float SourceHumanRespawnEnergyCost = 5f;
 		const float SourceCpuRespawnEnergyCost = 3.5f;
@@ -259,7 +271,9 @@ namespace RVP
 		Vector3 groundSurfaceContactNormalSumThisTick;
 		bool sourceRotationDiagnosticLogged;
 		bool sourceSuspensionDiagnosticLogged;
+		bool sourceSuspensionObservationLogged;
 		int sourceSuspensionStableContactTicks;
+		float sourceFirstSuspensionContactTime = -1;
 		readonly float[] sourceWheelProbeVerticalFitOffset = new float[4];
 		float sourceBodyProbeVerticalFitOffset;
 		float sourceContactCounter;
@@ -294,7 +308,7 @@ namespace RVP
 		bool sourceMassOverride;
 		uint sourceRailProgress;
 		float sourceRailTicks;
-		uint sourceRailEnergyAdded;
+		float sourceRailEnergyAdded;
 		float sourceRailThrottle;
 		byte sourceRailBrakeInput;
 		// source_cold_vehicle_state initializes gear to 1 (neutral). Gear 2 is
@@ -377,13 +391,13 @@ namespace RVP
 			{
 				// Time-trial startup explicitly selects torque map 3 for its player
 				// (retail_time_trial.cpp::start_time_trial). Other player modes retain
-				// the cold-start map 0.
+				// the torque map assembled from the selected car setup.
 				if (!vehicle.followAI || !vehicle.followAI.IsCPU)
-					return F.I && F.I.s_raceType == RaceType.TimeTrial ? 3 : 0;
+					return F.I && F.I.s_raceType == RaceType.TimeTrial ? 3 :
+						Mathf.Clamp(parameters.torqueCurveIndex, 0, parameters.torqueCurves.Length - 1);
 
-				// CPU maps come from Gameplay.csv's 40/65/80 skill thresholds, not
-				// from the remake's legacy EngineSavable.torqueCurveType. The remake
-				// exposes global CPU levels, so this is its current skill mapping.
+				// CPU maps come from Gameplay.csv's 40/65/80 skill thresholds. The
+				// current CPU difficulty setting supplies the corresponding skill value.
 				float skill = SourceCpuSkill;
 				return skill > SourceTorqueMap3SkillThreshold ? 3
 					: skill > SourceTorqueMap2SkillThreshold ? 2
@@ -414,6 +428,7 @@ namespace RVP
 			InitializeSourcePhysicsRandom();
 			vehicle = owner;
 			parameters = config;
+			AlignInitialPoseToTrackSurface();
 			lastSourceControlledRotation = owner.rb.rotation;
 			InitializeSourceWheelLayout();
 			bodyTransform = owner.bodyObj ? owner.bodyObj.transform : null;
@@ -438,11 +453,84 @@ namespace RVP
 				vehicle.engine.transmission.SetOriginalGear(gear, parameters);
 		}
 
+		void AlignInitialPoseToTrackSurface()
+		{
+			if (!RaceManager.I || !vehicle.rb)
+				return;
+
+			Vector3 worldUp = SourceWorldUp;
+			Vector3 rayOrigin = vehicle.rb.position + worldUp * 5;
+			RaycastHit[] hits = Physics.RaycastAll(rayOrigin, -worldUp, 20,
+				RaceManager.I.wheelCastMask, QueryTriggerInteraction.Ignore);
+			int closestTrackHit = -1;
+			float closestDistance = float.PositiveInfinity;
+			for (int i = 0; i < hits.Length; i++)
+				if (hits[i].distance < closestDistance && IsSourceTrackCollider(hits[i].collider))
+				{
+					closestTrackHit = i;
+					closestDistance = hits[i].distance;
+				}
+			if (closestTrackHit < 0)
+				return;
+
+			Vector3 surfaceNormal = hits[closestTrackHit].normal.normalized;
+			if (Vector3.Dot(surfaceNormal, worldUp) < 0)
+				surfaceNormal = -surfaceNormal;
+			Vector3 forward = Vector3.ProjectOnPlane(vehicle.rb.rotation * Vector3.forward, surfaceNormal);
+			if (forward.sqrMagnitude < 0.0001f)
+				return;
+
+			Quaternion initialRotation = vehicle.rb.rotation;
+			Quaternion alignedRotation = Quaternion.LookRotation(forward.normalized, surfaceNormal);
+			float correctionDegrees = Quaternion.Angle(initialRotation, alignedRotation);
+			if (correctionDegrees <= 0.25f)
+				return;
+
+			vehicle.rb.rotation = alignedRotation;
+			//Debug.LogWarning($"[OriginalVehiclePhysics] Initial pose aligned to Unity track surface: " +
+				//$"car={vehicle.carConfig?.name}, source={parameters.sourceConfig}, " +
+				//$"correction={correctionDegrees:F2} deg, normal={surfaceNormal.ToString("F2")}, " +
+				//$"rotation={initialRotation.eulerAngles.ToString("F1")} -> " +
+				//$"{alignedRotation.eulerAngles.ToString("F1")}", vehicle);
+		}
+
+		public float Energy => energy;
+		public float EnergyCapacity => Mathf.Max(0, parameters.fuelCapacity);
+		public float EnergyPercent => EnergyCapacity > 0 ? energy / EnergyCapacity : 0;
+		public float EnergyThreshold => Mathf.Clamp01(parameters.turboEnergyThreshold);
+		public float SourceRefuelRate => Mathf.Max(0, parameters.refuelRate);
+		public float EngineRpmLimit => Mathf.Max(1, parameters.rpmLimit);
+		public float SteeringLimitDegrees => Mathf.Abs(parameters.steeringMax);
+		public int CurrentGear => gear;
+		public bool TurboActive => sourceTurboActive;
+
+		public void RefreshParameters()
+		{
+			fuel = Mathf.Clamp(fuel, 0, Mathf.Max(0, parameters.fuelCapacity));
+			energy = Mathf.Clamp(energy, 0, Mathf.Max(0, parameters.fuelCapacity));
+			sourceEffectiveMass = (float)((double)fuel * parameters.fuelUnitMass + parameters.mass);
+			effectiveComHeight = parameters.comHeight;
+			bool preserveAngularVelocity = !vehicle.rb.isKinematic;
+			Vector3 angularVelocity = preserveAngularVelocity
+				? vehicle.rb.angularVelocity : Vector3.zero;
+			InitializeSourceWheelLayout();
+			ApplySourceDimensions();
+			if (preserveAngularVelocity && !vehicle.rb.isKinematic)
+				vehicle.rb.angularVelocity = angularVelocity;
+			ResetSourceProbeHistory();
+			FitSourceProbeHeightsToPrefabTires();
+			ResetSourceProbeHistory();
+			if (vehicle.engine && vehicle.engine.transmission)
+				vehicle.engine.transmission.SetOriginalGear(gear, parameters);
+		}
+
 		void InitializeSourceWheelLayout()
 		{
 			string sourceName = System.IO.Path.GetFileNameWithoutExtension(parameters.sourceConfig ?? string.Empty);
 			int selector = 0;
-			if (sourceName.StartsWith("car") && sourceName.Length > 3)
+			if (string.Equals(sourceName, "formula17", System.StringComparison.OrdinalIgnoreCase))
+				selector = 18;
+			else if (sourceName.StartsWith("car") && sourceName.Length > 3)
 				int.TryParse(sourceName.Substring(3), out selector);
 
 			float sourceCenterY = 0;
@@ -532,29 +620,28 @@ namespace RVP
 
 			if (mappedWheelCount == 4)
 			{
-				// The retail rig keeps all four wheel probes on one local-Y plane.
-				// Prefab suspension mounts can have different Y values to compensate
-				// for different tire radii (car0's front mounts are 12.6 cm lower).
-				// Copying those values directly with a fixed 70 cm source probe makes
-				// one axle's collision spheres extend farther below the tires. Preserve
-				// each prefab mount's X/Z, but restore the source rig's common Y plane.
-				// UpdateSourceSupportBasis derives its axle frame from these probes;
-				// this false slope was being added back to the body orientation each tick.
+				// The retail rig centers its probes around the body origin. Prefab roots
+				// are not always centered between their axles (Formula 17's suspension
+				// anchors average 18.7 cm behind its root), so remove the anchors' shared
+				// horizontal offset while preserving the actual wheelbase and track.
+				// It also keeps all four wheel probes on one local-Y plane; prefab mounts
+				// can have different Y values to compensate for different tire radii.
 				float commonWheelProbeY = 0.25f * (sourceWheelLocal[0].y + sourceWheelLocal[1].y +
 					sourceWheelLocal[2].y + sourceWheelLocal[3].y);
+				Vector3 wheelProbeOffset = wheelProbeOffsetSum / mappedWheelCount;
 				for (int i = 0; i < 4; i++)
 				{
+					sourceWheelLocal[i].x -= wheelProbeOffset.x;
+					sourceWheelLocal[i].z -= wheelProbeOffset.z;
 					sourceWheelLocal[i].y = commonWheelProbeY;
 					sourceProbeLocal[i] = sourceWheelLocal[i];
 				}
 
-				// Keep extra source body probes in the same remapped car-local frame
-				// by applying the average wheel-layout offset to their authored
-				// positions. Otherwise a body probe can reach the track before the
-				// tires solely because the prefab root and source model origins differ.
-				Vector3 wheelProbeOffset = wheelProbeOffsetSum / mappedWheelCount;
+				// Preserve the prefab's vertical origin offset for body probes, while
+				// retaining the source rig's centered horizontal coordinates.
 				for (int i = 4; i < sourceProbeCount; i++)
-					sourceProbeLocal[i] = sourceConfiguredProbeLocal[i] + wheelProbeOffset;
+					sourceProbeLocal[i] = sourceConfiguredProbeLocal[i] +
+						new Vector3(0, wheelProbeOffset.y, 0);
 			}
 
 			for (int i = 0; i < 4; i++)
@@ -568,6 +655,12 @@ namespace RVP
 			if (vehicle.wheels == null || vehicle.wheels.Length < 4 || !vehicle.rb || !vehicle.tr)
 				return;
 
+			// Refit from the unmodified rig each time parameters are refreshed.
+			// UpdateSourceWheelProbeGeometry applies these offsets, so measuring
+			// before clearing them would subtract the previous fit on every refresh.
+			System.Array.Clear(sourceWheelProbeVerticalFitOffset, 0,
+				sourceWheelProbeVerticalFitOffset.Length);
+			sourceBodyProbeVerticalFitOffset = 0;
 			UpdateSourceWheelProbeGeometry();
 			float totalOffset = 0;
 			int fittedWheelCount = 0;
@@ -630,10 +723,10 @@ namespace RVP
 			// collision rig is raised relative to the prefab. This lets the source
 			// contact solver settle the complete Unity vehicle to tire height at spawn.
 			sourceBodyProbeVerticalFitOffset = totalOffset / fittedWheelCount;
-			Debug.Log($"[OriginalVehiclePhysics] Initial probe placement: " +
-				$"car={vehicle.carConfig?.name}, source={parameters.sourceConfig}, " +
-				$"probeOffsets={wheelFits}, bodyProbeOffset=" +
-				$"{sourceBodyProbeVerticalFitOffset * SourceLengthToMetres:F3}m.", vehicle);
+			//Debug.Log($"[OriginalVehiclePhysics] Initial probe placement: " +
+			//	$"car={vehicle.carConfig?.name}, source={parameters.sourceConfig}, " +
+			//	$"probeOffsets={wheelFits}, bodyProbeOffset=" +
+			//	$"{sourceBodyProbeVerticalFitOffset * SourceLengthToMetres:F3}m.", vehicle);
 		}
 
 		Vector3 SourceProbeWorldPosition(int index)
@@ -700,7 +793,7 @@ namespace RVP
 				for (int i = 0; i < cars.Count; i++)
 				{
 					VehicleParent car = cars[i];
-					if (car && car.UsesOriginalPhysics)
+					if (car && car.originalVehiclePhysics != null)
 						car.originalVehiclePhysics.sourceAirFactor = 1;
 				}
 			}
@@ -740,7 +833,7 @@ namespace RVP
 			for (int target = 0; target < cars.Count; target++)
 			{
 				VehicleParent other = cars[target];
-				if (!other || other == vehicle || !other.UsesOriginalPhysics || !other.rb ||
+				if (!other || other == vehicle || other.originalVehiclePhysics == null || !other.rb ||
 					!other.raceBox || !other.raceBox.enabled || !other.gameObject.activeInHierarchy ||
 					other.originalVehiclePhysics.currentSourceSpeed <= 16.666666f)
 					continue;
@@ -888,7 +981,7 @@ namespace RVP
 					VehicleParent colliderVehicle = candidate.GetComponentInParent<VehicleParent>();
 					if (colliderVehicle)
 					{
-						if (!colliderVehicle.UsesOriginalPhysics || candidate.attachedRigidbody != colliderVehicle.rb)
+						if (colliderVehicle.originalVehiclePhysics == null || candidate.attachedRigidbody != colliderVehicle.rb)
 							continue;
 						vehicleIds.Add(candidate.GetInstanceID());
 						vehicleTargets.Add(candidate);
@@ -981,7 +1074,8 @@ namespace RVP
 			int layerMask = RaceManager.I.wheelCastMask;
 			float distance = movement.magnitude;
 			Vector3 end = start + movement;
-			if (distance > 0.001f && OriginalTrackSphereSweep.TrySweep(sourceTrackCollisionTargets,
+			if (distance > 0.001f && TrySweepSourceTrackMeshes(
+				sourceTrackCollisionTargets,
 				layerMask, start, movement, radius, out Collider sourceCollider, out Vector3 sourcePoint,
 				out Vector3 sourceNormal, out Vector3 sourceCenter, out float sourceTravel,
 				out int sourceTriangleIndex))
@@ -1063,6 +1157,15 @@ namespace RVP
 			return true;
 		}
 
+		bool TrySweepSourceTrackMeshes(Collider[] colliders, int layerMask, Vector3 start,
+			Vector3 movement, float radius, out Collider collider, out Vector3 point, out Vector3 normal,
+			out Vector3 center, out float travelDistance, out int triangleIndex)
+		{
+			using (SourceTrackMeshSweepMarker.Auto())
+				return OriginalTrackSphereSweep.TrySweep(colliders, layerMask, start, movement, radius,
+					out collider, out point, out normal, out center, out travelDistance, out triangleIndex);
+		}
+
 		bool TryFindSourceProbeOverlap(Vector3 center, Vector3 rayDirection, float radius, int layerMask,
 			out Collider collider, out Vector3 point, out Vector3 normal, out Vector3 correctedCenter,
 			out int triangleIndex, bool skipSourceSweptMeshes = false)
@@ -1086,38 +1189,84 @@ namespace RVP
 			for (int i = 0; i < overlapCount; i++)
 			{
 				Collider candidate = overlapHits[i];
-				if (skipSourceSweptMeshes && candidate is MeshCollider meshCollider &&
-					OriginalTrackSphereSweep.WasProcessed(meshCollider))
+				if (skipSourceSweptMeshes && candidate is MeshCollider sweptMeshCollider &&
+					OriginalTrackSphereSweep.WasProcessed(sweptMeshCollider))
 					continue;
 				if (!IsSourceTrackCollider(candidate))
 					continue;
-				Vector3 candidatePoint = candidate.ClosestPoint(center);
-				Vector3 fromSurface = center - candidatePoint;
-				float squaredDistance = fromSurface.sqrMagnitude;
+				Vector3 candidatePoint;
 				Vector3 candidateNormal;
+				float squaredDistance;
 				int candidateTriangleIndex = -1;
-				bool centerInsideCollider = squaredDistance <= 0.000001f;
-				if (squaredDistance > 0.000001f)
-					candidateNormal = fromSurface / Mathf.Sqrt(squaredDistance);
-				else
+				bool centerInsideCollider;
+				bool supportsClosestPoint = candidate is BoxCollider || candidate is SphereCollider ||
+					candidate is CapsuleCollider ||
+					(candidate is MeshCollider closestPointMesh && closestPointMesh.convex);
+				if (!supportsClosestPoint)
 				{
-					Vector3 castDirection = rayDirection.sqrMagnitude > 0.000001f
-						? rayDirection.normalized
-						: SourceGravityDirection;
-					// A center already inside a thick track collider makes ClosestPoint
-					// return the center, and a ray started one radius back can still start
-					// inside the mesh. Start beyond the collider bounds and trace inward
-					// so high-speed penetrations recover the entry surface and its normal.
+					// ClosestPoint is unsupported for terrain and non-convex meshes.
+					// Cast inward from outside the collider bounds along probe motion,
+					// then gravity as a fallback for lateral motion over terrain.
 					Bounds bounds = candidate.bounds;
 					float reach = Vector3.Distance(center, bounds.center) + bounds.extents.magnitude +
 						radius + 0.01f;
-					Ray inwardRay = new Ray(center - castDirection * reach, castDirection);
-					if (!candidate.Raycast(inwardRay, out RaycastHit hit, reach + radius + 0.01f))
+					Vector3 firstDirection = rayDirection.sqrMagnitude > 0.000001f
+						? rayDirection.normalized : SourceGravityDirection;
+					bool foundSurface = false;
+					squaredDistance = float.PositiveInfinity;
+					candidatePoint = Vector3.zero;
+					candidateNormal = Vector3.zero;
+					for (int rayIndex = 0; rayIndex < 2; rayIndex++)
+					{
+						Vector3 castDirection = rayIndex == 0 ? firstDirection : SourceGravityDirection;
+						if (rayIndex == 1 && Mathf.Abs(Vector3.Dot(firstDirection, castDirection)) > 0.98f)
+							continue;
+						Ray inwardRay = new Ray(center - castDirection * reach, castDirection);
+						if (!candidate.Raycast(inwardRay, out RaycastHit rayHit, reach + radius + 0.01f))
+							continue;
+						float hitDistanceSquared = (center - rayHit.point).sqrMagnitude;
+						if (hitDistanceSquared >= squaredDistance)
+							continue;
+						foundSurface = true;
+						squaredDistance = hitDistanceSquared;
+						candidatePoint = rayHit.point;
+						candidateNormal = rayHit.normal.normalized;
+						candidateTriangleIndex = rayHit.triangleIndex;
+					}
+					if (!foundSurface)
 						continue;
-					candidatePoint = hit.point;
-					candidateNormal = hit.normal.normalized;
-					squaredDistance = (center - candidatePoint).sqrMagnitude;
-					candidateTriangleIndex = hit.triangleIndex;
+					// TerrainCollider represents a solid height field. If its overlap
+					// query found the probe below the sampled surface, recover it even
+					// when penetration depth exceeds the probe radius.
+					centerInsideCollider = candidate is TerrainCollider || squaredDistance <= 0.000001f;
+				}
+				else
+				{
+					candidatePoint = candidate.ClosestPoint(center);
+					Vector3 fromSurface = center - candidatePoint;
+					squaredDistance = fromSurface.sqrMagnitude;
+					centerInsideCollider = squaredDistance <= 0.000001f;
+					if (squaredDistance > 0.000001f)
+						candidateNormal = fromSurface / Mathf.Sqrt(squaredDistance);
+					else
+					{
+						// A center already inside a thick primitive or convex mesh makes
+						// ClosestPoint return the center. Trace inward from beyond its
+						// bounds to recover the entry surface and its normal.
+						Vector3 castDirection = rayDirection.sqrMagnitude > 0.000001f
+							? rayDirection.normalized
+							: SourceGravityDirection;
+						Bounds bounds = candidate.bounds;
+						float reach = Vector3.Distance(center, bounds.center) + bounds.extents.magnitude +
+							radius + 0.01f;
+						Ray inwardRay = new Ray(center - castDirection * reach, castDirection);
+						if (!candidate.Raycast(inwardRay, out RaycastHit hit, reach + radius + 0.01f))
+							continue;
+						candidatePoint = hit.point;
+						candidateNormal = hit.normal.normalized;
+						squaredDistance = (center - candidatePoint).sqrMagnitude;
+						candidateTriangleIndex = hit.triangleIndex;
+					}
 				}
 				if (!centerInsideCollider && candidate is MeshCollider && candidateNormal.sqrMagnitude > 0.000001f &&
 					candidate.Raycast(new Ray(center, -candidateNormal), out RaycastHit surfaceHit, radius + 0.01f))
@@ -1263,7 +1412,8 @@ namespace RVP
 			if (!sourceSpecialMode && sourceContactClass == 0 && (flags & 15) == 10)
 			{
 				sourceSpecialMode = true;
-				sourceRailProgress = sourceRailEnergyAdded = 0;
+				sourceRailProgress = 0;
+				sourceRailEnergyAdded = 0;
 				sourceRailTicks = 0;
 			}
 			if ((flags & 0x40) != 0)
@@ -1346,9 +1496,11 @@ namespace RVP
 		void ApplySourceDimensions()
 		{
 			vehicle.rb.mass = (parameters.mass + fuel * parameters.fuelUnitMass) * SourceMassToKilograms;
-			vehicle.originalMass = vehicle.rb.mass;
 			vehicle.rb.centerOfMass = Vector3.zero;
-			vehicle.rb.angularVelocity = Vector3.zero;
+			// VehicleParent holds newly spawned cars kinematic until ApplySetup has
+			// applied their config. Unity rejects velocity writes in that state.
+			if (!vehicle.rb.isKinematic)
+				vehicle.rb.angularVelocity = Vector3.zero;
 			// The retail tick applies gravity in vehicle_tick_composition immediately
 			// before vehicle dynamics, with a 100 m/s velocity guard. Reproduce it in
 			// the source adapter instead of letting PhysX add gravity after this tick.
@@ -1356,7 +1508,6 @@ namespace RVP
 			vehicle.rb.linearDamping = 0;
 			vehicle.rb.angularDamping = 0;
 			vehicle.rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
-			vehicle.originalDrag = 0;
 			// Keep prefab colliders enabled so they can enter start/finish and
 			// gameplay triggers. ApplySourceTrackCollisionExclusions suppresses
 			// solid PhysX contacts against track and other cars without disabling
@@ -1614,7 +1765,7 @@ namespace RVP
 		{
 			// vehicle_rotation(1, steering) sends +Z toward +X for a positive
 			// source angle. Unity uses the same yaw direction for a +Z-forward car.
-			return steeringDegrees * suspension.steerFactor;
+			return steeringDegrees;
 		}
 
 		public float CurrentSourceSpeed => currentSourceSpeed;
@@ -1800,16 +1951,16 @@ namespace RVP
 			return normal * (sourceVelocityChange * SourceSpeedToMetresPerSecond);
 		}
 
-		void PublishSourceEnergy()
+		public void AddSourceEnergy(float amount)
 		{
-			vehicle.energyRemaining = vehicle.batteryCapacity * energy / Mathf.Max(0.001f, parameters.fuelCapacity);
+			if (amount <= 0 || parameters.fuelCapacity <= 0)
+				return;
+			energy = Mathf.Min(parameters.fuelCapacity, energy + amount);
 		}
 
-		public void SynchronizeSourceEnergyFromBattery()
+		public void RefillSourceEnergy()
 		{
-			if (vehicle.batteryCapacity <= 0)
-				return;
-			energy = vehicle.energyRemaining / vehicle.batteryCapacity * parameters.fuelCapacity;
+			energy = Mathf.Max(0, parameters.fuelCapacity);
 		}
 
 		public void ApplySourceRespawnEnergyCost()
@@ -1818,7 +1969,6 @@ namespace RVP
 				return;
 			float sourceCost = SourceUpgradeActive ? SourceCpuRespawnEnergyCost : SourceHumanRespawnEnergyCost;
 			energy = (float)((double)energy - (double)sourceCost * parameters.fuelCapacity / SourceEnergyCapacity);
-			PublishSourceEnergy();
 		}
 
 		public void AddSourceStuntEnergyAward()
@@ -1829,7 +1979,6 @@ namespace RVP
 				? SourceCpuStuntEnergyAwardPercent : SourceHumanStuntEnergyAwardPercent;
 			double amount = (double)awardPercent * 0.01 * parameters.fuelCapacity;
 			energy = Mathf.Min(parameters.fuelCapacity, (float)((double)energy + amount));
-			PublishSourceEnergy();
 		}
 
 		public void ResetToNeutral()
@@ -1845,6 +1994,10 @@ namespace RVP
 			stepRotationChanged = false;
 			hasSourceControlledRotation = true;
 			sourceRotationDiagnosticLogged = false;
+			sourceSuspensionDiagnosticLogged = false;
+			sourceSuspensionObservationLogged = false;
+			sourceSuspensionStableContactTicks = 0;
+			sourceFirstSuspensionContactTime = -1;
 			System.Array.Clear(sourceProbeContactIterations, 0, sourceProbeContactIterations.Length);
 			sourceMassOverride = false;
 			sourceSpecialMode = false;
@@ -1852,7 +2005,8 @@ namespace RVP
 			sourceUnityRailPathThisTick = null;
 			sourceRailControlDisabled = false;
 			sourceRailCompletedPath = null;
-			sourceRailProgress = sourceRailEnergyAdded = 0;
+			sourceRailProgress = 0;
+			sourceRailEnergyAdded = 0;
 			sourceRailTicks = 0;
 			sourceRailThrottle = 0;
 			sourceRailBrakeInput = 0;
@@ -2017,7 +2171,7 @@ namespace RVP
 			{
 				SourceVehiclePairPositions.Clear();
 				foreach (VehicleParent car in F.I.s_cars)
-					if (car && car.UsesOriginalPhysics && car.rb && car.gameObject.activeInHierarchy)
+					if (car && car.originalVehiclePhysics != null && car.rb && car.gameObject.activeInHierarchy)
 					{
 						car.originalVehiclePhysics.AdvanceSourceCollisionHold(tick, tickScale);
 						SourceVehiclePairPositions[car] = car.rb.position;
@@ -2029,7 +2183,7 @@ namespace RVP
 			for (int i = 0; i < F.I.s_cars.Count; i++)
 			{
 				VehicleParent otherVehicle = F.I.s_cars[i];
-				if (!otherVehicle || otherVehicle == vehicle || !otherVehicle.UsesOriginalPhysics || !otherVehicle.rb ||
+				if (!otherVehicle || otherVehicle == vehicle || otherVehicle.originalVehiclePhysics == null || !otherVehicle.rb ||
 					!otherVehicle.gameObject.activeInHierarchy || otherVehicle.rb.isKinematic ||
 					!otherVehicle.raceBox || !otherVehicle.raceBox.enabled)
 					continue;
@@ -2068,6 +2222,8 @@ namespace RVP
 				float secondImpulse = -overlap * firstMass * inverseTotalMass * 25;
 				Vector3 firstVelocityChange = normal * firstImpulse;
 				Vector3 secondVelocityChange = normal * secondImpulse;
+				// contact_effects.cpp::apply_pair_impulse attenuates the vertical
+				// component to half strength while leaving horizontal response intact.
 				firstVelocityChange.y *= 0.5f;
 				secondVelocityChange.y *= 0.5f;
 				vehicle.rb.linearVelocity += firstVelocityChange * SourceSpeedToMetresPerSecond;
@@ -2093,8 +2249,6 @@ namespace RVP
 				amount = (float)(((1.0 - SourceUpgradeCondition) * SourceCpuCollisionEnergyModifier + 1.0) * amount);
 			energy = Mathf.Max(0, energy - amount);
 			sourceImpactEnergyLossThisTick += amount;
-			vehicle.energyRemaining = vehicle.batteryCapacity * energy /
-				Mathf.Max(0.001f, parameters.fuelCapacity);
 		}
 
 		void AdvanceSourceCollisionHold(int tick, float tickScale)
@@ -2117,6 +2271,17 @@ namespace RVP
 			}
 			else
 				stuntPressed = false;
+		}
+
+		public void CancelStunt()
+		{
+			stuntActive = false;
+			stuntPressed = false;
+			stuntPressedAt = -1;
+			pitchAcceleration = yawAcceleration = 0;
+			pitchSpeed = yawSpeed = 0;
+			ResetSourceStuntRoll();
+			ResetSourceStuntPhaseHistory();
 		}
 
 		void ResetSourceStuntRoll()
@@ -2181,8 +2346,10 @@ namespace RVP
 			sourceImpactEnergyLossThisTick = 0;
 			vehicle.rb.mass = Mathf.Max(0.001f, sourceEffectiveMass * SourceMassToKilograms);
 			vehicle.rb.centerOfMass = Vector3.zero;
-			ApplySourceTrackCollisionExclusions();
-			ResolveSourceVehiclePair();
+			using (SourceCollisionExclusionMarker.Auto())
+				ApplySourceTrackCollisionExclusions();
+			using (SourceVehiclePairMarker.Auto())
+				ResolveSourceVehiclePair();
 			HoldSourceStartVehicle(tickScale);
 			Vector3 contactStartPosition = vehicle.rb.position;
 			Vector3 contactStartVelocity = vehicle.rb.linearVelocity;
@@ -2200,7 +2367,25 @@ namespace RVP
 			stepRotation = stepStartRotation;
 			stepRotationChanged = false;
 			sourceContactAngularStep = RotationVector(sourceIncrementalRotation);
-			FilterWheelContacts(tickScale, contactStartPosition, contactStartVelocity);
+			// The project has Auto Sync Transforms enabled. Each physics query in
+			// the probe loop would otherwise synchronize every recently moved wheel
+			// and vehicle again. The track query mask excludes vehicle colliders, so
+			// sync the current scene once before the batch and keep auto-sync off until
+			// its queries finish. Restore the project's setting even if a query fails.
+			bool restoreAutoSyncTransforms = Physics.autoSyncTransforms;
+			Physics.autoSyncTransforms = false;
+			try
+			{
+				using (SourceWheelContactMarker.Auto())
+				{
+					Physics.SyncTransforms();
+					FilterWheelContacts(tickScale, contactStartPosition, contactStartVelocity);
+				}
+			}
+			finally
+			{
+				Physics.autoSyncTransforms = restoreAutoSyncTransforms;
+			}
 			float pendingContactRotationDegrees = hasPendingContactRotation
 				? Quaternion.Angle(Quaternion.identity, pendingContactRotation) : 0;
 			Vector3 pendingContactRotationVector = hasPendingContactRotation
@@ -2234,7 +2419,8 @@ namespace RVP
 			{
 				if (!sourceSpecialMode)
 				{
-					sourceRailProgress = sourceRailEnergyAdded = 0;
+					sourceRailProgress = 0;
+					sourceRailEnergyAdded = 0;
 					sourceRailTicks = 0;
 				}
 				sourceSpecialMode = true;
@@ -2248,35 +2434,44 @@ namespace RVP
 				sourceSpecialMode = false;
 			}
 			int grounded = sourceContactCounter > 0 ? 1 : 0;
-			UpdateSourceControlFlags(grounded);
-			UpdateSourceBraking(tickScale, grounded);
-			UpdateSteering(tickScale);
-			UpdateSourceRail(tickScale);
-			UpdateSourceUpgradeCondition();
-			UpdateSourcePerformance();
-			UpdateSourceStartBoost(tickScale);
-			UpdateSourceAITurbo();
-			UpdateSourceCenterOfMass();
-			// The retail tick keeps the prior support basis through input, rail,
-			// progression and COM handling, then refreshes it immediately before
-			// approach_body_speed, gravity and vehicle_dynamics_core.
-			UpdateSourceSupportBasis(stepRotation);
-			ApproachSourceBodySpeed(currentSourceSpeed, sourceContactClass, tickScale);
-			ApplySourceGravity();
-			UpdateEngine(currentSourceSpeed, grounded, sourceContactClass, tickScale);
+			using (SourcePowertrainMarker.Auto())
+			{
+				UpdateSourceControlFlags(grounded);
+				UpdateSourceBraking(tickScale, grounded);
+				UpdateSteering(tickScale);
+				UpdateSourceRail(tickScale);
+				UpdateSourceUpgradeCondition();
+				UpdateSourcePerformance();
+				UpdateSourceStartBoost(tickScale);
+				UpdateSourceAITurbo();
+				UpdateSourceCenterOfMass();
+				// The retail tick keeps the prior support basis through input, rail,
+				// progression and COM handling, then refreshes it immediately before
+				// approach_body_speed, gravity and vehicle_dynamics_core.
+				UpdateSourceSupportBasis(stepRotation);
+				ApproachSourceBodySpeed(currentSourceSpeed, sourceContactClass, tickScale);
+				ApplySourceGravity();
+				UpdateEngine(currentSourceSpeed, grounded, sourceContactClass, tickScale);
+			}
 			int dynamicsContactClass = ClassifySourceContacts();
 			Quaternion incrementalAfterContact = sourceIncrementalRotation;
-			ApplyTyres(tickScale, dynamicsContactClass);
+			using (SourceTyreMarker.Auto())
+				ApplyTyres(tickScale, dynamicsContactClass);
 			Vector3 tyreDynamicsIncrementVector = RotationVector(
 				sourceIncrementalRotation * Quaternion.Inverse(incrementalAfterContact));
-			UpdateSourceTireParticleAccumulator();
+			using (SourceTyreMarker.Auto())
+				UpdateSourceTireParticleAccumulator();
 			ApplyAerodynamics(tickScale, dynamicsContactClass);
-			ApplySourceSuspensionTick(tickScale);
-			AttenuateSourceSteering(tickScale);
-			UpdateOriginalSuspensionPose(currentSourceSpeed, tickScale);
+			using (SourceSuspensionMarker.Auto())
+			{
+				ApplySourceSuspensionTick(tickScale);
+				AttenuateSourceSteering(tickScale);
+				UpdateOriginalSuspensionPose(currentSourceSpeed, tickScale);
+			}
 			LogSourceSuspensionStateAfterStableContact();
 			Quaternion incrementalBeforeAirMotion = sourceIncrementalRotation;
-			UpdateAirMotion(tickScale);
+			using (SourceAirMotionMarker.Auto())
+				UpdateAirMotion(tickScale);
 			Vector3 airIncrementVector = RotationVector(
 				sourceIncrementalRotation * Quaternion.Inverse(incrementalBeforeAirMotion));
 			float dynamicsRotationDegrees = Quaternion.Angle(stepStartRotation, stepRotation);
@@ -2326,7 +2521,7 @@ namespace RVP
 						$"probeLocal={sourceProbeLocal[i].ToString("F3")}, " +
 						$"anchor={anchorLocal.ToString("F3")}, rim={rimLocal.ToString("F3")}";
 				}
-				Debug.LogWarning($"[OriginalVehiclePhysics] Rotation stages: car={vehicle.carConfig?.name}, source={parameters.sourceConfig}, appliedIncremental={appliedContactIncrementDegrees:F2} deg rotVecRad={appliedContactRotationVector.ToString("F2")}, newContact={pendingContactRotationDegrees:F2} deg rotVecRad={pendingContactRotationVector.ToString("F2")}, contactVelocity={sourceContactVelocityBeforeThisTick.ToString("F2")} -> {sourceContactVelocityAfterThisTick.ToString("F2")} m/s, delta={sourceContactVelocityDeltaThisTick.ToString("F2")} m/s, tyreDynamicsIncrement={tyreDynamicsIncrementVector.ToString("F2")} rad ({wheelRotationDetails}, accelTilt={sourceAccelerationTiltDeltaThisTick.ToString("F3")} rad), airIncrement={airIncrementVector.ToString("F2")} rad, axlePose={dynamicsRotationDegrees:F2} deg rotVecRad={dynamicsRotationVector.ToString("F2")}, tickHits={sourceProbeHitsThisTick[0]},{sourceProbeHitsThisTick[1]},{sourceProbeHitsThisTick[2]},{sourceProbeHitsThisTick[3]},{(sourceProbeCount > 4 ? sourceProbeHitsThisTick[4] : 0)}, streak={sourceProbeContactIterations[0]},{sourceProbeContactIterations[1]},{sourceProbeContactIterations[2]},{sourceProbeContactIterations[3]},{(sourceProbeCount > 4 ? sourceProbeContactIterations[4] : 0)}, contacts={sourceContactCounter}, bodyPos={vehicle.rb.position.ToString("F2")}, bodyEuler={stepStartRotation.eulerAngles.ToString("F1")}, resultEuler={stepRotation.eulerAngles.ToString("F1")}; probeEnds=[{probeEnds}]; {probeDetails}; wheelGeometry=[{wheelGeometry}]", vehicle);
+				//Debug.LogWarning($"[OriginalVehiclePhysics] Rotation stages: car={vehicle.carConfig?.name}, source={parameters.sourceConfig}, appliedIncremental={appliedContactIncrementDegrees:F2} deg rotVecRad={appliedContactRotationVector.ToString("F2")}, newContact={pendingContactRotationDegrees:F2} deg rotVecRad={pendingContactRotationVector.ToString("F2")}, contactVelocity={sourceContactVelocityBeforeThisTick.ToString("F2")} -> {sourceContactVelocityAfterThisTick.ToString("F2")} m/s, delta={sourceContactVelocityDeltaThisTick.ToString("F2")} m/s, tyreDynamicsIncrement={tyreDynamicsIncrementVector.ToString("F2")} rad ({wheelRotationDetails}, accelTilt={sourceAccelerationTiltDeltaThisTick.ToString("F3")} rad), airIncrement={airIncrementVector.ToString("F2")} rad, axlePose={dynamicsRotationDegrees:F2} deg rotVecRad={dynamicsRotationVector.ToString("F2")}, tickHits={sourceProbeHitsThisTick[0]},{sourceProbeHitsThisTick[1]},{sourceProbeHitsThisTick[2]},{sourceProbeHitsThisTick[3]},{(sourceProbeCount > 4 ? sourceProbeHitsThisTick[4] : 0)}, streak={sourceProbeContactIterations[0]},{sourceProbeContactIterations[1]},{sourceProbeContactIterations[2]},{sourceProbeContactIterations[3]},{(sourceProbeCount > 4 ? sourceProbeContactIterations[4] : 0)}, contacts={sourceContactCounter}, bodyPos={vehicle.rb.position.ToString("F2")}, bodyEuler={stepStartRotation.eulerAngles.ToString("F1")}, resultEuler={stepRotation.eulerAngles.ToString("F1")}; probeEnds=[{probeEnds}]; {probeDetails}; wheelGeometry=[{wheelGeometry}]", vehicle);
 				sourceRotationDiagnosticLogged = true;
 			}
 			UpdateSourcePositionHistoryAndWake(tickScale);
@@ -2367,17 +2562,17 @@ namespace RVP
 			{
 				if (!sourceContactResetDiagnosticLogged)
 				{
-					Debug.LogWarning($"[OriginalVehiclePhysics] Reset requested by source contact safety: " +
-						$"reason={sourceContactResetReason ?? "unspecified"}, " +
-						$"probe iteration overflow={contactIterationReset}, velocity-delta threshold={contactVelocityReset}, " +
-						$"unsafe contact ticks={sourceUnsafeContactTicks}, opposing-direction ticks={sourceOpposingDirectionTicks}, " +
-						$"surface contact={hasGroundSurfaceContactThisTick}, contacts={sourceContactCounter}, " +
-						$"velocity={vehicle.rb.linearVelocity}, track={F.I?.s_trackName ?? "<unknown>"}, " +
-						$"lastUnsafeProbe={sourceLastUnsafeProbe}, flags=0x{sourceLastUnsafeFlags:X2}, " +
-						$"cause={sourceLastUnsafeCause ?? "<unknown>"}, contactSource=Unity map, " +
-						$"alignment={sourceLastUnsafeAlignment:F3}, speed={currentSourceSpeed:F2}, " +
-						$"normal={sourceLastUnsafeNormal.ToString("F2")}, point={sourceLastUnsafePoint.ToString("F2")}, " +
-						$"collider={sourceLastUnsafeCollider ?? "<none>"}, layer={sourceLastUnsafeLayer}", vehicle);
+					//Debug.LogWarning($"[OriginalVehiclePhysics] Reset requested by source contact safety: " +
+						//$"reason={sourceContactResetReason ?? "unspecified"}, " +
+						//$"probe iteration overflow={contactIterationReset}, velocity-delta threshold={contactVelocityReset}, " +
+						//$"unsafe contact ticks={sourceUnsafeContactTicks}, opposing-direction ticks={sourceOpposingDirectionTicks}, " +
+						//$"surface contact={hasGroundSurfaceContactThisTick}, contacts={sourceContactCounter}, " +
+						//$"velocity={vehicle.rb.linearVelocity}, track={F.I?.s_trackName ?? "<unknown>"}, " +
+						//$"lastUnsafeProbe={sourceLastUnsafeProbe}, flags=0x{sourceLastUnsafeFlags:X2}, " +
+						//$"cause={sourceLastUnsafeCause ?? "<unknown>"}, contactSource=Unity map, " +
+						//$"alignment={sourceLastUnsafeAlignment:F3}, speed={currentSourceSpeed:F2}, " +
+						//$"normal={sourceLastUnsafeNormal.ToString("F2")}, point={sourceLastUnsafePoint.ToString("F2")}, " +
+						//$"collider={sourceLastUnsafeCollider ?? "<none>"}, layer={sourceLastUnsafeLayer}", vehicle);
 					sourceContactResetDiagnosticLogged = true;
 				}
 				vehicle.ResetOnTrack();
@@ -2667,17 +2862,17 @@ namespace RVP
 			float countdown = CountDownSeq.Countdown;
 			if (F.I && F.I.s_raceType == RaceType.Stunt)
 			{
-				Debug.Log($"[Trickstart] Not activated: disabled in Stunt mode. car={vehicle.name}, " +
-					$"countdown={countdown:F3}s, rpm={rpm:F0}/{parameters.rpmMax:F0}.", vehicle);
+				//Debug.Log($"[Trickstart] Not activated: disabled in Stunt mode. car={vehicle.name}, " +
+				//	$"countdown={countdown:F3}s, rpm={rpm:F0}/{parameters.rpmMax:F0}.", vehicle);
 				return;
 			}
 
 			float rpmPercent = parameters.rpmMax > 0 ? rpm / parameters.rpmMax * 100 : 0;
 			if (rpm <= parameters.rpmMax * 0.6f || rpm >= parameters.rpmMax * 0.8f)
 			{
-				Debug.Log($"[Trickstart] Not activated: engine rpm is outside the 60-80% window. " +
-					$"car={vehicle.name}, track={F.I?.s_trackName ?? "<unknown>"}, " +
-					$"countdown={countdown:F3}s, rpm={rpm:F0}/{parameters.rpmMax:F0} ({rpmPercent:F1}%).", vehicle);
+				//Debug.Log($"[Trickstart] Not activated: engine rpm is outside the 60-80% window. " +
+				//	$"car={vehicle.name}, track={F.I?.s_trackName ?? "<unknown>"}, " +
+				//	$"countdown={countdown:F3}s, rpm={rpm:F0}/{parameters.rpmMax:F0} ({rpmPercent:F1}%).", vehicle);
 				return;
 			}
 
@@ -2685,9 +2880,9 @@ namespace RVP
 			rpm = parameters.rpmMax;
 			// The original suspension pose uses active turbo to add body pitch
 			// during acceleration; it does not apply a separate heave offset.
-			Debug.Log($"[Trickstart] Activated on N->1 shift. car={vehicle.name}, " +
-				$"track={F.I?.s_trackName ?? "<unknown>"}, countdown={countdown:F3}s, " +
-				$"triggerRpm={rpmPercent:F1}%.", vehicle);
+			//Debug.Log($"[Trickstart] Activated on N->1 shift. car={vehicle.name}, " +
+			//	$"track={F.I?.s_trackName ?? "<unknown>"}, countdown={countdown:F3}s, " +
+			//	$"triggerRpm={rpmPercent:F1}%.", vehicle);
 			if (vehicle.raceBox)
 				vehicle.raceBox.DoOriginalTrickstart();
 		}
@@ -2705,7 +2900,7 @@ namespace RVP
 		{
 			// Stock Stunt GP initializes parameters.manual_gears to zero and the
 			// recovered config/tuning loaders never overwrite it. Keep the source
-			// automatic gearbox independent of the remake transmission's legacy toggle.
+			// automatic gearbox independent of any gearbox component setting.
 			bool sourceShiftInput = !SourcePlayerControlsSuppressed &&
 				(vehicle.upshiftPressed || vehicle.downshiftPressed);
 
@@ -2972,11 +3167,13 @@ namespace RVP
 				{
 					sourceRailTicks -= 3;
 					if (parameters.refuelRate <= 0 ||
-						SourcePitlaneRefuelLimit * parameters.refuelRate <= unchecked((int)sourceRailEnergyAdded) ||
+						SourcePitlaneRefuelLimit * parameters.refuelRate <= sourceRailEnergyAdded ||
 						energy >= parameters.fuelCapacity)
 						continue;
-					uint amount = (uint)(parameters.refuelRate * 10);
-					sourceRailEnergyAdded = unchecked(sourceRailEnergyAdded + amount);
+					// The trigger also adds refuelRate per second. The old x10 rail
+					// multiplier made the same tunnel fill a battery in a few ticks.
+					float amount = parameters.refuelRate;
+					sourceRailEnergyAdded += amount;
 					energy += amount;
 				}
 			}
@@ -3182,7 +3379,6 @@ namespace RVP
 				performanceMultiplier = startBoostTicks * 0.0055555556900799274f + 1;
 				fuel = parameters.fuelCapacity;
 				energy = parameters.fuelCapacity;
-				vehicle.energyRemaining = vehicle.batteryCapacity;
 				sourceImpactEnergyLossThisTick = 0;
 				return;
 			}
@@ -3223,11 +3419,12 @@ namespace RVP
 
 		void UpdateSourceAITurbo()
 		{
-			if (!SourceUpgradeActive || !vehicle.followAI.selfDriving || vehicle.followAI.Pitting ||
+			if (CountDownSeq.Countdown > 0 || !SourceUpgradeActive ||
+				!vehicle.followAI.selfDriving || vehicle.followAI.Pitting ||
 				!vehicle.raceBox || !vehicle.raceBox.enabled)
 			{
-			sourceAiTurboTicks = sourceAiTurboCooldown = sourceAiTurboRestTicks = 0;
-			sourceAiTurboActive = false;
+				sourceAiTurboTicks = sourceAiTurboCooldown = sourceAiTurboRestTicks = 0;
+				sourceAiTurboActive = false;
 				return;
 			}
 			sourceAiTurboActive = false;
@@ -3323,8 +3520,8 @@ namespace RVP
 				turboRpm = 0;
 			turboForce = turboRpm > 0 ? Curve(parameters.turboCurve, turboRpm * 128 / Mathf.Max(1, parameters.turboMax)) * parameters.turboScale : 0;
 			// engine_tick updates turbo before the automatic gearbox. The stock
-			// game has manual_gears disabled, so remake shift buttons cannot select
-			// gears directly; the source automatic shift logic decides each gear.
+			// game has manual_gears disabled, so shift buttons cannot select gears
+			// directly; the source automatic shift logic decides each gear.
 			if (SourceAutomaticShiftAllowed)
 				UpdateAutomaticShift(sourceSpeed, throttle, tickScale);
 			if (clutch < 1)
@@ -3389,7 +3586,6 @@ namespace RVP
 			torque = Mathf.Max(250, Curve(parameters.torqueCurves[torqueCurveIndex],
 				rpm * 128 / Mathf.Max(1, parameters.rpmLimit)) * parameters.maxTorque);
 
-			vehicle.energyRemaining = vehicle.batteryCapacity * energy / Mathf.Max(0.001f, parameters.fuelCapacity);
 			DriveForce engineDrive = vehicle.engine.GetComponent<DriveForce>();
 			if (engineDrive)
 			{
@@ -3524,7 +3720,7 @@ namespace RVP
 						sourceProbeWheelTouched[i] = true;
 						// The wheel load comes from the rigid probe velocity, not its
 						// reflected sweep segment used by accumulate_impact.
-						sourceProbeWheelLoad[i] = -SourceWheelNormalSpeed(current, normal, Vector3.zero) * probeMass;
+						sourceProbeWheelLoad[i] = -normalSpeed * probeMass;
 						contactCountdown[i] = 8;
 						sourceWheelContactNormal[i] = normal;
 						hasSourceWheelContactNormal[i] = true;
@@ -3664,7 +3860,6 @@ namespace RVP
 		void FilterSourceWheelLoad(int i, float tickScale)
 		{
 			Wheel wheel = vehicle.wheels[UnityWheelIndex[i]];
-			wheel.susParent.appliedSuspensionForce = Vector3.zero;
 			float sourceLoad = sourceProbeWheelTouched[i] ? sourceProbeWheelLoad[i] : 0;
 			// filter_wheel_load runs once per 60 Hz source tick, including in
 			// the air. Step fractional Unity ticks with the equivalent source
@@ -3788,8 +3983,7 @@ namespace RVP
 				float step = Mathf.Min(1, remainingTicks);
 				bool outOfCompression = sourceSuspension[index] < 0;
 				float damping = outOfCompression ? tyre.dampingOut : tyre.dampingIn;
-				float stiffness = (outOfCompression ? tyre.stiffnessOut : tyre.stiffnessIn) *
-					SourceSuspensionComplianceScale;
+				float stiffness = outOfCompression ? tyre.stiffnessOut : tyre.stiffnessIn;
 				float decay = Mathf.Pow(damping, step);
 				float springResponse = Mathf.Abs(1 - damping) > 0.000001f
 					? stiffness * (1 - decay) / (1 - damping)
@@ -3812,7 +4006,13 @@ namespace RVP
 
 			sourceSuspensionStableContactTicks = supportingWheels >= 3
 				? sourceSuspensionStableContactTicks + 1 : 0;
-			if (sourceSuspensionStableContactTicks < 60)
+			if (supportingWheels > 0 && sourceFirstSuspensionContactTime < 0)
+				sourceFirstSuspensionContactTime = Time.fixedTime;
+			bool stableContact = sourceSuspensionStableContactTicks >= 60;
+			float contactObservationTime = sourceFirstSuspensionContactTime < 0
+				? 0 : Time.fixedTime - sourceFirstSuspensionContactTime;
+			bool contactObservation = !sourceSuspensionObservationLogged && contactObservationTime >= 1;
+			if (!stableContact && !contactObservation)
 				return;
 
 			float sourceMass = vehicle.rb.mass / SourceMassToKilograms;
@@ -3832,13 +4032,27 @@ namespace RVP
 					? sourceWheelContactNormal[i] : sourceUpBasis;
 				float visualClearance = Vector3.Dot(
 					wheel.rim.position - sourceWheelContactPoint[i], contactNormal.normalized) - wheel.actualRadius;
+				Vector3 probeCenter = sourceProbeHitsThisTick[i] > 0
+					? sourceProbeFirstContactCenter[i]
+					: SourceProbeWorldPosition(i, stepStartRotation);
+				Vector3 probePoint = sourceProbeHitsThisTick[i] > 0
+					? sourceProbeFirstContactPoint[i]
+					: sourceWheelContactPoint[i];
+				Vector3 probeNormal = sourceProbeHitsThisTick[i] > 0
+					? sourceProbeFirstContactNormal[i]
+					: contactNormal;
+				float probeSurfaceGap = Vector3.Dot(probeCenter - probePoint, probeNormal.normalized) -
+					sourceProbeRadius[i] * SourceLengthToMetres;
+				float probeToRim = Vector3.Dot(wheel.rim.position - probeCenter, probeNormal.normalized);
 				wheelStates += (i == 0 ? string.Empty : "; ") +
 					$"w{i}: touched={sourceProbeWheelTouched[i]}, sourceBump={sourceSuspension[i]:F2}/{tyre.travelIn:F2} ({bumpTravelUse:P0}), " +
 					$"unityTravelPosition={wheel.travelDist:F3}, unityCompressed={unityCompressedFraction:P0}, " +
-					$"cfgSpring={configuredStiffness:F3}, effectiveSpring={configuredStiffness * SourceSuspensionComplianceScale:F3}, " +
+					$"cfgSpring={configuredStiffness:F3}, " +
 					$"damping={configuredDamping:F2}, " +
 					$"suspensionDistance={suspension.suspensionDistance:F3}, radius={wheel.actualRadius:F3}, " +
-					$"visualClearance={visualClearance:F3}, load={filteredContactLoad[i]:F2}/" +
+					$"visualClearance={visualClearance:F3}, probeY={probeCenter.y:F3}, " +
+					$"probeToRim={probeToRim:F3}, probeGap={probeSurfaceGap:F3}, " +
+					$"load={filteredContactLoad[i]:F2}/" +
 					$"{sourceProbeWheelLoad[i]:F2}, anchorY={wheel.susParent.tr.position.y:F3}, " +
 					$"rimY={wheel.rim.position.y:F3}, surfaceY={sourceWheelContactPoint[i].y:F3}";
 			}
@@ -3846,17 +4060,51 @@ namespace RVP
 			float bodyLocalY = bodyTransform ? bodyTransform.localPosition.y : 0;
 			float averageSuspension = 0.25f * (sourceSuspension[0] + sourceSuspension[1] +
 				sourceSuspension[2] + sourceSuspension[3]);
-			Debug.LogWarning($"[OriginalVehiclePhysics] Suspension state after stable contact: " +
-				$"sourceConfig={parameters.sourceConfig}, rootY={vehicle.rb.position.y:F3}, " +
-				$"rootEuler={vehicle.rb.rotation.eulerAngles.ToString("F1")}, " +
-				$"rootAngularVelocity={vehicle.rb.angularVelocity.ToString("F2")}, " +
-				$"bodyY={bodyLocalY:F3}, bodyHeave={sourceBodyHeave:F2}, " +
-				$"bodyRoll={sourceBodyRoll:F3}, bodyPitch={sourceBodyPitch:F3}, " +
-				$"rideHeight={parameters.rideHeight:F2}, averageSuspension={averageSuspension:F2}, " +
-				$"comHeight={parameters.comHeight:F2}/{effectiveComHeight:F2}, " +
-				$"sourceMass={sourceMass:F2}, sourceGravity={SourceGravityMagnitude:F3}, " +
-				$"referenceLoad={referenceLoad:F2}, wheelProbeRadius={sourceProbeRadius[0] * SourceLengthToMetres:F3}m, {wheelStates}", vehicle);
-			sourceSuspensionDiagnosticLogged = true;
+			float bodyClearance = float.NaN;
+			Renderer bodyRenderer = bodyTransform ? bodyTransform.GetComponent<Renderer>() : null;
+			if (bodyRenderer && supportingWheels > 0)
+			{
+				Vector3 planePoint = Vector3.zero;
+				Vector3 planeNormal = Vector3.zero;
+				for (int i = 0; i < 4; i++)
+					if (sourceProbeWheelTouched[i])
+					{
+						planePoint += sourceWheelContactPoint[i];
+						planeNormal += sourceWheelContactNormal[i];
+					}
+				planePoint /= supportingWheels;
+				if (planeNormal.sqrMagnitude > 0.0001f)
+				{
+					planeNormal.Normalize();
+					Bounds bounds = bodyRenderer.bounds;
+					Vector3 extents = bounds.extents;
+					float lowestBodyProjection = Vector3.Dot(bounds.center, planeNormal) -
+						Mathf.Abs(planeNormal.x) * extents.x -
+						Mathf.Abs(planeNormal.y) * extents.y -
+						Mathf.Abs(planeNormal.z) * extents.z;
+					bodyClearance = lowestBodyProjection - Vector3.Dot(planePoint, planeNormal);
+				}
+			}
+			//Debug.LogWarning($"[OriginalVehiclePhysics] Suspension state after contact observation: " +
+				//$"stableContact={stableContact}, supportingWheels={supportingWheels}/4, " +
+				//$"stableTicks={sourceSuspensionStableContactTicks}, " +
+				//$"secondsSinceFirstContact={contactObservationTime:F2}, bodyClearance={bodyClearance:F3}, " +
+				//$"sourceConfig={parameters.sourceConfig}, rootY={vehicle.rb.position.y:F3}, " +
+				//$"verticalSpeed={Vector3.Dot(vehicle.rb.linearVelocity, sourceUpBasis):F2}m/s, " +
+				//$"rootEuler={vehicle.rb.rotation.eulerAngles.ToString("F1")}, " +
+				//$"rootAngularVelocity={vehicle.rb.angularVelocity.ToString("F2")}, " +
+				//$"bodyY={bodyLocalY:F3}, bodyHeave={sourceBodyHeave:F2}, " +
+				//$"bodyRoll={sourceBodyRoll:F3}, bodyPitch={sourceBodyPitch:F3}, " +
+				//$"rideHeight={parameters.rideHeight:F2}, averageSuspension={averageSuspension:F2}, " +
+				//$"comHeight={parameters.comHeight:F2}/{effectiveComHeight:F2}, " +
+				//$"sourceMass={sourceMass:F2}, sourceGravity={SourceGravityMagnitude:F3}, " +
+				//$"referenceLoad={referenceLoad:F2}, wheelProbeRadius={sourceProbeRadius[0] * SourceLengthToMetres:F3}m, " +
+				//$"probeHits={sourceProbeHitsThisTick[0]},{sourceProbeHitsThisTick[1]}," +
+				//$"{sourceProbeHitsThisTick[2]},{sourceProbeHitsThisTick[3]}, {wheelStates}", vehicle);
+			if (stableContact)
+				sourceSuspensionDiagnosticLogged = true;
+			else
+				sourceSuspensionObservationLogged = true;
 		}
 
 		void UpdateOriginalSuspensionPose(float sourceSpeed, float tickScale)
@@ -3874,14 +4122,22 @@ namespace RVP
 			{
 				pitch *= (turboRpm * 16 / Mathf.Max(1, parameters.turboMax)) /
 					(sourceSpeed * 0.1f + 1);
-				// Keep normal turbo pitch at the retail scale. Trickstart's launch
-				// pose is otherwise too subtle on the remake's smaller car models.
-				if (sourceStartBoostActiveThisTick)
-					pitch *= 2f;
 			}
-			float pitchTarget = pitch * 2.375f;
-			sourceBodyPitch = Mathf.Clamp(pitchTarget + (sourceBodyPitch - pitchTarget) *
-				Mathf.Pow(0.95f, tickScale), -0.3f, 0.3f);
+			float trickstartPitch = 0;
+			if (startBoostTicks > 0 && sourceStartBoostActiveThisTick)
+			{
+				// The retail model only amplifies pitch already created by suspension
+				// movement. That can be almost zero at a stationary start, so provide
+				// the launch pose directly on the rendered body for the 3-second boost.
+				float trickstartAge = 1 - Mathf.Clamp01(startBoostTicks / 180f);
+				float trickstartAttack = Mathf.SmoothStep(0, 1, trickstartAge / 0.05f);
+				float trickstartRelease = 1 - Mathf.SmoothStep(0, 1, trickstartAge);
+				trickstartPitch = 0.2f * trickstartAttack * trickstartRelease;
+			}
+			float pitchDecay = Mathf.Pow(0.95f, tickScale);
+			sourceBodyPitch = Mathf.Clamp((pitch * 0.125f + sourceBodyPitch) * pitchDecay,
+				-0.3f, 0.3f);
+			float displayedBodyPitch = Mathf.Clamp(sourceBodyPitch + trickstartPitch, -0.3f, 0.3f);
 
 			float averageSuspension = 0.25f * (sourceSuspension[0] + sourceSuspension[1] +
 				sourceSuspension[2] + sourceSuspension[3]);
@@ -3893,7 +4149,7 @@ namespace RVP
 			// vehicle_model_pose.cpp stores forward as (0, body_pitch, 1).
 			// Keep that sign in Unity so acceleration and braking pitch the chassis
 			// in the same direction as the source model pose.
-			Vector3 bodyForward = new Vector3(0, sourceBodyPitch, 1).normalized;
+			Vector3 bodyForward = new Vector3(0, displayedBodyPitch, 1).normalized;
 			Quaternion sourcePose = Quaternion.LookRotation(bodyForward, bodyUp);
 			// The retail renderer adds body_heave to the model's local Y position
 			// (vehicle_model_pose.cpp / source_pmd_vehicle_pose.cpp). Positive
@@ -3972,6 +4228,16 @@ namespace RVP
 				float staticFriction = (float)((double)sourceStaticFriction[i] * grip);
 				float kineticFriction = (float)((double)sourceKineticFriction[i] * grip);
 				double available = (double)load * SourceCurve(parameters.frictionCurve, magnitude);
+				double longitudinalAvailable = available;
+				if (F.I && F.I.s_raceType == RaceType.Drift && throttleSignal > 0.1f && slip > 0)
+				{
+					// Drift mode needs drive traction while the tyre is already using
+					// lateral grip. Evaluate the drive part of the friction budget from
+					// longitudinal slip alone, while keeping combined slip for sideways
+					// response and grip telemetry. Other race modes retain source behavior.
+					longitudinalAvailable = (double)load * SourceCurve(parameters.frictionCurve,
+						System.Math.Abs((double)slip) * 0.8);
+				}
 				double threshold = available * staticFriction;
 				if (System.Math.Abs(threshold) < 0.01f)
 					threshold = 0.01f;
@@ -3986,8 +4252,8 @@ namespace RVP
 					lateralResidual = (float)(wheelLateral < 0
 						? wheelLateral + lateralChange : wheelLateral - lateralChange);
 					if (slip > 0)
-						available *= 3;
-					float slipCorrection = (float)System.Math.Min(System.Math.Abs((double)slip), available);
+						longitudinalAvailable *= 3;
+					float slipCorrection = (float)System.Math.Min(System.Math.Abs((double)slip), longitudinalAvailable);
 					longitudinalResidual = (float)((double)slipCorrection * kineticFriction *
 						(slip < 0 ? -1.0 : 1.0));
 				}

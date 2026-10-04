@@ -3,6 +3,7 @@ using System.Collections;
 using System;
 using Unity.Netcode;
 using Unity.Collections;
+using Unity.Profiling;
 
 namespace RVP
 {
@@ -87,8 +88,9 @@ namespace RVP
 	// Vehicle root class
 	public class VehicleParent : NetworkBehaviour
 	{
+		static readonly ProfilerMarker OriginalPhysicsStepMarker =
+			new ProfilerMarker("RVP.VehicleParent.OriginalPhysicsStep");
 		//public Transform roadColParent;
-		public VehicleAssist va { get; private set; }
 		public Renderer antennaFlag;
 		[NonSerialized]
 		public Antenna antenna;
@@ -101,6 +103,8 @@ namespace RVP
 		public CarConfig carConfig;
 		[NonSerialized]
 		public OriginalVehiclePhysics originalVehiclePhysics;
+		[NonSerialized]
+		public OriginalVehicleCarSetup originalPartsSetup;
 		readonly float[] prefabSuspensionTravel = new float[4];
 		bool wasKinematicBeforePhysicsSetup;
 		public float PrefabSuspensionTravel(int wheelIndex)
@@ -108,14 +112,20 @@ namespace RVP
 			return wheelIndex >= 0 && wheelIndex < prefabSuspensionTravel.Length
 				? prefabSuspensionTravel[wheelIndex] : 0;
 		}
-		public bool UsesOriginalPhysics => originalVehiclePhysics != null;
-		public Vector3 WorldAngularVelocity => UsesOriginalPhysics
-			? originalVehiclePhysics.SourceAngularVelocity : rb.angularVelocity;
+		public Vector3 WorldAngularVelocity => originalVehiclePhysics != null
+			? originalVehiclePhysics.SourceAngularVelocity : Vector3.zero;
+		public float SourceEnergy => originalVehiclePhysics != null ? originalVehiclePhysics.Energy : 0;
+		public float SourceEnergyPercent => originalVehiclePhysics != null ? originalVehiclePhysics.EnergyPercent : 0;
+		public float SourceEnergyThreshold => originalVehiclePhysics != null ? originalVehiclePhysics.EnergyThreshold : 0;
 		public void UseOriginalPhysics(OriginalVehiclePhysicsConfig config)
 		{
 			if (!OriginalVehiclePhysics.IsUsable(config))
 				throw new InvalidOperationException($"Missing or invalid original vehicle physics data: {config?.sourceConfig ?? carConfig?.name}");
 			originalVehiclePhysics = new OriginalVehiclePhysics(this, config);
+		}
+		public void RefreshOriginalPhysicsParameters()
+		{
+			originalVehiclePhysics?.RefreshParameters();
 		}
 		/// <summary>
 		/// from 0 ti 19
@@ -124,14 +134,8 @@ namespace RVP
 		[NonSerialized]
 		public Ghost ghost;
 		public GameObject bodyObj;
-		static double[] digitalBrakeInputEnv = { 0.050000, 0.055749, 0.061497, 0.067246, 0.072994, 0.078743, 0.084491, 0.090240, 0.095988, 0.100108, 0.104227, 0.108347, 0.112467, 0.116586, 0.120706, 0.124826, 0.128945, 0.131461, 0.133977, 0.136492, 0.139008, 0.141523, 0.144039, 0.146555, 0.149070, 0.150732, 0.152394, 0.154057, 0.155719, 0.157381, 0.159043, 0.160705, 0.162367, 0.164702, 0.167037, 0.169372, 0.171707, 0.174042, 0.176377, 0.178712, 0.181047, 0.184175, 0.187302, 0.190430, 0.193557, 0.198389, 0.203220, 0.208051, 0.212883, 0.217714, 0.222546, 0.227377, 0.232208, 0.234335, 0.236462, 0.238589, 0.240716, 0.242843, 0.244970, 0.247097, 0.249224, 0.251272, 0.253320, 0.255368, 0.257416, 0.263848, 0.270281, 0.276713, 0.283146, 0.289578, 0.296011, 0.302443, 0.308876, 0.313165, 0.317455, 0.321745, 0.326034, 0.330324, 0.334614, 0.338904, 0.343193, 0.349227, 0.355260, 0.361294, 0.367327, 0.373361, 0.379394, 0.385428, 0.391461, 0.400442, 0.409424, 0.418405, 0.427386, 0.436368, 0.445349, 0.454330, 0.463311, 0.472721, 0.482131, 0.491541, 0.500951, 0.510361, 0.519771, 0.529180, 0.538590, 0.560293, 0.581995, 0.603697, 0.625400, 0.647102, 0.668805, 0.690507, 0.712209, 0.735046, 0.757883, 0.780720, 0.803557, 0.826394, 0.849231, 0.872068, 0.888060, 0.904051, 0.920043, 0.936034, 0.952026, 0.968017, 0.984009, 1.000000 };
-		static AnimationCurve brakeCurve;
 		[System.NonSerialized]
 		public Rigidbody rb;
-		[System.NonSerialized]
-		public float originalDrag;
-		[System.NonSerialized]
-		public float originalMass;
 		[System.NonSerialized]
 		public Transform tr;
 		[System.NonSerialized]
@@ -257,34 +261,9 @@ namespace RVP
 
 		Material rearLightsLighter;
 		Material rearLightsDarker;
-		[Tooltip("Accel axis is used for brake input")]
-		public bool accelAxisIsBrake;
-
-		[Tooltip("Brake input will act as reverse input")]
-		public bool brakeIsReverse;
-
-		[Tooltip("Automatically hold ebrake if it's pressed while parked")]
-		public bool holdEbrakePark;
-
-		public float burnoutThreshold = 0.9f;
-		[System.NonSerialized]
-		public float burnout;
-		public float burnoutSpin = 5;
-		[Range(0, 0.9f)]
-		public float burnoutSmoothness = 0.5f;
 		public GasMotor engine;
 		public Transform batteryLoadingParticleSystemParent;
 
-		public float energyRemaining = 1000;
-		public float batteryCapacity = 1000;
-		public float BatteryPercent
-		{
-			get { return energyRemaining / batteryCapacity; }
-		}
-		public float batteryChargingSpeed = 200;
-		public float lowBatteryLevel = 0.2f;
-
-		public float batteryStuntIncreasePercent = 0.1f;
 
 		bool stopUpshift;
 		bool stopDownShift;
@@ -311,30 +290,15 @@ namespace RVP
 		[System.NonSerialized]
 		public float sqrVelMag; // Velocity squared magnitude
 		public Vector3 acceleration { get; private set; }
-		[System.NonSerialized]
-		public bool reversing;
+		public bool reversing => originalVehiclePhysics != null && originalVehiclePhysics.CurrentGear == 0;
 		[Tooltip("convention for placing wheels is FL, FR, RL, RR")]
 		public Wheel[] wheels;
-		public WheelCheckGroup[] wheelGroups;
-		bool wheelLoopDone = false;
-		public bool hover;
 		[System.NonSerialized]
 		public int groundedWheels; // Number of wheels grounded
 		public int reallyGroundedWheels; // Number of really grounded wheels (cars can steer in air)
 		[System.NonSerialized]
 		public Vector3 wheelNormalAverage; // Average normal of the wheel contact points
 		Vector3 wheelContactsVelocity; // Average velocity of wheel contact points
-
-		[Tooltip("Lower center of mass by suspension height")]
-		public bool suspensionCenterOfMass;
-
-		public ForceMode wheelForceMode = ForceMode.Acceleration;
-		public ForceMode suspensionForceMode = ForceMode.Acceleration;
-
-		[Tooltip("Tow vehicle to instantiate")]
-		public GameObject towVehicle;
-		[System.NonSerialized]
-		public VehicleParent inputInherit; // Vehicle which to inherit input from
 
 		[Header("Crashing")]
 		public AudioSource roadNoiseSnd;
@@ -348,12 +312,8 @@ namespace RVP
 		[System.NonSerialized]
 		public bool playCrashSparks = true;
 
-		[Header("Camera")]
-		public float cameraheightOffset;
-
 		[Header("Steering wheel")]
 		public SteeringControl steeringControl;
-		private float brakeStart;
 		/// <summary>
 		/// touching anything
 		/// </summary>
@@ -362,7 +322,6 @@ namespace RVP
 		public bool crashing; // serious impact
 		[NonSerialized]
 		public GameObject customCam;
-		private float lastNoBatteryMessage;
 		public bool Owner { get { return IsOwner || F.I.gameMode != GameMode.Multiplayer; } }
 		[NonSerialized]
 		public int lastRoundScore;
@@ -390,85 +349,17 @@ namespace RVP
 		public FollowAI followAI { get; private set; }
 		public RaceBox raceBox { get; private set; }
 
-		float catchupGripMult = 1.1f;
 		int roadSurfaceType;
 		[NonSerialized]
 		public float tyresOffroad;
 
 		public CatchupStatus catchupStatus { get; private set; }
 
-		bool collisionDetectionChangerActive;
 		private float lastCrashingTime;
-		private Vector3 originalCOM;
-		[NonSerialized]
-		public float bunnyhopInput;
-		[NonSerialized]
-		public float twistGain = 0.25f;
-		float colDetectionTimer;
-
-		public void SetBattery(float capacity, float chargingSpeed, float lowBatPercent, float evoBountyPercent)
-		{
-			energyRemaining = capacity;
-			batteryCapacity = capacity;
-			batteryChargingSpeed = chargingSpeed;
-			lowBatteryLevel = lowBatPercent;
-			batteryStuntIncreasePercent = evoBountyPercent;
-		}
 
 		public void SetCatchup(CatchupStatus newStatus)
 		{
-			if (F.I.catchup)
-			{
-				switch (newStatus)
-				{
-					case CatchupStatus.NoCatchup:
-						for (int i = 0; i < 4; ++i)
-						{
-							if (catchupStatus == CatchupStatus.Speeding)
-							{
-								wheels[i].sidewaysFriction /= catchupGripMult;
-								wheels[i].forwardFriction /= catchupGripMult;
-							}
-							if (catchupStatus == CatchupStatus.Slowing)
-							{
-								wheels[i].sidewaysFriction *= catchupGripMult;
-								wheels[i].forwardFriction *= catchupGripMult;
-							}
-						}
-						break;
-					case CatchupStatus.Speeding:
-						for (int i = 0; i < 4; ++i)
-						{
-							if (catchupStatus == CatchupStatus.NoCatchup)
-							{
-								wheels[i].sidewaysFriction *= catchupGripMult;
-								wheels[i].forwardFriction *= catchupGripMult;
-							}
-							if (catchupStatus == CatchupStatus.Slowing)
-							{
-								wheels[i].sidewaysFriction *= catchupGripMult * catchupGripMult;
-								wheels[i].forwardFriction *= catchupGripMult * catchupGripMult;
-							}
-						}
-						break;
-					case CatchupStatus.Slowing:
-						for (int i = 0; i < 4; ++i)
-						{
-							if (catchupStatus == CatchupStatus.NoCatchup)
-							{
-								wheels[i].sidewaysFriction /= catchupGripMult;
-								wheels[i].forwardFriction /= catchupGripMult;
-							}
-							if (catchupStatus == CatchupStatus.Speeding)
-							{
-								wheels[i].sidewaysFriction /= catchupGripMult * catchupGripMult;
-								wheels[i].forwardFriction /= catchupGripMult * catchupGripMult;
-							}
-						}
-						break;
-				}
-				catchupStatus = newStatus;
-			}
+			catchupStatus = newStatus;
 		}
 		void OnSponsorChanged()
 		{
@@ -595,17 +486,6 @@ namespace RVP
 				batteryLoadingParticleSystemParent.GetChild(0).GetComponent<ParticleSystem>().Stop();
 			}
 		}
-		AnimationCurve GenerateBrakeCurve()
-		{
-			//double[] dydx = { 22.225, 1.808226, 1.808099, 1.808226, 1.808099, 1.808226, 1.808226, 1.808099, 1.808226, 0.535686, 0.535686, 0.535686, 0.535686, 0.535686,0.535686, 0.535559, 0.535686, 0.662432, 0.662305, 0.662432, 0.662305,0.662432, 0.662305, 0.662432, 0.662305, 0.407543, 0.407543, 0.407543,0.407543, 0.407543, 0.407543, 0.407543, 0.407416, 0.102362, 0.102362,0.102235, 0.102362, 0.102362, 0.102235, 0.102362, 0.102362, 0.545719,0.545719, 0.545592, 0.545719, 0.127127, 0.127127, 0.127127, 0.127127,0.127127, 0.127127, 0.127127, 0.127127, 0.617093, 0.616966, 0.616966,0.617093, 0.616966, 0.617093, 0.616966, 0.616966, 0.719328, 0.719328,0.719455, 0.719328, 0.719328, 0.719328, 0.719328, 0.719328, 0.930148,0.930148, 0.930148, 0.930275, 0.930148, 0.930148, 0.930148, 0.930148,1.364361, 1.364234, 1.364234, 1.364234, 1.364234, 1.364361, 1.364234,1.364234, 1.382903, 1.382776, 1.382903, 1.382903, 1.382776, 1.382903,1.382903, 1.382776, 1.885188, 1.885188, 1.885061, 1.885188, 1.885188,1.885188, 1.885061, 1.885188, 1.488313, 1.488313, 1.488186, 1.488313,1.488313, 1.488313, 1.488186, 1.488313, 0.595376, 0.595249, 0.595376,0.595249, 0.595376, 0.595249, 0.595376, 0.595249, 0.396875, 0.396875,0.396875, 0.396875, 0 , 0 , 0 , 0, 0,0};
-			Keyframe[] keys = new Keyframe[digitalBrakeInputEnv.Length];
-			for (int i = 0; i < keys.Length; i++)
-			{
-				keys[i].time = .5f * (float)i / keys.Length;
-				keys[i].value = (float)digitalBrakeInputEnv[i];
-			}
-			return new AnimationCurve(keys);
-		}
 		private void Awake()
 		{
 			if (wheels != null)
@@ -619,15 +499,11 @@ namespace RVP
 			ghost = GetComponent<Ghost>();
 			followAI = GetComponent<FollowAI>();
 			raceBox = GetComponent<RaceBox>();
-			va = GetComponent<VehicleAssist>();
 			tr = transform;
 			rb = GetComponent<Rigidbody>();
 			wasKinematicBeforePhysicsSetup = rb.isKinematic;
-			// Do not let the remake's drivetrain or suspension move this car while
-			// its source vehicle config is still loading.
+			// Keep the car stationary until its original physics config has loaded.
 			rb.isKinematic = true;
-			originalDrag = rb.linearDamping;
-			originalMass = rb.mass;
 			rb.collisionDetectionMode = CollisionDetectionMode.Discrete;
 			//for (int i = 0; i < roadColParent.childCount; i++)
 			//	roadColParent.GetChild(i).GetComponent<CapsuleCollider>().hasModifiableContacts = true;
@@ -656,7 +532,6 @@ namespace RVP
 			foreach (var s in springRenderers)
 				s.material.color = c;
 
-			brakeCurve ??= GenerateBrakeCurve();
 
 			// Create normal orientation object
 			GameObject normTemp = new(tr.name + "'s Normal");
@@ -728,17 +603,6 @@ namespace RVP
 		void Update()
 		{
 
-			if (!UsesOriginalPhysics)
-			{
-				if (reallyGroundedWheels == 0 && !colliding && !crashing)
-					rb.linearDamping = 0;
-				else if (Physics.OverlapBox(tr.position, Vector3.one, Quaternion.identity, 1 << F.I.aeroTunnel).Length > 1)
-				{ // aerodynamic tunnel
-					rb.linearDamping = 0.8f * originalDrag;
-				}
-				else
-					rb.linearDamping = originalDrag;
-			}
 			// Shift single frame pressing logic
 			if (stopUpshift)
 			{
@@ -761,11 +625,6 @@ namespace RVP
 			{
 				stopDownShift = true;
 			}
-
-			//if (inputInherit)
-			//{
-			//	InheritInputOneShot();
-			//}
 
 			if (wheels[2].curSurfaceType != roadSurfaceType)
 			{
@@ -804,36 +663,6 @@ namespace RVP
 		}
 		public void FixedUpdate()
 		{
-			//if (inputInherit)
-			//{
-			//	InheritInput();
-			//}
-
-			// Legacy vehicles enable CCD only after spending half a second airborne.
-			// Original vehicles keep ContinuousDynamic so a fast landing cannot skip
-			// the track between physics steps.
-			if (!UsesOriginalPhysics)
-			{
-				if (reallyGroundedWheels == 0)
-				{
-					colDetectionTimer = Mathf.Clamp(colDetectionTimer + Time.fixedDeltaTime, 0, 0.5f);
-					if (colDetectionTimer == 0.5f && velMag > 58)
-						rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
-				}
-				else if (reallyGroundedWheels == 4)
-				{
-					colDetectionTimer = Mathf.Clamp(colDetectionTimer - Time.fixedDeltaTime, 0, 0.5f);
-					if (colDetectionTimer == 0)
-						rb.collisionDetectionMode = CollisionDetectionMode.Discrete;
-				}
-			}
-
-			if (wheelLoopDone && wheelGroups.Length > 0)
-			{
-				wheelLoopDone = false;
-				StartCoroutine(WheelCheckLoop());
-			}
-
 			GetGroundedWheels();
 
 			prevVel = localVelocity;
@@ -853,23 +682,11 @@ namespace RVP
 			upDot = Vector3.Dot(upDir, RaceManager.worldUpDir);
 			worldCOM = rb.worldCenterOfMass;
 			norm.transform.SetPositionAndRotation(tr.position, Quaternion.LookRotation(reallyGroundedWheels == 0 ? upDir : wheelNormalAverage, forwardDir));
-			if (brakeIsReverse)
+			if (originalVehiclePhysics != null)
 			{
-				if (brakeInput > 0 && localVelocity.z < 3)
-					reversing = true;
-				if (accelInput > 0 && localVelocity.z > -3)
-					reversing = false;
+				using (OriginalPhysicsStepMarker.Auto())
+					originalVehiclePhysics.Step();
 			}
-
-			if (!UsesOriginalPhysics && reallyGroundedWheels == 4)
-			{
-
-				//float radius = wheelbase / Mathf.Sin(wheels[0].suspensionParent.steerRangeMax * Mathf.Deg2Rad * wheels[0].suspensionParent.steerAngle);
-				//rb.AddTorque(twistGain * Mathf.Pow(velMag, 2) / radius * forwardDir, ForceMode.Acceleration);
-				float coeff = (wheels[1].susParent.appliedSuspensionForce.magnitude - wheels[0].susParent.appliedSuspensionForce.magnitude) / (wheels[0].susParent.springForce);
-				rb.AddTorque(twistGain * coeff * forwardDir, ForceMode.Acceleration);
-			}
-			originalVehiclePhysics?.Step();
 		}
 		public void SetHonkerInput(int f)
 		{
@@ -893,119 +710,25 @@ namespace RVP
 		// Set accel input
 		public void SetAccel(float f)
 		{
-			if (!UsesOriginalPhysics && (F.I.s_inEditor || !raceBox.enabled || F.I.s_raceType == RaceType.TimeTrial))
-				energyRemaining = batteryCapacity;
-			else if (BatteryPercent <= 0 && Time.time - lastNoBatteryMessage > 60)
-			{
-				RaceManager.I.hud.infoText.AddMessage(new Message(name + " " + F.I.LocStr("IS OUT OF BATTERY!"), BottomInfoType.NO_BATT));
-				lastNoBatteryMessage = Time.time;
-			}
 			f = Mathf.Clamp(f, -1, 1);
-
-			if (!UsesOriginalPhysics && BatteryPercent <= 0 && velMag > 30)
-				f = 0;
-
-			if (!UsesOriginalPhysics && F.I.s_cpuLevel == CpuLevel.Hard)
-			{
-				engine.ignition = BatteryPercent > 0;
-				if (!engine.ignition)
-					f = 0;
-			}
 
 			if (Owner)
 				accelInput = f;
-
-			if (!UsesOriginalPhysics && energyRemaining > 0 && (!followAI.IsCPU || F.I.s_cpuLevel == CpuLevel.Easy))
-				energyRemaining -= accelInput * engine.fuelConsumption * Time.deltaTime;
-
-
 		}
 
 		// Set brake input
 		public void SetBrake(float f)
 		{
-			if (UsesOriginalPhysics)
-			{
-				// Source-game stunt input is read directly by OriginalVehiclePhysics.
-				// Do not apply the remake's brake-pressure ramp to flips or braking.
-				brakeStart = 0;
-				brakeInput = Mathf.Clamp01(f);
-				return;
-			}
-			if (followAI.selfDriving)
-			{
-				brakeInput = f;
-			}
-			else
-			{
-				if (f == 0)
-				{
-					brakeStart = 0;
-					brakeInput = 0;
-				}
-				else
-				{
-					if (brakeIsReverse && reversing)
-					{
-						if (!(F.I.s_cpuLevel == CpuLevel.Hard && BatteryPercent <= 0))
-							brakeInput = 1;
-					}
-					else
-					{
-						if (brakeStart == 0)
-						{
-							brakeStart = Time.time;
-						}
-						brakeInput = Mathf.Lerp(brakeInput, 1, Time.fixedDeltaTime * brakeCurve.Evaluate(Time.time - brakeStart));
-					}
-				}
-			}
+			brakeInput = Mathf.Clamp01(f);
 		}
 		public void SetSteer(float f)
 		{
 			steerInput = Mathf.Clamp(f, -1, 1);
 		}
-		public void SetBunnyhop(int f)
-		{
-			if (UsesOriginalPhysics)
-			{
-				// Original stunt launch is armed by the SGP shift input below.
-				// Bunnyhop is a separate remake action and must not start flips.
-				return;
-			}
-			if (f > 0)
-			{
-				if (reallyGroundedWheels > 2)
-				{
-					bunnyhopInput = 1;
-					rb.AddForce(40 * bunnyhopInput * originalMass * -upDir);
-				}
-			}
-			else
-			{
-				if (bunnyhopInput > 0)
-				{
-					if (reallyGroundedWheels > 2)
-					{
-						// perform bunnyhop
-						rb.AddForce(10 * bunnyhopInput * upDir, ForceMode.VelocityChange);
-					}
-					bunnyhopInput = 0;
-				}
-			}
-		}
-
 		// Set ebrake input
 		public void SetEbrake(float f)
 		{
-			if ((f > 0 || ebrakeInput > 0) && holdEbrakePark && velMag < 1 && accelInput == 0 && (brakeInput == 0 || !brakeIsReverse))
-			{
-				ebrakeInput = 1;
-			}
-			else
-			{
-				ebrakeInput = Mathf.Clamp01(f);
-			}
+			ebrakeInput = Mathf.Clamp01(f);
 		}
 		public void SetBoost(bool b)
 		{
@@ -1013,25 +736,12 @@ namespace RVP
 		}
 		public void SetBoost(int b)
 		{
-			if (UsesOriginalPhysics)
-			{
-				boostButton = b;
-				return;
-			}
-			if (b == 1 && BatteryPercent > lowBatteryLevel)
-			{
-				energyRemaining -= Time.deltaTime * engine.jetConsumption;
-			}
-			else
-				b = 0;
-
-			boostButton = b;
+			boostButton = Mathf.Clamp(b, 0, 1);
 		}
 		public void SetSGPShift(int b)
 		{
 			SGPshiftbutton = b;
-			if (UsesOriginalPhysics)
-				originalVehiclePhysics.SetStuntButton(b);
+			originalVehiclePhysics?.SetStuntButton(b);
 		}
 		public void Switchlights()
 		{
@@ -1104,7 +814,7 @@ namespace RVP
 				}
 			}
 
-			if (UsesOriginalPhysics)
+			if (originalVehiclePhysics != null)
 			{
 				// Source contact grace counters define the original grounded class;
 				// wheel visuals can update a fixed step before or after this method.
@@ -1211,16 +921,6 @@ namespace RVP
 		}
 
 		// Loop through all wheel groups to check for wheel contacts
-		IEnumerator WheelCheckLoop()
-		{
-			for (int i = 0; i < wheelGroups.Length; i++)
-			{
-				wheelGroups[i].Activate();
-				wheelGroups[i == 0 ? wheelGroups.Length - 1 : i - 1].Deactivate();
-				yield return new WaitForFixedUpdate();
-			}
-			wheelLoopDone = true;
-		}
 
 		internal void ResetOnTrack()
 		{
@@ -1228,45 +928,24 @@ namespace RVP
 				return;
 			StartCoroutine(followAI.ResetOnTrack());
 		}
-		public void AddWheelGroup()
-		{
-			WheelCheckGroup wcg = new WheelCheckGroup
-			{
-				wheels = wheels
-			};
-			wheelGroups = new WheelCheckGroup[] { wcg };
-		}
-
-		public void ChargeBattery()
+		public void RefuelSourceEnergy()
 		{
 			if (!batteryLoadingSnd.isPlaying)
 			{
 				batteryLoadingSnd.clip = F.I.audioClips["elec" + Mathf.RoundToInt(3 * UnityEngine.Random.value)];
 				batteryLoadingSnd.Play();
 			}
-			energyRemaining = Mathf.Clamp(energyRemaining + batteryChargingSpeed * Time.deltaTime, 0, batteryCapacity);
-			originalVehiclePhysics?.SynchronizeSourceEnergyFromBattery();
+			if (originalVehiclePhysics != null)
+				originalVehiclePhysics.AddSourceEnergy(originalVehiclePhysics.SourceRefuelRate * Time.deltaTime);
 		}
 
-		public void ChargeBatteryByStunt()
+		public void AddSourceStuntEnergyAward()
 		{
-			if (UsesOriginalPhysics)
-			{
-				originalVehiclePhysics.AddSourceStuntEnergyAward();
-				return;
-			}
-			energyRemaining = Mathf.Clamp(energyRemaining + batteryCapacity * batteryStuntIncreasePercent, 0, batteryCapacity);
+			originalVehiclePhysics?.AddSourceStuntEnergyAward();
 		}
-		public void ApplyBatteryPenalty()
+		public void ApplySourceRespawnEnergyCost()
 		{
-			if (UsesOriginalPhysics)
-			{
-				originalVehiclePhysics.ApplySourceRespawnEnergyCost();
-				return;
-			}
-			float penalty = (followAI.IsCPU ? 0 : 1) * 0.5f * batteryStuntIncreasePercent;
-
-			energyRemaining = Mathf.Clamp(energyRemaining - batteryCapacity * penalty, 0, batteryCapacity);
+			originalVehiclePhysics?.ApplySourceRespawnEnergyCost();
 		}
 		public void KnockoutMe()
 		{
@@ -1289,46 +968,5 @@ namespace RVP
 			SGP_HUD.I.infoText.AddMessage(new(tr.name + " " + F.I.LocStr("ELIMINATED!"), BottomInfoType.ELIMINATED));
 		}
 
-		public void SetChassis(float mass, float drag, float angularDrag, Vector3 com, float twistGain)
-		{
-			this.twistGain = twistGain;
-			originalCOM = com;
-			rb.centerOfMass = com;
-			originalMass = mass;
-			rb.mass = mass;
-			originalDrag = drag;
-			rb.linearDamping = drag;
-			rb.angularDamping = angularDrag;
-			va.initialAngularDrag = angularDrag;
-			if (UsesOriginalPhysics)
-			{
-				originalDrag = 0;
-				rb.linearDamping = 0;
-				rb.angularDamping = 0;
-			}
-		}
-	}
-
-	// Class for groups of wheels to check each FixedUpdate
-	[Serializable]
-	public class WheelCheckGroup
-	{
-		public Wheel[] wheels;
-
-		public void Activate()
-		{
-			foreach (Wheel curWheel in wheels)
-			{
-				curWheel.getContact = true;
-			}
-		}
-
-		public void Deactivate()
-		{
-			foreach (Wheel curWheel in wheels)
-			{
-				curWheel.getContact = false;
-			}
-		}
 	}
 }

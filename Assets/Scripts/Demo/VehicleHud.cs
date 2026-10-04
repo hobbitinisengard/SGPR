@@ -86,7 +86,7 @@ namespace RVP
 				{
 					rpmMeter.value = engine.targetPitch;
 
-					boostMeter.value = vp.energyRemaining;
+					boostMeter.value = vp.SourceEnergy;
 
 				}
 

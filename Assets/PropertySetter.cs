@@ -8,8 +8,8 @@ public class PropertySetter : MonoBehaviour
 	bool initializing;
 	// convention: name(0), inputfield(1)
 	public float value { get; private set; }
-	Action applyValuesMethod;
-	public void Initialize(string propName, float value, Action applyValuesToCarMethod)
+	Action<float> applyValuesMethod;
+	public void Initialize(string propName, float value, Action<float> applyValuesToCarMethod)
 	{
 		initializing = true;
 		transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = propName;
@@ -25,7 +25,7 @@ public class PropertySetter : MonoBehaviour
 		try
 		{
 			this.value = float.Parse(value);
-			applyValuesMethod.Invoke();
+			applyValuesMethod.Invoke(this.value);
 		}
 		catch
 		{

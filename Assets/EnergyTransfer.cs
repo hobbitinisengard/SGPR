@@ -1,19 +1,32 @@
 using RVP;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class EnergyTransfer : MonoBehaviour
 {
 	AudioSource pitsBuzzing;
 	public GameObject elecCam;
+	readonly Dictionary<VehicleParent, HashSet<Collider>> collidersInTunnel = new();
+	readonly Dictionary<VehicleParent, float> lastRefuelFixedTime = new();
+
 	private void Start()
 	{
 		pitsBuzzing = GetComponent<AudioSource>();
 	}
 	private void OnTriggerEnter(Collider other)
 	{
-		//Debug.Log("enter");
-		
-		var vp = other.attachedRigidbody.transform.GetComponent<VehicleParent>();
+		VehicleParent vp = GetVehicle(other);
+		if (!vp)
+			return;
+
+		if (collidersInTunnel.TryGetValue(vp, out HashSet<Collider> colliders))
+		{
+			colliders.Add(other);
+			return;
+		}
+
+		colliders = new HashSet<Collider> { other };
+		collidersInTunnel.Add(vp, colliders);
 		RaceManager.I.hud.infoText.AddMessage(new Message(vp.name + " " + F.I.LocStr("IS RECHARGING!"), BottomInfoType.PIT_IN));
 		vp.PlayBatteryLoadingFXs(true);
 		var pitsPathCreator = transform.parent.parent.GetComponent<EnergyTunnelPath>().pitsPathCreator;
@@ -26,15 +39,38 @@ public class EnergyTransfer : MonoBehaviour
 	}
 	private void OnTriggerExit(Collider other)
 	{
-		//Debug.Log("exit");
-		var vp = other.attachedRigidbody.transform.GetComponent<VehicleParent>();
+		VehicleParent vp = GetVehicle(other);
+		if (!vp || !collidersInTunnel.TryGetValue(vp, out HashSet<Collider> colliders))
+			return;
+
+		colliders.Remove(other);
+		if (colliders.Count > 0)
+			return;
+
+		collidersInTunnel.Remove(vp);
+		lastRefuelFixedTime.Remove(vp);
 		vp.PlayBatteryLoadingFXs(false);
-		pitsBuzzing.volume = 0.5f;
+		if (collidersInTunnel.Count == 0)
+			pitsBuzzing.volume = 0.5f;
 		vp.customCam = null;
 	}
 	private void OnTriggerStay(Collider other)
 	{
-		var vp = other.attachedRigidbody.transform.GetComponent<VehicleParent>();
-		vp.ChargeBattery();
+		VehicleParent vp = GetVehicle(other);
+		if (!vp || !collidersInTunnel.ContainsKey(vp))
+			return;
+
+		float fixedTime = Time.fixedTime;
+		if (lastRefuelFixedTime.TryGetValue(vp, out float lastTime) && Mathf.Approximately(lastTime, fixedTime))
+			return;
+		lastRefuelFixedTime[vp] = fixedTime;
+		vp.RefuelSourceEnergy();
+	}
+
+	static VehicleParent GetVehicle(Collider other)
+	{
+		if (!other || !other.attachedRigidbody)
+			return null;
+		return other.attachedRigidbody.GetComponent<VehicleParent>();
 	}
 }

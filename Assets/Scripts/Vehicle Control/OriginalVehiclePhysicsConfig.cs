@@ -16,7 +16,7 @@ namespace RVP
 		public float length, width, height, rideHeight;
 		public float rpmIdle, rpmLimit, rpmMax, engineDecay, maxTorque;
 		public float[][] torqueCurves;
-		public int driveMode, gearCount;
+		public int torqueCurveIndex, driveMode, gearCount;
 		public float finalDrive, shiftTime, efficiency, powerSplit;
 		public float[] ratios;
 		public float brakeBias, brakeAcceleration;

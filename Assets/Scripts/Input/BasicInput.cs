@@ -62,7 +62,6 @@ namespace RVP
 					vp.SetBrake(Mathf.Abs(Mathf.Clamp(input2.y, -1, 0)));
 					vp.SetSteer(input2.x);
 					vp.SetBoost((int)F.I.boostInput.action.ReadValue<float>());
-					vp.SetBunnyhop((int)F.I.bunnyhopInput.action.ReadValue<float>());
 					if (F.I.chat.texting)
 						return;
 

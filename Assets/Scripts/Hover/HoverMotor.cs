@@ -14,13 +14,14 @@ namespace RVP
 		[Tooltip("Curve which calculates the driving force based on the speed of the vehicle, x-axis = speed, y-axis = force")]
 		public AnimationCurve forceCurve = AnimationCurve.EaseInOut(0, 1, 50, 0);
 		public HoverWheel[] wheels;
+		public bool brakeIsReverse;
 
 		protected override void FixedUpdate()
 		{
 			base.FixedUpdate();
 
 			// Get proper input
-			float actualAccel = vp.brakeIsReverse ? vp.accelInput - vp.brakeInput : vp.accelInput;
+			float actualAccel = brakeIsReverse ? vp.accelInput - vp.brakeInput : vp.accelInput;
 			actualInput = inputCurve.Evaluate(Mathf.Abs(actualAccel)) * Mathf.Sign(actualAccel);
 
 			// Set hover wheel speeds and forces

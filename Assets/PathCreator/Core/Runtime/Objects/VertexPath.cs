@@ -272,6 +272,25 @@ namespace PathCreation
 				wrappedQuery = true;
 			}
 
+			// For open paths, cumulative distance is sorted. Begin near the
+			// requested interval and stop after it instead of scanning every
+			// segment on long race paths.
+			int firstSegment = 0;
+			if (!isClosedLoop)
+			{
+				int low = 0;
+				int high = cumulativeLengthAtEachVertex.Length - 1;
+				while (low < high)
+				{
+					int mid = (low + high) >> 1;
+					if (cumulativeLengthAtEachVertex[mid] < s)
+						low = mid + 1;
+					else
+						high = mid;
+				}
+				firstSegment = Mathf.Max(0, low - 1);
+			}
+
 			float minSqrDst = float.MaxValue;
 			int chosenA = -1;
 			int chosenB = -1;
@@ -280,8 +299,11 @@ namespace PathCreation
 			float chosenShift = 0f;
 			Vector3 closestPoint = Vector3.zero;
 
-			for (int i = 0; i < localPoints.Length; i++)
+			for (int i = firstSegment; i < localPoints.Length; i++)
 			{
+				if (!isClosedLoop && cumulativeLengthAtEachVertex[i] > e)
+					break;
+
 				int nextI = i + 1;
 				if (nextI >= localPoints.Length)
 				{

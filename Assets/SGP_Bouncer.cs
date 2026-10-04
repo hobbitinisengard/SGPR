@@ -1,5 +1,4 @@
 using RVP;
-using System.Collections;
 using System.Collections.Generic;
 using Unity.Collections;
 using UnityEngine;
@@ -17,11 +16,8 @@ public class SGP_Bouncer : MonoBehaviour
 	int rbId;
 	static AnimationCurve multCurve;
 	public Collider[] bouncyCols;
-	Coroutine rotEffectCo;
 	readonly static Dictionary<int, VehicleParent> carRbs = new(10);
 	static bool OnContactModifyRegistered = false;
-	float widthLengthAvg = 0;
-	bool rotEffectPlaying = false;
 	void Awake()
 	{
 		vp = GetComponent<VehicleParent>();
@@ -49,11 +45,6 @@ public class SGP_Bouncer : MonoBehaviour
 			Physics.ContactModifyEvent += OnContactModify;
 		}
 	}
-	private void Start()
-	{
-		widthLengthAvg = (Vector3.Distance(vp.wheels[0].transform.position, vp.wheels[2].transform.position)
-			+ Vector3.Distance(vp.wheels[2].transform.position, vp.wheels[3].transform.position)) / 2f;
-	}
 	static void OnContactModify(PhysicsScene scene, NativeArray<ModifiableContactPair> pairs)
 	{
 		foreach (var pair in pairs)
@@ -61,9 +52,17 @@ public class SGP_Bouncer : MonoBehaviour
 			if (/*pair.bodyInstanceID != 0 && pair.otherBodyInstanceID != 0 &&*/
 					carRbs.ContainsKey(pair.bodyInstanceID) && carRbs.ContainsKey(pair.otherBodyInstanceID)) // car-car collisions
 			{
+				VehicleParent firstCar = carRbs[pair.bodyInstanceID];
+				VehicleParent secondCar = carRbs[pair.otherBodyInstanceID];
+				// OriginalVehiclePhysics resolves car pairs itself. Do not reshape the
+				// PhysX contacts on top of that response.
+				if ((firstCar && firstCar.originalVehiclePhysics != null) ||
+					(secondCar && secondCar.originalVehiclePhysics != null))
+					continue;
+
 				if (pair.contactCount > 0)
 				{
-					pair.SetPoint(0, (carRbs[pair.otherBodyInstanceID].worldCOM + carRbs[pair.bodyInstanceID].worldCOM) / 2f);
+					pair.SetPoint(0, (secondCar.worldCOM + firstCar.worldCOM) / 2f);
 					//pair.SetNormal(0, (pair.GetNormal(0) + Vector3.up) / 2f);
 					for (int i = 1; i < pair.contactCount; ++i)
 					{
@@ -97,6 +96,14 @@ collision_energy_impact_timedelay,0.4,"Range(0, 1) Time in Seconds"
 	}
 	void Bounce(Collision col)
 	{
+		if (vp && vp.originalVehiclePhysics != null)
+		{
+			// Preserve the collision state used by presentation/gameplay, but leave
+			// collision response to OriginalVehiclePhysics.
+			vp.colliding = true;
+			return;
+		}
+
 		int contactsNr = col.GetContacts(contacts);
 		if (contacts[0].otherCollider.gameObject.layer == F.I.ignoreWheelCastLayer)
 			return;
@@ -119,8 +126,6 @@ collision_energy_impact_timedelay,0.4,"Range(0, 1) Time in Seconds"
 			//float rotationalImpulse = Mathf.Max(col.impulse.magnitude * rotationalFrictionScale, minShock);
 			//vp.rb.AddTorque(-norm * rotationalImpulse, ForceMode.VelocityChange);
 
-			if (!rotEffectPlaying)
-				rotEffectCo = StartCoroutine(RotEffect(contacts[0].point));
 		}
 		else
 		{
@@ -184,33 +189,6 @@ collision_energy_impact_timedelay,0.4,"Range(0, 1) Time in Seconds"
 
 		}
 		vp.colliding = true;
-	}
-	IEnumerator RotEffect(Vector3 colPoint)
-	{
-		rotEffectPlaying = true;
-		float timer = 0.5f;
-		float totalTime = timer;
-		SuspensionSavable sus = (SuspensionSavable)vp.carConfig.GetPartReadonly(PartType.Suspension);
-
-		while (timer > 0)
-		{
-			//float step = Easing.OutCubic(timer);
-			foreach(var w in vp.wheels)
-			{
-				float d = Vector3.Distance(colPoint, w.transform.position);
-				if (d > widthLengthAvg)
-					d = widthLengthAvg;
-				w.susParent.springForce = sus.RearSpringForce + timer / totalTime * sus.RearSpringForce * (widthLengthAvg - 2*d) / widthLengthAvg;
-				w.susParent.springForce = Mathf.Clamp(w.susParent.springForce, 0.1f * sus.RearSpringForce, 2*sus.RearSpringForce);
-			}
-			timer -= Time.fixedDeltaTime;
-			yield return null;
-		}
-		vp.wheels[0].susParent.springForce = sus.frontSpringForce;
-		vp.wheels[1].susParent.springForce = sus.frontSpringForce;
-		vp.wheels[2].susParent.springForce = sus.RearSpringForce;
-		vp.wheels[3].susParent.springForce = sus.RearSpringForce;
-		rotEffectPlaying = false;
 	}
 	private void OnCollisionExit(Collision collision)
 	{

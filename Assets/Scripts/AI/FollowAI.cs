@@ -1,8 +1,9 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using PathCreation;
 using System.Collections.Generic;
 using System;
+using Unity.Profiling;
 
 namespace RVP
 {
@@ -76,11 +77,21 @@ namespace RVP
 		float steerAngle;
 		int curStuntpointIdx;
 		int curReplayPointIdx = 0;
-		public bool aiStuntingProc;
 		private bool revvingCo;
 		bool resetRoutineActive;
 		public float targetSteer;
+		[SerializeField] bool debugDrawAIPath;
 		readonly RaycastHit[] groundSurfaceRayHits = new RaycastHit[32];
+		struct GroundSurfaceCacheEntry
+		{
+			public Collider collider;
+			public bool isGroundSurface;
+		}
+		static readonly Dictionary<int, GroundSurfaceCacheEntry> groundSurfaceCache = new();
+		static readonly ProfilerMarker PathProjectionMarker =
+			new ProfilerMarker("RVP.FollowAI.PathProjection");
+		static readonly ProfilerMarker GroundSurfaceFallbackMarker =
+			new ProfilerMarker("RVP.FollowAI.GroundSurfaceFallback");
 		[Range(0, 1)]
 		public float maxDiff = 0.01f;
 		public bool overRoad { get; private set; }
@@ -147,9 +158,11 @@ namespace RVP
 		}
 		IEnumerator Prepare()
 		{
-			yield return null; // wait till other components initialize
+			while (vp && vp.originalVehiclePhysics == null)
+				yield return null;
 
-			maxPhysicalSteerAngle = vp.steeringControl.steeredWheels[0].steerRangeMax;
+			if (vp && vp.originalVehiclePhysics != null)
+				maxPhysicalSteerAngle = vp.originalVehiclePhysics.SteeringLimitDegrees;
 
 			if (!vp.IsOwner && progress == 0) // progress could be synched earlier so set progress when it's not been set
 			{
@@ -159,31 +172,59 @@ namespace RVP
 		}
 		float GetDist(PathCreator p)
 		{
-			return p.path.GetClosestTimeOnPath(transform.position) * p.path.length;
+			using (PathProjectionMarker.Auto())
+			{
+				VertexPath path = p.path;
+				return path.GetClosestTimeOnPath(transform.position) * path.length;
+			}
+		}
+		static bool IsGroundSurfaceCollider(Collider collider)
+		{
+			int instanceId = collider.GetInstanceID();
+			if (groundSurfaceCache.TryGetValue(instanceId, out GroundSurfaceCacheEntry cached) &&
+				ReferenceEquals(cached.collider, collider))
+				return cached.isGroundSurface;
+
+			bool isGroundSurface = collider.GetComponent<GroundSurfaceInstance>() != null ||
+				collider.GetComponent<TerrainSurface>() != null;
+			if (groundSurfaceCache.Count >= 4096)
+				groundSurfaceCache.Clear();
+			groundSurfaceCache[instanceId] = new GroundSurfaceCacheEntry
+			{
+				collider = collider,
+				isGroundSurface = isGroundSurface
+			};
+			return isGroundSurface;
 		}
 		bool HasGroundSurfaceBelow(out Vector3 surfaceNormal, out float surfaceDistance)
 		{
-			surfaceNormal = Vector3.zero;
-			surfaceDistance = Mathf.Infinity;
-			int hitCount = Physics.RaycastNonAlloc(tr.position + Vector3.up, Vector3.down,
-				groundSurfaceRayHits, Mathf.Infinity, RaceManager.I.wheelCastMask,
-				QueryTriggerInteraction.Ignore);
-			for (int i = 0; i < hitCount; i++)
+			using (GroundSurfaceFallbackMarker.Auto())
 			{
-				Collider collider = groundSurfaceRayHits[i].collider;
-				RaycastHit hit = groundSurfaceRayHits[i];
-				if (collider && hit.distance < surfaceDistance &&
-					(collider.GetComponent<GroundSurfaceInstance>() || collider.GetComponent<TerrainSurface>()))
+				surfaceNormal = Vector3.zero;
+				surfaceDistance = Mathf.Infinity;
+				int hitCount = Physics.RaycastNonAlloc(tr.position + Vector3.up, Vector3.down,
+					groundSurfaceRayHits, Mathf.Infinity, RaceManager.I.wheelCastMask,
+					QueryTriggerInteraction.Ignore);
+				for (int i = 0; i < hitCount; i++)
 				{
-					surfaceNormal = hit.normal;
-					surfaceDistance = hit.distance;
+					Collider collider = groundSurfaceRayHits[i].collider;
+					RaycastHit hit = groundSurfaceRayHits[i];
+					if (collider && hit.distance < surfaceDistance && IsGroundSurfaceCollider(collider))
+					{
+						surfaceNormal = hit.normal;
+						surfaceDistance = hit.distance;
+					}
 				}
+				return surfaceDistance < Mathf.Infinity;
 			}
-			return surfaceDistance < Mathf.Infinity;
 		}
 		float GetDist(PathCreator p, float progress)
 		{
-			return p.path.GetClosestPointOnPath(transform.position, Mathf.Max(0,progress - 100), progress + 200);
+			using (PathProjectionMarker.Auto())
+			{
+				VertexPath path = p.path;
+				return path.GetClosestPointOnPath(transform.position, Mathf.Max(0, progress - 100), progress + 200);
+			}
 		}
 		//int GetDist(int layer)
 		//{
@@ -299,26 +340,23 @@ namespace RVP
 			vp.ebrakeInput = 0;
 
 			Vector3 originalSurfaceNormal = Vector3.zero;
-			bool hasOriginalSurfaceNormal = vp.UsesOriginalPhysics &&
+			bool hasOriginalSurfaceNormal = vp.originalVehiclePhysics != null &&
 				vp.originalVehiclePhysics.TryGetGroundSurfaceContactNormal(out originalSurfaceNormal);
+			bool hasSourceTrackContact = vp.originalVehiclePhysics != null &&
+				vp.originalVehiclePhysics.HasGroundSurfaceContactThisTick;
 			Vector3 belowSurfaceNormal = Vector3.zero;
 			float belowSurfaceDistance = Mathf.Infinity;
-			bool hasMarkedSurfaceBelow = vp.UsesOriginalPhysics &&
+			bool hasMarkedSurfaceBelow = (!hasSourceTrackContact || !hasOriginalSurfaceNormal) &&
 				HasGroundSurfaceBelow(out belowSurfaceNormal, out belowSurfaceDistance);
-			bool originalTrackSurfaceContact = vp.UsesOriginalPhysics &&
-				(vp.originalVehiclePhysics.HasGroundSurfaceContactThisTick || hasMarkedSurfaceBelow);
-			overRoad = originalTrackSurfaceContact ||
-				Physics.Raycast(tr.position + Vector3.up, Vector3.down, out var _, Mathf.Infinity, 1 << F.I.roadLayer);
-			bool surface = Physics.Raycast(tr.position + Vector3.up, Vector3.down, out var hit, 4, RaceManager.I.wheelCastMask);
+			bool originalTrackSurfaceContact = vp.originalVehiclePhysics != null &&
+				(hasSourceTrackContact || hasMarkedSurfaceBelow);
+			overRoad = originalTrackSurfaceContact;
 			if (hasOriginalSurfaceNormal)
 				rolledOverTime = Mathf.Clamp(Vector3.Dot(originalSurfaceNormal, vp.tr.up) < 0.5f
 					? rolledOverTime + Time.fixedDeltaTime : rolledOverTime - Time.fixedDeltaTime, 0, rollResetTime);
 			else if (hasMarkedSurfaceBelow && belowSurfaceDistance <= 4)
 				rolledOverTime = Mathf.Clamp(Vector3.Dot(belowSurfaceNormal, vp.tr.up) < 0.5f
 					? rolledOverTime + Time.fixedDeltaTime : rolledOverTime - Time.fixedDeltaTime, 0, rollResetTime);
-			else if (!vp.UsesOriginalPhysics && surface)
-				rolledOverTime = Mathf.Clamp((Vector3.Dot(hit.normal, vp.tr.up) < 0.5f) ? rolledOverTime + Time.fixedDeltaTime
-				: rolledOverTime - Time.fixedDeltaTime, 0, rollResetTime);
 
 			if (rolledOverTime >= rollResetTime)
 			{
@@ -435,7 +473,7 @@ namespace RVP
 					{
 						StartCoroutine(ResetOnTrack("AI low-speed timeout"));
 					}
-					if (vp.BatteryPercent < 0.2f && vp.raceBox.curLap < F.I.s_laps)
+					if (vp.SourceEnergyPercent < 0.2f && vp.raceBox.curLap < F.I.s_laps)
 					{
 						searchForPits = true;
 					}
@@ -525,18 +563,19 @@ namespace RVP
 					if (!vp.raceBox.evoModule.stunting)
 					{
 						//UpdateFollowTarget();
-						float reqDist = lookAheadSteerCurve.Evaluate(vp.velMag) * steerMinDist;
-						
-						Debug.DrawLine(transform.position, RaceManager.I.racingPaths[1].path.GetPointAtDistance(univProgress), Color.yellow);
+
+						if (debugDrawAIPath)
+							Debug.DrawLine(transform.position,
+								RaceManager.I.racingPaths[1].path.GetPointAtDistance(univProgress), Color.yellow);
 						//Debug.DrawRay(targetPos, Vector3.up * 3, Color.yellow);
 						Vector2 targetDir;
 						if (pitsPathCreator)
 							targetDir = ((Vector3)tPos - vp.tr.position).Flat();
-						else if ((aiStuntingProc || NextStuntpointIn(30))
-							&& overRoad)
+						else if (NextStuntpointIn(30) && overRoad)
 						{
 							targetDir = ((Vector3)trackPathCreator.path.GetPointAtDistance(dist + 90) - vp.tr.position).Flat().normalized;
-							Debug.DrawRay(vp.tr.position + Vector3.up * 3, targetDir, Color.yellow);
+							if (debugDrawAIPath)
+								Debug.DrawRay(vp.tr.position + Vector3.up * 3, targetDir, Color.yellow);
 						}
 						else
 						{
@@ -553,7 +592,7 @@ namespace RVP
 							vp.SetSteer(newTargetSteer);
 						}
 
-						vp.SetBoost(steerAngle < 2 && vp.BatteryPercent > 0.5f && vp.reallyGroundedWheels > 2 && vp.velMag < 30);
+						vp.SetBoost(steerAngle < 2 && vp.SourceEnergyPercent > 0.5f && vp.reallyGroundedWheels > 2 && vp.velMag < 30);
 					}
 
 					if (vp.reallyGroundedWheels > 0)
@@ -589,73 +628,19 @@ namespace RVP
 								}
 							}
 						}
-						if (!vp.UsesOriginalPhysics && NextStuntpointIn(15) && vp.velMag > 50)
-						{
-							if (!aiStuntingProc)
-								StartCoroutine(AIStuntingProc());
-						}
 					}
 				}
 			}
-		}
-		public IEnumerator AIStuntingProc()
-		{
-			if (vp.UsesOriginalPhysics)
-				yield break;
-
-			aiStuntingProc = true;
-			float waitTimer = 1;
-			while (waitTimer > 0)
-			{
-				float stuntTimer = .5f;
-				vp.SetSGPShift(1);
-				if (vp.reallyGroundedWheels == 0)
-				{
-					vp.SetRoll(0);
-					vp.SetSteer(0);
-					vp.SetAccel(0);
-					vp.SetBrake(0);
-					waitTimer = 0;
-					int type = Mathf.RoundToInt(3 * UnityEngine.Random.value);
-					int val = (type > 1) ? 1 : (UnityEngine.Random.value > 0.5f) ? 1 : -1;
-					while (stuntTimer > 0)
-					{
-						switch (type)
-						{
-							case 0:
-								vp.SetRoll(val); // -1 or 1
-								break;
-							case 1:
-								vp.SetSteer(val); // -1 or 1
-								break;
-							case 2:
-								vp.SetAccel(val); // 1
-								break;
-							case 3:
-								vp.SetBrake(val); // 1
-								break;
-							default:
-								break;
-						}
-						stuntTimer -= Time.fixedDeltaTime;
-						yield return new WaitForFixedUpdate();
-					}
-				}
-				waitTimer -= Time.fixedDeltaTime;
-				yield return new WaitForFixedUpdate();
-			}
-			vp.SetSGPShift(0);
-			aiStuntingProc = false;
 		}
 		public IEnumerator ResetOnTrack(string resetCause = "external request")
 		{
 			if (!vp.Owner || F.I.s_inEditor || resetRoutineActive)
 				yield break;
 			resetRoutineActive = true;
-			Debug.LogWarning($"[FollowAI] Reset on track: cause={resetCause}, overRoad={overRoad}, " +
-				$"outOfTrackTime={outOfTrackTime:F2}, rolledOverTime={rolledOverTime:F2}, " +
-				$"lowSpeedTime={lowSpeedTime:F2}, position={tr.position:F2}, " +
-				$"sourceSurfaceContact={vp.UsesOriginalPhysics && vp.originalVehiclePhysics.HasGroundSurfaceContactThisTick}", vp);
+			//Debug.LogWarning($"[FollowAI] Reset on track: cause={resetCause}, overRoad={overRoad}, " +
+			//	$"outOfTrackTime={outOfTrackTime:F2}, rolledOverTime={rolledOverTime:F2}, " +
+			//	$"lowSpeedTime={lowSpeedTime:F2}, position={tr.position:F2}, " +
+			//	$"sourceSurfaceContact={vp.originalVehiclePhysics != null && vp.originalVehiclePhysics.HasGroundSurfaceContactThisTick}", vp);
 
 			vp.customCam = null;
 
@@ -665,7 +650,7 @@ namespace RVP
 
 			vp.raceBox.ResetOnTrack();
 			vp.originalVehiclePhysics.ResetToNeutral();
-			vp.ApplyBatteryPenalty();
+			vp.ApplySourceRespawnEnergyCost();
 			rolledOverTime = 0;
 			pitsProgress = 0;
 			reverseAttempts = 0;
@@ -699,7 +684,9 @@ namespace RVP
 				progress = (int)(trackPathCreator.path.length - 5);
 
 			dist = progress;
-			univProgress = GetDist(RaceManager.I.racingPaths[1],univProgress);
+			univProgress = GetDist(RaceManager.I.racingPaths[1]);
+			if(univProgress < RaceManager.I.racingPaths[1].path.length)
+				univProgress = RaceManager.I.racingPaths[1].path.length - 5;
 			vp.ghost.StartGhostResetting();
 			rb.isKinematic = true;
 			tr.position = resetPos + Vector3.up + resetDir;
@@ -708,7 +695,10 @@ namespace RVP
 			vp.antenna?.Reset();
 			//rb.angularVelocity = Vector3.zero;
 			//rb.velocity = Vector3.zero;
-			tr.rotation = Quaternion.LookRotation(trackPathCreator.path.GetDirectionAtDistance(progress));
+			Vector3 resetForward = Vector3.ProjectOnPlane(resetDir, h.normal);
+			if (resetForward.sqrMagnitude < 0.0001f)
+				resetForward = Vector3.ProjectOnPlane(Vector3.forward, h.normal);
+			tr.rotation = Quaternion.LookRotation(resetForward.normalized, h.normal);
 			vp.originalVehiclePhysics.ResetSourceProbeHistory();
 
 			OutOfPits(resetProgress: false);

@@ -161,9 +161,9 @@ public class Info : MonoBehaviour
 		QualitySettings.vSyncCount = playerData.vSync ? 1 : 0;
 		ReadSettingsDataFromJson();
 		PopulateSFXData();
+		LoadOriginalVehiclePartCatalog();
 		ReloadCarsData();
 		PopulateTrackData();
-		ReloadCarPartsData();
 		LoadRanking();
 		LoadArcade();
 		icons = Resources.LoadAll<Sprite>(trackImagesPath + "tiles");
@@ -226,7 +226,6 @@ public class Info : MonoBehaviour
 	public InputActionReference honkInput;
 	public InputActionReference rollInput;
 	public InputActionReference resetOnTrackInput;
-	public InputActionReference bunnyhopInput;
 	public InputActionReference lookBackInput;
 	public InputActionReference lookAxisInput;
 
@@ -448,24 +447,6 @@ public class Info : MonoBehaviour
 		File.WriteAllText(userdataPath, jsonText);
 	}
 
-	public PartInfo[] partInfos = new PartInfo[]
-	{
-		new ("Itex", ".suscfg"),
-		new ("Mysuko", ".bmscfg"),
-		new ("Titan", ".batcfg"),
-		new ("Caltex", ".engcfg"),
-		new ("TGR", ".chacfg"),
-		new ("Itex", ".grscfg"),
-		new ("Mysuko", ".jetcfg"),
-		new ("Rline", ".tyrcfg"),
-		new ("TGR", ".drvcfg"),
-		new ("Titan", ".hnkcfg"),
-		new ("", ".carcfg"),
-	};
-	//public static string[] extensionsSuffixes = new string[] { "suscfg", "bmscfg", "batcfg",
-	//		"engcfg", "chacfg", "grscfg", "jetcfg", "tyrcfg", "drvcfg", "carcfg" };
-
-
 	/// <summary>
 	/// Number of track textures. Set pavementTypes+1 for random texture.
 	/// </summary>
@@ -523,11 +504,48 @@ public class Info : MonoBehaviour
 	public Vector3[] carSGPstats;
 	[NonSerialized]
 	public Car[] cars;
+	[NonSerialized]
+	public OriginalVehiclePartCatalog originalVehiclePartCatalog;
+
+	public OriginalVehiclePartDefinition GetOriginalVehiclePart(string id)
+	{
+		return originalVehiclePartCatalog?.GetPart(id);
+	}
+
+	public OriginalVehiclePartDefinition GetOriginalVehiclePart(OriginalVehiclePartType type, int index)
+	{
+		return originalVehiclePartCatalog?.GetPart(type, index);
+	}
+
+	public OriginalVehicleCarSetup GetDefaultOriginalVehicleSetup(int carIndex)
+	{
+		return originalVehiclePartCatalog?.GetDefaultSetup(carIndex);
+	}
+
+	void LoadOriginalVehiclePartCatalog()
+	{
+		TextAsset dynamics = Resources.Load<TextAsset>("OriginalSetupData/dynamics");
+		TextAsset carSetup = Resources.Load<TextAsset>("OriginalSetupData/carsetup");
+		TextAsset language = Resources.Load<TextAsset>("OriginalSetupData/languagepc");
+		if (dynamics == null || carSetup == null || language == null)
+		{
+			Debug.LogError("Original vehicle part data is missing from Resources/OriginalSetupData.");
+			return;
+		}
+
+		try
+		{
+			originalVehiclePartCatalog = OriginalVehiclePartCatalog.Load(dynamics.text, carSetup.text, language.text);
+			Debug.Log($"Loaded {originalVehiclePartCatalog.parts.Count} original vehicle parts and {originalVehiclePartCatalog.carSetups.Count} car setups.");
+		}
+		catch (Exception exception)
+		{
+			Debug.LogError("Failed to load original vehicle part data: " + exception);
+		}
+	}
 	public ScoringType scoringType;
 	public GameMode gameMode = GameMode.Exhibition;
 	public ActionHappening actionHappening = ActionHappening.InLobby;
-	[NonSerialized]
-	public Dictionary<string, PartSavable> carParts;
 	[NonSerialized]
 	public SortedDictionary<string, TrackHeader> tracks;
 	[NonSerialized]
@@ -631,21 +649,6 @@ public class Info : MonoBehaviour
 			return cars[0];
 		}
 	}
-	public void ReloadCarPartsData()
-	{
-		string[] extensionsSuffixes = partInfos.Select(i => i.fileExtension).ToArray();
-		string[] filepaths = Directory.GetFiles(partsPath)
-			.Where(filepath => extensionsSuffixes.Any(filepath.ToLower().EndsWith))
-			.ToArray();
-		if (carParts == null)
-			carParts = new Dictionary<string, PartSavable>();
-		else
-			carParts.Clear();
-		foreach (var filepath in filepaths)
-		{
-			ComponentPanel.AddPart(filepath);
-		}
-	}
 	public void ReloadCarsData()
 	{
 		if (cars == null)
@@ -674,11 +677,13 @@ public class Info : MonoBehaviour
 				new ("car19",90000,5,7,7,CarGroup.Team, Livery.Team, "TEAM MACHINE","The ultimate, hugely versatile stock car.")
 			};
 		}
+		for (int i = 0; i < cars.Length; i++)
+			cars[i].defaultOriginalParts = GetDefaultOriginalVehicleSetup(i);
 		ReloadCarConfigs();
 	}
 	public async void ReloadCarConfigs()
 	{
-		string carSuffix = partInfos[^1].fileExtension;
+		string carSuffix = "." + CarConfig.extension;
 		string[] filepaths = Directory.GetFiles(partsPath)
 			.Where(filepath => filepath.ToLower().EndsWith(carSuffix))
 			.ToArray();
@@ -687,10 +692,11 @@ public class Info : MonoBehaviour
 		{
 			await Task.Run(() =>
 			{
-				string filepath = partsPath + "car" + i.ToString() + partInfos[^1].fileExtension;
+				string filepath = partsPath + "car" + i.ToString() + "." + CarConfig.extension;
 				string jsonText = File.ReadAllText(filepath);
 				cars[i].config = new CarConfig("car" + i.ToString(), jsonText);
 			});
+			cars[i].config?.EnsureOriginalParts(cars[i].defaultOriginalParts);
 		}
 	}
 	public void PopulateTrackData()
@@ -1093,6 +1099,7 @@ public class Car
 	public string name;
 	public CarGroup category;
 	public CarConfig config;
+	public OriginalVehicleCarSetup defaultOriginalParts;
 	public int price;
 	public int rooster;
 	public string internalName;
@@ -1132,17 +1139,6 @@ public class Car
 		}
 	}
 }
-public struct PartInfo
-{
-	public string manufacturer;
-	public string fileExtension;
-	public PartInfo(string m, string e)
-	{
-		manufacturer = m;
-		fileExtension = e;
-	}
-}
-
 public static class IMG2Sprite
 {
 

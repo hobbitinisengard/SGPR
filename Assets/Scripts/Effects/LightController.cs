@@ -63,25 +63,17 @@ namespace RVP
             }
 
             // Activate reverse lights
-            if (gearTrans) {
+			if (vp.originalVehiclePhysics != null) {
+				reverseLightsOn = vp.originalVehiclePhysics.CurrentGear == 0;
+			}
+			else if (gearTrans) {
                 reverseLightsOn = gearTrans.selectedGear == 0;
             }
             else if (conTrans) {
                 reverseLightsOn = conTrans.reversing;
             }
 
-            // Activate brake lights
-            if (vp.accelAxisIsBrake) {
-                brakelightsOn = vp.accelInput != 0 && Mathf.Sign(vp.accelInput) != Mathf.Sign(vp.localVelocity.z) && Mathf.Abs(vp.localVelocity.z) > 1;
-            }
-            else {
-                if (!vp.brakeIsReverse) {
-                    brakelightsOn = (vp.burnout > 0 && vp.brakeInput > 0) || vp.brakeInput > 0;
-                }
-                else {
-                    brakelightsOn = (vp.burnout > 0 && vp.brakeInput > 0) || ((vp.brakeInput > 0 && vp.localVelocity.z > 1) || (vp.accelInput > 0 && vp.localVelocity.z < -1));
-                }
-            }
+			brakelightsOn = vp.brakeInput > 0;
 
             SetLights(headlights, highBeams, headlightsOn);
             SetLights(brakeLights, headlightsOn || highBeams, brakelightsOn);

@@ -444,12 +444,15 @@ namespace RVP
 				Vector3 rotDirVec = Quaternion.AngleAxis(90, Vector3.up) * dirVec;
 				Vector3 leftSide = startPos;
 				Vector3 rightSide = startPos;
+				Vector3 leftNormal = Vector3.zero;
+				Vector3 rightNormal = Vector3.zero;
 
 				for (int j = 2; j < 8; j += 2)//track width is around 30
 				{
 					if (Physics.Raycast(startPos + 5 * Vector3.up + rotDirVec * j, Vector3.down, out var hit, 10, 1 << F.I.roadLayer))
 					{
 						rightSide = hit.point;
+						rightNormal += hit.normal;
 					}
 					else
 						break;
@@ -459,13 +462,22 @@ namespace RVP
 					if (Physics.Raycast(startPos + 5 * Vector3.up - rotDirVec * j, Vector3.down, out var hit, 10, 1 << F.I.roadLayer))
 					{
 						leftSide = hit.point;
+						leftNormal += hit.normal;
 					}
 					else
 						break;
 				}
 				startPos = Vector3.Lerp(leftSide, rightSide, (cp.position % 2 == 0) ? 0 : 1);
 				var position = new Vector3(startPos.x, startPos.y + 3, startPos.z);
-				var rotation = Quaternion.LookRotation(dirVec);
+				Vector3 trackNormal = leftNormal + rightNormal;
+				if (trackNormal.sqrMagnitude < 0.0001f)
+					trackNormal = Vector3.up;
+				else
+					trackNormal.Normalize();
+				Vector3 trackForward = Vector3.ProjectOnPlane(dirVec, trackNormal);
+				if (trackForward.sqrMagnitude < 0.0001f)
+					trackForward = Vector3.ProjectOnPlane(Vector3.forward, trackNormal);
+				var rotation = Quaternion.LookRotation(trackForward.normalized, trackNormal);
 
 				if (!ServerC.I.AmHost)
 					Online.I.GibCar(position, rotation);

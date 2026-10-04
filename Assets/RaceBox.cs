@@ -361,7 +361,7 @@ public class RaceBox : MonoBehaviour
 				grantedComboTime = 3;
 				starLevel = Mathf.Clamp(++starLevel, 0, 10);
 				ProgressDrift(0, true);
-				vp.ChargeBatteryByStunt();
+				vp.AddSourceStuntEnergyAward();
 				driftingTimer = 0;
 			}
 			if (grantedComboTime > 0 && vp.reallyGroundedWheels > 0)
@@ -425,7 +425,6 @@ public class RaceBox : MonoBehaviour
 			{
 				float dot = Vector3.Dot(vp.forwardDir, vp.rb.linearVelocity.normalized);
 				
-				vp.va.StabilizeRail(dot);
 				grindTimer += Time.fixedDeltaTime;
 				grindTime = Time.time;
 				if (grindTimer > 0.15f)
@@ -668,7 +667,7 @@ public class RaceBox : MonoBehaviour
 		{
 			aero += stuntPai.score / 10f;
 			prevStuntPai = new PtsAnimInfo(stuntPai);
-			vp.ChargeBatteryByStunt();
+			vp.AddSourceStuntEnergyAward();
 		}
 		StuntPaiReset();
 	}
@@ -677,7 +676,7 @@ public class RaceBox : MonoBehaviour
 		stableLandingTimer = -1;
 		if (stuntPai.score > 0)
 		{
-			vp.ChargeBatteryByStunt();
+			vp.AddSourceStuntEnergyAward();
 			if (F.I.s_raceType == RaceType.Drift)
 				Drift += stuntPai.score;
 			else
@@ -826,8 +825,7 @@ public class RaceBox : MonoBehaviour
 
 				if (F.I.s_raceType == RaceType.TimeTrial)
 				{
-					vp.energyRemaining = vp.batteryCapacity;
-					vp.originalVehiclePhysics?.SynchronizeSourceEnergyFromBattery();
+					vp.originalVehiclePhysics?.RefillSourceEnergy();
 				}
 
 				if (curLap <= F.I.s_laps && enabled)

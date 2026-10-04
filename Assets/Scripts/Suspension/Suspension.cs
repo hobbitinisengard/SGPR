@@ -1,509 +1,172 @@
-﻿using UnityEngine;
-using System.Collections.Generic;
+using UnityEngine;
 using System;
+using System.Collections.Generic;
 
 namespace RVP
 {
-	[RequireComponent(typeof(DriveForce))]
 	[ExecuteInEditMode]
 	[DisallowMultipleComponent]
 	[AddComponentMenu("RVP/Suspension/Suspension", 0)]
-
-	// Class for the suspensions
 	public class Suspension : MonoBehaviour
 	{
-		[System.NonSerialized]
-		public Transform tr;
-		Rigidbody rb;
-		VehicleParent vp;
+		[NonSerialized] public Transform tr;
+		VehicleParent vehicle;
 
-		// Variables for inverting certain values on opposite sides of the vehicle
-		[System.NonSerialized]
-		public bool flippedSide;
-		[System.NonSerialized]
-		public float flippedSideFactor;
-		[System.NonSerialized]
-		public Quaternion initialRotation;
+		[NonSerialized] public bool flippedSide;
+		[NonSerialized] public float flippedSideFactor;
+		[NonSerialized] public Quaternion initialRotation;
 
 		public Wheel wheel;
-		SphereCollider compressCol; // The hard collider // capsuleCollider
 
-		[Tooltip("Generate a capsule collider for hard compressions")]
-		public bool generateHardCollider = true;
+		[Header("Steering")]
+		[Range(-180, 180)] public float steerRangeMin;
+		[Range(-180, 180)] public float steerRangeMax;
+		[Range(-1, 1)] public float steerAngle;
+		[NonSerialized] public float steerDegrees;
 
-		[Tooltip("Multiplier for the radius of the hard collider")]
-		public float hardColliderRadiusFactor = 1;
-		float hardColliderRadiusFactorPrev;
-		float setHardColliderRadiusFactor;
-		Transform compressTr; // Transform component of the hard collider
-
-		[Header("Brakes and Steering")]
-		public float brakeForce;
-
-		[Range(-180, 180)]
-		public float steerRangeMin;
-		[Range(-180, 180)]
-		public float steerRangeMax;
-
-		[Tooltip("How much the wheel is steered")]
-		public float steerFactor = 1;
-		[Range(-1, 1)]
-		public float steerAngle;
-		[System.NonSerialized]
-		public float steerDegrees;
-
-		[Tooltip("Effect of Ackermann steering geometry")]
-		public float ackermannFactor;
-
-		[Tooltip("The camber of the wheel as it travels, x-axis = compression, y-axis = angle")]
+		[Header("Wheel alignment")]
 		public AnimationCurve camberCurve = AnimationCurve.Linear(0, 0, 1, 0);
-		[Range(-89.999f, 89.999f)]
-		public float camberOffset;
-		[System.NonSerialized]
-		public float camberAngle;
-
-		[Tooltip("Adjust the camber as if it was connected to a solid axle, opposite wheel must be set")]
+		[Range(-89.999f, 89.999f)] public float camberOffset;
+		[NonSerialized] public float camberAngle;
 		public bool solidAxleCamber;
 		public Suspension oppositeWheel;
-
-		[Tooltip("Angle at which the suspension points out to the side")]
-		[Range(-89.999f, 89.999f)]
-		public float sideAngle;
-		[Range(-89.999f, 89.999f)]
-		public float casterAngle;
-		[Range(-89.999f, 89.999f)]
-		public float toeAngle;
-
-		[Tooltip("Wheel offset from its pivot point")]
+		[Range(-89.999f, 89.999f)] public float sideAngle;
+		[Range(-89.999f, 89.999f)] public float casterAngle;
+		[Range(-89.999f, 89.999f)] public float toeAngle;
 		public float pivotOffset;
-		[System.NonSerialized]
-		public List<SuspensionPart> movingParts = new List<SuspensionPart>();
+		[NonSerialized] public List<SuspensionPart> movingParts = new();
 
-		[Header("Spring")]
+		[Header("Original suspension presentation")]
 		public float suspensionDistance;
-		[System.NonSerialized]
-		public float compression;
-
-		[Tooltip("Should be left at 1 unless testing suspension travel")]
-		[Range(0, 1)]
-		public float targetCompression;
-		[System.NonSerialized]
-		public float penetration; // How deep the ground is interesecting with the wheel's tire
-		public float springForce;
-
-		[Tooltip("Force of the curve depending on it's compression, x-axis = compression, y-axis = force")]
-		public AnimationCurve springForceCurve = AnimationCurve.Linear(0, 0, 1, 1);
-
-		[Tooltip("Exponent for spring force based on compression")]
-		public float springExponent = 1;
-		public float springDampening;
-
-		[NonSerialized]
-		[Tooltip("How quickly the suspension extends if it's not grounded")]
-		public float extendSpeed = 10;
-
-		[Tooltip("Apply forces to prevent the wheel from intersecting with the ground, not necessary if generating a hard collider")]
-		public bool applyHardContactForce = true;
-		public float hardContactForce = 50;
-		public float hardContactSensitivity = 2;
-
-		[Tooltip("Apply suspension forces at ground point")]
-		public bool applyForceAtGroundContact = true;
-
-		[Tooltip("Apply suspension forces along local up direction instead of ground normal")]
-		public bool leaningForce;
-
-		[System.NonSerialized]
-		public Vector3 maxCompressPoint; // Position of the wheel when the suspension is compressed all the way
-		[System.NonSerialized]
-		public Vector3 springDirection;
-		[System.NonSerialized]
-		public Vector3 upDir; // Local up direction
-		[System.NonSerialized]
-		public Vector3 forwardDir; // Local forward direction
-
-		[System.NonSerialized]
-		public DriveForce targetDrive; // The drive being passed into the wheel
-
-		[System.NonSerialized]
-		public SuspensionPropertyToggle properties; // Property toggler
-		[System.NonSerialized]
-		public bool steerEnabled = true;
-		[System.NonSerialized]
-		public bool steerInverted;
-		//[System.NonSerialized]
-		//public bool driveEnabled = true;
-		[System.NonSerialized]
-		public bool driveInverted;
-		[System.NonSerialized]
-		public bool ebrakeEnabled = true;
-		[System.NonSerialized]
-		public bool skidSteerBrake;
+		[NonSerialized] public float compression;
+		[Range(0, 1)] public float targetCompression = 1;
+		[NonSerialized] public Vector3 maxCompressPoint;
+		[NonSerialized] public Vector3 springDirection;
+		[NonSerialized] public Vector3 upDir;
+		[NonSerialized] public Vector3 forwardDir;
 
 		[Header("Damage")]
-
-		[Tooltip("Point around which the suspension pivots when damaged")]
 		public Vector3 damagePivot;
-
-		[Tooltip("Compression amount to remain at when wheel is detached")]
-		[Range(0, 1)]
-		public float detachedCompression = 0.5f;
-
+		[Range(0, 1)] public float detachedCompression = 0.5f;
 		public float jamForce = Mathf.Infinity;
-		[System.NonSerialized]
-		public bool jammed;
-		public Vector3 appliedSuspensionForce;
-		private void Awake()
+		[NonSerialized] public bool jammed;
+
+		void Awake()
 		{
 			tr = transform;
+			vehicle = tr.GetTopmostParentComponent<VehicleParent>();
 		}
+
 		void Start()
 		{
-			rb = tr.GetTopmostParentComponent<Rigidbody>();
-			vp = tr.GetTopmostParentComponent<VehicleParent>();
-			targetDrive = GetComponent<DriveForce>();
-			flippedSide = Vector3.Dot(tr.forward, vp.transform.right) < 0;
+			if (!vehicle)
+				vehicle = tr.GetTopmostParentComponent<VehicleParent>();
+			flippedSide = Vector3.Dot(tr.forward, vehicle.transform.right) < 0;
 			flippedSideFactor = flippedSide ? -1 : 1;
 			initialRotation = tr.localRotation;
-
 			if (Application.isPlaying)
 			{
-				GetCamber();
-
-				// Generate the hard collider
-				if (generateHardCollider)
-				{
-					GameObject cap = new GameObject("Compress Collider");
-					cap.layer = RaceManager.ignoreWheelCastLayer;
-					
-					compressTr = cap.transform;
-					compressTr.parent = tr;
-					
-					
-					if (wheel.isFront)
-					{ // prevent sticking to walls by aligning front suspension hard colliders with rear ones
-						var rearSus = wheel.isLeft ? vp.wheels[2].susParent : vp.wheels[3].susParent;
-						compressTr.localPosition = (Math.Abs(rearSus.tr.localPosition.x - tr.localPosition.x) + rearSus.wheel.tireRadius / 2 - wheel.tireRadius / 2) * Vector3.forward;
-					}
-					else
-					{
-						compressTr.localPosition = Math.Abs(wheel.tireRadius / 2 - wheel.tireWidth / 2) * -Vector3.forward;
-					}
-					compressTr.localEulerAngles = new Vector3(camberAngle, 0, -casterAngle * flippedSideFactor);
-
-					setHardColliderRadiusFactor = hardColliderRadiusFactor;
-					hardColliderRadiusFactorPrev = setHardColliderRadiusFactor;
-
-					//compressCol = cap.AddComponent<MeshCollider>();
-					//compressCol.sharedMesh = wheel.tr.GetChild(0).GetComponent<MeshFilter>().mesh;
-					//compressCol.convex = true;
-
-					compressCol = cap.AddComponent<SphereCollider>();
-					compressCol.radius = wheel.tireRadius;
-					//compressCol = cap.AddComponent<CapsuleCollider>();
-					//compressCol.direction = 1;
-					//compressCol.radius = 0;// wheel.rimWidth;// * hardColliderRadiusFactor;
-					//compressCol.height = (wheel.popped ? wheel.rimRadius : Mathf.Lerp(wheel.rimRadius, wheel.tireRadius, wheel.tirePressure)) * 2;
-
-					compressCol.sharedMaterial = RaceManager.I.frictionlessMat;
-				}
-				else
-				{
-					Debug.LogWarning("Not generate hard collider selected");
-				}
-
-					steerRangeMax = Mathf.Max(steerRangeMin, steerRangeMax);
-
-				properties = GetComponent<SuspensionPropertyToggle>();
-				if (properties)
-				{
-					UpdateProperties();
-				}
+				steerRangeMax = Mathf.Max(steerRangeMin, steerRangeMax);
 			}
+			GetCamber();
+			GetSpringVectors();
 		}
 
 		void FixedUpdate()
 		{
 			upDir = tr.up;
 			forwardDir = tr.forward;
-			targetCompression = 1;
-
 			GetCamber();
-
 			GetSpringVectors();
 
-			if (wheel.connected)
-			{
-				compression = Mathf.Min(targetCompression, suspensionDistance > 0 ? Mathf.Clamp01(wheel.contactPoint.distance / suspensionDistance) : 0);
-				penetration = Mathf.Min(0, wheel.contactPoint.distance);
-			}
-			else
+			if (!wheel || !wheel.connected)
 			{
 				compression = detachedCompression;
-				penetration = 0;
+				return;
 			}
 
-			if (targetCompression > 0 && !vp.UsesOriginalPhysics)
-			{
-				ApplySuspensionForce();
-			}
-
-			// Set hard collider size if it is changed during play mode
-			//if (generateHardCollider)
-			//{
-			//	setHardColliderRadiusFactor = hardColliderRadiusFactor;
-
-			//	if (hardColliderRadiusFactorPrev != setHardColliderRadiusFactor || wheel.updatedSize || wheel.updatedPopped)
-			//	{
-			//		if (wheel.rimWidth > wheel.actualRadius)
-			//		{
-			//			compressCol.direction = 2;
-			//			compressCol.radius = wheel.actualRadius * hardColliderRadiusFactor;
-			//			compressCol.height = wheel.rimWidth * 2;
-			//		}
-			//		else
-			//		{
-			//			compressCol.direction = 1;
-			//			compressCol.radius = wheel.rimWidth * hardColliderRadiusFactor;
-			//			compressCol.height = wheel.actualRadius * 2;
-			//		}
-			//	}
-
-			//	hardColliderRadiusFactorPrev = setHardColliderRadiusFactor;
-			//}
-
-			// Set the drive of the wheel
-			if (wheel.connected)
-			{
-				if (wheel.targetDrive)
-				{
-					targetDrive.feedbackRPM = wheel.targetDrive.feedbackRPM;
-					wheel.targetDrive.SetDrive(targetDrive);
-				}
-			}
-			else
-			{
-				targetDrive.feedbackRPM = targetDrive.rpm;
-			}
+			compression = vehicle && vehicle.originalVehiclePhysics != null
+				? vehicle.originalVehiclePhysics.GetWheelTravelDistance(wheel)
+				: targetCompression;
 		}
-		public void Update()
+
+		void Update()
 		{
 			GetCamber();
-
 			if (!Application.isPlaying)
-			{
 				GetSpringVectors();
-			}
-
-			// Set steer angle for the wheel
 			steerDegrees = Mathf.Abs(steerAngle) * (steerAngle > 0 ? steerRangeMax : steerRangeMin);
 		}
 
-		// Apply suspension forces to support vehicles
-		public float ApplyOriginalSuspensionForce(OriginalTyrePhysicsConfig tyre, float travel,
-			float cornerWeight, Vector3 contactNormal)
-		{
-			appliedSuspensionForce = Vector3.zero;
-			if (!wheel.connected || !wheel.grounded ||
-				Vector3.Dot(contactNormal, vp.tr.up) <= 0.70710678f)
-				return 0;
-
-			float compression = Mathf.Clamp01(1 - wheel.contactPoint.distance / travel);
-			float sourceTravel = Mathf.Max(0.001f, tyre.travelIn + tyre.travelOut);
-			float restCompression = Mathf.Clamp(tyre.travelIn / sourceTravel, 0.1f, 0.9f);
-			float stiffness = compression >= restCompression ? tyre.stiffnessIn : tyre.stiffnessOut;
-			float springRate = cornerWeight / (restCompression * travel) *
-				(0.05f / Mathf.Max(0.001f, stiffness));
-			float springForce = springRate * compression * travel;
-			Rigidbody ground = wheel.contactPoint.col ? wheel.contactPoint.col.attachedRigidbody : null;
-			Vector3 groundVelocity = ground ? ground.GetPointVelocity(wheel.contactPoint.point) : Vector3.zero;
-			float travelVelocity = Vector3.Dot(rb.GetPointVelocity(wheel.tr.position) - groundVelocity, vp.tr.up);
-			float damping = compression >= restCompression ? tyre.dampingIn : tyre.dampingOut;
-			float damperRatio = Mathf.Max(0, 1 - damping) * 4;
-			float damper = -2 * Mathf.Sqrt(Mathf.Max(0, springRate * rb.mass * 0.25f)) *
-				damperRatio * travelVelocity;
-			float force = Mathf.Max(0, springForce + damper);
-			appliedSuspensionForce = contactNormal * force;
-			// The recovered vehicle model accumulates wheel support in its body
-			// velocity/contact solver and supplies rotation through wheel_rotation.
-			// Apply this Unity adapter's net support at the COM to avoid adding PhysX
-			// contact torque on top of that source rotation path.
-			rb.AddForce(appliedSuspensionForce, ForceMode.Force);
-			if (ground && ground != rb)
-				ground.AddForceAtPosition(-appliedSuspensionForce, wheel.contactPoint.point, ForceMode.Force);
-			return force;
-		}
-
-		void ApplySuspensionForce()
-		{
-			if (wheel.grounded && wheel.connected)
-			{
-				// Get velocity of ground to offset from local vertical velocity
-				Rigidbody groundBody = wheel.contactPoint.col ? wheel.contactPoint.col.attachedRigidbody : null;
-				Vector3 groundVel = Vector3.zero;
-				if (groundBody)
-				{
-					groundVel = groundBody.linearVelocity;
-				}
-
-				// Get the local vertical velocity
-				float travelVel = vp.norm.InverseTransformDirection(rb.GetPointVelocity(tr.position) - groundVel).z;
-
-				// Apply the suspension force
-				if (suspensionDistance > 0 && targetCompression > 0)
-				{
-					appliedSuspensionForce = (leaningForce ? Vector3.Lerp(upDir, vp.norm.forward,
-						 Mathf.Abs(Mathf.Pow(Vector3.Dot(vp.norm.forward, vp.upDir), 5))) : vp.norm.forward) *
-						 springForce * (Mathf.Pow(springForceCurve.Evaluate(1 - compression),
-						 Mathf.Max(1, springExponent)) - (1 - targetCompression) - springDampening * Mathf.Clamp(travelVel, -1, 1));
-
-					//Debug.DrawRay(tr.position, new Vector3(0,10*travelVel,0), Color.red, 5);
-					rb.AddForceAtPosition(
-						 appliedSuspensionForce,
-						 applyForceAtGroundContact ? wheel.contactPoint.point : wheel.tr.position,
-						 vp.suspensionForceMode);
-					
-
-
-					// If wheel is resting on a rigidbody, apply opposing force to it
-					if (groundBody)
-					{
-						groundBody.AddForceAtPosition(
-							 -appliedSuspensionForce,
-							 wheel.contactPoint.point,
-							 vp.suspensionForceMode);
-					}
-				}
-
-				// Apply hard contact force
-				if (compression == 0 && !generateHardCollider && applyHardContactForce)
-				{
-					rb.AddForceAtPosition(
-						 -vp.norm.TransformDirection(0, 0, Mathf.Clamp(travelVel, -hardContactSensitivity * .01f / Time.fixedDeltaTime, 0)
-						 + penetration) * hardContactForce * Mathf.Clamp01(.01f / Time.fixedDeltaTime),
-						 applyForceAtGroundContact ? wheel.contactPoint.point : wheel.tr.position,
-						 vp.suspensionForceMode);
-				}
-			}
-		}
-		// Calculate the direction of the spring
 		void GetSpringVectors()
 		{
 			if (!Application.isPlaying)
 			{
 				tr = transform;
-				flippedSide = Vector3.Dot(tr.forward, vp.transform.right) < 0;
-				flippedSideFactor = flippedSide ? -1 : 1;
+				if (vehicle)
+				{
+					flippedSide = Vector3.Dot(tr.forward, vehicle.transform.right) < 0;
+					flippedSideFactor = flippedSide ? -1 : 1;
+				}
 			}
 
 			maxCompressPoint = tr.position;
-
 			float casterDir = -Mathf.Sin(casterAngle * Mathf.Deg2Rad) * flippedSideFactor;
 			float sideDir = -Mathf.Sin(sideAngle * Mathf.Deg2Rad);
-
-			springDirection = tr.TransformDirection(casterDir, Mathf.Max(Mathf.Abs(casterDir), Mathf.Abs(sideDir)) - 1, sideDir).normalized;
+			springDirection = tr.TransformDirection(casterDir,
+				Mathf.Max(Mathf.Abs(casterDir), Mathf.Abs(sideDir)) - 1, sideDir).normalized;
 		}
 
-		// Calculate the camber angle
 		void GetCamber()
 		{
-			if (solidAxleCamber && oppositeWheel && wheel.connected)
+			if (solidAxleCamber && oppositeWheel && wheel && wheel.connected &&
+				oppositeWheel.wheel && oppositeWheel.wheel.rim && wheel.rim)
 			{
-				if (oppositeWheel.wheel.rim && wheel.rim)
-				{
-					Vector3 axleDir = tr.InverseTransformDirection((oppositeWheel.wheel.rim.position - wheel.rim.position).normalized);
-					camberAngle = Mathf.Atan2(axleDir.z, axleDir.y) * Mathf.Rad2Deg + 90 + camberOffset;
-				}
+				Vector3 axleDir = tr.InverseTransformDirection(
+					(oppositeWheel.wheel.rim.position - wheel.rim.position).normalized);
+				camberAngle = Mathf.Atan2(axleDir.z, axleDir.y) * Mathf.Rad2Deg + 90 + camberOffset;
 			}
 			else
 			{
-				camberAngle = camberCurve.Evaluate((Application.isPlaying && wheel.connected ? wheel.travelDist : targetCompression)) + camberOffset;
+				float travel = Application.isPlaying && wheel && wheel.connected
+					? wheel.travelDist : targetCompression;
+				camberAngle = camberCurve.Evaluate(travel) + camberOffset;
 			}
 		}
 
-		// Update the toggleable properties
-		public void UpdateProperties()
-		{
-			if (properties)
-			{
-				foreach (SuspensionToggledProperty curProperty in properties.properties)
-				{
-					switch ((int)curProperty.property)
-					{
-						case 0:
-							steerEnabled = curProperty.toggled;
-							break;
-						case 1:
-							steerInverted = curProperty.toggled;
-							break;
-						case 2:
-							//driveEnabled = curProperty.toggled;
-							break;
-						case 3:
-							driveInverted = curProperty.toggled;
-							break;
-						case 4:
-							ebrakeEnabled = curProperty.toggled;
-							break;
-						case 5:
-							skidSteerBrake = curProperty.toggled;
-							break;
-					}
-				}
-			}
-		}
-
-		// Visualize steer range
 		void OnDrawGizmosSelected()
 		{
 			if (!tr)
-			{
 				tr = transform;
-			}
 
-			if (wheel)
+			if (wheel && wheel.rim)
 			{
-				if (wheel.rim)
-				{
-					Vector3 wheelPoint = wheel.rim.position;
-
-					float camberSin = -Mathf.Sin(camberAngle * Mathf.Deg2Rad);
-					float steerSin = Mathf.Sin(Mathf.Lerp(steerRangeMin, steerRangeMax, (steerAngle + 1) * 0.5f) * Mathf.Deg2Rad);
-					float minSteerSin = Mathf.Sin(steerRangeMin * Mathf.Deg2Rad);
-					float maxSteerSin = Mathf.Sin(steerRangeMax * Mathf.Deg2Rad);
-
-					Gizmos.color = Color.magenta;
-
-					Gizmos.DrawWireSphere(wheelPoint, 0.05f);
-
-					Gizmos.DrawLine(wheelPoint, wheelPoint + tr.TransformDirection(minSteerSin,
-						 camberSin * (1 - Mathf.Abs(minSteerSin)),
-						 Mathf.Cos(steerRangeMin * Mathf.Deg2Rad) * (1 - Mathf.Abs(camberSin))
-						 ).normalized);
-
-					Gizmos.DrawLine(wheelPoint, wheelPoint + tr.TransformDirection(maxSteerSin,
-						 camberSin * (1 - Mathf.Abs(maxSteerSin)),
-						 Mathf.Cos(steerRangeMax * Mathf.Deg2Rad) * (1 - Mathf.Abs(camberSin))
-						 ).normalized);
-
-					Gizmos.DrawLine(wheelPoint + tr.TransformDirection(minSteerSin,
-						 camberSin * (1 - Mathf.Abs(minSteerSin)),
-						 Mathf.Cos(steerRangeMin * Mathf.Deg2Rad) * (1 - Mathf.Abs(camberSin))
-						 ).normalized * 0.9f,
+				Vector3 wheelPoint = wheel.rim.position;
+				float camberSin = -Mathf.Sin(camberAngle * Mathf.Deg2Rad);
+				float steerSin = Mathf.Sin(Mathf.Lerp(steerRangeMin, steerRangeMax,
+					(steerAngle + 1) * 0.5f) * Mathf.Deg2Rad);
+				float minSteerSin = Mathf.Sin(steerRangeMin * Mathf.Deg2Rad);
+				float maxSteerSin = Mathf.Sin(steerRangeMax * Mathf.Deg2Rad);
+				Gizmos.color = Color.magenta;
+				Gizmos.DrawWireSphere(wheelPoint, 0.05f);
+				Gizmos.DrawLine(wheelPoint, wheelPoint + tr.TransformDirection(minSteerSin,
+					camberSin * (1 - Mathf.Abs(minSteerSin)),
+					Mathf.Cos(steerRangeMin * Mathf.Deg2Rad) * (1 - Mathf.Abs(camberSin))).normalized);
+				Gizmos.DrawLine(wheelPoint, wheelPoint + tr.TransformDirection(maxSteerSin,
+					camberSin * (1 - Mathf.Abs(maxSteerSin)),
+					Mathf.Cos(steerRangeMax * Mathf.Deg2Rad) * (1 - Mathf.Abs(camberSin))).normalized);
+				Gizmos.DrawLine(wheelPoint + tr.TransformDirection(minSteerSin,
+					camberSin * (1 - Mathf.Abs(minSteerSin)),
+					Mathf.Cos(steerRangeMin * Mathf.Deg2Rad) * (1 - Mathf.Abs(camberSin))).normalized * 0.9f,
 					wheelPoint + tr.TransformDirection(maxSteerSin,
-						 camberSin * (1 - Mathf.Abs(maxSteerSin)),
-						 Mathf.Cos(steerRangeMax * Mathf.Deg2Rad) * (1 - Mathf.Abs(camberSin))
-						 ).normalized * 0.9f);
-
-					Gizmos.DrawLine(wheelPoint, wheelPoint + tr.TransformDirection(steerSin,
-						 camberSin * (1 - Mathf.Abs(steerSin)),
-						 Mathf.Cos(steerRangeMin * Mathf.Deg2Rad) * (1 - Mathf.Abs(camberSin))
-						 ).normalized);
-				}
+					camberSin * (1 - Mathf.Abs(maxSteerSin)),
+					Mathf.Cos(steerRangeMax * Mathf.Deg2Rad) * (1 - Mathf.Abs(camberSin))).normalized);
+				Gizmos.DrawLine(wheelPoint, wheelPoint + tr.TransformDirection(steerSin,
+					camberSin * (1 - Mathf.Abs(steerSin)),
+					Mathf.Cos(steerRangeMin * Mathf.Deg2Rad) * (1 - Mathf.Abs(camberSin))).normalized);
 			}
 
 			Gizmos.color = Color.red;
-
 			Gizmos.DrawWireSphere(tr.TransformPoint(damagePivot), 0.05f);
 		}
 	}

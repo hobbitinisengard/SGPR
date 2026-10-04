@@ -35,6 +35,7 @@ Material:
   - _DOUBLESIDED_ON
   - _ENABLE_FOG_ON_TRANSPARENT
   - _NORMALMAP_TANGENT_SPACE
+  - _SOURCEMASK_ON
   - _SURFACE_TYPE_TRANSPARENT
   - _USEBASECOLORALPHA_ON
   m_LightmapFlags: 4
@@ -230,7 +231,7 @@ Material:
     - _AoIntensity: 1
     - _BlendMainNormal: 1
     - _BlendMode: 0
-    - _Brightness: 1
+    - _Brightness: 8
     - _BumpScale: 1
     - _CoatMask: 0
     - _ColorMask: 0
@@ -284,7 +285,7 @@ Material:
     - _HeightTessAmplitude: 2
     - _HeightTessCenter: 0.5
     - _IntensityMask: 1
-    - _IntensityTransparentMap: 0.108
+    - _IntensityTransparentMap: 0
     - _InvTilingScale: 1
     - _InvertABaseColor: 0
     - _InvertMask: 0
@@ -319,13 +320,13 @@ Material:
     - _RefractionModel: 0
     - _RenderQueueType: 4
     - _RequireSplitLighting: 0
-    - _Saturation: 1
+    - _Saturation: 0
     - _Smoothness: 0.5
     - _SmoothnessRemapMax: 1
     - _SmoothnessRemapMin: 0
     - _SmoothnessTextureChannel: 0
     - _Source: 0
-    - _SourceMask: 0
+    - _SourceMask: 1
     - _SpecularAAScreenSpaceVariance: 0.1
     - _SpecularAAThreshold: 0.2
     - _SpecularHighlights: 1
@@ -391,7 +392,7 @@ Material:
     - _EmissiveColor: {r: 0, g: 0, b: 0, a: 1}
     - _EmissiveColorLDR: {r: 0, g: 0, b: 0, a: 1}
     - _Flip: {r: 1, g: 1, b: 1, a: 1}
-    - _GlobalXYTilingXYZWOffsetXY: {r: 1, g: 1, b: 0, a: -0.0017355353}
+    - _GlobalXYTilingXYZWOffsetXY: {r: 1, g: 1, b: 0, a: -0.68621814}
     - _InvPrimScale: {r: 1, g: 1, b: 0, a: 0}
     - _IridescenceThicknessRemap: {r: 0, g: 1, b: 0, a: 0}
     - _Offset: {r: 0, g: -0.274178, b: 0, a: 0}

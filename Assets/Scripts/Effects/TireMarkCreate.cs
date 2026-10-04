@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System;
 
 namespace RVP
@@ -84,41 +84,36 @@ namespace RVP
 		}
 		void Update()
 		{
-			// Check for continuous marking
-			if (w.groundedReally)
+			if (!w || !w.vp || w.vp.originalVehiclePhysics == null)
 			{
-				alwaysScrape = GroundSurfaceMaster.surfaceTypesStatic[w.contactPoint.surfaceType].alwaysScrape ?
-					(w.slipThres + w.vp.engine.targetPitch) : 0;
-			}
-			else
-			{
-				alwaysScrape = 0;
-			}
-			bool sourcePhysics = w.vp.UsesOriginalPhysics;
-			int unityWheelIndex = Array.IndexOf(w.vp.wheels, w);
-			int sourceTireParticleCount = sourcePhysics
-				? w.vp.originalVehiclePhysics.ConsumeSourceTireParticleEvents(unityWheelIndex)
-				: 0;
-			bool sourceSkid = sourcePhysics &&
-				w.vp.originalVehiclePhysics.ShouldEmitSourceSkidStrip(unityWheelIndex);
-			bool remakeSkid = !sourcePhysics &&
-				(Mathf.Abs(F.MaxAbs(w.sidewaysSlip, w.forwardSlip)) > w.slipThres || alwaysScrape > 0);
-			if (sourcePhysics && sourceTireParticleCount > 0 &&
-				w.contactPoint.surfaceType >= 0 && w.contactPoint.surfaceType < debrisParticles.Length)
-			{
-				ParticleSystem sourceTireParticles = debrisParticles[w.contactPoint.surfaceType];
-				if (!sourceTireParticles.isPlaying)
-					sourceTireParticles.Play();
-				sourceTireParticles.Emit(sourceTireParticleCount);
+				if (creatingMark)
+					EndMark();
+				w.sliding = false;
+				return;
 			}
 
-			// Create mark
-			if (w.groundedReally && (sourceSkid || remakeSkid) && (sourcePhysics || w.connected))
+			int surfaceType = w.contactPoint.surfaceType;
+			bool validSurface = surfaceType >= 0 && surfaceType < GroundSurfaceMaster.surfaceTypesStatic.Length;
+			alwaysScrape = w.groundedReally && validSurface &&
+				GroundSurfaceMaster.surfaceTypesStatic[surfaceType].alwaysScrape
+				? w.slipThres + w.vp.engine.targetPitch : 0;
+
+			int wheelIndex = Array.IndexOf(w.vp.wheels, w);
+			int particleCount = w.vp.originalVehiclePhysics.ConsumeSourceTireParticleEvents(wheelIndex);
+			if (particleCount > 0 && validSurface && surfaceType < debrisParticles.Length)
+			{
+				ParticleSystem particles = debrisParticles[surfaceType];
+				if (!particles.isPlaying)
+					particles.Play();
+				particles.Emit(particleCount);
+			}
+
+			bool sourceSkid = w.vp.originalVehiclePhysics.ShouldEmitSourceSkidStrip(wheelIndex);
+			if (w.groundedReally && sourceSkid && w.connected && validSurface)
 			{
 				w.sliding = true;
 				prevSurface = curSurface;
-				curSurface = w.groundedReally ? w.contactPoint.surfaceType : -1;
-
+				curSurface = surfaceType;
 				poppedPrev = popped;
 				popped = w.popped;
 
@@ -128,16 +123,18 @@ namespace RVP
 					StartMark();
 				}
 				else if (curSurface != prevSurface || popped != poppedPrev)
-				{
 					EndMark();
-				}
 
-				// Calculate segment points
 				if (curMark)
 				{
-					Vector3 pointDir = Quaternion.AngleAxis(90, w.contactPoint.normal) * tr.right * (w.popped ? w.rimWidth : w.tireWidth);
-					leftPoint = curMarkTr.InverseTransformPoint(w.contactPoint.point + Mathf.Sign(w.rawRPM) * w.susParent.flippedSideFactor * pointDir + w.contactPoint.normal * RaceManager.I.tireMarkHeight);
-					rightPoint = curMarkTr.InverseTransformPoint(w.contactPoint.point - Mathf.Sign(w.rawRPM) * w.susParent.flippedSideFactor * pointDir + w.contactPoint.normal * RaceManager.I.tireMarkHeight);
+					Vector3 pointDir = Quaternion.AngleAxis(90, w.contactPoint.normal) *
+						tr.right * (w.popped ? w.rimWidth : w.tireWidth);
+					leftPoint = curMarkTr.InverseTransformPoint(w.contactPoint.point +
+						Mathf.Sign(w.rawRPM) * w.susParent.flippedSideFactor * pointDir +
+						w.contactPoint.normal * RaceManager.I.tireMarkHeight);
+					rightPoint = curMarkTr.InverseTransformPoint(w.contactPoint.point -
+						Mathf.Sign(w.rawRPM) * w.susParent.flippedSideFactor * pointDir +
+						w.contactPoint.normal * RaceManager.I.tireMarkHeight);
 				}
 			}
 			else if (creatingMark)
@@ -146,94 +143,34 @@ namespace RVP
 				EndMark();
 			}
 
-			// Update mark if it's short enough, otherwise end it
-			if(creatingMark)
+			if (creatingMark)
 			{
 				if (curEdge < RaceManager.I.tireMarkLength)
 					UpdateMark();
 				else
 					EndMark();
 			}
-			
 
-			// Set particle emission rates
-			ParticleSystem.EmissionModule em;
-			for (int ps = 0; ps < debrisParticles.Length; ps++)
+			ParticleSystem.EmissionModule emission;
+			for (int i = 0; i < debrisParticles.Length; i++)
 			{
-				if (sourcePhysics)
-				{
-					em = debrisParticles[ps].emission;
-					em.rateOverTime = zeroEmission;
-					if (ps == w.contactPoint.surfaceType && w.connected &&
-						GroundSurfaceMaster.surfaceTypesStatic[w.contactPoint.surfaceType].leaveSparks && w.popped)
-					{
-						if (sparks)
-						{
-							em = sparks.emission;
-							float sparkSlip = w.vp.originalVehiclePhysics.CurrentSourceSpeed < 100
-								? Mathf.Clamp01((w.originalGripUsage - 3.5f) * 0.25f) : 0;
-							em.rateOverTime = new ParticleSystem.MinMaxCurve(
-								initialEmissionRates[debrisParticles.Length] * sparkSlip);
-						}
-					}
-					else if (sparks)
-					{
-						em = sparks.emission;
-						em.rateOverTime = zeroEmission;
-					}
-					continue;
-				}
+				emission = debrisParticles[i].emission;
+				emission.rateOverTime = zeroEmission;
+			}
 
-				if (w.connected)
-				{
-					if (ps == w.contactPoint.surfaceType)
-					{
-						if (GroundSurfaceMaster.surfaceTypesStatic[w.contactPoint.surfaceType].leaveSparks && w.popped)
-						{
-							em = debrisParticles[ps].emission;
-							em.rateOverTime = zeroEmission;
-
-							if (sparks)
-							{
-								em = sparks.emission;
-								float sparkSlip = Mathf.Clamp01(Mathf.Abs(F.MaxAbs(w.sidewaysSlip, w.forwardSlip, alwaysScrape)) - w.slipThres);
-								em.rateOverTime = new ParticleSystem.MinMaxCurve(initialEmissionRates[debrisParticles.Length] * sparkSlip);
-							}
-						}
-						else
-						{
-							em = debrisParticles[ps].emission;
-							float debrisSlip = Mathf.Clamp01(Mathf.Abs(F.MaxAbs(w.sidewaysSlip, w.forwardSlip, alwaysScrape)) - w.slipThres);
-							var v = initialEmissionRates[ps] * debrisSlip;
-							em.rateOverTime = new ParticleSystem.MinMaxCurve(v);
-
-							if (sparks)
-							{
-								em = sparks.emission;
-								em.rateOverTime = zeroEmission;
-							}
-						}
-					}
-					else
-					{
-						em = debrisParticles[ps].emission;
-						em.rateOverTime = zeroEmission;
-					}
-				}
-				else
-				{
-					em = debrisParticles[ps].emission;
-					em.rateOverTime = zeroEmission;
-
-					if (sparks)
-					{
-						em = sparks.emission;
-						em.rateOverTime = zeroEmission;
-					}
-				}
+			if (sparks)
+			{
+				emission = sparks.emission;
+				bool emitSparks = w.groundedReally && w.connected && validSurface && w.popped &&
+					GroundSurfaceMaster.surfaceTypesStatic[surfaceType].leaveSparks &&
+					w.vp.originalVehiclePhysics.CurrentSourceSpeed < 100;
+				float sparkRate = emitSparks
+					? initialEmissionRates[debrisParticles.Length] *
+						Mathf.Clamp01((w.originalGripUsage - 3.5f) * 0.25f)
+					: 0;
+				emission.rateOverTime = new ParticleSystem.MinMaxCurve(sparkRate);
 			}
 		}
-
 		// Start creating a mark
 		void StartMark()
 		{
@@ -293,10 +230,9 @@ namespace RVP
 		{
 			if (gapDelay == 0)
 			{
+				float sourceSlip = F.MaxAbs(w.sidewaysSlip, w.forwardSlip, alwaysScrape) - w.slipThres;
 				float alpha = (curEdge < RaceManager.I.tireMarkLength - 2 && curEdge > 5 ? 1 : 0) *
-					 UnityEngine.Random.Range(
-						  Mathf.Clamp01(F.MaxAbs(w.sidewaysCurveStretch * w.sidewaysSlip, w.forwardStretch * w.forwardSlip, alwaysScrape) - w.slipThres),
-						  Mathf.Clamp01(F.MaxAbs(w.sidewaysCurveStretch * w.sidewaysSlip, w.forwardStretch * w.forwardSlip, alwaysScrape) - w.slipThres));
+					Mathf.Clamp01(sourceSlip);
 				gapDelay = RaceManager.I.tireMarkGap;
 				curEdge += 2;
 

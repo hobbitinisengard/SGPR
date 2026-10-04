@@ -42,6 +42,8 @@ namespace RVP
         float flippedSideFactor; // Multiplier for inverting the forces on opposite sides
         public float brakeForce = 1;
         public float ebrakeForce = 2;
+		public ForceMode wheelForceMode = ForceMode.Acceleration;
+		public ForceMode suspensionForceMode = ForceMode.Acceleration;
         [System.NonSerialized]
         public float steerRate;
 
@@ -175,12 +177,12 @@ namespace RVP
 
                 rb.AddForceAtPosition(upDir * floatForce * (Mathf.Pow(floatForceCurve.Evaluate(1 - compression), Mathf.Max(1, floatExponent)) - floatDampening * Mathf.Clamp(travelVel, -1, 1)),
                     tr.position,
-                    vp.suspensionForceMode);
+					suspensionForceMode);
 
                 if (contactPoint.distance < bufferDistance) {
                     rb.AddForceAtPosition(-upDir * bufferFloatForce * floatForceCurve.Evaluate(contactPoint.distance / bufferDistance) * Mathf.Clamp(travelVel, -1, 0),
                         tr.position,
-                        vp.suspensionForceMode);
+						suspensionForceMode);
                 }
             }
         }
@@ -196,7 +198,7 @@ namespace RVP
                     0,
                     -steerRate * steerFactor * flippedSideFactor - contactPoint.relativeVelocity.z * sideFriction) * (1 - compression),
                 tr.position,
-                vp.wheelForceMode);
+				wheelForceMode);
         }
 
         // Tilt the visual wheel

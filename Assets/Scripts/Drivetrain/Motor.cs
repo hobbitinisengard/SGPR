@@ -66,28 +66,16 @@ namespace RVP
 			{
 				initialSmokeEmission = smoke.emission.rateOverTime.constantMax;
 			}
-			foreach (GameObject jet in jets)
-			{
-				jet.transform.localScale = Vector3.zero;
-			}
+			if (jets != null)
+				foreach (GameObject jet in jets)
+					if (jet)
+						jet.transform.localScale = Vector3.zero;
 		}
 		protected virtual void FixedUpdate()
 		{
-			if (engineAudio)
-			{
-				if (health > 0)
-				{
-					engineAudio.pitch = Mathf.LerpUnclamped(engineAudio.pitch, Mathf.LerpUnclamped(minPitch, maxPitch, targetPitch),
-						20 * Time.fixedDeltaTime) + Mathf.Sin(Time.time * 200 * (1 - health)) * (1 - health) * 0.1f * damagePitchWiggle;
-					idlingEngineAudio.pitch = engineAudio.pitch;
-					// blend idling engine audio with revving audio
-					float blendPoint = 0.4f;
-					idlingEngineAudio.volume = idlingEngineAudioCurve.Evaluate(1 / (2 * blendPoint) * targetPitch);
-					engineAudio.volume = 1 - idlingEngineAudio.volume;
-				}
-			}
-
+			UpdateMotorAudio();
 			health = Mathf.Clamp01(health);
+
 			if (canBoost && ignition && vp.ebrakeInput == 0)
 			{
 				if (((boostReleased && !boosting) || boosting) && vp.boostButton == 1)
@@ -110,10 +98,30 @@ namespace RVP
 			}
 
 			if (vp.boostButton == 0 || vp.accelInput == 0)
-			{
 				boostReleased = true;
-			}
 
+			UpdateBoostPresentation();
+		}
+
+		protected void UpdateMotorAudio()
+		{
+			if (engineAudio)
+			{
+				if (health > 0)
+				{
+					engineAudio.pitch = Mathf.LerpUnclamped(engineAudio.pitch, Mathf.LerpUnclamped(minPitch, maxPitch, targetPitch),
+						20 * Time.fixedDeltaTime) + Mathf.Sin(Time.time * 200 * (1 - health)) * (1 - health) * 0.1f * damagePitchWiggle;
+					idlingEngineAudio.pitch = engineAudio.pitch;
+					// blend idling engine audio with revving audio
+					float blendPoint = 0.4f;
+					idlingEngineAudio.volume = idlingEngineAudioCurve.Evaluate(1 / (2 * blendPoint) * targetPitch);
+					engineAudio.volume = 1 - idlingEngineAudio.volume;
+				}
+			}
+		}
+
+		protected void UpdateBoostPresentation()
+		{
 			if (jets != null)
 			{
 				// boosting visuals
@@ -149,7 +157,7 @@ namespace RVP
 			
 
 			// Play boost particles
-			if (boostParticles.Length > 0)
+			if (boostParticles != null && boostParticles.Length > 0)
 			{
 				foreach (ParticleSystem curBoost in boostParticles)
 				{
