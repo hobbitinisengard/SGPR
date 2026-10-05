@@ -22,7 +22,6 @@ public enum PartType
 	Turbo,
 	Tyres,
 	Steering,
-	Launch,
 	None
 }
 
@@ -31,16 +30,19 @@ public class ComponentPanel : MonoBehaviour
 	VehicleParent vp;
 	public GameObject settersPanel;
 	public GameObject mainMenu;
+	public GameObject removeSetupBtn;
 	public AudioMixerSnapshot paused;
 	public AudioMixerSnapshot unPaused;
 	public TextMeshProUGUI bottomNameText;
 	public GameObject YouSurePanel;
 	PartType selectedPart;
+	OriginalVehiclePartDefinition openedUserPart;
+	OriginalVehiclePhysicsConfig editingConfig;
 	readonly List<PhysicsValueBinding> activeBindings = new();
 
 	static readonly string[] GroupNames =
 	{
-		"Suspension", "Brakes", "Fuel", "Gearbox", "Chassis", "Engine", "Turbo", "Tyres", "Steering", "Launch"
+		"Suspension", "Brakes", "Fuel", "Gearbox", "Chassis", "Engine", "Turbo", "Tyres", "Steering"
 	};
 
 	void OnEnable()
@@ -50,7 +52,7 @@ public class ComponentPanel : MonoBehaviour
 		paused.TransitionTo(0);
 		Time.timeScale = 0;
 		F.I.gamePaused = true;
-		if (vp == null)
+		if (!vp || vp != RaceManager.I.playerCar)
 			NewSetupButton();
 	}
 
@@ -58,6 +60,10 @@ public class ComponentPanel : MonoBehaviour
 
 	void OnDisable()
 	{
+		// F3 hides the panel without leaving the current part editor.
+		if (vp && editingConfig != null)
+			foreach (PhysicsValueBinding binding in activeBindings)
+				if (binding.Setter) binding.Setter.CommitInput();
 		F.I.escRef.action.performed -= OnEscPressed;
 		Cursor.visible = false;
 		unPaused.TransitionTo(0);
@@ -67,7 +73,11 @@ public class ComponentPanel : MonoBehaviour
 
 	public void NewSetupButton()
 	{
+		if (vp && editingConfig != null) vp.carConfig.Apply(vp);
 		vp = RaceManager.I.playerCar;
+		openedUserPart = null;
+		editingConfig = null;
+		if (removeSetupBtn) removeSetupBtn.SetActive(false);
 		YouSurePanel.SetActive(false);
 		mainMenu.SetActive(true);
 		settersPanel.SetActive(false);
@@ -75,15 +85,38 @@ public class ComponentPanel : MonoBehaviour
 		PopulateCarConfigTable();
 	}
 
+	public void RemoveSetupButton()
+	{
+		if (mainMenu.activeSelf || openedUserPart == null || !openedUserPart.IsUserPart) return;
+		string id = openedUserPart.id;
+		var affected = new List<VehicleParent>();
+		foreach (VehicleParent vehicle in F.I.s_cars)
+			if (vehicle && Array.Exists(vehicle.carConfig?.originalParts?.slots ?? Array.Empty<OriginalVehiclePartSlot>(),
+				slot => slot != null && slot.selectedUserPartId == id)) affected.Add(vehicle);
+		File.Delete(openedUserPart.sourcePath);
+		F.I.ReloadUserParts();
+		foreach (VehicleParent vehicle in affected) vehicle.carConfig.Apply(vehicle);
+		openedUserPart = null;
+		BackToComponentMenu();
+	}
+	void LateUpdate()
+	{
+		if (removeSetupBtn) removeSetupBtn.SetActive(!mainMenu.activeSelf && openedUserPart != null && openedUserPart.IsUserPart);
+	}
 	public void OpenComponentConfigMenu(ConfigEnumSelector type)
 	{
+		if (!type) return;
 		selectedPart = type.componentType;
+		if (selectedPart == PartType.None) return;
+		OriginalVehiclePartDefinition part = F.I.originalVehiclePartCatalog.GetSelectedPart(vp.carConfig.originalParts, CatalogType(selectedPart));
+		openedUserPart = part != null && part.IsUserPart ? part : null;
+		editingConfig = vp.carConfig.BuildRuntimePhysicsConfig();
 		mainMenu.SetActive(false);
 		settersPanel.SetActive(true);
-		bottomNameText.text = GroupName(selectedPart);
+		bottomNameText.text = openedUserPart?.GetName() ?? GroupName(selectedPart);
 		PopulatePropertyTable();
+		vp.UseOriginalPhysics(editingConfig);
 	}
-
 	// Existing Unity button events pass the selected parameter group to LoadConfig.
 	public void LoadConfig(ConfigEnumSelector type) => OpenComponentConfigMenu(type);
 
@@ -102,7 +135,7 @@ public class ComponentPanel : MonoBehaviour
 
 		FileBrowser.SetFilters(true, new[]
 		{
-			new FileBrowser.Filter("Original vehicle physics configuration", "." + CarConfig.extension)
+			new FileBrowser.Filter("Vehicle parts and physics", "." + CarConfig.extension, "." + OriginalVehiclePartCatalog.UserPartExtension)
 		});
 		StartCoroutine(ShowLoadDialogCoroutine());
 	}
@@ -113,6 +146,11 @@ public class ComponentPanel : MonoBehaviour
 			return;
 
 		string filepath = filepaths[0];
+		if (filepath.EndsWith("." + OriginalVehiclePartCatalog.UserPartExtension, StringComparison.OrdinalIgnoreCase))
+		{
+			LoadUserPart(filepath);
+			return;
+		}
 		if (!filepath.EndsWith("." + CarConfig.extension, StringComparison.OrdinalIgnoreCase))
 		{
 			Debug.LogWarning("Only original-physics .carcfg files can be loaded.", this);
@@ -126,6 +164,9 @@ public class ComponentPanel : MonoBehaviour
 			return;
 		}
 
+		openedUserPart = null;
+		editingConfig = null;
+		if (removeSetupBtn) removeSetupBtn.SetActive(false);
 		vp.carConfig = loadedConfig;
 		vp.carConfig.Apply(vp);
 		mainMenu.SetActive(true);
@@ -136,25 +177,35 @@ public class ComponentPanel : MonoBehaviour
 
 	void PopulateCarConfigTable()
 	{
-		if (!mainMenu)
-			return;
-
-		int groupCount = Enum.GetValues(typeof(PartType)).Length - 1;
-		for (int i = 0; i < mainMenu.transform.childCount && i < groupCount; i++)
+		if (!mainMenu) return;
+		var catalog = F.I.originalVehiclePartCatalog;
+		var setup = F.I.GetDefaultOriginalVehicleSetup(vp.carNumber);
+		for (int i = 0; i < mainMenu.transform.childCount; i++)
 		{
 			ComponentSetter setter = mainMenu.transform.GetChild(i).GetComponent<ComponentSetter>();
-			if (setter)
-				setter.InitializeOriginalPhysics(GroupName((PartType)i));
+			if (!setter) continue;
+			ConfigEnumSelector selector = setter.GetComponentInChildren<ConfigEnumSelector>(true);
+			PartType group = selector ? selector.componentType : (PartType)i;
+			if (group == PartType.None) { setter.gameObject.SetActive(false); continue; }
+			OriginalVehiclePartType category = CatalogType(group);
+			setter.InitializeOriginalPhysics(GroupName(group), catalog.GetAvailableParts(setup, category),
+				vp.carConfig.originalParts?.GetSlot(category)?.SelectedPartId, part =>
+				{
+					if (vp.carConfig.originalParts.TrySelectPart(part))
+					{
+						vp.carConfig.MarkModified();
+						vp.carConfig.Apply(vp);
+					}
+				});
 		}
 	}
-
 	public void PopulatePropertyTable()
 	{
 		for (int i = settersPanel.transform.childCount - 1; i >= 0; i--)
 			Destroy(settersPanel.transform.GetChild(i).gameObject);
 		activeBindings.Clear();
 
-		OriginalVehiclePhysicsConfig config = vp.carConfig?.originalPhysics;
+		OriginalVehiclePhysicsConfig config = editingConfig ?? vp.carConfig?.BuildRuntimePhysicsConfig();
 		if (!OriginalVehiclePhysics.IsUsable(config))
 		{
 			Debug.LogError("The active car has no valid original-physics configuration.", this);
@@ -165,6 +216,7 @@ public class ComponentPanel : MonoBehaviour
 		foreach (PhysicsValueBinding binding in activeBindings)
 		{
 			PropertySetter setter = Instantiate(propertySetter, settersPanel.transform).GetComponent<PropertySetter>();
+			binding.Setter = setter;
 			setter.Initialize(binding.Name, binding.Read(), value => EditPhysicsValue(binding, value));
 		}
 	}
@@ -179,39 +231,31 @@ public class ComponentPanel : MonoBehaviour
 				break;
 			case PartType.Brakes:
 				AddRootField(config, "brakeBias", "brakeAcceleration");
-				AddRootArray(config, "frictionCurve");
 				break;
 			case PartType.Fuel:
 				AddRootField(config, "fuelCapacity", "fuelUnitMass", "fuelConsumption", "refuelRate");
-				AddRootArray(config, "consumptionCurve");
 				break;
 			case PartType.Gearbox:
 				AddRootField(config, "driveMode", "gearCount", "finalDrive", "shiftTime", "efficiency", "powerSplit");
-				AddRootArray(config, "ratios");
+				AddGearRatios(config);
 				break;
 			case PartType.Chassis:
 				AddRootField(config, "mass", "comA", "comB", "comHeight", "wheelbase", "trackFront", "trackRear",
-					"length", "width", "height", "dragCoefficient", "liftCoefficient", "frontalArea");
+					"length", "width", "height", "dragCoefficient", "liftCoefficient", "frontalArea",
+					"launchTime", "launchTolerance", "launchSpeed", "maxPitchSpeed", "maxYawSpeed");
 				break;
 			case PartType.Engine:
 				AddRootField(config, "rpmIdle", "rpmLimit", "rpmMax", "engineDecay", "maxTorque");
-				AddRootMatrix(config, "torqueCurves");
 				break;
 			case PartType.Turbo:
 				AddRootField(config, "turboAcceleration", "turboMax", "turboDecay", "turboScale",
 					"turboConsumption", "turboEnergyThreshold");
-				AddRootArray(config, "turboCurve");
 				break;
 			case PartType.Tyres:
 				AddTyreFields(config, "radius", "pressure", "staticFriction", "kineticFriction");
 				break;
 			case PartType.Steering:
 				AddRootField(config, "steeringMax", "steeringSensitivity", "steeringAcceleration");
-				AddRootArray(config, "steeringCurve", "digitalSteering", "digitalBrake", "analogSteering",
-					"analogBrake", "velocitySteering");
-				break;
-			case PartType.Launch:
-				AddRootField(config, "launchTime", "launchTolerance", "launchSpeed", "maxPitchSpeed", "maxYawSpeed");
 				break;
 		}
 	}
@@ -219,79 +263,60 @@ public class ComponentPanel : MonoBehaviour
 	void AddRootField(OriginalVehiclePhysicsConfig config, params string[] fieldNames)
 	{
 		foreach (string fieldName in fieldNames)
-			AddNumericField(config, typeof(OriginalVehiclePhysicsConfig).GetField(fieldName), Humanize(fieldName));
+			AddNumericField(config, typeof(OriginalVehiclePhysicsConfig).GetField(fieldName), Humanize(fieldName), fieldName);
 	}
 
-	void AddRootArray(OriginalVehiclePhysicsConfig config, params string[] fieldNames)
+	void AddGearRatios(OriginalVehiclePhysicsConfig config)
 	{
-		foreach (string fieldName in fieldNames)
+		if (config.ratios == null) return;
+		for (int i = 0; i < config.ratios.Length; i++)
 		{
-			FieldInfo field = typeof(OriginalVehiclePhysicsConfig).GetField(fieldName);
-			if (field?.GetValue(config) is not float[] values)
-				continue;
-
-			for (int i = 0; i < values.Length; i++)
-			{
-				int index = i;
-				string label = ArrayValueName(fieldName, index);
-				activeBindings.Add(new PhysicsValueBinding(label, () => values[index], value => values[index] = value));
-			}
-		}
-	}
-
-	void AddRootMatrix(OriginalVehiclePhysicsConfig config, string fieldName)
-	{
-		FieldInfo field = typeof(OriginalVehiclePhysicsConfig).GetField(fieldName);
-		if (field?.GetValue(config) is not float[][] values)
-			return;
-
-		for (int curve = 0; curve < values.Length; curve++)
-		{
-			float[] samples = values[curve];
-			if (samples == null)
-				continue;
-			for (int sample = 0; sample < samples.Length; sample++)
-			{
-				int curveIndex = curve;
-				int sampleIndex = sample;
-				activeBindings.Add(new PhysicsValueBinding(
-					$"Torque curve {curveIndex} [{sampleIndex}]",
-					() => values[curveIndex][sampleIndex],
-					value => values[curveIndex][sampleIndex] = value));
-			}
+			int index = i;
+			string gear = i == 0 ? "R" : i == 1 ? "N" : (i - 1).ToString();
+			activeBindings.Add(new PhysicsValueBinding($"ratios.{index}", $"Ratio {gear}",
+				() => config.ratios[index], value => config.ratios[index] = value));
 		}
 	}
 
 	void AddTyreFields(OriginalVehiclePhysicsConfig config, params string[] fieldNames)
 	{
-		if (config.tyres == null)
-			return;
-
-		string[] wheelNames = { "Rear left", "Rear right", "Front left", "Front right" };
-		for (int wheel = 0; wheel < config.tyres.Length && wheel < wheelNames.Length; wheel++)
+		if (config.tyres == null) return;
+		// Source ordering: rear left/right, then front left/right.
+		for (int axle = 0; axle < 2; axle++)
 		{
-			OriginalTyrePhysicsConfig tyre = config.tyres[wheel];
-			if (tyre == null)
-				continue;
+			int left = axle * 2;
+			int right = left + 1;
+			if (right >= config.tyres.Length || config.tyres[left] == null || config.tyres[right] == null) continue;
+			string axleKey = axle == 0 ? "rear" : "front";
+			string axleName = axle == 0 ? "Rear" : "Front";
 			foreach (string fieldName in fieldNames)
-				AddNumericField(tyre, typeof(OriginalTyrePhysicsConfig).GetField(fieldName),
-					$"{wheelNames[wheel]} {Humanize(fieldName)}");
+			{
+				FieldInfo field = typeof(OriginalTyrePhysicsConfig).GetField(fieldName);
+				if (field == null || field.FieldType != typeof(float)) continue;
+				activeBindings.Add(new PhysicsValueBinding($"tyres.{axleKey}.{fieldName}", $"{axleName} {Humanize(fieldName)}",
+					() => ((float)field.GetValue(config.tyres[left]) + (float)field.GetValue(config.tyres[right])) * 0.5f,
+					value =>
+					{
+						field.SetValue(config.tyres[left], value);
+						field.SetValue(config.tyres[right], value);
+					}));
+			}
 		}
 	}
 
-	void AddNumericField(object target, FieldInfo field, string label)
+	void AddNumericField(object target, FieldInfo field, string label, string key)
 	{
 		if (target == null || field == null)
 			return;
 
 		if (field.FieldType == typeof(float))
 		{
-			activeBindings.Add(new PhysicsValueBinding(label,
+			activeBindings.Add(new PhysicsValueBinding(key, label,
 				() => (float)field.GetValue(target), value => field.SetValue(target, value)));
 		}
 		else if (field.FieldType == typeof(int))
 		{
-			activeBindings.Add(new PhysicsValueBinding(label,
+			activeBindings.Add(new PhysicsValueBinding(key, label,
 				() => (int)field.GetValue(target), value => field.SetValue(target, Mathf.RoundToInt(value))));
 		}
 	}
@@ -299,9 +324,8 @@ public class ComponentPanel : MonoBehaviour
 	void EditPhysicsValue(PhysicsValueBinding binding, float value)
 	{
 		binding.Write(value);
-		vp.carConfig.MarkModified();
 		vp.RefreshOriginalPhysicsParameters();
-		bottomNameText.text = "*" + vp.carConfig.name;
+		bottomNameText.text = "*" + (openedUserPart?.GetName() ?? GroupName(selectedPart));
 	}
 
 	public void BackToComponentMenu()
@@ -309,6 +333,10 @@ public class ComponentPanel : MonoBehaviour
 		if (mainMenu.activeSelf)
 			return;
 
+		vp.carConfig.Apply(vp);
+		editingConfig = null;
+		openedUserPart = null;
+		if (removeSetupBtn) removeSetupBtn.SetActive(false);
 		PopulateCarConfigTable();
 		bottomNameText.text = (vp.carConfig.Modified ? "*" : "") + vp.carConfig.name;
 		settersPanel.SetActive(false);
@@ -318,7 +346,7 @@ public class ComponentPanel : MonoBehaviour
 			Destroy(settersPanel.transform.GetChild(i).gameObject);
 	}
 
-	public void SaveConfig() => StartCoroutine(SaveConfigCo());
+	public void SaveConfig() => StartCoroutine(mainMenu.activeSelf ? SaveConfigCo() : SavePartCo());
 
 	IEnumerator SaveConfigCo()
 	{
@@ -349,6 +377,102 @@ public class ComponentPanel : MonoBehaviour
 			F.I.ReloadCarConfigs();
 	}
 
+	static OriginalVehiclePartType CatalogType(PartType group) => group switch
+	{
+		PartType.Suspension => OriginalVehiclePartType.Suspension,
+		PartType.Brakes => OriginalVehiclePartType.Brakes,
+		PartType.Fuel => OriginalVehiclePartType.Battery,
+		PartType.Gearbox => OriginalVehiclePartType.Gears,
+		PartType.Chassis => OriginalVehiclePartType.Chassis,
+		PartType.Engine => OriginalVehiclePartType.Engine,
+		PartType.Turbo => OriginalVehiclePartType.StuntBoost,
+		PartType.Tyres => OriginalVehiclePartType.Tyres,
+		_ => OriginalVehiclePartType.Bms
+	};
+	static PartType EditorType(OriginalVehiclePartType type) => type switch
+	{
+		OriginalVehiclePartType.Suspension => PartType.Suspension,
+		OriginalVehiclePartType.Brakes => PartType.Brakes,
+		OriginalVehiclePartType.Battery => PartType.Fuel,
+		OriginalVehiclePartType.Gears => PartType.Gearbox,
+		OriginalVehiclePartType.Drive => PartType.Gearbox,
+		OriginalVehiclePartType.Chassis => PartType.Chassis,
+		OriginalVehiclePartType.Engine => PartType.Engine,
+		OriginalVehiclePartType.StuntBoost => PartType.Turbo,
+		OriginalVehiclePartType.Tyres => PartType.Tyres,
+		_ => PartType.Steering
+	};
+	void LoadUserPart(string filepath)
+	{
+		try
+		{
+			var file = JsonConvert.DeserializeObject<OriginalVehicleUserPartFile>(File.ReadAllText(filepath));
+			if (file == null || file.formatVersion != 1 || file.id == null || !file.id.StartsWith("user-", StringComparison.Ordinal))
+				throw new InvalidDataException("Not a supported user part.");
+			Directory.CreateDirectory(F.I.userPartsPath);
+			string target = F.I.originalVehiclePartCatalog.GetPart(file.id)?.sourcePath ??
+				Path.Combine(F.I.userPartsPath, file.id + "." + OriginalVehiclePartCatalog.UserPartExtension);
+			if (!string.Equals(Path.GetFullPath(filepath), Path.GetFullPath(target), StringComparison.OrdinalIgnoreCase))
+				File.Copy(filepath, target, true);
+			F.I.ReloadUserParts();
+			openedUserPart = F.I.originalVehiclePartCatalog.GetPart(file.id);
+			if (openedUserPart == null) throw new InvalidDataException("Invalid part parameters.");
+			selectedPart = EditorType(openedUserPart.type);
+			editingConfig = vp.carConfig.BuildRuntimePhysicsConfig();
+			OriginalVehicleUserPartFile.Apply(editingConfig, openedUserPart.physicsOverrides);
+			mainMenu.SetActive(false);
+			settersPanel.SetActive(true);
+			bottomNameText.text = openedUserPart.GetName();
+			PopulatePropertyTable();
+			vp.UseOriginalPhysics(editingConfig);
+		}
+		catch (Exception exception) { Debug.LogError("Could not open user part: " + exception.Message, this); }
+	}
+	IEnumerator SavePartCo()
+	{
+		if (FileBrowser.IsOpen || activeBindings.Count == 0) yield break;
+		foreach (PhysicsValueBinding binding in activeBindings) binding.Setter.CommitInput();
+		Directory.CreateDirectory(F.I.userPartsPath);
+		FileBrowser.SetFilters(false, new FileBrowser.Filter("User vehicle part", "." + OriginalVehiclePartCatalog.UserPartExtension));
+		yield return FileBrowser.WaitForSaveDialog(FileBrowser.PickMode.Files, false, F.I.userPartsPath,
+			openedUserPart?.GetName() ?? GroupName(selectedPart), F.I.LocStr("SAVE"), F.I.LocStr("SAVE"));
+		if (!FileBrowser.Success || FileBrowser.Result == null || FileBrowser.Result.Length == 0) yield break;
+		string filepath = FileBrowser.Result[0];
+		if (string.IsNullOrWhiteSpace(filepath)) yield break;
+		if (!filepath.EndsWith("." + OriginalVehiclePartCatalog.UserPartExtension, StringComparison.OrdinalIgnoreCase))
+			filepath += "." + OriginalVehiclePartCatalog.UserPartExtension;
+		bool overwrite = openedUserPart != null && string.Equals(Path.GetFullPath(filepath), openedUserPart.sourcePath, StringComparison.OrdinalIgnoreCase);
+		OriginalVehiclePartType type = openedUserPart?.type ?? CatalogType(selectedPart);
+		var basePart = F.I.originalVehiclePartCatalog.GetSelectedPart(vp.carConfig.originalParts, type);
+		var file = new OriginalVehicleUserPartFile
+		{
+			id = overwrite ? openedUserPart.id : "user-" + Guid.NewGuid().ToString("N"),
+			name = Path.GetFileNameWithoutExtension(filepath), type = type,
+			description = openedUserPart?.GetDescription() ?? "User-created part",
+			presentationIndex = openedUserPart?.presentationIndex ??
+				(basePart != null && basePart.IsUserPart ? basePart.presentationIndex : basePart?.index ?? 1)
+		};
+		foreach (PhysicsValueBinding binding in activeBindings) file.physics[binding.Key] = binding.Read();
+		string json = JsonConvert.SerializeObject(file, Formatting.Indented);
+		File.WriteAllText(filepath, json);
+		// Keep an installed copy in the discovered directory when exporting elsewhere.
+		if (!string.Equals(Path.GetDirectoryName(Path.GetFullPath(filepath)), Path.GetFullPath(F.I.userPartsPath), StringComparison.OrdinalIgnoreCase))
+			File.WriteAllText(Path.Combine(F.I.userPartsPath, file.id + "." + OriginalVehiclePartCatalog.UserPartExtension), json);
+		F.I.ReloadUserParts();
+		openedUserPart = F.I.originalVehiclePartCatalog.GetPart(file.id);
+		if (openedUserPart != null)
+		{
+			vp.carConfig.originalParts.TrySelectPart(openedUserPart);
+			vp.carConfig.MarkModified();
+			F.I.cars[vp.carNumber].config.originalParts.TrySelectPart(openedUserPart);
+			F.I.cars[vp.carNumber].config.MarkModified();
+			vp.carConfig.Apply(vp);
+		}
+		bottomNameText.text = file.name;
+		editingConfig = vp.carConfig.BuildRuntimePhysicsConfig();
+		PopulatePropertyTable();
+		vp.UseOriginalPhysics(editingConfig);
+	}
 	static string GroupName(PartType group)
 	{
 		int index = (int)group;
@@ -370,25 +494,17 @@ public class ComponentPanel : MonoBehaviour
 		return result.ToString();
 	}
 
-	static string ArrayValueName(string fieldName, int index)
-	{
-		if (fieldName == "ratios")
-		{
-			if (index == 0) return "Reverse ratio";
-			if (index == 1) return "Neutral ratio";
-			return $"Gear {index - 1} ratio";
-		}
-		return $"{Humanize(fieldName)} [{index}]";
-	}
-
 	sealed class PhysicsValueBinding
 	{
 		public readonly string Name;
+		public readonly string Key;
+		public PropertySetter Setter;
 		readonly Func<float> read;
 		public readonly Action<float> Write;
 
-		public PhysicsValueBinding(string name, Func<float> read, Action<float> write)
+		public PhysicsValueBinding(string key, string name, Func<float> read, Action<float> write)
 		{
+			Key = key;
 			Name = name;
 			this.read = read;
 			Write = write;
@@ -456,6 +572,7 @@ public class CarConfig
 			OriginalVehiclePhysicsConfig runtimePhysics = CreateRuntimePhysicsConfig(originalPhysics, originalParts);
 			vehicle.UseOriginalPhysics(runtimePhysics);
 			vehicle.originalPartsSetup = originalParts?.Clone();
+			vehicle.ApplyOriginalPartPresentation();
 
 			OriginalVehiclePartSlot gearsSlot = originalParts?.GetSlot(OriginalVehiclePartType.Gears);
 			OriginalVehiclePartDefinition gearsPart = gearsSlot == null
@@ -485,6 +602,8 @@ public class CarConfig
 		}
 		}
 	}
+
+	public OriginalVehiclePhysicsConfig BuildRuntimePhysicsConfig() => CreateRuntimePhysicsConfig(originalPhysics, originalParts);
 
 	static OriginalVehiclePhysicsConfig CreateRuntimePhysicsConfig(OriginalVehiclePhysicsConfig source, OriginalVehicleCarSetup parts)
 	{
@@ -576,6 +695,8 @@ public class CarConfig
 		Set("Mat Rot Speed X", value => runtime.maxPitchSpeed = value);
 		Set("Mat Rot Speed Y", value => runtime.maxYawSpeed = value);
 
+		foreach (OriginalVehiclePartSlot slot in parts.slots ?? Array.Empty<OriginalVehiclePartSlot>())
+			OriginalVehicleUserPartFile.Apply(runtime, catalog.GetPart(slot?.SelectedPartId)?.physicsOverrides);
 		return runtime;
 	}
 

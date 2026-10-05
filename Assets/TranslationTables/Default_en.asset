@@ -1554,6 +1554,478 @@ MonoBehaviour:
     m_Localized: 'Component:'
     m_Metadata:
       m_Items: []
+  - m_Id: 187701912941420545
+    m_Localized: "Engine"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420546
+    m_Localized: "Battery"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420547
+    m_Localized: "Tyres"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420548
+    m_Localized: "Brakes"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420549
+    m_Localized: "Suspension"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420550
+    m_Localized: "Chassis"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420551
+    m_Localized: "Drive"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420552
+    m_Localized: "Horn"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420553
+    m_Localized: "Stunt Boost"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420554
+    m_Localized: "BMS"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420555
+    m_Localized: "Gears"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420556
+    m_Localized: "No parts available"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420557
+    m_Localized: "TITAN 6V QUADRA-CELL"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420558
+    m_Localized: "Heavy 4 Cell Battery."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420559
+    m_Localized: "TITAN 6V DUO CELL"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420560
+    m_Localized: "Dual Cell Delivers More Charge."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420561
+    m_Localized: "TITAN 7.2V POWERCELL NI-CAD"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420562
+    m_Localized: "Efficient High Capacity Cell."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420563
+    m_Localized: "TITAN 7.2V NI-MH POWERFORCE"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420564
+    m_Localized: "High Performance Ni-MH Cell."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420565
+    m_Localized: "TITAN 7.2V LITHIUM LITE-MAX"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420566
+    m_Localized: "Super Light, Super Charged!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420567
+    m_Localized: "ITEX WHEELFORCE"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420568
+    m_Localized: "Basic Brake System."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420569
+    m_Localized: "ITEX WHEELFORCE ULTRA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420570
+    m_Localized: "Enhanced Performance."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420571
+    m_Localized: "ITEX MAXIM"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420572
+    m_Localized: "Improved Efficiency."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420573
+    m_Localized: "ITEX BRAKESURE LITE"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420574
+    m_Localized: "Responsive Brake System."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420575
+    m_Localized: "ITEX BRAKESURE PRO"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420576
+    m_Localized: "Outstanding Brake."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420577
+    m_Localized: "TGR IMPACT"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420578
+    m_Localized: "Base Heavy Duty Chassis."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420579
+    m_Localized: "TGR FRAME-STAR"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420580
+    m_Localized: "Stronger And Heavier."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420581
+    m_Localized: "TGR HOLLOW-LITE"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420582
+    m_Localized: "Reinforced Chassis."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420583
+    m_Localized: "TGR ULTRA C"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420584
+    m_Localized: "Strong And Light, Very Desirable."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420585
+    m_Localized: "TGR CARBON MAGNA"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420586
+    m_Localized: "Ultra Light And Super-Strong."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420587
+    m_Localized: "CALTECH 6V MOTOR"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420588
+    m_Localized: "Best-Value Motor."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420589
+    m_Localized: "CALTECH 7.2V MOTOR"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420590
+    m_Localized: "Improved 7.2v Performance."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420591
+    m_Localized: "CALTECH MAX-LITE"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420592
+    m_Localized: "Basic Engine."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420593
+    m_Localized: "CALTECH MAX-PRO"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420594
+    m_Localized: "Improved Performance."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420595
+    m_Localized: "CALTECH NITRO-V EXTREME"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420596
+    m_Localized: "High Performance Nitro-Engine."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420597
+    m_Localized: "ITEX COGNITO 4-GEAR SYSTEM"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420598
+    m_Localized: "Basic 2 Gear System."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420599
+    m_Localized: "ITEX FIVE-STAR"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420600
+    m_Localized: "3 Gear System, Improved Efficiency."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420601
+    m_Localized: "ITEX FIVE-STAR PRO"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420602
+    m_Localized: "5 Gear System."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420603
+    m_Localized: "ITEX SIX-SHOOTER"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420604
+    m_Localized: "Advanced 6 Gear System."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420605
+    m_Localized: "ITEX VELOCITY"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420606
+    m_Localized: "6 Gear Racing Specification."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420607
+    m_Localized: "TITAN VOXBOX"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420608
+    m_Localized: "Basic Horn System."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420609
+    m_Localized: "TITAN INFORMER"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420610
+    m_Localized: "Make Yourself Heard!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420611
+    m_Localized: "TITAN TWIN-HORN"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420612
+    m_Localized: "Twin Horn System."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420613
+    m_Localized: "TITAN SUPREMO"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420614
+    m_Localized: "Loud And Proud."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420615
+    m_Localized: "TITAN EVANGELIST"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420616
+    m_Localized: "Exhibitionists Only!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420617
+    m_Localized: "ITEX BASIC"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420618
+    m_Localized: "Basic Shocks."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420619
+    m_Localized: "ITEX COMPACT"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420620
+    m_Localized: "Enhanced Ride."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420621
+    m_Localized: "ITEX ABSORBER"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420622
+    m_Localized: "Damage Reducing Travel."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420623
+    m_Localized: "ITEX ABSORBER PRO"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420624
+    m_Localized: "Super Tough And Strong."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420625
+    m_Localized: "ITEX ULTRA SHOCK"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420626
+    m_Localized: "Max Absorption!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420627
+    m_Localized: "MYSUKO MAXI-CONTROL BMS"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420628
+    m_Localized: "Maximum Brake And Handling Aids."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420629
+    m_Localized: "MYSUKO ENHANCED BMS"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420630
+    m_Localized: "Increased Performance Levels."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420631
+    m_Localized: "MYSUKO BMS BYPASS"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420632
+    m_Localized: "Increased Performance, Less Aid."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420633
+    m_Localized: "MYSUKO MEPHISTO"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420634
+    m_Localized: "Minimum Driving Aid."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420635
+    m_Localized: "MYSUKO DIABLO EXTREME"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420636
+    m_Localized: "Maximum Control And Performance."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420637
+    m_Localized: "R-LINE DIRTBUSTER"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420638
+    m_Localized: "Off-Road Tyres For Max Grip."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420639
+    m_Localized: "R-LINE MAXI-GRIP"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420640
+    m_Localized: "General Purpose."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420641
+    m_Localized: "R-LINE AEROSTUNT"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420642
+    m_Localized: "General Purpose, All Terrain Tyres."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420643
+    m_Localized: "R-LINE VORTEX"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420644
+    m_Localized: "Faster, Slicker Tyres."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420645
+    m_Localized: "R-LINE VELOCITY"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420646
+    m_Localized: "Racing Slicks."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420647
+    m_Localized: "MYSUKO STUNT LITE"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420648
+    m_Localized: "Basic Stunt Boost."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420649
+    m_Localized: "MYSUKO STUNT ACE"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420650
+    m_Localized: "Improved Launch."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420651
+    m_Localized: "MYSUKO MAXI-LIFT"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420652
+    m_Localized: "Increased Turbo."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420653
+    m_Localized: "MYSUKO MAXI-LIFT PRO"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420654
+    m_Localized: "Super Launch Potential."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420655
+    m_Localized: "MYSUKO STUNT PRO SPECIAL EDITION"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420656
+    m_Localized: "Stunt Boost Extreme!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420657
+    m_Localized: "TGR EAGLE FWD SYSTEM"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420658
+    m_Localized: "TGR Front Wheel Drive System."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420659
+    m_Localized: "TGR STALLION RWD SYSTEM"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420660
+    m_Localized: "TGR Rear Wheel Drive System."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420661
+    m_Localized: "TGR 4WD SYSTEM"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420662
+    m_Localized: "TGR Four Wheel Drive System."
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

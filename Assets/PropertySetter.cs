@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -6,31 +7,41 @@ using UnityEngine.UI;
 public class PropertySetter : MonoBehaviour
 {
 	bool initializing;
-	// convention: name(0), inputfield(1)
+	InputField input;
 	public float value { get; private set; }
 	Action<float> applyValuesMethod;
+
 	public void Initialize(string propName, float value, Action<float> applyValuesToCarMethod)
 	{
 		initializing = true;
 		transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = propName;
-		transform.GetChild(1).GetComponent<InputField>().text = value.ToString();
+		input = transform.GetChild(1).GetComponent<InputField>();
+		input.contentType = InputField.ContentType.Standard;
+		input.characterValidation = InputField.CharacterValidation.None;
 		applyValuesMethod = applyValuesToCarMethod;
 		this.value = value;
+		SetText(value);
 		initializing = false;
 	}
-	public void UpdateValue(string value)
+
+	void SetText(float number) => input.SetTextWithoutNotify(number.ToString("G9", CultureInfo.CurrentCulture));
+
+	public void UpdateValue(string text)
 	{
-		if (initializing)
+		if (initializing) return;
+		text = text.Trim();
+		float number;
+		if (!float.TryParse(text, NumberStyles.Float, CultureInfo.CurrentCulture, out number) &&
+			!float.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out number))
+		{
+			SetText(value);
 			return;
-		try
-		{
-			this.value = float.Parse(value);
-			applyValuesMethod.Invoke(this.value);
 		}
-		catch
-		{
-			Debug.LogError("Bad string: " + value);
-			Debug.Break();
-		}
+		if (float.IsNaN(number) || float.IsInfinity(number)) { SetText(value); return; }
+		value = number;
+		SetText(value);
+		applyValuesMethod?.Invoke(value);
 	}
+
+	public void CommitInput() => UpdateValue(input.text);
 }

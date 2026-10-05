@@ -25,6 +25,7 @@ public class MultiPlayerSelector : TrackSelector
 	public TextMeshProUGUI scoringText;
 	public TextMeshProUGUI roundText;
 	public Button garageBtn;
+	public Button tuningBtn;
 	public GameObject dataTransferWnd;
 	public TextMeshProUGUI dataTransferText;
 	public CarSelector carSelector;
@@ -379,6 +380,7 @@ public class MultiPlayerSelector : TrackSelector
 		sortButton.gameObject.SetActive(isHost);
 		sortButton.buttonComponent.interactable = notRdy;
 		garageBtn.interactable = notRdy && !F.I.randomCars;
+		tuningBtn.interactable = isHost && notRdy;
 		scoringText.text = F.I.scoringType.ToString();
 		scoringText.transform.parent.GetComponent<Button>().interactable = isHost && notRdy;
 		randomCarsText.transform.parent.GetComponent<Button>().interactable = isHost && notRdy;

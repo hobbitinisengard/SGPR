@@ -16,6 +16,7 @@ namespace RVP
 
 		protected AudioSource engineAudio;
 		protected AudioSource idlingEngineAudio;
+		int selectedAudioPartIndex = -1;
 		[Header("Engine Audio")]
 
 		public float minPitch;
@@ -70,6 +71,35 @@ namespace RVP
 				foreach (GameObject jet in jets)
 					if (jet)
 						jet.transform.localScale = Vector3.zero;
+		}
+		public void SetPartAudio(int partIndex)
+		{
+			if (partIndex <= 0 || selectedAudioPartIndex == partIndex) return;
+			selectedAudioPartIndex = partIndex;
+			if (!engineAudio) engineAudio = GetComponent<AudioSource>();
+			if (!idlingEngineAudio && transform.childCount > 0)
+				idlingEngineAudio = transform.GetChild(0).GetComponent<AudioSource>();
+			AudioClip rev = Resources.Load<AudioClip>("sfx/engine/engine" + partIndex);
+			AudioClip idle = Resources.Load<AudioClip>("sfx/engine/engine" + partIndex + "i");
+			if (!rev || !idle)
+			{
+				// The available collection ends at engine4; keep a deterministic
+				// audible fallback until an engine5/engine5i pair is provided.
+				Debug.LogWarning($"[Motor] Missing engine{partIndex}/engine{partIndex}i audio; using engine4/engine4i.", this);
+				rev = Resources.Load<AudioClip>("sfx/engine/engine4");
+				idle = Resources.Load<AudioClip>("sfx/engine/engine4i");
+			}
+			SetLoopClip(engineAudio, rev);
+			SetLoopClip(idlingEngineAudio, idle);
+		}
+		static void SetLoopClip(AudioSource source, AudioClip clip)
+		{
+			if (!source || !clip || source.clip == clip) return;
+			bool resume = source.isPlaying || source.playOnAwake;
+			source.Stop();
+			source.clip = clip;
+			source.loop = true;
+			if (resume && source.isActiveAndEnabled) source.Play();
 		}
 		protected virtual void FixedUpdate()
 		{

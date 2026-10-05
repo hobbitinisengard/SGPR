@@ -27,6 +27,10 @@ public class OriginalVehiclePartDefinition
 	public OriginalVehiclePartType type;
 	public int index;
 	public int price;
+	public Dictionary<string, float> physicsOverrides;
+	public int presentationIndex;
+	[JsonIgnore] public string sourcePath;
+	[JsonIgnore] public bool IsUserPart => physicsOverrides != null;
 	public string[] parameterNames = Array.Empty<string>();
 	public float[] parameters = Array.Empty<float>();
 	public string[] localizedNames = Array.Empty<string>();
@@ -81,9 +85,11 @@ public class OriginalVehiclePartSlot
 	public int maximumIndex;
 	public int selectedIndex;
 	public string defaultPartId;
+	public string selectedUserPartId;
 
 	[JsonIgnore]
-	public string SelectedPartId => selectedIndex > 0 ? OriginalVehiclePartCatalog.MakePartId(type, selectedIndex) : null;
+	public string SelectedPartId => !string.IsNullOrEmpty(selectedUserPartId) ? selectedUserPartId :
+		selectedIndex > 0 ? OriginalVehiclePartCatalog.MakePartId(type, selectedIndex) : null;
 
 	public OriginalVehiclePartSlot Clone()
 	{
@@ -94,7 +100,8 @@ public class OriginalVehiclePartSlot
 			minimumIndex = minimumIndex,
 			maximumIndex = maximumIndex,
 			selectedIndex = selectedIndex,
-			defaultPartId = defaultPartId
+			defaultPartId = defaultPartId,
+			selectedUserPartId = selectedUserPartId
 		};
 	}
 }
@@ -123,9 +130,19 @@ public class OriginalVehicleCarSetup
 		if (slot == null || index < slot.minimumIndex || index > slot.maximumIndex)
 			return false;
 		slot.selectedIndex = index;
+		slot.selectedUserPartId = null;
 		return true;
 	}
 
+	public bool TrySelectPart(OriginalVehiclePartDefinition part)
+	{
+		if (part == null) return false;
+		if (!part.IsUserPart) return TrySelectPart(part.type, part.index);
+		OriginalVehiclePartSlot slot = GetSlot(part.type);
+		if (slot == null) return false;
+		slot.selectedUserPartId = part.id;
+		return true;
+	}
 	public OriginalVehicleCarSetup Clone()
 	{
 		var clonedSlots = new OriginalVehiclePartSlot[slots?.Length ?? 0];
@@ -274,7 +291,7 @@ public class OriginalVehiclePartCatalog
 			for (int i = 0; i < (setup.slots?.Length ?? 0); i++)
 			{
 				OriginalVehiclePartSlot slot = setup.slots[i];
-				OriginalVehiclePartDefinition part = slot == null ? null : GetPart(slot.type, slot.selectedIndex);
+				OriginalVehiclePartDefinition part = slot == null ? null : GetPresentationPart(GetPart(slot.SelectedPartId));
 				if (part == null)
 					continue;
 				float additiveMass = parameterIndex < part.parameters.Length
@@ -288,7 +305,7 @@ public class OriginalVehiclePartCatalog
 		for (int i = 0; i < (setup.slots?.Length ?? 0); i++)
 		{
 			OriginalVehiclePartSlot slot = setup.slots[i];
-			OriginalVehiclePartDefinition part = slot == null ? null : GetPart(slot.type, slot.selectedIndex);
+			OriginalVehiclePartDefinition part = slot == null ? null : GetPresentationPart(GetPart(slot.SelectedPartId));
 			if (part == null)
 				continue;
 			float partValue = parameterIndex < part.parameters.Length
@@ -395,6 +412,53 @@ public class OriginalVehiclePartCatalog
 		}
 	}
 
+	public const string UserPartExtension = "sgppart";
+	public int UserPartsVersion { get; private set; }
+	public OriginalVehiclePartDefinition GetSelectedPart(OriginalVehicleCarSetup setup, OriginalVehiclePartType type) =>
+		GetPart(setup?.GetSlot(type)?.SelectedPartId);
+
+	public OriginalVehiclePartDefinition GetPresentationPart(OriginalVehiclePartDefinition part) =>
+		part != null && part.IsUserPart ? GetPart(part.type, part.presentationIndex) : part;
+	public void LoadUserParts(string directory)
+	{
+		Directory.CreateDirectory(directory);
+		foreach (OriginalVehiclePartDefinition part in parts)
+			if (part.IsUserPart) partsById.Remove(part.id);
+		parts.RemoveAll(part => part.IsUserPart);
+		string[] files = Directory.GetFiles(directory, "*." + UserPartExtension);
+		Array.Sort(files, StringComparer.OrdinalIgnoreCase);
+		foreach (string path in files)
+		{
+			try
+			{
+				OriginalVehicleUserPartFile file = JsonConvert.DeserializeObject<OriginalVehicleUserPartFile>(File.ReadAllText(path));
+				if (file == null || file.formatVersion != 1 || string.IsNullOrWhiteSpace(file.id) ||
+					!file.id.StartsWith("user-", StringComparison.Ordinal) || !Enum.IsDefined(typeof(OriginalVehiclePartType), file.type) ||
+					file.physics == null || file.physics.Count == 0 || partsById.ContainsKey(file.id))
+					throw new InvalidDataException("Invalid or duplicate user part.");
+				foreach (var entry in file.physics)
+					if (!OriginalVehicleUserPartFile.IsValidValue(entry.Key, entry.Value))
+						throw new InvalidDataException("Invalid part parameter: " + entry.Key);
+				float[] values = new float[parameterNames.Length];
+				Array.Fill(values, -99999f);
+				var part = new OriginalVehiclePartDefinition
+				{
+					id = file.id, type = file.type, index = 0,
+					parameterNames = parameterNames, parameters = values,
+					localizedNames = new[] { string.IsNullOrWhiteSpace(file.name) ? Path.GetFileNameWithoutExtension(path) : file.name },
+					localizedDescriptions = new[] { file.description ?? "User-created part" },
+					physicsOverrides = file.physics, presentationIndex = file.presentationIndex, sourcePath = Path.GetFullPath(path)
+				};
+				parts.Add(part);
+				partsById.Add(part.id, part);
+			}
+			catch (Exception exception)
+			{
+				UnityEngine.Debug.LogWarning("Could not load user part " + path + ": " + exception.Message);
+			}
+		}
+		UserPartsVersion++;
+	}
 	public OriginalVehiclePartDefinition GetPart(string id)
 	{
 		if (string.IsNullOrWhiteSpace(id))
@@ -409,15 +473,16 @@ public class OriginalVehiclePartCatalog
 	{
 		var available = new List<OriginalVehiclePartDefinition>();
 		OriginalVehiclePartSlot slot = setup?.GetSlot(type);
-		if (slot == null || slot.minimumIndex <= 0 || slot.maximumIndex < slot.minimumIndex)
-			return available;
+		if (slot == null) return available;
 
-		for (int index = slot.minimumIndex; index <= slot.maximumIndex; index++)
+		for (int index = System.Math.Max(1, slot.minimumIndex); index <= slot.maximumIndex; index++)
 		{
 			OriginalVehiclePartDefinition part = GetPart(type, index);
 			if (part != null)
 				available.Add(part);
 		}
+		foreach (OriginalVehiclePartDefinition part in parts)
+			if (part.IsUserPart && part.type == type) available.Add(part);
 		return available;
 	}
 
@@ -549,5 +614,74 @@ public class OriginalVehiclePartCatalog
 			rows.Add(row.ToArray());
 		}
 		return rows;
+	}
+}
+
+[Serializable]
+public class OriginalVehicleUserPartFile
+{
+	public int formatVersion = 1;
+	public string id;
+	public string name;
+	public string description = "User-created part";
+	[JsonConverter(typeof(Newtonsoft.Json.Converters.StringEnumConverter))]
+	public OriginalVehiclePartType type;
+	public int presentationIndex;
+	public Dictionary<string, float> physics = new();
+
+	public static bool IsValidValue(string key, float value)
+	{
+		if (float.IsNaN(value) || float.IsInfinity(value)) return false;
+		return TryGetRatioIndex(key, out _) || ResolveField(null, key, out _) != null;
+	}
+	static bool TryGetRatioIndex(string key, out int index)
+	{
+		index = -1;
+		return key != null && key.StartsWith("ratios.", StringComparison.Ordinal) &&
+			int.TryParse(key.Substring(7), out index) && index >= 0 && index < 8;
+	}
+	static System.Reflection.FieldInfo ResolveField(RVP.OriginalVehiclePhysicsConfig config, string key, out object target)
+	{
+		target = config;
+		if (string.IsNullOrEmpty(key)) return null;
+		string[] segments = key.Split('.');
+		Type type = typeof(RVP.OriginalVehiclePhysicsConfig);
+		string fieldName = key;
+		int wheel = segments.Length == 3 && segments[1] == "rear" ? 0 :
+			segments.Length == 3 && segments[1] == "front" ? 2 : -1;
+		if (segments.Length == 3 && segments[0] == "tyres" &&
+			(wheel >= 0 || int.TryParse(segments[1], out wheel)) && wheel >= 0 && wheel < 4)
+		{
+			type = typeof(RVP.OriginalTyrePhysicsConfig);
+			target = config?.tyres != null && wheel < config.tyres.Length ? config.tyres[wheel] : null;
+			fieldName = segments[2];
+		}
+		var field = type.GetField(fieldName);
+		return field != null && field.Name != "formatVersion" && (field.FieldType == typeof(float) || field.FieldType == typeof(int)) ? field : null;
+	}
+	public static void Apply(RVP.OriginalVehiclePhysicsConfig config, Dictionary<string, float> values)
+	{
+		if (config == null || values == null) return;
+		foreach (var entry in values)
+		{
+			if (!IsValidValue(entry.Key, entry.Value)) continue;
+			if (TryGetRatioIndex(entry.Key, out int ratio))
+			{
+				if (config.ratios != null && ratio < config.ratios.Length) config.ratios[ratio] = entry.Value;
+				continue;
+			}
+			var field = ResolveField(config, entry.Key, out object target);
+			if (field == null || target == null) continue;
+			if (field.FieldType == typeof(int)) field.SetValue(target, UnityEngine.Mathf.RoundToInt(entry.Value));
+			else field.SetValue(target, entry.Value);
+			// Axle keys apply the same value to both sides; numeric keys from older parts still work.
+			string[] segments = entry.Key.Split('.');
+			if (segments.Length == 3 && segments[0] == "tyres" && (segments[1] == "rear" || segments[1] == "front"))
+			{
+				int right = segments[1] == "rear" ? 1 : 3;
+				if (config.tyres != null && right < config.tyres.Length && config.tyres[right] != null)
+					field.SetValue(config.tyres[right], entry.Value);
+			}
+		}
 	}
 }

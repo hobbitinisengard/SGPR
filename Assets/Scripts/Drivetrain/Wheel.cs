@@ -24,7 +24,7 @@ namespace RVP
 		float initialTirePressure;
 
 		[Header("Original tyre telemetry")]
-		[NonSerialized] public float slipThres = 0.5f;
+		[NonSerialized] public float slipThres = 0.25f;
 		public float forwardSlip;
 		[NonSerialized] public float sidewaysSlip;
 

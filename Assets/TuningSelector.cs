@@ -1,12 +1,16 @@
 using System.Collections;
-using System.Linq;
+using System.Collections.Generic;
+using System.Globalization;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Localization.Components;
 using UnityEngine.UI;
 using UnityEngine.UIElements.Experimental;
+using RVP;
 
 public class TuningSelector : Sfxable
 {
+	// Keep the existing Inspector bindings and animation controls.
 	public RectTransform[] bars;
 	public Text partDescrText;
 	public Text partTypeText;
@@ -16,192 +20,415 @@ public class TuningSelector : Sfxable
 	public RectTransform content;
 	public Scrollbar scrollx;
 	public Scrollbar scrolly;
-	Transform selectedPart;
-	string persistentSelectedPart;
-	float initBarSizeDelta;
+	public RectTransform traitsContent;
+	public BackgroundTiles tuningBackground;
+	public bool d_co;
+
+	static readonly string[] ImageCategories =
+		{ "engines", "batteries", "tyres", "brakes", "shocks", "chassis", "drives", "horns", "boost", "bms", "gears" };
+	static readonly string[] CategoryNames =
+		{ "Engine", "Battery", "Tyres", "Brakes", "Suspension", "Chassis", "Drive", "Horn", "Stunt Boost", "BMS", "Gears" };
+
+	sealed class PartRow
+	{
+		public OriginalVehiclePartType type;
+		public RectTransform transform;
+		public List<OriginalVehiclePartDefinition> parts;
+		public readonly List<RectTransform> images = new();
+		public int selectedIndex;
+	}
+
+	readonly List<PartRow> rows = new();
+	readonly List<GameObject> traitCells = new();
+	OriginalVehiclePartCatalog catalog;
+	CarConfig carConfig;
+	InputAction navigationAction;
+	int loadedCarIndex = -1;
+	int loadedPartsVersion = -1;
+	int selectedRow;
+	OriginalVehiclePartType rememberedCategory;
+	float rowSpacing;
+	float backgroundPosition;
+	float[] barWidths;
+	Coroutine loadRoutine;
 	Coroutine containerCo;
 	Coroutine barsAndRadialCo;
-	bool loadCo;
-	public bool d_co;
-	
-	new void Awake()
+	bool loading;
+
+	public OriginalVehiclePartDefinition SelectedPart => rows.Count == 0 ? null :
+		rows[selectedRow].parts[rows[selectedRow].selectedIndex];
+
+	protected override void Awake()
 	{
 		base.Awake();
-		initBarSizeDelta = bars[0].sizeDelta.x;
+		barWidths = new float[bars?.Length ?? 0];
+		for (int i = 0; i < barWidths.Length; i++)
+			barWidths[i] = bars[i] ? bars[i].sizeDelta.x : 0;
 	}
-	private void OnDisable()
-	{ // in unity, 
-		F.I.move2Ref.action.performed -= CalculateTargetToSelect;
-		persistentSelectedPart = selectedPart.name;
-		F.I.s_playerCarIdx = Car.Name2Index(selectedPart.name);
-	}
-	private void OnEnable()
+
+	void OnEnable() => Reload();
+
+	void OnDisable()
 	{
-		F.I.move2Ref.action.performed += CalculateTargetToSelect;
-		if (loadCo)
-		{
-			StopCoroutine(Load());
-		}
-		StartCoroutine(Load());
+		if (navigationAction != null)
+			navigationAction.performed -= CalculateTargetToSelect;
+		navigationAction = null;
+		StopAllCoroutines();
+		loadRoutine = containerCo = barsAndRadialCo = null;
+		loading = false;
 	}
-	
-	void ClearAllParts()
+
+	void Update()
 	{
-		for (int i = 0; i < content.childCount; ++i)
-		{ // remove parts from previous entry
-			content.GetChild(i).DestroyAllChildren();
-		}
+		if (!loading && F.I && (loadedCarIndex != F.I.s_playerCarIdx || (catalog != null && loadedPartsVersion != catalog.UserPartsVersion)))
+			Reload();
 	}
+
+	public void Reload()
+	{
+		if (!isActiveAndEnabled)
+			return;
+		if (loadRoutine != null) StopCoroutine(loadRoutine);
+		if (containerCo != null) StopCoroutine(containerCo);
+		if (barsAndRadialCo != null) StopCoroutine(barsAndRadialCo);
+		containerCo = barsAndRadialCo = null;
+		loading = true;
+		loadRoutine = StartCoroutine(Load());
+	}
+
 	IEnumerator Load()
 	{
-		int partsCurrentlyVisible = 0;
-		for (int i = 0; i < content.childCount; ++i)
-			partsCurrentlyVisible += content.GetChild(i).childCount;
-
-		int numberOfPartsThatShouldBeVisible = 0;
-		loadCo = true;
-		if (partsCurrentlyVisible != numberOfPartsThatShouldBeVisible)
+		while (!F.I || F.I.originalVehiclePartCatalog == null || F.I.cars == null || F.I.cars.Length == 0)
+			yield return null;
+		loadedCarIndex = Mathf.Clamp(F.I.s_playerCarIdx, 0, F.I.cars.Length - 1);
+		while (F.I.cars[loadedCarIndex].config == null)
+			yield return null;
+		if (navigationAction == null && F.I.move2Ref != null)
 		{
-			bool[] menuButtons = new bool[4];
-			ClearAllParts();
-			for (int i = 0; i < F.I.cars.Length; ++i)
-			{ // populate car grid
-				var car = F.I.cars[i];
-				//if (ShowCar(car))
+			navigationAction = F.I.move2Ref.action;
+			navigationAction.performed += CalculateTargetToSelect;
+		}
+		ResolveViewBindings();
+		if (!content || !partImageTemplate || !TraitValuePrefab || !traitsContent)
+		{
+			Debug.LogError("TuningSelector needs part content, both prefabs and a trait grid.", this);
+			loading = false;
+			yield break;
+		}
+		F.I.ReloadUserParts();
+		catalog = F.I.originalVehiclePartCatalog;
+		loadedPartsVersion = catalog.UserPartsVersion;
+		carConfig = F.I.cars[loadedCarIndex].config;
+		OriginalVehicleCarSetup allowedSetup = F.I.GetDefaultOriginalVehicleSetup(loadedCarIndex);
+		carConfig.EnsureOriginalParts(allowedSetup);
+		BuildRows(allowedSetup);
+		selectedRow = Mathf.Max(0, rows.FindIndex(row => row.type == rememberedCategory));
+		yield return null;
+		Canvas.ForceUpdateCanvases();
+		RefreshSelectedPart(false);
+		loading = false;
+		loadRoutine = null;
+	}
+
+	void ResolveViewBindings()
+	{
+		Transform view = transform;
+		while (view.parent && view.name != "TuningView") view = view.parent;
+		if (!tuningBackground)
+		{
+			foreach (BackgroundTiles background in view.GetComponentsInChildren<BackgroundTiles>(true))
+			{
+				if (background.name == "CVBckBrown")
 				{
-					var newcar = Instantiate(partImageTemplate, content.GetChild((int)car.category));
-					newcar.name = "car" + i.ToString("D2");
-					newcar.GetComponent<Image>().sprite = Resources.Load<Sprite>(F.I.carImagesPath + newcar.name);
-					newcar.SetActive(true);
-					menuButtons[(int)car.category] = true;
-					if (persistentSelectedPart != null && persistentSelectedPart == newcar.name)
-						selectedPart = newcar.transform;
+					tuningBackground = background;
+					break;
 				}
+				if (background.TryGetComponent(out Image image) && image.sprite == background.tileBrown)
+					tuningBackground = background;
 			}
-
-			yield return null; // wait for one frame for active objects to refresh
 		}
-		if (selectedPart == null)
+		if (!content)
 		{
-			partDescrText.text = "No parts available";
+			ScrollRect scroll = GetComponentInChildren<ScrollRect>(true);
+			if (scroll) content = scroll.content;
 		}
-		else
+		if (!partImageTemplate) partImageTemplate = Resources.Load<GameObject>("prefabs/partContent");
+		if (!TraitValuePrefab) TraitValuePrefab = Resources.Load<GameObject>("prefabs/ElementValue");
+		if (!traitsContent)
 		{
-			partDescrText.text = F.I.LocStr(F.I.Car(selectedPart.name).name) + "\n\n" + F.I.LocStr(selectedPart.name + "d");
+			GridLayoutGroup grid = view.GetComponentInChildren<GridLayoutGroup>(true);
+			if (grid) traitsContent = (RectTransform)grid.transform;
 		}
-		containerCo = StartCoroutine(MoveToCar());
+		foreach (Text text in view.GetComponentsInChildren<Text>(true))
+		{
+			if (!partTypeText && text.name == "Type") partTypeText = text;
+			if (!partNameText && text.name == "Name") partNameText = text;
+			if (!partDescrText && text.name == "Description") partDescrText = text;
+		}
+		DisableLocalization(partTypeText ? partTypeText.gameObject : null);
+		DisableLocalization(partNameText ? partNameText.gameObject : null);
+		DisableLocalization(partDescrText ? partDescrText.gameObject : null);
+	}
 
-		if (barsAndRadialCo != null)
-			StopCoroutine(barsAndRadialCo);
-		barsAndRadialCo = StartCoroutine(SetPerformanceBarsAndRadial());
-		//Debug.Log(selectedCar);
-		loadCo = false;
+	void BuildRows(OriginalVehicleCarSetup allowedSetup)
+	{
+		rows.Clear();
+		DisableAutomaticLayout(content);
+		ScrollRect scroll = content.GetComponentInParent<ScrollRect>();
+		if (scroll)
+		{
+			scroll.StopMovement();
+			// The selector owns centering; ScrollRect's bounds must not clamp it.
+			scroll.enabled = false;
+		}
+		RectTransform viewport = content.parent as RectTransform;
+		RectTransform template = partImageTemplate.GetComponent<RectTransform>();
+		float imageWidth = template.rect.width * Mathf.Abs(template.localScale.x);
+		float imageHeight = template.rect.height * Mathf.Abs(template.localScale.y);
+		rowSpacing = Mathf.Max(imageHeight + 24, viewport.rect.height);
+		content.anchorMin = content.anchorMax = new Vector2(0.5f, 1);
+		content.pivot = new Vector2(0.5f, 1);
+		content.anchoredPosition = Vector2.zero;
+
+		foreach (OriginalVehiclePartSlot slot in allowedSetup?.slots ?? System.Array.Empty<OriginalVehiclePartSlot>())
+		{
+			List<OriginalVehiclePartDefinition> parts = catalog.GetAvailableParts(allowedSetup, slot.type);
+			if (parts.Count == 0) continue;
+			int rowIndex = rows.Count;
+			RectTransform rowTransform = rowIndex < content.childCount
+				? content.GetChild(rowIndex) as RectTransform
+				: (RectTransform)new GameObject(slot.type.ToString(), typeof(RectTransform)).transform;
+			rowTransform.SetParent(content, false);
+			rowTransform.gameObject.SetActive(true);
+			DisableAutomaticLayout(rowTransform);
+			for (int i = rowTransform.childCount - 1; i >= 0; i--)
+			{
+				GameObject previous = rowTransform.GetChild(i).gameObject;
+				previous.SetActive(false);
+				Destroy(previous);
+			}
+			rowTransform.name = slot.type.ToString();
+			rowTransform.localScale = Vector3.one;
+			rowTransform.anchorMin = rowTransform.anchorMax = new Vector2(0.5f, 1);
+			rowTransform.pivot = new Vector2(0.5f, 0.5f);
+			rowTransform.sizeDelta = new Vector2(viewport.rect.width, rowSpacing);
+			var row = new PartRow { type = slot.type, transform = rowTransform, parts = parts };
+			string equippedId = carConfig.originalParts?.GetSlot(slot.type)?.SelectedPartId ?? slot.defaultPartId;
+			row.selectedIndex = Mathf.Max(0, parts.FindIndex(part => part.id == equippedId));
+			for (int i = 0; i < parts.Count; i++)
+			{
+				GameObject icon = Instantiate(partImageTemplate, rowTransform, false);
+				icon.name = parts[i].id;
+				RectTransform rect = (RectTransform)icon.transform;
+				rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(0.5f, 0.5f);
+				rect.anchoredPosition = new Vector2(i * (imageWidth + 24), 0);
+				Image image = icon.GetComponent<Image>();
+				image.sprite = parts[i].IsUserPart ? Resources.Load<Sprite>("catalog/locked") : Resources.Load<Sprite>("catalog/upgrades/frontend_pages_catalog_upgrades_" +
+					ImageCategories[(int)slot.type] + "_" + parts[i].index.ToString("D2"));
+				image.preserveAspect = true;
+				icon.SetActive(true);
+				row.images.Add(rect);
+			}
+			rowTransform.anchoredPosition = new Vector2(-row.images[row.selectedIndex].anchoredPosition.x,
+				-viewport.rect.height * 0.5f - rowIndex * rowSpacing);
+			rows.Add(row);
+		}
+		for (int i = rows.Count; i < content.childCount; i++) content.GetChild(i).gameObject.SetActive(false);
+		content.sizeDelta = new Vector2(viewport.rect.width,
+			viewport.rect.height + Mathf.Max(0, rows.Count - 1) * rowSpacing);
+		if (traitCells.Count == 0)
+			foreach (Transform child in traitsContent) child.gameObject.SetActive(false);
+	}
+
+	static void DisableAutomaticLayout(RectTransform target)
+	{
+		if (target.TryGetComponent(out LayoutGroup layout)) layout.enabled = false;
+		if (target.TryGetComponent(out ContentSizeFitter fitter)) fitter.enabled = false;
 	}
 
 	void CalculateTargetToSelect(InputAction.CallbackContext ctx)
 	{
-		if (!selectedPart || loadCo)
-			return;
-		d_co = containerCo == null;
+		if (loading || rows.Count == 0) return;
+		Vector2 move = ctx.ReadValue<Vector2>();
+		int x = Mathf.RoundToInt(move.x);
+		int y = Mathf.RoundToInt(-move.y);
+		if (x == 0 && y == 0) return;
+		int nextRow = Mathf.Clamp(selectedRow + y, 0, rows.Count - 1);
+		PartRow row = rows[nextRow];
+		int nextPart = Mathf.Clamp(row.selectedIndex + (y == 0 ? x : 0), 0, row.parts.Count - 1);
+		if (nextRow == selectedRow && nextPart == row.selectedIndex) return;
+		selectedRow = nextRow;
+		row.selectedIndex = nextPart;
+		PlaySFX("fe-bitmapscroll");
+		RefreshSelectedPart(true);
+	}
 
-		Vector2 move2 = F.I.move2Ref.action.ReadValue<Vector2>();
-		int x = Mathf.RoundToInt(move2.x);
-		int y = Mathf.RoundToInt(-move2.y);
-
-		if (x != 0 || y != 0)
+	void RefreshSelectedPart(bool equip)
+	{
+		OriginalVehiclePartDefinition part = SelectedPart;
+		if (part == null)
 		{
-			int posx = x + selectedPart.GetSiblingIndex();
-			int posy = y + selectedPart.parent.GetSiblingIndex();
-			if (posy >= 0 && posy <= 3 && posx >= 0)
-			{
-				Transform tempSelectedCar = null;
-				for (int i = posy; i < content.childCount && i >= 0; i = (y > 0) ? (i + 1) : (i - 1))
-				{
-					Transform selectedClass = content.GetChild(i);
+			if (partTypeText) partTypeText.text = "";
+			if (partNameText) partNameText.text = "";
+			if (partDescrText) partDescrText.text = F.I.LocStr("No parts available");
+			foreach (GameObject cell in traitCells) cell.SetActive(false);
+			return;
+		}
+		rememberedCategory = part.type;
+		if (equip) EquipPart(part);
+		if (partTypeText) partTypeText.text = F.I.LocStr(CategoryNames[(int)part.type]) + ":";
+		if (partNameText) partNameText.text = F.I.LocStr(part.IsUserPart ? part.GetName() : "Tuning." + part.id + ".Name");
+		if (partDescrText) partDescrText.text = F.I.LocStr(part.IsUserPart ? part.GetDescription() : "Tuning." + part.id + ".Description");
+		RefreshTraits(part);
+		if (containerCo != null) StopCoroutine(containerCo);
+		containerCo = StartCoroutine(MoveToPart());
+		if (barsAndRadialCo != null) StopCoroutine(barsAndRadialCo);
+		barsAndRadialCo = StartCoroutine(SetPerformanceBarsAndRadial());
+	}
 
-					if (selectedClass.childCount > 0)
-					{
-						if (posx >= selectedClass.childCount)
-							posx = selectedClass.childCount - 1;
-						tempSelectedCar = selectedClass.GetChild(posx);
-						//Debug.Log(tempSelectedCar);
-						break;
-					}
-				}
-				if (tempSelectedCar != null && tempSelectedCar != selectedPart)
-				{
-					selectedPart = tempSelectedCar;
-					F.I.s_playerCarIdx = Car.Name2Index(selectedPart.name);
-					PlaySFX("fe-bitmapscroll");
-				}
-				// new part has been selected
-				// set description
-				var car = F.I.Car(selectedPart.name);
-				partDescrText.text = F.I.LocStr(car.name) + "\n\n" + F.I.LocStr(selectedPart.name + "d");
-				// set bars
-				if (barsAndRadialCo != null)
-					StopCoroutine(barsAndRadialCo);
-				barsAndRadialCo = StartCoroutine(SetPerformanceBarsAndRadial());
-				// focus on car
-				if (containerCo != null)
-					StopCoroutine(containerCo);
-				containerCo = StartCoroutine(MoveToCar());
-			}
+	void EquipPart(OriginalVehiclePartDefinition part)
+	{
+		if (carConfig.originalParts == null) return;
+		OriginalVehiclePartSlot slot = carConfig.originalParts.GetSlot(part.type);
+		if (slot == null || slot.SelectedPartId == part.id ||
+			!carConfig.originalParts.TrySelectPart(part)) return;
+		carConfig.MarkModified();
+		//PlaySFX("fe-dialogconfirm");
+		VehicleParent player = RaceManager.I ? RaceManager.I.playerCar : null;
+		if (player && player.Owner && player.carNumber == loadedCarIndex)
+		{
+			player.carConfig.originalParts = carConfig.originalParts.Clone();
+			player.carConfig.MarkModified();
+			player.carConfig.Apply(player);
 		}
 	}
 
-	IEnumerator MoveToCar()
+	void RefreshTraits(OriginalVehiclePartDefinition part)
 	{
-		yield return null;
-		if (!selectedPart)
-			yield break;
-		float timer = 0;
-		Vector2 initPos = content.anchoredPosition;
-		Vector2 targetPos = new Vector2(-((RectTransform)selectedPart).anchoredPosition.x,
-			-selectedPart.parent.GetComponent<RectTransform>().anchoredPosition.y);
-		Vector2 scrollInitPos = new Vector2(scrollx.value, scrolly.value);
-		Vector2 scrollInitSize = new Vector2(scrollx.size, scrolly.size);
-		float carInGroupPos = F.I.InGroupPos(selectedPart);//.parent.PosAmongstActive(selectedCar, false);
-		float groupPos = content.PosAmongstActive(selectedPart.parent, false);
-		Vector2 scrollTargetPos = new Vector2(carInGroupPos, groupPos);
-		Vector2 scrollTargetSize = new Vector2(1f / selectedPart.parent.ActiveChildren(), 1f / content.ActiveChildren());
+		int count = 0;
+		if (part.IsUserPart)
+		{
+			foreach (var entry in part.physicsOverrides)
+				SetTraitCell(count++, entry.Key, entry.Value);
+			for (int i = count; i < traitCells.Count; i++) traitCells[i].SetActive(false);
+			LayoutRebuilder.ForceRebuildLayoutImmediate(traitsContent);
+			return;
+		}
+		for (int i = 0; i < part.parameterNames.Length && i < part.parameters.Length; i++)
+		{
+			float value = part.parameters[i];
+			if (value == -99999 || float.IsNaN(value) || float.IsInfinity(value)) continue;
+			string label = PhysicsParameterName(part.parameterNames[i], i);
+			if (label == null) continue;
+			SetTraitCell(count++, label, value);
+		}
+		for (int i = count; i < traitCells.Count; i++) traitCells[i].SetActive(false);
+		LayoutRebuilder.ForceRebuildLayoutImmediate(traitsContent);
+	}
 
-		while (timer < 1)
+	void SetTraitCell(int index, string label, float value)
+	{
+		if (index == traitCells.Count)
+		{
+			GameObject cell = Instantiate(TraitValuePrefab, traitsContent, false);
+			DisableLocalization(cell);
+			traitCells.Add(cell);
+		}
+		GameObject trait = traitCells[index];
+		trait.SetActive(true);
+		trait.transform.Find("Element").GetComponent<Text>().text = label + ":";
+		trait.transform.Find("Value").GetComponent<Text>().text = value.ToString("0.#####", CultureInfo.InvariantCulture);
+	}
+	static void DisableLocalization(GameObject target)
+	{
+		if (!target) return;
+		foreach (LocalizeStringEvent localizer in target.GetComponentsInChildren<LocalizeStringEvent>(true))
+			localizer.enabled = false;
+	}
+
+	static string PhysicsParameterName(string source, int column)
+	{
+		return source.Trim() switch
+		{
+			"Additive Mass" => "additiveMass", "Base Mass" => "mass",
+			"Com A" => "comA", "Com B" => "comB", "Com H" => "comHeight",
+			"Ride Height" => "rideHeight", "Cm" => column > 40 ? "turboDecay" : "engineDecay",
+			"Rpm Idle" => "rpmIdle", "Rpm Limit" => "rpmLimit",
+			"Rpm Max" => column > 40 ? "turboMax" : "rpmMax",
+			"Max Torque" => "maxTorque", "Torque Env" => "torqueCurveIndex",
+			"Drive Mode" => "driveMode", "Final Drive" => "finalDrive", "Gears" => "forwardGears",
+			"Shift" => "shiftTime", "Efficiency" => "efficiency", "4WD Split" => "powerSplit",
+			"GearCog1" => "gearRatio1", "GearCog2" => "gearRatio2", "GearCog3" => "gearRatio3",
+			"GearCog4" => "gearRatio4", "GearCog5" => "gearRatio5", "GearCog6" => "gearRatio6",
+			"GearCog7" => "gearRatio7", "GearCog8" => "gearRatio8",
+			"Brake Bias" => "brakeBias", "Brake Accel." => "brakeAcceleration",
+			"Travel in" => "travelIn", "Damping in" => "dampingIn", "Stiffness in" => "stiffnessIn",
+			"Max Travel" => "travelOut", "Max Damp." => "dampingOut", "Max Stiff." => "stiffnessOut",
+			"Cs" => "staticFriction", "Ck" => "kineticFriction", "Cd" => "dragCoefficient",
+			"Cl" => "liftCoefficient", "Steering angle" => "steeringMax",
+			"Sensitivity" => "steeringSensitivity", "Acceleration" => "steeringAcceleration",
+			"Max Fuel" => "fuelCapacity", "Fuel Consumpt" => "fuelConsumption", "Refuel Rate" => "refuelRate",
+			"Rpm Acc" => "turboAcceleration", "Power Mult" => "turboScale",
+			"Max Consump" => "turboConsumption", "Fuel Cut Off" => "turboEnergyThreshold",
+			"Launchtime" => "launchTime", "Launch Tolerance" => "launchTolerance", "Launch Speed" => "launchSpeed",
+			"Mat Rot Speed X" => "maxPitchSpeed", "Mat Rot Speed Y" => "maxYawSpeed",
+			_ => null
+		};
+	}
+
+	IEnumerator MoveToPart()
+	{
+		d_co = false;
+		PartRow row = rows[selectedRow];
+		float initialBackground = backgroundPosition;
+		float targetBackground = row.parts.Count == 1 ? 0 :
+			2f * row.selectedIndex / (row.parts.Count - 1) - 1;
+		Vector2 initialContent = content.anchoredPosition;
+		Vector2 targetContent = new Vector2(initialContent.x, selectedRow * rowSpacing);
+		Vector2 initialRow = row.transform.anchoredPosition;
+		Vector2 targetRow = new Vector2(-row.images[row.selectedIndex].anchoredPosition.x, initialRow.y);
+		Vector2 initialScroll = new Vector2(scrollx ? scrollx.value : 0, scrolly ? scrolly.value : 1);
+		Vector2 initialSize = new Vector2(scrollx ? scrollx.size : 1, scrolly ? scrolly.size : 1);
+		float horizontalProgress = row.parts.Count == 1 ? 0 : (float)row.selectedIndex / (row.parts.Count - 1);
+		float verticalProgress = rows.Count == 1 ? 0 : (float)selectedRow / (rows.Count - 1);
+		Vector2 targetScroll = new Vector2(
+			scrollx && scrollx.direction == Scrollbar.Direction.RightToLeft ? 1 - horizontalProgress : horizontalProgress,
+			scrolly && scrolly.direction == Scrollbar.Direction.BottomToTop ? 1 - verticalProgress : verticalProgress);
+		Vector2 targetSize = new Vector2(1f / row.parts.Count, 1f / rows.Count);
+		for (float timer = 0; timer < 1; timer += Time.unscaledDeltaTime)
 		{
 			float step = F.EasingOutQuint(timer);
-			content.anchoredPosition = Vector2.Lerp(initPos, targetPos, step);
-			scrollx.value = Mathf.Lerp(scrollInitPos.x, scrollTargetPos.x, step);
-			scrolly.value = Mathf.Lerp(scrollInitPos.y, scrollTargetPos.y, step);
-			scrollx.size = Mathf.Lerp(scrollInitSize.x, scrollTargetSize.x, step);
-			scrolly.size = Mathf.Lerp(scrollInitSize.y, scrollTargetSize.y, step);
-			timer += Time.deltaTime;
-
+			backgroundPosition = Mathf.Lerp(initialBackground, targetBackground, step);
+			if (tuningBackground) tuningBackground.SetTuningBlend(backgroundPosition);
+			content.anchoredPosition = Vector2.Lerp(initialContent, targetContent, step);
+			row.transform.anchoredPosition = Vector2.Lerp(initialRow, targetRow, step);
+			if (scrollx) { scrollx.SetValueWithoutNotify(Mathf.Lerp(initialScroll.x, targetScroll.x, step)); scrollx.size = Mathf.Lerp(initialSize.x, targetSize.x, step); }
+			if (scrolly) { scrolly.SetValueWithoutNotify(Mathf.Lerp(initialScroll.y, targetScroll.y, step)); scrolly.size = Mathf.Lerp(initialSize.y, targetSize.y, step); }
 			yield return null;
 		}
+		backgroundPosition = targetBackground;
+		if (tuningBackground) tuningBackground.SetTuningBlend(backgroundPosition);
+		content.anchoredPosition = targetContent;
+		row.transform.anchoredPosition = targetRow;
+		if (scrollx) { scrollx.SetValueWithoutNotify(targetScroll.x); scrollx.size = targetSize.x; }
+		if (scrolly) { scrolly.SetValueWithoutNotify(targetScroll.y); scrolly.size = targetSize.y; }
+		containerCo = null;
+		d_co = true;
 	}
 
 	IEnumerator SetPerformanceBarsAndRadial()
 	{
-		float[] targetSgpBars = selectedPart ? F.I.Car(selectedPart.name).config.SGP : new float[] { .03f, .03f, .03f };
-		float[] initSgpBars = new float[3];
-
-		for (int i = 0; i < 3; i++)
-			initSgpBars[i] = bars[i].sizeDelta.x / initBarSizeDelta;
-		float timer = 0;
-		while (timer < 1)
+		if (barWidths.Length == 0) yield break;
+		float[] targetBars = carConfig.SGP;
+		float[] initialBars = new float[barWidths.Length];
+		for (int i = 0; i < initialBars.Length; i++) initialBars[i] = bars[i] ? bars[i].sizeDelta.x : 0;
+		for (float timer = 0; timer < 1; timer += Time.unscaledDeltaTime)
 		{
 			float step = Easing.OutCubic(timer);
-			// set bars
-			for (int i = 0; i < 3; ++i)
-			{
-				float animValue = Mathf.Lerp(initSgpBars[i], targetSgpBars[i], step);
-				bars[i].sizeDelta = new Vector2(animValue * initBarSizeDelta, bars[i].sizeDelta.y);
-			}
-
-			timer += Time.deltaTime;
-
+			for (int i = 0; i < initialBars.Length && i < targetBars.Length; i++)
+				if (bars[i]) bars[i].sizeDelta = new Vector2(Mathf.Lerp(initialBars[i], targetBars[i] * barWidths[i], step), bars[i].sizeDelta.y);
 			yield return null;
 		}
+		barsAndRadialCo = null;
 	}
-
 }

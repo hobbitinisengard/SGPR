@@ -64,8 +64,11 @@ namespace RVP
 						}
 					}
 
-					screechAmount = Mathf.Max(screechAmount, Mathf.Pow(Mathf.Clamp01(Mathf.Abs(F.MaxAbs(
-						wheels[i].sidewaysSlip, wheels[i].forwardSlip, alwaysScrape)) - wheels[i].slipThres), 2));
+					float audibleSlip = Mathf.Clamp01(Mathf.Abs(F.MaxAbs(
+						wheels[i].sidewaysSlip, wheels[i].forwardSlip, alwaysScrape)) - wheels[i].slipThres);
+					// Boost quiet slides without exceeding the audio source's full volume.
+					screechAmount = Mathf.Max(screechAmount,
+						Mathf.Clamp01(1.25f * Mathf.Pow(audibleSlip, 0.65f)));
 				}
 			}
 

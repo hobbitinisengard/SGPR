@@ -383,10 +383,6 @@ namespace RVP
 
 			// assign to body
 			mr.material = newMat;
-			var wheelMat = Resources.Load<Material>("materials/carModels/Materials/cars_misc_tyre" + UnityEngine.Random.Range(1, 12).ToString());
-			//var wheelMatInv = new Material(wheelMat);
-			//wheelMatInv.name += "Inv";
-			//wheelMatInv.mainTextureScale = -Vector2.one;
 			// assign to wheels
 			foreach (var w in wheels)
 			{
@@ -399,24 +395,11 @@ namespace RVP
 					{
 						mats[i] = newMat;
 					}
-					if (mats[i].name.Contains("tyre"))
-					{
-						//if (!w.isLeft)
-						//{
-						//	mats[i] = wheelMatInv;
-						//	//var mf = w.transform.GetChild(0).GetComponent<MeshFilter>();
-						//	//var uvs = mf.mesh.uv;
-						//	//for (int i = 0; i < uvs.Length; ++i)
-						//	//	uvs[i] *= -1;
-						//	//mf.mesh.SetUVs(0, uvs);
-						//}
-						//else
-						mats[i] = wheelMat;
-					}
 				}
 				wmr.materials = mats;
 
 			}
+			ApplyOriginalTyreMaterial();
 			// assign to antennas
 			var anchor = bodyObj.transform.GetChild(0);
 			for (int i = 0; i < anchor.childCount; i++)
@@ -441,6 +424,53 @@ namespace RVP
 
 			RaceManager.I.hud.AddToProgressBar(this);
 			sampleText.textMesh.color = F.ReadColor(sponsor);
+		}
+		public void ApplyOriginalPartPresentation()
+		{
+			OriginalVehiclePartSlot engineSlot = originalPartsSetup?.GetSlot(OriginalVehiclePartType.Engine);
+			if (engine && engineSlot != null)
+			{
+				var part = F.I.originalVehiclePartCatalog.GetPart(engineSlot.SelectedPartId);
+				engine.SetPartAudio(part != null && part.IsUserPart ? part.presentationIndex : engineSlot.selectedIndex);
+			}
+			OriginalVehiclePartSlot hornSlot = originalPartsSetup?.GetSlot(OriginalVehiclePartType.Horn);
+			if (hornSlot != null)
+			{
+				var part = F.I.originalVehiclePartCatalog.GetPart(hornSlot.SelectedPartId);
+				SetHonkerAudio(part != null && part.IsUserPart ? part.presentationIndex : hornSlot.selectedIndex);
+			}
+			ApplyOriginalTyreMaterial();
+		}
+		void ApplyOriginalTyreMaterial()
+		{
+			OriginalVehicleCarSetup setup = originalPartsSetup ?? carConfig?.originalParts ??
+				F.I.cars[carNumber].config?.originalParts ?? F.I.cars[carNumber].defaultOriginalParts;
+			OriginalVehiclePartSlot slot = setup?.GetSlot(OriginalVehiclePartType.Tyres);
+			if (slot == null || slot.selectedIndex <= 0 || wheels == null) return;
+			OriginalVehiclePartDefinition part = F.I.originalVehiclePartCatalog.GetPresentationPart(
+				F.I.originalVehiclePartCatalog.GetPart(slot.SelectedPartId));
+			if (part == null) return;
+			int tread = Mathf.RoundToInt(part.GetParameter("Tread", -99999));
+			if (tread <= 0) return;
+			Material tyreMaterial = Resources.Load<Material>("materials/carModels/Materials/cars_misc_tyre" + tread);
+			if (!tyreMaterial) return;
+			foreach (Wheel wheel in wheels)
+			{
+				if (!wheel) continue;
+				foreach (MeshRenderer renderer in wheel.GetComponentsInChildren<MeshRenderer>(true))
+				{
+					Material[] materials = renderer.sharedMaterials;
+					bool changed = false;
+					for (int i = 0; i < materials.Length; i++)
+						if (materials[i] && materials[i].name.IndexOf("tyre", StringComparison.OrdinalIgnoreCase) >= 0 &&
+							materials[i] != tyreMaterial)
+						{
+							materials[i] = tyreMaterial;
+							changed = true;
+						}
+					if (changed) renderer.sharedMaterials = materials;
+				}
+			}
 		}
 		private Texture2D ImgPathToTexture2D(string imgPath)
 		{
@@ -700,12 +730,17 @@ namespace RVP
 				honkerAudio.Stop();
 		}
 		/// <summary>
-		/// Type is clamped to <1;6>
+		/// Zero disables the horn; installed horns use hornloop01 through hornloop06.
 		/// </summary>
 		public void SetHonkerAudio(int type)
 		{
-			type = Mathf.Clamp(type, 1, 6);
-			honkerAudio.clip = F.I.audioClips["hornloop0" + type.ToString()];
+			if (!honkerAudio) return;
+			AudioClip clip = type <= 0 ? null : Resources.Load<AudioClip>("sfx/hornloop" + Mathf.Clamp(type, 1, 6).ToString("D2"));
+			if (honkerAudio.clip == clip) return;
+			bool resume = honkerAudio.isPlaying;
+			honkerAudio.Stop();
+			honkerAudio.clip = clip;
+			if (resume && clip) honkerAudio.Play();
 		}
 		// Set accel input
 		public void SetAccel(float f)

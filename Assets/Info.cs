@@ -193,6 +193,7 @@ public class Info : MonoBehaviour
 		private set { _documentsSGPRpath = value; }
 	}
 	public string partsPath { get { return documentsSGPRpath + "parts\\"; } }
+	public string userPartsPath => Path.Combine(partsPath, "user");
 	public string tracksPath { get { return documentsSGPRpath + "tracks\\"; } }
 	public string userdataPath { get { return documentsSGPRpath + "userdata.json"; } }
 	public string rankingPath { get { return documentsSGPRpath + "ranking.json"; } }
@@ -522,6 +523,20 @@ public class Info : MonoBehaviour
 		return originalVehiclePartCatalog?.GetDefaultSetup(carIndex);
 	}
 
+	public void ReloadUserParts()
+	{
+		if (originalVehiclePartCatalog == null) return;
+		originalVehiclePartCatalog.LoadUserParts(userPartsPath);
+		void Reconcile(OriginalVehicleCarSetup setup)
+		{
+			foreach (OriginalVehiclePartSlot slot in setup?.slots ?? Array.Empty<OriginalVehiclePartSlot>())
+				if (!string.IsNullOrEmpty(slot.selectedUserPartId) && originalVehiclePartCatalog.GetPart(slot.selectedUserPartId) == null)
+					slot.selectedUserPartId = null;
+		}
+		foreach (Car car in cars ?? Array.Empty<Car>()) Reconcile(car.config?.originalParts);
+		foreach (var vehicle in s_cars)
+			if (vehicle) { Reconcile(vehicle.carConfig?.originalParts); Reconcile(vehicle.originalPartsSetup); }
+	}
 	void LoadOriginalVehiclePartCatalog()
 	{
 		TextAsset dynamics = Resources.Load<TextAsset>("OriginalSetupData/dynamics");
@@ -536,6 +551,7 @@ public class Info : MonoBehaviour
 		try
 		{
 			originalVehiclePartCatalog = OriginalVehiclePartCatalog.Load(dynamics.text, carSetup.text, language.text);
+			ReloadUserParts();
 			Debug.Log($"Loaded {originalVehiclePartCatalog.parts.Count} original vehicle parts and {originalVehiclePartCatalog.carSetups.Count} car setups.");
 		}
 		catch (Exception exception)
