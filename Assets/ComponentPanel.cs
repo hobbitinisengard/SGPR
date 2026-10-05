@@ -454,45 +454,6 @@ public class CarConfig
 			if (originalParts == null)
 				originalParts = F.I?.GetDefaultOriginalVehicleSetup(vehicle.carNumber);
 			OriginalVehiclePhysicsConfig runtimePhysics = CreateRuntimePhysicsConfig(originalPhysics, originalParts);
-			// Temporary diagnostic: run Formula 17 with car 17's fully assembled
-			// original-physics setup while retaining Formula 17's source identity and
-			// model dimensions. Remove this block after the suspension comparison.
-			if (vehicle.carNumber == 18 && F.I?.cars != null && F.I.cars.Length > 17)
-			{
-				CarConfig donor = F.I.cars[17].config;
-				OriginalVehicleCarSetup donorParts = donor?.originalParts ??
-					F.I.GetDefaultOriginalVehicleSetup(17);
-				OriginalVehiclePhysicsConfig donorPhysics = donor == null ? null :
-					CreateRuntimePhysicsConfig(donor.originalPhysics, donorParts);
-				if (OriginalVehiclePhysics.IsUsable(runtimePhysics) &&
-					OriginalVehiclePhysics.IsUsable(donorPhysics))
-				{
-					donorPhysics.sourceConfig = runtimePhysics.sourceConfig;
-					donorPhysics.wheelbase = runtimePhysics.wheelbase;
-					donorPhysics.trackFront = runtimePhysics.trackFront;
-					donorPhysics.trackRear = runtimePhysics.trackRear;
-					donorPhysics.length = runtimePhysics.length;
-					donorPhysics.width = runtimePhysics.width;
-					donorPhysics.height = runtimePhysics.height;
-					if (runtimePhysics.tyres != null && donorPhysics.tyres != null)
-						for (int i = 0; i < Mathf.Min(runtimePhysics.tyres.Length, donorPhysics.tyres.Length); i++)
-							donorPhysics.tyres[i].radius = runtimePhysics.tyres[i].radius;
-
-					runtimePhysics = donorPhysics;
-					Debug.LogWarning($"[OriginalVehicleParts] Formula 17 diagnostic: using car17 physics " +
-						$"with Formula 17 dimensions. mass={runtimePhysics.mass:F1}, " +
-						$"comHeight={runtimePhysics.comHeight:F1}, " +
-						$"springIn={runtimePhysics.tyres[0].stiffnessIn:F3}/" +
-						$"{runtimePhysics.tyres[2].stiffnessIn:F3}, " +
-						$"springOut={runtimePhysics.tyres[0].stiffnessOut:F3}/" +
-						$"{runtimePhysics.tyres[2].stiffnessOut:F3}, " +
-						$"travelOut={runtimePhysics.tyres[0].travelOut:F1}/" +
-						$"{runtimePhysics.tyres[2].travelOut:F1}.", vehicle);
-				}
-				else
-					Debug.LogError("[OriginalVehicleParts] Formula 17 diagnostic could not load valid car17 physics; " +
-						"Formula 17 is using its own configuration.", vehicle);
-			}
 			vehicle.UseOriginalPhysics(runtimePhysics);
 			vehicle.originalPartsSetup = originalParts?.Clone();
 

@@ -1,7 +1,6 @@
 using PathCreation;
 using UnityEngine;
 using Unity.Profiling;
-
 namespace RVP
 {
 	internal static class OriginalContactPhysics
@@ -26,29 +25,24 @@ namespace RVP
 			1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f,
 			1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f, 1.000000f
 		};
-
 		public static float EffectiveRestitution(float sourceNormalSpeed, Vector3 normal, Vector3 radial,
 			float sourceGravity)
 		{
 			float restitution = MotionRestitution(sourceNormalSpeed, sourceGravity, radial);
 			if (radial.sqrMagnitude <= 0.00000000000001f)
 				return restitution;
-
 			return (1 - Vector3.Dot(normal.normalized, radial.normalized)) * restitution;
 		}
-
 		public static float MotionRestitution(float sourceNormalSpeed, float sourceGravity, Vector3 radial)
 		{
 			float restitution = BaseRestitution(sourceNormalSpeed, sourceGravity);
 			if (radial.sqrMagnitude <= 0.00000000000001f)
 				return restitution;
-
 			float index = Mathf.Abs(sourceNormalSpeed) * 128 / Mathf.Max(0.001f, sourceGravity * 4);
 			int curveIndex = (int)index;
 			float curve = curveIndex < RestitutionCurve.Length ? RestitutionCurve[curveIndex] : 1;
 			return restitution * curve;
 		}
-
 		public static float BaseRestitution(float sourceNormalSpeed, float sourceGravity)
 		{
 			float index = Mathf.Abs(sourceNormalSpeed) * 128 / Mathf.Max(0.001f, sourceGravity * 4);
@@ -57,7 +51,6 @@ namespace RVP
 			return curve * 0.05f;
 		}
 	}
-
 	/// <summary>
 	/// Recovered Stunt GP vehicle model from vehicle.cpp and vehicle_stunt.cpp.
 	/// It uses Stunt GP units and a 60 Hz source tick; Unity colliders are queried
@@ -91,6 +84,7 @@ namespace RVP
 		const float SourceCpuRespawnEnergyCost = 3.5f;
 		const float SourceHumanStuntEnergyAwardPercent = 9f;
 		const float SourceCpuStuntEnergyAwardPercent = 7f; // The retail award truncates Gameplay.csv 7.5 before applying it.
+		const float SourceStuntEnergyAwardMultiplier = 1.5f;
 		// The source adapter disables Rigidbody.useGravity and integrates gravity
 		// itself. Derive the source-unit values from Unity's project setting so a
 		// configured gravity (for example -30 m/s^2) affects these cars too.
@@ -132,7 +126,6 @@ namespace RVP
 		const float SourceCollisionEnergyMaximum = 0.5f;
 		const float SourceCollisionEnergyScale = 0.01f;
 		const float SourceCollisionEnergyLimit = 0.75f;
-
 		// VehicleParent wheel order: front left, front right, rear left, rear right.
 		static readonly int[] UnityWheelIndex = { 2, 3, 0, 1 };
 		static readonly int[] SourceAiStuntReleaseAt = { 8, 15, 20 };
@@ -161,7 +154,6 @@ namespace RVP
 		static int sourceWakeResetTick = -1;
 		static uint sourcePhysicsRandomState;
 		static bool sourcePhysicsRandomInitialized;
-
 		readonly VehicleParent vehicle;
 		readonly OriginalVehiclePhysicsConfig parameters;
 		readonly Transform bodyTransform;
@@ -221,7 +213,6 @@ namespace RVP
 		Collider[] appliedSourceVehicleCollisionTargets = System.Array.Empty<Collider>();
 		Collider[] appliedSourceInvisibleLevelCollisionTargets = System.Array.Empty<Collider>();
 		int sourceProbeCount = 4;
-
 		float rpm;
 		float torque;
 		float clutch = 1f;
@@ -275,6 +266,7 @@ namespace RVP
 		int sourceSuspensionStableContactTicks;
 		float sourceFirstSuspensionContactTime = -1;
 		readonly float[] sourceWheelProbeVerticalFitOffset = new float[4];
+		readonly float[] sourceWheelVisualVerticalOffset = new float[4];
 		float sourceBodyProbeVerticalFitOffset;
 		float sourceContactCounter;
 		int sourceUnsafeContactTicks;
@@ -348,14 +340,12 @@ namespace RVP
 		bool sourceAiStuntInputThisTick;
 		readonly int[] sourceStuntPhaseIndex = new int[2];
 		readonly int[] sourceStuntLastPhase = { -1, -1 };
-
 		sealed class SourceAiStuntKnot
 		{
 			public float progress;
 			public float width;
 			public int grade;
 		}
-
 		bool DigitalControls => vehicle.basicInput && vehicle.basicInput.playerInput &&
 			vehicle.basicInput.playerInput.currentControlScheme == "Keyboard" && !vehicle.followAI.selfDriving;
 		bool SourcePlayerControlsSuppressed => sourceRailControlsActive && sourceRailControlDisabled;
@@ -395,7 +385,6 @@ namespace RVP
 				if (!vehicle.followAI || !vehicle.followAI.IsCPU)
 					return F.I && F.I.s_raceType == RaceType.TimeTrial ? 3 :
 						Mathf.Clamp(parameters.torqueCurveIndex, 0, parameters.torqueCurves.Length - 1);
-
 				// CPU maps come from Gameplay.csv's 40/65/80 skill thresholds. The
 				// current CPU difficulty setting supplies the corresponding skill value.
 				float skill = SourceCpuSkill;
@@ -422,7 +411,6 @@ namespace RVP
 				p.analogBrake?.Length == 128 && p.consumptionCurve?.Length == 128 &&
 				p.turboCurve?.Length == 128;
 		}
-
 		public OriginalVehiclePhysics(VehicleParent owner, OriginalVehiclePhysicsConfig config)
 		{
 			InitializeSourcePhysicsRandom();
@@ -446,18 +434,18 @@ namespace RVP
 			ApplySourceDimensions();
 			ResetSourceProbeHistory();
 			FitSourceProbeHeightsToPrefabTires();
+			// The fit changes the probe offsets; reset history so the next sweep
+			// starts from the fitted locations.
 			ResetSourceProbeHistory();
 			ResetSourceWakeHistory();
 			nextSourceTrackCollisionScan = 0;
 			if (vehicle.engine && vehicle.engine.transmission)
 				vehicle.engine.transmission.SetOriginalGear(gear, parameters);
 		}
-
 		void AlignInitialPoseToTrackSurface()
 		{
 			if (!RaceManager.I || !vehicle.rb)
 				return;
-
 			Vector3 worldUp = SourceWorldUp;
 			Vector3 rayOrigin = vehicle.rb.position + worldUp * 5;
 			RaycastHit[] hits = Physics.RaycastAll(rayOrigin, -worldUp, 20,
@@ -472,20 +460,17 @@ namespace RVP
 				}
 			if (closestTrackHit < 0)
 				return;
-
 			Vector3 surfaceNormal = hits[closestTrackHit].normal.normalized;
 			if (Vector3.Dot(surfaceNormal, worldUp) < 0)
 				surfaceNormal = -surfaceNormal;
 			Vector3 forward = Vector3.ProjectOnPlane(vehicle.rb.rotation * Vector3.forward, surfaceNormal);
 			if (forward.sqrMagnitude < 0.0001f)
 				return;
-
 			Quaternion initialRotation = vehicle.rb.rotation;
 			Quaternion alignedRotation = Quaternion.LookRotation(forward.normalized, surfaceNormal);
 			float correctionDegrees = Quaternion.Angle(initialRotation, alignedRotation);
 			if (correctionDegrees <= 0.25f)
 				return;
-
 			vehicle.rb.rotation = alignedRotation;
 			//Debug.LogWarning($"[OriginalVehiclePhysics] Initial pose aligned to Unity track surface: " +
 				//$"car={vehicle.carConfig?.name}, source={parameters.sourceConfig}, " +
@@ -493,7 +478,6 @@ namespace RVP
 				//$"rotation={initialRotation.eulerAngles.ToString("F1")} -> " +
 				//$"{alignedRotation.eulerAngles.ToString("F1")}", vehicle);
 		}
-
 		public float Energy => energy;
 		public float EnergyCapacity => Mathf.Max(0, parameters.fuelCapacity);
 		public float EnergyPercent => EnergyCapacity > 0 ? energy / EnergyCapacity : 0;
@@ -503,7 +487,6 @@ namespace RVP
 		public float SteeringLimitDegrees => Mathf.Abs(parameters.steeringMax);
 		public int CurrentGear => gear;
 		public bool TurboActive => sourceTurboActive;
-
 		public void RefreshParameters()
 		{
 			fuel = Mathf.Clamp(fuel, 0, Mathf.Max(0, parameters.fuelCapacity));
@@ -523,16 +506,12 @@ namespace RVP
 			if (vehicle.engine && vehicle.engine.transmission)
 				vehicle.engine.transmission.SetOriginalGear(gear, parameters);
 		}
-
 		void InitializeSourceWheelLayout()
 		{
 			string sourceName = System.IO.Path.GetFileNameWithoutExtension(parameters.sourceConfig ?? string.Empty);
 			int selector = 0;
-			if (string.Equals(sourceName, "formula17", System.StringComparison.OrdinalIgnoreCase))
-				selector = 18;
-			else if (sourceName.StartsWith("car") && sourceName.Length > 3)
+			if (sourceName.StartsWith("car") && sourceName.Length > 3)
 				int.TryParse(sourceName.Substring(3), out selector);
-
 			float sourceCenterY = 0;
 			if (selector == 6)
 			{
@@ -557,7 +536,6 @@ namespace RVP
 				sourceProbeCount = 5;
 				sourceCenterY = -10; // The fifth probe is at y=50 and all five are centered.
 			}
-
 			for (int i = 0; i < sourceWheelLocal.Length; i++)
 			{
 				Vector3 local = new Vector3(i % 2 == 0 ? -60 : 60, sourceCenterY,
@@ -566,7 +544,6 @@ namespace RVP
 				sourceProbeLocal[i] = local;
 				sourceProbeRadius[i] = 70;
 			}
-
 			if (sourceProbeCount == 5)
 			{
 				bool shorterFifthProbe = selector == 2 || selector == 7 || selector == 11 || selector == 13;
@@ -585,16 +562,13 @@ namespace RVP
 				sourceProbeLocal[5] = new Vector3(0, 130 + sourceCenterY, 0);
 				sourceProbeRadius[4] = sourceProbeRadius[5] = 80;
 			}
-
 			for (int i = 0; i < sourceProbeCount; i++)
 				sourceConfiguredProbeLocal[i] = sourceProbeLocal[i];
 		}
-
 		void UpdateSourceWheelProbeGeometry()
 		{
 			if (vehicle.wheels == null || vehicle.wheels.Length < 4 || !vehicle.tr)
 				return;
-
 			Vector3 wheelProbeOffsetSum = Vector3.zero;
 			int mappedWheelCount = 0;
 			for (int sourceIndex = 0; sourceIndex < 4; sourceIndex++)
@@ -602,7 +576,6 @@ namespace RVP
 				Wheel wheel = vehicle.wheels[UnityWheelIndex[sourceIndex]];
 				if (!wheel || !wheel.connected || !wheel.rim || !wheel.susParent)
 					continue;
-
 				// Keep each contact probe fixed to the suspension mount. Following the
 				// rendered rim makes the probe sweep along with suspension travel, which
 				// feeds wheel animation back into contact velocity and causes bounce.
@@ -617,7 +590,6 @@ namespace RVP
 				// initialize_rig in the original game gives each of the four wheel
 				// contact probes a fixed 70 cm radius, independent of rendered tires.
 			}
-
 			if (mappedWheelCount == 4)
 			{
 				// The retail rig centers its probes around the body origin. Prefab roots
@@ -636,36 +608,36 @@ namespace RVP
 					sourceWheelLocal[i].y = commonWheelProbeY;
 					sourceProbeLocal[i] = sourceWheelLocal[i];
 				}
-
 				// Preserve the prefab's vertical origin offset for body probes, while
 				// retaining the source rig's centered horizontal coordinates.
 				for (int i = 4; i < sourceProbeCount; i++)
 					sourceProbeLocal[i] = sourceConfiguredProbeLocal[i] +
 						new Vector3(0, wheelProbeOffset.y, 0);
 			}
-
 			for (int i = 0; i < 4; i++)
 				sourceProbeLocal[i].y += sourceWheelProbeVerticalFitOffset[i];
 			for (int i = 4; i < sourceProbeCount; i++)
 				sourceProbeLocal[i].y += sourceBodyProbeVerticalFitOffset;
 		}
-
 		void FitSourceProbeHeightsToPrefabTires()
 		{
 			if (vehicle.wheels == null || vehicle.wheels.Length < 4 || !vehicle.rb || !vehicle.tr)
 				return;
-
 			// Refit from the unmodified rig each time parameters are refreshed.
 			// UpdateSourceWheelProbeGeometry applies these offsets, so measuring
 			// before clearing them would subtract the previous fit on every refresh.
 			System.Array.Clear(sourceWheelProbeVerticalFitOffset, 0,
 				sourceWheelProbeVerticalFitOffset.Length);
+			System.Array.Clear(sourceWheelVisualVerticalOffset, 0,
+				sourceWheelVisualVerticalOffset.Length);
 			sourceBodyProbeVerticalFitOffset = 0;
 			UpdateSourceWheelProbeGeometry();
 			float totalOffset = 0;
+			float totalTireBottomHeight = 0;
 			int fittedWheelCount = 0;
+			float[] expectedTireBottomHeights = new float[4];
+			bool[] fittedWheels = new bool[4];
 			string wheelFits = string.Empty;
-
 			for (int sourceIndex = 0; sourceIndex < 4; sourceIndex++)
 			{
 				Wheel wheel = vehicle.wheels[UnityWheelIndex[sourceIndex]];
@@ -674,7 +646,6 @@ namespace RVP
 				float tireRadius = wheel.actualRadius > 0 ? wheel.actualRadius : wheel.tireRadius;
 				if (tireRadius <= 0)
 					continue;
-
 				Suspension suspension = wheel.susParent;
 				Vector3 springDirection = suspension.springDirection.sqrMagnitude > 0.5f
 					? suspension.springDirection.normalized : -vehicle.tr.up;
@@ -683,7 +654,6 @@ namespace RVP
 				Vector3 maxCompressPoint = suspension.maxCompressPoint;
 				if ((maxCompressPoint - suspension.tr.position).sqrMagnitude > 0.25f)
 					maxCompressPoint = suspension.tr.position;
-
 				OriginalTyrePhysicsConfig tyre = parameters.tyres[sourceIndex];
 				float totalTravel = Mathf.Max(0.001f, tyre.travelIn + tyre.travelOut);
 				float sourceRestTravel = Mathf.Clamp01(tyre.travelIn / totalTravel);
@@ -699,7 +669,6 @@ namespace RVP
 					suspension.pivotOffset * steeringDirection -
 					suspension.pivotOffset * (suspension.forwardDir.sqrMagnitude > 0.5f
 						? suspension.forwardDir : suspension.tr.forward);
-
 				float rimHeight = Vector3.Dot(expectedRimPosition - vehicle.rb.position, vehicle.tr.up);
 				float probeHeight = Vector3.Dot(
 					vehicle.rb.rotation * (sourceProbeLocal[sourceIndex] * SourceLengthToMetres), vehicle.tr.up);
@@ -708,32 +677,41 @@ namespace RVP
 				if (float.IsNaN(clearanceAtProbeContact) || float.IsInfinity(clearanceAtProbeContact) ||
 					Mathf.Abs(clearanceAtProbeContact) > 0.75f)
 					continue;
-
 				sourceWheelProbeVerticalFitOffset[sourceIndex] =
 					clearanceAtProbeContact / SourceLengthToMetres;
-				totalOffset += sourceWheelProbeVerticalFitOffset[sourceIndex];
+				totalOffset += clearanceAtProbeContact / SourceLengthToMetres;
+				expectedTireBottomHeights[sourceIndex] = rimHeight - tireRadius;
+				totalTireBottomHeight += expectedTireBottomHeights[sourceIndex];
+				fittedWheels[sourceIndex] = true;
 				fittedWheelCount++;
 				wheelFits += $" w{sourceIndex}={clearanceAtProbeContact:F3}m";
 			}
-
 			if (fittedWheelCount == 0)
 				return;
-
-			// Keep the source body probes aligned with the wheel probes as the whole
-			// collision rig is raised relative to the prefab. This lets the source
-			// contact solver settle the complete Unity vehicle to tire height at spawn.
+			// Wheel presentation aligns the tire bottoms below to their average.
+			// Fit the contact probes to that same geometry: fitting to the unadjusted
+			// tire bottoms leaves unequal-radius axles at different probe heights.
+			// UpdateSourceSupportBasis then interprets that built-in slope as road
+			// pitch, even at spawn (Sky Hawk), feeding rotation back into contacts.
+			float averageTireBottomHeight = totalTireBottomHeight / fittedWheelCount;
+			for (int sourceIndex = 0; sourceIndex < 4; sourceIndex++)
+			{
+				if (!fittedWheels[sourceIndex])
+					continue;
+				float visualOffset = averageTireBottomHeight - expectedTireBottomHeights[sourceIndex];
+				sourceWheelVisualVerticalOffset[sourceIndex] = visualOffset;
+				sourceWheelProbeVerticalFitOffset[sourceIndex] += visualOffset / SourceLengthToMetres;
+			}
 			sourceBodyProbeVerticalFitOffset = totalOffset / fittedWheelCount;
 			//Debug.Log($"[OriginalVehiclePhysics] Initial probe placement: " +
 			//	$"car={vehicle.carConfig?.name}, source={parameters.sourceConfig}, " +
 			//	$"probeOffsets={wheelFits}, bodyProbeOffset=" +
 			//	$"{sourceBodyProbeVerticalFitOffset * SourceLengthToMetres:F3}m.", vehicle);
 		}
-
 		Vector3 SourceProbeWorldPosition(int index)
 		{
 			return SourceProbeWorldPosition(index, vehicle.rb.rotation);
 		}
-
 		Vector3 SourceProbeWorldPosition(int index, Quaternion rotation)
 		{
 			Vector3 sourceLocal = sourceProbeLocal[index];
@@ -742,7 +720,6 @@ namespace RVP
 			Vector3 unityLocal = sourceLocal;
 			return vehicle.rb.position + rotation * (unityLocal * SourceLengthToMetres);
 		}
-
 		public void ResetSourceProbeHistory()
 		{
 			UpdateSourceWheelProbeGeometry();
@@ -769,7 +746,6 @@ namespace RVP
 			}
 			UpdateSourceSupportBasis(vehicle.rb.rotation);
 		}
-
 		void ResetSourceWakeHistory()
 		{
 			Vector3 position = vehicle.rb.position;
@@ -781,12 +757,10 @@ namespace RVP
 			sourceWakeTicks = 0;
 			sourceAirFactor = 1;
 		}
-
 		static void ResetSourceAirFactorsForTick(int tick)
 		{
 			if (sourceWakeResetTick == tick)
 				return;
-
 			if (F.I)
 			{
 				var cars = F.I.s_cars;
@@ -797,15 +771,12 @@ namespace RVP
 						car.originalVehiclePhysics.sourceAirFactor = 1;
 				}
 			}
-
 			sourceWakeResetTick = tick;
 		}
-
 		void UpdateSourcePositionHistoryAndWake(float tickScale)
 		{
 			if (!vehicle.raceBox || !vehicle.raceBox.enabled || !vehicle.gameObject.activeInHierarchy)
 				return;
-
 			sourceWakeTicks += tickScale;
 			if (sourceWakeTicks >= 8)
 			{
@@ -818,12 +789,10 @@ namespace RVP
 				sourceWakeRadii[0] = 400 * SourceLengthToMetres;
 				sourceWakeTicks -= 8;
 			}
-
 			// retail::update_vehicle_position_history updates trails in every race
 			// mode, but does not apply the wake during Time Trial (source mode 4).
 			if (!F.I || F.I.s_raceType == RaceType.TimeTrial || currentSourceSpeed < 16.666666f)
 				return;
-
 			Vector3 oldestToNewest = sourceWakePositions[0] - sourceWakePositions[7];
 			float totalLength = oldestToNewest.magnitude;
 			if (totalLength <= 0.000001f)
@@ -837,12 +806,10 @@ namespace RVP
 					!other.raceBox || !other.raceBox.enabled || !other.gameObject.activeInHierarchy ||
 					other.originalVehiclePhysics.currentSourceSpeed <= 16.666666f)
 					continue;
-
 				Vector3 position = other.rb.position;
 				float projected = Vector3.Dot(sourceWakePositions[0] - position, direction);
 				if (projected <= 0 || projected >= totalLength)
 					continue;
-
 				for (int segment = 0; segment < 7; segment++)
 				{
 					Vector3 a = sourceWakePositions[segment];
@@ -850,13 +817,11 @@ namespace RVP
 					float length = delta.magnitude;
 					if (length <= SourceLengthToMetres)
 						continue;
-
 					Vector3 axis = delta / length;
 					Vector3 fromOther = a - position;
 					float along = Vector3.Dot(fromOther, axis);
 					if (along <= 0 || along >= length)
 						continue;
-
 					Vector3 radial = fromOther - along * axis;
 					float radius = sourceWakeRadii[segment] - along / length *
 						(sourceWakeRadii[segment] - sourceWakeRadii[segment + 1]);
@@ -864,36 +829,30 @@ namespace RVP
 					float distanceSquared = radial.sqrMagnitude;
 					if (distanceSquared >= radiusSquared)
 						continue;
-
 					float ratio = distanceSquared / radiusSquared;
 					other.originalVehiclePhysics.sourceAirFactor = Mathf.Max(0.1f, ratio * ratio);
 					break;
 				}
 			}
 		}
-
 		void UpdateSourceIdleSuspension(int contactClass)
 		{
 			// retail vehicle_tick_composition calls idle_vehicle_suspension after
 			// vehicle_dynamics_tick. This changes spring state for the next tick only.
 			if (contactClass != 0)
 				return;
-
 			float speed = Mathf.Abs(currentSourceSpeed);
 			if (speed > 3)
 			{
 				sourceIdleHold = 300;
 				return;
 			}
-
 			sourceIdleHold = Mathf.Max(0, sourceIdleHold - 1);
 			if (sourceIdleHold >= 180)
 				return;
-
 			sourceIdleInterval--;
 			if (sourceIdleInterval > 0)
 				return;
-
 			sourceIdleInterval = 8;
 			float amount = (float)(1.0 / ((double)(sourceIdleHold / 16 + 1) + speed));
 			if (sourceIdleHold == 0 && SourceRandomInteger(32) == 1)
@@ -925,19 +884,16 @@ namespace RVP
 					return;
 				}
 			}
-
 			sourceRightBasis = fallbackRotation * Vector3.right;
 			sourceForwardBasis = fallbackRotation * Vector3.forward;
 			sourceUpBasis = fallbackRotation * Vector3.up;
 		}
-
 		bool IsSourceTrackCollider(Collider collider)
 		{
 			if (!collider || collider.isTrigger || collider.attachedRigidbody || IsInvisibleLevelCollider(collider))
 				return false;
 			return collider.GetComponentInParent<VehicleParent>() == null;
 		}
-
 		static bool IsInvisibleLevelCollider(Collider collider)
 		{
 			if (!invisibleLevelLayerInitialized)
@@ -945,15 +901,12 @@ namespace RVP
 				invisibleLevelLayer = LayerMask.NameToLayer("InvisibleLevel");
 				invisibleLevelLayerInitialized = true;
 			}
-
 			return collider && invisibleLevelLayer >= 0 && collider.gameObject.layer == invisibleLevelLayer;
 		}
-
 		void ApplySourceTrackCollisionExclusions()
 		{
 			if (!RaceManager.I)
 				return;
-
 			int layerMask = RaceManager.I.wheelCastMask.value;
 			if (Time.unscaledTime >= nextSourceTrackCollisionScan || sourceTrackCollisionMask != layerMask)
 			{
@@ -995,7 +948,6 @@ namespace RVP
 					trackIds.Add(candidate.GetInstanceID());
 					trackTargets.Add(candidate);
 				}
-
 				if (!SourceTrackColliderIds.SetEquals(trackIds) || sourceTrackCollisionMask != layerMask ||
 					!SourceVehicleColliderIds.SetEquals(vehicleIds) ||
 					!SourceInvisibleLevelColliderIds.SetEquals(invisibleLevelIds))
@@ -1016,10 +968,8 @@ namespace RVP
 				sourceTrackCollisionGeneration++;
 				nextSourceTrackCollisionScan = Time.unscaledTime + 1;
 			}
-
 			if (appliedSourceTrackCollisionGeneration == sourceTrackCollisionGeneration)
 				return;
-
 			Collider[] ownColliders = vehicle.GetComponentsInChildren<Collider>();
 			foreach (Collider own in ownColliders)
 			{
@@ -1033,7 +983,6 @@ namespace RVP
 				foreach (Collider invisibleLevel in sourceInvisibleLevelCollisionTargets)
 					if (invisibleLevel && invisibleLevel != own)
 						Physics.IgnoreCollision(own, invisibleLevel, true);
-
 				// Preserve trigger colliders for start/finish and gameplay events.
 				// Their only ignored pairs are with InvisibleLevel above.
 				if (own.isTrigger || !isVehicleBodyCollider)
@@ -1059,7 +1008,6 @@ namespace RVP
 			appliedSourceInvisibleLevelCollisionTargets = sourceInvisibleLevelCollisionTargets;
 			appliedSourceTrackCollisionGeneration = sourceTrackCollisionGeneration;
 		}
-
 		bool TryFindSourceProbeContact(Vector3 start, Vector3 movement, float radius,
 			out Collider collider, out Vector3 point, out Vector3 normal, out Vector3 probeCenter,
 			out float travelDistance, out int triangleIndex)
@@ -1070,7 +1018,6 @@ namespace RVP
 			triangleIndex = -1;
 			if (!RaceManager.I)
 				return false;
-
 			int layerMask = RaceManager.I.wheelCastMask;
 			float distance = movement.magnitude;
 			Vector3 end = start + movement;
@@ -1088,7 +1035,6 @@ namespace RVP
 				triangleIndex = sourceTriangleIndex;
 				return true;
 			}
-
 			// PhysX sphere casts skip colliders that overlap their starting sphere.
 			// Recover the source solver's zero-distance contact before sweeping so
 			// a high-speed landing cannot begin inside the track and tunnel through it.
@@ -1105,7 +1051,6 @@ namespace RVP
 				triangleIndex = startTriangleIndex;
 				return true;
 			}
-
 			if (distance > 0.001f)
 			{
 				Vector3 direction = movement / distance;
@@ -1145,18 +1090,15 @@ namespace RVP
 					return true;
 				}
 			}
-
 			if (!TryFindSourceProbeOverlap(end, movement.sqrMagnitude > 0.000001f
 				? movement.normalized : SourceGravityDirection, radius, layerMask,
 				out collider, out point, out normal, out probeCenter, out triangleIndex, distance > 0.001f))
 				return false;
 			if (distance > 0.001f && Vector3.Dot(movement, normal) > 0.0001f)
 				return false;
-
 			travelDistance = distance;
 			return true;
 		}
-
 		bool TrySweepSourceTrackMeshes(Collider[] colliders, int layerMask, Vector3 start,
 			Vector3 movement, float radius, out Collider collider, out Vector3 point, out Vector3 normal,
 			out Vector3 center, out float travelDistance, out int triangleIndex)
@@ -1165,7 +1107,6 @@ namespace RVP
 				return OriginalTrackSphereSweep.TrySweep(colliders, layerMask, start, movement, radius,
 					out collider, out point, out normal, out center, out travelDistance, out triangleIndex);
 		}
-
 		bool TryFindSourceProbeOverlap(Vector3 center, Vector3 rayDirection, float radius, int layerMask,
 			out Collider collider, out Vector3 point, out Vector3 normal, out Vector3 correctedCenter,
 			out int triangleIndex, bool skipSourceSweptMeshes = false)
@@ -1271,7 +1212,6 @@ namespace RVP
 				if (!centerInsideCollider && candidate is MeshCollider && candidateNormal.sqrMagnitude > 0.000001f &&
 					candidate.Raycast(new Ray(center, -candidateNormal), out RaycastHit surfaceHit, radius + 0.01f))
 					candidateTriangleIndex = surfaceHit.triangleIndex;
-
 				if (squaredDistance >= closestSquaredDistance ||
 					(!centerInsideCollider && squaredDistance > (radius + 0.001f) * (radius + 0.001f)))
 					continue;
@@ -1288,7 +1228,6 @@ namespace RVP
 			}
 			return collider;
 		}
-
 		void ApplySourceSurface(int sourceWheel, Wheel wheel, Collider collider, Vector3 point, int triangleIndex)
 		{
 			int surfaceType = 0;
@@ -1307,7 +1246,6 @@ namespace RVP
 				surfaceType = surface.surfaceType;
 			else if (terrain)
 				surfaceType = terrain.GetDominantSurfaceTypeAtPoint(point);
-
 			// Unity map surfaces provide the source-format contact channels. Unknown
 			// surfaces use the common asphalt fallback profile.
 			wheel.contactPoint.sourceGrip = DefaultSourceTrackGrip;
@@ -1328,7 +1266,6 @@ namespace RVP
 				if (sourceSurface.sourceRoughness >= 0)
 					wheel.contactPoint.sourceRoughness = Mathf.Clamp(sourceSurface.sourceRoughness, 0, 255);
 			}
-
 			// Collider-local source material data remains authoritative even when a
 			// scene has no global surface table or uses a surface type outside it.
 			if (surface)
@@ -1371,7 +1308,6 @@ namespace RVP
 			sourceWheelSurfaceRolling[sourceWheel] = wheel.contactPoint.sourceRolling;
 			sourceWheelSurfaceRoughness[sourceWheel] = wheel.contactPoint.sourceRoughness;
 		}
-
 		int ConfiguredSourceSurfaceFlags(Collider collider, Vector3 point, int triangleIndex)
 		{
 			int surfaceType = 0;
@@ -1381,7 +1317,6 @@ namespace RVP
 				surfaceType = surface.surfaceType;
 			else if (terrain)
 				surfaceType = terrain.GetDominantSurfaceTypeAtPoint(point);
-
 			int flags = 1;
 			GroundSurface[] sourceSurfaces = GroundSurfaceMaster.surfaceTypesStatic;
 			if (sourceSurfaces != null && surfaceType >= 0 && surfaceType < sourceSurfaces.Length &&
@@ -1397,7 +1332,6 @@ namespace RVP
 			}
 			return flags;
 		}
-
 		void ProcessSourceContactMaterial(int probeIndex, Collider collider, Vector3 point, Vector3 normal,
 			int triangleIndex, float alignment)
 		{
@@ -1434,7 +1368,6 @@ namespace RVP
 			}
 			if ((flags & 0x20) != 0 && currentSourceSpeed < 1.6666666f)
 				unsafeContact = true;
-
 			if (!F.I || F.I.s_raceType != RaceType.Stunt)
 			{
 				Vector3 heading = vehicle.followAI && vehicle.followAI.trackPathCreator
@@ -1453,7 +1386,6 @@ namespace RVP
 				else
 					sourceOpposingDirectionTicks = 0;
 			}
-
 			if (!unsafeContact && alignment > 0.7071068f)
 			{
 				sourceUnsafeContactTicks = 0;
@@ -1487,12 +1419,10 @@ namespace RVP
 				sourceUnsafeContactTicks = 0;
 			}
 		}
-
 		public OriginalTyrePhysicsConfig TyreForUnityWheel(int index)
 		{
 			return parameters.tyres[index < 2 ? index + 2 : index - 2];
 		}
-
 		void ApplySourceDimensions()
 		{
 			vehicle.rb.mass = (parameters.mass + fuel * parameters.fuelUnitMass) * SourceMassToKilograms;
@@ -1530,13 +1460,11 @@ namespace RVP
 					SourceSpeedToMetresPerSecond;
 			}
 		}
-
 		static float Curve(float[] samples, float x)
 		{
 			// The retail curve index truncates, then clamps to 127.
 			return samples[Mathf.Clamp((int)x, 0, 127)];
 		}
-
 		static float SourceCurve(float[] samples, double x)
 		{
 			// curve_index uses the original truncating conversion, with out of
@@ -1544,31 +1472,26 @@ namespace RVP
 			int index = x <= -1.0 || x >= 128.0 ? 127 : (int)x;
 			return samples[index];
 		}
-
 		static void InitializeSourcePhysicsRandom()
 		{
 			if (sourcePhysicsRandomInitialized)
 				return;
-
 			// Retail seeds the shared vehicle RNG from local time during cold start.
 			sourcePhysicsRandomState = unchecked((uint)System.DateTime.Now.TimeOfDay.TotalSeconds);
 			sourcePhysicsRandomInitialized = true;
 		}
-
 		static double SourceRandomSigned(float amplitude)
 		{
 			sourcePhysicsRandomState = unchecked(sourcePhysicsRandomState * 0x343fdu + 0x269ec3u);
 			int value = (int)((sourcePhysicsRandomState >> 16) & 0x7fffu) - 0x3fff;
 			return (double)value * amplitude * (double)3.051851e-05f;
 		}
-
 		static int SourceRandomInteger(int amplitude)
 		{
 			sourcePhysicsRandomState = unchecked(sourcePhysicsRandomState * 0x343fdu + 0x269ec3u);
 			int sample = (int)((sourcePhysicsRandomState >> 16) & 0x7fffu) - 0x3fff;
 			return sample * amplitude / 0x7fff;
 		}
-
 		SourceAiStuntKnot[] SourceAiStuntKnotsFor(float routeLength)
 		{
 			System.Collections.Generic.List<int> mapPoints = F.I ? F.I.stuntpointsContainer : null;
@@ -1577,7 +1500,6 @@ namespace RVP
 				sourceMapStuntPointCount = -1;
 				return System.Array.Empty<SourceAiStuntKnot>();
 			}
-
 			string trackName = F.I.s_trackName;
 			float markerPathLength = routeLength;
 			if (RaceManager.I && RaceManager.I.racingPaths != null && RaceManager.I.racingPaths.Length > 0 &&
@@ -1591,7 +1513,6 @@ namespace RVP
 				Mathf.Approximately(sourceMapStuntMarkerPathLength, markerPathLength) &&
 				sourceMapStuntPointCount == mapPoints.Count)
 				return sourceMapAiStuntKnots;
-
 			var knots = new System.Collections.Generic.List<SourceAiStuntKnot>(mapPoints.Count);
 			for (int i = 0; i < mapPoints.Count; i++)
 			{
@@ -1616,14 +1537,12 @@ namespace RVP
 			sourceMapStuntPointCount = mapPoints.Count;
 			return sourceMapAiStuntKnots;
 		}
-
 		void UpdateSourceAIStunt(int tick)
 		{
 			sourceAiStuntInputThisTick = false;
 			if (!vehicle.followAI || !vehicle.followAI.selfDriving || vehicle.followAI.Pitting ||
 				!vehicle.raceBox || !vehicle.raceBox.enabled)
 				return;
-
 			if (sourceAiStuntMeter != 0)
 			{
 				if (sourceAiStuntMeter < 0)
@@ -1631,11 +1550,9 @@ namespace RVP
 					sourceAiStuntMeter = 0;
 					return;
 				}
-
 				--sourceAiStuntMeter;
 				if (sourceAiStuntInputKind == 5)
 					return;
-
 				int grade = Mathf.Clamp(sourceAiStuntGrade, 0, 2);
 				bool released = sourceStuntPhaseIndex[0] >= SourceAiStuntReleaseAt[grade] ||
 					sourceStuntPhaseIndex[1] >= SourceAiStuntReleaseAt[grade];
@@ -1650,7 +1567,6 @@ namespace RVP
 					sourceAiStuntInputKind <= 3;
 				return;
 			}
-
 			if (sourceAiPairEffectTicks != 0)
 			{
 				--sourceAiPairEffectTicks;
@@ -1675,7 +1591,6 @@ namespace RVP
 			SourceAiStuntKnot knot = knots[sourceAiStuntKnotCursor];
 			if (knot.progress <= 0 || knot.grade < 0 || knot.grade > 2 || knot.width < 0)
 				return;
-
 			Vector3 first = route.GetPointAtDistance(routeDistance + 1);
 			Vector3 second = route.GetPointAtDistance(routeDistance + 2);
 			Vector3 forward = second - first;
@@ -1693,7 +1608,6 @@ namespace RVP
 			if (Mathf.Abs(Vector3.Dot(delta, forward)) > 4 ||
 				Mathf.Abs(Vector3.Dot(delta, side)) > knot.width * SourceLengthToMetres)
 				return;
-
 			// Automatic source drivers initialize lateral_fraction to zero.
 			if (Mathf.Abs(SourceRandomInteger(100)) > 10)
 			{
@@ -1708,7 +1622,6 @@ namespace RVP
 				level = 1;
 			if (knot.grade >= 2 && currentSourceSpeed >= SourceAiStuntLevelTwoSpeed)
 				level = 2;
-
 			int choice = Mathf.Abs(SourceRandomInteger(8)) + level * 8;
 			sourceAiStuntInputKind = SourceAiStuntInputKinds[choice];
 			sourceAiStuntGrade = knot.grade;
@@ -1717,7 +1630,6 @@ namespace RVP
 			sourceAiLaunchPending = true;
 			sourceAiStuntKnotCursor++;
 		}
-
 		static int SourceStuntSector(float transverse, float facing)
 		{
 			if (facing < 0)
@@ -1730,7 +1642,6 @@ namespace RVP
 				return transverse <= -SourceStuntPhaseBoundary ? 7 : 8;
 			return transverse < SourceStuntPhaseBoundary ? 1 : 2;
 		}
-
 		void UpdateSourceStuntPhaseHistory()
 		{
 			Vector3 gravity = SourceGravityDirection;
@@ -1741,7 +1652,6 @@ namespace RVP
 				sourceStuntPhaseIndex[0]++;
 				sourceStuntLastPhase[0] = pitchPhase;
 			}
-
 			float projection = Vector3.Dot(gravity, vehicle.rb.linearVelocity);
 			Vector3 horizontal = (vehicle.rb.linearVelocity - gravity * projection).normalized;
 			Vector3 side = Vector3.Cross(horizontal, gravity).normalized;
@@ -1753,21 +1663,18 @@ namespace RVP
 				sourceStuntLastPhase[1] = yawPhase;
 			}
 		}
-
 		void ResetSourceStuntPhaseHistory()
 		{
 			System.Array.Clear(sourceStuntPhaseIndex, 0, sourceStuntPhaseIndex.Length);
 			for (int i = 0; i < sourceStuntLastPhase.Length; i++)
 				sourceStuntLastPhase[i] = -1;
 		}
-
 		public float SteeringDegreesFor(Suspension suspension)
 		{
 			// vehicle_rotation(1, steering) sends +Z toward +X for a positive
 			// source angle. Unity uses the same yaw direction for a +Z-forward car.
 			return steeringDegrees;
 		}
-
 		public float CurrentSourceSpeed => currentSourceSpeed;
 		// FollowAI's legacy off-track check only raycasts the Road layer. Preserve
 		// actual source contacts with authored track surfaces on other layers.
@@ -1804,14 +1711,12 @@ namespace RVP
 				return count;
 			}
 		}
-
 		public float GetWheelTravelDistance(Wheel wheel)
 		{
 			for (int i = 0; i < 4; i++)
 			{
 				if (vehicle.wheels[UnityWheelIndex[i]] != wheel)
 					continue;
-
 				OriginalTyrePhysicsConfig tyre = parameters.tyres[i];
 				float totalTravel = Mathf.Max(0.001f, tyre.travelIn + tyre.travelOut);
 				// The source uses positive suspension for bump/compression and negative
@@ -1819,17 +1724,25 @@ namespace RVP
 				// direction, so the normalized visual position runs in the opposite direction.
 				return Mathf.Clamp01((tyre.travelIn - sourceSuspension[i]) / totalTravel);
 			}
-
 			return wheel.susParent ? wheel.susParent.compression : 0;
 		}
-
+		public float GetWheelVisualVerticalOffset(Wheel wheel)
+		{
+			if (vehicle.wheels == null || vehicle.wheels.Length < 4 || !wheel)
+				return 0;
+			for (int sourceIndex = 0; sourceIndex < 4; sourceIndex++)
+			{
+				if (vehicle.wheels[UnityWheelIndex[sourceIndex]] == wheel)
+					return sourceWheelVisualVerticalOffset[sourceIndex];
+			}
+			return 0;
+		}
 		public void UpdateWheelContact(Wheel wheel)
 		{
 			int unityIndex = System.Array.IndexOf(vehicle.wheels, wheel);
 			int sourceIndex = SourceIndexForUnityWheel(unityIndex);
 			if (sourceIndex < 0)
 				return;
-
 			bool hasContact = hasSourceWheelSurfaceContact[sourceIndex];
 			Vector3 normal = hasSourceWheelContactNormal[sourceIndex]
 				? sourceWheelContactNormal[sourceIndex] : sourceUpBasis;
@@ -1847,33 +1760,28 @@ namespace RVP
 				sourceProbeWheelTouched[sourceIndex], point, normal, collider, relativeVelocity,
 				distance, hasContact ? sourceWheelSurfaceType[sourceIndex] : 0);
 		}
-
 		public void GetWheelSlip(int unityWheelIndex, out float forward, out float sideways)
 		{
 			int sourceIndex = unityWheelIndex < 2 ? unityWheelIndex + 2 : unityWheelIndex - 2;
 			forward = sourceWheelSlip[sourceIndex];
 			sideways = sourceWheelSideSlip[sourceIndex];
 		}
-
 		public float GetWheelGripUsage(int unityWheelIndex)
 		{
 			int sourceIndex = SourceIndexForUnityWheel(unityWheelIndex);
 			return sourceIndex >= 0 ? sourceWheelGripUsage[sourceIndex] : 0;
 		}
-
 		int SourceIndexForUnityWheel(int unityWheelIndex)
 		{
 			if (unityWheelIndex < 0 || unityWheelIndex >= UnityWheelIndex.Length)
 				return -1;
 			return unityWheelIndex < 2 ? unityWheelIndex + 2 : unityWheelIndex - 2;
 		}
-
 		public bool ShouldEmitSourceSkidStrip(int unityWheelIndex)
 		{
 			int sourceIndex = SourceIndexForUnityWheel(unityWheelIndex);
 			if (sourceIndex < 0 || sourceIndex >= sourceWheelGripUsage.Length || sourceContactClass != 0)
 				return false;
-
 			float usage = sourceWheelGripUsage[sourceIndex];
 			// vehicle_skid_strip.cpp: slow motion starts at grip usage 2; above
 			// source speed 30, the original requires 8.5. At exactly 30 neither
@@ -1884,18 +1792,15 @@ namespace RVP
 				return usage >= 2;
 			return true;
 		}
-
 		public int ConsumeSourceTireParticleEvents(int unityWheelIndex)
 		{
 			int sourceIndex = SourceIndexForUnityWheel(unityWheelIndex);
 			if (sourceIndex < 0 || sourceIndex >= sourceTireParticleEvents.Length)
 				return 0;
-
 			int count = sourceTireParticleEvents[sourceIndex];
 			sourceTireParticleEvents[sourceIndex] = 0;
 			return count;
 		}
-
 		void UpdateSourceTireParticleAccumulator()
 		{
 			for (int i = 0; i < sourceWheelGripUsage.Length; i++)
@@ -1905,7 +1810,6 @@ namespace RVP
 				// strictly less-than, so exactly 100 is excluded too.
 				if (currentSourceSpeed >= 100)
 					continue;
-
 				float usage = sourceWheelGripUsage[i];
 				float accumulated = sourceTireParticleAccumulator[i];
 				if (usage < 3.5f)
@@ -1922,7 +1826,6 @@ namespace RVP
 						sourceWheelSurfaceRolling[i] + accumulated;
 					accumulated = (float)added;
 				}
-
 				if (accumulated > 200)
 				{
 					sourceTireParticleEvents[i]++;
@@ -1931,7 +1834,6 @@ namespace RVP
 				sourceTireParticleAccumulator[i] = accumulated;
 			}
 		}
-
 		public float SourceWheelNormalSpeed(Vector3 probePosition, Vector3 normal, Vector3 groundVelocity)
 		{
 			normal.Normalize();
@@ -1944,25 +1846,21 @@ namespace RVP
 			float rotationalSpeed = Vector3.Dot(sourceIncrementalRotation * radial - radial, normal);
 			return centreSpeed + rotationalSpeed;
 		}
-
 		Vector3 SourceProbeImpactVelocityChange(Vector3 normal, float sourceNormalSpeed, float restitution)
 		{
 			float sourceVelocityChange = -(1 + restitution) * sourceNormalSpeed / sourceProbeCount;
 			return normal * (sourceVelocityChange * SourceSpeedToMetresPerSecond);
 		}
-
 		public void AddSourceEnergy(float amount)
 		{
 			if (amount <= 0 || parameters.fuelCapacity <= 0)
 				return;
 			energy = Mathf.Min(parameters.fuelCapacity, energy + amount);
 		}
-
 		public void RefillSourceEnergy()
 		{
 			energy = Mathf.Max(0, parameters.fuelCapacity);
 		}
-
 		public void ApplySourceRespawnEnergyCost()
 		{
 			if (F.I && F.I.s_raceType == RaceType.Stunt)
@@ -1970,17 +1868,16 @@ namespace RVP
 			float sourceCost = SourceUpgradeActive ? SourceCpuRespawnEnergyCost : SourceHumanRespawnEnergyCost;
 			energy = (float)((double)energy - (double)sourceCost * parameters.fuelCapacity / SourceEnergyCapacity);
 		}
-
 		public void AddSourceStuntEnergyAward()
 		{
 			if (F.I && F.I.s_raceType == RaceType.TimeTrial)
 				return;
 			float awardPercent = SourceUpgradeActive
 				? SourceCpuStuntEnergyAwardPercent : SourceHumanStuntEnergyAwardPercent;
-			double amount = (double)awardPercent * 0.01 * parameters.fuelCapacity;
+			double amount = (double)awardPercent * SourceStuntEnergyAwardMultiplier *
+				0.01 * parameters.fuelCapacity;
 			energy = Mathf.Min(parameters.fuelCapacity, (float)((double)energy + amount));
 		}
-
 		public void ResetToNeutral()
 		{
 			gear = 1;
@@ -2094,7 +1991,6 @@ namespace RVP
 			if (vehicle.engine && vehicle.engine.transmission)
 				vehicle.engine.transmission.SetOriginalGear(gear, parameters);
 		}
-
 		public void ResolveBodyContact(Collision collision, bool entering = false)
 		{
 			// contact_response.cpp linear_friction: tangential motion is
@@ -2158,13 +2054,11 @@ namespace RVP
 				vehicle.rb.rotation = lastSourceControlledRotation;
 			vehicle.rb.angularVelocity = Vector3.zero;
 		}
-
 		void ResolveSourceVehiclePair()
 		{
 			if (!F.I || F.I.s_raceType == RaceType.TimeTrial || !vehicle.gameObject.activeInHierarchy ||
 				!vehicle.raceBox || !vehicle.raceBox.enabled)
 				return;
-
 			int tick = Mathf.RoundToInt(Time.fixedTime / Mathf.Max(0.0001f, Time.fixedDeltaTime));
 			float tickScale = Time.fixedDeltaTime * SourceTicksPerSecond;
 			if (sourceVehiclePairSnapshotTick != tick)
@@ -2187,7 +2081,6 @@ namespace RVP
 					!otherVehicle.gameObject.activeInHierarchy || otherVehicle.rb.isKinematic ||
 					!otherVehicle.raceBox || !otherVehicle.raceBox.enabled)
 					continue;
-
 				if (!SourceVehiclePairPositions.TryGetValue(vehicle, out Vector3 thisPreviousPosition) ||
 					!SourceVehiclePairPositions.TryGetValue(otherVehicle, out Vector3 otherPreviousPosition))
 					continue;
@@ -2200,10 +2093,8 @@ namespace RVP
 						otherVehicle.originalVehiclePhysics.sourceCollisionHoldTicks += 60;
 					continue;
 				}
-
 				Vector3 separation = vehicle.rb.position - otherVehicle.rb.position;
 				float distance = separation.magnitude / SourceLengthToMetres;
-
 				lastVehiclePairImpulseTick = tick;
 				sourceAiPairEffectTicks = 60;
 				// contact_effects.cpp applies this center-to-center overlap impulse
@@ -2235,12 +2126,10 @@ namespace RVP
 				return;
 			}
 		}
-
 		void ApplySourceImpactEnergy(float strength)
 		{
 			if (sourceImpactEnergyLossThisTick > SourceCollisionEnergyLimit)
 				return;
-
 			float amount = Mathf.Abs(strength) * SourceCollisionEnergyScale;
 			if (amount < SourceCollisionEnergyMinimum)
 				return;
@@ -2250,7 +2139,6 @@ namespace RVP
 			energy = Mathf.Max(0, energy - amount);
 			sourceImpactEnergyLossThisTick += amount;
 		}
-
 		void AdvanceSourceCollisionHold(int tick, float tickScale)
 		{
 			if (lastSourceCollisionHoldTick == tick)
@@ -2258,7 +2146,6 @@ namespace RVP
 			sourceCollisionHoldTicks = Mathf.Max(0, sourceCollisionHoldTicks - tickScale);
 			lastSourceCollisionHoldTick = tick;
 		}
-
 		public void SetStuntButton(int pressed)
 		{
 			if (pressed != 0)
@@ -2272,7 +2159,6 @@ namespace RVP
 			else
 				stuntPressed = false;
 		}
-
 		public void CancelStunt()
 		{
 			stuntActive = false;
@@ -2283,7 +2169,6 @@ namespace RVP
 			ResetSourceStuntRoll();
 			ResetSourceStuntPhaseHistory();
 		}
-
 		void ResetSourceStuntRoll()
 		{
 			rollAcceleration = rollSpeed = stuntRollProgress = 0;
@@ -2291,7 +2176,6 @@ namespace RVP
 			stuntRollActive = false;
 			stuntRollInputArmed = true;
 		}
-
 		bool TryLaunchOnTakeoff(int tick)
 		{
 			float strength;
@@ -2325,7 +2209,6 @@ namespace RVP
 			airTicks = 0;
 			return stuntActive;
 		}
-
 		public void Step()
 		{
 			hasGroundSurfaceContactThisTick = false;
@@ -2335,7 +2218,6 @@ namespace RVP
 			if (vehicle.wheels == null || vehicle.wheels.Length < 4 || vehicle.rb.isKinematic)
 				return;
 			UpdateSourceWheelProbeGeometry();
-
 			int tick = Mathf.RoundToInt(Time.fixedTime / Mathf.Max(0.0001f, Time.fixedDeltaTime));
 			ResetSourceAirFactorsForTick(tick);
 			float tickScale = Time.fixedDeltaTime * SourceTicksPerSecond;
@@ -2483,7 +2365,6 @@ namespace RVP
 					hasSourceProbeContactThisTick = true;
 					break;
 				}
-
 			if (!sourceRotationDiagnosticLogged && hasSourceProbeContactThisTick)
 			{
 				string probeDetails = string.Empty;
@@ -2584,7 +2465,6 @@ namespace RVP
 				}
 			}
 		}
-
 		void ApplySourceGravity()
 		{
 			// vehicle.cpp apply_gravity returns when source speed squared exceeds
@@ -2593,7 +2473,6 @@ namespace RVP
 				return;
 			vehicle.rb.linearVelocity += SourceGravityAcceleration * Time.fixedDeltaTime;
 		}
-
 		int ClassifySourceContacts()
 		{
 			// vehicle.cpp classifies by the four contact grace counters: zero
@@ -2605,7 +2484,6 @@ namespace RVP
 					expired++;
 			return expired == 0 ? 0 : expired == 4 ? 1 : 2;
 		}
-
 		void ApproachSourceBodySpeed(float sourceSpeed, int sourceContactClass, float tickScale)
 		{
 			// vehicle.cpp approach_body_speed eases all tire speeds halfway toward
@@ -2616,14 +2494,12 @@ namespace RVP
 			for (int i = 0; i < wheelSpeed.Length; i++)
 				wheelSpeed[i] += (sourceSpeed - wheelSpeed[i]) * blend;
 		}
-
 		void UpdateSourceCenterOfMass()
 		{
 			// vehicle_tick.cpp update_vehicle_com reacts to a lost or uneven axle by
 			// temporarily moving the effective COM height, then eases it back.
 			if (F.I && F.I.s_raceType == RaceType.Stunt)
 				return; // vehicle_tick_composition skips this stage in source game mode 3.
-
 			if ((contactCountdown[2] <= 0 && contactCountdown[3] <= 0 &&
 				contactCountdown[0] > 2 && contactCountdown[1] > 2) ||
 				(contactCountdown[0] <= 0 && contactCountdown[2] <= 0 &&
@@ -2634,7 +2510,6 @@ namespace RVP
 				sourceCom262c = 500;
 				comResetTicks = 24;
 			}
-
 			int unsupported = 0;
 			int supported = 0;
 			for (int i = 0; i < contactCountdown.Length; i++)
@@ -2654,7 +2529,6 @@ namespace RVP
 			uint timer = unchecked((uint)comResetTicks);
 			if (timer == 0)
 				return;
-
 			comResetTicks = unchecked((int)(timer - 1u));
 			Vector3 unitGravity = SourceGravityDirection;
 			double gravityAlongUp = ((double)unitGravity.z * sourceUpBasis.z +
@@ -2671,7 +2545,6 @@ namespace RVP
 			effectiveComHeight = (float)(parameters.comHeight - target * delta);
 			sourceCom2628 = (float)target;
 		}
-
 		static Vector3 RotationVector(Quaternion rotation)
 		{
 			rotation.ToAngleAxis(out float angleDegrees, out Vector3 axis);
@@ -2682,17 +2555,14 @@ namespace RVP
 			}
 			return axis * (angleDegrees * Mathf.Deg2Rad);
 		}
-
 		void ApplyAngularImpactResponse(ContactPoint contact, Vector3 normal, float normalSpeed, float sourceGravity)
 		{
 			ApplyAngularImpactResponse(contact.point, normal, normalSpeed, sourceGravity, vehicle.rb.rotation);
 		}
-
 		void ApplyAngularImpactResponse(Vector3 contactPoint, Vector3 normal, float normalSpeed, float sourceGravity)
 		{
 			ApplyAngularImpactResponse(contactPoint, normal, normalSpeed, sourceGravity, stepStartRotation);
 		}
-
 		void ApplyAngularImpactResponse(Vector3 contactPoint, Vector3 normal, float normalSpeed,
 			float sourceGravity, Quaternion contactOrientation)
 		{
@@ -2704,7 +2574,6 @@ namespace RVP
 			if (radial.sqrMagnitude < 1e-14f)
 				return;
 			radial.Normalize();
-
 			float restitution = OriginalContactPhysics.BaseRestitution(normalSpeed, sourceGravity);
 			float sourceMass = sourceEffectiveMass;
 			float probeMass = sourceMass * 0.25f;
@@ -2717,12 +2586,10 @@ namespace RVP
 			// angular_response builds the rotation axis.
 			Vector3 tangentialVelocity = normalVelocity - radial * Vector3.Dot(normalVelocity, radial);
 			float angle = -(1 + restitution) * tangentialVelocity.magnitude / probeMass;
-
 			// The recovered contact inertia is diag(1, 0.5, 0.5) in body space.
 			Vector3 axis = Vector3.Cross(normal, inertiaRadial).normalized;
 			if (axis.sqrMagnitude <= 0.000001f || Mathf.Abs(angle) <= 0.000001f)
 				return;
-
 			// track_contact::angular_response rotates in a left-handed frame whose
 			// X axis is normal x inertiaRadial. Convert its angle before using Unity's
 			// right-handed axis-angle rotation.
@@ -2732,12 +2599,10 @@ namespace RVP
 				: delta;
 			hasPendingContactRotation = true;
 		}
-
 		void ApplyAngularContactFriction(ContactPoint contact, Vector3 normal, float normalSpeed)
 		{
 			ApplyAngularContactFriction(contact.point, normal, normalSpeed, vehicle.rb.rotation);
 		}
-
 		void ApplyAngularContactFriction(Vector3 probeWorldPosition, Vector3 normal, float normalSpeed,
 			Quaternion contactOrientation)
 		{
@@ -2746,7 +2611,6 @@ namespace RVP
 			ApplyAngularContactFriction(probeWorldPosition, probeLocalSource, normal, normalSpeed,
 				contactOrientation * Vector3.up);
 		}
-
 		void ApplyAngularContactFriction(Vector3 probeWorldPosition, Vector3 probeLocalSource,
 			Vector3 normal, float normalSpeed, Vector3 snapshotUp)
 		{
@@ -2756,7 +2620,6 @@ namespace RVP
 			float radius = probeLocalSource.magnitude;
 			if (radius <= 0.0001f)
 				return;
-
 			Vector3 tangent = sourceIncrementalRotation * probeLocalSource - probeLocalSource;
 			float projection = Vector3.Dot(normal, tangent);
 			tangent -= normal * projection;
@@ -2766,16 +2629,13 @@ namespace RVP
 			if (strength * 0.2f < tangentLength)
 				tangentLength = strength * 0.1f;
 			float angle = tangentLength / radius;
-
 			Vector3 signAxis = Vector3.Cross(snapshotUp, probeLocalSource).normalized;
 			if (Vector3.Dot(tangentDirection, signAxis) < 0)
 				angle = -angle;
-
 			Vector3 radial = probeWorldPosition - vehicle.rb.position;
 			Vector3 rotationAxis = SupportRotationAxis(radial, radial.magnitude);
 			if (rotationAxis.sqrMagnitude <= 0.000001f || Mathf.Abs(angle) <= 0.000001f)
 				return;
-
 			// support_rotation builds a left-handed source basis (y = cross(x, z)).
 			// Converting that basis to Unity's right-handed quaternion convention
 			// reverses the angle around the corresponding support axis.
@@ -2785,19 +2645,16 @@ namespace RVP
 				: delta;
 			hasPendingContactRotation = true;
 		}
-
 		static Vector3 SupportRotationAxis(Vector3 radialFromBody, float radius)
 		{
 			Vector3 supportZ = -radialFromBody / radius;
 			Vector3 supportX = Vector3.Cross(Vector3.up, supportZ).normalized;
 			return Vector3.Cross(supportX, supportZ).normalized;
 		}
-
 		void UpdateSteering(float tickScale)
 		{
 			if (SourcePlayerControlsSuppressed)
 				return;
-
 			steeringBoost = Mathf.Clamp(steeringBoost + (vehicle.SGPshiftbutton != 0 ? 0.1f : -0.42857143f) * tickScale, 0, 3);
 			float input = Mathf.Clamp(SourceSteerInput, -1, 1);
 			if (DigitalControls)
@@ -2828,7 +2685,6 @@ namespace RVP
 			}
 			steeringDegrees = sourceSteering;
 		}
-
 		void AttenuateSourceSteering(float tickScale)
 		{
 			// vehicle_dynamics_core attenuates s.steering after the current tick's
@@ -2838,7 +2694,6 @@ namespace RVP
 			sourceSteering *= Mathf.Pow(attenuation, tickScale);
 			steeringDegrees = sourceSteering;
 		}
-
 		void ChangeGear(int next)
 		{
 			next = Mathf.Clamp(next, 0, Mathf.Min(parameters.gearCount, parameters.ratios.Length - 1));
@@ -2852,13 +2707,11 @@ namespace RVP
 			vehicle.engine.transmission.SetOriginalGear(gear, parameters);
 			TrySourceTrickstartAtGearChange(previousGear, gear);
 		}
-
 		void TrySourceTrickstartAtGearChange(int previousGear, int nextGear)
 		{
 			// Source gear 1 is neutral and source gear 2 is first (displayed N -> 1).
 			if (previousGear != 1 || nextGear != 2)
 				return;
-
 			float countdown = CountDownSeq.Countdown;
 			if (F.I && F.I.s_raceType == RaceType.Stunt)
 			{
@@ -2866,7 +2719,6 @@ namespace RVP
 				//	$"countdown={countdown:F3}s, rpm={rpm:F0}/{parameters.rpmMax:F0}.", vehicle);
 				return;
 			}
-
 			float rpmPercent = parameters.rpmMax > 0 ? rpm / parameters.rpmMax * 100 : 0;
 			if (rpm <= parameters.rpmMax * 0.6f || rpm >= parameters.rpmMax * 0.8f)
 			{
@@ -2875,7 +2727,6 @@ namespace RVP
 				//	$"countdown={countdown:F3}s, rpm={rpm:F0}/{parameters.rpmMax:F0} ({rpmPercent:F1}%).", vehicle);
 				return;
 			}
-
 			startBoostTicks = 180;
 			rpm = parameters.rpmMax;
 			// The original suspension pose uses active turbo to add body pitch
@@ -2886,7 +2737,6 @@ namespace RVP
 			if (vehicle.raceBox)
 				vehicle.raceBox.DoOriginalTrickstart();
 		}
-
 		void ShiftToNeutral()
 		{
 			if (gear == 1)
@@ -2895,7 +2745,6 @@ namespace RVP
 			clutch = 0;
 			vehicle.engine.transmission.SetOriginalGear(gear, parameters);
 		}
-
 		void UpdateAutomaticShift(float sourceSpeed, float throttle, float tickScale)
 		{
 			// Stock Stunt GP initializes parameters.manual_gears to zero and the
@@ -2903,12 +2752,10 @@ namespace RVP
 			// automatic gearbox independent of any gearbox component setting.
 			bool sourceShiftInput = !SourcePlayerControlsSuppressed &&
 				(vehicle.upshiftPressed || vehicle.downshiftPressed);
-
 			if (rpm < parameters.rpmIdle + 200 && controlFlags[0] == 0 && controlFlags[1] == 0 &&
 				controlFlags[2] == 0 && controlFlags[3] == 0 && gear != 1 &&
 				!sourceShiftInput)
 				ShiftToNeutral();
-
 			if (downshiftTicks > 0)
 			{
 				downshiftTicks = Mathf.Max(0, downshiftTicks - tickScale);
@@ -2916,7 +2763,6 @@ namespace RVP
 			}
 			if (clutch != 1)
 				return;
-
 			if (throttle < 0.4f)
 			{
 				if ((gear == 1 || gear == 2) && controlFlags[3] == 1 && sourceSpeed < 8.333333f)
@@ -2925,7 +2771,6 @@ namespace RVP
 					ChangeGear(gear - 1);
 				return;
 			}
-
 			if (gear == 1)
 			{
 				if (parameters.rpmLimit * 0.5f < rpm)
@@ -2934,7 +2779,6 @@ namespace RVP
 			}
 			if (gear == 0)
 				return;
-
 			if (gear > 2)
 			{
 				float previousRpm = wheelSpeed[2] * parameters.ratios[gear - 1] * parameters.finalDrive * 3600 /
@@ -2948,12 +2792,10 @@ namespace RVP
 			if (gear <= 6 && rpm > parameters.rpmLimit * 0.9f)
 				ChangeGear(gear + 1);
 		}
-
 		void UpdateSourceControlFlags(int grounded)
 		{
 			if (SourcePlayerControlsSuppressed)
 				return;
-
 			float throttleInput = Mathf.Clamp01(gear == 0 ? SourceRawBrakeInput : SourceRawAccelInput);
 			float brakeInput = Mathf.Clamp01(gear == 0 ? SourceRawAccelInput : SourceRawBrakeInput);
 			bool brakeActive = brakeInput > 0 && (grounded > 0 || !DigitalControls);
@@ -2967,16 +2809,13 @@ namespace RVP
 				controlFlags[3] = brakeActive ? 1 : 0;
 			}
 		}
-
 		void UpdateSourceBraking(float tickScale, int grounded)
 		{
 			if (SourcePlayerControlsSuppressed)
 				return;
-
 			float brakeInput = Mathf.Clamp01(gear == 0 ? SourceRawAccelInput : SourceRawBrakeInput);
 			if (DigitalControls && grounded == 0)
 				return; // digital_brake leaves both the ramp and flags untouched in air
-
 			if (DigitalControls)
 			{
 				if (brakeInput > 0)
@@ -2992,7 +2831,6 @@ namespace RVP
 					brakeRamp = Mathf.Max(0, brakeRamp - 40 * tickScale);
 				return;
 			}
-
 			if (brakeInput <= 0)
 				return;
 			double analogForce = -(double)Curve(parameters.analogBrake, brakeInput * 127) * parameters.brakeAcceleration;
@@ -3001,7 +2839,6 @@ namespace RVP
 			else
 				ApplySourceBrakingForce(analogForce);
 		}
-
 		static bool TryFindSourceUnityRail(Vector3 position, PathCreator assignedPitPath,
 			out EnergyTunnelPath nearestRail,
 			out float nearestPathDistance, out float nearestDistanceSqr)
@@ -3013,13 +2850,11 @@ namespace RVP
 				nearestDistanceSqr = float.PositiveInfinity;
 				return false;
 			}
-
 			if (Time.time >= nextSourceUnityRailPathScan)
 			{
 				sourceUnityRailPaths = Object.FindObjectsByType<EnergyTunnelPath>(FindObjectsSortMode.None);
 				nextSourceUnityRailPathScan = Time.time + 1;
 			}
-
 			nearestRail = null;
 			nearestPathDistance = 0;
 			nearestDistanceSqr = float.PositiveInfinity;
@@ -3029,7 +2864,6 @@ namespace RVP
 				if (!candidate || !candidate.isActiveAndEnabled ||
 					candidate.pitsPathCreator != assignedPitPath)
 					continue;
-
 				var path = candidate.pitsPathCreator.path;
 				if (path == null || path.length <= 0.001f)
 					continue;
@@ -3042,11 +2876,9 @@ namespace RVP
 				nearestPathDistance = pathDistance;
 				nearestDistanceSqr = distanceSqr;
 			}
-
 			return nearestRail && nearestDistanceSqr <=
 				SourceUnityRailActivationDistance * SourceUnityRailActivationDistance;
 		}
-
 		void UpdateSourceRail(float tickScale)
 		{
 			if (!sourceRailControlsActive || !sourceUnityRailPathThisTick ||
@@ -3055,13 +2887,11 @@ namespace RVP
 			var railPath = sourceUnityRailPathThisTick.pitsPathCreator.path;
 			if (railPath == null || railPath.length <= 0.001f)
 				return;
-
 			if (!sourceRailControlDisabled)
 				throttleSignal = 0; // disable_vehicle_control clears the stored throttle on entry.
 			sourceRailControlDisabled = true;
 			sourceRailThrottle = throttleSignal;
 			sourceRailBrakeInput = 0;
-
 			if (unchecked((int)sourceRailProgress) > 75)
 			{
 				// The original switches to a ten-unit crawl in the final quarter of the rail.
@@ -3070,7 +2900,6 @@ namespace RVP
 			}
 			else
 				ApplySourceRailSpeedError(SourcePitlaneTargetSpeed - currentSourceSpeed, tickScale);
-
 			Vector3 sourcePosition = vehicle.rb.position / SourceLengthToMetres;
 			Vector3 ahead = vehicle.rb.position + sourceForwardBasis * 8;
 			float pathDistance = railPath.GetClosestDistanceAlongPath(ahead);
@@ -3078,7 +2907,6 @@ namespace RVP
 				SourceLengthToMetres;
 			sourceRailProgress = (uint)Mathf.Clamp(
 				Mathf.FloorToInt(pathDistance / railPath.length * 100), 0, 100);
-
 			Vector3 gravity = SourceGravityDirection;
 			float dx = sourcePosition.x - projected.x;
 			float dy = sourcePosition.y - projected.y;
@@ -3101,7 +2929,6 @@ namespace RVP
 			if (Mathf.Abs(steering) > 0.1f)
 				sourceSteering = Mathf.Clamp(sourceSteering + steering, -parameters.steeringMax, parameters.steeringMax);
 			steeringDegrees = sourceSteering;
-
 			UpdateSourceRailRefuel(tickScale);
 			if (unchecked((int)sourceRailProgress) >= 99)
 			{
@@ -3110,7 +2937,6 @@ namespace RVP
 				sourceRailCompletedPath = sourceUnityRailPathThisTick;
 			}
 		}
-
 		void ApplySourceRailSpeedError(float error, float tickScale)
 		{
 			if (error > 0)
@@ -3120,7 +2946,6 @@ namespace RVP
 				controlFlags[2] = 1;
 				return;
 			}
-
 			if (error < -3.3333333f)
 			{
 				if (error < -16.666666f)
@@ -3136,10 +2961,8 @@ namespace RVP
 				ApplySourceRailBraking(tickScale);
 				return;
 			}
-
 			sourceRailThrottle *= 0.8f;
 		}
-
 		void ApplySourceRailBraking(float tickScale)
 		{
 			if (sourceContactCounter <= 0)
@@ -3156,7 +2979,6 @@ namespace RVP
 			else
 				brakeRamp = Mathf.Max(0, brakeRamp - 40 * tickScale);
 		}
-
 		void UpdateSourceRailRefuel(float tickScale)
 		{
 			int progress = unchecked((int)sourceRailProgress);
@@ -3178,7 +3000,6 @@ namespace RVP
 				}
 			}
 		}
-
 		void ApplySourceBrakingForce(double force)
 		{
 			if (wheelSpeed[0] < 0)
@@ -3199,7 +3020,6 @@ namespace RVP
 				}
 			}
 		}
-
 		void PrepareSourcePhysicalParameters()
 		{
 			// prepare_physical_parameters runs before input and start-boost updates.
@@ -3222,7 +3042,6 @@ namespace RVP
 			}
 			torque *= performanceMultiplier;
 		}
-
 		void UpdateSourceUpgradeCondition()
 		{
 			if (!SourceUpgradeActive)
@@ -3230,7 +3049,6 @@ namespace RVP
 				sourceUpgradeCondition = 0;
 				return;
 			}
-
 			// Rival AI starts every update from its configured skill. The remake
 			// exposes a global CPU level instead of each source driver's skill.
 			float baseCondition = SourceCpuSkill * 0.01f;
@@ -3238,7 +3056,6 @@ namespace RVP
 			if (!F.I || F.I.s_inEditor || !vehicle.raceBox || !vehicle.raceBox.enabled ||
 				!vehicle.gameObject.activeInHierarchy)
 				return;
-
 			var cars = F.I.s_cars;
 			VehicleParent leader = null;
 			VehicleParent second = null;
@@ -3251,7 +3068,6 @@ namespace RVP
 					!candidate.followAI || !candidate.followAI.trackPathCreator ||
 					candidate.followAI.trackPathCreator.path == null || !candidate.gameObject.activeInHierarchy)
 					continue;
-
 				float progress = candidate.raceBox.RaceProgressLaps;
 				if (progress > leaderProgress)
 				{
@@ -3266,10 +3082,8 @@ namespace RVP
 					secondProgress = progress;
 				}
 			}
-
 			if (!leader || cars.Count < 2)
 				return;
-
 			float routeLength = 0;
 			if (RaceManager.I && RaceManager.I.racingPaths != null && RaceManager.I.racingPaths.Length > 1 &&
 				RaceManager.I.racingPaths[1] && RaceManager.I.racingPaths[1].path != null)
@@ -3278,7 +3092,6 @@ namespace RVP
 				routeLength = vehicle.followAI.trackPathCreator.path.length;
 			if (routeLength <= 0)
 				return;
-
 			if (leader == vehicle)
 			{
 				if (!second)
@@ -3291,7 +3104,6 @@ namespace RVP
 				sourceUpgradeCondition = Mathf.Max(0, baseCondition - fraction * SourceCpuLeaderSkillPenalty);
 				return;
 			}
-
 			float distanceBehind = (leaderProgress - vehicle.raceBox.RaceProgressLaps) * routeLength;
 			if (distanceBehind <= SourceCpuCatchupDistanceMetres)
 				return;
@@ -3299,13 +3111,11 @@ namespace RVP
 				SourceCpuCatchupDistanceMetres);
 			sourceUpgradeCondition = Mathf.Min(1, baseCondition + catchupFraction * SourceCpuCatchupSkillGain);
 		}
-
 		void UpdateSourcePerformance()
 		{
 			if (!F.I || F.I.s_inEditor || !vehicle.raceBox || !vehicle.raceBox.enabled ||
 				!vehicle.gameObject.activeInHierarchy)
 				return;
-
 			var cars = F.I.s_cars;
 			VehicleParent reference = null;
 			float bestPlaceValue = float.NegativeInfinity;
@@ -3315,7 +3125,6 @@ namespace RVP
 				if (!candidate || !candidate.raceBox || !candidate.raceBox.enabled ||
 					!candidate.gameObject.activeInHierarchy)
 					continue;
-
 				// The source ranking and performance reference both use route
 				// progress, including in stunt, drift, and time-trial modes.
 				float placeValue = candidate.raceBox.RaceProgressLaps;
@@ -3325,16 +3134,13 @@ namespace RVP
 					reference = candidate;
 				}
 			}
-
 			// performance_reference falls back to source slot 2 when no active
 			// first-place vehicle is found.
 			if (!reference && cars.Count > 2)
 				reference = cars[2];
-
 			performanceMultiplier = 1;
 			if (!reference || reference == vehicle || !reference.raceBox)
 				return;
-
 			// Both FollowAI.LapProgressPercent values use racingPaths[1] as their
 			// common denominator. Source performance scales the progress difference
 			// by one shared route length, rather than each car's selected AI path.
@@ -3351,7 +3157,6 @@ namespace RVP
 			float shiftedGap = gap - SourcePerformanceDeadZoneMetres;
 			if (shiftedGap >= 0)
 				return;
-
 			bool upgraded = vehicle.followAI && vehicle.followAI.IsCPU;
 			float limit = upgraded
 				? SourceCpuPerformanceDistanceMetres
@@ -3360,16 +3165,13 @@ namespace RVP
 			float factor = Mathf.Min(1, Mathf.Abs(distance) / limit * 2);
 			performanceMultiplier = SourcePerformanceGain * factor + 1;
 		}
-
 		void UpdateSourceStartBoost(float tickScale)
 		{
 			sourceStartBoostActiveThisTick = false;
-
 			// update_vehicle_start_boost exits for source race mode 3 (stunt).
 			// Time trial is source mode 4 and still uses the start boost.
 			if (F.I && F.I.s_raceType == RaceType.Stunt)
 				return;
-
 			if (startBoostTicks > 0)
 			{
 				// update_vehicle_start_boost sets turbo_active before vehicle_dynamics_core
@@ -3383,7 +3185,6 @@ namespace RVP
 				return;
 			}
 		}
-
 		bool SourceAiTurboForSpeed()
 		{
 			if (!(parameters.fuelCapacity * 0.3f < energy) || !(SourceRawAccelInput > 0.75f) ||
@@ -3393,7 +3194,6 @@ namespace RVP
 				(parameters.rpmMax * 0.4f);
 			return threshold > rpm;
 		}
-
 		bool SourceAiTurboForStunt()
 		{
 			if (!(parameters.fuelCapacity * 0.5f < energy) || !(SourceRawAccelInput > 0.5f) ||
@@ -3401,7 +3201,6 @@ namespace RVP
 				!RaceManager.I || RaceManager.I.racingPaths == null || RaceManager.I.racingPaths.Length <= 1 ||
 				!RaceManager.I.racingPaths[1])
 				return false;
-
 			var route = RaceManager.I.racingPaths[1].path;
 			if (route == null || route.length <= 0.001f)
 				return false;
@@ -3416,7 +3215,6 @@ namespace RVP
 			float distanceToStunt = (knot.progress - progress) * route.length * 0.01f;
 			return distanceToStunt < 100;
 		}
-
 		void UpdateSourceAITurbo()
 		{
 			if (CountDownSeq.Countdown > 0 || !SourceUpgradeActive ||
@@ -3446,7 +3244,6 @@ namespace RVP
 				}
 				return;
 			}
-
 			bool speed = SourceAiTurboForSpeed();
 			if (!speed && !SourceAiTurboForStunt())
 				return;
@@ -3456,7 +3253,6 @@ namespace RVP
 			sourceAiTurboTicks = unchecked((int)((System.Math.Abs(SourceRandomSigned((float)activeRange)) + activeBase) * factor));
 			sourceAiTurboRestTicks = unchecked((int)((System.Math.Abs(SourceRandomSigned(300)) + 300) / factor));
 		}
-
 		void HoldSourceStartVehicle(float tickScale)
 		{
 			// retail_race_start.cpp::hold_start_vehicles runs while the normal-race
@@ -3466,11 +3262,9 @@ namespace RVP
 			if (!F.I || F.I.s_inEditor || F.I.s_raceType == RaceType.Stunt ||
 				!vehicle.raceBox || !vehicle.raceBox.enabled || CountDownSeq.Countdown <= 1)
 				return;
-
 			brakeRamp += 6 * tickScale;
 			System.Array.Clear(wheelSpeed, 0, wheelSpeed.Length);
 		}
-
 		void UpdateEngine(float sourceSpeed, int grounded, int sourceContactClass, float tickScale)
 		{
 			// vehicle.cpp::engine_tick consumes fuel from the RPM values at the
@@ -3485,7 +3279,6 @@ namespace RVP
 					rpm *= 0.8f;
 			}
 			ConsumeSourceEngineEnergy(tickScale);
-
 			float sourceMass = sourceEffectiveMass;
 			float throttleInput = Mathf.Clamp01(gear == 0 ? SourceRawBrakeInput : SourceRawAccelInput);
 			if (sourceRailControlsActive)
@@ -3505,7 +3298,6 @@ namespace RVP
 			else
 				throttleSignal *= Mathf.Pow(0.5f, tickScale);
 			float throttle = throttleSignal;
-
 			bool playerBoostAllowed = !sourceRailControlsActive;
 			bool boostRequested = SourceUpgradeActive ? sourceAiTurboActive : vehicle.boostButton != 0;
 			bool turboActive = gear != 0 && (sourceStartBoostActiveThisTick ||
@@ -3530,7 +3322,6 @@ namespace RVP
 				throttle = 0;
 			if (throttle < 0.1f)
 				rpm *= Mathf.Pow(parameters.engineDecay, tickScale);
-
 			float ratio = gear == 1 ? 2 : parameters.ratios[gear];
 			int torqueCurveIndex = SourceTorqueCurveIndex;
 			float driveClutch = gear == 1 ? 0 : clutch;
@@ -3563,10 +3354,8 @@ namespace RVP
 				rpm = 100;
 			if (rpm < parameters.rpmIdle)
 				rpm *= Mathf.Pow(1.05f, tickScale);
-
 			float driveAcceleration = (float)((double)acceleration * driveClutch);
 			DistributeSourceDrive(driveAcceleration, sourceContactClass);
-
 			if (gear != 1)
 			{
 				double drivenWheelSpeed = parameters.driveMode == 1 ? wheelSpeed[2]
@@ -3585,7 +3374,6 @@ namespace RVP
 			}
 			torque = Mathf.Max(250, Curve(parameters.torqueCurves[torqueCurveIndex],
 				rpm * 128 / Mathf.Max(1, parameters.rpmLimit)) * parameters.maxTorque);
-
 			DriveForce engineDrive = vehicle.engine.GetComponent<DriveForce>();
 			if (engineDrive)
 			{
@@ -3593,7 +3381,6 @@ namespace RVP
 				engineDrive.torque = torque * throttle;
 			}
 		}
-
 		void ConsumeSourceEngineEnergy(float tickScale)
 		{
 			// Source mode 3 (stunt) is the one mode that skips engine energy use;
@@ -3602,7 +3389,6 @@ namespace RVP
 			if (!F.I || F.I.s_inEditor || !vehicle.raceBox || !vehicle.raceBox.enabled ||
 				F.I.s_raceType == RaceType.Stunt)
 				return;
-
 			float engineConsumption = Curve(parameters.consumptionCurve,
 				rpm * 128 / Mathf.Max(1, parameters.rpmMax)) * parameters.fuelConsumption * tickScale;
 			float turboConsumption = Curve(parameters.consumptionCurve,
@@ -3617,7 +3403,6 @@ namespace RVP
 			fuel = (float)((double)fuel - engineConsumption);
 			energy = Mathf.Max(0, energy - engineConsumption - turboConsumption);
 		}
-
 		void DistributeSourceDrive(float acceleration, int sourceContactClass)
 		{
 			double value = acceleration;
@@ -3637,7 +3422,6 @@ namespace RVP
 					wheelAcceleration[i] = (float)(first + wheelAcceleration[i]);
 			}
 		}
-
 		void FilterWheelContacts(float tickScale, Vector3 contactStartPosition, Vector3 contactStartVelocity)
 		{
 			float sourceGravity = SourceGravityMagnitude;
@@ -3679,7 +3463,6 @@ namespace RVP
 				{
 					Vector3 segmentMotion = sourceMotion * remaining;
 					float segmentLength = segmentMotion.magnitude;
-
 					if (!TryFindSourceProbeContact(segmentStart, segmentMotion, probeRadius,
 						out Collider collider, out Vector3 point, out Vector3 normal,
 						out Vector3 probeCenter, out float travelDistance, out int triangleIndex))
@@ -3695,7 +3478,6 @@ namespace RVP
 						finalProbePosition = segmentStart + segmentMotion;
 						break;
 					}
-
 					probeTouched = true;
 					sourceProbeHitsThisTick[i]++;
 					sourceProbeContactIterations[i] = Mathf.Min(128,
@@ -3755,7 +3537,6 @@ namespace RVP
 					// effect set by finish_impact_physical; body probes use full strength.
 					ApplySourceImpactEnergy(wheelContact ? normalSpeed * 0.25f : normalSpeed);
 					ProcessSourceContactMaterial(i, collider, point, normal, triangleIndex, alignment);
-
 					float impactRestitution = OriginalContactPhysics.EffectiveRestitution(normalSpeed, normal,
 						vehicle.rb.position - current, sourceGravity);
 					accumulatedVelocityChange += SourceProbeImpactVelocityChange(normal, normalSpeed,
@@ -3774,7 +3555,6 @@ namespace RVP
 						iterationOverflow = probeOverflow = true;
 						break;
 					}
-
 					float restitution = OriginalContactPhysics.MotionRestitution(normalSpeed, sourceGravity,
 						vehicle.rb.position - current);
 					float normalMotion = Vector3.Dot(sourceMotion, normal);
@@ -3785,7 +3565,6 @@ namespace RVP
 					sourceMotion = reflectedMotion;
 					finalProbePosition = segmentStart + sourceMotion * remaining;
 				}
-
 				if (probeOverflow)
 				{
 					// update_probe_position has already advanced this probe before the
@@ -3795,10 +3574,8 @@ namespace RVP
 					hasPreviousSourceProbe[i] = true;
 					break;
 				}
-
 				if (i < 4)
 					FilterSourceWheelLoad(i, tickScale);
-
 				if (probeTouched)
 				{
 					averagePositionCorrection += finalProbePosition - current;
@@ -3818,7 +3595,6 @@ namespace RVP
 				sourceContactVelocityAfterThisTick = contactStartVelocity;
 				return;
 			}
-
 			// Several probes can hit in one tick. Bound their combined separating
 			// speed to the original weighted restitution so overlapping contacts do
 			// not turn a falling body into an unintended launch.
@@ -3836,7 +3612,6 @@ namespace RVP
 						accumulatedVelocityChange -= supportNormal * (resultingSupportSpeed - allowedSeparationSpeed);
 				}
 			}
-
 			// contact_solver marks respawn_requested when the accumulated contact
 			// velocity delta exceeds 250 source units, but still commits this solve.
 			float sourceVelocityDelta = accumulatedVelocityChange.magnitude /
@@ -3856,7 +3631,6 @@ namespace RVP
 					previousSourceProbeWorld[i] += positionCorrection;
 			}
 		}
-
 		void FilterSourceWheelLoad(int i, float tickScale)
 		{
 			Wheel wheel = vehicle.wheels[UnityWheelIndex[i]];
@@ -3878,7 +3652,6 @@ namespace RVP
 			}
 			UpdateWheelContact(wheel);
 		}
-
 		void StabilizeSourceIncrementalRotation()
 		{
 			// contact_response.cpp damps and settles the incremental matrix only
@@ -3890,7 +3663,6 @@ namespace RVP
 					supportsStabilization = false;
 					break;
 				}
-
 			if (supportsStabilization)
 			{
 				Vector3 x = sourceIncrementalRotation * Vector3.right;
@@ -3907,12 +3679,10 @@ namespace RVP
 					if (z.sqrMagnitude > 0.000001f && y.sqrMagnitude > 0.000001f)
 						sourceIncrementalRotation = Quaternion.LookRotation(z, y);
 				}
-
 				z = sourceIncrementalRotation * Vector3.forward;
 				if (Mathf.Abs(z.x) <= 0.002f && Mathf.Abs(z.y) <= 0.002f)
 					sourceIncrementalRotation = Quaternion.identity;
 			}
-
 			// limit_incremental trims any matrix column component beyond the
 			// recovered 45-degree bound by rotating the incremental basis in place.
 			const float threshold = 0.70710677f;
@@ -3922,19 +3692,16 @@ namespace RVP
 			sourceIncrementalRotation = LimitSourceIncrementalAxis(sourceIncrementalRotation, 1, -forward.x, threshold);
 			sourceIncrementalRotation = LimitSourceIncrementalAxis(sourceIncrementalRotation, 2, -right.y, threshold);
 		}
-
 		static Quaternion LimitSourceIncrementalAxis(Quaternion rotation, int axis, float value, float threshold)
 		{
 			if (Mathf.Abs(value) <= threshold)
 				return rotation;
-
 			float argument = value < 0 ? value + threshold : value - threshold;
 			float sine = Mathf.Sqrt(Mathf.Max(0, (1 + argument) * (1 - argument)));
 			float degrees = Mathf.Atan2(argument, sine) * Mathf.Rad2Deg;
 			Vector3 direction = axis == 0 ? Vector3.right : axis == 1 ? Vector3.up : Vector3.forward;
 			return Quaternion.AngleAxis(degrees, direction) * rotation;
 		}
-
 		void ApplySourceSuspensionTick(float tickScale)
 		{
 			float sourceGravity = SourceGravityMagnitude;
@@ -3948,7 +3715,6 @@ namespace RVP
 					sourceSuspensionTickPhase = 0;
 					sourceSuspensionTick++;
 				}
-
 				float step = Mathf.Min(remainingTicks, 1 - sourceSuspensionTickPhase);
 				bool sampleRoughness = sourceSuspensionTickPhase <= 0.000001f &&
 					(sourceSuspensionTick & 3) == 0;
@@ -3963,7 +3729,6 @@ namespace RVP
 					}
 					UpdateSourceSuspension(i, force, step);
 				}
-
 				sourceSuspensionTickPhase += step;
 				remainingTicks -= step;
 				if (sourceSuspensionTickPhase >= 0.999999f)
@@ -3973,7 +3738,6 @@ namespace RVP
 				}
 			}
 		}
-
 		void UpdateSourceSuspension(int index, float force, float tickScale)
 		{
 			OriginalTyrePhysicsConfig tyre = parameters.tyres[index];
@@ -3993,17 +3757,14 @@ namespace RVP
 				remainingTicks -= step;
 			}
 		}
-
 		void LogSourceSuspensionStateAfterStableContact()
 		{
 			if (sourceSuspensionDiagnosticLogged)
 				return;
-
 			int supportingWheels = 0;
 			for (int i = 0; i < 4; i++)
 				if (sourceProbeWheelTouched[i])
 					supportingWheels++;
-
 			sourceSuspensionStableContactTicks = supportingWheels >= 3
 				? sourceSuspensionStableContactTicks + 1 : 0;
 			if (supportingWheels > 0 && sourceFirstSuspensionContactTime < 0)
@@ -4014,7 +3775,6 @@ namespace RVP
 			bool contactObservation = !sourceSuspensionObservationLogged && contactObservationTime >= 1;
 			if (!stableContact && !contactObservation)
 				return;
-
 			float sourceMass = vehicle.rb.mass / SourceMassToKilograms;
 			float referenceLoad = sourceMass * SourceGravityMagnitude * 0.25f;
 			string wheelStates = string.Empty;
@@ -4056,7 +3816,6 @@ namespace RVP
 					$"{sourceProbeWheelLoad[i]:F2}, anchorY={wheel.susParent.tr.position.y:F3}, " +
 					$"rimY={wheel.rim.position.y:F3}, surfaceY={sourceWheelContactPoint[i].y:F3}";
 			}
-
 			float bodyLocalY = bodyTransform ? bodyTransform.localPosition.y : 0;
 			float averageSuspension = 0.25f * (sourceSuspension[0] + sourceSuspension[1] +
 				sourceSuspension[2] + sourceSuspension[3]);
@@ -4106,7 +3865,6 @@ namespace RVP
 			else
 				sourceSuspensionObservationLogged = true;
 		}
-
 		void UpdateOriginalSuspensionPose(float sourceSpeed, float tickScale)
 		{
 			float left = 0.5f * (sourceSuspension[0] + sourceSuspension[2]);
@@ -4114,7 +3872,6 @@ namespace RVP
 			float averageTrack = Mathf.Max(0.001f, 0.5f * (parameters.trackRear + parameters.trackFront));
 			float roll = (left - right) / averageTrack;
 			sourceBodyRoll = roll + (sourceBodyRoll - roll) * Mathf.Pow(0.5f, tickScale);
-
 			float rear = 0.5f * (sourceSuspension[0] + sourceSuspension[1]);
 			float front = 0.5f * (sourceSuspension[2] + sourceSuspension[3]);
 			float pitch = -(rear - front) / Mathf.Max(0.001f, parameters.wheelbase);
@@ -4138,13 +3895,11 @@ namespace RVP
 			sourceBodyPitch = Mathf.Clamp((pitch * 0.125f + sourceBodyPitch) * pitchDecay,
 				-0.3f, 0.3f);
 			float displayedBodyPitch = Mathf.Clamp(sourceBodyPitch + trickstartPitch, -0.3f, 0.3f);
-
 			float averageSuspension = 0.25f * (sourceSuspension[0] + sourceSuspension[1] +
 				sourceSuspension[2] + sourceSuspension[3]);
 			sourceBodyHeave = parameters.rideHeight - averageSuspension;
 			if (!bodyTransform)
 				return;
-
 			Vector3 bodyUp = new Vector3(sourceBodyRoll, 1, 0).normalized;
 			// vehicle_model_pose.cpp stores forward as (0, body_pitch, 1).
 			// Keep that sign in Unity so acceleration and braking pitch the chassis
@@ -4157,9 +3912,11 @@ namespace RVP
 			// wheel anchors; subtracting this value raised the body instead.
 			bodyTransform.localPosition = initialBodyLocalPosition + Vector3.up *
 				(sourceBodyHeave * SourceLengthToMetres);
-			bodyTransform.localRotation = initialBodyLocalRotation * sourcePose;
+			// sourcePose is expressed in the vehicle's local axes. Apply it outside
+			// the prefab's static mesh alignment so cars whose body mesh is rotated
+			// (car17 is aligned by 180 degrees around Y) still lean with the vehicle.
+			bodyTransform.localRotation = sourcePose * initialBodyLocalRotation;
 		}
-
 		void ApplyTyres(float tickScale, int sourceContactClass)
 		{
 			System.Array.Clear(sourceWheelRotationDeltaThisTick, 0, sourceWheelRotationDeltaThisTick.Length);
@@ -4173,7 +3930,6 @@ namespace RVP
 				wheelSpeed[i] = Mathf.Clamp(integratedWheelSpeed, -416.66666f, 416.66666f);
 				wheelAcceleration[i] = 0;
 			}
-
 			Vector3 forward = sourceForwardBasis;
 			Vector3 right = sourceRightBasis;
 			Vector3 up = sourceUpBasis;
@@ -4200,7 +3956,6 @@ namespace RVP
 			sourceLongitudinalSpeed[2] = sourceLongitudinalSpeed[3] = frontSpeed;
 			sourceAxleForce[0] = frontForce;
 			sourceAxleForce[1] = 0;
-
 			for (int i = 0; i < 4; i++)
 			{
 				Wheel wheel = vehicle.wheels[UnityWheelIndex[i]];
@@ -4262,7 +4017,6 @@ namespace RVP
 				sourceLateralSpeed[i] = lateralResidual;
 				int axle = i < 2 ? 1 : 0;
 				sourceAxleForce[axle] = (float)((double)longitudinalChange + sourceAxleForce[axle]);
-
 				double roadSpeed = System.Math.Abs((double)longitudinal) * 1.3424487f;
 				double resistance = -((roadSpeed * roadSpeed * 0.000035f + 0.15f) *
 					(1.0 / parameters.tyres[i].pressure) + 0.005f);
@@ -4282,7 +4036,6 @@ namespace RVP
 				sourceWheelRotationDeltaThisTick[i] = RotationVector(
 					sourceIncrementalRotation * Quaternion.Inverse(beforeWheelRotation));
 			}
-
 			frontForce = 0.5f * sourceAxleForce[0];
 			rearForce = 0.5f * sourceAxleForce[1];
 			float frontSide = 0.5f * (sourceLateralSpeed[3] + sourceLateralSpeed[2]);
@@ -4299,7 +4052,6 @@ namespace RVP
 			rearForce -= dragStep;
 			for (int i = 0; i < wheelSpeed.Length; i++)
 				wheelSpeed[i] -= dragStep;
-
 			Vector3 correction = -right * lateral;
 			Vector3 frontAxleVelocity = forward * (speed + frontForce) + right * frontSide + correction;
 			Vector3 rearAxleVelocity = forward * (speed + rearForce) + right * rearSide;
@@ -4308,7 +4060,6 @@ namespace RVP
 			Vector3 nextVelocity = (frontAxleVelocity + rearAxleVelocity) * (0.5f * SourceSpeedToMetresPerSecond);
 			nextVelocity += up * verticalVelocity;
 			vehicle.rb.linearVelocity = nextVelocity;
-
 			// The source advances each axle independently, then rebuilds its basis
 			// from their new separation and the support up vector.
 			Vector3 axleDisplacement = (frontAxleVelocity - rearAxleVelocity) * tickScale;
@@ -4353,7 +4104,6 @@ namespace RVP
 				sourceAccelerationTiltDeltaThisTick = RotationVector(
 					sourceIncrementalRotation * Quaternion.Inverse(beforeAccelerationTilt));
 			}
-
 			float finalSpeed = sourceContactClass == 1
 				? nextVelocity.magnitude / SourceSpeedToMetresPerSecond
 				: Vector3.Dot(sourceForwardBasis, nextVelocity) / SourceSpeedToMetresPerSecond;
@@ -4373,7 +4123,6 @@ namespace RVP
 					wheelSpeed[i] *= wheelDecay;
 			}
 		}
-
 		void ApplyWheelContactRotation(int sourceIndex, float sourceMass)
 		{
 			// vehicle.cpp wheel_rotation converts each wheel's residual tangential
@@ -4393,12 +4142,10 @@ namespace RVP
 			tangent -= normal * projection;
 			float tangentLength = tangent.magnitude;
 			Vector3 direction = tangentLength > 0.000001f ? tangent / tangentLength : Vector3.zero;
-
 			Vector3 supportRadial = previousSourceProbeWorld[sourceIndex] - vehicle.rb.position;
 			float radius = sourceLocal.magnitude;
 			if (radius <= 0.0001f)
 				return;
-
 			float sourceGravity = SourceGravityMagnitude;
 			float referenceLoad = sourceMass * sourceGravity * 0.25f;
 			float mass = sourceMass * 0.25f;
@@ -4406,17 +4153,14 @@ namespace RVP
 			float force = tangentLength * mass;
 			if (force > load * sourceStaticFriction[sourceIndex])
 				force = load * sourceKineticFriction[sourceIndex] * 0.5f;
-
 			float angle = force / (mass * radius);
 			Vector3 side = Vector3.Cross(sourceUpBasis, sourceLocal).normalized;
 			if (sourceUpBasis.y < 0)
 				angle = -angle;
 			if (Vector3.Dot(direction, side) >= 0)
 				angle = -angle;
-
 			ApplyWheelSupportRotation(supportRadial, angle);
 		}
-
 		void ApplyWheelSupportRotation(Vector3 radial, float angle)
 		{
 			float radius = radial.magnitude;
@@ -4425,13 +4169,11 @@ namespace RVP
 			Vector3 axis = SupportRotationAxis(radial, radius);
 			if (axis.sqrMagnitude <= 0.000001f || Mathf.Abs(angle) <= 0.000001f)
 				return;
-
 			// source support_rotation's axis-angle sign is opposite Unity's
 			// right-handed quaternion convention after the vehicle Y-axis mapping.
 			sourceIncrementalRotation = (Quaternion.AngleAxis(-angle * Mathf.Rad2Deg, axis) *
 				sourceIncrementalRotation).normalized;
 		}
-
 		void ApplyAerodynamics(float tickScale, int sourceContactClass)
 		{
 			Vector3 velocity = vehicle.rb.linearVelocity;
@@ -4449,7 +4191,6 @@ namespace RVP
 				SourceSpeedToMetresPerSecond * tickScale);
 			vehicle.rb.linearVelocity += sourceUp * liftStep;
 		}
-
 		void UpdateAirMotion(float tickScale)
 		{
 			// steer_air_velocity tests the contact counter before the air tick
@@ -4470,7 +4211,6 @@ namespace RVP
 					vehicle.rb.linearVelocity += side * (amount * SourceSpeedToMetresPerSecond * tickScale);
 				}
 			}
-
 			if (sourceContactCounter > 0)
 				sourceContactCounter = Mathf.Max(0, sourceContactCounter - tickScale);
 			if (sourceContactCounter > 0)
@@ -4483,14 +4223,12 @@ namespace RVP
 				ResetSourceStuntPhaseHistory();
 				return;
 			}
-
 			if (hadContact)
 			{
 				ResetSourceStuntPhaseHistory();
 			}
 			else
 				UpdateSourceStuntPhaseHistory();
-
 			bool launchedThisTick = hadContact && TryLaunchOnTakeoff(Mathf.RoundToInt(Time.fixedTime /
 				Mathf.Max(0.0001f, Time.fixedDeltaTime)));
 			airTicks += tickScale;
@@ -4498,7 +4236,6 @@ namespace RVP
 				LevelSourceIncrementalRotation(0.9f);
 			if (!stuntActive)
 				return;
-
 			float stuntBrakeInput = SourcePlayerControlsSuppressed
 				? 0 : SourceAiAirBrakeInput;
 			float stuntThrottleInput = SourcePlayerControlsSuppressed
@@ -4506,7 +4243,6 @@ namespace RVP
 			float stuntSteeringInput = SourcePlayerControlsSuppressed
 				? 0 : SourceSteerInput;
 			float stuntRollInput = SourcePlayerControlsSuppressed ? 0 : vehicle.rollInput;
-
 			float mass = Mathf.Max(1, parameters.mass);
 			float pitchLimit = Mathf.Min(12, parameters.maxPitchSpeed / mass);
 			float yawLimit = Mathf.Min(12, parameters.maxYawSpeed / mass);
@@ -4523,7 +4259,6 @@ namespace RVP
 				stuntRollProgress = 0;
 				rollAcceleration = rollSpeed = 0;
 			}
-
 			bool pitchProcessed = false;
 			bool rollProcessed = rollCommand || stuntRollActive;
 			bool yawProcessed = false;
@@ -4560,7 +4295,6 @@ namespace RVP
 				pitchAcceleration = yawAcceleration = rollAcceleration = 0;
 				AssistAirPitchAndYaw();
 			}
-
 			float rollAngleThisTick = 0;
 			if (stuntRollActive && !launchedThisTick)
 			{
@@ -4577,7 +4311,6 @@ namespace RVP
 					rollAcceleration = rollSpeed = 0;
 				}
 			}
-
 			// Match SGP_Evo's pitch/roll signs; source steering yaw remains left-handed.
 			Quaternion rotation = stepRotation;
 			rotation *= Quaternion.AngleAxis(pitchSpeed * tickScale, Vector3.right);
@@ -4586,7 +4319,6 @@ namespace RVP
 			stepRotation = rotation;
 			stepRotationChanged = true;
 		}
-
 		void LevelSourceIncrementalRotation(float divisor)
 		{
 			Vector3 x = sourceIncrementalRotation * Vector3.right;
@@ -4602,7 +4334,6 @@ namespace RVP
 			if (z.sqrMagnitude > 0.000001f && y.sqrMagnitude > 0.000001f)
 				sourceIncrementalRotation = Quaternion.LookRotation(z, y);
 		}
-
 		void AssistAirPitchAndYaw()
 		{
 			// vehicle_stunt.cpp::assist_air_pitch / assist_air_yaw run only when
@@ -4615,7 +4346,6 @@ namespace RVP
 					pitch = -pitch;
 				pitchSpeed = pitch * 6;
 			}
-
 			Vector3 velocity = vehicle.rb.linearVelocity;
 			if (Vector3.Dot(sourceForwardBasis, velocity) > 0 && Mathf.Abs(yawSpeed) >= 0.05f &&
 				velocity.sqrMagnitude > 0.000001f)
@@ -4626,6 +4356,5 @@ namespace RVP
 				yawSpeed = yaw * 6;
 			}
 		}
-
 	}
 }

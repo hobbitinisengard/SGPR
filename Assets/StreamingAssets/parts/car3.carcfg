@@ -113,7 +113,7 @@
   },
   "originalPhysics": {
     "formatVersion": 1,
-    "sourceConfig": "car3.cfg",
+    "sourceConfig": "car4.cfg",
     "mass": 1000.0,
     "comA": 0.35,
     "comB": 0.65,

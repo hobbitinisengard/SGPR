@@ -242,7 +242,7 @@ namespace RVP
 			if (!susParent || !rim)
 				return;
 
-			rim.position = susParent.maxCompressPoint +
+			Vector3 wheelPosition = susParent.maxCompressPoint +
 				susParent.springDirection * susParent.suspensionDistance *
 					(Application.isPlaying ? travelDist : susParent.targetCompression) +
 				susParent.upDir * Mathf.Pow(Mathf.Max(
@@ -253,6 +253,9 @@ namespace RVP
 					Mathf.Cos(tr.localEulerAngles.y * Mathf.Deg2Rad)) -
 				susParent.pivotOffset * (Application.isPlaying
 					? susParent.forwardDir : susParent.tr.forward);
+			if (Application.isPlaying && vp && vp.originalVehiclePhysics != null)
+				wheelPosition += vp.tr.up * vp.originalVehiclePhysics.GetWheelVisualVerticalOffset(this);
+			rim.position = wheelPosition;
 		}
 
 		void MatchTireRadiusToVisualMesh()

@@ -113,7 +113,7 @@
   },
   "originalPhysics": {
     "formatVersion": 1,
-    "sourceConfig": "car8.cfg",
+    "sourceConfig": "car9.cfg",
     "mass": 1000.0,
     "comA": 0.35,
     "comB": 0.65,

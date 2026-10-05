@@ -107,10 +107,9 @@ namespace RVP
 		public int CameraFieldOfViewAtMaxSpeed = 64;
 		public int minSpeedForCameraFovFX = 54;
 		public int maxSpeedForCameraFovFX = 100;
-		/// <summary>
-		/// used for smooth change between cam rotation by velocity to cam rotation by lookObj 
-		/// </summary>
-		private float lookObjVelCoeff = 1;
+		public int debug1;
+
+		public float lookObjVelCoeff = 1;
 
 		void Awake()
 		{
@@ -355,7 +354,9 @@ namespace RVP
 				else
 				{
 					if (Time.time - slowCameraStartTime > maxSlowCameraTime)
+					{
 						slowCamera = false;
+					}
 				}
 			}
 			else

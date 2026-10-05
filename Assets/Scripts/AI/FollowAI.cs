@@ -151,7 +151,7 @@ namespace RVP
 		}
 		private void Start()
 		{
-			dist = trackPathCreator.path.GetClosestDistanceAlongPath(transform.position);
+			dist = trackPathCreator.path.GetClosestDistanceAlongPath(tr.position);
 			progress = dist;
 			univProgress = dist;
 			StartCoroutine(Prepare());
@@ -175,7 +175,7 @@ namespace RVP
 			using (PathProjectionMarker.Auto())
 			{
 				VertexPath path = p.path;
-				return path.GetClosestTimeOnPath(transform.position) * path.length;
+				return path.GetClosestTimeOnPath(tr.position) * path.length;
 			}
 		}
 		static bool IsGroundSurfaceCollider(Collider collider)
@@ -223,7 +223,7 @@ namespace RVP
 			using (PathProjectionMarker.Auto())
 			{
 				VertexPath path = p.path;
-				return path.GetClosestPointOnPath(transform.position, Mathf.Max(0, progress - 100), progress + 200);
+				return path.GetClosestPointOnPath(tr.position, Mathf.Max(0, progress - 100), progress + 200);
 			}
 		}
 		//int GetDist(int layer)
@@ -232,16 +232,16 @@ namespace RVP
 		//	string closestLen = null;
 		//	float min = 3 * radius;
 
-		//	var racingPathHits = Physics.CapsuleCastAll(transform.position + Vector3.up,
-		//		transform.position + .5f * Vector3.up, radius, Vector3.down, Mathf.Infinity, layer);
+		//	var racingPathHits = Physics.CapsuleCastAll(tr.position + Vector3.up,
+		//		tr.position + .5f * Vector3.up, radius, Vector3.down, Mathf.Infinity, layer);
 
 
 
 		//	foreach (var hit in racingPathHits)
 		//	{
-		//		dist = Vector3.Distance(transform.position, hit.transform.position);
-		//		if (dist < min && !Physics.Linecast(transform.position + Vector3.up,
-		//			hit.transform.position + 3 * Vector3.up, 1 | 1 << F.I.roadLayer | 1 << F.I.terrainLayer))
+		//		dist = Vector3.Distance(tr.position, hit.tr.position);
+		//		if (dist < min && !Physics.Linecast(tr.position + Vector3.up,
+		//			hit.tr.position + 3 * Vector3.up, 1 | 1 << F.I.roadLayer | 1 << F.I.terrainLayer))
 		//		{
 		//			min = dist;
 		//			distPoint = hit.point;
@@ -310,7 +310,7 @@ namespace RVP
 			if (searchForPits)
 			{
 				Collider[] pitsPathHits;
-				pitsPathHits = Physics.OverlapSphere(transform.position, radius, 1 << F.I.pitsLineLayer);
+				pitsPathHits = Physics.OverlapSphere(tr.position, radius, 1 << F.I.pitsLineLayer);
 
 				if (pitsPathHits.Length > 0)
 				{
@@ -417,8 +417,11 @@ namespace RVP
 			else
 			{
 				float newUnivProgress = GetDist(RaceManager.I.racingPaths[1], univProgress);
-				if (newUnivProgress - univProgress > -200 && newUnivProgress - univProgress < 200)
+				if (newUnivProgress - univProgress > -200 && newUnivProgress - univProgress < 200 
+				&& newUnivProgress > univProgress)
+				{
 					univProgress = newUnivProgress;
+				}
 
 				dist = GetDist(trackPathCreator, progress);
 
@@ -498,9 +501,9 @@ namespace RVP
 						tPos2 = trackPathCreator.path.GetPointAtDistance(dist + lookAheadBase * lookAheadMultCurve.Evaluate(vp.velMag));
 					}
 
-					tPos0.y = transform.position.y;
-					tPos.y = transform.position.y;
-					tPos2.y = transform.position.y;
+					tPos0.y = tr.position.y;
+					tPos.y = tr.position.y;
+					tPos2.y = tr.position.y;
 					//Debug.DrawLine((Vector3)tPos, (Vector3)tPos + 100 * Vector3.up, Color.magenta);
 					//Debug.DrawLine((Vector3)tPos2, (Vector3)tPos2 + 100 * Vector3.up, Color.red);
 
@@ -565,7 +568,7 @@ namespace RVP
 						//UpdateFollowTarget();
 
 						if (debugDrawAIPath)
-							Debug.DrawLine(transform.position,
+							Debug.DrawLine(tr.position,
 								RaceManager.I.racingPaths[1].path.GetPointAtDistance(univProgress), Color.yellow);
 						//Debug.DrawRay(targetPos, Vector3.up * 3, Color.yellow);
 						Vector2 targetDir;
@@ -681,16 +684,22 @@ namespace RVP
 			}
 
 			if (progress >= trackPathCreator.path.length)
-				progress = (int)(trackPathCreator.path.length - 5);
-
-			dist = progress;
-			univProgress = GetDist(RaceManager.I.racingPaths[1]);
-			if(univProgress < RaceManager.I.racingPaths[1].path.length)
+			{
 				univProgress = RaceManager.I.racingPaths[1].path.length - 5;
+				progress = (int)(trackPathCreator.path.length - 5);
+			}
+			dist = progress;
+				
 			vp.ghost.StartGhostResetting();
 			rb.isKinematic = true;
 			tr.position = resetPos + Vector3.up + resetDir;
 			yield return new WaitForFixedUpdate();
+
+			float newUnivProgress = GetDist(RaceManager.I.racingPaths[1]);
+			if (newUnivProgress > univProgress)
+			{
+				univProgress = newUnivProgress;
+			}
 
 			vp.antenna?.Reset();
 			//rb.angularVelocity = Vector3.zero;

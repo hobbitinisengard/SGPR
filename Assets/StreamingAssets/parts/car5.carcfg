@@ -113,7 +113,7 @@
   },
   "originalPhysics": {
     "formatVersion": 1,
-    "sourceConfig": "car5.cfg",
+    "sourceConfig": "car6.cfg",
     "mass": 1000.0,
     "comA": 0.35,
     "comB": 0.65,
@@ -123,7 +123,7 @@
     "trackRear": 180.0,
     "length": 400.0,
     "width": 152.0,
-    "height": 115.0,
+    "height": 215.0,
     "rideHeight": 0.0,
     "rpmIdle": 150.0,
     "rpmLimit": 5750.0,
