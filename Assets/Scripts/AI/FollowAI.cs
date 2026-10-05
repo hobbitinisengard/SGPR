@@ -76,22 +76,14 @@ namespace RVP
 		public float lowSpeedTime;
 		float steerAngle;
 		int curStuntpointIdx;
+		int preparedStuntpointIdx = -1;
 		int curReplayPointIdx = 0;
 		private bool revvingCo;
 		bool resetRoutineActive;
 		public float targetSteer;
 		[SerializeField] bool debugDrawAIPath;
-		readonly RaycastHit[] groundSurfaceRayHits = new RaycastHit[32];
-		struct GroundSurfaceCacheEntry
-		{
-			public Collider collider;
-			public bool isGroundSurface;
-		}
-		static readonly Dictionary<int, GroundSurfaceCacheEntry> groundSurfaceCache = new();
 		static readonly ProfilerMarker PathProjectionMarker =
 			new ProfilerMarker("RVP.FollowAI.PathProjection");
-		static readonly ProfilerMarker GroundSurfaceFallbackMarker =
-			new ProfilerMarker("RVP.FollowAI.GroundSurfaceFallback");
 		[Range(0, 1)]
 		public float maxDiff = 0.01f;
 		public bool overRoad { get; private set; }
@@ -113,9 +105,9 @@ namespace RVP
 				return univProgress / RaceManager.I.racingPaths[1].path.length;
 			}
 		}
-		private bool NextStuntpointIn(float distanceOffset)
+		public bool NextStuntPointIn(float distanceOffset)
 		{
-			return stuntPoints != null && stuntPoints.Count > 0 && stuntPoints[curStuntpointIdx] > progress && stuntPoints[curStuntpointIdx] - progress < distanceOffset;
+			return stuntPoints != null && curStuntpointIdx >= 0 && curStuntpointIdx < stuntPoints.Count && stuntPoints[curStuntpointIdx] > progress && stuntPoints[curStuntpointIdx] - progress < distanceOffset;
 		}
 		public void ResetCurCameraIdx()
 		{
@@ -128,6 +120,7 @@ namespace RVP
 			dist = 1;
 			trackPathCreator = RaceManager.I.racingPaths.GetRandom();
 			curStuntpointIdx = 0;
+			preparedStuntpointIdx = -1;
 			ResetCurCameraIdx();
 			speedLimitDist = -1;
 		}
@@ -176,46 +169,6 @@ namespace RVP
 			{
 				VertexPath path = p.path;
 				return path.GetClosestTimeOnPath(tr.position) * path.length;
-			}
-		}
-		static bool IsGroundSurfaceCollider(Collider collider)
-		{
-			int instanceId = collider.GetInstanceID();
-			if (groundSurfaceCache.TryGetValue(instanceId, out GroundSurfaceCacheEntry cached) &&
-				ReferenceEquals(cached.collider, collider))
-				return cached.isGroundSurface;
-
-			bool isGroundSurface = collider.GetComponent<GroundSurfaceInstance>() != null ||
-				collider.GetComponent<TerrainSurface>() != null;
-			if (groundSurfaceCache.Count >= 4096)
-				groundSurfaceCache.Clear();
-			groundSurfaceCache[instanceId] = new GroundSurfaceCacheEntry
-			{
-				collider = collider,
-				isGroundSurface = isGroundSurface
-			};
-			return isGroundSurface;
-		}
-		bool HasGroundSurfaceBelow(out Vector3 surfaceNormal, out float surfaceDistance)
-		{
-			using (GroundSurfaceFallbackMarker.Auto())
-			{
-				surfaceNormal = Vector3.zero;
-				surfaceDistance = Mathf.Infinity;
-				int hitCount = Physics.RaycastNonAlloc(tr.position + Vector3.up, Vector3.down,
-					groundSurfaceRayHits, Mathf.Infinity, RaceManager.I.wheelCastMask,
-					QueryTriggerInteraction.Ignore);
-				for (int i = 0; i < hitCount; i++)
-				{
-					Collider collider = groundSurfaceRayHits[i].collider;
-					RaycastHit hit = groundSurfaceRayHits[i];
-					if (collider && hit.distance < surfaceDistance && IsGroundSurfaceCollider(collider))
-					{
-						surfaceNormal = hit.normal;
-						surfaceDistance = hit.distance;
-					}
-				}
-				return surfaceDistance < Mathf.Infinity;
 			}
 		}
 		float GetDist(PathCreator p, float progress)
@@ -339,23 +292,11 @@ namespace RVP
 			}
 			vp.ebrakeInput = 0;
 
-			Vector3 originalSurfaceNormal = Vector3.zero;
-			bool hasOriginalSurfaceNormal = vp.originalVehiclePhysics != null &&
-				vp.originalVehiclePhysics.TryGetGroundSurfaceContactNormal(out originalSurfaceNormal);
-			bool hasSourceTrackContact = vp.originalVehiclePhysics != null &&
-				vp.originalVehiclePhysics.HasGroundSurfaceContactThisTick;
-			Vector3 belowSurfaceNormal = Vector3.zero;
-			float belowSurfaceDistance = Mathf.Infinity;
-			bool hasMarkedSurfaceBelow = (!hasSourceTrackContact || !hasOriginalSurfaceNormal) &&
-				HasGroundSurfaceBelow(out belowSurfaceNormal, out belowSurfaceDistance);
-			bool originalTrackSurfaceContact = vp.originalVehiclePhysics != null &&
-				(hasSourceTrackContact || hasMarkedSurfaceBelow);
-			overRoad = originalTrackSurfaceContact;
-			if (hasOriginalSurfaceNormal)
-				rolledOverTime = Mathf.Clamp(Vector3.Dot(originalSurfaceNormal, vp.tr.up) < 0.5f
-					? rolledOverTime + Time.fixedDeltaTime : rolledOverTime - Time.fixedDeltaTime, 0, rollResetTime);
-			else if (hasMarkedSurfaceBelow && belowSurfaceDistance <= 4)
-				rolledOverTime = Mathf.Clamp(Vector3.Dot(belowSurfaceNormal, vp.tr.up) < 0.5f
+			overRoad = Physics.Raycast(tr.position + Vector3.up, Vector3.down, out var _, Mathf.Infinity, 1 << F.I.roadLayer);
+			// Rollover uses the nearby Unity road normal, independent of material profiles.
+			if (overRoad && Physics.Raycast(tr.position + Vector3.up, Vector3.down,
+				out var roadHit, 4, 1 << F.I.roadLayer))
+				rolledOverTime = Mathf.Clamp(Vector3.Dot(roadHit.normal, vp.tr.up) < 0.5f
 					? rolledOverTime + Time.fixedDeltaTime : rolledOverTime - Time.fixedDeltaTime, 0, rollResetTime);
 
 			if (rolledOverTime >= rollResetTime)
@@ -377,13 +318,7 @@ namespace RVP
 					outOfTrackTime += Time.fixedDeltaTime;
 					lastOutOfTrackTime = Time.time;
 				}
-				//else if (originalTrackSurfaceContact)
-				//{
-				//	// A source wheel probe or the track-layer query found an authored
-				//	// surface, so discard accumulated false off-track time.
-				//	outOfTrackTime = 0;
-				//	lastOutOfTrackTime = Time.time;
-				//}
+
 
 				if (Time.time - lastOutOfTrackTime > 1)
 				{
@@ -426,7 +361,7 @@ namespace RVP
 				dist = GetDist(trackPathCreator, progress);
 
 
-				if (!originalTrackSurfaceContact && dist != 1 &&
+				if (!overRoad && dist != 1 &&
 					(dist < progress || dist > progress + 2 * radius))
 					outOfTrackTime += Time.fixedDeltaTime;
 
@@ -490,7 +425,7 @@ namespace RVP
 					else if (trackPathCreator)
 					{
 						//targetPos = trackPathCreator.path.GetPointAtDistance(progress + reqDist);
-						if (stuntPoints.Count > 0 && stuntPoints[curStuntpointIdx] < progress)
+						if (curStuntpointIdx >= 0 && curStuntpointIdx < stuntPoints.Count && stuntPoints[curStuntpointIdx] < progress)
 						{
 							if (curStuntpointIdx < stuntPoints.Count - 1)
 								++curStuntpointIdx;
@@ -563,7 +498,8 @@ namespace RVP
 					reverseTime = Mathf.Max(0, reverseTime - Time.fixedDeltaTime);
 
 
-					if (!vp.raceBox.evoModule.stunting)
+					if (!vp.raceBox.evoModule.stunting &&
+						!(vp.originalVehiclePhysics.AIStuntInProgress && vp.reallyGroundedWheels == 0))
 					{
 						//UpdateFollowTarget();
 
@@ -574,7 +510,7 @@ namespace RVP
 						Vector2 targetDir;
 						if (pitsPathCreator)
 							targetDir = ((Vector3)tPos - vp.tr.position).Flat();
-						else if (NextStuntpointIn(30) && overRoad)
+						else if ((vp.originalVehiclePhysics.AIStuntInProgress || NextStuntPointIn(30)) && overRoad)
 						{
 							targetDir = ((Vector3)trackPathCreator.path.GetPointAtDistance(dist + 90) - vp.tr.position).Flat().normalized;
 							if (debugDrawAIPath)
@@ -596,6 +532,15 @@ namespace RVP
 						}
 
 						vp.SetBoost(steerAngle < 2 && vp.SourceEnergyPercent > 0.5f && vp.reallyGroundedWheels > 2 && vp.velMag < 30);
+					}
+
+					if (IsCPU && !Pitting && !looping && !resetRoutineActive &&
+						CountDownSeq.Countdown <= 0 && reverseTime == 0 && vp.velMag > 35 &&
+						vp.reallyGroundedWheels > 0 && NextStuntPointIn(15) &&
+						preparedStuntpointIdx != curStuntpointIdx && !vp.originalVehiclePhysics.AIStuntInProgress)
+					{
+						if (vp.originalVehiclePhysics.PrepareAIStunt())
+							preparedStuntpointIdx = curStuntpointIdx;
 					}
 
 					if (vp.reallyGroundedWheels > 0)
@@ -642,8 +587,7 @@ namespace RVP
 			resetRoutineActive = true;
 			//Debug.LogWarning($"[FollowAI] Reset on track: cause={resetCause}, overRoad={overRoad}, " +
 			//	$"outOfTrackTime={outOfTrackTime:F2}, rolledOverTime={rolledOverTime:F2}, " +
-			//	$"lowSpeedTime={lowSpeedTime:F2}, position={tr.position:F2}, " +
-			//	$"sourceSurfaceContact={vp.originalVehiclePhysics != null && vp.originalVehiclePhysics.HasGroundSurfaceContactThisTick}", vp);
+			//	$"lowSpeedTime={lowSpeedTime:F2}, position={tr.position:F2}", vp);
 
 			vp.customCam = null;
 

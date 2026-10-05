@@ -1,0 +1,207 @@
+using System.Collections;
+using System.Linq;
+using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.UI;
+using UnityEngine.UIElements.Experimental;
+
+public class TuningSelector : Sfxable
+{
+	public RectTransform[] bars;
+	public Text partDescrText;
+	public Text partTypeText;
+	public Text partNameText;
+	public GameObject partImageTemplate;
+	public GameObject TraitValuePrefab;
+	public RectTransform content;
+	public Scrollbar scrollx;
+	public Scrollbar scrolly;
+	Transform selectedPart;
+	string persistentSelectedPart;
+	float initBarSizeDelta;
+	Coroutine containerCo;
+	Coroutine barsAndRadialCo;
+	bool loadCo;
+	public bool d_co;
+	
+	new void Awake()
+	{
+		base.Awake();
+		initBarSizeDelta = bars[0].sizeDelta.x;
+	}
+	private void OnDisable()
+	{ // in unity, 
+		F.I.move2Ref.action.performed -= CalculateTargetToSelect;
+		persistentSelectedPart = selectedPart.name;
+		F.I.s_playerCarIdx = Car.Name2Index(selectedPart.name);
+	}
+	private void OnEnable()
+	{
+		F.I.move2Ref.action.performed += CalculateTargetToSelect;
+		if (loadCo)
+		{
+			StopCoroutine(Load());
+		}
+		StartCoroutine(Load());
+	}
+	
+	void ClearAllParts()
+	{
+		for (int i = 0; i < content.childCount; ++i)
+		{ // remove parts from previous entry
+			content.GetChild(i).DestroyAllChildren();
+		}
+	}
+	IEnumerator Load()
+	{
+		int partsCurrentlyVisible = 0;
+		for (int i = 0; i < content.childCount; ++i)
+			partsCurrentlyVisible += content.GetChild(i).childCount;
+
+		int numberOfPartsThatShouldBeVisible = 0;
+		loadCo = true;
+		if (partsCurrentlyVisible != numberOfPartsThatShouldBeVisible)
+		{
+			bool[] menuButtons = new bool[4];
+			ClearAllParts();
+			for (int i = 0; i < F.I.cars.Length; ++i)
+			{ // populate car grid
+				var car = F.I.cars[i];
+				//if (ShowCar(car))
+				{
+					var newcar = Instantiate(partImageTemplate, content.GetChild((int)car.category));
+					newcar.name = "car" + i.ToString("D2");
+					newcar.GetComponent<Image>().sprite = Resources.Load<Sprite>(F.I.carImagesPath + newcar.name);
+					newcar.SetActive(true);
+					menuButtons[(int)car.category] = true;
+					if (persistentSelectedPart != null && persistentSelectedPart == newcar.name)
+						selectedPart = newcar.transform;
+				}
+			}
+
+			yield return null; // wait for one frame for active objects to refresh
+		}
+		if (selectedPart == null)
+		{
+			partDescrText.text = "No parts available";
+		}
+		else
+		{
+			partDescrText.text = F.I.LocStr(F.I.Car(selectedPart.name).name) + "\n\n" + F.I.LocStr(selectedPart.name + "d");
+		}
+		containerCo = StartCoroutine(MoveToCar());
+
+		if (barsAndRadialCo != null)
+			StopCoroutine(barsAndRadialCo);
+		barsAndRadialCo = StartCoroutine(SetPerformanceBarsAndRadial());
+		//Debug.Log(selectedCar);
+		loadCo = false;
+	}
+
+	void CalculateTargetToSelect(InputAction.CallbackContext ctx)
+	{
+		if (!selectedPart || loadCo)
+			return;
+		d_co = containerCo == null;
+
+		Vector2 move2 = F.I.move2Ref.action.ReadValue<Vector2>();
+		int x = Mathf.RoundToInt(move2.x);
+		int y = Mathf.RoundToInt(-move2.y);
+
+		if (x != 0 || y != 0)
+		{
+			int posx = x + selectedPart.GetSiblingIndex();
+			int posy = y + selectedPart.parent.GetSiblingIndex();
+			if (posy >= 0 && posy <= 3 && posx >= 0)
+			{
+				Transform tempSelectedCar = null;
+				for (int i = posy; i < content.childCount && i >= 0; i = (y > 0) ? (i + 1) : (i - 1))
+				{
+					Transform selectedClass = content.GetChild(i);
+
+					if (selectedClass.childCount > 0)
+					{
+						if (posx >= selectedClass.childCount)
+							posx = selectedClass.childCount - 1;
+						tempSelectedCar = selectedClass.GetChild(posx);
+						//Debug.Log(tempSelectedCar);
+						break;
+					}
+				}
+				if (tempSelectedCar != null && tempSelectedCar != selectedPart)
+				{
+					selectedPart = tempSelectedCar;
+					F.I.s_playerCarIdx = Car.Name2Index(selectedPart.name);
+					PlaySFX("fe-bitmapscroll");
+				}
+				// new part has been selected
+				// set description
+				var car = F.I.Car(selectedPart.name);
+				partDescrText.text = F.I.LocStr(car.name) + "\n\n" + F.I.LocStr(selectedPart.name + "d");
+				// set bars
+				if (barsAndRadialCo != null)
+					StopCoroutine(barsAndRadialCo);
+				barsAndRadialCo = StartCoroutine(SetPerformanceBarsAndRadial());
+				// focus on car
+				if (containerCo != null)
+					StopCoroutine(containerCo);
+				containerCo = StartCoroutine(MoveToCar());
+			}
+		}
+	}
+
+	IEnumerator MoveToCar()
+	{
+		yield return null;
+		if (!selectedPart)
+			yield break;
+		float timer = 0;
+		Vector2 initPos = content.anchoredPosition;
+		Vector2 targetPos = new Vector2(-((RectTransform)selectedPart).anchoredPosition.x,
+			-selectedPart.parent.GetComponent<RectTransform>().anchoredPosition.y);
+		Vector2 scrollInitPos = new Vector2(scrollx.value, scrolly.value);
+		Vector2 scrollInitSize = new Vector2(scrollx.size, scrolly.size);
+		float carInGroupPos = F.I.InGroupPos(selectedPart);//.parent.PosAmongstActive(selectedCar, false);
+		float groupPos = content.PosAmongstActive(selectedPart.parent, false);
+		Vector2 scrollTargetPos = new Vector2(carInGroupPos, groupPos);
+		Vector2 scrollTargetSize = new Vector2(1f / selectedPart.parent.ActiveChildren(), 1f / content.ActiveChildren());
+
+		while (timer < 1)
+		{
+			float step = F.EasingOutQuint(timer);
+			content.anchoredPosition = Vector2.Lerp(initPos, targetPos, step);
+			scrollx.value = Mathf.Lerp(scrollInitPos.x, scrollTargetPos.x, step);
+			scrolly.value = Mathf.Lerp(scrollInitPos.y, scrollTargetPos.y, step);
+			scrollx.size = Mathf.Lerp(scrollInitSize.x, scrollTargetSize.x, step);
+			scrolly.size = Mathf.Lerp(scrollInitSize.y, scrollTargetSize.y, step);
+			timer += Time.deltaTime;
+
+			yield return null;
+		}
+	}
+
+	IEnumerator SetPerformanceBarsAndRadial()
+	{
+		float[] targetSgpBars = selectedPart ? F.I.Car(selectedPart.name).config.SGP : new float[] { .03f, .03f, .03f };
+		float[] initSgpBars = new float[3];
+
+		for (int i = 0; i < 3; i++)
+			initSgpBars[i] = bars[i].sizeDelta.x / initBarSizeDelta;
+		float timer = 0;
+		while (timer < 1)
+		{
+			float step = Easing.OutCubic(timer);
+			// set bars
+			for (int i = 0; i < 3; ++i)
+			{
+				float animValue = Mathf.Lerp(initSgpBars[i], targetSgpBars[i], step);
+				bars[i].sizeDelta = new Vector2(animValue * initBarSizeDelta, bars[i].sizeDelta.y);
+			}
+
+			timer += Time.deltaTime;
+
+			yield return null;
+		}
+	}
+
+}

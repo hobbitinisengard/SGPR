@@ -419,9 +419,11 @@ public class RaceBox : MonoBehaviour
 		{
 			grindTimer = 0;
 		}
-		if (vp.reallyGroundedWheels == 0 && (vp.crashing || vp.colliding) && vp.velMag > 30)
+		bool railbarSupported = vp.originalVehiclePhysics != null && vp.originalVehiclePhysics.IsRailbarGrinding;
+		if ((railbarSupported || (vp.reallyGroundedWheels == 0 && (vp.crashing || vp.colliding))) && vp.velMag > 30)
 		{
-			if (Physics.Raycast(vp.tr.position + vp.upDir, -vp.upDir, out var hit,2) && Vector3.Dot(vp.upDir, hit.normal) > 0.86f)
+			if (railbarSupported || (Physics.Raycast(vp.tr.position + vp.upDir, -vp.upDir, out var hit, 2) &&
+				Vector3.Dot(vp.upDir, hit.normal) > 0.86f))
 			{
 				float dot = Vector3.Dot(vp.forwardDir, vp.rb.linearVelocity.normalized);
 				
@@ -429,7 +431,6 @@ public class RaceBox : MonoBehaviour
 				grindTime = Time.time;
 				if (grindTimer > 0.15f)
 				{
-					Debug.Log(dot);
 					if (dot > 0.86f)
 						StartCoroutine(AddExtraStuntCo(StuntsData.ExtraName.Railgrind));
 					if (Mathf.Abs(dot) < .34f)

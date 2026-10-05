@@ -634,8 +634,8 @@ MonoBehaviour:
     m_Localized: "STUNT GP REMASTERED\\n\\nProgramowanie  - @viatrufka\\nmuzyka i
       tory - DJ Mistone (@luckygoose)\\ntory - @Arkhnen\\n\\nSPECJALNIE PODZI\u0118KOWANIA\\n\\n
       martin (forum.xen-tax.com) - za format .PMD v.1.82 i narz\u0119dzia \\n\\n@Halamix2,
-      @TushkaN - za format .PMD v.1.62\\n\\nJustin Couch za Randomation Vehicle Physics
-      - darmow\u0105 bibliotek\u0119 fizyki aut"
+      @TushkaN - za format .PMD v.1.62\\n\\n@Dreiji - za oryginaln\u0105 fizyk\u0119
+      aut"
     m_Metadata:
       m_Items: []
   - m_Id: 71441426677760
@@ -1547,6 +1547,14 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 121623786990133248
     m_Localized: Rundy
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187699192444542976
+    m_Localized: TUNING
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420544
+    m_Localized: "Cz\u0119\u015B\u0107:"
     m_Metadata:
       m_Items: []
   references:

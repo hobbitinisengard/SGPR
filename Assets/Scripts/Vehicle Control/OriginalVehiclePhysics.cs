@@ -128,13 +128,6 @@ namespace RVP
 		const float SourceCollisionEnergyLimit = 0.75f;
 		// VehicleParent wheel order: front left, front right, rear left, rear right.
 		static readonly int[] UnityWheelIndex = { 2, 3, 0, 1 };
-		static readonly int[] SourceAiStuntReleaseAt = { 8, 15, 20 };
-		static readonly int[] SourceAiStuntStopAt = { 10, 18, 26 };
-		static readonly int[] SourceAiStuntInputKinds =
-			{ 0, 1, 0, 1, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3 };
-		static readonly float SourceAiStuntMinimumSpeed = System.BitConverter.Int32BitsToSingle(0x42855555);
-		static readonly float SourceAiStuntLevelOneSpeed = System.BitConverter.Int32BitsToSingle(0x42b75555);
-		static readonly float SourceAiStuntLevelTwoSpeed = System.BitConverter.Int32BitsToSingle(0x42d8aaab);
 		static readonly float SourceStuntPhaseBoundary = System.BitConverter.Int32BitsToSingle(0x3f3504f4);
 		static readonly System.Collections.Generic.HashSet<int> SourceTrackColliderIds = new();
 		static readonly System.Collections.Generic.HashSet<int> SourceVehicleColliderIds = new();
@@ -253,6 +246,8 @@ namespace RVP
 		bool stepRotationChanged;
 		bool sourceProbeIterationOverflow;
 		bool sourceContactVelocityRespawnRequested;
+		// Temporary diagnostic switch: suppress all resets requested by this physics solver.
+		static readonly bool SourceRequestedResetsEnabled = false;
 		bool sourceContactResetPending;
 		bool sourceContactResetDiagnosticLogged;
 		string sourceContactResetReason;
@@ -298,6 +293,11 @@ namespace RVP
 		bool sourceStartBoostActiveThisTick;
 		bool sourceSpecialMode;
 		bool sourceRailControlsActive;
+		RailbarLogic sourceRailbar;
+		float sourceRailbarSeenTime = float.NegativeInfinity;
+		float sourceRailbarSupportedTime = float.NegativeInfinity;
+		public bool IsRailbarGrinding => sourceRailbar && sourceRailbar.isActiveAndEnabled &&
+			Time.fixedTime - sourceRailbarSupportedTime <= Time.fixedDeltaTime * 1.5f;
 		bool sourceRailControlDisabled;
 		EnergyTunnelPath sourceUnityRailPathThisTick;
 		EnergyTunnelPath sourceRailCompletedPath;
@@ -325,16 +325,9 @@ namespace RVP
 		int sourceIdleInterval;
 		int appliedSourceTrackCollisionGeneration = -1;
 		int sourceAiStuntMeter;
+		float sourceAiStuntDeadline;
+		bool sourceAiStuntAirborne;
 		int sourceAiStuntInputKind;
-		int sourceAiStuntGrade;
-		int sourceAiStuntKnotCursor;
-		SourceAiStuntKnot[] sourceMapAiStuntKnots = System.Array.Empty<SourceAiStuntKnot>();
-		System.Collections.Generic.List<int> sourceMapStuntPoints;
-		string sourceMapStuntTrackName;
-		float sourceMapStuntRouteLength = -1;
-		float sourceMapStuntMarkerPathLength = -1;
-		int sourceMapStuntPointCount = -1;
-		int sourceAiPairEffectTicks;
 		int sourceAiTurboTicks;
 		int sourceAiTurboCooldown;
 		int sourceAiTurboRestTicks;
@@ -344,12 +337,6 @@ namespace RVP
 		bool sourceAiStuntInputThisTick;
 		readonly int[] sourceStuntPhaseIndex = new int[2];
 		readonly int[] sourceStuntLastPhase = { -1, -1 };
-		sealed class SourceAiStuntKnot
-		{
-			public float progress;
-			public float width;
-			public int grade;
-		}
 		bool DigitalControls => vehicle.basicInput && vehicle.basicInput.playerInput &&
 			vehicle.basicInput.playerInput.currentControlScheme == "Keyboard" && !vehicle.followAI.selfDriving;
 		bool SourcePlayerControlsSuppressed => sourceRailControlsActive && sourceRailControlDisabled;
@@ -364,12 +351,16 @@ namespace RVP
 			sourceAiStuntInputThisTick && ((sourceAiStuntInputKind == 0 && gear == 0) ||
 				(sourceAiStuntInputKind == 1 && gear != 0))
 				? Mathf.Max(vehicle.brakeInput, 1) : vehicle.brakeInput;
-		float SourceSteerInput => sourceAiStuntInputThisTick && sourceAiStuntInputKind == 2
-			? -1 : sourceAiStuntInputThisTick && sourceAiStuntInputKind == 3 ? 1 : vehicle.steerInput;
-		float SourceAiAirThrottleInput => sourceAiStuntInputThisTick && sourceAiStuntInputKind == 0
-			? 1 : vehicle.accelInput;
-		float SourceAiAirBrakeInput => sourceAiStuntInputThisTick && sourceAiStuntInputKind == 1
-			? 1 : vehicle.brakeInput;
+		float SourceSteerInput => sourceAiStuntInputThisTick
+			? (sourceAiStuntInputKind == 2 ? -1 : sourceAiStuntInputKind == 3 ? 1 : 0)
+			: vehicle.steerInput;
+		float SourceAiAirThrottleInput => sourceAiStuntInputThisTick
+			? (sourceAiStuntInputKind == 0 ? 1 : 0) : vehicle.accelInput;
+		float SourceAiAirBrakeInput => sourceAiStuntInputThisTick
+			? (sourceAiStuntInputKind == 1 ? 1 : 0) : vehicle.brakeInput;
+		float SourceAiAirRollInput => sourceAiStuntInputThisTick
+			? (sourceAiStuntInputKind == 4 ? -1 : sourceAiStuntInputKind == 5 ? 1 : 0)
+			: vehicle.rollInput;
 		float SourceCpuSkill => !F.I ? 85f : F.I.s_cpuLevel switch
 		{
 			CpuLevel.Easy => 70f,
@@ -1498,143 +1489,66 @@ namespace RVP
 			int sample = (int)((sourcePhysicsRandomState >> 16) & 0x7fffu) - 0x3fff;
 			return sample * amplitude / 0x7fff;
 		}
-		SourceAiStuntKnot[] SourceAiStuntKnotsFor(float routeLength)
+		public bool AIStuntInProgress => sourceAiStuntMeter > 0;
+		public bool PrepareAIStunt()
 		{
-			System.Collections.Generic.List<int> mapPoints = F.I ? F.I.stuntpointsContainer : null;
-			if (mapPoints == null || mapPoints.Count == 0 || routeLength <= 0.001f)
-			{
-				sourceMapStuntPointCount = -1;
-				return System.Array.Empty<SourceAiStuntKnot>();
-			}
-			string trackName = F.I.s_trackName;
-			float markerPathLength = routeLength;
-			if (RaceManager.I && RaceManager.I.racingPaths != null && RaceManager.I.racingPaths.Length > 0 &&
-				RaceManager.I.racingPaths[0] && RaceManager.I.racingPaths[0].path != null)
-				markerPathLength = RaceManager.I.racingPaths[0].path.length;
-			if (markerPathLength <= 0.001f)
-				markerPathLength = routeLength;
-			if (ReferenceEquals(sourceMapStuntPoints, mapPoints) &&
-				string.Equals(sourceMapStuntTrackName, trackName, System.StringComparison.Ordinal) &&
-				Mathf.Approximately(sourceMapStuntRouteLength, routeLength) &&
-				Mathf.Approximately(sourceMapStuntMarkerPathLength, markerPathLength) &&
-				sourceMapStuntPointCount == mapPoints.Count)
-				return sourceMapAiStuntKnots;
-			var knots = new System.Collections.Generic.List<SourceAiStuntKnot>(mapPoints.Count);
-			for (int i = 0; i < mapPoints.Count; i++)
-			{
-				float distance = Mathf.Repeat(mapPoints[i], markerPathLength);
-				if (distance <= 0.001f)
-					continue;
-				knots.Add(new SourceAiStuntKnot
-				{
-					progress = distance / markerPathLength * 100,
-					// Map stunt zones provide their location, not the original game's
-					// grade metadata. Keep the standard lane-width gate and basic trick.
-					width = 1500,
-					grade = 0
-				});
-			}
-			knots.Sort((first, second) => first.progress.CompareTo(second.progress));
-			sourceMapAiStuntKnots = knots.ToArray();
-			sourceMapStuntPoints = mapPoints;
-			sourceMapStuntTrackName = trackName;
-			sourceMapStuntRouteLength = routeLength;
-			sourceMapStuntMarkerPathLength = markerPathLength;
-			sourceMapStuntPointCount = mapPoints.Count;
-			return sourceMapAiStuntKnots;
+			if (AIStuntInProgress || !vehicle.followAI || !vehicle.followAI.IsCPU ||
+				!vehicle.followAI.selfDriving || vehicle.followAI.Pitting || CountDownSeq.Countdown > 0)
+				return false;
+			// FollowAI arms at the Unity ramp marker; wait for takeoff before steering a trick.
+			sourceAiStuntMeter = 1;
+			sourceAiStuntAirborne = false;
+			sourceAiStuntDeadline = Time.fixedTime + 1;
+			vehicle.SetSGPShift(1);
+			int type = UnityEngine.Random.Range(0, 4);
+			sourceAiStuntInputKind = type < 2
+				? (type == 0 ? 4 : 2) + UnityEngine.Random.Range(0, 2)
+				: type - 2;
+			sourceAiLaunchPending = true;
+			sourceAiLaunchTick = (uint)Mathf.RoundToInt(Time.fixedTime / Time.fixedDeltaTime);
+			return true;
 		}
 		void UpdateSourceAIStunt(int tick)
 		{
 			sourceAiStuntInputThisTick = false;
-			if (!vehicle.followAI || !vehicle.followAI.selfDriving || vehicle.followAI.Pitting ||
-				!vehicle.raceBox || !vehicle.raceBox.enabled)
+			if (!AIStuntInProgress)
 				return;
-			if (sourceAiStuntMeter != 0)
+			if (!vehicle.followAI || !vehicle.followAI.IsCPU || !vehicle.followAI.selfDriving ||
+				vehicle.followAI.Pitting || !vehicle.raceBox || !vehicle.raceBox.enabled ||
+				Time.fixedTime >= sourceAiStuntDeadline || (sourceAiStuntAirborne && vehicle.reallyGroundedWheels > 0))
 			{
-				if (sourceAiStuntMeter < 0)
-				{
-					sourceAiStuntMeter = 0;
-					return;
-				}
-				--sourceAiStuntMeter;
-				if (sourceAiStuntInputKind == 5)
-					return;
-				int grade = Mathf.Clamp(sourceAiStuntGrade, 0, 2);
-				bool released = sourceStuntPhaseIndex[0] >= SourceAiStuntReleaseAt[grade] ||
-					sourceStuntPhaseIndex[1] >= SourceAiStuntReleaseAt[grade];
-				if (released && (sourceStuntPhaseIndex[0] >= SourceAiStuntStopAt[grade] ||
-					sourceStuntPhaseIndex[1] >= SourceAiStuntStopAt[grade]))
-				{
-					pitchAcceleration = yawAcceleration = 0;
-					pitchSpeed = yawSpeed = 0;
-					ResetSourceStuntRoll();
-				}
-				sourceAiStuntInputThisTick = !released && sourceAiStuntInputKind >= 0 &&
-					sourceAiStuntInputKind <= 3;
+				FinishAIStunt();
 				return;
 			}
-			if (sourceAiPairEffectTicks != 0)
+			if (vehicle.reallyGroundedWheels > 0)
 			{
-				--sourceAiPairEffectTicks;
+				// The key stays armed while approaching the lip, as in the old AI coroutine.
+				sourceAiLaunchTick = unchecked((uint)tick);
 				return;
 			}
-			if (sourceContactClass != 0 || sourceContactCounter <= 0 ||
-				!RaceManager.I || RaceManager.I.racingPaths == null || RaceManager.I.racingPaths.Length <= 1 ||
-				!RaceManager.I.racingPaths[1])
-				return;
-			var route = RaceManager.I.racingPaths[1].path;
-			if (route == null || route.length <= 0.001f)
-				return;
-			SourceAiStuntKnot[] knots = SourceAiStuntKnotsFor(route.length);
-			float routeDistance = Mathf.Repeat(vehicle.followAI.univProgress, route.length);
-			float progress = Mathf.Repeat(routeDistance / route.length * 100, 100);
-			while (sourceAiStuntKnotCursor < knots.Length &&
-				knots[sourceAiStuntKnotCursor].progress > 0 &&
-				knots[sourceAiStuntKnotCursor].progress < progress)
-				sourceAiStuntKnotCursor++;
-			if (sourceAiStuntKnotCursor >= knots.Length)
-				return;
-			SourceAiStuntKnot knot = knots[sourceAiStuntKnotCursor];
-			if (knot.progress <= 0 || knot.grade < 0 || knot.grade > 2 || knot.width < 0)
-				return;
-			Vector3 first = route.GetPointAtDistance(routeDistance + 1);
-			Vector3 second = route.GetPointAtDistance(routeDistance + 2);
-			Vector3 forward = second - first;
-			if (forward.magnitude < SourceLengthToMetres)
-				return;
-			forward.Normalize();
-			Vector3 worldUp = SourceWorldUp;
-			Vector3 side = Vector3.Cross(forward, worldUp);
-			if (side.magnitude < 0.6666667f)
-				return;
-			side.Normalize();
-			float targetDistance = route.length * (knot.progress * 0.01f);
-			Vector3 target = route.GetPointAtDistance(targetDistance);
-			Vector3 delta = target - vehicle.rb.position;
-			if (Mathf.Abs(Vector3.Dot(delta, forward)) > 4 ||
-				Mathf.Abs(Vector3.Dot(delta, side)) > knot.width * SourceLengthToMetres)
-				return;
-			// Automatic source drivers initialize lateral_fraction to zero.
-			if (Mathf.Abs(SourceRandomInteger(100)) > 10)
+			if (!sourceAiStuntAirborne)
 			{
-				sourceAiStuntInputKind = 5;
-				sourceAiStuntMeter = 120;
-				return;
+				sourceAiStuntAirborne = true;
+				ClearAIStuntDirection();
+				sourceAiStuntDeadline = Time.fixedTime + 0.5f;
 			}
-			if (currentSourceSpeed < SourceAiStuntMinimumSpeed)
-				return;
-			int level = 0;
-			if (knot.grade >= 1 && currentSourceSpeed >= SourceAiStuntLevelOneSpeed)
-				level = 1;
-			if (knot.grade >= 2 && currentSourceSpeed >= SourceAiStuntLevelTwoSpeed)
-				level = 2;
-			int choice = Mathf.Abs(SourceRandomInteger(8)) + level * 8;
-			sourceAiStuntInputKind = SourceAiStuntInputKinds[choice];
-			sourceAiStuntGrade = knot.grade;
-			sourceAiStuntMeter = (level * 3 + 3) * 40;
-			sourceAiLaunchTick = unchecked((uint)tick);
-			sourceAiLaunchPending = true;
-			sourceAiStuntKnotCursor++;
+			sourceAiStuntInputThisTick = true;
+		}
+		void ClearAIStuntDirection()
+		{
+			vehicle.SetAccel(0);
+			vehicle.SetBrake(0);
+			vehicle.SetSteer(0);
+			vehicle.SetRoll(0);
+		}
+		void FinishAIStunt()
+		{
+			if (sourceAiStuntAirborne)
+				ClearAIStuntDirection();
+			vehicle.SetSGPShift(0);
+			sourceAiStuntMeter = 0;
+			sourceAiLaunchPending = sourceAiStuntInputThisTick = false;
+			sourceAiStuntAirborne = false;
 		}
 		static int SourceStuntSector(float transverse, float facing)
 		{
@@ -1935,6 +1849,8 @@ namespace RVP
 			System.Array.Clear(sourceProbeWheelTouched, 0, sourceProbeWheelTouched.Length);
 			System.Array.Clear(sourceSuspension, 0, sourceSuspension.Length);
 			System.Array.Clear(contactCountdown, 0, contactCountdown.Length);
+			sourceRailbar = null;
+			sourceRailbarSeenTime = sourceRailbarSupportedTime = float.NegativeInfinity;
 			System.Array.Clear(sourceWheelSlip, 0, sourceWheelSlip.Length);
 			System.Array.Clear(sourceWheelSideSlip, 0, sourceWheelSideSlip.Length);
 			System.Array.Clear(sourceWheelGripUsage, 0, sourceWheelGripUsage.Length);
@@ -1973,10 +1889,13 @@ namespace RVP
 			sourceContactCounter = 0;
 			currentSourceSpeed = 0;
 			sourceAngularVelocity = Vector3.zero;
-			sourceAiStuntMeter = sourceAiStuntInputKind = sourceAiStuntGrade = sourceAiStuntKnotCursor = 0;
+			if (AIStuntInProgress)
+				FinishAIStunt();
+			sourceAiStuntMeter = sourceAiStuntInputKind = 0;
+			sourceAiStuntAirborne = false;
+			sourceAiStuntDeadline = 0;
 			sourceAiTurboTicks = sourceAiTurboCooldown = sourceAiTurboRestTicks = 0;
 			sourceAiTurboActive = false;
-			sourceAiPairEffectTicks = 0;
 			sourceAiLaunchTick = 0;
 			sourceAiLaunchPending = sourceAiStuntInputThisTick = false;
 			ResetSourceStuntPhaseHistory();
@@ -2111,7 +2030,6 @@ namespace RVP
 				Vector3 separation = vehicle.rb.position - otherVehicle.rb.position;
 				float distance = separation.magnitude / SourceLengthToMetres;
 				lastVehiclePairImpulseTick = tick;
-				sourceAiPairEffectTicks = 60;
 				// contact_effects.cpp applies this center-to-center overlap impulse
 				// to the first selected partner using previous-position proximity.
 				// A pair can be visited again when the other car reaches its own source
@@ -2218,6 +2136,10 @@ namespace RVP
 		}
 		public void CancelStunt()
 		{
+			if (AIStuntInProgress)
+				FinishAIStunt();
+			sourceAiStuntMeter = 0;
+			sourceAiLaunchPending = sourceAiStuntInputThisTick = false;
 			stuntActive = false;
 			stuntPressed = false;
 			stuntPressedAt = -1;
@@ -2419,6 +2341,7 @@ namespace RVP
 			Quaternion incrementalBeforeAirMotion = sourceIncrementalRotation;
 			using (SourceAirMotionMarker.Auto())
 				UpdateAirMotion(tickScale);
+			ApplyRailbarSupport();
 			Vector3 airIncrementVector = RotationVector(
 				sourceIncrementalRotation * Quaternion.Inverse(incrementalBeforeAirMotion));
 			LogFormulaStability(appliedContactRotationVector, pendingContactRotationVector,
@@ -2506,7 +2429,7 @@ namespace RVP
 			}
 			sourceProbeIterationOverflow = false;
 			sourceContactVelocityRespawnRequested = false;
-			if (sourceContactResetPending)
+			if (sourceContactResetPending && SourceRequestedResetsEnabled)
 			{
 				if (!sourceContactResetDiagnosticLogged)
 				{
@@ -2559,15 +2482,15 @@ namespace RVP
 			double speedMetres = (double)currentSourceSpeed * SourceSpeedToMetresPerSecond;
 			double downforce = speedMetres * speedMetres * sourceAirFactor * parameters.frontalArea *
 				parameters.liftCoefficient * 0.615;
-			Debug.Log($"[OriginalVehiclePhysics] Formula17 stability {sourceStabilityDiagnosticSamples}/12: " +
-				$"source={parameters.sourceConfig}, support={support}/4, class={sourceContactClass}, " +
-				$"speed={currentSourceSpeed:F2}, rootY={vehicle.rb.position.y:F4}, " +
-				$"velocity={vehicle.rb.linearVelocity.ToString("F3")}, bodyHeave={sourceBodyHeave:F2}, " +
-				$"downforce={downforce:F2}, mass={sourceEffectiveMass:F2}, " +
-				$"appliedRad={appliedContact.ToString("F4")}, contactRad={newContact.ToString("F4")}, " +
-				$"tyreRad={tyreRotation.ToString("F4")}, airRad={airRotation.ToString("F4")}, " +
-				$"bodyHits={(sourceProbeCount > 4 ? sourceProbeHitsThisTick[4] : 0)}, " +
-				$"bodyImpact={(sourceProbeCount > 4 ? sourceProbeFirstContactSpeed[4] : 0):F3};{wheels}", vehicle);
+			//Debug.Log($"[OriginalVehiclePhysics] Formula17 stability {sourceStabilityDiagnosticSamples}/12: " +
+			//	$"source={parameters.sourceConfig}, support={support}/4, class={sourceContactClass}, " +
+			//	$"speed={currentSourceSpeed:F2}, rootY={vehicle.rb.position.y:F4}, " +
+			//	$"velocity={vehicle.rb.linearVelocity.ToString("F3")}, bodyHeave={sourceBodyHeave:F2}, " +
+			//	$"downforce={downforce:F2}, mass={sourceEffectiveMass:F2}, " +
+			//	$"appliedRad={appliedContact.ToString("F4")}, contactRad={newContact.ToString("F4")}, " +
+			//	$"tyreRad={tyreRotation.ToString("F4")}, airRad={airRotation.ToString("F4")}, " +
+			//	$"bodyHits={(sourceProbeCount > 4 ? sourceProbeHitsThisTick[4] : 0)}, " +
+			//	$"bodyImpact={(sourceProbeCount > 4 ? sourceProbeFirstContactSpeed[4] : 0):F3};{wheels}", vehicle);
 		}
 		void ApplySourceGravity()
 		{
@@ -3313,24 +3236,9 @@ namespace RVP
 		}
 		bool SourceAiTurboForStunt()
 		{
-			if (!(parameters.fuelCapacity * 0.5f < energy) || !(SourceRawAccelInput > 0.5f) ||
-				!(parameters.rpmMax * 0.75f > rpm) || !vehicle.followAI || vehicle.followAI.Pitting ||
-				!RaceManager.I || RaceManager.I.racingPaths == null || RaceManager.I.racingPaths.Length <= 1 ||
-				!RaceManager.I.racingPaths[1])
-				return false;
-			var route = RaceManager.I.racingPaths[1].path;
-			if (route == null || route.length <= 0.001f)
-				return false;
-			SourceAiStuntKnot[] knots = SourceAiStuntKnotsFor(route.length);
-			if (sourceAiStuntKnotCursor >= knots.Length)
-				return false;
-			SourceAiStuntKnot knot = knots[sourceAiStuntKnotCursor];
-			if (knot.progress == 0)
-				return false;
-			float routeDistance = Mathf.Repeat(vehicle.followAI.univProgress, route.length);
-			float progress = Mathf.Repeat(routeDistance / route.length * 100, 100);
-			float distanceToStunt = (knot.progress - progress) * route.length * 0.01f;
-			return distanceToStunt < 100;
+			return parameters.fuelCapacity * 0.5f < energy && SourceRawAccelInput > 0.5f &&
+				parameters.rpmMax * 0.75f > rpm && vehicle.followAI &&
+				!vehicle.followAI.Pitting && vehicle.followAI.NextStuntPointIn(100);
 		}
 		void UpdateSourceAITurbo()
 		{
@@ -4352,6 +4260,50 @@ namespace RVP
 			sourceIncrementalRotation = (Quaternion.AngleAxis(-angle * Mathf.Rad2Deg, axis) *
 				sourceIncrementalRotation).normalized;
 		}
+		public void RegisterRailbarSupport(RailbarLogic railbar)
+		{
+			// Trigger callbacks run after physics; consume support in the next
+			// source tick, where its orientation and velocity are actually resolved.
+			sourceRailbar = railbar;
+			sourceRailbarSeenTime = Time.fixedTime;
+		}
+		void ApplyRailbarSupport()
+		{
+			if (!sourceRailbar || sourceRailControlsActive ||
+				Time.fixedTime - sourceRailbarSeenTime > Time.fixedDeltaTime * 1.5f ||
+				!sourceRailbar.TryGetSupport(vehicle, out Vector3 axis, out Vector3 normal))
+			{
+				sourceRailbarSupportedTime = float.NegativeInfinity;
+				return;
+			}
+			sourceRailbarSupportedTime = Time.fixedTime;
+			float lateralBlend = 1 - Mathf.Exp(-sourceRailbar.lateralDamping * Time.fixedDeltaTime);
+			float rotationBlend = 1 - Mathf.Exp(-sourceRailbar.rotationDamping * Time.fixedDeltaTime);
+			Vector3 velocity = vehicle.rb.linearVelocity;
+			Vector3 along = axis * Vector3.Dot(velocity, axis);
+			Vector3 away = normal * Mathf.Max(0, Vector3.Dot(velocity, normal));
+			Vector3 sideways = Vector3.ProjectOnPlane(velocity - along, normal);
+			vehicle.rb.linearVelocity = along + away + sideways * (1 - lateralBlend);
+			// Preserve yaw relative to the rail: sideways grinds must stay sideways.
+			Vector3 forward = Vector3.ProjectOnPlane(stepRotation * Vector3.forward, normal);
+			if (forward.sqrMagnitude > 0.000001f)
+			{
+				stepRotation = Quaternion.Slerp(stepRotation,
+					Quaternion.LookRotation(forward.normalized, normal), rotationBlend);
+				stepRotationChanged = true;
+			}
+			sourceIncrementalRotation = Quaternion.Slerp(sourceIncrementalRotation,
+				Quaternion.identity, rotationBlend);
+			sourceForwardBasis = stepRotation * Vector3.forward;
+			sourceRightBasis = stepRotation * Vector3.right;
+			sourceUpBasis = stepRotation * Vector3.up;
+			// A supported grind is not free-flight stunt rotation. Landing on the
+			// rail clears residual flip/roll speed; leaving it restores air control.
+			stuntActive = false;
+			pitchAcceleration = yawAcceleration = pitchSpeed = yawSpeed = 0;
+			ResetSourceStuntRoll();
+			airTicks = 0;
+		}
 		void ApplyAerodynamics(float tickScale, int sourceContactClass)
 		{
 			Vector3 velocity = vehicle.rb.linearVelocity;
@@ -4420,13 +4372,14 @@ namespace RVP
 				? 0 : SourceAiAirThrottleInput;
 			float stuntSteeringInput = SourcePlayerControlsSuppressed
 				? 0 : SourceSteerInput;
-			float stuntRollInput = SourcePlayerControlsSuppressed ? 0 : vehicle.rollInput;
+			float stuntRollInput = SourcePlayerControlsSuppressed ? 0 : SourceAiAirRollInput;
 			float mass = Mathf.Max(1, parameters.mass);
 			float pitchLimit = Mathf.Min(12, parameters.maxPitchSpeed / mass);
 			float yawLimit = Mathf.Min(12, parameters.maxYawSpeed / mass);
 			float rollLimit = pitchLimit;
 			bool pitchCommand = stuntBrakeInput > 0.5f || stuntThrottleInput > 0.5f;
-			bool rollCommand = vehicle.SGPshiftbutton > 0 && Mathf.Abs(stuntRollInput) > 0.2f;
+			bool rollCommand = (vehicle.SGPshiftbutton > 0 || sourceAiStuntInputThisTick) &&
+				Mathf.Abs(stuntRollInput) > 0.2f;
 			if (!rollCommand && !stuntRollActive)
 				stuntRollInputArmed = true;
 			if (!pitchCommand && rollCommand && stuntRollInputArmed && !stuntRollActive)

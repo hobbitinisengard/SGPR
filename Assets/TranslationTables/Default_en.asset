@@ -637,8 +637,7 @@ MonoBehaviour:
     m_Localized: STUNT GP REMASTERED\n\nProgramming  - @viatrufka\nmusic here & tracks
       - DJ Mistone (@luckygoose)\ntracks - @Arkhnen\n\nSPECIAL THANKS\n\n martin
       (forum.xen-tax.com) - for format .PMD v.1.82 and tools \n\n@Halamix2, @TushkaN
-      - for format .PMD v.1.62\n\nJustin Couch for Randomation Vehicle Physics -
-      free vehicle physics library
+      - for format .PMD v.1.62\n\n@Dreiji - for original vehicle physics
     m_Metadata:
       m_Items: []
   - m_Id: 71441426677760
@@ -1545,6 +1544,14 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 121623786990133248
     m_Localized: Rounds
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187699192444542976
+    m_Localized: TUNING
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420544
+    m_Localized: 'Component:'
     m_Metadata:
       m_Items: []
   references:
