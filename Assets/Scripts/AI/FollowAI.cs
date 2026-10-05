@@ -377,13 +377,13 @@ namespace RVP
 					outOfTrackTime += Time.fixedDeltaTime;
 					lastOutOfTrackTime = Time.time;
 				}
-				else if (originalTrackSurfaceContact)
-				{
-					// A source wheel probe or the track-layer query found an authored
-					// surface, so discard accumulated false off-track time.
-					outOfTrackTime = 0;
-					lastOutOfTrackTime = Time.time;
-				}
+				//else if (originalTrackSurfaceContact)
+				//{
+				//	// A source wheel probe or the track-layer query found an authored
+				//	// surface, so discard accumulated false off-track time.
+				//	outOfTrackTime = 0;
+				//	lastOutOfTrackTime = Time.time;
+				//}
 
 				if (Time.time - lastOutOfTrackTime > 1)
 				{

@@ -245,6 +245,7 @@ namespace RVP
 		float sourceCom262c;
 		Vector3 sourceContactAngularStep;
 		Quaternion sourceIncrementalRotation = Quaternion.identity;
+		Matrix4x4 sourceContactAngularResponse = Matrix4x4.identity;
 		Quaternion stepStartRotation;
 		Quaternion stepRotation;
 		Quaternion lastSourceControlledRotation;
@@ -261,6 +262,8 @@ namespace RVP
 		bool hasGroundSurfaceContactThisTick;
 		Vector3 groundSurfaceContactNormalSumThisTick;
 		bool sourceRotationDiagnosticLogged;
+		int sourceStabilityDiagnosticSamples;
+		float nextSourceStabilityDiagnosticTime;
 		bool sourceSuspensionDiagnosticLogged;
 		bool sourceSuspensionObservationLogged;
 		int sourceSuspensionStableContactTicks;
@@ -284,6 +287,7 @@ namespace RVP
 		Quaternion pendingContactRotation = Quaternion.identity;
 		bool hasPendingContactRotation;
 		int lastVehiclePairImpulseTick = -1;
+		float nextVehicleCollisionHopTime;
 		int lastSourceCollisionHoldTick = -1;
 		float sourceCollisionHoldTicks;
 		float sourceImpactEnergyLossThisTick;
@@ -739,6 +743,8 @@ namespace RVP
 			System.Array.Clear(sourceProbeContactIterations, 0, sourceProbeContactIterations.Length);
 			System.Array.Clear(sourceProbeHitsThisTick, 0, sourceProbeHitsThisTick.Length);
 			sourceRotationDiagnosticLogged = false;
+			sourceStabilityDiagnosticSamples = 0;
+			nextSourceStabilityDiagnosticTime = Time.fixedTime + 0.5f;
 			for (int i = 0; i < sourceProbeCount; i++)
 			{
 				previousSourceProbeWorld[i] = SourceProbeWorldPosition(i);
@@ -1961,6 +1967,7 @@ namespace RVP
 			pendingContactRotation = Quaternion.identity;
 			hasPendingContactRotation = false;
 			lastVehiclePairImpulseTick = -1;
+			nextVehicleCollisionHopTime = 0;
 			lastSourceCollisionHoldTick = -1;
 			sourceCollisionHoldTicks = 0;
 			sourceContactCounter = 0;
@@ -2000,6 +2007,13 @@ namespace RVP
 			for (int i = 0; i < collision.contactCount; i++)
 			{
 				ContactPoint contact = collision.GetContact(i);
+				VehicleParent otherCar = contact.otherCollider
+					? contact.otherCollider.GetComponentInParent<VehicleParent>() : null;
+				// Changing collider layers does not gate the manual source solver;
+				// honor ghost protection also for queued/kinematic body callbacks.
+				if (otherCar && ((vehicle.ghost && !vehicle.ghost.hittable) ||
+					(otherCar.ghost && !otherCar.ghost.hittable)))
+					continue;
 				// Track probes already resolve these static colliders in FilterWheelContacts.
 				// Applying the callback response too adds a second impact impulse and angular
 				// rotation on each landing. Keep this path for static obstacles outside that
@@ -2057,7 +2071,7 @@ namespace RVP
 		void ResolveSourceVehiclePair()
 		{
 			if (!F.I || F.I.s_raceType == RaceType.TimeTrial || !vehicle.gameObject.activeInHierarchy ||
-				!vehicle.raceBox || !vehicle.raceBox.enabled)
+				!vehicle.raceBox || !vehicle.raceBox.enabled || (vehicle.ghost && !vehicle.ghost.hittable))
 				return;
 			int tick = Mathf.RoundToInt(Time.fixedTime / Mathf.Max(0.0001f, Time.fixedDeltaTime));
 			float tickScale = Time.fixedDeltaTime * SourceTicksPerSecond;
@@ -2079,7 +2093,8 @@ namespace RVP
 				VehicleParent otherVehicle = F.I.s_cars[i];
 				if (!otherVehicle || otherVehicle == vehicle || otherVehicle.originalVehiclePhysics == null || !otherVehicle.rb ||
 					!otherVehicle.gameObject.activeInHierarchy || otherVehicle.rb.isKinematic ||
-					!otherVehicle.raceBox || !otherVehicle.raceBox.enabled)
+					!otherVehicle.raceBox || !otherVehicle.raceBox.enabled ||
+					(otherVehicle.ghost && !otherVehicle.ghost.hittable))
 					continue;
 				if (!SourceVehiclePairPositions.TryGetValue(vehicle, out Vector3 thisPreviousPosition) ||
 					!SourceVehiclePairPositions.TryGetValue(otherVehicle, out Vector3 otherPreviousPosition))
@@ -2119,12 +2134,54 @@ namespace RVP
 				secondVelocityChange.y *= 0.5f;
 				vehicle.rb.linearVelocity += firstVelocityChange * SourceSpeedToMetresPerSecond;
 				otherVehicle.rb.linearVelocity += secondVelocityChange * SourceSpeedToMetresPerSecond;
+				ApplyVehicleCollisionHop(otherVehicle.originalVehiclePhysics, normalSpeed);
 				ApplySourceImpactEnergy(normalSpeed);
 				effectiveComHeight = parameters.comHeight;
 				sourceCom2628 = sourceCom262c = 0;
 				comResetTicks = -12;
 				return;
 			}
+		}
+		void ApplyVehicleCollisionHop(OriginalVehiclePhysics other, float sourceClosingSpeed)
+		{
+			// The recovered pair impulse has no upward component for equal-height
+			// centers. Add a small hop to reproduce the visible collision response
+			// on Unity tracks, separately from the retail horizontal impulse.
+			float closingSpeed = sourceClosingSpeed * SourceSpeedToMetresPerSecond;
+			if (CountDownSeq.Countdown > 0 || closingSpeed < 0.5f ||
+				Time.fixedTime < nextVehicleCollisionHopTime ||
+				Time.fixedTime < other.nextVehicleCollisionHopTime)
+				return;
+			bool supported = false;
+			for (int i = 0; i < 4; i++)
+				if (contactCountdown[i] >= 4 || other.contactCountdown[i] >= 4)
+				{
+					supported = true;
+					break;
+				}
+			if (!supported)
+				return;
+			// Both source slots can process the pair; debounce the hop for both
+			// cars, so one impact cannot launch them twice or chatter while rubbing.
+			nextVehicleCollisionHopTime = other.nextVehicleCollisionHopTime =
+				Time.fixedTime + 8f / SourceTicksPerSecond;
+			float height = Mathf.Lerp(0.03f, 0.07f, Mathf.Clamp01(closingSpeed / 12));
+			ApplyCollisionHopVelocity(height);
+			other.ApplyCollisionHopVelocity(height);
+		}
+		void ApplyCollisionHopVelocity(float height)
+		{
+			Vector3 up = SourceWorldUp;
+			float speedMetres = currentSourceSpeed * SourceSpeedToMetresPerSecond;
+			float downforce = Mathf.Max(0, speedMetres * speedMetres * sourceAirFactor *
+				parameters.frontalArea * parameters.liftCoefficient * 0.615f);
+			float acceleration = Physics.gravity.magnitude + downforce /
+				(Mathf.Max(1, sourceEffectiveMass) * 4) * SourceSpeedToMetresPerSecond * SourceTicksPerSecond;
+			// Compensate for active downforce so a fast, light car still hops a few
+			// centimetres. Limit the speed to keep the response small at any speed.
+			float upwardSpeed = Mathf.Min(3.5f, Mathf.Sqrt(2 * acceleration * height));
+			float existingUpwardSpeed = Vector3.Dot(vehicle.rb.linearVelocity, up);
+			vehicle.rb.linearVelocity += up * Mathf.Max(0, upwardSpeed - existingUpwardSpeed);
 		}
 		void ApplySourceImpactEnergy(float strength)
 		{
@@ -2282,7 +2339,15 @@ namespace RVP
 				hasPendingContactRotation = false;
 			}
 			else if (hasPendingContactRotation)
+			{
+				LimitSourceContactOvercorrection();
 				sourceIncrementalRotation = (pendingContactRotation * sourceIncrementalRotation).normalized;
+			}
+			// Diagnostics should report the correction actually applied by the solve.
+			pendingContactRotationVector = hasPendingContactRotation
+				? RotationVector(pendingContactRotation) : Vector3.zero;
+			pendingContactRotationDegrees = hasPendingContactRotation
+				? Quaternion.Angle(Quaternion.identity, pendingContactRotation) : 0;
 			pendingContactRotation = Quaternion.identity;
 			hasPendingContactRotation = false;
 			if (!sourceProbeIterationOverflow)
@@ -2356,6 +2421,8 @@ namespace RVP
 				UpdateAirMotion(tickScale);
 			Vector3 airIncrementVector = RotationVector(
 				sourceIncrementalRotation * Quaternion.Inverse(incrementalBeforeAirMotion));
+			LogFormulaStability(appliedContactRotationVector, pendingContactRotationVector,
+				tyreDynamicsIncrementVector, airIncrementVector);
 			float dynamicsRotationDegrees = Quaternion.Angle(stepStartRotation, stepRotation);
 			Vector3 dynamicsRotationVector = RotationVector(stepRotation * Quaternion.Inverse(stepStartRotation));
 			bool hasSourceProbeContactThisTick = false;
@@ -2443,17 +2510,17 @@ namespace RVP
 			{
 				if (!sourceContactResetDiagnosticLogged)
 				{
-					//Debug.LogWarning($"[OriginalVehiclePhysics] Reset requested by source contact safety: " +
-						//$"reason={sourceContactResetReason ?? "unspecified"}, " +
-						//$"probe iteration overflow={contactIterationReset}, velocity-delta threshold={contactVelocityReset}, " +
-						//$"unsafe contact ticks={sourceUnsafeContactTicks}, opposing-direction ticks={sourceOpposingDirectionTicks}, " +
-						//$"surface contact={hasGroundSurfaceContactThisTick}, contacts={sourceContactCounter}, " +
-						//$"velocity={vehicle.rb.linearVelocity}, track={F.I?.s_trackName ?? "<unknown>"}, " +
-						//$"lastUnsafeProbe={sourceLastUnsafeProbe}, flags=0x{sourceLastUnsafeFlags:X2}, " +
-						//$"cause={sourceLastUnsafeCause ?? "<unknown>"}, contactSource=Unity map, " +
-						//$"alignment={sourceLastUnsafeAlignment:F3}, speed={currentSourceSpeed:F2}, " +
-						//$"normal={sourceLastUnsafeNormal.ToString("F2")}, point={sourceLastUnsafePoint.ToString("F2")}, " +
-						//$"collider={sourceLastUnsafeCollider ?? "<none>"}, layer={sourceLastUnsafeLayer}", vehicle);
+					Debug.LogWarning($"[OriginalVehiclePhysics] Reset requested by source contact safety: " +
+						$"reason={sourceContactResetReason ?? "unspecified"}, " +
+						$"probe iteration overflow={contactIterationReset}, velocity-delta threshold={contactVelocityReset}, " +
+						$"unsafe contact ticks={sourceUnsafeContactTicks}, opposing-direction ticks={sourceOpposingDirectionTicks}, " +
+						$"surface contact={hasGroundSurfaceContactThisTick}, contacts={sourceContactCounter}, " +
+						$"velocity={vehicle.rb.linearVelocity}, track={F.I?.s_trackName ?? "<unknown>"}, " +
+						$"lastUnsafeProbe={sourceLastUnsafeProbe}, flags=0x{sourceLastUnsafeFlags:X2}, " +
+						$"cause={sourceLastUnsafeCause ?? "<unknown>"}, contactSource=Unity map, " +
+						$"alignment={sourceLastUnsafeAlignment:F3}, speed={currentSourceSpeed:F2}, " +
+						$"normal={sourceLastUnsafeNormal.ToString("F2")}, point={sourceLastUnsafePoint.ToString("F2")}, " +
+						$"collider={sourceLastUnsafeCollider ?? "<none>"}, layer={sourceLastUnsafeLayer}", vehicle);
 					sourceContactResetDiagnosticLogged = true;
 				}
 				vehicle.ResetOnTrack();
@@ -2464,6 +2531,43 @@ namespace RVP
 					sourceContactResetReason = null;
 				}
 			}
+		}
+		void LogFormulaStability(Vector3 appliedContact, Vector3 newContact, Vector3 tyreRotation,
+			Vector3 airRotation)
+		{
+			// Bounded diagnostic for the remaining Formula 17 oscillation: build
+			// strings only when emitting, at most twelve entries per spawn/reset.
+			if (vehicle.carNumber != 18 || sourceStabilityDiagnosticSamples >= 12 ||
+				Time.fixedTime < nextSourceStabilityDiagnosticTime || sourceContactCounter <= 0)
+				return;
+			nextSourceStabilityDiagnosticTime = Time.fixedTime + 1;
+			sourceStabilityDiagnosticSamples++;
+			int support = 0;
+			string wheels = string.Empty;
+			for (int i = 0; i < 4; i++)
+			{
+				if (sourceProbeWheelTouched[i])
+					support++;
+				Vector3 probe = SourceProbeWorldPosition(i, stepStartRotation);
+				float gap = hasSourceWheelContactNormal[i]
+					? Vector3.Dot(probe - sourceWheelContactPoint[i], sourceWheelContactNormal[i]) -
+						sourceProbeRadius[i] * SourceLengthToMetres : float.NaN;
+				wheels += $" w{i}: hit={sourceProbeHitsThisTick[i]}, streak={sourceProbeContactIterations[i]}, " +
+					$"gap={gap:F4}m, impact={sourceProbeFirstContactSpeed[i]:F3}, " +
+					$"load={sourceProbeWheelLoad[i]:F2}/{filteredContactLoad[i]:F2}, bump={sourceSuspension[i]:F2};";
+			}
+			double speedMetres = (double)currentSourceSpeed * SourceSpeedToMetresPerSecond;
+			double downforce = speedMetres * speedMetres * sourceAirFactor * parameters.frontalArea *
+				parameters.liftCoefficient * 0.615;
+			Debug.Log($"[OriginalVehiclePhysics] Formula17 stability {sourceStabilityDiagnosticSamples}/12: " +
+				$"source={parameters.sourceConfig}, support={support}/4, class={sourceContactClass}, " +
+				$"speed={currentSourceSpeed:F2}, rootY={vehicle.rb.position.y:F4}, " +
+				$"velocity={vehicle.rb.linearVelocity.ToString("F3")}, bodyHeave={sourceBodyHeave:F2}, " +
+				$"downforce={downforce:F2}, mass={sourceEffectiveMass:F2}, " +
+				$"appliedRad={appliedContact.ToString("F4")}, contactRad={newContact.ToString("F4")}, " +
+				$"tyreRad={tyreRotation.ToString("F4")}, airRad={airRotation.ToString("F4")}, " +
+				$"bodyHits={(sourceProbeCount > 4 ? sourceProbeHitsThisTick[4] : 0)}, " +
+				$"bodyImpact={(sourceProbeCount > 4 ? sourceProbeFirstContactSpeed[4] : 0):F3};{wheels}", vehicle);
 		}
 		void ApplySourceGravity()
 		{
@@ -2564,7 +2668,7 @@ namespace RVP
 			ApplyAngularImpactResponse(contactPoint, normal, normalSpeed, sourceGravity, stepStartRotation);
 		}
 		void ApplyAngularImpactResponse(Vector3 contactPoint, Vector3 normal, float normalSpeed,
-			float sourceGravity, Quaternion contactOrientation)
+			float sourceGravity, Quaternion contactOrientation, bool accumulateResponse = false)
 		{
 			// track_contact.cpp angular_response turns the tangential component of
 			// a probe's normal impact velocity into an inertia-weighted body rotation.
@@ -2594,6 +2698,19 @@ namespace RVP
 			// X axis is normal x inertiaRadial. Convert its angle before using Unity's
 			// right-handed axis-angle rotation.
 			Quaternion delta = Quaternion.AngleAxis(-angle * Mathf.Rad2Deg, axis);
+			if (accumulateResponse && normalSpeed < -0.000001f)
+			{
+				// Jacobian of the angular contact impulse with respect to the saved
+				// angular step. Point normal motion is dot(step, radial x normal).
+				Vector3 velocityGradient = Vector3.Cross(
+					(contactPoint - vehicle.rb.position) / SourceLengthToMetres, normal);
+				float response = (1 + restitution) * tangentialVelocity.magnitude /
+					(-normalSpeed * probeMass);
+				for (int row = 0; row < 3; row++)
+					for (int column = 0; column < 3; column++)
+						sourceContactAngularResponse[row, column] +=
+							response * axis[row] * velocityGradient[column];
+			}
 			pendingContactRotation = hasPendingContactRotation
 				? delta * pendingContactRotation
 				: delta;
@@ -3426,6 +3543,7 @@ namespace RVP
 		{
 			float sourceGravity = SourceGravityMagnitude;
 			float probeMass = sourceEffectiveMass * 0.25f;
+			sourceContactAngularResponse = Matrix4x4.identity;
 			sourceContactVelocityBeforeThisTick = contactStartVelocity;
 			sourceContactVelocityDeltaThisTick = Vector3.zero;
 			sourceContactVelocityAfterThisTick = contactStartVelocity;
@@ -3463,9 +3581,40 @@ namespace RVP
 				{
 					Vector3 segmentMotion = sourceMotion * remaining;
 					float segmentLength = segmentMotion.magnitude;
-					if (!TryFindSourceProbeContact(segmentStart, segmentMotion, probeRadius,
+					bool foundContact = TryFindSourceProbeContact(segmentStart, segmentMotion, probeRadius,
 						out Collider collider, out Vector3 point, out Vector3 normal,
-						out Vector3 probeCenter, out float travelDistance, out int triangleIndex))
+						out Vector3 probeCenter, out float travelDistance, out int triangleIndex);
+					// A just-supported wheel can miss the exact sphere boundary by a
+					// fraction of a millimetre. Losing its load and resetting its impact
+					// streak then prevents settling, particularly on light cars. Recheck
+					// only nearby contacts against the actual Unity geometry. A tiny
+					// outgoing motion must also keep support, or an alternating roll
+					// clears the streak on each side before stabilization can run.
+					const float restingContactSkin = 0.0025f;
+					if (!foundContact && attempt == 0 && i < 4 && contactCountdown[i] > 0 &&
+						hasSourceWheelContactNormal[i] && sourceWheelContactCollider[i])
+					{
+						Vector3 previousNormal = sourceWheelContactNormal[i];
+						float gap = Vector3.Dot(current - sourceWheelContactPoint[i], previousNormal) - probeRadius;
+						if (gap >= 0 && gap <= restingContactSkin &&
+							Vector3.Dot(segmentMotion, previousNormal) <= restingContactSkin &&
+							TryFindSourceProbeOverlap(current, -previousNormal, probeRadius + restingContactSkin,
+								RaceManager.I.wheelCastMask, out collider, out point, out normal,
+								out probeCenter, out triangleIndex) &&
+							Vector3.Dot(normal, previousNormal) > 0.99f)
+						{
+							// Revalidate the gap on the newly queried surface, including seams.
+							float actualGap = Vector3.Dot(current - point, normal) - probeRadius;
+							if (Mathf.Abs(actualGap) <= restingContactSkin)
+							{
+								// Query tolerance does not change the physical sphere radius.
+								probeCenter -= normal * restingContactSkin;
+								travelDistance = segmentLength;
+								foundContact = true;
+							}
+						}
+					}
+					if (!foundContact)
 					{
 						if (attempt == 0)
 							sourceProbeContactIterations[i] = 0;
@@ -3483,11 +3632,13 @@ namespace RVP
 					sourceProbeContactIterations[i] = Mathf.Min(128,
 						sourceProbeContactIterations[i] + 1);
 					sourceContactCounter = Mathf.Min(8, sourceContactCounter + 1);
-					// Derive impact speed from the rigidbody point velocity and the
-					// source's finite incremental rotation. Probe sweep displacement can
-					// include last tick's positional correction and report a false spike
-					// (the body probe was reporting -34 while the tires reported about -7).
-					float normalSpeed = SourceWheelNormalSpeed(current, normal, Vector3.zero);
+					// Retail accumulate_impact uses the current sweep motion; the wheel
+					// load separately uses update_probe_velocity. After a hit the sweep
+					// is reflected, so another triangle must not replay the incoming
+					// rigidbody impulse. Light cars amplify that feedback (Formula 17).
+					float wheelNormalSpeed = SourceWheelNormalSpeed(current, normal, Vector3.zero);
+					float normalSpeed = Mathf.Min(0, Vector3.Dot(sourceMotion, normal) /
+						(SourceLengthToMetres * Mathf.Max(0.000001f, tickScale)));
 					if (sourceProbeHitsThisTick[i] == 1)
 					{
 						sourceProbeFirstContactNormal[i] = normal;
@@ -3502,7 +3653,9 @@ namespace RVP
 						sourceProbeWheelTouched[i] = true;
 						// The wheel load comes from the rigid probe velocity, not its
 						// reflected sweep segment used by accumulate_impact.
-						sourceProbeWheelLoad[i] = -normalSpeed * probeMass;
+						// Resting tolerance can retain a slightly separating contact.
+						// A tire supports compression; it cannot pull the road upward.
+						sourceProbeWheelLoad[i] = Mathf.Max(0, -wheelNormalSpeed * probeMass);
 						contactCountdown[i] = 8;
 						sourceWheelContactNormal[i] = normal;
 						hasSourceWheelContactNormal[i] = true;
@@ -3548,7 +3701,7 @@ namespace RVP
 						accumulatedClosingContactSpeed += closingSpeed;
 						accumulatedRestitutionSpeed += closingSpeed * impactRestitution;
 					}
-					ApplyAngularImpactResponse(current, normal, normalSpeed, sourceGravity, stepStartRotation);
+					ApplyAngularImpactResponse(current, normal, normalSpeed, sourceGravity, stepStartRotation, true);
 					attempt++;
 					if (attempt > 64)
 					{
@@ -3564,6 +3717,12 @@ namespace RVP
 					segmentStart = probeCenter + normal * 0.001f;
 					sourceMotion = reflectedMotion;
 					finalProbePosition = segmentStart + sourceMotion * remaining;
+					// No sweep remains after a fully consumed or inelastic impact.
+					// Re-querying that stationary sphere can rediscover the same surface
+					// within the overlap tolerance until the 64-attempt reset limit.
+					if (remaining <= 0.000001f ||
+						(sourceMotion * remaining).sqrMagnitude <= 0.000000000001f)
+						break;
 				}
 				if (probeOverflow)
 				{
@@ -3624,11 +3783,9 @@ namespace RVP
 			{
 				Vector3 positionCorrection = averagePositionCorrection / sourceProbeCount;
 				vehicle.rb.position += positionCorrection;
-				// These points are stored in world space. Keep them attached to the
-				// corrected body pose so the next sweep does not treat this solver
-				// correction as extra probe velocity.
-				for (int i = 0; i < sourceProbeCount; i++)
-					previousSourceProbeWorld[i] += positionCorrection;
+				// Retail keeps each corrected query endpoint as probe history. Moving
+				// those endpoints with the averaged body correction puts them above
+				// the surface and adds a false closing motion to the next sweep.
 			}
 		}
 		void FilterSourceWheelLoad(int i, float tickScale)
@@ -3651,6 +3808,27 @@ namespace RVP
 				remainingTicks -= step;
 			}
 			UpdateWheelContact(wheel);
+		}
+		void LimitSourceContactOvercorrection()
+		{
+			Vector3 angularStep = RotationVector(sourceIncrementalRotation);
+			Vector3 correction = RotationVector(pendingContactRotation);
+			// Simultaneous contacts evaluate the incoming angular step separately.
+			// On light rigs their summed correction can reverse and amplify it:
+			// Formula 17's logs show ~0.10 rad in and ~0.20 rad against that step.
+			// Use the implicit contact response only for this excessive corrective
+			// feedback; ordinary impulses and first impacts retain the retail path.
+			if (sourceContactClass == 1 || angularStep.sqrMagnitude <= 0.000001f ||
+				Vector3.Dot(angularStep, correction) >= 0 ||
+				correction.sqrMagnitude <= angularStep.sqrMagnitude)
+				return;
+			Vector3 resolved = sourceContactAngularResponse.inverse.MultiplyVector(correction);
+			float angle = resolved.magnitude;
+			if (float.IsNaN(angle) || float.IsInfinity(angle) || angle >= correction.magnitude)
+				return;
+			pendingContactRotation = angle > 0.000001f
+				? Quaternion.AngleAxis(angle * Mathf.Rad2Deg, resolved / angle)
+				: Quaternion.identity;
 		}
 		void StabilizeSourceIncrementalRotation()
 		{

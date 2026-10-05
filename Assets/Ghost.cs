@@ -5,7 +5,8 @@ using UnityEngine;
 
 public class Ghost : NetworkBehaviour
 {
-	public bool hittable { get; private set; }
+	// Normal spawns are solid; reset/time-trial ghosting explicitly disables hits.
+	public bool hittable { get; private set; } = true;
 	public bool justResetted { get; private set; }
 	public Collider[] colliders;
 	public Renderer[] ghostableParts;
