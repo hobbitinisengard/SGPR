@@ -114,11 +114,25 @@ public class ViewSwitcher : MonoBehaviour
 	}
 	void CleanUp()
 	{
+		if (Championships.Active)
+		{
+			if (applyScoring) Championships.RecordRace();
+			else Championships.CancelRace();
+		}
 		RaceManager.I.editorPanel.gameObject.SetActive(true);
 		RaceManager.I.RemoveCars();
 		RaceManager.I.editorPanel.RemoveTrackLeftovers();
 		Time.timeScale = 1;
 
+		if (Championships.Active)
+		{
+			MainMenuView destination = applyScoring ? resultsView.GetComponent<ResultsView>() : ChampionshipUI.View("ChampionshipsView");
+			foreach (var view in Resources.FindObjectsOfTypeAll<MainMenuView>())
+				if (view != destination && view.transform.IsChildOf(menu.transform) && view.gameObject.activeSelf) view.gameObject.SetActive(false);
+			destination.gameObject.SetActive(true);
+			menuMusic.clip = destination.music; menuMusic.Play();
+			return;
+		}
 		if (applyScoring)
 		{
 			if (F.I.gameMode == GameMode.Arcade)

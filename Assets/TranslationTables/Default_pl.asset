@@ -117,7 +117,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 19966491099136
-    m_Localized: "SZYBKI WY\u015ACIG"
+    m_Localized: "WY\u015ACIG DOWOLNY"
     m_Metadata:
       m_Items: []
   - m_Id: 20069574508544
@@ -149,7 +149,8 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 22373761548288
-    m_Localized: "We\u017A udzia\u0142 w ca\u0142ym sezonie Stunt GP"
+    m_Localized: "We\u017A udzia\u0142 w ca\u0142ym sezonie Stunt GP i odblokuj cz\u0119\u015Bci
+      tuningowe"
     m_Metadata:
       m_Items: []
   - m_Id: 22584969920512
@@ -1554,7 +1555,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 187701912941420544
-    m_Localized: "Cz\u0119\u015B\u0107:"
+    m_Localized: 'Kredyty:'
     m_Metadata:
       m_Items: []
   - m_Id: 187701912941420545
@@ -2071,6 +2072,153 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 188072957011615744
     m_Localized: START
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615745
+    m_Localized: Pusty slot
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615746
+    m_Localized: Rozpocznij mistrzostwa
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615747
+    m_Localized: Wybierz mistrzostwa
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615748
+    m_Localized: "Wygraj wszystkie siedem mistrzostw krajowych, aby odblokowa\u0107
+      ten cykl."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615749
+    m_Localized: Fundusze
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615750
+    m_Localized: Cena
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615751
+    m_Localized: Miejsce
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615752
+    m_Localized: "Zwyci\u0119stwa"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615753
+    m_Localized: "Kup cz\u0119\u015B\u0107"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615754
+    m_Localized: "Kup samoch\xF3d"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615755
+    m_Localized: "Za\u0142o\u017Cone"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615756
+    m_Localized: "Titan wspiera Twoj\u0105 walk\u0119 o mistrzostwo Niemiec. Opanuj
+      szybkie proste i wymagaj\u0105ce p\u0119tle wszystkich niemieckich tor\xF3w.
+      Ka\u017Cdy wy\u015Bcig ma 10 okr\u0105\u017Ce\u0144."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615757
+    m_Localized: "Wystartuj dla TGR w hiszpa\u0144skim s\u0142o\u0144cu. Zwyci\u0119\u017C
+      na torach Hiszpanii i zdob\u0105d\u017A krajowy tytu\u0142 dla sponsora. Ka\u017Cdy
+      wy\u015Bcig ma 10 okr\u0105\u017Ce\u0144."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615758
+    m_Localized: "Itex szuka mistrza japo\u0144skich tor\xF3w. Zachowaj precyzj\u0119
+      na technicznych zakr\u0119tach i walcz o mistrzostwo Japonii. Ka\u017Cdy wy\u015Bcig
+      ma 10 okr\u0105\u017Ce\u0144."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615759
+    m_Localized: "Reprezentuj Mysuko w mistrzostwach Wielkiej Brytanii. Pokonaj wszystkie
+      brytyjskie tory i udowodnij swoj\u0105 regularno\u015B\u0107 przez ca\u0142y
+      sezon. Ka\u017Cdy wy\u015Bcig ma 10 okr\u0105\u017Ce\u0144."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615760
+    m_Localized: "TGR wysy\u0142a Ci\u0119 do Francji po krajowy tytu\u0142. Utrzymaj
+      tempo na francuskich torach i zdob\u0105d\u017A mistrzostwo. Ka\u017Cdy wy\u015Bcig
+      ma 10 okr\u0105\u017Ce\u0144."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615761
+    m_Localized: "Rline sponsoruje Twoj\u0105 ameryka\u0144sk\u0105 kampani\u0119.
+      Przejed\u017A wszystkie tory USA i zamie\u0144 szybko\u015B\u0107 na punkty
+      mistrzostw. Ka\u017Cdy wy\u015Bcig ma 10 okr\u0105\u017Ce\u0144."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615762
+    m_Localized: "Titan zaprasza Ci\u0119 do rywalizacji we W\u0142oszech. Opanuj
+      wszystkie w\u0142oskie tory i zdob\u0105d\u017A kolejny krajowy tytu\u0142.
+      Ka\u017Cdy wy\u015Bcig ma 10 okr\u0105\u017Ce\u0144."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615763
+    m_Localized: "Sponsor wspiera Twoj\u0105 walk\u0119 o mistrzostwo \u015Bwiata:
+      trzy losowe tory z ka\u017Cdego kraju oraz fina\u0142 w Meksyku. Ka\u017Cdy
+      wy\u015Bcig ma 10 okr\u0105\u017Ce\u0144."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615764
+    m_Localized: "Tunele roz\u0142adowuj\u0105 bateri\u0119, a zatrzymane auto z
+      pust\u0105 bateri\u0105 zostaje zdyskwalifikowane. Ka\u017Cdy wy\u015Bcig ma
+      10 okr\u0105\u017Ce\u0144."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188096609769807872
+    m_Localized: Wybierz sezon mistrzostw
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188100007000858624
+    m_Localized: "Podejrzyj nast\u0119pny wy\u015Bcig"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188100138337099776
+    m_Localized: "Wymieniaj cz\u0119\u015Bci swojego autka"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188100648683233280
+    m_Localized: Zakup nowe autko
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188100648683233281
+    m_Localized: Klasyfikacja (Runda {0} z {1})
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188100648683233282
+    m_Localized: Kredyty
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188100648683233283
+    m_Localized: Pojazd
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188115255720206336
+    m_Localized: 'Cena:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188115634570715136
+    m_Localized: 'Wymiana:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188115634570715137
+    m_Localized: "{0} ko\u0144czy mistrzostwa na {1}. miejscu."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188153160442372096
+    m_Localized: Wybierz cykl mistrzostw
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188158728963940352
+    m_Localized: "SZYBKI WY\u015ACIG"
     m_Metadata:
       m_Items: []
   references:

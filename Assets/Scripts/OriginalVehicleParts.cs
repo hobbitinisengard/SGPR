@@ -196,6 +196,7 @@ public class OriginalVehiclePartCatalog
 
 	readonly Dictionary<string, OriginalVehiclePartDefinition> partsById = new(StringComparer.OrdinalIgnoreCase);
 	readonly Dictionary<string, OriginalVehicleCarSetup> setupsBySourceId = new(StringComparer.OrdinalIgnoreCase);
+	readonly Dictionary<string, int> carPricesById = new(StringComparer.OrdinalIgnoreCase);
 	readonly Dictionary<string, float[]> carDynamicsById = new(StringComparer.OrdinalIgnoreCase);
 	readonly Dictionary<string, int> typeOrderBySetupName = new(StringComparer.OrdinalIgnoreCase);
 	readonly Dictionary<string, string[]> languageNamesByKey = new(StringComparer.OrdinalIgnoreCase);
@@ -244,6 +245,7 @@ public class OriginalVehiclePartCatalog
 			for (int column = 2; column < row.Length && column - 2 < values.Length; column++)
 				values[column - 2] = ParseFloat(row[column]);
 			carDynamicsById[row[0].Trim()] = values;
+			carPricesById[row[0].Trim()] = row.Length > 1 ? (int)ParseFloat(row[1]) : 0;
 		}
 	}
 
@@ -484,6 +486,12 @@ public class OriginalVehiclePartCatalog
 		foreach (OriginalVehiclePartDefinition part in parts)
 			if (part.IsUserPart && part.type == type) available.Add(part);
 		return available;
+	}
+
+	public int GetSourceCarPrice(int remakeCarIndex)
+	{
+		string id = "Car" + (remakeCarIndex + 1).ToString("00", CultureInfo.InvariantCulture);
+		return carPricesById.TryGetValue(id, out int price) ? price : -1;
 	}
 
 	public OriginalVehicleCarSetup GetDefaultSetup(int remakeCarIndex)

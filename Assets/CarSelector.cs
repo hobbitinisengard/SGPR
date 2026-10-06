@@ -25,6 +25,8 @@ public class CarSelector : Sfxable
 	public bool d_co;
 	public GarageType type = GarageType.Unlocked;
 	float playerMoney = 0;
+	bool forceChampionshipRefresh;
+	bool returningToChampionship;
 	public void SetType(GarageType type, float money = 1e6f)
 	{
 		playerMoney = money;
@@ -43,12 +45,23 @@ public class CarSelector : Sfxable
 	private void OnDisable()
 	{ // in unity, 
 		F.I.move2Ref.action.performed -= CalculateTargetToSelect;
-		persistentSelectedCar = selectedCar.name;
-		F.I.s_playerCarIdx = Car.Name2Index(selectedCar.name);
+		F.I.enterRef.action.performed -= ConfirmPurchase;
+		if (selectedCar) persistentSelectedCar = selectedCar.name;
+		if (Championships.Active) F.I.s_playerCarIdx = Championships.Current.carIndex;
+		else if (selectedCar) F.I.s_playerCarIdx = Car.Name2Index(selectedCar.name);
 	}
 	private void OnEnable()
 	{
+		returningToChampionship = false;
+		if (Championships.Active)
+		{
+			forceChampionshipRefresh = true;
+			playerMoney = Championships.Current.cash; type = GarageType.Earned;
+			persistentSelectedCar = "car" + Championships.Current.carIndex.ToString("D2");
+			selectedCar = null; ClearAllCars();
+		}
 		F.I.move2Ref.action.performed += CalculateTargetToSelect;
+		F.I.enterRef.action.performed += ConfirmPurchase;
 		if (loadCo)
 		{
 			StopCoroutine(Load());
@@ -57,6 +70,7 @@ public class CarSelector : Sfxable
 	}
 	bool ShowCar(Car c)
 	{
+		if (Championships.Active) return c == F.I.cars[Championships.Current.carIndex] || (Championships.CarPrice(System.Array.IndexOf(F.I.cars,c)) >= 0 && Championships.CarCost(System.Array.IndexOf(F.I.cars,c)) <= Championships.Current.cash);
 		switch (type)
 		{
 			case GarageType.Unlocked:
@@ -84,7 +98,7 @@ public class CarSelector : Sfxable
 
 		int numberOfCarsThatShouldBeVisible = F.I.cars.Count(c => ShowCar(c));
 		loadCo = true;
-		if (carsCurrentlyVisible != numberOfCarsThatShouldBeVisible)
+		if (forceChampionshipRefresh || carsCurrentlyVisible != numberOfCarsThatShouldBeVisible)
 		{
 			bool[] menuButtons = new bool[4];
 			ClearAllCars();
@@ -129,7 +143,7 @@ public class CarSelector : Sfxable
 		else
 		{
 			buttonsContainer.GetChild(selectedCar.parent.GetSiblingIndex()).GetComponent<MainMenuButton>().Select();
-			carDescText.text = F.I.LocStr(F.I.Car(selectedCar.name).name) + "\n\n" + F.I.LocStr(selectedCar.name + "d");
+			UpdateDescription();
 		}
 		radial.gameObject.SetActive(selectedCar);
 		containerCo = StartCoroutine(MoveToCar());
@@ -140,6 +154,7 @@ public class CarSelector : Sfxable
 		barsAndRadialCo = StartCoroutine(SetPerformanceBarsAndRadial());
 		//Debug.Log(selectedCar);
 		loadCo = false;
+		forceChampionshipRefresh = false;
 	}
 
 	void CalculateTargetToSelect(InputAction.CallbackContext ctx)
@@ -175,14 +190,14 @@ public class CarSelector : Sfxable
 				if (tempSelectedCar != null && tempSelectedCar != selectedCar)
 				{
 					selectedCar = tempSelectedCar;
-					F.I.s_playerCarIdx = Car.Name2Index(selectedCar.name);
+					if (!Championships.Active) F.I.s_playerCarIdx = Car.Name2Index(selectedCar.name);
 					buttonsContainer.GetChild(selectedCar.parent.GetSiblingIndex()).GetComponent<MainMenuButton>().Select();
 					PlaySFX("fe-bitmapscroll");
 				}
 				// new car has been selected
 				// set description
 				var car = F.I.Car(selectedCar.name);
-				carDescText.text = F.I.LocStr(car.name) + "\n\n" + F.I.LocStr(selectedCar.name + "d");
+				UpdateDescription();
 				// set bars
 				if (barsAndRadialCo != null)
 					StopCoroutine(barsAndRadialCo);
@@ -193,6 +208,28 @@ public class CarSelector : Sfxable
 				containerCo = StartCoroutine(MoveToCar());
 			}
 		}
+	}
+
+	void UpdateDescription()
+	{
+		if (!selectedCar) return;
+		var car = F.I.Car(selectedCar.name);
+		carDescText.text = F.I.LocStr(car.name) + "\n\n" + F.I.LocStr(selectedCar.name + "d");
+		if (Championships.Active)
+		{
+			carDescText.text += $"\n\n{F.I.LocStr("Funds")}: ${Championships.Current.cash:N0}\n{F.I.LocStr("Price")}: ${Mathf.Max(0,Championships.CarPrice(Car.Name2Index(selectedCar.name))):N0}";
+
+		}
+	}
+	void ConfirmPurchase(InputAction.CallbackContext ctx) => BuySelectedVehicle();
+	public void BuySelectedVehicle()
+	{
+		if (returningToChampionship || loadCo || !selectedCar || !Championships.Active) return;
+		if (!Championships.BuyCar(Car.Name2Index(selectedCar.name))) { PlaySFX("fe-warning"); return; }
+		PlaySFX("fe-dialogconfirm");
+		returningToChampionship = true;
+		var garage = ChampionshipUI.View("GarageView");
+		garage.GoToView(ChampionshipUI.View("ChampionshipsView"));
 	}
 
 	IEnumerator MoveToCar()

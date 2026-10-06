@@ -594,7 +594,8 @@ namespace RVP
 
 			yield return new WaitForSeconds(.5f); // wait for all the components to load
 
-			carConfig = new CarConfig(F.I.cars[carNumber].config);
+			carConfig = Championships.Active && isCpuCar ? Championships.OpponentConfig(carNumber) :
+				new CarConfig(F.I.cars[carNumber].config);
 			carConfig.Apply(this);
 			rb.isKinematic = wasKinematicBeforePhysicsSetup;
 

@@ -153,7 +153,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 22373761548288
-    m_Localized: Take part in an entire SGP season
+    m_Localized: Take part in an entire SGP season and unlock tuning parts
     m_Metadata:
       m_Items: []
   - m_Id: 22584969920512
@@ -1551,7 +1551,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 187701912941420544
-    m_Localized: 'Component:'
+    m_Localized: 'Cash Balance:'
     m_Metadata:
       m_Items: []
   - m_Id: 187701912941420545
@@ -2068,6 +2068,146 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 188072957011615744
     m_Localized: START
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615745
+    m_Localized: Empty slot
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615746
+    m_Localized: Start championship
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615747
+    m_Localized: Select championship
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615748
+    m_Localized: Win all seven national championships to unlock.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615749
+    m_Localized: Funds
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615750
+    m_Localized: Price
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615751
+    m_Localized: Position
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615752
+    m_Localized: Wins
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615753
+    m_Localized: Buy part
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615754
+    m_Localized: Buy vehicle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615755
+    m_Localized: Installed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615756
+    m_Localized: Titan backs your bid for the German title. Master the fast straights
+      and demanding loops on every German circuit. Each race lasts 10 laps.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615757
+    m_Localized: Race for TGR under the Spanish sun. Win on every Spanish circuit
+      and reward your sponsor with a national title. Each race lasts 10 laps.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615758
+    m_Localized: Itex needs a champion on the Japanese circuits. Keep your precision
+      through the technical corners and chase the Japanese title. Each race lasts
+      10 laps.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615759
+    m_Localized: Represent Mysuko in the British championship. Tackle every British
+      circuit and prove your consistency across the whole season. Each race lasts
+      10 laps.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615760
+    m_Localized: TGR sends you to France to compete for the national crown. Carry
+      your speed through the French circuits and deliver the title. Each race lasts
+      10 laps.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615761
+    m_Localized: Rline sponsors your American campaign. Race every US circuit and
+      turn outright speed into championship points. Each race lasts 10 laps.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615762
+    m_Localized: Titan invites you to challenge Italy. Conquer every Italian circuit
+      and bring home another national title. Each race lasts 10 laps.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615763
+    m_Localized: 'Sponsor backs your world championship campaign: three random circuits
+      from each country, followed by the Mexico finale. Every race lasts 10 laps.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615764
+    m_Localized: Energy tunnels drain your battery and a stopped car with an empty
+      battery is eliminated. Each race lasts 10 laps.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188096609769807872
+    m_Localized: Please select championship season
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188100007000858624
+    m_Localized: Preview next event
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188100138337099776
+    m_Localized: Customize the car to suit your preferences
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188100648683233280
+    m_Localized: Trade in your car for a new one
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188100648683233281
+    m_Localized: Current Standings (Round {0} of {1})
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188100648683233282
+    m_Localized: Credits
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188100648683233283
+    m_Localized: Vehicle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188115255720206336
+    m_Localized: 'Price New:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188115634570715136
+    m_Localized: 'Trade in:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188115634570715137
+    m_Localized: '{0} finishes the championship in position {1}.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188153160442372096
+    m_Localized: Select championship series
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188158728963940352
+    m_Localized: QUICK RACE
     m_Metadata:
       m_Items: []
   references:

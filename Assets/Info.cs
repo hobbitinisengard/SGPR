@@ -25,7 +25,7 @@ public enum RecordType { BestLap, RaceTime, StuntScore, DriftScore }
 public enum ScoringType { Championship, Points, Victory }
 public enum ActionHappening { InLobby, InRace }
 public enum PavementType { Arena, Volcano, Asphalt, Energy, Grid, Japan, Jungle, Random }
-public enum GameMode { Exhibition, Multiplayer, Splitscreen, Arcade, Championships };
+public enum GameMode { Exhibition, Multiplayer, Splitscreen, Arcade, Championships,QuickRace };
 public enum RaceType { Race, Knockout, Stunt, Drift, TimeTrial, Survival }
 public enum CpuLevel { Easy, Medium, Hard };
 public enum TimeOfDay { Day, Night };
@@ -508,6 +508,70 @@ public class Info : MonoBehaviour
 	[NonSerialized]
 	public OriginalVehiclePartCatalog originalVehiclePartCatalog;
 
+	HashSet<string> unlockedOriginalParts = new(StringComparer.Ordinal);
+	bool partUnlocksLoaded;
+	string PartUnlocksPath => Path.Combine(documentsSGPRpath, "unlocked-parts.json");
+
+	void LoadPartUnlocks()
+	{
+		if (partUnlocksLoaded) return;
+		partUnlocksLoaded = true;
+		try
+		{
+			if (File.Exists(PartUnlocksPath))
+				unlockedOriginalParts = new HashSet<string>(
+					JsonConvert.DeserializeObject<string[]>(File.ReadAllText(PartUnlocksPath)) ?? Array.Empty<string>(),
+					StringComparer.Ordinal);
+		}
+		catch (Exception error) { Debug.LogError("Could not load part unlocks: " + error.Message, this); }
+	}
+	public bool IsOriginalVehiclePartUnlocked(OriginalVehiclePartDefinition part)
+	{
+		LoadPartUnlocks();
+		// User-created parts remain available as required by the component editor.
+		return part != null && (part.IsUserPart || unlockedOriginalParts.Contains(part.id));
+	}
+	public void UnlockOriginalVehiclePart(OriginalVehiclePartDefinition part)
+	{
+		if (part == null) return;
+		LoadPartUnlocks();
+		if (!unlockedOriginalParts.Add(part.id)) return;
+		Directory.CreateDirectory(documentsSGPRpath);
+		File.WriteAllText(PartUnlocksPath, JsonConvert.SerializeObject(
+			unlockedOriginalParts.OrderBy(id => id, StringComparer.Ordinal), Formatting.Indented));
+	}
+
+	HashSet<string> wonChampionships = new(StringComparer.Ordinal);
+	bool championshipWinsLoaded;
+	string ChampionshipWinsPath => Path.Combine(documentsSGPRpath, "won-championships.json");
+	void LoadChampionshipWins()
+	{
+		if (championshipWinsLoaded) return;
+		championshipWinsLoaded = true;
+		try
+		{
+			if (File.Exists(ChampionshipWinsPath))
+				wonChampionships = new HashSet<string>(
+					JsonConvert.DeserializeObject<string[]>(File.ReadAllText(ChampionshipWinsPath)) ?? Array.Empty<string>(),
+					StringComparer.Ordinal);
+		}
+		catch (Exception error) { Debug.LogError("Could not load championship wins: " + error.Message, this); }
+	}
+	public bool HasWonChampionship(string season)
+	{
+		LoadChampionshipWins();
+		return wonChampionships.Contains(season);
+	}
+	public void RememberChampionshipWin(string season)
+	{
+		if (string.IsNullOrEmpty(season)) return;
+		LoadChampionshipWins();
+		if (!wonChampionships.Add(season)) return;
+		Directory.CreateDirectory(documentsSGPRpath);
+		File.WriteAllText(ChampionshipWinsPath, JsonConvert.SerializeObject(
+			wonChampionships.OrderBy(value => value, StringComparer.Ordinal), Formatting.Indented));
+	}
+
 	public OriginalVehiclePartDefinition GetOriginalVehiclePart(string id)
 	{
 		return originalVehiclePartCatalog?.GetPart(id);
@@ -671,26 +735,26 @@ public class Info : MonoBehaviour
 		{
 			cars = new Car[]
 			{
-				new ("car00",0,5,5,5,CarGroup.Speed, Livery.Itex, "MEAN STREAK","Fast, light and agile, this racer offers much for those who wish to modify their vehicle."),
+				new ("car00",40000,5,5,5,CarGroup.Speed, Livery.Itex, "MEAN STREAK","Fast, light and agile, this racer offers much for those who wish to modify their vehicle."),
 				new ("car01",45000,1,8,2,CarGroup.Wild,Livery.Caltex, "THE HUSTLER","Sturdy 4x4 pick-up truck with an eye for the outrageous!"),
 				new ("car02",50000,8,3,6,CarGroup.Aero, Livery.Mysuko, "TWIN EAGLE","Take flight with this light and speedy stuntcar."),
-				new ("car03",0,8,5,6,CarGroup.Aero, Livery.TGR, "SKY HAWK","Get airborne with this very versatile stunt car."),
-				new ("car04",30000,4,7,7,CarGroup.Speed, Livery.Rline, "THE PHANTOM","Fast, sleek and tough to handle."),
-				new ("car05",30000,1,8,3,CarGroup.Wild, Livery.Titan, "ROAD HOG","Rock and Roll with the rough ridin' road hog."),
-				new ("car06",0,6,4,5,CarGroup.Wild, Livery.Itex, "DUNE RAT","Defy the laws of physics in this buggy."),
+				new ("car03",40000,8,5,6,CarGroup.Aero, Livery.TGR, "SKY HAWK","Get airborne with this very versatile stunt car."),
+				new ("car04",60000,4,7,7,CarGroup.Speed, Livery.Rline, "THE PHANTOM","Fast, sleek and tough to handle."),
+				new ("car05",80000,1,8,3,CarGroup.Wild, Livery.Titan, "ROAD HOG","Rock and Roll with the rough ridin' road hog."),
+				new ("car06",30000,6,4,5,CarGroup.Wild, Livery.Itex, "DUNE RAT","Defy the laws of physics in this buggy."),
 				new ("car07",50000,3,10,9,CarGroup.Speed, Livery.Titan, "LIGHTNIN'","Supercharged super speed. Easy does it!"),
 				new ("car08",30000,5,4,5,CarGroup.Speed, Livery.Caltex, "ALLEY KAT","Sleek and powerful, this cat is ready to roar."),
-				new ("car09",40000,6,3,2,CarGroup.Wild, Livery.Itex, "SAND SHARK","This beachcomber is at home on any stunt circuit."),
-				new ("car10",45000,1,5,3,CarGroup.Wild, Livery.TGR, "THE BRUTE","Unleash the Brute for no-nonsense on the road!"),
-				new ("car11",70000,10,9,8,CarGroup.Aero, Livery.Titan,"WILD DART","Fly fast and true with this stuntcar."),
-				new ("car12",65000,5,8,7,CarGroup.Wild, Livery.Mysuko, "RAGING BULL","Powerful and fast, this streetwise 4x4 is incredible."),
-				new ("car13",15000,10,7,5,CarGroup.Aero, Livery.Caltex, "FLYING MANTIS","Super light and very fast."),
+				new ("car09",30000,6,3,2,CarGroup.Wild, Livery.Itex, "SAND SHARK","This beachcomber is at home on any stunt circuit."),
+				new ("car10",65000,1,5,3,CarGroup.Wild, Livery.TGR, "THE BRUTE","Unleash the Brute for no-nonsense on the road!"),
+				new ("car11",90000,10,9,8,CarGroup.Aero, Livery.Titan,"WILD DART","Fly fast and true with this stuntcar."),
+				new ("car12",95000,5,8,7,CarGroup.Wild, Livery.Mysuko, "RAGING BULL","Powerful and fast, this streetwise 4x4 is incredible."),
+				new ("car13",65000,10,7,5,CarGroup.Aero, Livery.Caltex, "FLYING MANTIS","Super light and very fast."),
 				new ("car14",35000,10,1,4,CarGroup.Aero, Livery.Rline, "STUNT MONKEY","Monkey see, monkey do! Go bananas with this wild ride!"),
-				new ("car15",50000,5,5,9,CarGroup.Speed, Livery.Titan, "INFERNO","This speed demon is on fire!"),
-				new ("car16",35000,5,10,9,CarGroup.Team, Livery.Team, "FORK","Despite its looks, it moves like fork lightning!"),
-				new ("car17",55000,4,9,7,CarGroup.Team, Livery.Team, "WORM MOBILE","Super Speedy Buggy!"),
-				new ("car18",100000,3,10,7,CarGroup.Team, Livery.Itex, "FORMULA 17","Incredibly fast racing car."),
-				new ("car19",90000,5,7,7,CarGroup.Team, Livery.Team, "TEAM MACHINE","The ultimate, hugely versatile stock car.")
+				new ("car15",90000,5,5,9,CarGroup.Speed, Livery.Titan, "INFERNO","This speed demon is on fire!"),
+				new ("car16",85000,5,10,9,CarGroup.Team, Livery.Team, "FORK","Despite its looks, it moves like fork lightning!"),
+				new ("car17",75000,4,9,7,CarGroup.Team, Livery.Team, "WORM MOBILE","Super Speedy Buggy!"),
+				new ("car18",120000,3,10,7,CarGroup.Team, Livery.Itex, "FORMULA 17","Incredibly fast racing car."),
+				new ("car19",120000,5,7,7,CarGroup.Team, Livery.Team, "TEAM MACHINE","The ultimate, hugely versatile stock car.")
 			};
 		}
 		for (int i = 0; i < cars.Length; i++)

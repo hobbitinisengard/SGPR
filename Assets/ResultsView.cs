@@ -265,8 +265,25 @@ public class ResultsView : MainMenuView
 	public static readonly Comparison<Result> lapComp = new((Result x, Result y) => x.lap.TotalSeconds.CompareTo(y.lap.TotalSeconds));
 	public static readonly Comparison<Result> ScoreComp = new((Result x, Result y) => y.score.CompareTo(x.score));
 
+	MainMenuView ChampionshipContinuation()
+	{
+		if (!Championships.Current.Completed) return ChampionshipUI.View("ChampionshipsView");
+		F.I.rankingView.SetRankingType(ScoringType.Championship, false, GameMode.Championships);
+		F.I.rankingView.sortedResults = null;
+		if (Championships.Position <= 3)
+		{
+			winnersView.PrepareUsingChampionship();
+			return winnersView;
+		}
+		return F.I.rankingView;
+	}
 	public void OKButton()
 	{
+		if (Championships.Active)
+		{
+			GoToView(ChampionshipContinuation());
+			return;
+		}
 		if (F.I.gameMode == GameMode.Multiplayer)
 		{
 			if (F.I.Rounds > 0 && F.I.CurRound > F.I.Rounds)
@@ -495,6 +512,7 @@ public class ResultsView : MainMenuView
 	}
 	protected override void OnDisable()
 	{
+		if (Championships.Active && Championships.Current.Completed) Championships.CompleteSeason();
 		if (addingScoreCo != null)
 			StopCoroutine(addingScoreCo);
 		if (payoutCo != null)
@@ -508,8 +526,16 @@ public class ResultsView : MainMenuView
 		playerDNF = false;
 		base.OnDisable();
 	}
+	static readonly Comparison<Result> championshipComp = (x, y) =>
+	{
+		if (x.disqualified != y.disqualified) return x.disqualified ? 1 : -1;
+		if (x.disqualified) return y.progress.CompareTo(x.progress);
+		if (x.finished != y.finished) return x.finished ? -1 : 1;
+		return x.finished ? raceComp(x, y) : y.progress.CompareTo(x.progress);
+	};
 	static Comparison<Result> ComparisonBasedOnRaceType()
 	{
+		if (Championships.Active) return championshipComp;
 		return F.I.s_raceType switch
 		{
 			RaceType.Race => raceComp,
@@ -527,7 +553,12 @@ public class ResultsView : MainMenuView
 		if (playerDNF)
 			MakePlayerResultWorst();
 
-		F.I.CurRound++;
+		if (Championships.Active)
+		{
+			prevView = ChampionshipContinuation();
+			prevViewForbidden = false;
+		}
+		else F.I.CurRound++;
 		//ResultRandomizer(); // for testing 
 		grandScoreMoving = 0;
 		grandScore0Text.text = "      0";
@@ -540,7 +571,7 @@ public class ResultsView : MainMenuView
 		for (int i = 0; i < 10; i++)
 		{
 			bool visible = i < resultData.Count;
-			bool highlight = visible && ((F.I.gameMode == GameMode.Arcade && resultData[i].name == F.I.playerData.playerName) ||
+			bool highlight = visible && (((F.I.gameMode == GameMode.Arcade || Championships.Active) && resultData[i].name == F.I.playerData.playerName) ||
 				(F.I.gameMode == GameMode.Multiplayer && ServerC.I.networkManager.LocalClientId == resultData[i].id));
 			if (highlight)
 				finalPosition = i;
@@ -595,6 +626,11 @@ public class ResultsView : MainMenuView
 			default:
 				break;
 		}
+		if (Championships.Active)
+		{
+			positionBonus = resultData[finalPosition].disqualified ? 0 : Championships.Prizes[finalPosition];
+			grandScoreFinal = positionBonus;
+		}
 		//Debug.Log(resultData[finalPosition].name + string.Format(" OnEnable. lap,stunt,drift = {0}, {1}, {2}, {3}, {4}", positionBonus, lapBonus, stuntBonus, driftBonus, aeroMeter));
 
 		if (F.I.gameMode == GameMode.Multiplayer)
@@ -602,7 +638,7 @@ public class ResultsView : MainMenuView
 			ServerC.I.ScoreSet(ServerC.I.PlayerMe.ScoreGet() + grandScoreFinal);
 			ServerC.I.UpdatePlayerData();
 		}
-		else
+		else if (!Championships.Active)
 		{
 			F.I.curArcadeScore += grandScoreFinal;
 		}
@@ -651,7 +687,7 @@ public class ResultsView : MainMenuView
 		while (isAddingScore)
 			yield return null;
 
-		if (F.I.scoringType == ScoringType.Championship)
+		if (F.I.scoringType == ScoringType.Championship && !Championships.Active)
 		{
 			if (lapBonus > 0)
 			{

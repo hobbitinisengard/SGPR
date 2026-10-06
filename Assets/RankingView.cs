@@ -114,7 +114,11 @@ public class RankingView : MainMenuView
 	}
 	public void OKButton()
 	{
-		if (F.I.gameMode == GameMode.Arcade)
+		if (Championships.Active && Championships.Current.Completed)
+		{
+			GoToView(SinglePlayerView);
+		}
+		else if (F.I.gameMode == GameMode.Arcade)
 		{
 			ResultsView.Clear();
 			GoToView(SinglePlayerView);
@@ -165,7 +169,14 @@ public class RankingView : MainMenuView
 		List<Result> players = ResultsView.SortedResultsByFinishPos;
 		RankingRowData newEntry = null;
 
-		if (players.Count > 0)
+		if (Championships.Active && Championships.Current.Completed)
+		{
+			SetRankingType(ScoringType.Championship, false, GameMode.Championships);
+			prevView = SinglePlayerView;
+			prevViewForbidden = false;
+			newEntry = Championships.TakeFinalRankingEntry();
+		}
+		else if (players.Count > 0)
 			newEntry = new RankingRowData(players);
 
 		string gameName;

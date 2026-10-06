@@ -80,7 +80,7 @@ public class GreetingLogo : Sfxable
 					{
 						if ((cantFind && track.Key.Length > 3) || randomIdx == i)
 						{
-							if (track.Key.Length > 3 && track.Value.valid && track.Value.unlocked)
+							if (track.Key.Length > 3 && track.Value.valid)
 							{
 								F.I.s_spectator = true;
 								F.I.s_cpuRivals = 5;

@@ -27,6 +27,7 @@ public class TuningSelector : Sfxable
 	public GameObject TradeIn;
 	public bool d_co;
 
+	const float AnimationSpeed = 3f;
 	static readonly string[] ImageCategories =
 		{ "engines", "batteries", "tyres", "brakes", "shocks", "chassis", "drives", "horns", "boost", "bms", "gears" };
 	static readonly string[] CategoryNames =
@@ -39,6 +40,8 @@ public class TuningSelector : Sfxable
 		public List<OriginalVehiclePartDefinition> parts;
 		public readonly List<RectTransform> images = new();
 		public int selectedIndex;
+		public string defaultPartId;
+		public float imageSpacing;
 	}
 
 	readonly List<PartRow> rows = new();
@@ -69,10 +72,15 @@ public class TuningSelector : Sfxable
 			barWidths[i] = bars[i] ? bars[i].sizeDelta.x : 0;
 	}
 
-	void OnEnable() => Reload();
+	void OnEnable()
+	{
+		F.I.enterRef.action.performed += ConfirmPurchase;
+		UpdatePurchaseUI(); Reload();
+	}
 
 	void OnDisable()
 	{
+		F.I.enterRef.action.performed -= ConfirmPurchase;
 		if (navigationAction != null)
 			navigationAction.performed -= CalculateTargetToSelect;
 		navigationAction = null;
@@ -196,6 +204,17 @@ public class TuningSelector : Sfxable
 		foreach (OriginalVehiclePartSlot slot in allowedSetup?.slots ?? System.Array.Empty<OriginalVehiclePartSlot>())
 		{
 			List<OriginalVehiclePartDefinition> parts = catalog.GetAvailableParts(allowedSetup, slot.type);
+			if (!Championships.Active)
+			{
+				var equipped = catalog.GetSelectedPart(carConfig.originalParts, slot.type);
+				parts.RemoveAll(part => part.id != equipped?.id && !F.I.IsOriginalVehiclePartUnlocked(part));
+				// A custom car setup can equip a stock part outside its usual catalog range.
+				if (equipped != null && !parts.Exists(part => part.id == equipped.id))
+				{
+					parts.Add(equipped);
+					parts.Sort((a, b) => a.IsUserPart != b.IsUserPart ? (a.IsUserPart ? 1 : -1) : a.index.CompareTo(b.index));
+				}
+			}
 			if (parts.Count == 0) continue;
 			int rowIndex = rows.Count;
 			RectTransform rowTransform = rowIndex < content.childCount
@@ -215,9 +234,8 @@ public class TuningSelector : Sfxable
 			rowTransform.anchorMin = rowTransform.anchorMax = new Vector2(0.5f, 1);
 			rowTransform.pivot = new Vector2(0.5f, 0.5f);
 			rowTransform.sizeDelta = new Vector2(viewport.rect.width, rowSpacing);
-			var row = new PartRow { type = slot.type, transform = rowTransform, parts = parts };
-			string equippedId = carConfig.originalParts?.GetSlot(slot.type)?.SelectedPartId ?? slot.defaultPartId;
-			row.selectedIndex = Mathf.Max(0, parts.FindIndex(part => part.id == equippedId));
+			var row = new PartRow { type = slot.type, transform = rowTransform, parts = parts, defaultPartId = slot.defaultPartId, imageSpacing = imageWidth + 24 };
+			row.selectedIndex = EquippedIndex(row);
 			for (int i = 0; i < parts.Count; i++)
 			{
 				GameObject icon = Instantiate(partImageTemplate, rowTransform, false);
@@ -249,6 +267,14 @@ public class TuningSelector : Sfxable
 		if (target.TryGetComponent(out ContentSizeFitter fitter)) fitter.enabled = false;
 	}
 
+	int EquippedIndex(PartRow row)
+	{
+		string equippedId = carConfig.originalParts?.GetSlot(row.type)?.SelectedPartId ?? row.defaultPartId;
+		// Some source setups use index 0 (including horns). Keep the same visual
+		// fallback when entering a row and when discarding an unpurchased preview.
+		return Mathf.Max(0, row.parts.FindIndex(part => part.id == equippedId));
+	}
+
 	void CalculateTargetToSelect(InputAction.CallbackContext ctx)
 	{
 		if (loading || rows.Count == 0) return;
@@ -260,6 +286,11 @@ public class TuningSelector : Sfxable
 		PartRow row = rows[nextRow];
 		int nextPart = Mathf.Clamp(row.selectedIndex + (y == 0 ? x : 0), 0, row.parts.Count - 1);
 		if (nextRow == selectedRow && nextPart == row.selectedIndex) return;
+		if (Championships.Active && nextRow != selectedRow)
+		{
+			PartRow previous = rows[selectedRow];
+			previous.selectedIndex = EquippedIndex(previous);
+		}
 		selectedRow = nextRow;
 		row.selectedIndex = nextPart;
 		PlaySFX("fe-bitmapscroll");
@@ -278,15 +309,68 @@ public class TuningSelector : Sfxable
 			return;
 		}
 		rememberedCategory = part.type;
-		if (equip) EquipPart(part);
+		if (equip && !Championships.Active)
+		{
+			EquipPart(part);
+			RemoveUnequippedLockedParts(rows[selectedRow]);
+		}
 		if (partTypeText) partTypeText.text = F.I.LocStr(CategoryNames[(int)part.type]) + ":";
 		if (partNameText) partNameText.text = F.I.LocStr(part.IsUserPart ? part.GetName() : "Tuning." + part.id + ".Name");
 		if (partDescrText) partDescrText.text = F.I.LocStr(part.IsUserPart ? part.GetDescription() : "Tuning." + part.id + ".Description");
 		RefreshTraits(part);
+		UpdatePurchaseUI();
 		if (containerCo != null) StopCoroutine(containerCo);
 		containerCo = StartCoroutine(MoveToPart());
 		if (barsAndRadialCo != null) StopCoroutine(barsAndRadialCo);
 		barsAndRadialCo = StartCoroutine(SetPerformanceBarsAndRadial());
+	}
+
+	void RemoveUnequippedLockedParts(PartRow row)
+	{
+		string equippedId = carConfig.originalParts.GetSlot(row.type)?.SelectedPartId;
+		for (int i = row.parts.Count - 1; i >= 0; i--)
+		{
+			if (row.parts[i].id == equippedId || F.I.IsOriginalVehiclePartUnlocked(row.parts[i])) continue;
+			row.images[i].gameObject.SetActive(false);
+			Destroy(row.images[i].gameObject);
+			row.images.RemoveAt(i);
+			row.parts.RemoveAt(i);
+			if (i < row.selectedIndex) row.selectedIndex--;
+		}
+		for (int i = 0; i < row.images.Count; i++)
+			row.images[i].anchoredPosition = new Vector2(i * row.imageSpacing, 0);
+	}
+
+	void ConfirmPurchase(InputAction.CallbackContext ctx) { if (Championships.Active && !loading) BuySelectedPart(); }
+	public void BuySelectedPart()
+	{
+		if (!Championships.Active || loading || SelectedPart == null) return;
+		var installed = F.I.originalVehiclePartCatalog.GetSelectedPart(carConfig.originalParts, SelectedPart.type);
+		if (installed?.id == SelectedPart.id) return;
+		if (!Championships.BuyPart(SelectedPart)) { PlaySFX("fe-warning"); return; }
+		PlaySFX("fe-dialogconfirm"); UpdatePurchaseUI();
+	}
+	void UpdatePurchaseUI()
+	{
+		bool active = Championships.Active;
+		if (PriceNew) PriceNew.SetActive(active);
+		if (CashBalance) CashBalance.SetActive(active);
+		if (TradeIn) TradeIn.SetActive(active);
+		if (!active || SelectedPart == null) return;
+		var part = SelectedPart;
+		var installed = F.I.originalVehiclePartCatalog.GetSelectedPart(F.I.cars[Championships.Current.carIndex].config.originalParts, part.type);
+		SetMoneyValue(PriceNew, Championships.PartPrice(part));
+		SetMoneyValue(CashBalance, Championships.Current.cash);
+		int exchangeBalance = installed?.id == part.id ? 0 : -Championships.PartCost(part);
+		SetMoneyValue(TradeIn, exchangeBalance);
+
+	}
+	static void SetMoneyValue(GameObject root, int amount)
+	{
+		if (!root) return;
+		// Update only the numeric child, leaving the labels and their localization intact.
+		Transform value = root.transform.Find("Price") ?? root.transform.Find("Name");
+		if (value) ChampionshipUI.SetText(value.gameObject, $"${amount:N0}");
 	}
 
 	void EquipPart(OriginalVehiclePartDefinition part)
@@ -388,8 +472,15 @@ public class TuningSelector : Sfxable
 			2f * row.selectedIndex / (row.parts.Count - 1) - 1;
 		Vector2 initialContent = content.anchoredPosition;
 		Vector2 targetContent = new Vector2(initialContent.x, selectedRow * rowSpacing);
-		Vector2 initialRow = row.transform.anchoredPosition;
-		Vector2 targetRow = new Vector2(-row.images[row.selectedIndex].anchoredPosition.x, initialRow.y);
+		// Restore outgoing previews and center the destination in the same animation.
+		// Capturing every row also allows a new input to redirect an unfinished movement.
+		Vector2[] initialRows = new Vector2[rows.Count];
+		Vector2[] targetRows = new Vector2[rows.Count];
+		for (int i = 0; i < rows.Count; i++)
+		{
+			initialRows[i] = rows[i].transform.anchoredPosition;
+			targetRows[i] = new Vector2(-rows[i].images[rows[i].selectedIndex].anchoredPosition.x, initialRows[i].y);
+		}
 		Vector2 initialScroll = new Vector2(scrollx ? scrollx.value : 0, scrolly ? scrolly.value : 1);
 		Vector2 initialSize = new Vector2(scrollx ? scrollx.size : 1, scrolly ? scrolly.size : 1);
 		float horizontalProgress = row.parts.Count == 1 ? 0 : (float)row.selectedIndex / (row.parts.Count - 1);
@@ -398,13 +489,14 @@ public class TuningSelector : Sfxable
 			scrollx && scrollx.direction == Scrollbar.Direction.RightToLeft ? 1 - horizontalProgress : horizontalProgress,
 			scrolly && scrolly.direction == Scrollbar.Direction.BottomToTop ? 1 - verticalProgress : verticalProgress);
 		Vector2 targetSize = new Vector2(1f / row.parts.Count, 1f / rows.Count);
-		for (float timer = 0; timer < 1; timer += Time.unscaledDeltaTime)
+		for (float timer = 0; timer < 1; timer += Time.unscaledDeltaTime * AnimationSpeed)
 		{
 			float step = F.EasingOutQuint(timer);
 			backgroundPosition = Mathf.Lerp(initialBackground, targetBackground, step);
 			if (tuningBackground) tuningBackground.SetTuningBlend(backgroundPosition);
 			content.anchoredPosition = Vector2.Lerp(initialContent, targetContent, step);
-			row.transform.anchoredPosition = Vector2.Lerp(initialRow, targetRow, step);
+			for (int i = 0; i < rows.Count; i++)
+				rows[i].transform.anchoredPosition = Vector2.Lerp(initialRows[i], targetRows[i], step);
 			if (scrollx) { scrollx.SetValueWithoutNotify(Mathf.Lerp(initialScroll.x, targetScroll.x, step)); scrollx.size = Mathf.Lerp(initialSize.x, targetSize.x, step); }
 			if (scrolly) { scrolly.SetValueWithoutNotify(Mathf.Lerp(initialScroll.y, targetScroll.y, step)); scrolly.size = Mathf.Lerp(initialSize.y, targetSize.y, step); }
 			yield return null;
@@ -412,7 +504,7 @@ public class TuningSelector : Sfxable
 		backgroundPosition = targetBackground;
 		if (tuningBackground) tuningBackground.SetTuningBlend(backgroundPosition);
 		content.anchoredPosition = targetContent;
-		row.transform.anchoredPosition = targetRow;
+		for (int i = 0; i < rows.Count; i++) rows[i].transform.anchoredPosition = targetRows[i];
 		if (scrollx) { scrollx.SetValueWithoutNotify(targetScroll.x); scrollx.size = targetSize.x; }
 		if (scrolly) { scrolly.SetValueWithoutNotify(targetScroll.y); scrolly.size = targetSize.y; }
 		containerCo = null;
@@ -425,7 +517,7 @@ public class TuningSelector : Sfxable
 		float[] targetBars = carConfig.SGP;
 		float[] initialBars = new float[barWidths.Length];
 		for (int i = 0; i < initialBars.Length; i++) initialBars[i] = bars[i] ? bars[i].sizeDelta.x : 0;
-		for (float timer = 0; timer < 1; timer += Time.unscaledDeltaTime)
+		for (float timer = 0; timer < 1; timer += Time.unscaledDeltaTime * AnimationSpeed)
 		{
 			float step = Easing.OutCubic(timer);
 			for (int i = 0; i < initialBars.Length && i < targetBars.Length; i++)

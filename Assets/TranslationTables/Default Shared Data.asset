@@ -1520,7 +1520,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 187701912941420544
-    m_Key: Component
+    m_Key: 'Cash Balance:'
     m_Metadata:
       m_Items: []
   - m_Id: 187701912941420545
@@ -2037,6 +2037,138 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 188072957011615744
     m_Key: START
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615745
+    m_Key: Empty slot
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615746
+    m_Key: Start championship
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615747
+    m_Key: Select championship
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615748
+    m_Key: Win all seven national championships to unlock.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615749
+    m_Key: Funds
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615750
+    m_Key: Price
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615751
+    m_Key: Position
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615752
+    m_Key: Wins
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615753
+    m_Key: Buy part
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615754
+    m_Key: Buy vehicle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615755
+    m_Key: Installed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615756
+    m_Key: Champ.Season.GER.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615757
+    m_Key: Champ.Season.SPN.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615758
+    m_Key: Champ.Season.JAP.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615759
+    m_Key: Champ.Season.ENG.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615760
+    m_Key: Champ.Season.FRA.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615761
+    m_Key: Champ.Season.USA.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615762
+    m_Key: Champ.Season.ITA.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615763
+    m_Key: Champ.Season.SGP.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615764
+    m_Key: Champ.Season.SURVIVAL.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188096609769807872
+    m_Key: SELECT TEAM SPONSOR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188100007000858624
+    m_Key: Next race
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188100138337099776
+    m_Key: Tune your car
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188100648683233280
+    m_Key: Change your car
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188100648683233281
+    m_Key: Champ.CurrentStandings
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188100648683233282
+    m_Key: Credits
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188100648683233283
+    m_Key: Vehicle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188115255720206336
+    m_Key: 'Price New:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188115634570715136
+    m_Key: 'Trade in:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188115634570715137
+    m_Key: Champ.PodiumResult
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188153002149339136
+    m_Key: 'Choose '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188153160442372096
+    m_Key: Select championships
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188158728963940352
+    m_Key: QUICK RACE
     m_Metadata:
       m_Items: []
   m_Metadata:

@@ -21,6 +21,27 @@ public class WinnersView : MainMenuView
 	{
 		GoToView(rankingView);
 	}
+	protected override void OnEnable()
+	{
+		if (Championships.Active && Championships.Current.Completed)
+		{
+			prevView = rankingView;
+			prevViewForbidden = false;
+		}
+		base.OnEnable();
+	}
+	public void PrepareUsingChampionship()
+	{
+		rankingView = F.I.rankingView;
+		rankingView.SetRankingType(ScoringType.Championship, false, GameMode.Championships);
+		int position = Championships.Position;
+		ChampionshipUI.SetText(description.gameObject,
+			string.Format(F.I.LocStr("Champ.PodiumResult"), Championships.Current.driverName, position));
+		succOverObj.gameObject.SetActive(false);
+		result123Obj.gameObject.SetActive(true);
+		result123Obj.sprite = result123Sprites[position - 1];
+		music = goodendingClip;
+	}
 	public void PrepareUsingArcade(bool continuationCheck)
 	{
 

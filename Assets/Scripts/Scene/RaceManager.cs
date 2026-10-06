@@ -385,7 +385,9 @@ namespace RVP
 			{
 				carPlacements = new CarPlacement[F.I.s_cpuRivals + 1];
 
-				if (F.I.gameMode == GameMode.Arcade)
+				if (Championships.Active)
+					carPlacements = Championships.Placements();
+				else if (F.I.gameMode == GameMode.Arcade)
 				{
 					for (int i = 0; i < F.I.targetNode.cars.Length; ++i)
 					{
@@ -421,11 +423,11 @@ namespace RVP
 					}
 				}
 
-				if (F.I.s_spectator)
+				if (!Championships.Active && F.I.s_spectator)
 				{
 					carPlacements[^1] = CarPlacement.CPU(F.I.s_cpuRivals, preferredCarsIdxs.GetRandom());
 				}
-				else
+				else if (!Championships.Active)
 				{
 					if (F.I.gameMode == GameMode.Multiplayer)
 						carPlacements[^1] = CarPlacement.OnlinePlayer(ServerC.I.LeaderboardPos + F.I.s_cpuRivals, ServerC.I.PlayerMe);
@@ -615,7 +617,7 @@ namespace RVP
 			else
 			{
 				//Debug.Log("back to menu");
-				BackToMenu(applyScoring: F.I.gameMode != GameMode.Exhibition);
+				BackToMenu(applyScoring: F.I.gameMode != GameMode.Exhibition && F.I.gameMode != GameMode.QuickRace);
 			}
 		}
 		public void TimeForRaceEnded()

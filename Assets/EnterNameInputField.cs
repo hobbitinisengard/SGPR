@@ -44,7 +44,14 @@ public class EnterNameInputField : Sfxable
 	}
 	public void SetName()
 	{
-		F.I.playerData.playerName = GetInputField();
+		string driverName = GetInputField().Trim();
+		if (string.IsNullOrWhiteSpace(driverName)) return;
+		if (F.I.gameMode == GameMode.Championships)
+		{
+			if (Championships.Current == null) Championships.Create(driverName);
+			else Championships.Current.driverName = driverName;
+		}
+		else F.I.playerData.playerName = driverName;
 	}
 	void Update()
 	{

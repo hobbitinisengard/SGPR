@@ -14,6 +14,7 @@ public class MainMenuButton : Sfxable, ISelectHandler, IDeselectHandler, ISubmit
 	public LocalizedString bottomTextStr;
 	TMP_Text text;
 	MainMenuView mainMenuView;
+	bool pendingMoveSound;
 	[System.NonSerialized]
 	public Button buttonComponent;
 	new void Awake()
@@ -27,6 +28,7 @@ public class MainMenuButton : Sfxable, ISelectHandler, IDeselectHandler, ISubmit
 	}
 	private void OnDisable()
 	{
+		pendingMoveSound = false;
 		text.color = deselectedColor;
 	}
 	public void OnSubmit(BaseEventData eventData)
@@ -36,7 +38,16 @@ public class MainMenuButton : Sfxable, ISelectHandler, IDeselectHandler, ISubmit
 	public void OnDeselect(BaseEventData eventData)
 	{
 		text.color = deselectedColor;
-		PlaySFX("fe-dialogmove");
+		pendingMoveSound = true;
+	}
+	void LateUpdate()
+	{
+		if (!pendingMoveSound) return;
+		pendingMoveSound = false;
+		// EventSystem updates currentSelectedGameObject after dispatching OnDeselect.
+		GameObject next = EventSystem.current ? EventSystem.current.currentSelectedGameObject : null;
+		if (next && next != gameObject && next.TryGetComponent<MainMenuButton>(out _))
+			PlaySFX("fe-dialogmove");
 	}
 	public void OnSelect(BaseEventData eventData)
 	{

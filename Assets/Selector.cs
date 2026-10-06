@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Linq;
 using TMPro;
@@ -35,7 +35,7 @@ public class TrackSelectorTemplate : Sfxable
 	protected void OnDisable()
 	{
 		F.I.move2Ref.action.performed -= CalculateTargetToSelect;
-		persistentSelectedTrack = selectedTrack.name;
+		persistentSelectedTrack = selectedTrack ? selectedTrack.name : persistentSelectedTrack;
 	}
 	protected virtual void OnEnable()
 	{
