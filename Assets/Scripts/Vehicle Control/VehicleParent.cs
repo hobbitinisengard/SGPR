@@ -971,7 +971,7 @@ namespace RVP
 				batteryLoadingSnd.Play();
 			}
 			if (originalVehiclePhysics != null)
-				originalVehiclePhysics.AddSourceEnergy(originalVehiclePhysics.SourceRefuelRate * Time.deltaTime);
+				originalVehiclePhysics.TransferSourceTunnelEnergy(originalVehiclePhysics.SourceRefuelRate * Time.deltaTime);
 		}
 
 		public void AddSourceStuntEnergyAward()
@@ -991,6 +991,7 @@ namespace RVP
 		}
 		void KnockoutMeInternal()
 		{
+			if (F.I.s_raceType == RaceType.Survival) raceBox.MarkSurvivalEliminated();
 			SetAccel(0);
 			SetBrake(0);
 			SetSteer(0);

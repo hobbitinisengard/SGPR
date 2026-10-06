@@ -100,7 +100,7 @@ public class RaceBox : MonoBehaviour
 	}
 	public float RaceProgressLaps
 	{
-		get { return curLap + vp.followAI.LapProgressPercent; }
+		get { return SurvivalEliminated ? survivalEliminationProgress : curLap + vp.followAI.LapProgressPercent; }
 	}
 	public float RaceProgressDist
 	{
@@ -114,6 +114,16 @@ public class RaceBox : MonoBehaviour
 	public static readonly TimeSpan initialRaceTime = TimeSpan.FromHours(12);
 
 	public int curLap;
+	public bool SurvivalEliminated { get; private set; }
+	float survivalStoppedTime;
+	float survivalEliminationProgress;
+
+	public void MarkSurvivalEliminated()
+	{
+		if (SurvivalEliminated) return;
+		survivalEliminationProgress = RaceProgressLaps;
+		SurvivalEliminated = true;
+	}
 
 	public float w_A_dot;
 
@@ -184,6 +194,8 @@ public class RaceBox : MonoBehaviour
 	}
 	private void OnEnable()
 	{
+		SurvivalEliminated = false;
+		survivalStoppedTime = 0;
 		lapTimer = 3600 * 24; // 24 hours
 		bestLapTime = TimeSpan.FromHours(12);
 		raceTime = initialRaceTime;
@@ -192,6 +204,7 @@ public class RaceBox : MonoBehaviour
 	}
 	void FixedUpdate()
 	{
+		if (CheckSurvivalElimination()) return;
 		if (F.I.s_laps > 0)
 		{
 			if (!F.I.gamePaused && curLap > 0)
@@ -210,6 +223,25 @@ public class RaceBox : MonoBehaviour
 				stableLandingTimer -= Time.deltaTime;
 		}
 	}
+	bool CheckSurvivalElimination()
+	{
+		if (F.I.s_raceType != RaceType.Survival || F.I.s_inEditor || F.I.gamePaused ||
+			F.I.s_laps <= 0 || CountDownSeq.Countdown > 0 || !vp.Owner ||
+			vp.originalVehiclePhysics == null || vp.SourceEnergy > 0 || vp.rb.linearVelocity.sqrMagnitude > 1f)
+		{
+			survivalStoppedTime = 0;
+			return false;
+		}
+		// Allow resting contact velocity and brief stops without immediate elimination.
+		survivalStoppedTime += Time.fixedDeltaTime;
+		if (survivalStoppedTime < 1f) return false;
+		vp.KnockoutMe();
+		// Multiplayer's knockout RPC already broadcasts the elimination message.
+		if (F.I.gameMode != GameMode.Multiplayer)
+			RaceManager.I.hud.infoText.AddMessage(new(vp.name + " " + F.I.LocStr("ELIMINATED!"), BottomInfoType.ELIMINATED));
+		return true;
+	}
+
 	public bool GetStuntSeq(ref StuntsData outStuntsData)
 	{
 		if (stuntsData.availableForFrontend)
@@ -976,7 +1008,7 @@ public class RaceBox : MonoBehaviour
 			}
 			vp.followAI.selfDriving = true;
 
-			UpdateTrackRecords();
+			if (!SurvivalEliminated) UpdateTrackRecords();
 		}
 	}
 

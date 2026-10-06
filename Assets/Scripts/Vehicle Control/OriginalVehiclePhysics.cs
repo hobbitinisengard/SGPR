@@ -213,7 +213,12 @@ namespace RVP
 		float turboForce;
 		float sourceEffectiveMass = 1;
 		float fuel;
-		float energy;
+		float storedEnergy;
+		float energy
+		{
+			get => UnlimitedBatteryEnergy ? Mathf.Max(0, parameters.fuelCapacity) : storedEnergy;
+			set => storedEnergy = UnlimitedBatteryEnergy ? Mathf.Max(0, parameters.fuelCapacity) : value;
+		}
 		float steeringBoost;
 		float steeringDegrees;
 		float sourceSteering;
@@ -369,6 +374,12 @@ namespace RVP
 			_ => 85f,
 		};
 		bool SourceUpgradeActive => vehicle.followAI && vehicle.followAI.IsCPU;
+		// Cover every energy cost, including tunnels, boosts, impacts and respawns.
+		bool UnlimitedBatteryEnergy => F.I && (F.I.s_raceType == RaceType.TimeTrial ||
+			(F.I.s_raceType == RaceType.Survival && SourceUpgradeActive &&
+				(!RaceManager.I || RaceManager.I.playerCar != vehicle)));
+		bool PlayerBatteryEmpty => energy <= 0 && F.I && F.I.s_cpuLevel == CpuLevel.Hard &&
+			RaceManager.I && RaceManager.I.playerCar == vehicle;
 		float SourceUpgradeCondition => SourceUpgradeActive ? sourceUpgradeCondition : 0f;
 		int SourceTorqueCurveIndex
 		{
@@ -1777,6 +1788,13 @@ namespace RVP
 				return;
 			energy = Mathf.Min(parameters.fuelCapacity, energy + amount);
 		}
+		public void TransferSourceTunnelEnergy(float amount)
+		{
+			if (amount <= 0 || parameters.fuelCapacity <= 0) return;
+			float direction = F.I && F.I.s_raceType == RaceType.Survival ? -1 : 1;
+			energy = Mathf.Clamp(energy + direction * amount, 0, parameters.fuelCapacity);
+		}
+
 		public void RefillSourceEnergy()
 		{
 			energy = Mathf.Max(0, parameters.fuelCapacity);
@@ -3030,13 +3048,13 @@ namespace RVP
 					sourceRailTicks -= 3;
 					if (parameters.refuelRate <= 0 ||
 						SourcePitlaneRefuelLimit * parameters.refuelRate <= sourceRailEnergyAdded ||
-						energy >= parameters.fuelCapacity)
+						(F.I && F.I.s_raceType == RaceType.Survival ? energy <= 0 : energy >= parameters.fuelCapacity))
 						continue;
 					// The trigger also adds refuelRate per second. The old x10 rail
 					// multiplier made the same tunnel fill a battery in a few ticks.
 					float amount = parameters.refuelRate;
 					sourceRailEnergyAdded += amount;
-					energy += amount;
+					TransferSourceTunnelEnergy(amount);
 				}
 			}
 		}
@@ -3323,9 +3341,10 @@ namespace RVP
 			else
 				throttleSignal *= Mathf.Pow(0.5f, tickScale);
 			float throttle = throttleSignal;
+			if (PlayerBatteryEmpty) throttle = throttleSignal = 0;
 			bool playerBoostAllowed = !sourceRailControlsActive;
 			bool boostRequested = SourceUpgradeActive ? sourceAiTurboActive : vehicle.boostButton != 0;
-			bool turboActive = gear != 0 && (sourceStartBoostActiveThisTick ||
+			bool turboActive = !PlayerBatteryEmpty && gear != 0 && (sourceStartBoostActiveThisTick ||
 				(playerBoostAllowed && boostRequested)) &&
 				energy >= parameters.fuelCapacity * parameters.turboEnergyThreshold;
 			sourceTurboActive = turboActive;
@@ -3430,6 +3449,9 @@ namespace RVP
 		}
 		void DistributeSourceDrive(float acceleration, int sourceContactClass)
 		{
+			// Also block residual engine/wheel coupling and decaying turbo torque.
+			// Brakes, tyre forces and gravity are handled independently.
+			if (PlayerBatteryEmpty) return;
 			double value = acceleration;
 			if (acceleration > 0 && turboRpm != 0 && sourceContactClass == 0)
 				value = value * turboForce + value;

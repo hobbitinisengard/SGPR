@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using PathCreation;
 using Smooth;
 using System;
@@ -192,6 +192,7 @@ namespace RVP
 						leader = F.I.s_cars[0];
 						switch (F.I.s_raceType)
 						{
+							case RaceType.Survival:
 							case RaceType.Race:
 								hud.infoText.AddMessage(new(leader.name + " " + F.I.LocStr("TAKES THE LEAD!"), BottomInfoType.NEW_LEADER));
 								break;

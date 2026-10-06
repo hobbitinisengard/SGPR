@@ -25,8 +25,8 @@ public enum RecordType { BestLap, RaceTime, StuntScore, DriftScore }
 public enum ScoringType { Championship, Points, Victory }
 public enum ActionHappening { InLobby, InRace }
 public enum PavementType { Arena, Volcano, Asphalt, Energy, Grid, Japan, Jungle, Random }
-public enum GameMode { Exhibition, Multiplayer, Splitscreen, Arcade };
-public enum RaceType { Race, Knockout, Stunt, Drift, TimeTrial }
+public enum GameMode { Exhibition, Multiplayer, Splitscreen, Arcade, Championships };
+public enum RaceType { Race, Knockout, Stunt, Drift, TimeTrial, Survival }
 public enum CpuLevel { Easy, Medium, Hard };
 public enum TimeOfDay { Day, Night };
 public enum Language { English, Polish };
@@ -452,7 +452,7 @@ public class Info : MonoBehaviour
 	/// Number of track textures. Set pavementTypes+1 for random texture.
 	/// </summary>
 	public readonly int pavementTypes = 6;
-	public readonly int RaceTypes = 5;
+	public readonly int RaceTypes = Enum.GetValues(typeof(RaceType)).Length;
 
 	public readonly Vector3[] invisibleLevelDimensions = new Vector3[]{
 		new (564, 1231,1), //ger

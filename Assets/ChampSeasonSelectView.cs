@@ -8,29 +8,13 @@ using UnityEngine.UI;
 using UnityEngine.UIElements.Experimental;
 using RVP;
 
-public class TuningSelector : Sfxable
+public class ChampSeasonSelectView : MainMenuView
 {
-	// Keep the existing Inspector bindings and animation controls.
-	public RectTransform[] bars;
-	public Text partDescrText;
-	public Text partTypeText;
-	public Text partNameText;
-	public GameObject partImageTemplate;
-	public GameObject TraitValuePrefab;
+	public Text sponsorDescrText;
+	public Text startingMoneyText;
 	public RectTransform content;
 	public Scrollbar scrollx;
-	public Scrollbar scrolly;
-	public RectTransform traitsContent;
-	public BackgroundTiles tuningBackground;
-	public GameObject PriceNew;
-	public GameObject CashBalance;
-	public GameObject TradeIn;
 	public bool d_co;
-
-	static readonly string[] ImageCategories =
-		{ "engines", "batteries", "tyres", "brakes", "shocks", "chassis", "drives", "horns", "boost", "bms", "gears" };
-	static readonly string[] CategoryNames =
-		{ "Engine", "Battery", "Tyres", "Brakes", "Suspension", "Chassis", "Drive", "Horn", "Stunt Boost", "BMS", "Gears" };
 
 	sealed class PartRow
 	{
@@ -60,14 +44,6 @@ public class TuningSelector : Sfxable
 
 	public OriginalVehiclePartDefinition SelectedPart => rows.Count == 0 ? null :
 		rows[selectedRow].parts[rows[selectedRow].selectedIndex];
-
-	protected override void Awake()
-	{
-		base.Awake();
-		barWidths = new float[bars?.Length ?? 0];
-		for (int i = 0; i < barWidths.Length; i++)
-			barWidths[i] = bars[i] ? bars[i].sizeDelta.x : 0;
-	}
 
 	void OnEnable() => Reload();
 
@@ -111,13 +87,7 @@ public class TuningSelector : Sfxable
 			navigationAction = F.I.move2Ref.action;
 			navigationAction.performed += CalculateTargetToSelect;
 		}
-		ResolveViewBindings();
-		if (!content || !partImageTemplate || !TraitValuePrefab || !traitsContent)
-		{
-			Debug.LogError("TuningSelector needs part content, both prefabs and a trait grid.", this);
-			loading = false;
-			yield break;
-		}
+	
 		F.I.ReloadUserParts();
 		catalog = F.I.originalVehiclePartCatalog;
 		loadedPartsVersion = catalog.UserPartsVersion;
@@ -128,50 +98,11 @@ public class TuningSelector : Sfxable
 		selectedRow = Mathf.Max(0, rows.FindIndex(row => row.type == rememberedCategory));
 		yield return null;
 		Canvas.ForceUpdateCanvases();
-		RefreshSelectedPart(false);
 		loading = false;
 		loadRoutine = null;
 	}
 
-	void ResolveViewBindings()
-	{
-		Transform view = transform;
-		while (view.parent && view.name != "TuningView") view = view.parent;
-		if (!tuningBackground)
-		{
-			foreach (BackgroundTiles background in view.GetComponentsInChildren<BackgroundTiles>(true))
-			{
-				if (background.name == "CVBckBrown")
-				{
-					tuningBackground = background;
-					break;
-				}
-				if (background.TryGetComponent(out Image image) && image.sprite == background.tileBrown)
-					tuningBackground = background;
-			}
-		}
-		if (!content)
-		{
-			ScrollRect scroll = GetComponentInChildren<ScrollRect>(true);
-			if (scroll) content = scroll.content;
-		}
-		if (!partImageTemplate) partImageTemplate = Resources.Load<GameObject>("prefabs/partContent");
-		if (!TraitValuePrefab) TraitValuePrefab = Resources.Load<GameObject>("prefabs/ElementValue");
-		if (!traitsContent)
-		{
-			GridLayoutGroup grid = view.GetComponentInChildren<GridLayoutGroup>(true);
-			if (grid) traitsContent = (RectTransform)grid.transform;
-		}
-		foreach (Text text in view.GetComponentsInChildren<Text>(true))
-		{
-			if (!partTypeText && text.name == "Type") partTypeText = text;
-			if (!partNameText && text.name == "Name") partNameText = text;
-			if (!partDescrText && text.name == "Description") partDescrText = text;
-		}
-		DisableLocalization(partTypeText ? partTypeText.gameObject : null);
-		DisableLocalization(partNameText ? partNameText.gameObject : null);
-		DisableLocalization(partDescrText ? partDescrText.gameObject : null);
-	}
+	
 
 	void BuildRows(OriginalVehicleCarSetup allowedSetup)
 	{
@@ -185,7 +116,7 @@ public class TuningSelector : Sfxable
 			scroll.enabled = false;
 		}
 		RectTransform viewport = content.parent as RectTransform;
-		RectTransform template = partImageTemplate.GetComponent<RectTransform>();
+		RectTransform template = null;// sponsorImageTemplate.GetComponent<RectTransform>();
 		float imageWidth = template.rect.width * Mathf.Abs(template.localScale.x);
 		float imageHeight = template.rect.height * Mathf.Abs(template.localScale.y);
 		rowSpacing = Mathf.Max(imageHeight + 24, viewport.rect.height);
@@ -220,14 +151,12 @@ public class TuningSelector : Sfxable
 			row.selectedIndex = Mathf.Max(0, parts.FindIndex(part => part.id == equippedId));
 			for (int i = 0; i < parts.Count; i++)
 			{
-				GameObject icon = Instantiate(partImageTemplate, rowTransform, false);
+				GameObject icon = null;// Instantiate(sponsorImageTemplate, rowTransform, false);
 				icon.name = parts[i].id;
 				RectTransform rect = (RectTransform)icon.transform;
 				rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(0.5f, 0.5f);
 				rect.anchoredPosition = new Vector2(i * (imageWidth + 24), 0);
 				Image image = icon.GetComponent<Image>();
-				image.sprite = parts[i].IsUserPart ? Resources.Load<Sprite>("catalog/locked") : Resources.Load<Sprite>("catalog/upgrades/frontend_pages_catalog_upgrades_" +
-					ImageCategories[(int)slot.type] + "_" + parts[i].index.ToString("D2"));
 				image.preserveAspect = true;
 				icon.SetActive(true);
 				row.images.Add(rect);
@@ -239,8 +168,7 @@ public class TuningSelector : Sfxable
 		for (int i = rows.Count; i < content.childCount; i++) content.GetChild(i).gameObject.SetActive(false);
 		content.sizeDelta = new Vector2(viewport.rect.width,
 			viewport.rect.height + Mathf.Max(0, rows.Count - 1) * rowSpacing);
-		if (traitCells.Count == 0)
-			foreach (Transform child in traitsContent) child.gameObject.SetActive(false);
+		
 	}
 
 	static void DisableAutomaticLayout(RectTransform target)
@@ -263,30 +191,6 @@ public class TuningSelector : Sfxable
 		selectedRow = nextRow;
 		row.selectedIndex = nextPart;
 		PlaySFX("fe-bitmapscroll");
-		RefreshSelectedPart(true);
-	}
-
-	void RefreshSelectedPart(bool equip)
-	{
-		OriginalVehiclePartDefinition part = SelectedPart;
-		if (part == null)
-		{
-			if (partTypeText) partTypeText.text = "";
-			if (partNameText) partNameText.text = "";
-			if (partDescrText) partDescrText.text = F.I.LocStr("No parts available");
-			foreach (GameObject cell in traitCells) cell.SetActive(false);
-			return;
-		}
-		rememberedCategory = part.type;
-		if (equip) EquipPart(part);
-		if (partTypeText) partTypeText.text = F.I.LocStr(CategoryNames[(int)part.type]) + ":";
-		if (partNameText) partNameText.text = F.I.LocStr(part.IsUserPart ? part.GetName() : "Tuning." + part.id + ".Name");
-		if (partDescrText) partDescrText.text = F.I.LocStr(part.IsUserPart ? part.GetDescription() : "Tuning." + part.id + ".Description");
-		RefreshTraits(part);
-		if (containerCo != null) StopCoroutine(containerCo);
-		containerCo = StartCoroutine(MoveToPart());
-		if (barsAndRadialCo != null) StopCoroutine(barsAndRadialCo);
-		barsAndRadialCo = StartCoroutine(SetPerformanceBarsAndRadial());
 	}
 
 	void EquipPart(OriginalVehiclePartDefinition part)
@@ -306,42 +210,9 @@ public class TuningSelector : Sfxable
 		}
 	}
 
-	void RefreshTraits(OriginalVehiclePartDefinition part)
-	{
-		int count = 0;
-		if (part.IsUserPart)
-		{
-			foreach (var entry in part.physicsOverrides)
-				SetTraitCell(count++, entry.Key, entry.Value);
-			for (int i = count; i < traitCells.Count; i++) traitCells[i].SetActive(false);
-			LayoutRebuilder.ForceRebuildLayoutImmediate(traitsContent);
-			return;
-		}
-		for (int i = 0; i < part.parameterNames.Length && i < part.parameters.Length; i++)
-		{
-			float value = part.parameters[i];
-			if (value == -99999 || float.IsNaN(value) || float.IsInfinity(value)) continue;
-			string label = PhysicsParameterName(part.parameterNames[i], i);
-			if (label == null) continue;
-			SetTraitCell(count++, label, value);
-		}
-		for (int i = count; i < traitCells.Count; i++) traitCells[i].SetActive(false);
-		LayoutRebuilder.ForceRebuildLayoutImmediate(traitsContent);
-	}
+	
 
-	void SetTraitCell(int index, string label, float value)
-	{
-		if (index == traitCells.Count)
-		{
-			GameObject cell = Instantiate(TraitValuePrefab, traitsContent, false);
-			DisableLocalization(cell);
-			traitCells.Add(cell);
-		}
-		GameObject trait = traitCells[index];
-		trait.SetActive(true);
-		trait.transform.Find("Element").GetComponent<Text>().text = label + ":";
-		trait.transform.Find("Value").GetComponent<Text>().text = value.ToString("0.#####", CultureInfo.InvariantCulture);
-	}
+	
 	static void DisableLocalization(GameObject target)
 	{
 		if (!target) return;
@@ -353,28 +224,59 @@ public class TuningSelector : Sfxable
 	{
 		return source.Trim() switch
 		{
-			"Additive Mass" => "additiveMass", "Base Mass" => "mass",
-			"Com A" => "comA", "Com B" => "comB", "Com H" => "comHeight",
-			"Ride Height" => "rideHeight", "Cm" => column > 40 ? "turboDecay" : "engineDecay",
-			"Rpm Idle" => "rpmIdle", "Rpm Limit" => "rpmLimit",
+			"Additive Mass" => "additiveMass",
+			"Base Mass" => "mass",
+			"Com A" => "comA",
+			"Com B" => "comB",
+			"Com H" => "comHeight",
+			"Ride Height" => "rideHeight",
+			"Cm" => column > 40 ? "turboDecay" : "engineDecay",
+			"Rpm Idle" => "rpmIdle",
+			"Rpm Limit" => "rpmLimit",
 			"Rpm Max" => column > 40 ? "turboMax" : "rpmMax",
-			"Max Torque" => "maxTorque", "Torque Env" => "torqueCurveIndex",
-			"Drive Mode" => "driveMode", "Final Drive" => "finalDrive", "Gears" => "forwardGears",
-			"Shift" => "shiftTime", "Efficiency" => "efficiency", "4WD Split" => "powerSplit",
-			"GearCog1" => "gearRatio1", "GearCog2" => "gearRatio2", "GearCog3" => "gearRatio3",
-			"GearCog4" => "gearRatio4", "GearCog5" => "gearRatio5", "GearCog6" => "gearRatio6",
-			"GearCog7" => "gearRatio7", "GearCog8" => "gearRatio8",
-			"Brake Bias" => "brakeBias", "Brake Accel." => "brakeAcceleration",
-			"Travel in" => "travelIn", "Damping in" => "dampingIn", "Stiffness in" => "stiffnessIn",
-			"Max Travel" => "travelOut", "Max Damp." => "dampingOut", "Max Stiff." => "stiffnessOut",
-			"Cs" => "staticFriction", "Ck" => "kineticFriction", "Cd" => "dragCoefficient",
-			"Cl" => "liftCoefficient", "Steering angle" => "steeringMax",
-			"Sensitivity" => "steeringSensitivity", "Acceleration" => "steeringAcceleration",
-			"Max Fuel" => "fuelCapacity", "Fuel Consumpt" => "fuelConsumption", "Refuel Rate" => "refuelRate",
-			"Rpm Acc" => "turboAcceleration", "Power Mult" => "turboScale",
-			"Max Consump" => "turboConsumption", "Fuel Cut Off" => "turboEnergyThreshold",
-			"Launchtime" => "launchTime", "Launch Tolerance" => "launchTolerance", "Launch Speed" => "launchSpeed",
-			"Mat Rot Speed X" => "maxPitchSpeed", "Mat Rot Speed Y" => "maxYawSpeed",
+			"Max Torque" => "maxTorque",
+			"Torque Env" => "torqueCurveIndex",
+			"Drive Mode" => "driveMode",
+			"Final Drive" => "finalDrive",
+			"Gears" => "forwardGears",
+			"Shift" => "shiftTime",
+			"Efficiency" => "efficiency",
+			"4WD Split" => "powerSplit",
+			"GearCog1" => "gearRatio1",
+			"GearCog2" => "gearRatio2",
+			"GearCog3" => "gearRatio3",
+			"GearCog4" => "gearRatio4",
+			"GearCog5" => "gearRatio5",
+			"GearCog6" => "gearRatio6",
+			"GearCog7" => "gearRatio7",
+			"GearCog8" => "gearRatio8",
+			"Brake Bias" => "brakeBias",
+			"Brake Accel." => "brakeAcceleration",
+			"Travel in" => "travelIn",
+			"Damping in" => "dampingIn",
+			"Stiffness in" => "stiffnessIn",
+			"Max Travel" => "travelOut",
+			"Max Damp." => "dampingOut",
+			"Max Stiff." => "stiffnessOut",
+			"Cs" => "staticFriction",
+			"Ck" => "kineticFriction",
+			"Cd" => "dragCoefficient",
+			"Cl" => "liftCoefficient",
+			"Steering angle" => "steeringMax",
+			"Sensitivity" => "steeringSensitivity",
+			"Acceleration" => "steeringAcceleration",
+			"Max Fuel" => "fuelCapacity",
+			"Fuel Consumpt" => "fuelConsumption",
+			"Refuel Rate" => "refuelRate",
+			"Rpm Acc" => "turboAcceleration",
+			"Power Mult" => "turboScale",
+			"Max Consump" => "turboConsumption",
+			"Fuel Cut Off" => "turboEnergyThreshold",
+			"Launchtime" => "launchTime",
+			"Launch Tolerance" => "launchTolerance",
+			"Launch Speed" => "launchSpeed",
+			"Mat Rot Speed X" => "maxPitchSpeed",
+			"Mat Rot Speed Y" => "maxYawSpeed",
 			_ => null
 		};
 	}
@@ -390,31 +292,27 @@ public class TuningSelector : Sfxable
 		Vector2 targetContent = new Vector2(initialContent.x, selectedRow * rowSpacing);
 		Vector2 initialRow = row.transform.anchoredPosition;
 		Vector2 targetRow = new Vector2(-row.images[row.selectedIndex].anchoredPosition.x, initialRow.y);
-		Vector2 initialScroll = new Vector2(scrollx ? scrollx.value : 0, scrolly ? scrolly.value : 1);
-		Vector2 initialSize = new Vector2(scrollx ? scrollx.size : 1, scrolly ? scrolly.size : 1);
+		Vector2 initialScroll = new Vector2(scrollx ? scrollx.value : 0, 0);
+		Vector2 initialSize = new Vector2(scrollx ? scrollx.size : 1, 0);
 		float horizontalProgress = row.parts.Count == 1 ? 0 : (float)row.selectedIndex / (row.parts.Count - 1);
 		float verticalProgress = rows.Count == 1 ? 0 : (float)selectedRow / (rows.Count - 1);
 		Vector2 targetScroll = new Vector2(
 			scrollx && scrollx.direction == Scrollbar.Direction.RightToLeft ? 1 - horizontalProgress : horizontalProgress,
-			scrolly && scrolly.direction == Scrollbar.Direction.BottomToTop ? 1 - verticalProgress : verticalProgress);
+			0);
 		Vector2 targetSize = new Vector2(1f / row.parts.Count, 1f / rows.Count);
 		for (float timer = 0; timer < 1; timer += Time.unscaledDeltaTime)
 		{
 			float step = F.EasingOutQuint(timer);
 			backgroundPosition = Mathf.Lerp(initialBackground, targetBackground, step);
-			if (tuningBackground) tuningBackground.SetTuningBlend(backgroundPosition);
 			content.anchoredPosition = Vector2.Lerp(initialContent, targetContent, step);
 			row.transform.anchoredPosition = Vector2.Lerp(initialRow, targetRow, step);
 			if (scrollx) { scrollx.SetValueWithoutNotify(Mathf.Lerp(initialScroll.x, targetScroll.x, step)); scrollx.size = Mathf.Lerp(initialSize.x, targetSize.x, step); }
-			if (scrolly) { scrolly.SetValueWithoutNotify(Mathf.Lerp(initialScroll.y, targetScroll.y, step)); scrolly.size = Mathf.Lerp(initialSize.y, targetSize.y, step); }
 			yield return null;
 		}
 		backgroundPosition = targetBackground;
-		if (tuningBackground) tuningBackground.SetTuningBlend(backgroundPosition);
 		content.anchoredPosition = targetContent;
 		row.transform.anchoredPosition = targetRow;
 		if (scrollx) { scrollx.SetValueWithoutNotify(targetScroll.x); scrollx.size = targetSize.x; }
-		if (scrolly) { scrolly.SetValueWithoutNotify(targetScroll.y); scrolly.size = targetSize.y; }
 		containerCo = null;
 		d_co = true;
 	}
@@ -422,16 +320,16 @@ public class TuningSelector : Sfxable
 	IEnumerator SetPerformanceBarsAndRadial()
 	{
 		if (barWidths.Length == 0) yield break;
-		float[] targetBars = carConfig.SGP;
-		float[] initialBars = new float[barWidths.Length];
-		for (int i = 0; i < initialBars.Length; i++) initialBars[i] = bars[i] ? bars[i].sizeDelta.x : 0;
-		for (float timer = 0; timer < 1; timer += Time.unscaledDeltaTime)
-		{
-			float step = Easing.OutCubic(timer);
-			for (int i = 0; i < initialBars.Length && i < targetBars.Length; i++)
-				if (bars[i]) bars[i].sizeDelta = new Vector2(Mathf.Lerp(initialBars[i], targetBars[i] * barWidths[i], step), bars[i].sizeDelta.y);
-			yield return null;
-		}
-		barsAndRadialCo = null;
+		//float[] targetBars = carConfig.SGP;
+		//float[] initialBars = new float[barWidths.Length];
+		//for (int i = 0; i < initialBars.Length; i++) initialBars[i] = bars[i] ? bars[i].sizeDelta.x : 0;
+		//for (float timer = 0; timer < 1; timer += Time.unscaledDeltaTime)
+		//{
+		//	float step = Easing.OutCubic(timer);
+		//	for (int i = 0; i < initialBars.Length && i < targetBars.Length; i++)
+		//		if (bars[i]) bars[i].sizeDelta = new Vector2(Mathf.Lerp(initialBars[i], targetBars[i] * barWidths[i], step), bars[i].sizeDelta.y);
+		//	yield return null;
+		//}
+		//barsAndRadialCo = null;
 	}
 }

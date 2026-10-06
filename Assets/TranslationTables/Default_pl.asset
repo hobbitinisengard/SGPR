@@ -2029,6 +2029,50 @@ MonoBehaviour:
     m_Localized: "Uk\u0142ad nap\u0119du na cztery ko\u0142a TGR."
     m_Metadata:
       m_Items: []
+  - m_Id: 187701912941420663
+    m_Localized: Przetrwanie
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420664
+    m_Localized: "TRACI ENERGI\u0118!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188004823470759936
+    m_Localized: WYBIERZ SLOT MISTRZOSTW
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188005531444109312
+    m_Localized: WYBIERZ SEZON
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188038140953944064
+    m_Localized: MODYFIKUJ POJAZD
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188038661651619840
+    m_Localized: "ZMIE\u0143 POJAZD"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188040083000582144
+    m_Localized: "ZESP\xD3\u0141"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188040234964410368
+    m_Localized: "ZWYCI\u0118STW"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188040853192237056
+    m_Localized: "Status zespo\u0142u"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188065932869427200
+    m_Localized: "PODGL\u0104D TRASY"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615744
+    m_Localized: START
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

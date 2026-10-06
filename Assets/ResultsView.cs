@@ -11,6 +11,7 @@ public class Result
 {
 	public VehicleParent vp;
 	public bool finished;
+	public bool disqualified;
 	public ulong id;
 	public string name;
 	public TimeSpan lap;
@@ -38,6 +39,7 @@ public class Result
 		score = vp.lastRoundScore;
 		sponsor = vp.sponsor;
 		finished = !vp.raceBox.enabled;
+		disqualified = vp.raceBox.SurvivalEliminated;
 		maxAeroStars = vp.raceBox.maxAeroStars;
 		//Debug.Log(string.Format("{0}, RaceProgressLaps:{1}, score:{2}, ", name, progress, aeromiles));
 	}
@@ -252,6 +254,11 @@ public class ResultsView : MainMenuView
 	private int driftBonus;
 	private int aeroMeter;
 	public static readonly Comparison<Result> raceComp = new((Result x, Result y) => x.raceTime.TotalSeconds.CompareTo(y.raceTime.TotalSeconds));
+	public static readonly Comparison<Result> survivalComp = new((Result x, Result y) =>
+	{
+		if (x.disqualified != y.disqualified) return x.disqualified ? 1 : -1;
+		return x.disqualified ? y.progress.CompareTo(x.progress) : raceComp(x, y);
+	});
 	public static readonly Comparison<Result> knockoutComp = new((Result x, Result y) => { return y.progress.CompareTo(x.progress); });
 	public static readonly Comparison<Result> stuntComp = new((Result x, Result y) => y.aeromiles.CompareTo(x.aeromiles));
 	public static readonly Comparison<Result> driftComp = new((Result x, Result y) => y.drift.CompareTo(x.drift));
@@ -506,6 +513,7 @@ public class ResultsView : MainMenuView
 		return F.I.s_raceType switch
 		{
 			RaceType.Race => raceComp,
+			RaceType.Survival => survivalComp,
 			RaceType.Knockout => knockoutComp,
 			RaceType.Stunt => stuntComp,
 			RaceType.Drift => driftComp,
@@ -766,6 +774,7 @@ public class ResultsView : MainMenuView
 		var p = resultData.FirstOrDefault(p => p.name == F.I.playerData.playerName);
 		switch (F.I.s_raceType)
 		{
+			case RaceType.Survival:
 			case RaceType.Race:
 				p.raceTime = TimeSpan.FromHours(24);
 				break;

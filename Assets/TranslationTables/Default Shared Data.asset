@@ -1995,6 +1995,50 @@ MonoBehaviour:
     m_Key: Tuning.Drive03.Description
     m_Metadata:
       m_Items: []
+  - m_Id: 187701912941420663
+    m_Key: Survival
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420664
+    m_Key: IS DISCHARGING!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188004823470759936
+    m_Key: SELECT CHAMPIONSHIP SLOT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188005531444109312
+    m_Key: SELECT SEASON
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188038140953944064
+    m_Key: MODIFY VEHICLE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188038661651619840
+    m_Key: CHANGE VEHICLE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188040083000582144
+    m_Key: TEAM
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188040234964410368
+    m_Key: WON
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188040853192237056
+    m_Key: Current team status
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188065932869427200
+    m_Key: TRACK PREVIEW
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615744
+    m_Key: START
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

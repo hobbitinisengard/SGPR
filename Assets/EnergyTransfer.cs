@@ -27,7 +27,7 @@ public class EnergyTransfer : MonoBehaviour
 
 		colliders = new HashSet<Collider> { other };
 		collidersInTunnel.Add(vp, colliders);
-		RaceManager.I.hud.infoText.AddMessage(new Message(vp.name + " " + F.I.LocStr("IS RECHARGING!"), BottomInfoType.PIT_IN));
+		RaceManager.I.hud.infoText.AddMessage(new Message(vp.name + " " + F.I.LocStr(F.I.s_raceType == RaceType.Survival ? "IS DISCHARGING!" : "IS RECHARGING!"), BottomInfoType.PIT_IN));
 		vp.PlayBatteryLoadingFXs(true);
 		var pitsPathCreator = transform.parent.parent.GetComponent<EnergyTunnelPath>().pitsPathCreator;
 		// The player keeps control through the charging trigger. Their autodrive
