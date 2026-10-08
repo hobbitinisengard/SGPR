@@ -1,0 +1,20 @@
+{
+  "author": "viatrufka",
+  "localizedDescriptions": [
+    "short simple track",
+    "krótka trasa"
+  ],
+  "localizedNames": [
+    "eight",
+    "Ósemka"
+  ],
+  "valid": true,
+  "envir": "SPN",
+  "preferredCarClass": "Team",
+  "difficulty": 4,
+  "unlocked": true,
+  "icons": [
+    3,
+    5
+  ]
+}

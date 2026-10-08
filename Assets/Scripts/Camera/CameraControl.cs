@@ -403,7 +403,7 @@ namespace RVP
 							lookObjVelCoeff = 1;
 							Quaternion cameraStoppedRotation = Quaternion.LookRotation(cameraTargetPosition - tr.position, rollUp);
 							//Quaternion cameraStoppedRotation = Quaternion.LookRotation(vp.rb.linearVelocity, rollUp);
-							rotation = Quaternion.Lerp(tr.rotation, cameraStoppedRotation, 2 * Time.fixedDeltaTime);
+							rotation = Quaternion.Lerp(tr.rotation, cameraStoppedRotation, Time.fixedDeltaTime);
 						}
 						else
 						{// camera right behind car

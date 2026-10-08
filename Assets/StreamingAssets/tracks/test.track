@@ -1,0 +1,21 @@
+{
+  "author": "viatrufka",
+  "localizedDescriptions": [
+    "test",
+    "test"
+  ],
+  "localizedNames": [
+    "test",
+    "test"
+  ],
+  "valid": true,
+  "envir": "JAP",
+  "preferredCarClass": "Team",
+  "difficulty": 2,
+  "unlocked": true,
+  "icons": [
+    3,
+    5,
+    6
+  ]
+}

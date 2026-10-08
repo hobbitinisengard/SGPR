@@ -256,6 +256,8 @@ public static class Championships
 		F.I.s_raceType = Current.season == "SURVIVAL" ? RaceType.Survival : RaceType.Race;
 		F.I.teams = false; F.I.s_spectator = false; F.I.randomCars = F.I.randomTracks = false;
 		F.I.s_inEditor = false; F.I.scoringType = ScoringType.Championship;
+		F.I.s_cpuLevel = CpuLevel.Hard; F.I.s_roadType = (PavementType)UnityEngine.Random.Range(0, Enum.GetValues(typeof(PavementType)).Length-1);
+		F.I.s_timeOfDay = (TimeOfDay)UnityEngine.Random.Range(0, Info.TimeOfDays);
 		ResultsView.Clear(); Save(); RacePending = true; return true;
 	}
 	public static CarConfig OpponentConfig(int carIndex)

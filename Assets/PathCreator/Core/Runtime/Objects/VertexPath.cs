@@ -265,11 +265,9 @@ namespace PathCreation
 			}
 
 			// For closed loops, allow the range to wrap around the end by adding length to end
-			bool wrappedQuery = false;
 			if (isClosedLoop && e < s)
 			{
 				e += length;
-				wrappedQuery = true;
 			}
 
 			// For open paths, cumulative distance is sorted. Begin near the

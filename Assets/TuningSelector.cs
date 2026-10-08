@@ -8,7 +8,7 @@ using UnityEngine.UI;
 using UnityEngine.UIElements.Experimental;
 using RVP;
 
-public class TuningSelector : Sfxable
+public class TuningSelector : MainMenuView
 {
 	// Keep the existing Inspector bindings and animation controls.
 	public RectTransform[] bars;
@@ -22,9 +22,7 @@ public class TuningSelector : Sfxable
 	public Scrollbar scrolly;
 	public RectTransform traitsContent;
 	public BackgroundTiles tuningBackground;
-	public GameObject PriceNew;
-	public GameObject CashBalance;
-	public GameObject TradeIn;
+	public GameObject PartPricesUI;
 	public bool d_co;
 
 	const float AnimationSpeed = 3f;
@@ -72,13 +70,18 @@ public class TuningSelector : Sfxable
 			barWidths[i] = bars[i] ? bars[i].sizeDelta.x : 0;
 	}
 
-	void OnEnable()
+	override protected void OnEnable()
 	{
+		base.OnEnable();
+		if (Championships.Active)
+			bottomText.text = F.I.LocStr("Pick a part you want to buy and accept purchase");
+		else
+			bottomText.text = F.I.LocStr("Navigate to an unlocked part to mount it");
 		F.I.enterRef.action.performed += ConfirmPurchase;
 		UpdatePurchaseUI(); Reload();
 	}
 
-	void OnDisable()
+	override protected void OnDisable()
 	{
 		F.I.enterRef.action.performed -= ConfirmPurchase;
 		if (navigationAction != null)
@@ -87,6 +90,7 @@ public class TuningSelector : Sfxable
 		StopAllCoroutines();
 		loadRoutine = containerCo = barsAndRadialCo = null;
 		loading = false;
+		base.OnDisable();
 	}
 
 	void Update()
@@ -353,16 +357,14 @@ public class TuningSelector : Sfxable
 	void UpdatePurchaseUI()
 	{
 		bool active = Championships.Active;
-		if (PriceNew) PriceNew.SetActive(active);
-		if (CashBalance) CashBalance.SetActive(active);
-		if (TradeIn) TradeIn.SetActive(active);
+		PartPricesUI.SetActive(active);
 		if (!active || SelectedPart == null) return;
 		var part = SelectedPart;
 		var installed = F.I.originalVehiclePartCatalog.GetSelectedPart(F.I.cars[Championships.Current.carIndex].config.originalParts, part.type);
-		SetMoneyValue(PriceNew, Championships.PartPrice(part));
-		SetMoneyValue(CashBalance, Championships.Current.cash);
+		SetMoneyValue(PartPricesUI.transform.GetChild(0).gameObject, Championships.PartPrice(part));
+		SetMoneyValue(PartPricesUI.transform.GetChild(1).gameObject, Championships.Current.cash);
 		int exchangeBalance = installed?.id == part.id ? 0 : -Championships.PartCost(part);
-		SetMoneyValue(TradeIn, exchangeBalance);
+		SetMoneyValue(PartPricesUI.transform.GetChild(2).gameObject, exchangeBalance);
 
 	}
 	static void SetMoneyValue(GameObject root, int amount)

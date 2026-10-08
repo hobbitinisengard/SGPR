@@ -78,7 +78,7 @@ namespace RVP
 		const float SourceSpeedToMetresPerSecond = 0.6f;
 		const float SourceMassToKilograms = 0.001f;
 		const float SourceLengthToMetres = 0.01f;
-		const float SourceTicksPerSecond = 60f;
+		public const float SourceTicksPerSecond = 60f;
 		const float SourceEnergyCapacity = 1000f;
 		const float SourceHumanRespawnEnergyCost = 5f;
 		const float SourceCpuRespawnEnergyCost = 3.5f;
@@ -263,6 +263,9 @@ namespace RVP
 		Vector3 groundSurfaceContactNormalSumThisTick;
 		bool sourceRotationDiagnosticLogged;
 		int sourceStabilityDiagnosticSamples;
+		int formulaAccelerationDiagnosticSamples;
+		float nextFormulaAccelerationDiagnosticTime;
+		float diagnosticEngineMass, diagnosticDriveAcceleration;
 		float nextSourceStabilityDiagnosticTime;
 		bool sourceSuspensionDiagnosticLogged;
 		bool sourceSuspensionObservationLogged;
@@ -1939,7 +1942,7 @@ namespace RVP
 		{
 			// contact_response.cpp linear_friction: tangential motion is
 			// cancelled below 20% of impact speed, otherwise 10% is removed. The
-			// source's velocity unit is one 60 Hz tick, independent of Unity's step.
+			// source's velocity unit is one source tick, independent of Unity's step.
 			Vector3 relative = collision.relativeVelocity / SourceSpeedToMetresPerSecond;
 			for (int i = 0; i < collision.contactCount; i++)
 			{
@@ -2342,8 +2345,10 @@ namespace RVP
 			}
 			int dynamicsContactClass = ClassifySourceContacts();
 			Quaternion incrementalAfterContact = sourceIncrementalRotation;
+			Vector3 velocityBeforeTyres = vehicle.rb.linearVelocity;
 			using (SourceTyreMarker.Auto())
 				ApplyTyres(tickScale, dynamicsContactClass);
+			LogFormulaAcceleration(contactStartVelocity, velocityBeforeTyres);
 			Vector3 tyreDynamicsIncrementVector = RotationVector(
 				sourceIncrementalRotation * Quaternion.Inverse(incrementalAfterContact));
 			using (SourceTyreMarker.Auto())
@@ -2472,6 +2477,31 @@ namespace RVP
 					sourceContactResetReason = null;
 				}
 			}
+		}
+		void LogFormulaAcceleration(Vector3 velocityBeforeContacts, Vector3 velocityBeforeTyres)
+		{
+			// Eight samples per vehicle instance, no per-frame string allocations.
+			if (vehicle.carNumber != 18 || SourceUpgradeActive || formulaAccelerationDiagnosticSamples >= 8 ||
+				CountDownSeq.Countdown > 0 || SourceRawAccelInput < 0.25f || gear < 2 ||
+				Time.fixedTime < nextFormulaAccelerationDiagnosticTime)
+				return;
+			nextFormulaAccelerationDiagnosticTime = Time.fixedTime + 1;
+			formulaAccelerationDiagnosticSamples++;
+			Vector3 forward = sourceForwardBasis;
+			float before = Vector3.Dot(velocityBeforeContacts, forward);
+			float beforeTyres = Vector3.Dot(velocityBeforeTyres, forward);
+			float after = Vector3.Dot(vehicle.rb.linearVelocity, forward);
+			float dt = Mathf.Max(Time.fixedDeltaTime, 0.0001f);
+			Debug.Log($"[Formula17 acceleration] sample={formulaAccelerationDiagnosticSamples}/8, " +
+				$"source={parameters.sourceConfig}, speed={after * 3.6f:F1}km/h, gear={gear - 1}, rpm={rpm:F0}, " +
+				$"mass={sourceEffectiveMass:F2}, engineMass={diagnosticEngineMass:F2}, maxTorque={parameters.maxTorque:F2}, " +
+				$"torque={torque:F2}, torqueMap={SourceTorqueCurveIndex}, driveMode={parameters.driveMode}, " +
+				$"clutch={clutch:F3}, throttle={throttleSignal:F3}, catchup={F.I.catchup}, performance={performanceMultiplier:F3}, " +
+				$"turboRpm={turboRpm:F0}, turboForce={turboForce:F3}, trickstart={sourceStartBoostActiveThisTick}, " +
+				$"engineStep={diagnosticDriveAcceleration:F4}, " +
+				$"contactAcceleration={Vector3.Dot(sourceContactVelocityDeltaThisTick, forward) / dt:F2}m/s2, " +
+				$"tyreAcceleration={(after - beforeTyres) / dt:F2}m/s2, totalAcceleration={(after - before) / dt:F2}m/s2, " +
+				$"contactGrace={contactCountdown[0]:F1},{contactCountdown[1]:F1},{contactCountdown[2]:F1},{contactCountdown[3]:F1}", vehicle);
 		}
 		void LogFormulaStability(Vector3 appliedContact, Vector3 newContact, Vector3 tyreRotation,
 			Vector3 airRotation)
@@ -2785,7 +2815,7 @@ namespace RVP
 				//	$"countdown={countdown:F3}s, rpm={rpm:F0}/{parameters.rpmMax:F0} ({rpmPercent:F1}%).", vehicle);
 				return;
 			}
-			startBoostTicks = 180;
+			startBoostTicks = 3 * SourceTicksPerSecond;
 			rpm = parameters.rpmMax;
 			// The original suspension pose uses active turbo to add body pitch
 			// during acceleration; it does not apply a separate heave offset.
@@ -3171,7 +3201,8 @@ namespace RVP
 		}
 		void UpdateSourcePerformance()
 		{
-			if (!F.I || F.I.s_inEditor || !vehicle.raceBox || !vehicle.raceBox.enabled ||
+			performanceMultiplier = 1;
+			if (!F.I || !F.I.catchup || F.I.s_inEditor || !vehicle.raceBox || !vehicle.raceBox.enabled ||
 				!vehicle.gameObject.activeInHierarchy)
 				return;
 			var cars = F.I.s_cars;
@@ -3236,7 +3267,7 @@ namespace RVP
 				// on every active tick, including the tick that decrements the timer to 0.
 				sourceStartBoostActiveThisTick = true;
 				startBoostTicks = Mathf.Max(0, startBoostTicks - tickScale);
-				performanceMultiplier = startBoostTicks * 0.0055555556900799274f + 1;
+				performanceMultiplier = startBoostTicks / (3 * SourceTicksPerSecond) + 1;
 				fuel = parameters.fuelCapacity;
 				energy = parameters.fuelCapacity;
 				sourceImpactEnergyLossThisTick = 0;
@@ -3361,7 +3392,7 @@ namespace RVP
 			if (SourceAutomaticShiftAllowed)
 				UpdateAutomaticShift(sourceSpeed, throttle, tickScale);
 			if (clutch < 1)
-				clutch = Mathf.Min(1, clutch + tickScale / Mathf.Max(1, parameters.shiftTime * 60));
+				clutch = Mathf.Min(1, clutch + tickScale / Mathf.Max(1, parameters.shiftTime * SourceTicksPerSecond));
 			if (clutch < 0.5f)
 				throttle = 0;
 			if (throttle < 0.1f)
@@ -3381,6 +3412,8 @@ namespace RVP
 			float engineMass = (float)((double)clutchMass + 50);
 			double accelerationValue = (double)ratio * torque * parameters.finalDrive * parameters.efficiency * throttle /
 				engineMass * 100 * (double)0.00027777778f * 3;
+			diagnosticEngineMass = engineMass;
+			diagnosticDriveAcceleration = (float)accelerationValue;
 			float acceleration = (float)accelerationValue;
 			if (!sourceSpecialMode && energy <= 10)
 			{
@@ -3722,7 +3755,7 @@ namespace RVP
 		{
 			Wheel wheel = vehicle.wheels[UnityWheelIndex[i]];
 			float sourceLoad = sourceProbeWheelTouched[i] ? sourceProbeWheelLoad[i] : 0;
-			// filter_wheel_load runs once per 60 Hz source tick, including in
+			// filter_wheel_load runs once per source tick, including in
 			// the air. Step fractional Unity ticks with the equivalent source
 			// filter decay so the load and grace timer keep source-time duration.
 			float remainingTicks = tickScale;

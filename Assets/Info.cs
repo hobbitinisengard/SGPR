@@ -694,7 +694,6 @@ public class Info : MonoBehaviour
 	};
 	public Sprite[] icons;
 	public bool gamePaused;
-	internal bool controllerInUse;
 	internal bool randomCars;
 	internal bool randomTracks;
 	internal int hostId;

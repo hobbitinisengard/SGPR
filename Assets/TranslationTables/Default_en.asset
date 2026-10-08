@@ -2210,6 +2210,22 @@ MonoBehaviour:
     m_Localized: QUICK RACE
     m_Metadata:
       m_Items: []
+  - m_Id: 188177540870365184
+    m_Localized: Very quick race for very busy people
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188358232631730176
+    m_Localized: Pick a part you want to buy and accept purchase
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188358577143472128
+    m_Localized: Navigate to an unlocked part to mount it
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188378724084277248
+    m_Localized: 'Overwrite picture: '
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

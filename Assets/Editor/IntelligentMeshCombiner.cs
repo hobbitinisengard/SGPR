@@ -78,7 +78,6 @@ public class IntelligentMeshCombiner : EditorWindow
     private bool showOptions = false;
     private bool showFilters = false;
     private bool showVisualizationSettings = false;
-    private bool showToolInformation = false;
 
     private bool drawLines = false;
 

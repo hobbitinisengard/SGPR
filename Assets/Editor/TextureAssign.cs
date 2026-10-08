@@ -57,8 +57,6 @@ public class TextureAssign : EditorWindow
 	string metallicSliderID = "_Metallic";
 	string glossinessSliderID = "_Glossiness";
 	string smoothnessSliderID = "_Smoothness"; //HD SRP Lit shader.
-	string bumpSliderID = "_BumpScale";
-	string normalSliderID = "_NormalScale"; //HD SRP Lit shader.
 
 
 	//These are the names added to the textures when exported by Substance Painter.

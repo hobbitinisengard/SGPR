@@ -9,6 +9,8 @@ public class SavePanelWorks : MonoBehaviour
 	public TMP_InputField trackAuthor;
 	public TMP_Dropdown languageDropdown;
 	public GameObject beigePlane;
+	public GameObject renderImageGameObject;
+	public TextMeshProUGUI overwriteTrackPicButtonText;
 	EditorPanel editorPanel;
 	[NonSerialized]
 	public string[] localizedDescriptions;
@@ -21,9 +23,11 @@ public class SavePanelWorks : MonoBehaviour
 	}
 	private void OnEnable()
 	{
+		overwriteTrackPicButtonText.text = F.I.LocStr("Overwrite track picture:") + (editorPanel.overwriteTrackPicture ? F.I.LocStr("Yes") : F.I.LocStr("No"));
 		F.I.renderTextureCam.SetActive(true);
 		editorPanel.SetVisibleInPictureMode(false);
 		beigePlane.SetActive(true);
+		renderImageGameObject.SetActive(editorPanel.overwriteTrackPicture);
 		Physics.BoxCast(Vector3.zero + 2000 * Vector3.down, new Vector3(3000, 1, 3000), Vector3.up, out var hit, Quaternion.identity, Mathf.Infinity, 1 << F.I.roadLayer);
 		beigePlane.transform.position = hit.point;
 		editorPanel.SetVisibleInPictureMode(true);
@@ -37,6 +41,12 @@ public class SavePanelWorks : MonoBehaviour
 		beigePlane.SetActive(false);
 		//editorPanel.SetPylonVisibility(true);
 		SetFlyCamera(true);
+	}
+	public void ToggleOverwriteTrackPicture()
+	{
+		editorPanel.overwriteTrackPicture = !editorPanel.overwriteTrackPicture;
+		overwriteTrackPicButtonText.text = F.I.LocStr("Overwrite track picture:") + (editorPanel.overwriteTrackPicture ? F.I.LocStr("Yes") : F.I.LocStr("No"));
+		renderImageGameObject.SetActive(editorPanel.overwriteTrackPicture);
 	}
 	public void RegisterName(string name)
 	{

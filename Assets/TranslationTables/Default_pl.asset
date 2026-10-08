@@ -633,7 +633,7 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 70863850045440
     m_Localized: "STUNT GP REMASTERED\\n\\nProgramowanie  - @viatrufka\\nmuzyka i
-      tory - DJ Mistone (@luckygoose)\\ntory - @Arkhnen\\n\\nSPECJALNIE PODZI\u0118KOWANIA\\n\\n
+      tory - DJ Mistone (@luckygoose)\\ntory - @Arkhnen\\n\\nSPECJALNE PODZI\u0118KOWANIA\\n\\n
       martin (forum.xen-tax.com) - za format .PMD v.1.82 i narz\u0119dzia \\n\\n@Halamix2,
       @TushkaN - za format .PMD v.1.62\\n\\n@Dreiji - za oryginaln\u0105 fizyk\u0119
       aut"
@@ -2219,6 +2219,24 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 188158728963940352
     m_Localized: "SZYBKI WY\u015ACIG"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188177540870365184
+    m_Localized: "Bardzo szybki wy\u015Bcig dla zabieganych ludzi"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188358232631730176
+    m_Localized: "Wybierz cz\u0119\u015B\u0107 kt\xF3r\u0105 chcesz zakupi\u0107
+      i zatwierd\u017A zakup"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188358577143472128
+    m_Localized: "Najed\u017A na odblokowan\u0105 cz\u0119\u015B\u0107 \u017Ceby
+      j\u0105 zamontowa\u0107"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188378724084277248
+    m_Localized: "Nadpisa\u0107 obrazek: "
     m_Metadata:
       m_Items: []
   references:

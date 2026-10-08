@@ -718,7 +718,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &2023921332992022350
 Transform:
   m_ObjectHideFlags: 0
@@ -1003,7 +1003,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &7036308157699955445
 Transform:
   m_ObjectHideFlags: 0
@@ -1834,7 +1834,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1357054667711970938
 Transform:
   m_ObjectHideFlags: 0
@@ -2063,7 +2063,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1599343399318234877
 Transform:
   m_ObjectHideFlags: 0
@@ -2175,7 +2175,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &6377378916628594968
 Transform:
   m_ObjectHideFlags: 0
@@ -2766,7 +2766,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &2087314890311671463
 Transform:
   m_ObjectHideFlags: 0
@@ -2999,39 +2999,14 @@ MonoBehaviour:
   - {fileID: 2487640389071866887}
   rearLights:
   - {fileID: 5343642536240803875}
-  accelAxisIsBrake: 0
-  brakeIsReverse: 1
-  holdEbrakePark: 0
-  burnoutThreshold: -1
-  burnoutSpin: 1
-  burnoutSmoothness: 0.5
   engine: {fileID: 6779875396040730803}
   batteryLoadingParticleSystemParent: {fileID: 3520898574937649242}
-  energyRemaining: 1000
-  batteryCapacity: 1000
-  batteryChargingSpeed: 200
-  lowBatteryLevel: 0.2
-  batteryStuntIncreasePercent: 0.1
   wheels:
   - {fileID: 6779875394929326516}
   - {fileID: 6779875396295812404}
   - {fileID: 6779875396142811108}
   - {fileID: 6779875395201521068}
-  wheelGroups:
-  - wheels:
-    - {fileID: 6779875394929326516}
-  - wheels:
-    - {fileID: 6779875396295812404}
-  - wheels:
-    - {fileID: 6779875396142811108}
-  - wheels:
-    - {fileID: 6779875395201521068}
-  hover: 0
   reallyGroundedWheels: 0
-  suspensionCenterOfMass: 1
-  wheelForceMode: 0
-  suspensionForceMode: 0
-  towVehicle: {fileID: 0}
   roadNoiseSnd: {fileID: 1329346153}
   crashSnd: {fileID: 6779875394764497535}
   scrapeSnd: {fileID: 4023472752218344359}
@@ -3041,7 +3016,6 @@ MonoBehaviour:
   - {fileID: 8300000, guid: b08c99567558fd14db654fc4a16ea68f, type: 3}
   - {fileID: 8300000, guid: fcce9f8132480eb46befdb286a2256d4, type: 3}
   sparks: {fileID: 6347354151603906554}
-  cameraheightOffset: 0
   steeringControl: {fileID: 6779875395873480448}
   colliding: 0
   crashing: 0
@@ -3057,74 +3031,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 950cf8b6abec9974792705495dd652de, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  basedOnWheelsGrounded: 1
-  driftSpinAssist: 10
-  driftSpinSpeed: 1
-  driftSpinExponent: 1
-  autoSteerDrift: 0
-  maxDriftAngle: 70
-  driftSpinCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0.1
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 10
-      value: 1
-      inSlope: 0.1
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  driftPush: 0
-  straightenAssist: 0
-  downforce: 6
-  invertDownforceInReverse: 0
-  downforceCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0.05
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 20
-      value: 1
-      inSlope: 0.05
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  autoRollOver: 1
-  steerRollOver: 0
-  rollCheckDistance: 1
-  rollOverForce: 2
-  rollSpeedThreshold: 0
-  initialAngularDrag: 0
-  fallSpeedLimit: Infinity
-  applyFallLimitUpwards: 0
-  X: 0.1
-  Z: 0.1
 --- !u!114 &4194641081301078446
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3137,14 +3043,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e45c5ede14091ac489343ac18aa547dd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  angleThres: 15
   evoBloorp: {fileID: 515682680}
-  rX_delta: 0
-  euler: {x: 0, y: 0, z: 0}
-  posy: 0
-  tary: 0
-  rotationSpeed: 5
-  mult: 1000
 --- !u!114 &6779875395068024192
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3299,8 +3198,8 @@ MonoBehaviour:
   outOfTrackTime: 0
   outOfTrackRequiredTime: 2
   lowSpeedTime: 0
-  aiStuntingProc: 0
   targetSteer: 0
+  debugDrawAIPath: 0
   maxDiff: 0.01
   univProgress: 0
 --- !u!114 &8319369162350912230
@@ -3908,14 +3807,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   wheel: {fileID: 6779875394929326516}
-  generateHardCollider: 1
-  hardColliderRadiusFactor: 1
-  brakeForce: 0.01
   steerRangeMin: -35
   steerRangeMax: 35
-  steerFactor: 1
   steerAngle: 0
-  ackermannFactor: 0.1
   camberCurve:
     serializedVersion: 2
     m_Curve:
@@ -3949,42 +3843,9 @@ MonoBehaviour:
   pivotOffset: 0
   suspensionDistance: 0.25
   targetCompression: 1
-  springForce: 12
-  springForceCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 1
-      outSlope: 1
-      tangentMode: 34
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 1
-      outSlope: 1
-      tangentMode: 34
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  springExponent: 1
-  springDampening: 0.4
-  applyHardContactForce: 0
-  hardContactForce: 25
-  hardContactSensitivity: 0
-  applyForceAtGroundContact: 1
-  leaningForce: 0
   damagePivot: {x: 0, y: 0, z: 0}
   detachedCompression: 0.5
   jamForce: Infinity
-  appliedSuspensionForce: {x: 0, y: 0, z: 0}
 --- !u!1 &6779875394929326518
 GameObject:
   m_ObjectHideFlags: 0
@@ -4051,41 +3912,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ecbf6806518860b4ba6e32c8e44407ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  generateHardCollider: 1
-  axleFriction: 0.001
-  forwardFriction: 12
-  sidewaysFriction: 12
-  forwardRimFriction: 1
-  sidewaysRimFriction: 1
-  forwardStretch: 1
-  sidewaysCurveStretch: 1
   forwardSlip: 0
-  slipDependence: 1
-  normalFrictionCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  compressionFrictionFactor: 0
   tireRadius: 0.42181593
   rimRadius: 0.3
   tireWidth: 0.18861157
@@ -4095,10 +3922,6 @@ MonoBehaviour:
   canPop: 0
   deformAmount: 0
   rimGlow: 0
-  currentRPM: 0
-  rawRPM: 0
-  actualTorque: 0
-  applyForceAtGroundContact: 0
   impactSnd: {fileID: 6779875396549254752}
   tireHitClips:
   - {fileID: 8300000, guid: 2d7b28651a8a8f64290708da0c5314d7, type: 3}
@@ -4113,11 +3936,6 @@ MonoBehaviour:
   detachedTireMaterial: {fileID: 0}
   detachedRimMaterial: {fileID: 0}
   airGreenParticleSystem: {fileID: 0}
-  d_brakeForce: 0
-  d_targetForce: 0
-  rpmBiasCurveLimit: 4000
-  eval: 0
-  slipMult: 0
 --- !u!114 &1004512902
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4448,41 +4266,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ecbf6806518860b4ba6e32c8e44407ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  generateHardCollider: 1
-  axleFriction: 0.001
-  forwardFriction: 12
-  sidewaysFriction: 12
-  forwardRimFriction: 1
-  sidewaysRimFriction: 1
-  forwardStretch: 1
-  sidewaysCurveStretch: 1
   forwardSlip: 0
-  slipDependence: 1
-  normalFrictionCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  compressionFrictionFactor: 0
   tireRadius: 0.4238343
   rimRadius: 0.3
   tireWidth: 0.31835768
@@ -4492,10 +4276,6 @@ MonoBehaviour:
   canPop: 0
   deformAmount: 0
   rimGlow: 0
-  currentRPM: 0
-  rawRPM: 0
-  actualTorque: 0
-  applyForceAtGroundContact: 0
   impactSnd: {fileID: 0}
   tireHitClips: []
   rimHitClip: {fileID: 0}
@@ -4508,11 +4288,6 @@ MonoBehaviour:
   detachedTireMaterial: {fileID: 0}
   detachedRimMaterial: {fileID: 0}
   airGreenParticleSystem: {fileID: 0}
-  d_brakeForce: 0
-  d_targetForce: 0
-  rpmBiasCurveLimit: 4000
-  eval: 0
-  slipMult: 0
 --- !u!114 &1968379668835498802
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4705,19 +4480,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   strength: 1
-  automatic: 1
-  skidSteerDrive: 0
-  outputDrives:
-  - {fileID: 6779875395759827800}
-  - {fileID: 6779875395547520795}
-  driveDividePower: 3
   audioShift: {fileID: 8340340605858943697}
-  startGear: 1
-  skipNeutral: 0
-  autoCalculateRpmRanges: 1
-  shiftDelaySeconds: 0.4
-  d_feedback: 0
-  d_rpm: 0
 --- !u!1 &6779875395547520796
 GameObject:
   m_ObjectHideFlags: 0
@@ -4779,14 +4542,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   wheel: {fileID: 6779875395201521068}
-  generateHardCollider: 1
-  hardColliderRadiusFactor: 1
-  brakeForce: 0
   steerRangeMin: 0
   steerRangeMax: 0
-  steerFactor: 0
   steerAngle: 0
-  ackermannFactor: 0.2
   camberCurve:
     serializedVersion: 2
     m_Curve:
@@ -4820,42 +4578,9 @@ MonoBehaviour:
   pivotOffset: 0
   suspensionDistance: 0.25
   targetCompression: 1
-  springForce: 12
-  springForceCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 1
-      outSlope: 1
-      tangentMode: 34
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 1
-      outSlope: 1
-      tangentMode: 34
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  springExponent: 1
-  springDampening: 0.4
-  applyHardContactForce: 0
-  hardContactForce: 25
-  hardContactSensitivity: 0
-  applyForceAtGroundContact: 1
-  leaningForce: 0
   damagePivot: {x: 0, y: 0, z: 0}
   detachedCompression: 0.5
   jamForce: Infinity
-  appliedSuspensionForce: {x: 0, y: 0, z: 0}
 --- !u!1 &6779875395759827805
 GameObject:
   m_ObjectHideFlags: 0
@@ -4917,14 +4642,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   wheel: {fileID: 6779875396142811108}
-  generateHardCollider: 1
-  hardColliderRadiusFactor: 1
-  brakeForce: 0
   steerRangeMin: 0
   steerRangeMax: 0
-  steerFactor: 0
   steerAngle: 0
-  ackermannFactor: 0.2
   camberCurve:
     serializedVersion: 2
     m_Curve:
@@ -4958,42 +4678,9 @@ MonoBehaviour:
   pivotOffset: 0
   suspensionDistance: 0.25
   targetCompression: 1
-  springForce: 12
-  springForceCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 1
-      outSlope: 1
-      tangentMode: 34
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 1
-      outSlope: 1
-      tangentMode: 34
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  springExponent: 1
-  springDampening: 0.4
-  applyHardContactForce: 0
-  hardContactForce: 25
-  hardContactSensitivity: 0
-  applyForceAtGroundContact: 1
-  leaningForce: 0
   damagePivot: {x: 0, y: 0, z: 0}
   detachedCompression: 0.5
   jamForce: Infinity
-  appliedSuspensionForce: {x: 0, y: 0, z: 0}
 --- !u!1 &6779875395873480450
 GameObject:
   m_ObjectHideFlags: 0
@@ -5042,67 +4729,6 @@ MonoBehaviour:
   steeredWheels:
   - {fileID: 6779875394792814007}
   - {fileID: 6779875396000727281}
-  holdDuration: 0
-  gripDuration: 0
-  steerLimit: 0
-  maxDegreesRotation: 0
-  holdComebackSpeed: 0
-  holdCurveValue: 0
-  steerAdd: 0.25
-  steerLimitCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0.5
-      inSlope: 0
-      outSlope: -0.013333334
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 30
-      value: 0.1
-      inSlope: -0.013333334
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  steerComebackCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 1
-      inSlope: 0
-      outSlope: -0.016363636
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 55
-      value: 0.1
-      inSlope: -0.016363636
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  gamma: 2
-  shiftRearFriction: 0
-  absSteerInput: 0
-  collisionWheelMult: 0
-  gripAdd: 0.25
-  gripComebackSpeed: 1
 --- !u!1 &6779875396000727283
 GameObject:
   m_ObjectHideFlags: 0
@@ -5164,14 +4790,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   wheel: {fileID: 6779875396295812404}
-  generateHardCollider: 1
-  hardColliderRadiusFactor: 1
-  brakeForce: 0.01
   steerRangeMin: -35
   steerRangeMax: 35
-  steerFactor: 1
   steerAngle: 0
-  ackermannFactor: 0.1
   camberCurve:
     serializedVersion: 2
     m_Curve:
@@ -5205,42 +4826,9 @@ MonoBehaviour:
   pivotOffset: 0
   suspensionDistance: 0.25
   targetCompression: 1
-  springForce: 12
-  springForceCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 1
-      outSlope: 1
-      tangentMode: 34
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 1
-      outSlope: 1
-      tangentMode: 34
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  springExponent: 1
-  springDampening: 0.4
-  applyHardContactForce: 0
-  hardContactForce: 25
-  hardContactSensitivity: 0
-  applyForceAtGroundContact: 1
-  leaningForce: 0
   damagePivot: {x: 0, y: 0, z: 0}
   detachedCompression: 0.5
   jamForce: Infinity
-  appliedSuspensionForce: {x: 0, y: 0, z: 0}
 --- !u!1 &6779875396040730805
 GameObject:
   m_ObjectHideFlags: 0
@@ -5342,58 +4930,7 @@ MonoBehaviour:
   smoke: {fileID: 0}
   jetConsumption: 0
   boostActivatedTime: 0
-  torqueCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0.019300362
-      value: 0.8466981
-      inSlope: 0.091649465
-      outSlope: 0.091649465
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0.06771464
-    - serializedVersion: 3
-      time: 5.008292
-      value: 0.99929655
-      inSlope: -0.0030038257
-      outSlope: -0.0030038257
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.33333334
-    - serializedVersion: 3
-      time: 7.99035
-      value: 0.0023584962
-      inSlope: -0.5631789
-      outSlope: -0.5631789
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.07442994
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  inertia: 0.375
-  canReverse: 0
-  limit2kRPM: 10.5
-  limitkRPM: 10.35
-  minkRPM: 0.45
-  maxTorque: 0.5
-  outputDrives:
-  - {fileID: 6779875395388755403}
-  driveDividePower: 3
-  actualAccel: 0
   transmission: {fileID: 6779875395388755402}
-  rpmTooHigh: 0
-  d_targetRpm: 0
-  d_feedRpm: 0
-  boostEval: 0
-  d_torqueCurve: 0
-  d_actInput: 0
-  accMult: 1
-  inertiaAcc: 4
 --- !u!82 &4634947501902952183
 AudioSource:
   m_ObjectHideFlags: 0
@@ -5558,41 +5095,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ecbf6806518860b4ba6e32c8e44407ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  generateHardCollider: 1
-  axleFriction: 0.001
-  forwardFriction: 12
-  sidewaysFriction: 12
-  forwardRimFriction: 1
-  sidewaysRimFriction: 1
-  forwardStretch: 1
-  sidewaysCurveStretch: 1
   forwardSlip: 0
-  slipDependence: 1
-  normalFrictionCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  compressionFrictionFactor: 0
   tireRadius: 0.42383367
   rimRadius: 0.3
   tireWidth: 0.31835774
@@ -5602,10 +5105,6 @@ MonoBehaviour:
   canPop: 0
   deformAmount: 0
   rimGlow: 0
-  currentRPM: 0
-  rawRPM: 0
-  actualTorque: 0
-  applyForceAtGroundContact: 0
   impactSnd: {fileID: 0}
   tireHitClips: []
   rimHitClip: {fileID: 0}
@@ -5618,11 +5117,6 @@ MonoBehaviour:
   detachedTireMaterial: {fileID: 0}
   detachedRimMaterial: {fileID: 0}
   airGreenParticleSystem: {fileID: 0}
-  d_brakeForce: 0
-  d_targetForce: 0
-  rpmBiasCurveLimit: 4000
-  eval: 0
-  slipMult: 0
 --- !u!114 &7348575612494076749
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5823,41 +5317,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ecbf6806518860b4ba6e32c8e44407ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  generateHardCollider: 1
-  axleFriction: 0.001
-  forwardFriction: 12
-  sidewaysFriction: 12
-  forwardRimFriction: 1
-  sidewaysRimFriction: 1
-  forwardStretch: 1
-  sidewaysCurveStretch: 1
   forwardSlip: 0
-  slipDependence: 1
-  normalFrictionCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  compressionFrictionFactor: 0
   tireRadius: 0.42181638
   rimRadius: 0.3
   tireWidth: 0.18861148
@@ -5867,10 +5327,6 @@ MonoBehaviour:
   canPop: 0
   deformAmount: 0
   rimGlow: 0
-  currentRPM: 0
-  rawRPM: 0
-  actualTorque: 0
-  applyForceAtGroundContact: 0
   impactSnd: {fileID: 6779875396549254752}
   tireHitClips: []
   rimHitClip: {fileID: 0}
@@ -5883,11 +5339,6 @@ MonoBehaviour:
   detachedTireMaterial: {fileID: 0}
   detachedRimMaterial: {fileID: 0}
   airGreenParticleSystem: {fileID: 0}
-  d_brakeForce: 0
-  d_targetForce: 0
-  rpmBiasCurveLimit: 4000
-  eval: 0
-  slipMult: 0
 --- !u!114 &3417992997382013542
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6460,7 +5911,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &8116386472062399483
 Transform:
   m_ObjectHideFlags: 0
@@ -6570,7 +6021,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &8349597596461134795
 Transform:
   m_ObjectHideFlags: 0

@@ -14,8 +14,7 @@ public class DecreaseGravityOfVehicles : MonoBehaviour
 	{
 		if (waitCo != null)
 			StopCoroutine(waitCo);
-		StartCoroutine(Wait(carCollider));
-		
+		waitCo = StartCoroutine(Wait(carCollider));
 	}
 	private void OnTriggerEnter(Collider carCollider)
 	{

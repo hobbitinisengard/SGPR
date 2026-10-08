@@ -20,9 +20,10 @@ namespace RVP
 
 		void Awake()
 		{
-			// The source vehicle simulation advances at 60 Hz; keep Unity's baseline
-			// fixed step aligned so its discrete physics ticks are not fractional.
-			initialFixedTime = Time.fixedDeltaTime;
+			// Keep one complete vehicle tick per FixedUpdate at the selected
+			// simulation rate, including contact and clutch/tyre coupling.
+			initialFixedTime = 1f / OriginalVehiclePhysics.SourceTicksPerSecond;
+			Time.fixedDeltaTime = Mathf.Max(Time.timeScale, 0.0001f) * initialFixedTime;
 
 			if (!destroyOnLoad)
 			{

@@ -70,7 +70,7 @@ public class SGP_HUD : MonoBehaviour
 	public Roller[] mainRollers;
 
 	public Image blinker;
-	float blinkerStart = 0;
+	float blinkerPhase;
 	float progressBarUpdateTime;
 
 	public Transform progressBar;
@@ -102,7 +102,6 @@ public class SGP_HUD : MonoBehaviour
 	/// Seconds required to dim stuntTableTimer
 	/// </summary>
 	const float dimmingStuntTableTime = 1;
-
 	
 	public void Disconnect()
 	{
@@ -504,16 +503,20 @@ public class SGP_HUD : MonoBehaviour
 			// Combo Blinker
 			if (vp.raceBox.grantedComboTime > 0)
 			{
-				if (blinkerStart == 0 || Time.time - blinkerStart >= 1)
-					blinkerStart = Time.time;
+				float blinkPeriod = Mathf.Lerp(0.2f, 1f,
+					Mathf.InverseLerp(1f, 5f, vp.raceBox.grantedComboTime));
+				blinkerPhase = Mathf.Repeat(blinkerPhase + Time.fixedDeltaTime / blinkPeriod, 1f);
 
-				Color clr = Color.Lerp(Color.red, Color.green, vp.raceBox.grantedComboTime / 3f);
-				clr.a = Mathf.Lerp(.5f, 1, Mathf.Abs(Mathf.Sin(2 * Mathf.PI * (Time.time - blinkerStart))));
+				Color clr = blinker.color;
+				clr.a = Mathf.Lerp(.5f, 1, Mathf.Sin(Mathf.PI * blinkerPhase));
 				blinker.color = clr;
 			}
 			else
 			{
-				blinker.color = Color.red;
+				blinkerPhase = 0;
+				Color clr = blinker.color;
+				clr.a = Mathf.Lerp(clr.a, 0, Time.fixedDeltaTime);
+				blinker.color = clr;
 			}
 		}
 

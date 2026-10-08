@@ -74,7 +74,6 @@ namespace RVP
 		public float outOfTrackTime;
 		public float outOfTrackRequiredTime = 1;
 		public float lowSpeedTime;
-		float steerAngle;
 		int curStuntpointIdx;
 		int preparedStuntpointIdx = -1;
 		int curReplayPointIdx = 0;
@@ -93,8 +92,6 @@ namespace RVP
 		public ReplayCam currentCam { get { return replayCams[curReplayPointIdx]; } }
 
 		public float univProgress;
-		Vector3 distPoint;
-		Vector3 progressPoint;
 		private float lastOutOfTrackTime;
 		internal bool looping;
 
@@ -276,7 +273,11 @@ namespace RVP
 		}
 		void FixedUpdate()
 		{
-			if (!trackPathCreator)
+			// CPU drivers use the regular brake for corners; handbrake only holds the starting grid.
+			if (IsCPU && CountDownSeq.Countdown <= 0)
+				vp.SetEbrake(0);
+
+			if (!trackPathCreator || vp.originalVehiclePhysics == null)
 				return;
 
 			if (CountDownSeq.Countdown > 0)
@@ -370,11 +371,8 @@ namespace RVP
 					dist = progress;
 
 				if (dist <= progress + 2 * radius
-					|| (pitsPathCreator && pitsProgress >= pitsPathCreator.path.length)
-					|| (Mathf.Abs(progressPoint.y - distPoint.y) > 30 && Vector2.Distance(progressPoint.Flat(), distPoint.Flat()) <= 2 * radius))
+					|| (pitsPathCreator && pitsProgress >= pitsPathCreator.path.length))
 				{
-					progressPoint = distPoint;
-
 					progress = dist;
 				}
 				else if (progress == 1)
@@ -397,14 +395,11 @@ namespace RVP
 			{
 				if (selfDriving)
 				{
+					
 					//Vector3 targetPos;
 					if (vp.velMag < 5)
 					{
 						lowSpeedTime += Time.fixedDeltaTime;
-					}
-					else if (lowSpeedTime > 0)
-					{
-						lowSpeedTime -= Time.fixedDeltaTime;
 					}
 
 					if (lowSpeedTime > 3)
@@ -531,7 +526,7 @@ namespace RVP
 							vp.SetSteer(newTargetSteer);
 						}
 
-						vp.SetBoost(steerAngle < 2 && vp.SourceEnergyPercent > 0.5f && vp.reallyGroundedWheels > 2 && vp.velMag < 30);
+						vp.SetBoost(vp.SourceEnergyPercent > 0.5f && vp.reallyGroundedWheels > 2 && vp.velMag < 30);
 					}
 
 					if (IsCPU && !Pitting && !looping && !resetRoutineActive &&
@@ -585,9 +580,9 @@ namespace RVP
 			if (!vp.Owner || F.I.s_inEditor || resetRoutineActive)
 				yield break;
 			resetRoutineActive = true;
-			//Debug.LogWarning($"[FollowAI] Reset on track: cause={resetCause}, overRoad={overRoad}, " +
-			//	$"outOfTrackTime={outOfTrackTime:F2}, rolledOverTime={rolledOverTime:F2}, " +
-			//	$"lowSpeedTime={lowSpeedTime:F2}, position={tr.position:F2}", vp);
+			Debug.LogWarning($"[FollowAI] Reset on track: cause={resetCause}, overRoad={overRoad}, " +
+				$"outOfTrackTime={outOfTrackTime:F2}, rolledOverTime={rolledOverTime:F2}, " +
+				$"lowSpeedTime={lowSpeedTime:F2}, position={tr.position:F2}", vp);
 
 			vp.customCam = null;
 

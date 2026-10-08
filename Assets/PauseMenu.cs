@@ -38,7 +38,7 @@ public class PauseMenu : Sfxable
 	}
 	private void OnEnable()
 	{
-		steerGamma.SetActive(F.I.controllerInUse);
+		steerGamma.SetActive(false);
 		if(F.I.gameMode != GameMode.Multiplayer)
 			Time.timeScale = 0;
 		F.I.gamePaused = true;

@@ -89,7 +89,7 @@ public class RankingView : MainMenuView
 	public Scrollbar scrollbar;
 	Coroutine sinCo;
 	Coroutine moveTableCo;
-	AudioSource audio;
+	AudioSource audioSource;
 	Coroutine selectBlinkCo;
 	/// <summary>
 	/// 1 = Top, 0 = Bottom
@@ -132,7 +132,7 @@ public class RankingView : MainMenuView
 	}
 	protected override void Awake()
 	{
-		audio = GetComponent<AudioSource>();
+		audioSource = GetComponent<AudioSource>();
 		base.Awake();
 	}
 	IEnumerator SelectAndBlink(Transform row)
@@ -303,7 +303,7 @@ public class RankingView : MainMenuView
 	{
 		float timer = 0;
 		float scrollInit = scrollbar.value;
-		audio.Play();
+		audioSource.Play();
 		while (timer < 1)
 		{
 			float step = F.EasingOutQuint(timer);

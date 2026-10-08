@@ -127,6 +127,10 @@ public class MainMenuView : Sfxable
 		string fallbackTrack = null;
 		int fallbackTrackCount = 0;
 
+		if(F.I.playerData.playerName == "")
+		{
+			F.I.playerData.playerName = "Player";
+		}
 		// Reservoir sampling selects each eligible entry with equal probability, without a list.
 		for (int i = 0; i < info.cars.Length; ++i)
 		{
@@ -154,7 +158,7 @@ public class MainMenuView : Sfxable
 		info.teams = false;
 		info.s_spectator = false;
 		info.s_playerCarIdx = carIndex;
-		info.s_cpuRivals = 5;
+		info.s_cpuRivals = 9;
 		info.s_inEditor = false;
 		info.s_cpuLevel = (CpuLevel)UnityEngine.Random.Range(0, 3);
 		info.s_trackName = trackName;

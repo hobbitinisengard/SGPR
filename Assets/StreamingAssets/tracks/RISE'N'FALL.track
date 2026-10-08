@@ -10,8 +10,8 @@
   ],
   "valid": true,
   "envir": "SPN",
-  "preferredCarClass": "Team",
-  "difficulty": 11,
+  "preferredCarClass": "Speed",
+  "difficulty": 8,
   "unlocked": true,
   "icons": [
     1,

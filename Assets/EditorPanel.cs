@@ -134,6 +134,7 @@ public class EditorPanel : MonoBehaviour
 	float zRot = 0;
 	CSelector selector;
 	bool curMirror;
+	public bool overwriteTrackPicture = true;
 	public GameObject placedTilesContainer { get; private set; }
 
 	GameObject[] racingLineContainers;
@@ -147,7 +148,6 @@ public class EditorPanel : MonoBehaviour
 	Coroutine DisplayCo;
 	private Connector selectedConnector;
 	private GameObject selectedCamera;
-	private GameObject newCamera;
 	private Transform selectedFlag;
 	Vector3 windExternal, windRandom;
 	const int maxWind = 300;
@@ -1347,8 +1347,6 @@ public class EditorPanel : MonoBehaviour
 					break;
 				case Mode.SetCamera:
 					selectedCamera = null;
-					if (newCamera)
-						Destroy(newCamera.gameObject);
 					cameraMenu.gameObject.SetActive(false);
 					UnmarkAllAndDisableCollidersOfConnectedConnectors();
 					flyCamera.transform.GetComponent<Camera>().cullingMask &= ~(1 << F.I.connectorLayer | 1 << F.I.cameraLayer);
@@ -1421,9 +1419,19 @@ public class EditorPanel : MonoBehaviour
 			var tile = placedTilesContainer.transform.GetChild(i);
 			for (int j = 1; j < tile.transform.childCount; ++j)
 			{
-				var c = tile.transform.GetChild(j).GetComponent<Connector>();
-				c.Colorize(p(c) ? Connector.red : Connector.blue);
-				c.EnableColliderForStuntZoneMode();
+				try
+				{
+					if(tile.transform.GetChild(j).TryGetComponent(out Connector c))
+					{
+						c.Colorize(p(c) ? Connector.red : Connector.blue);
+						c.EnableColliderForStuntZoneMode();
+					}
+				}
+				catch
+				{
+					int a = 1;
+				}
+			
 			}
 		}
 	}
@@ -1434,9 +1442,11 @@ public class EditorPanel : MonoBehaviour
 			var tile = placedTilesContainer.transform.GetChild(i);
 			for (int j = 1; j < tile.transform.childCount; ++j)
 			{
-				var c = tile.transform.GetChild(j).GetComponent<Connector>();
-				c.Colorize(Connector.blue);
-				c.DisableCollider();
+				if (tile.transform.GetChild(j).TryGetComponent(out Connector c))
+				{
+					c.Colorize(Connector.blue);
+					c.DisableCollider();
+				}
 			}
 		}
 	}
@@ -1784,11 +1794,13 @@ public class EditorPanel : MonoBehaviour
 		File.WriteAllText(path, JsonContent);
 
 		// save image
-		Texture2D tex = F.toTexture2D(renderTexture);
 		path = Path.Combine(F.I.tracksPath, trackName + ".jpg"); // .JPG
-		File.WriteAllBytes(path, tex.EncodeToJPG(50));
+		if (!File.Exists(path) || (File.Exists(path) && overwriteTrackPicture))
+		{
+			Texture2D tex = F.toTexture2D(renderTexture);
+			File.WriteAllBytes(path, tex.EncodeToJPG(50));
+		}
 		
-
 		// save track editor data
 		JsonContent = JsonConvert.SerializeObject(TRACK);
 		path = Path.Combine(F.I.tracksPath, trackName + ".data"); // .DATA

@@ -260,7 +260,7 @@ TextureImporter:
         serializedVersion: 2
         x: 601
         y: 785
-        width: 320
+        width: 290
         height: 277
       alignment: 6
       pivot: {x: 0, y: 0}
@@ -280,9 +280,9 @@ TextureImporter:
       name: overlays_gear_39
       rect:
         serializedVersion: 2
-        x: 920
+        x: 904
         y: 790
-        width: 257
+        width: 273
         height: 265
       alignment: 6
       pivot: {x: 0, y: 0}
@@ -370,7 +370,7 @@ TextureImporter:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 346
+        width: 328
         height: 552
       alignment: 1
       pivot: {x: 0, y: 1}
@@ -390,9 +390,9 @@ TextureImporter:
       name: overlays_gear_101
       rect:
         serializedVersion: 2
-        x: 1021
+        x: 1007
         y: 0
-        width: 313
+        width: 304
         height: 567
       alignment: 1
       pivot: {x: 0, y: 1}
@@ -412,9 +412,9 @@ TextureImporter:
       name: overlays_gear_104
       rect:
         serializedVersion: 2
-        x: 1334
+        x: 1311
         y: 0
-        width: 375
+        width: 379
         height: 570
       alignment: 1
       pivot: {x: 0, y: 1}
@@ -478,10 +478,10 @@ TextureImporter:
       name: overlays_gear_6
       rect:
         serializedVersion: 2
-        x: 1714
+        x: 1702
         y: 13
-        width: 319
-        height: 184
+        width: 344
+        height: 199
       alignment: 6
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -764,9 +764,9 @@ TextureImporter:
       name: overlays_gear_25
       rect:
         serializedVersion: 2
-        x: 349
+        x: 341
         y: 0
-        width: 305
+        width: 303
         height: 569
       alignment: 1
       pivot: {x: 0, y: 1}
@@ -786,9 +786,9 @@ TextureImporter:
       name: overlays_gear_26
       rect:
         serializedVersion: 2
-        x: 654
+        x: 644
         y: 0
-        width: 367
+        width: 361
         height: 570
       alignment: 1
       pivot: {x: 0, y: 1}
