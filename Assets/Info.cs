@@ -710,6 +710,7 @@ public class Info : MonoBehaviour
 		"https://docs.google.com/document/d/1PNb95xUi0pdOjPetwu-MNLeIwpVN6t8rxAmukKEpB2E/",
 		"https://docs.google.com/document/d/14PEdrIv2pKRA5bBgoyBFK_-WArmZ6AFeBQoZ4Xr_Wpg/"
 	};
+	internal bool s_isSkatePark;
 	public readonly int maxConcurrentUsers = 30;
 
 	/// <summary>
@@ -1094,6 +1095,7 @@ public class TrackHeader
 	public int difficulty;
 	public bool unlocked;
 	public int[] icons;
+	public bool isSkatePark;
 	/// <summary>
 	/// lap, race, stunt, drift 
 	/// </summary>
@@ -1106,7 +1108,7 @@ public class TrackHeader
 		localizedNames = EmptyLocStrArray("");
 	}
 	public TrackHeader(int unlocked, CarGroup prefCarClass, int trackDifficulty,
-		Envir envir, string author, int[] icons, string[] localizedDescriptions, string[] localizedNames, bool valid = true)
+		Envir envir, string author, int[] icons, string[] localizedDescriptions, string[] localizedNames, bool valid = true, bool isSkatePark = false)
 		: this()
 	{
 		this.unlocked = unlocked > 0;
@@ -1122,6 +1124,7 @@ public class TrackHeader
 		this.localizedNames = localizedNames;
 		this.valid = valid;
 		this.icons = icons;
+		this.isSkatePark = isSkatePark;
 	}
 
 	public TrackHeader(TrackHeader h)
@@ -1135,6 +1138,7 @@ public class TrackHeader
 		this.localizedNames = h.localizedNames;
 		this.valid = h.valid;
 		this.icons = h.icons;
+		this.isSkatePark = h.isSkatePark;
 	}
 	public static string[] EmptyLocStrArray(string str)
 	{

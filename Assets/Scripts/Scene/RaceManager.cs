@@ -331,7 +331,7 @@ namespace RVP
 		{
 			ResultsView.Clear();
 			F.I.raceStartDate = DateTime.UtcNow.AddSeconds(5);
-
+			cam.isSkateCam = F.I.tracks[F.I.s_trackName].isSkatePark;
 			StartCoroutine(StartRaceCoroutine());
 		}
 		IEnumerator StartRaceCoroutine()

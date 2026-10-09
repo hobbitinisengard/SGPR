@@ -310,31 +310,33 @@ public class Tile : MonoBehaviour
 		if (scale == 1)
 			return;
 		transform.localScale = new Vector3(1, 1, scale);
-		{ // adjust UVs
-			Vector2[] uvs = mf.mesh.uv;
-			int submeshes = mf.mesh.subMeshCount;
-			for (int i = 0; i < submeshes; ++i)
-			{ // foreach material find max UV Y-coord
-				int[] triangles = mf.mesh.GetTriangles(i);
-				float maxUVY = 0;
-				float minUVY = 999;
-				for (int j = 0; j < triangles.Length; ++j)
-				{
-					if (uvs[triangles[j]].y > maxUVY)
-						maxUVY = uvs[triangles[j]].y;
-					if (uvs[triangles[j]].y < minUVY)
-						minUVY = uvs[triangles[j]].y;
-				}
-				float newMaxUVY = Mathf.LerpUnclamped(minUVY, maxUVY, scale);
-				newMaxUVY += 0.5f - newMaxUVY % 0.5f;
-				for (int j = 0; j < triangles.Length; ++j)
-				{
-					if (uvs[triangles[j]].y == maxUVY)
-						uvs[triangles[j]].y = newMaxUVY;
-				}
+
+
+		Mesh mesh = mf.mesh;
+		Vector2[] uvs = mesh.uv;
+
+		for (int i = 0; i < mesh.subMeshCount; i++)
+		{
+			int[] triangles = mesh.GetTriangles(i);
+
+			float minUVY = float.MaxValue;
+
+			foreach (int index in triangles)
+				minUVY = Mathf.Min(minUVY, uvs[index].y);
+
+			HashSet<int> processed = new HashSet<int>();
+
+			foreach (int index in triangles)
+			{
+				if (!processed.Add(index))
+					continue;
+
+				float originalY = uvs[index].y;
+
+				uvs[index].y = minUVY + (originalY - minUVY) * scale;
 			}
-			mf.mesh.uv = uvs;
 		}
+		mesh.uv = uvs;
 		// make connectors round again
 		int scaleX = 1;// mirrored ? -1 : 1;
 		for (int i = 1; i < transform.childCount; ++i)

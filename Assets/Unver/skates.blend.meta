@@ -3,7 +3,97 @@ guid: 8b5e356938fe49f46a635c5fe8f06dcc
 ModelImporter:
   serializedVersion: 22200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: c2_inout
+    second: {fileID: 2100000, guid: f446758f5c7f10d45aa86bb9b821fcdc, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: fence
+    second: {fileID: 2100000, guid: b8a7bef7d66055b44b1a504a86b030dc, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: flaglogo
+    second: {fileID: 2100000, guid: 8cbbe540dd0f33044b729a46afea918d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: floodlight
+    second: {fileID: 2100000, guid: b890f2e3c3c17fb4dbba52ccdf3b0312, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: glass
+    second: {fileID: 2100000, guid: d2054f9749346e440a091a8a1c074896, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: jump
+    second: {fileID: 2100000, guid: e8d0fb77d2b920347a1584aafc7a625d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: racelane
+    second: {fileID: 2100000, guid: fa0e1624bfcae854bb5165e30442c59b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: rampstartside
+    second: {fileID: 2100000, guid: f7dea36fb03f94840bc2f7b3088a0334, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: ramptarmac
+    second: {fileID: 2100000, guid: b003f05cf0dc77f4b9083a038d4b2b9c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: ramptop
+    second: {fileID: 2100000, guid: efb43f6b317f71e438037c7777b8e0a2, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: ramptopedges
+    second: {fileID: 2100000, guid: 0bf185cba7a14e645b3e36c52c015ebf, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: rampwood
+    second: {fileID: 2100000, guid: 9d86bae85fbbc904fa4920bf0b0cb1f6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: sponser1
+    second: {fileID: 2100000, guid: 2f2d741545d93e24a95bba70bc02f5ce, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: wall2
+    second: {fileID: 2100000, guid: f98ec2e20b729d240a4b96a14520bfe3, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: walllogo
+    second: {fileID: 2100000, guid: 60a10ef1ab55a9d428df438bf8eb147d, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: walllogo2
+    second: {fileID: 2100000, guid: 49b8d19b0d21b1a4b9440ace459d3119, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: walllogo3
+    second: {fileID: 2100000, guid: ca5051b94bf27624b91a8d171a461c69, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: walllogo3dfx
+    second: {fileID: 2100000, guid: 1b62ddb8fddab38408a288d15f562329, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

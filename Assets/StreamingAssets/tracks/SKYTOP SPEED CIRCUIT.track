@@ -15,5 +15,6 @@
   "unlocked": true,
   "icons": [
     0
-  ]
+  ],
+  "isSkatePark": false
 }

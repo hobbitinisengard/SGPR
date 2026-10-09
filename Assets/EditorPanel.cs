@@ -117,7 +117,7 @@ public class EditorPanel : MonoBehaviour
 	public Slider WindRanX;
 	public Slider WindRanZ;
 	public Slider initialRotationSlider;
-	public Toggle ShowXAxisToggle;
+	public Toggle isSkateParkToggle;
 	LineRenderer ShowXAxisLineRenderer;
 	public Button terrainBtn;
 	Vector3? lastEditorCameraPosition;
@@ -178,7 +178,7 @@ public class EditorPanel : MonoBehaviour
 	private void Awake()
 	{
 		ShowXAxisLineRenderer = GetComponent<LineRenderer>();
-		ShowXAxisToggle.onValueChanged.AddListener(SwitchXAxisRenderer);
+		isSkateParkToggle.onValueChanged.AddListener(SwitchXAxisRenderer);
 		F.I.stuntpointsContainer = stuntpointsContainer;
 		F.I.replayCams = replayCamsContainer;
 	}
@@ -408,6 +408,7 @@ public class EditorPanel : MonoBehaviour
 							var arrow_rot = arrow.transform.rotation;
 							flyCamera.enabled = false;
 							SwitchTo(Mode.None);
+							raceManager.cam.isSkateCam = isSkateParkToggle.isOn;
 							raceManager.StartFreeRoam(arrow_pos, arrow_rot);
 							return;
 						}
@@ -486,11 +487,7 @@ public class EditorPanel : MonoBehaviour
 							{
 								currentTile.gameObject.SetActive(true);
 							}
-							if (ShowXAxisToggle.isOn)
-							{
-								ShowXAxisLineRenderer.SetPositions(
-										new Vector3[] { currentTile.transform.position, currentTile.transform.position + 50 * currentTile.transform.right });
-							}
+
 							if (Input.GetKeyDown(KeyCode.Q))
 							{
 								curMirror = currentTile.MirrorTile();
@@ -1657,7 +1654,7 @@ public class EditorPanel : MonoBehaviour
 			return;
 		}
 
-		TrackSavableData TRACK = new TrackSavableData();
+		TrackSavableData TRACK = new();
 		TRACK.windExternal = windExternal;
 		TRACK.windRandom = windRandom;
 		TRACK.initialRotation = (int)initialRotationSlider.value;
@@ -1778,7 +1775,8 @@ public class EditorPanel : MonoBehaviour
 			localizedDescriptions = new string[LocalizationSettings.AvailableLocales.Locales.Count],
 			localizedNames = new string[LocalizationSettings.AvailableLocales.Locales.Count],
 			records = new(),
-			valid = PathValid()
+			valid = PathValid(),
+			isSkatePark = isSkateParkToggle.isOn
 		};
 		Array.Copy(savePanel.localizedDescriptions, tHeader.localizedDescriptions, savePanel.localizedDescriptions.Length);
 		Array.Copy(savePanel.localizedNames, tHeader.localizedNames, savePanel.localizedNames.Length);
@@ -1821,7 +1819,7 @@ public class EditorPanel : MonoBehaviour
 	}
 	bool PathValid()
 	{
-		return racingLine != null && racingLine.Length > 2;
+		return isSkateParkToggle.isOn || (racingLine != null && racingLine.Length > 2);
 	}
 	public void SetVisibleInPictureMode(bool isVisible)
 	{
@@ -1999,7 +1997,7 @@ public class EditorPanel : MonoBehaviour
 
 		string trackJson = File.ReadAllText(path);
 		TrackSavableData TRACK = JsonConvert.DeserializeObject<TrackSavableData>(trackJson);
-
+		isSkateParkToggle.isOn = F.I.tracks[F.I.s_trackName].isSkatePark;
 		Array.Copy(F.I.tracks[F.I.s_trackName].localizedNames, savePanel.localizedNames, LocalizationSettings.AvailableLocales.Locales.Count);
 		Array.Copy(F.I.tracks[F.I.s_trackName].localizedDescriptions, savePanel.localizedDescriptions, LocalizationSettings.AvailableLocales.Locales.Count);
 

@@ -94,7 +94,6 @@ namespace RVP
 			? Physics.gravity.normalized : Vector3.down;
 		static Vector3 SourceWorldUp => -SourceGravityDirection;
 		static Vector3 SourceGravityAcceleration => Physics.gravity;
-		const float SourcePitlaneTargetSpeed = 41.666668f; // 90 km/h scaled by the original gameplay rule.
 		const float SourcePitlaneRefuelLimit = 1000f; // gameplay.csv value 100 scaled by 10.
 		const float SourceUnityRailActivationDistance = 3.5f;
 		// Source contact profile defaults used when a Unity surface has no authored
@@ -275,6 +274,7 @@ namespace RVP
 		readonly float[] sourceWheelVisualVerticalOffset = new float[4];
 		float sourceBodyProbeVerticalFitOffset;
 		float sourceContactCounter;
+		float sourceCameraLaunchHeight;
 		int sourceUnsafeContactTicks;
 		int sourceOpposingDirectionTicks;
 		int sourceLastUnsafeProbe = -1;
@@ -297,6 +297,18 @@ namespace RVP
 		float stuntPressedAt = -1;
 		bool stuntPressed;
 		bool stuntActive;
+		struct PlayerStuntTurn
+		{
+			public int axis;
+			public float direction, angle, targetAngle;
+			public Quaternion initialRotation;
+		}
+		readonly System.Collections.Generic.List<PlayerStuntTurn> playerStuntTurns = new(8);
+		bool playerStuntSequenceActive, playerStuntFinishing, playerStuntTurnActive;
+		Quaternion playerStuntInitialRotation, playerStuntRotation;
+		int playerStuntLastInputAxis = -1, playerStuntPendingAxis = -1;
+		float playerStuntLastInputDirection, playerStuntPendingDirection;
+		float playerStuntSpeed, playerStuntAcceleration;
 		bool sourceTurboActive;
 		bool sourceStartBoostActiveThisTick;
 		bool sourceSpecialMode;
@@ -437,6 +449,7 @@ namespace RVP
 			energy = parameters.fuelCapacity;
 			sourceEffectiveMass = (float)((double)fuel * parameters.fuelUnitMass + parameters.mass);
 			effectiveComHeight = parameters.comHeight;
+			sourceCameraLaunchHeight = vehicle.rb.position.y;
 			float sourceTicks = Time.fixedTime * SourceTicksPerSecond;
 			sourceSuspensionTick = Mathf.FloorToInt(sourceTicks);
 			sourceSuspensionTickPhase = sourceTicks - sourceSuspensionTick;
@@ -494,6 +507,11 @@ namespace RVP
 		public float SourceRefuelRate => Mathf.Max(0, parameters.refuelRate);
 		public float EngineRpmLimit => Mathf.Max(1, parameters.rpmLimit);
 		public float SteeringLimitDegrees => Mathf.Abs(parameters.steeringMax);
+		// CameraVehicle observation used by retail_camera.cpp::camera_chase_tick.
+		public float CameraBodyHeight => parameters.height * SourceLengthToMetres;
+		public int CameraContactClass => sourceContactClass;
+		public float CameraContactCounter => sourceContactCounter;
+		public float CameraLaunchHeight => sourceCameraLaunchHeight;
 		public int CurrentGear => gear;
 		public bool TurboActive => sourceTurboActive;
 		public void RefreshParameters()
@@ -1908,6 +1926,7 @@ namespace RVP
 			lastSourceCollisionHoldTick = -1;
 			sourceCollisionHoldTicks = 0;
 			sourceContactCounter = 0;
+			sourceCameraLaunchHeight = vehicle.rb.position.y;
 			currentSourceSpeed = 0;
 			sourceAngularVelocity = Vector3.zero;
 			if (AIStuntInProgress)
@@ -2171,6 +2190,7 @@ namespace RVP
 		}
 		void ResetSourceStuntRoll()
 		{
+			ResetPlayerStuntSequence();
 			rollAcceleration = rollSpeed = stuntRollProgress = 0;
 			stuntRollDirection = 0;
 			stuntRollActive = false;
@@ -2216,7 +2236,9 @@ namespace RVP
 			System.Array.Clear(sourceWheelGroundSurfaceContactThisTick, 0,
 				sourceWheelGroundSurfaceContactThisTick.Length);
 			if (vehicle.wheels == null || vehicle.wheels.Length < 4 || vehicle.rb.isKinematic)
+			{
 				return;
+			}
 			UpdateSourceWheelProbeGeometry();
 			int tick = Mathf.RoundToInt(Time.fixedTime / Mathf.Max(0.0001f, Time.fixedDeltaTime));
 			ResetSourceAirFactorsForTick(tick);
@@ -2980,14 +3002,10 @@ namespace RVP
 			sourceRailControlDisabled = true;
 			sourceRailThrottle = throttleSignal;
 			sourceRailBrakeInput = 0;
-			if (unchecked((int)sourceRailProgress) > 75)
-			{
-				// The original switches to a ten-unit crawl in the final quarter of the rail.
-				float error = 10 - currentSourceSpeed;
-				ApplySourceRailSpeedError(error, tickScale);
-			}
-			else
-				ApplySourceRailSpeedError(SourcePitlaneTargetSpeed - currentSourceSpeed, tickScale);
+			// Unity's pit path includes the exit. FollowAI owns its speed phases;
+			// the original rail's final-quarter crawl would brake during that exit.
+			float targetSpeed = vehicle.followAI.PitTargetSpeed / SourceSpeedToMetresPerSecond;
+			ApplySourceRailSpeedError(targetSpeed - currentSourceSpeed, tickScale);
 			Vector3 sourcePosition = vehicle.rb.position / SourceLengthToMetres;
 			Vector3 ahead = vehicle.rb.position + sourceForwardBasis * 8;
 			float pathDistance = railPath.GetClosestDistanceAlongPath(ahead);
@@ -4410,6 +4428,8 @@ namespace RVP
 			}
 			if (hadContact)
 			{
+				// vehicle_air_tick: begin_stunt_height stores the body height at takeoff.
+				sourceCameraLaunchHeight = vehicle.rb.position.y;
 				ResetSourceStuntPhaseHistory();
 			}
 			else
@@ -4421,6 +4441,11 @@ namespace RVP
 				LevelSourceIncrementalRotation(0.9f);
 			if (!stuntActive)
 				return;
+			if (!SourceUpgradeActive)
+			{
+				UpdatePlayerStuntSequence(tickScale, launchedThisTick);
+				return;
+			}
 			float stuntBrakeInput = SourcePlayerControlsSuppressed
 				? 0 : SourceAiAirBrakeInput;
 			float stuntThrottleInput = SourcePlayerControlsSuppressed
@@ -4504,6 +4529,195 @@ namespace RVP
 			rotation *= Quaternion.AngleAxis(rollAngleThisTick, Vector3.forward);
 			stepRotation = rotation;
 			stepRotationChanged = true;
+		}
+		void ResetPlayerStuntSequence()
+		{
+			playerStuntTurns.Clear();
+			playerStuntSequenceActive = playerStuntFinishing = playerStuntTurnActive = false;
+			playerStuntLastInputAxis = playerStuntPendingAxis = -1;
+			playerStuntLastInputDirection = playerStuntPendingDirection = 0;
+			playerStuntSpeed = playerStuntAcceleration = 0;
+		}
+		void UpdatePlayerStuntSequence(float tickScale, bool launchedThisTick)
+		{
+			if (!playerStuntSequenceActive)
+			{
+				ResetPlayerStuntSequence();
+				playerStuntSequenceActive = true;
+				playerStuntInitialRotation = playerStuntRotation = stepRotation;
+			}
+			bool wasFinishing = playerStuntFinishing;
+			playerStuntFinishing = !stuntPressed || SourcePlayerControlsSuppressed;
+			if (wasFinishing && !playerStuntFinishing)
+			{
+				// Pressing Shift again may interrupt automatic completion, including
+				// a roll. Read the held direction as a fresh command.
+				playerStuntLastInputAxis = -1;
+				playerStuntLastInputDirection = 0;
+			}
+
+			if (!playerStuntFinishing)
+			{
+				int axis = -1;
+				float direction = 0;
+				// Explicit roll input overrides driving input; all three axes share
+				// the same pause, resume and reversal logic and existing control signs.
+				if (Mathf.Abs(vehicle.rollInput) > 0.2f)
+				{
+					axis = 2;
+					direction = vehicle.rollInput > 0 ? -1 : 1;
+				}
+				else if (vehicle.brakeInput > 0.5f || vehicle.accelInput > 0.5f)
+				{
+					axis = 0;
+					// Unity local +X pitches the nose down: Down = forward,
+					// Up = backward (negative X).
+					direction = vehicle.brakeInput > 0.5f ? 1 : -1;
+				}
+				else if (Mathf.Abs(vehicle.steerInput) > 0.5f)
+				{
+					axis = 1;
+					direction = Mathf.Sign(vehicle.steerInput);
+				}
+				// Latch a short press until its turn can start. Releasing the arrow
+				// completes the remaining angle; holding it continues into another turn.
+				if (axis >= 0 && (axis != playerStuntLastInputAxis || direction != playerStuntLastInputDirection))
+				{
+					bool sameTurn = false;
+					if (playerStuntTurnActive && playerStuntTurns.Count > 0)
+					{
+						PlayerStuntTurn active = playerStuntTurns[playerStuntTurns.Count - 1];
+						float activeDirection = Mathf.Sign(active.targetAngle - active.angle) * active.direction;
+						sameTurn = active.axis == axis && activeDirection == direction;
+					}
+					if (sameTurn)
+						playerStuntPendingAxis = -1;
+					else
+					{
+						playerStuntPendingAxis = axis;
+						playerStuntPendingDirection = direction;
+					}
+				}
+				playerStuntLastInputAxis = axis;
+				playerStuntLastInputDirection = direction;
+			}
+
+			if (!playerStuntTurnActive)
+			{
+				if (playerStuntPendingAxis >= 0)
+					StartPendingPlayerStuntTurn();
+				else if (playerStuntFinishing && playerStuntTurns.Count > 0)
+					ResumePlayerStuntTurn();
+			}
+			else if (playerStuntPendingAxis >= 0)
+			{
+				int index = playerStuntTurns.Count - 1;
+				PlayerStuntTurn turn = playerStuntTurns[index];
+				float quarter = Mathf.Round(turn.angle / 90) * 90;
+				float switchWindow = Mathf.Max(2, playerStuntSpeed * tickScale);
+				if (quarter < 360 && Mathf.Abs(turn.angle - quarter) <= switchWindow)
+				{
+					// Accept a press close to 90/180/270 despite fixed-step sampling.
+					ApplyPlayerStuntTurnAngle(ref turn, quarter - turn.angle);
+					playerStuntTurns[index] = turn;
+					StartPendingPlayerStuntTurn();
+				}
+			}
+
+			if (!launchedThisTick && playerStuntTurnActive)
+			{
+				int index = playerStuntTurns.Count - 1;
+				PlayerStuntTurn turn = playerStuntTurns[index];
+				// Original digital rotation acceleration and mass-dependent speed cap.
+				playerStuntAcceleration = Mathf.Min(0.8f, playerStuntAcceleration + 0.8f * tickScale);
+				float configuredLimit = turn.axis == 1 ? parameters.maxYawSpeed : parameters.maxPitchSpeed;
+				float limit = Mathf.Min(12, configuredLimit / Mathf.Max(1, parameters.mass));
+				playerStuntSpeed = Mathf.Min(limit, playerStuntSpeed + playerStuntAcceleration * tickScale);
+				float boundary = turn.targetAngle;
+				if (playerStuntPendingAxis >= 0)
+					boundary = turn.targetAngle > turn.angle
+						? Mathf.Min(turn.targetAngle, (Mathf.Floor(turn.angle / 90) + 1) * 90)
+						: Mathf.Max(turn.targetAngle, (Mathf.Ceil(turn.angle / 90) - 1) * 90);
+				float motionDirection = Mathf.Sign(turn.targetAngle - turn.angle) * turn.direction;
+				float nextAngle = Mathf.MoveTowards(turn.angle, boundary, playerStuntSpeed * tickScale);
+				ApplyPlayerStuntTurnAngle(ref turn, nextAngle - turn.angle);
+				playerStuntTurns[index] = turn;
+				if (Mathf.Abs(turn.angle - turn.targetAngle) < 0.001f)
+				{
+					// A full turn (or undoing a partial turn) returns to this axis's
+					// starting pose, which may still contain a paused parent turn.
+					playerStuntRotation = turn.initialRotation;
+					bool continueHeldTurn = !playerStuntFinishing && playerStuntPendingAxis < 0 &&
+						playerStuntLastInputAxis == turn.axis && playerStuntLastInputDirection == motionDirection;
+					if (continueHeldTurn)
+					{
+						// Keep the rotation speed and the interrupted parent. Rebase
+						// progress so releasing the arrow finishes just this next cycle.
+						turn.angle = 0;
+						turn.direction = motionDirection;
+						turn.targetAngle = 360;
+						playerStuntTurns[index] = turn;
+					}
+					else
+					{
+						playerStuntTurns.RemoveAt(index);
+						playerStuntTurnActive = false;
+						playerStuntSpeed = playerStuntAcceleration = 0;
+						// While Shift is held the parent waits for a fresh direction press.
+					}
+				}
+				else if (playerStuntPendingAxis >= 0 && Mathf.Abs(turn.angle - boundary) < 0.001f)
+					StartPendingPlayerStuntTurn();
+			}
+
+			stepRotation = playerStuntRotation;
+			stepRotationChanged = true;
+			sourceIncrementalRotation = Quaternion.identity;
+			if (playerStuntFinishing && playerStuntTurns.Count == 0 && playerStuntPendingAxis < 0)
+			{
+				stepRotation = playerStuntInitialRotation;
+				stuntActive = false;
+				pitchAcceleration = yawAcceleration = pitchSpeed = yawSpeed = 0;
+				ResetSourceStuntRoll();
+			}
+		}
+		void StartPendingPlayerStuntTurn()
+		{
+			int axis = playerStuntPendingAxis;
+			float direction = playerStuntPendingDirection;
+			playerStuntPendingAxis = -1;
+			if (playerStuntTurns.Count > 0)
+			{
+				int index = playerStuntTurns.Count - 1;
+				PlayerStuntTurn turn = playerStuntTurns[index];
+				if (turn.axis == axis)
+				{
+					// Continue toward 360 in the initial direction, or undo only the
+					// angle already performed when the opposite direction is pressed.
+					turn.targetAngle = turn.direction == direction ? 360 : 0;
+					playerStuntTurns[index] = turn;
+					ResumePlayerStuntTurn();
+					return;
+				}
+			}
+			playerStuntTurns.Add(new PlayerStuntTurn
+			{
+				axis = axis, direction = direction, targetAngle = 360, initialRotation = playerStuntRotation
+			});
+			ResumePlayerStuntTurn();
+		}
+		void ApplyPlayerStuntTurnAngle(ref PlayerStuntTurn turn, float delta)
+		{
+			Vector3 axis = turn.axis == 0 ? Vector3.right :
+				turn.axis == 1 ? Vector3.up : Vector3.forward;
+			playerStuntRotation = (playerStuntRotation * Quaternion.AngleAxis(delta * turn.direction, axis)).normalized;
+			turn.angle += delta;
+		}
+		void ResumePlayerStuntTurn()
+		{
+			playerStuntTurnActive = true;
+			playerStuntSpeed = playerStuntAcceleration = 0;
+			pitchSpeed = yawSpeed = pitchAcceleration = yawAcceleration = 0;
 		}
 		void LevelSourceIncrementalRotation(float divisor)
 		{

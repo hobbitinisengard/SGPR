@@ -599,8 +599,8 @@ namespace RVP
 			carConfig.Apply(this);
 			rb.isKinematic = wasKinematicBeforePhysicsSetup;
 
-			if (F.I.s_raceType == RaceType.TimeTrial)
-				ghost.SetGhostPermanently();
+			//if (F.I.s_raceType == RaceType.TimeTrial)
+			//	ghost.SetGhostPermanently();
 
 			if (!Owner)
 			{

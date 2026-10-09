@@ -1,0 +1,20 @@
+{
+  "author": "Team17",
+  "localizedDescriptions": [
+    "A long, fast track with many opportunities for jumps and stunts.",
+    "Długa i szybka trasa z wieloma okazjami do skoków i ewolucji."
+  ],
+  "localizedNames": [
+    "THE LOOPBACK REVERSE",
+    "PĘTELKA REWERS"
+  ],
+  "valid": true,
+  "envir": "ENG",
+  "preferredCarClass": "Aero",
+  "difficulty": 5,
+  "unlocked": true,
+  "icons": [
+    2,
+    3
+  ]
+}

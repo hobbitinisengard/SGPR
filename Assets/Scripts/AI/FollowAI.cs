@@ -42,6 +42,8 @@ namespace RVP
 
 		public float progress = 0;
 		public float pitsProgress = 0;
+		// Both the autopilot and source physics use the same pit speed, in m/s.
+		public float PitTargetSpeed => pitsProgress > 225 ? 80f : 22f;
 
 		public float dist = 0;
 		public float speedLimit = 999;
@@ -440,10 +442,7 @@ namespace RVP
 					
 					if (pitsPathCreator)
 					{
-						if (pitsProgress > 0)
-							tSpeed = 22f;
-						if (pitsProgress > 225)
-							tSpeed = 80;
+						tSpeed = PitTargetSpeed;
 					}
 					else
 					{

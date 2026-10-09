@@ -123,6 +123,6 @@ public class Ghost : NetworkBehaviour
 			yield return null;
 			justResetted = false;
 		}
-		SetHittable(vp.raceBox.enabled && F.I.s_raceType != RaceType.TimeTrial);
+		SetHittable(true);
 	}
 }

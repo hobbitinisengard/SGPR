@@ -934,8 +934,8 @@ public class RaceBox : MonoBehaviour
 						// in racemode after the end of a race, cars still run around the track, ghosts overtake each other. Don't let it change results
 						curLap += 100 * (F.I.maxCarsInRace - curPos);
 
-						if (vp.Owner)
-							vp.ghost.SetGhostPermanently();
+						//if (vp.Owner)
+						//	vp.ghost.SetGhostPermanently();
 
 						if (F.I.s_raceType == RaceType.Drift)
 						{
@@ -988,7 +988,7 @@ public class RaceBox : MonoBehaviour
 
 			//Debug.Log(vp.name + " " + raceTime.ToString());
 
-			vp.ghost.SetGhostPermanently();
+			//vp.ghost.SetGhostPermanently();
 
 			if (F.I.gameMode == GameMode.Multiplayer)
 			{
