@@ -166,6 +166,12 @@ namespace RVP
 		{
 			if (!vp || vp.originalVehiclePhysics == null || !susParent)
 				return;
+			if (vp.ActiveRailbar)
+			{
+				SetOriginalContact(false, false, tr.position, vp.tr.up, null, Vector3.zero, 0, curSurfaceType);
+				forwardSlip = sidewaysSlip = originalGripUsage = 0;
+				return;
+			}
 
 			if (!originalTireRadiusChecked)
 			{

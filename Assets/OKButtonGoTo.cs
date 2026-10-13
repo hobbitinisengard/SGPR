@@ -8,6 +8,7 @@ public class OKButtonGoTo : MonoBehaviour
 	public MainMenuView onMultiplayerGoToThis;
 	public MainMenuView onSplitscreenGoToThis;
 	public MainMenuView onArcadeGoToThis;
+	public MainMenuView onSkateGoToThis;
 	private void Start()
 	{
 		GetComponent<Button>().onClick.AddListener(GoToView);	
@@ -36,6 +37,9 @@ public class OKButtonGoTo : MonoBehaviour
 				break;
 			case GameMode.Arcade:
 				menuView.GoToView(onArcadeGoToThis);
+				break;
+			case GameMode.Skate:
+				menuView.GoToView(onSkateGoToThis);
 				break;
 			default:
 				break;

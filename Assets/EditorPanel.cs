@@ -178,7 +178,6 @@ public class EditorPanel : MonoBehaviour
 	private void Awake()
 	{
 		ShowXAxisLineRenderer = GetComponent<LineRenderer>();
-		isSkateParkToggle.onValueChanged.AddListener(SwitchXAxisRenderer);
 		F.I.stuntpointsContainer = stuntpointsContainer;
 		F.I.replayCams = replayCamsContainer;
 	}
@@ -223,10 +222,10 @@ public class EditorPanel : MonoBehaviour
 	{
 		AngleSnapping = !AngleSnapping;
 	}
-	public void SwitchXAxisRenderer(bool newState)
-	{
-		ShowXAxisLineRenderer.enabled = newState;
-	}
+	// public void SwitchXAxisRenderer(bool newState)
+	// {
+	// 	ShowXAxisLineRenderer.enabled = newState;
+	// }
 	public void SetPlacedAnchor(Connector c)
 	{
 		placedConnector = c;
@@ -292,12 +291,13 @@ public class EditorPanel : MonoBehaviour
 	{
 		if (F.I.s_inEditor)
 			Initialize();
+		ApplyEnvironmentLighting();
 		Cursor.visible = true;
 		ResetScale();
 		YouSurePanel.gameObject.SetActive(false);
 		flyCamera.enabled = true;
 		if (lastEditorCameraPosition.HasValue)
-		{
+		{ 
 			flyCamera.transform.SetPositionAndRotation(lastEditorCameraPosition.Value, lastEditorCameraRotation);
 		}
 	}
@@ -936,6 +936,12 @@ public class EditorPanel : MonoBehaviour
 	{
 
 		connectors.Clear();
+		if (isSkateParkToggle.isOn || F.I.gameMode == GameMode.Skate)
+		{
+			CreateSkateRacingPath();
+			loadingTrack = false;
+			yield break;
+		}
 
 		List<Vector3> Lpath = new List<Vector3>(100);
 		List<Vector3> Rpath = new List<Vector3>(100);
@@ -1185,6 +1191,45 @@ public class EditorPanel : MonoBehaviour
 		//Debug.Log("racingpath length:" + F.I.universalPath.path.length);
 		loadingTrack = false;
 	}
+	void CreateSkateRacingPath()
+	{
+		Transform startTile = FindTileByName("startGround") ?? FindTileByName("startline");
+		List<Vector4> points = new();
+		if (startTile)
+		{
+			// The tile stores the two edges of its path under its first connector.
+			foreach (var connector in startTile.GetComponentsInChildren<Connector>())
+			{
+				if (connector.transform.childCount < 2) continue;
+				connector.Paths(out var left, out var right);
+				for (int i = 0; i < Mathf.Min(left.Length, right.Length); ++i)
+				{
+					Vector3 point = (left[i] + right[i]) * 0.5f;
+					if (points.Count == 0 || Vector3.Distance((Vector3)points[^1], point) > 0.001f)
+						points.Add(new Vector4(point.x, point.y, point.z, 0));
+				}
+				break;
+			}
+		}
+		if (points.Count < 3)
+		{
+			SetPathClosed(false);
+			DisplayMessageFor("Skate: startGround/startline needs at least three path points", 5);
+			return;
+		}
+		racingLine = points.ToArray();
+		for (int i = 0; i < raceManager.racingPaths.Length; ++i)
+		{
+			raceManager.racingPaths[i].bezierPath = new BezierPath(racingLine, false, PathSpace.xyz);
+			raceManager.racingPaths[i].gameObject.layer = F.I.racingLineLayers[i];
+			for (int j = racingLineContainers[i].transform.childCount - 1; j >= 0; --j)
+				Destroy(racingLineContainers[i].transform.GetChild(j).gameObject);
+		}
+		stuntpointsContainer.Clear();
+		replayCamsContainer.Clear();
+		// This flag marks a usable editor path; Skate deliberately uses an open path.
+		SetPathClosed(true);
+	}
 	void SetPathClosed(bool val)
 	{
 		isPathClosed = val;
@@ -1325,6 +1370,7 @@ public class EditorPanel : MonoBehaviour
 					break;
 				case Mode.Terrain:
 					terrainEditor.enabled = false;
+					invisibleLevel.gameObject.SetActive(true);
 					break;
 				case Mode.Build:
 					anchor = null;
@@ -1374,6 +1420,7 @@ public class EditorPanel : MonoBehaviour
 
 				case Mode.Terrain:
 					terrainEditor.enabled = true;
+					invisibleLevel.gameObject.SetActive(false);
 					break;
 				case Mode.Build:
 					currentTilesPanel.gameObject.SetActive(true);
@@ -1482,6 +1529,8 @@ public class EditorPanel : MonoBehaviour
 	}
 	CarGroup CalculatePreferredCarClass()
 	{
+		if (isSkateParkToggle.isOn)
+			return CarGroup.Aero;
 		if (!PathValid())
 			return CarGroup.Speed;
 		float roadDist = 0;
@@ -1528,7 +1577,7 @@ public class EditorPanel : MonoBehaviour
 	/// <summary> Returns track difficulty in range 0 to 17 </summary>
 	int CalculateTrackDifficulty()
 	{
-		if (!PathValid())
+		if (isSkateParkToggle.isOn || !PathValid())
 			return 0;
 		Transform startline = FindTileByName("startline");
 
@@ -1817,9 +1866,9 @@ public class EditorPanel : MonoBehaviour
 			F.I.loadSelector.RefreshTrackImage();
 		}
 	}
-	bool PathValid()
+	public bool PathValid()
 	{
-		return isSkateParkToggle.isOn || (racingLine != null && racingLine.Length > 2);
+		return (racingLine != null && racingLine.Length > 2);
 	}
 	public void SetVisibleInPictureMode(bool isVisible)
 	{
@@ -1895,6 +1944,20 @@ public class EditorPanel : MonoBehaviour
 			terrain.terrainData.SetHeights(0, 0, hmap);
 		}
 	}
+	public void ApplyEnvironmentLighting()
+	{
+		if (!F.I || string.IsNullOrEmpty(F.I.s_trackName) || !F.I.tracks.TryGetValue(F.I.s_trackName, out var track))
+			return;
+
+		float intensity = F.I.s_timeOfDay == TimeOfDay.Night ? 0.25f : 1;
+		RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
+		RenderSettings.ambientIntensity = intensity;
+		// Flat ambient uses ambientLight directly, rather than the skybox intensity.
+		RenderSettings.ambientLight = new Color(intensity, intensity, intensity, 1f);
+		RenderSettings.fogColor = track.envir == Envir.SPN && F.I.s_timeOfDay == TimeOfDay.Night
+			? new Color32(128, 128, 255, 255)
+			: new Color32(255, 128, 0, 255);
+	}
 	public void SetEnvirLights()
 	{
 		if (envir)
@@ -1957,6 +2020,7 @@ public class EditorPanel : MonoBehaviour
 			Initialize();
 		gameObject.SetActive(true);
 		loadingTrack = true;
+		ApplyEnvironmentLighting();
 
 		int skyboxNumber = F.I.skys[(int)F.I.tracks[F.I.s_trackName].envir];
 		string envirName = F.I.tracks[F.I.s_trackName].envir.ToString();

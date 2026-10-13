@@ -114,10 +114,18 @@ public class ViewSwitcher : MonoBehaviour
 	}
 	void CleanUp()
 	{
+		bool skateCarUnlocked = false;
 		if (Championships.Active)
 		{
 			if (applyScoring) Championships.RecordRace();
 			else Championships.CancelRace();
+		}
+		if (applyScoring && F.I.gameMode == GameMode.Skate)
+		{
+			var player = RaceManager.I.playerCar;
+			var result = ResultsView.Get(player) ?? (player ? new Result(player) : null);
+			F.I.rankingView.PrepareSkateResult(result);
+			skateCarUnlocked = result != null && F.I.TryUnlockSkateCar(result.aeromiles);
 		}
 		RaceManager.I.editorPanel.gameObject.SetActive(true);
 		RaceManager.I.RemoveCars();
@@ -145,7 +153,24 @@ public class ViewSwitcher : MonoBehaviour
 				lobbyView.SetActive(false);
 				resultsView.SetActive(true);
 			}
-			menuMusic.clip = resultsView.GetComponent<ResultsView>().music;
+			else if (F.I.gameMode == GameMode.Skate)
+			{
+				MainMenuView destination = F.I.rankingView;
+				if (skateCarUnlocked)
+				{
+					var prize = resultsView.GetComponent<ResultsView>().prizeView;
+					prize.Prepare(new System.Collections.Generic.List<string> { "car20" }, false, F.I.rankingView);
+					destination = prize;
+				}
+				foreach (var view in Resources.FindObjectsOfTypeAll<MainMenuView>())
+					if (view != destination && view.transform.IsChildOf(menu.transform) && view.gameObject.activeSelf)
+						view.gameObject.SetActive(false);
+				destination.gameObject.SetActive(true);
+				menuMusic.clip = destination.music;
+				menuMusic.Play();
+				return;
+			}
+				menuMusic.clip = resultsView.GetComponent<ResultsView>().music;
 			menuMusic.Play();
 		}
 	}

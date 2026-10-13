@@ -101,18 +101,20 @@ public class Tile : MonoBehaviour
 			}
 			else if (F.I.s_roadType != PavementType.Arena)
 			{
-				var mr = mc.transform.GetComponent<MeshRenderer>();
-				string replacementStr = "0" + ((int)F.I.s_roadType).ToString();
-				var materials = mr.materials;
-				for (int i = 0; i < materials.Length; ++i)
+				if(mc.transform.TryGetComponent(out MeshRenderer mr))
 				{
-					if (materials[i].name.Contains("00"))
+					string replacementStr = "0" + ((int)F.I.s_roadType).ToString();
+					var materials = mr.materials;
+					for (int i = 0; i < materials.Length; ++i)
 					{
-						var newName = materials[i].name.Replace("00", replacementStr).Split(' ')[0];
-						materials[i] = Resources.Load<Material>("materials/" + newName);
+						if (materials[i].name.Contains("00"))
+						{
+							var newName = materials[i].name.Replace("00", replacementStr).Split(' ')[0];
+							materials[i] = Resources.Load<Material>("materials/" + newName);
+						}
 					}
+					mr.materials = materials;
 				}
-				mr.materials = materials;
 			}
 
 			if(type == Type.Road)
@@ -130,9 +132,12 @@ public class Tile : MonoBehaviour
 					connector.layer = F.I.connectorLayer;
 					var mf = connector.AddComponent<MeshFilter>();
 					var mr = connector.AddComponent<MeshRenderer>();
-					mf.mesh = F.I.sphereMesh;
-					mr.enabled = true;
-					mr.material = Connector.blue;
+					if(mf != null)
+					{
+						mf.mesh = F.I.sphereMesh;
+						mr.enabled = true;
+						mr.material = Connector.blue;
+					}
 				}
 			}
 		}

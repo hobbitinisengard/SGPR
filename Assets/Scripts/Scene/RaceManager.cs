@@ -273,6 +273,7 @@ namespace RVP
 					break;
 			}
 			Sun.transform.rotation = Quaternion.Euler(eulerX, 0, 0);
+			if (editorPanel) editorPanel.ApplyEnvironmentLighting();
 		}
 		void Awake()
 		{
@@ -281,6 +282,14 @@ namespace RVP
 			ignoreWheelCastLayer = LayerMask.NameToLayer("Ignore Wheel Cast");
 
 			musicPlayer = GetComponent<AudioSource>();
+			CountDownSeq.OnRaceStarted += () =>
+			{
+				if (F.I.gameMode == GameMode.Skate)
+				{
+					
+					hud.endraceTimer.gameObject.SetActive(true);
+				}
+			};
 		}
 		private void OnDisable()
 		{
@@ -327,6 +336,11 @@ namespace RVP
 			newCar.sponsor = F.RandomLivery();
 			newCar.name = F.I.playerData.playerName;
 		}
+		public void ActivateEndraceTimer()
+		{
+			if (F.I.gameMode == GameMode.Multiplayer)
+				Online.I.CountdownTillForceEveryoneToResultsRpc();
+		}
 		public void StartRace()
 		{
 			ResultsView.Clear();
@@ -336,6 +350,14 @@ namespace RVP
 		}
 		IEnumerator StartRaceCoroutine()
 		{
+			bool skate = F.I.gameMode == GameMode.Skate;
+			if (skate)
+			{
+				F.I.s_cpuRivals = 0;
+				F.I.s_spectator = false;
+				F.I.s_raceType = RaceType.Stunt;
+				hud.endraceTimer.gameObject.SetActive(false);
+			}
 			musicPlayer.Stop();
 			int startlines = 0;
 			while (editorPanel.loadingTrack)
@@ -348,12 +370,18 @@ namespace RVP
 			editorPanel.pathFollower.SetActive(false);
 			for (int i = 0; i < editorPanel.placedTilesContainer.transform.childCount; ++i)
 			{
-				if (editorPanel.placedTilesContainer.transform.GetChild(i).name.Contains("startline"))
+				string tileName = editorPanel.placedTilesContainer.transform.GetChild(i).name;
+				if (tileName.Contains("startline") || (skate && tileName.Contains("startGround")))
 					startlines++;
 			}
 			if (startlines != 1)
 			{
 				editorPanel.DisplayMessageFor(F.I.LocStr("Exactly 1 startline needed"), 3);
+				yield break;
+			}
+			if (skate && !editorPanel.PathValid())
+			{
+				Debug.LogError("path invalid");
 				yield break;
 			}
 			editorPanel.gameObject.SetActive(false);
@@ -381,7 +409,9 @@ namespace RVP
 					preferredCarsIdxs.Add(i);
 			}
 			CarPlacement[] carPlacements;
-			if (ServerC.I.AmHost)
+			if (skate)
+				carPlacements = new[] { CarPlacement.LocalPlayer() };
+			else if (ServerC.I.AmHost)
 			{
 				carPlacements = new CarPlacement[F.I.s_cpuRivals + 1];
 
@@ -441,9 +471,10 @@ namespace RVP
 			}
 			foreach (var cp in carPlacements)
 			{
-				int dist = -20 - 10 * cp.position;
-				Vector3 startPos = racingPaths[0].path.GetPointAtDistance(dist);
-				Vector3 dirVec = racingPaths[0].path.GetDirectionAtDistance(dist);
+				float dist = skate ? Mathf.Min(5f, racingPaths[0].path.length * 0.5f) : -20 - 10 * cp.position;
+				var pathEnd = skate ? EndOfPathInstruction.Stop : EndOfPathInstruction.Loop;
+				Vector3 startPos = racingPaths[0].path.GetPointAtDistance(dist, pathEnd);
+				Vector3 dirVec = racingPaths[0].path.GetDirectionAtDistance(dist, pathEnd);
 				Vector3 rotDirVec = Quaternion.AngleAxis(90, Vector3.up) * dirVec;
 				Vector3 leftSide = startPos;
 				Vector3 rightSide = startPos;
@@ -470,7 +501,7 @@ namespace RVP
 					else
 						break;
 				}
-				startPos = Vector3.Lerp(leftSide, rightSide, (cp.position % 2 == 0) ? 0 : 1);
+				startPos = Vector3.Lerp(leftSide, rightSide, skate ? 0.5f : (cp.position % 2 == 0) ? 0 : 1);
 				var position = new Vector3(startPos.x, startPos.y + 3, startPos.z);
 				Vector3 trackNormal = leftNormal + rightNormal;
 				if (trackNormal.sqrMagnitude < 0.0001f)
@@ -482,7 +513,7 @@ namespace RVP
 					trackForward = Vector3.ProjectOnPlane(Vector3.forward, trackNormal);
 				var rotation = Quaternion.LookRotation(trackForward.normalized, trackNormal);
 
-				if (!ServerC.I.AmHost)
+				if (!skate && !ServerC.I.AmHost)
 					Online.I.GibCar(position, rotation);
 				else
 				{
@@ -501,6 +532,8 @@ namespace RVP
 			SetPitsLayer(F.I.roadLayer);
 
 			DemoSGPLogo.SetActive(F.I.s_spectator);
+			if (skate)
+				F.I.raceStartDate = DateTime.UtcNow.AddSeconds(CountDownSeq.startRaceCountdownSecs);
 			hud.gameObject.SetActive(!F.I.s_spectator);
 			countDownSeq.gameObject.SetActive(!F.I.s_spectator);
 
@@ -585,7 +618,10 @@ namespace RVP
 
 			if (F.I.gameMode == GameMode.Multiplayer)
 				yield return new WaitForSeconds(1);
-			resultsSeq.gameObject.SetActive(true);
+
+			if(F.I.gameMode != GameMode.Skate)
+				resultsSeq.gameObject.SetActive(true);
+
 			cam.mode = CameraControl.Mode.Replay;
 			foreach (var c in F.I.s_cars)
 				c.sampleText.gameObject.SetActive(false);

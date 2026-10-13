@@ -228,7 +228,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 31799994220544
-    m_Localized: STEER AXIS
+    m_Localized: STEER AXIS (STICK)
     m_Metadata:
       m_Items: []
   - m_Id: 31932731359232
@@ -673,7 +673,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 289947137081344
-    m_Localized: No cars available lol
+    m_Localized: No cars available
     m_Metadata:
       m_Items: []
   - m_Id: 291063086186496
@@ -1147,7 +1147,9 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 413387257020416
     m_Localized: '- Mousewheel - change area\n- Mousewheel + shift - change strength\nHold
-      Shift in Raise/Lower to lower terrain\n- Ctrl + R -reset terrain'
+      Shift in Raise/Lower to lower terrain\n- Ctrl + R -reset terrain\n- Ctrl -
+      pick height under cursor then use set mode to copy it\n- Ctrl + Tab - undo
+      last terrain change'
     m_Metadata:
       m_Items: []
   - m_Id: 413979912175616
@@ -2224,6 +2226,38 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 188378724084277248
     m_Localized: 'Overwrite picture: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189469949742866432
+    m_Localized: Set
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189522099361603584
+    m_Localized: 'Time Limit: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189544484919894016
+    m_Localized: STUNTMAN
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189544510102495232
+    m_Localized: This modified hawk takes you to the sky!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190294953174818816
+    m_Localized: 'Cars:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190595285587124224
+    m_Localized: BRAKE TRIGGER
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190595817013829632
+    m_Localized: ACCELERATE TRIGGER
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190601394989359104
+    m_Localized: ACCELERATE AXIS
     m_Metadata:
       m_Items: []
   references:

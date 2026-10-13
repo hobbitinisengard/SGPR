@@ -31,6 +31,11 @@ namespace UnityEngine.InputSystem.Samples.RebindUI
 
         public override void OnInspectorGUI()
         {
+            serializedObject.Update();
+            // Input Actions can be reimported while this inspector remains open.
+            // Rebuild the choices from the current asset rather than keeping the
+            // list captured when the component was first selected.
+            RefreshBindingOptions();
             EditorGUI.BeginChangeCheck();
 
             // Binding section.
@@ -84,7 +89,12 @@ namespace UnityEngine.InputSystem.Samples.RebindUI
         protected void RefreshBindingOptions()
         {
             var actionReference = (InputActionReference)m_ActionProperty.objectReferenceValue;
-            var action = actionReference?.action;
+            var referencedAction = actionReference?.action;
+            // InputActionReference caches its resolved action. Resolve its ID
+            // again in the asset to avoid displaying the pre-import bindings.
+            var action = referencedAction != null
+                ? actionReference.asset?.FindAction(referencedAction.id)
+                : null;
 
             if (action == null)
             {

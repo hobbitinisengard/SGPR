@@ -38,13 +38,9 @@ public class Online : NetworkBehaviour
 	{
 		RaceManager.I.SpawnCarForPlayer(ps.Receive.SenderClientId, lobbyId, position, rotation);
 	}
-	public void ActivateEndraceTimer()
-	{
-		if(F.I.gameMode == GameMode.Multiplayer)
-			CountdownTillForceEveryoneToResultsRpc();
-	}
+	
 	[Rpc(SendTo.Everyone)]
-	void CountdownTillForceEveryoneToResultsRpc()
+	public void CountdownTillForceEveryoneToResultsRpc()
 	{
 		if (ResultsView.FinishedPlayers < ServerC.I.lobby.Players.Count)
 			RaceManager.I.hud.endraceTimer.gameObject.SetActive(true);

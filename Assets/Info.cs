@@ -25,7 +25,7 @@ public enum RecordType { BestLap, RaceTime, StuntScore, DriftScore }
 public enum ScoringType { Championship, Points, Victory }
 public enum ActionHappening { InLobby, InRace }
 public enum PavementType { Arena, Volcano, Asphalt, Energy, Grid, Japan, Jungle, Random }
-public enum GameMode { Exhibition, Multiplayer, Splitscreen, Arcade, Championships,QuickRace };
+public enum GameMode { Exhibition, Multiplayer, Splitscreen, Arcade, Championships,QuickRace, Skate };
 public enum RaceType { Race, Knockout, Stunt, Drift, TimeTrial, Survival }
 public enum CpuLevel { Easy, Medium, Hard };
 public enum TimeOfDay { Day, Night };
@@ -50,6 +50,7 @@ public class PlayerSettingsData
 	public bool trail = false;
 	public string currentArcadeVariant = "Original";
 	public Language language = Language.English;
+	public bool skateCarUnlocked;
 }
 [Serializable]
 public class RankingData
@@ -60,6 +61,7 @@ public class RankingData
 	public LinkedList<RankingRowData> Vic = new();
 	public LinkedList<RankingRowData> Pts = new();
 	public LinkedList<RankingRowData> Champ = new();
+	public LinkedList<RankingRowData> Skate = new();
 }
 
 public class Info : MonoBehaviour
@@ -166,6 +168,7 @@ public class Info : MonoBehaviour
 		PopulateTrackData();
 		LoadRanking();
 		LoadArcade();
+		LoadSkate();
 		icons = Resources.LoadAll<Sprite>(trackImagesPath + "tiles");
 		LocalizationSettings.InitializeSynchronously = true;
 	}
@@ -173,6 +176,29 @@ public class Info : MonoBehaviour
 	{
 		UpdateLanguage(true);
 
+	}
+	public const float SkateCarUnlockScore = 30000;
+	void LoadSkate()
+	{
+		ApplyChampionshipRewards();
+		if (cars == null || cars.Length <= 20) return;
+		// Preserve rewards earned in existing saves that only stored track records.
+		if (!playerData.skateCarUnlocked && tracks.Any(t => t.Value.isSkatePark &&
+			t.Value.records?.stunt?.secondsOrPts >= SkateCarUnlockScore))
+		{
+			playerData.skateCarUnlocked = true;
+			SaveSettingsDataToJson();
+		}
+		cars[20].unlocked = playerData.skateCarUnlocked || playerData.playerName == "SGPNOW";
+	}
+	public bool TryUnlockSkateCar(float aeroScore)
+	{
+		if (aeroScore < SkateCarUnlockScore || cars == null || cars.Length <= 20 || cars[20].unlocked)
+			return false;
+		cars[20].unlocked = true;
+		playerData.skateCarUnlocked = true;
+		SaveSettingsDataToJson();
+		return true;
 	}
 	public void UpdateLanguage(bool firstRun = false)
 	{
@@ -204,6 +230,7 @@ public class Info : MonoBehaviour
 	public const string alreadyWalkedTag = "walked";
 
 	public Livery s_PlayerCarSponsor = Livery.TGR;
+	public float s_SkateTimeLimit = 90;
 
 	public readonly int maxCarsInRace = 10;
 
@@ -229,6 +256,7 @@ public class Info : MonoBehaviour
 	public InputActionReference resetOnTrackInput;
 	public InputActionReference lookBackInput;
 	public InputActionReference lookAxisInput;
+	public InputActionReference lightsInput;
 
 	public RankingData rankingData;
 	[NonSerialized]
@@ -241,6 +269,7 @@ public class Info : MonoBehaviour
 	[NonSerialized]
 	public Livery?[] unlockedLiveries = new Livery?[] { Livery.Random, null, null, null, null, null, null, null };
 
+	
 	public void LoadArcade()
 	{
 		// iterate over all files in arcadePath
@@ -375,6 +404,7 @@ public class Info : MonoBehaviour
 
 			prizeNamesToBeLocked.Clear();
 		}
+		LoadSkate();
 	}
 
 	public async void LoadRanking()
@@ -572,6 +602,69 @@ public class Info : MonoBehaviour
 			wonChampionships.OrderBy(value => value, StringComparer.Ordinal), Formatting.Indented));
 	}
 
+	HashSet<string> rewardedChampionships = new(StringComparer.Ordinal);
+	bool championshipRewardsLoaded;
+	string ChampionshipRewardsPath => Path.Combine(documentsSGPRpath, "championship-rewards.json");
+	static string[] ChampionshipCompletionPrizes(string season) => season switch
+	{
+		"SGP" => new[] { "AZTEC", "car19" },
+		"SURVIVAL" => new[] { "car11", "car12", "car19" },
+		_ => Array.Empty<string>()
+	};
+	void LoadChampionshipRewards()
+	{
+		if (championshipRewardsLoaded) return;
+		championshipRewardsLoaded = true;
+		try
+		{
+			if (File.Exists(ChampionshipRewardsPath))
+				rewardedChampionships = new HashSet<string>(
+					JsonConvert.DeserializeObject<string[]>(File.ReadAllText(ChampionshipRewardsPath)) ?? Array.Empty<string>(),
+					StringComparer.Ordinal);
+		}
+		catch (Exception error) { Debug.LogError("Could not load championship rewards: " + error.Message, this); }
+	}
+	bool UnlockChampionshipPrize(string prize)
+	{
+		if (prize.StartsWith("car", StringComparison.Ordinal))
+		{
+			var car = cars?.FirstOrDefault(c => c != null && c.internalName == prize);
+			if (car == null) return false;
+			bool newlyUnlocked = !car.unlocked;
+			car.unlocked = true;
+			return newlyUnlocked;
+		}
+		if (!tracks.TryGetValue(prize, out var track)) return false;
+		bool newTrack = !track.unlocked;
+		track.unlocked = true;
+		return newTrack;
+	}
+	void ApplyChampionshipRewards()
+	{
+		LoadChampionshipRewards();
+		foreach (string season in rewardedChampionships)
+			foreach (string prize in ChampionshipCompletionPrizes(season))
+				UnlockChampionshipPrize(prize);
+	}
+	public List<string> AwardChampionshipCompletion(string season)
+	{
+		LoadChampionshipRewards();
+		var prizes = new List<string>();
+		if (ChampionshipCompletionPrizes(season).Length == 0) return prizes;
+		if (!rewardedChampionships.Add(season))
+		{
+			ApplyChampionshipRewards();
+			return prizes;
+		}
+		// Persist separately from the championship slot, which is deleted on completion.
+		Directory.CreateDirectory(documentsSGPRpath);
+		File.WriteAllText(ChampionshipRewardsPath, JsonConvert.SerializeObject(
+			rewardedChampionships.OrderBy(value => value, StringComparer.Ordinal), Formatting.Indented));
+		foreach (string prize in ChampionshipCompletionPrizes(season))
+			if (UnlockChampionshipPrize(prize)) prizes.Add(prize);
+		return prizes;
+	}
+
 	public OriginalVehiclePartDefinition GetOriginalVehiclePart(string id)
 	{
 		return originalVehiclePartCatalog?.GetPart(id);
@@ -711,6 +804,7 @@ public class Info : MonoBehaviour
 		"https://docs.google.com/document/d/14PEdrIv2pKRA5bBgoyBFK_-WArmZ6AFeBQoZ4Xr_Wpg/"
 	};
 	internal bool s_isSkatePark;
+	
 	public readonly int maxConcurrentUsers = 30;
 
 	/// <summary>
@@ -753,8 +847,9 @@ public class Info : MonoBehaviour
 				new ("car15",90000,5,5,9,CarGroup.Speed, Livery.Titan, "INFERNO","This speed demon is on fire!"),
 				new ("car16",85000,5,10,9,CarGroup.Team, Livery.Team, "FORK","Despite its looks, it moves like fork lightning!"),
 				new ("car17",75000,4,9,7,CarGroup.Team, Livery.Team, "WORM MOBILE","Super Speedy Buggy!"),
-				new ("car18",120000,3,10,7,CarGroup.Team, Livery.Itex, "FORMULA 17","Incredibly fast racing car."),
-				new ("car19",120000,5,7,7,CarGroup.Team, Livery.Team, "TEAM MACHINE","The ultimate, hugely versatile stock car.")
+				new ("car18",120000,3,10,10,CarGroup.Team, Livery.Itex, "FORMULA 17","Incredibly fast racing car."),
+				new ("car19",120000,5,7,7,CarGroup.Team, Livery.Team, "TEAM MACHINE","The ultimate, hugely versatile stock car."),
+				new ("car20",70000,10,5,10,CarGroup.Aero, Livery.Team, "STUNTMAN","This modified hawk takes you to the sky!")
 			};
 		}
 		for (int i = 0; i < cars.Length; i++)

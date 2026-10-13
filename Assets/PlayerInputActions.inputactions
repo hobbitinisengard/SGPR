@@ -15,6 +15,15 @@
                     "initialStateCheck": true
                 },
                 {
+                    "name": "Lights",
+                    "type": "Button",
+                    "id": "033e464c-0a81-4763-81e3-1ced8a18789e",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
                     "name": "Ctrl",
                     "type": "Button",
                     "id": "183afd44-b1e5-409c-9391-fd0d23da0b59",
@@ -46,6 +55,15 @@
                     "type": "Button",
                     "id": "bd8257b7-7196-4025-a946-25b06763fd66",
                     "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Drive",
+                    "type": "PassThrough",
+                    "id": "9a5b5b97-c7a0-424e-8a64-22ed86b48c27",
+                    "expectedControlType": "Vector2",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -150,15 +168,6 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "Drive",
-                    "type": "PassThrough",
-                    "id": "9a5b5b97-c7a0-424e-8a64-22ed86b48c27",
-                    "expectedControlType": "Vector2",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
                     "name": "Chat",
                     "type": "Button",
                     "id": "dda3f125-65bd-4e1a-aee1-17f404aace0c",
@@ -206,6 +215,17 @@
                     "processors": "",
                     "groups": "Gamepad",
                     "action": "Submit",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "ccdaf7d8-bf4c-418e-a589-585d35ab85ff",
+                    "path": "<Keyboard>/l",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard",
+                    "action": "Lights",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -837,8 +857,19 @@
                     "isPartOfComposite": false
                 },
                 {
+                    "name": "up",
+                    "id": "afcf79ad-a2a9-48ec-80e6-487c2265ba4f",
+                    "path": "<Gamepad>/rightStick/up",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Gamepad",
+                    "action": "Drive",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
                     "name": "down",
-                    "id": "73e276ac-b15b-4684-b4e3-be1260586ac1",
+                    "id": "271f3302-52af-4847-9ff9-b9da669dcc1a",
                     "path": "<Gamepad>/rightStick/down",
                     "interactions": "",
                     "processors": "",

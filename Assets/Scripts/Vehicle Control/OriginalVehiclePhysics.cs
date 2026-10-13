@@ -81,7 +81,6 @@ namespace RVP
 		public const float SourceTicksPerSecond = 60f;
 		const float SourceEnergyCapacity = 1000f;
 		const float SourceHumanRespawnEnergyCost = 5f;
-		const float SourceCpuRespawnEnergyCost = 3.5f;
 		const float SourceHumanStuntEnergyAwardPercent = 9f;
 		const float SourceCpuStuntEnergyAwardPercent = 7f; // The retail award truncates Gameplay.csv 7.5 before applying it.
 		const float SourceStuntEnergyAwardMultiplier = 1.5f;
@@ -94,7 +93,6 @@ namespace RVP
 			? Physics.gravity.normalized : Vector3.down;
 		static Vector3 SourceWorldUp => -SourceGravityDirection;
 		static Vector3 SourceGravityAcceleration => Physics.gravity;
-		const float SourcePitlaneRefuelLimit = 1000f; // gameplay.csv value 100 scaled by 10.
 		const float SourceUnityRailActivationDistance = 3.5f;
 		// Source contact profile defaults used when a Unity surface has no authored
 		// values. GroundSurfaceMaster supplies the actual per-surface values.
@@ -116,7 +114,6 @@ namespace RVP
 		const float SourceCpuCatchupDistanceMetres = 100f;
 		const float SourceCpuCatchupSkillGain = 0.20f;
 		// gameplay.csv rules scaled to the original runtime values.
-		const float SourceCpuCollisionEnergyModifier = 1f;
 		const float SourceCpuEngineConsumptionModifier = 1.10f;
 		const float SourceCpuTurboConsumptionModifier = 1.15f;
 		const float SourceCpuBoostUsageModifier = 0.95f;
@@ -213,6 +210,7 @@ namespace RVP
 		float sourceEffectiveMass = 1;
 		float fuel;
 		float storedEnergy;
+		int activeEnergyTunnels;
 		float energy
 		{
 			get => UnlimitedBatteryEnergy ? Mathf.Max(0, parameters.fuelCapacity) : storedEnergy;
@@ -236,6 +234,10 @@ namespace RVP
 		float sourceBodyRoll;
 		float sourceBodyPitch;
 		float sourceBodyHeave;
+		bool suspensionJumpHeld, suspensionJumpArmed, suspensionJumpPending;
+		bool suspensionJumpTakeoffPending;
+		float suspensionJumpTakeoffDeadline;
+		float suspensionJumpLowering;
 		Vector3 sourceAngularVelocity;
 		float effectiveComHeight;
 		float sourceCom2628;
@@ -275,6 +277,7 @@ namespace RVP
 		float sourceBodyProbeVerticalFitOffset;
 		float sourceContactCounter;
 		float sourceCameraLaunchHeight;
+		Vector3 sourceCameraOriginLocal;
 		int sourceUnsafeContactTicks;
 		int sourceOpposingDirectionTicks;
 		int sourceLastUnsafeProbe = -1;
@@ -313,18 +316,13 @@ namespace RVP
 		bool sourceStartBoostActiveThisTick;
 		bool sourceSpecialMode;
 		bool sourceRailControlsActive;
-		RailbarLogic sourceRailbar;
-		float sourceRailbarSeenTime = float.NegativeInfinity;
-		float sourceRailbarSupportedTime = float.NegativeInfinity;
-		public bool IsRailbarGrinding => sourceRailbar && sourceRailbar.isActiveAndEnabled &&
-			Time.fixedTime - sourceRailbarSupportedTime <= Time.fixedDeltaTime * 1.5f;
+		public bool IsRailbarGrinding => vehicle.HasRailbarTriggerContact;
 		bool sourceRailControlDisabled;
 		EnergyTunnelPath sourceUnityRailPathThisTick;
 		EnergyTunnelPath sourceRailCompletedPath;
 		bool sourceMassOverride;
 		uint sourceRailProgress;
 		float sourceRailTicks;
-		float sourceRailEnergyAdded;
 		float sourceRailThrottle;
 		byte sourceRailBrakeInput;
 		// source_cold_vehicle_state initializes gear to 1 (neutral). Gear 2 is
@@ -389,6 +387,13 @@ namespace RVP
 			_ => 85f,
 		};
 		bool SourceUpgradeActive => vehicle.followAI && vehicle.followAI.IsCPU;
+		float BatteryConsumptionScale => !SourceUpgradeActive || !F.I ||
+			(RaceManager.I && RaceManager.I.playerCar == vehicle) ? 1f : F.I.s_cpuLevel switch
+		{
+			CpuLevel.Medium => 0.5f,
+			CpuLevel.Hard => 0.1f,
+			_ => 1f,
+		};
 		// Cover every energy cost, including tunnels, boosts, impacts and respawns.
 		bool UnlimitedBatteryEnergy => F.I && (F.I.s_raceType == RaceType.TimeTrial ||
 			(F.I.s_raceType == RaceType.Survival && SourceUpgradeActive &&
@@ -437,7 +442,6 @@ namespace RVP
 			InitializeSourcePhysicsRandom();
 			vehicle = owner;
 			parameters = config;
-			AlignInitialPoseToTrackSurface();
 			lastSourceControlledRotation = owner.rb.rotation;
 			InitializeSourceWheelLayout();
 			bodyTransform = owner.bodyObj ? owner.bodyObj.transform : null;
@@ -449,16 +453,22 @@ namespace RVP
 			energy = parameters.fuelCapacity;
 			sourceEffectiveMass = (float)((double)fuel * parameters.fuelUnitMass + parameters.mass);
 			effectiveComHeight = parameters.comHeight;
-			sourceCameraLaunchHeight = vehicle.rb.position.y;
+			sourceCameraLaunchHeight = CameraPhysicsPosition.y;
 			float sourceTicks = Time.fixedTime * SourceTicksPerSecond;
 			sourceSuspensionTick = Mathf.FloorToInt(sourceTicks);
 			sourceSuspensionTickPhase = sourceTicks - sourceSuspensionTick;
 			ApplySourceDimensions();
 			ResetSourceProbeHistory();
 			FitSourceProbeHeightsToPrefabTires();
-			// The fit changes the probe offsets; reset history so the next sweep
-			// starts from the fitted locations.
+			// Fit in the spawn pose, while the cached Suspension world vectors
+			// still describe that same pose. Aligning first mixed new Rigidbody
+			// rotation with old spring vectors and baked the slope into the fit.
+			// Only move the body after calibration; the driving formulas stay intact.
+			AlignInitialPoseToTrackSurface();
+			lastSourceControlledRotation = owner.rb.rotation;
+			// Begin contact history at the aligned pose with the fitted geometry.
 			ResetSourceProbeHistory();
+			sourceCameraLaunchHeight = CameraPhysicsPosition.y;
 			ResetSourceWakeHistory();
 			nextSourceTrackCollisionScan = 0;
 			if (vehicle.engine && vehicle.engine.transmission)
@@ -504,14 +514,79 @@ namespace RVP
 		public float EnergyCapacity => Mathf.Max(0, parameters.fuelCapacity);
 		public float EnergyPercent => EnergyCapacity > 0 ? energy / EnergyCapacity : 0;
 		public float EnergyThreshold => Mathf.Clamp01(parameters.turboEnergyThreshold);
-		public float SourceRefuelRate => Mathf.Max(0, parameters.refuelRate);
+		// The source transfers refuelRate once every three simulation ticks.
+		public float SourceRefuelRate => Mathf.Max(0, parameters.refuelRate) * (SourceTicksPerSecond / 3f);
 		public float EngineRpmLimit => Mathf.Max(1, parameters.rpmLimit);
 		public float SteeringLimitDegrees => Mathf.Abs(parameters.steeringMax);
 		// CameraVehicle observation used by retail_camera.cpp::camera_chase_tick.
 		public float CameraBodyHeight => parameters.height * SourceLengthToMetres;
+		// The Unity root can differ from the origin of the original centered rig.
+		public Vector3 CameraPhysicsPosition => vehicle.rb.position + vehicle.rb.rotation * sourceCameraOriginLocal;
 		public int CameraContactClass => sourceContactClass;
 		public float CameraContactCounter => sourceContactCounter;
+		// Actual map contacts include body probes, even when all tires are airborne.
+		public bool HasTrackContact
+		{
+			get
+			{
+				if (vehicle.ActiveRailbar) return true;
+				for (int i = 0; i < sourceProbeCount; ++i)
+					if (sourceProbeHitsThisTick[i] > 0) return true;
+				return false;
+			}
+		}
 		public float CameraLaunchHeight => sourceCameraLaunchHeight;
+		bool CanUseSuspensionJump => vehicle.Owner && vehicle.basicInput &&
+			vehicle.basicInput.isActiveAndEnabled && vehicle.followAI && !vehicle.followAI.selfDriving &&
+			!vehicle.rb.isKinematic && CountDownSeq.Countdown <= 0 &&
+			F.I && !F.I.chat.texting;
+		public void SetSuspensionJumpInput(bool held)
+		{
+			if (!CanUseSuspensionJump) { CancelSuspensionJump(); return; }
+			if (held && !suspensionJumpHeld)
+				suspensionJumpArmed = ReallyGroundedWheelCount > 0;
+			if (!held && suspensionJumpHeld && suspensionJumpArmed)
+				suspensionJumpPending = true;
+			suspensionJumpHeld = held;
+		}
+		public void CancelSuspensionJump()
+		{
+			suspensionJumpHeld = suspensionJumpArmed = suspensionJumpPending = false;
+			suspensionJumpTakeoffPending = false;
+			suspensionJumpLowering = 0;
+		}
+		void UpdateSuspensionJumpLowering()
+		{
+			if (!CanUseSuspensionJump) { CancelSuspensionJump(); return; }
+			float available = 0.1f;
+			for (int i = 0; i < 4; i++)
+				available = Mathf.Min(available, Mathf.Max(0,
+					parameters.tyres[i].travelIn - sourceSuspension[i]) * SourceLengthToMetres);
+			float target = suspensionJumpHeld && suspensionJumpArmed && ReallyGroundedWheelCount > 0
+				? available : 0;
+			suspensionJumpLowering = Mathf.MoveTowards(suspensionJumpLowering, target,
+				0.5f * Time.fixedDeltaTime);
+		}
+		void ApplySuspensionJump()
+		{
+			if (!suspensionJumpPending) return;
+			suspensionJumpPending = suspensionJumpArmed = false;
+			if (!CanUseSuspensionJump || ReallyGroundedWheelCount == 0 ||
+				Vector3.Dot(vehicle.tr.up, SourceWorldUp) < 0.5f) return;
+			float gravity = Physics.gravity.magnitude;
+			if (gravity <= 0.001f) return;
+			Vector3 up = SourceWorldUp;
+			const float jumpHeight = 2f;
+			float jumpSpeed = Mathf.Sqrt(2 * gravity * jumpHeight);
+			vehicle.rb.linearVelocity += up * (jumpSpeed - Vector3.Dot(vehicle.rb.linearVelocity, up));
+			suspensionJumpTakeoffPending = true;
+			suspensionJumpTakeoffDeadline = Time.fixedTime + 0.5f;
+			sourceCameraLaunchHeight = CameraPhysicsPosition.y;
+			sourceContactCounter = 0;
+			airTicks = 0;
+			System.Array.Clear(contactCountdown, 0, contactCountdown.Length);
+			System.Array.Clear(sourceProbeWheelTouched, 0, sourceProbeWheelTouched.Length);
+		}
 		public int CurrentGear => gear;
 		public bool TurboActive => sourceTurboActive;
 		public void RefreshParameters()
@@ -730,6 +805,14 @@ namespace RVP
 				sourceWheelProbeVerticalFitOffset[sourceIndex] += visualOffset / SourceLengthToMetres;
 			}
 			sourceBodyProbeVerticalFitOffset = totalOffset / fittedWheelCount;
+			UpdateSourceWheelProbeGeometry();
+			// Recover the rig's origin from the common translation between fitted
+			// Unity probes and their original car-local coordinates. Capture only
+			// during geometry setup, never from contacts or animated suspension.
+			Vector3 originOffset = Vector3.zero;
+			for (int i = 0; i < sourceProbeCount; i++)
+				originOffset += sourceProbeLocal[i] - sourceConfiguredProbeLocal[i];
+			sourceCameraOriginLocal = originOffset * (SourceLengthToMetres / sourceProbeCount);
 			//Debug.Log($"[OriginalVehiclePhysics] Initial probe placement: " +
 			//	$"car={vehicle.carConfig?.name}, source={parameters.sourceConfig}, " +
 			//	$"probeOffsets={wheelFits}, bodyProbeOffset=" +
@@ -1376,7 +1459,6 @@ namespace RVP
 			{
 				sourceSpecialMode = true;
 				sourceRailProgress = 0;
-				sourceRailEnergyAdded = 0;
 				sourceRailTicks = 0;
 			}
 			if ((flags & 0x40) != 0)
@@ -1809,11 +1891,22 @@ namespace RVP
 				return;
 			energy = Mathf.Min(parameters.fuelCapacity, energy + amount);
 		}
+		public void SetEnergyTunnelContact(bool inside)
+		{
+			activeEnergyTunnels = Mathf.Max(0, activeEnergyTunnels + (inside ? 1 : -1));
+		}
 		public void TransferSourceTunnelEnergy(float amount)
 		{
 			if (amount <= 0 || parameters.fuelCapacity <= 0) return;
-			float direction = F.I && F.I.s_raceType == RaceType.Survival ? -1 : 1;
-			energy = Mathf.Clamp(energy + direction * amount, 0, parameters.fuelCapacity);
+			if (F.I && F.I.s_raceType == RaceType.Survival) ConsumeBatteryEnergy(amount);
+			else energy = Mathf.Min(energy + amount, parameters.fuelCapacity);
+		}
+		float ConsumeBatteryEnergy(float amount)
+		{
+			if (amount <= 0 || UnlimitedBatteryEnergy) return 0;
+			float consumed = Mathf.Min(Mathf.Max(0, energy), amount * BatteryConsumptionScale);
+			energy = Mathf.Max(0, energy - consumed);
+			return consumed;
 		}
 
 		public void RefillSourceEnergy()
@@ -1824,8 +1917,7 @@ namespace RVP
 		{
 			if (F.I && F.I.s_raceType == RaceType.Stunt)
 				return;
-			float sourceCost = SourceUpgradeActive ? SourceCpuRespawnEnergyCost : SourceHumanRespawnEnergyCost;
-			energy = (float)((double)energy - (double)sourceCost * parameters.fuelCapacity / SourceEnergyCapacity);
+			ConsumeBatteryEnergy((float)((double)SourceHumanRespawnEnergyCost * parameters.fuelCapacity / SourceEnergyCapacity));
 		}
 		public void AddSourceStuntEnergyAward()
 		{
@@ -1862,7 +1954,6 @@ namespace RVP
 			sourceRailControlDisabled = false;
 			sourceRailCompletedPath = null;
 			sourceRailProgress = 0;
-			sourceRailEnergyAdded = 0;
 			sourceRailTicks = 0;
 			sourceRailThrottle = 0;
 			sourceRailBrakeInput = 0;
@@ -1888,8 +1979,6 @@ namespace RVP
 			System.Array.Clear(sourceProbeWheelTouched, 0, sourceProbeWheelTouched.Length);
 			System.Array.Clear(sourceSuspension, 0, sourceSuspension.Length);
 			System.Array.Clear(contactCountdown, 0, contactCountdown.Length);
-			sourceRailbar = null;
-			sourceRailbarSeenTime = sourceRailbarSupportedTime = float.NegativeInfinity;
 			System.Array.Clear(sourceWheelSlip, 0, sourceWheelSlip.Length);
 			System.Array.Clear(sourceWheelSideSlip, 0, sourceWheelSideSlip.Length);
 			System.Array.Clear(sourceWheelGripUsage, 0, sourceWheelGripUsage.Length);
@@ -1913,6 +2002,7 @@ namespace RVP
 			pitchSpeed = yawSpeed = 0;
 			ResetSourceStuntRoll();
 			sourceBodyRoll = sourceBodyPitch = sourceBodyHeave = 0;
+			CancelSuspensionJump();
 			effectiveComHeight = parameters.comHeight;
 			sourceCom2628 = sourceCom262c = 0;
 			comResetTicks = 0;
@@ -1926,7 +2016,7 @@ namespace RVP
 			lastSourceCollisionHoldTick = -1;
 			sourceCollisionHoldTicks = 0;
 			sourceContactCounter = 0;
-			sourceCameraLaunchHeight = vehicle.rb.position.y;
+			sourceCameraLaunchHeight = CameraPhysicsPosition.y;
 			currentSourceSpeed = 0;
 			sourceAngularVelocity = Vector3.zero;
 			if (AIStuntInProgress)
@@ -1959,6 +2049,7 @@ namespace RVP
 		}
 		public void ResolveBodyContact(Collision collision, bool entering = false)
 		{
+			if (vehicle.ActiveRailbar) return;
 			// contact_response.cpp linear_friction: tangential motion is
 			// cancelled below 20% of impact speed, otherwise 10% is removed. The
 			// source's velocity unit is one source tick, independent of Unity's step.
@@ -2093,6 +2184,9 @@ namespace RVP
 				vehicle.rb.linearVelocity += firstVelocityChange * SourceSpeedToMetresPerSecond;
 				otherVehicle.rb.linearVelocity += secondVelocityChange * SourceSpeedToMetresPerSecond;
 				ApplyVehicleCollisionHop(otherVehicle.originalVehiclePhysics, normalSpeed);
+				float crashSpeed = Mathf.Max(0, normalSpeed * SourceSpeedToMetresPerSecond);
+				vehicle.PlayCrashSound(crashSpeed, 0.5f);
+				otherVehicle.PlayCrashSound(crashSpeed, 0.5f);
 				ApplySourceImpactEnergy(normalSpeed);
 				effectiveComHeight = parameters.comHeight;
 				sourceCom2628 = sourceCom262c = 0;
@@ -2143,15 +2237,17 @@ namespace RVP
 		}
 		void ApplySourceImpactEnergy(float strength)
 		{
+			// Spawning and resting contacts during the starting countdown are free.
+			if (CountDownSeq.Countdown > 0 ||
+				(F.I && F.I.raceStartDate > System.DateTime.UtcNow))
+				return;
 			if (sourceImpactEnergyLossThisTick > SourceCollisionEnergyLimit)
 				return;
 			float amount = Mathf.Abs(strength) * SourceCollisionEnergyScale;
 			if (amount < SourceCollisionEnergyMinimum)
 				return;
 			amount = Mathf.Min(amount, SourceCollisionEnergyMaximum);
-			if (SourceUpgradeActive)
-				amount = (float)(((1.0 - SourceUpgradeCondition) * SourceCpuCollisionEnergyModifier + 1.0) * amount);
-			energy = Mathf.Max(0, energy - amount);
+			ConsumeBatteryEnergy(amount);
 			sourceImpactEnergyLossThisTick += amount;
 		}
 		void AdvanceSourceCollisionHold(int tick, float tickScale)
@@ -2332,7 +2428,6 @@ namespace RVP
 				if (!sourceSpecialMode)
 				{
 					sourceRailProgress = 0;
-					sourceRailEnergyAdded = 0;
 					sourceRailTicks = 0;
 				}
 				sourceSpecialMode = true;
@@ -2380,13 +2475,14 @@ namespace RVP
 			{
 				ApplySourceSuspensionTick(tickScale);
 				AttenuateSourceSteering(tickScale);
+				UpdateSuspensionJumpLowering();
 				UpdateOriginalSuspensionPose(currentSourceSpeed, tickScale);
 			}
 			LogSourceSuspensionStateAfterStableContact();
 			Quaternion incrementalBeforeAirMotion = sourceIncrementalRotation;
 			using (SourceAirMotionMarker.Auto())
 				UpdateAirMotion(tickScale);
-			ApplyRailbarSupport();
+			ApplySuspensionJump();
 			Vector3 airIncrementVector = RotationVector(
 				sourceIncrementalRotation * Quaternion.Inverse(incrementalBeforeAirMotion));
 			LogFormulaStability(appliedContactRotationVector, pendingContactRotationVector,
@@ -3035,7 +3131,8 @@ namespace RVP
 			if (Mathf.Abs(steering) > 0.1f)
 				sourceSteering = Mathf.Clamp(sourceSteering + steering, -parameters.steeringMax, parameters.steeringMax);
 			steeringDegrees = sourceSteering;
-			UpdateSourceRailRefuel(tickScale);
+			// EnergyTransfer is the charging source for Unity tunnels. Spline
+			// progress must not add a second, independently timed energy transfer.
 			if (unchecked((int)sourceRailProgress) >= 99)
 			{
 				sourceSpecialMode = false;
@@ -3084,27 +3181,6 @@ namespace RVP
 			}
 			else
 				brakeRamp = Mathf.Max(0, brakeRamp - 40 * tickScale);
-		}
-		void UpdateSourceRailRefuel(float tickScale)
-		{
-			int progress = unchecked((int)sourceRailProgress);
-			if (progress >= 40 && progress < 65)
-			{
-				sourceRailTicks += tickScale;
-				while (sourceRailTicks >= 3)
-				{
-					sourceRailTicks -= 3;
-					if (parameters.refuelRate <= 0 ||
-						SourcePitlaneRefuelLimit * parameters.refuelRate <= sourceRailEnergyAdded ||
-						(F.I && F.I.s_raceType == RaceType.Survival ? energy <= 0 : energy >= parameters.fuelCapacity))
-						continue;
-					// The trigger also adds refuelRate per second. The old x10 rail
-					// multiplier made the same tunnel fill a battery in a few ticks.
-					float amount = parameters.refuelRate;
-					sourceRailEnergyAdded += amount;
-					TransferSourceTunnelEnergy(amount);
-				}
-			}
 		}
 		void ApplySourceBrakingForce(double force)
 		{
@@ -3347,14 +3423,13 @@ namespace RVP
 		}
 		void HoldSourceStartVehicle(float tickScale)
 		{
-			// retail_race_start.cpp::hold_start_vehicles runs while the normal-race
-			// countdown has more than 60 of its 301 ticks left. It advances the
-			// brake ramp and zeros all four source wheel speeds. The remake exposes
-			// the matching interval as seconds, excluding its final GO fade.
-			if (!F.I || F.I.s_inEditor || F.I.s_raceType == RaceType.Stunt ||
-				!vehicle.raceBox || !vehicle.raceBox.enabled || CountDownSeq.Countdown <= 1)
+			// Hold every race mode, including Skate, until the countdown reaches GO.
+			if (!F.I || F.I.s_inEditor || !vehicle.raceBox ||
+				!vehicle.raceBox.enabled || CountDownSeq.Countdown <= 0)
 				return;
-			brakeRamp += 6 * tickScale;
+			vehicle.SetBrake(1);
+			vehicle.SetEbrake(1);
+			brakeRamp = Mathf.Min(127, brakeRamp + 6 * tickScale);
 			System.Array.Clear(wheelSpeed, 0, wheelSpeed.Length);
 		}
 		void UpdateEngine(float sourceSpeed, int grounded, int sourceContactClass, float tickScale)
@@ -3482,12 +3557,16 @@ namespace RVP
 			// time trial consumes energy. Evaluate from incoming RPM as the source
 			// engine_tick does, while retaining the editor/inactive-race guards.
 			if (!F.I || F.I.s_inEditor || !vehicle.raceBox || !vehicle.raceBox.enabled ||
+				CountDownSeq.Countdown > 0 || F.I.raceStartDate > System.DateTime.UtcNow ||
 				F.I.s_raceType == RaceType.Stunt)
 				return;
 			float engineConsumption = Curve(parameters.consumptionCurve,
 				rpm * 128 / Mathf.Max(1, parameters.rpmMax)) * parameters.fuelConsumption * tickScale;
 			float turboConsumption = Curve(parameters.consumptionCurve,
 				turboRpm * 128 / Mathf.Max(1, parameters.turboMax)) * parameters.turboConsumption * tickScale;
+			// Battery difficulty uses the same base consumption as the player.
+			// Keep the original CPU fuel/mass calculation separate from this aid.
+			float batteryConsumption = engineConsumption + turboConsumption;
 			if (SourceUpgradeActive)
 			{
 				engineConsumption = (float)(((1.0 - SourceUpgradeCondition) * SourceCpuEngineConsumptionModifier + 1.0) * engineConsumption);
@@ -3496,7 +3575,11 @@ namespace RVP
 			// The retail fuel field is allowed to pass below zero; only the battery
 			// energy field is clamped by consume_engine_energy/consume_turbo_energy.
 			fuel = (float)((double)fuel - engineConsumption);
-			energy = Mathf.Max(0, energy - engineConsumption - turboConsumption);
+			// Engine and boost consumption otherwise offset the tunnel's recharge
+			// and can make the gauge settle below full capacity while still charging.
+			// Survival keeps normal consumption in addition to the tunnel drain.
+			if (activeEnergyTunnels == 0 || F.I.s_raceType == RaceType.Survival)
+				ConsumeBatteryEnergy(batteryConsumption);
 		}
 		void DistributeSourceDrive(float acceleration, int sourceContactClass)
 		{
@@ -3670,6 +3753,11 @@ namespace RVP
 					// loss and material effects. Wheel impacts use the quarter-strength
 					// effect set by finish_impact_physical; body probes use full strength.
 					ApplySourceImpactEnergy(wheelContact ? normalSpeed * 0.25f : normalSpeed);
+					// A supported tire has a contact every tick. Play landing sounds
+					// only on fresh contact; body/wall impacts can sound again after cooldown.
+					if (!wheelContact || sourceProbeContactIterations[i] == 1)
+						vehicle.PlayCrashSound(Mathf.Max(0, -normalSpeed) * SourceSpeedToMetresPerSecond,
+							wheelContact ? 3f : 1f);
 					ProcessSourceContactMaterial(i, collider, point, normal, triangleIndex, alignment);
 					float impactRestitution = OriginalContactPhysics.EffectiveRestitution(normalSpeed, normal,
 						vehicle.rb.position - current, sourceGravity);
@@ -3835,8 +3923,19 @@ namespace RVP
 					x.Normalize();
 					y.Normalize();
 					z.Normalize();
-					if (z.sqrMagnitude > 0.000001f && y.sqrMagnitude > 0.000001f)
-						sourceIncrementalRotation = Quaternion.LookRotation(z, y);
+					// Retail stores all three independently normalized columns. Using
+					// LookRotation(z, y) discarded the damped X column, so the Unity
+					// rotation did not include the full contact stabilization response.
+					// Project that slightly non-orthogonal matrix onto a rotation using
+					// all columns, rather than rebuilding X from the other two.
+					if (x.sqrMagnitude > 0.000001f && y.sqrMagnitude > 0.000001f && z.sqrMagnitude > 0.000001f)
+					{
+						Matrix4x4 dampedBasis = Matrix4x4.identity;
+						dampedBasis.SetColumn(0, new Vector4(x.x, x.y, x.z, 0));
+						dampedBasis.SetColumn(1, new Vector4(y.x, y.y, y.z, 0));
+						dampedBasis.SetColumn(2, new Vector4(z.x, z.y, z.z, 0));
+						sourceIncrementalRotation = dampedBasis.rotation.normalized;
+					}
 				}
 				z = sourceIncrementalRotation * Vector3.forward;
 				if (Mathf.Abs(z.x) <= 0.002f && Mathf.Abs(z.y) <= 0.002f)
@@ -4056,7 +4155,8 @@ namespace RVP
 			float displayedBodyPitch = Mathf.Clamp(sourceBodyPitch + trickstartPitch, -0.3f, 0.3f);
 			float averageSuspension = 0.25f * (sourceSuspension[0] + sourceSuspension[1] +
 				sourceSuspension[2] + sourceSuspension[3]);
-			sourceBodyHeave = parameters.rideHeight - averageSuspension;
+			sourceBodyHeave = parameters.rideHeight - averageSuspension -
+			suspensionJumpLowering / SourceLengthToMetres;
 			if (!bodyTransform)
 				return;
 			Vector3 bodyUp = new Vector3(sourceBodyRoll, 1, 0).normalized;
@@ -4333,49 +4433,17 @@ namespace RVP
 			sourceIncrementalRotation = (Quaternion.AngleAxis(-angle * Mathf.Rad2Deg, axis) *
 				sourceIncrementalRotation).normalized;
 		}
-		public void RegisterRailbarSupport(RailbarLogic railbar)
+		public void SuspendForRailbar()
 		{
-			// Trigger callbacks run after physics; consume support in the next
-			// source tick, where its orientation and velocity are actually resolved.
-			sourceRailbar = railbar;
-			sourceRailbarSeenTime = Time.fixedTime;
-		}
-		void ApplyRailbarSupport()
-		{
-			if (!sourceRailbar || sourceRailControlsActive ||
-				Time.fixedTime - sourceRailbarSeenTime > Time.fixedDeltaTime * 1.5f ||
-				!sourceRailbar.TryGetSupport(vehicle, out Vector3 axis, out Vector3 normal))
-			{
-				sourceRailbarSupportedTime = float.NegativeInfinity;
-				return;
-			}
-			sourceRailbarSupportedTime = Time.fixedTime;
-			float lateralBlend = 1 - Mathf.Exp(-sourceRailbar.lateralDamping * Time.fixedDeltaTime);
-			float rotationBlend = 1 - Mathf.Exp(-sourceRailbar.rotationDamping * Time.fixedDeltaTime);
-			Vector3 velocity = vehicle.rb.linearVelocity;
-			Vector3 along = axis * Vector3.Dot(velocity, axis);
-			Vector3 away = normal * Mathf.Max(0, Vector3.Dot(velocity, normal));
-			Vector3 sideways = Vector3.ProjectOnPlane(velocity - along, normal);
-			vehicle.rb.linearVelocity = along + away + sideways * (1 - lateralBlend);
-			// Preserve yaw relative to the rail: sideways grinds must stay sideways.
-			Vector3 forward = Vector3.ProjectOnPlane(stepRotation * Vector3.forward, normal);
-			if (forward.sqrMagnitude > 0.000001f)
-			{
-				stepRotation = Quaternion.Slerp(stepRotation,
-					Quaternion.LookRotation(forward.normalized, normal), rotationBlend);
-				stepRotationChanged = true;
-			}
-			sourceIncrementalRotation = Quaternion.Slerp(sourceIncrementalRotation,
-				Quaternion.identity, rotationBlend);
-			sourceForwardBasis = stepRotation * Vector3.forward;
-			sourceRightBasis = stepRotation * Vector3.right;
-			sourceUpBasis = stepRotation * Vector3.up;
-			// A supported grind is not free-flight stunt rotation. Landing on the
-			// rail clears residual flip/roll speed; leaving it restores air control.
+			ResetSourceProbeHistory();
+			System.Array.Clear(contactCountdown, 0, contactCountdown.Length);
+			System.Array.Clear(sourceProbeWheelTouched, 0, sourceProbeWheelTouched.Length);
+			System.Array.Clear(sourceProbeWheelLoad, 0, sourceProbeWheelLoad.Length);
+			sourceContactCounter = 0;
 			stuntActive = false;
 			pitchAcceleration = yawAcceleration = pitchSpeed = yawSpeed = 0;
 			ResetSourceStuntRoll();
-			airTicks = 0;
+			CancelSuspensionJump();
 		}
 		void ApplyAerodynamics(float tickScale, int sourceContactClass)
 		{
@@ -4396,6 +4464,24 @@ namespace RVP
 		}
 		void UpdateAirMotion(float tickScale)
 		{
+			bool suspensionTakeoff = false;
+			if (suspensionJumpTakeoffPending)
+			{
+				if (Time.fixedTime > suspensionJumpTakeoffDeadline)
+					suspensionJumpTakeoffPending = false;
+				else if (ReallyGroundedWheelCount == 0 && !HasTrackContact)
+				{
+					// A suspension jump clears the grace counter before the usual
+					// ramp takeoff detector sees it. Arm tricks at actual separation,
+					// independently of the original Shift-to-ramp timing window.
+					suspensionJumpTakeoffPending = false;
+					suspensionTakeoff = true;
+					sourceContactCounter = 0;
+					sourceCameraLaunchHeight = CameraPhysicsPosition.y;
+					ResetSourceStuntPhaseHistory();
+					stuntActive = stuntPressed && !SourcePlayerControlsSuppressed;
+				}
+			}
 			// steer_air_velocity tests the contact counter before the air tick
 			// decrements it. A vehicle on its final contact tick must not steer.
 			bool hadContact = sourceContactCounter > 0;
@@ -4429,12 +4515,12 @@ namespace RVP
 			if (hadContact)
 			{
 				// vehicle_air_tick: begin_stunt_height stores the body height at takeoff.
-				sourceCameraLaunchHeight = vehicle.rb.position.y;
+				sourceCameraLaunchHeight = CameraPhysicsPosition.y;
 				ResetSourceStuntPhaseHistory();
 			}
 			else
 				UpdateSourceStuntPhaseHistory();
-			bool launchedThisTick = hadContact && TryLaunchOnTakeoff(Mathf.RoundToInt(Time.fixedTime /
+			bool launchedThisTick = !suspensionTakeoff && hadContact && TryLaunchOnTakeoff(Mathf.RoundToInt(Time.fixedTime /
 				Mathf.Max(0.0001f, Time.fixedDeltaTime)));
 			airTicks += tickScale;
 			if (airTicks < 16)
@@ -4614,8 +4700,13 @@ namespace RVP
 				int index = playerStuntTurns.Count - 1;
 				PlayerStuntTurn turn = playerStuntTurns[index];
 				float quarter = Mathf.Round(turn.angle / 90) * 90;
-				float switchWindow = Mathf.Max(2, playerStuntSpeed * tickScale);
-				if (quarter < 360 && Mathf.Abs(turn.angle - quarter) <= switchWindow)
+				float switchWindow = Mathf.Max(2, Mathf.Abs(playerStuntSpeed) * tickScale);
+				if (turn.axis == playerStuntPendingAxis)
+				{
+					// Reverse acceleration immediately; keep the current angular momentum.
+					StartPendingPlayerStuntTurn();
+				}
+				else if (quarter >= 0 && quarter < 360 && Mathf.Abs(turn.angle - quarter) <= switchWindow)
 				{
 					// Accept a press close to 90/180/270 despite fixed-step sampling.
 					ApplyPlayerStuntTurnAngle(ref turn, quarter - turn.angle);
@@ -4628,19 +4719,27 @@ namespace RVP
 			{
 				int index = playerStuntTurns.Count - 1;
 				PlayerStuntTurn turn = playerStuntTurns[index];
-				// Original digital rotation acceleration and mass-dependent speed cap.
-				playerStuntAcceleration = Mathf.Min(0.8f, playerStuntAcceleration + 0.8f * tickScale);
+				// Retail positive_rotation/negative_rotation preserve signed speed and
+				// acceleration: opposite input brakes before reversing the rotation.
+				float targetDirection = turn.targetAngle == 0 ? -1f : 1f;
+				playerStuntAcceleration = Mathf.Clamp(playerStuntAcceleration +
+					targetDirection * 0.8f * tickScale, -0.8f, 0.8f);
 				float configuredLimit = turn.axis == 1 ? parameters.maxYawSpeed : parameters.maxPitchSpeed;
 				float limit = Mathf.Min(12, configuredLimit / Mathf.Max(1, parameters.mass));
-				playerStuntSpeed = Mathf.Min(limit, playerStuntSpeed + playerStuntAcceleration * tickScale);
+				playerStuntSpeed = Mathf.Clamp(playerStuntSpeed + playerStuntAcceleration * tickScale, -limit, limit);
 				float boundary = turn.targetAngle;
 				if (playerStuntPendingAxis >= 0)
 					boundary = turn.targetAngle > turn.angle
 						? Mathf.Min(turn.targetAngle, (Mathf.Floor(turn.angle / 90) + 1) * 90)
 						: Mathf.Max(turn.targetAngle, (Mathf.Ceil(turn.angle / 90) - 1) * 90);
-				float motionDirection = Mathf.Sign(turn.targetAngle - turn.angle) * turn.direction;
-				float nextAngle = Mathf.MoveTowards(turn.angle, boundary, playerStuntSpeed * tickScale);
-				ApplyPlayerStuntTurnAngle(ref turn, nextAngle - turn.angle);
+				float motionDirection = targetDirection * turn.direction;
+				float delta = playerStuntSpeed * tickScale;
+				float remaining = boundary - turn.angle;
+				// Stop at the completion/switch boundary only while moving toward it.
+				// During reversal the old momentum can still move away from the target.
+				if (delta * targetDirection >= 0 && Mathf.Abs(delta) >= Mathf.Abs(remaining))
+					delta = remaining;
+				ApplyPlayerStuntTurnAngle(ref turn, delta);
 				playerStuntTurns[index] = turn;
 				if (Mathf.Abs(turn.angle - turn.targetAngle) < 0.001f)
 				{
@@ -4654,6 +4753,9 @@ namespace RVP
 						// Keep the rotation speed and the interrupted parent. Rebase
 						// progress so releasing the arrow finishes just this next cycle.
 						turn.angle = 0;
+						float rebaseDirection = motionDirection * turn.direction;
+						playerStuntSpeed *= rebaseDirection;
+						playerStuntAcceleration *= rebaseDirection;
 						turn.direction = motionDirection;
 						turn.targetAngle = 360;
 						playerStuntTurns[index] = turn;
@@ -4696,7 +4798,7 @@ namespace RVP
 					// angle already performed when the opposite direction is pressed.
 					turn.targetAngle = turn.direction == direction ? 360 : 0;
 					playerStuntTurns[index] = turn;
-					ResumePlayerStuntTurn();
+					ResumePlayerStuntTurn(preserveMotion: playerStuntTurnActive);
 					return;
 				}
 			}
@@ -4713,10 +4815,11 @@ namespace RVP
 			playerStuntRotation = (playerStuntRotation * Quaternion.AngleAxis(delta * turn.direction, axis)).normalized;
 			turn.angle += delta;
 		}
-		void ResumePlayerStuntTurn()
+		void ResumePlayerStuntTurn(bool preserveMotion = false)
 		{
 			playerStuntTurnActive = true;
-			playerStuntSpeed = playerStuntAcceleration = 0;
+			if (!preserveMotion)
+				playerStuntSpeed = playerStuntAcceleration = 0;
 			pitchSpeed = yawSpeed = pitchAcceleration = yawAcceleration = 0;
 		}
 		void LevelSourceIncrementalRotation(float divisor)

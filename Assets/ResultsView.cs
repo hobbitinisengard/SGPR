@@ -121,8 +121,49 @@ public class ResultsView : MainMenuView
 		return -1;
 	}
 
+	public readonly struct ChampionshipReward
+	{
+		public readonly int position, lap, stunt, drift, aero;
+		public int Total => position + lap + stunt + drift + aero;
+		public ChampionshipReward(int position, int lap, int stunt, int drift, int aero)
+		{
+			this.position = position; this.lap = lap; this.stunt = stunt;
+			this.drift = drift; this.aero = aero;
+		}
+	}
+	static int RewardRank(Result result, Comparison<Result> comparison)
+	{
+		// CPU cars may share a network ID. Rank the actual result and preserve
+		// resultData ordering so scoring cannot change the displayed finish order.
+		var sorted = new List<Result>(resultData);
+		sorted.Sort((left, right) =>
+		{
+			int order = comparison(left, right);
+			if (order != 0) return order;
+			order = ComparisonBasedOnRaceType()(left, right);
+			return order != 0 ? order : string.CompareOrdinal(left.name, right.name);
+		});
+		return sorted.IndexOf(result) + 1;
+	}
+	static int RankedBonus(int rank, int firstPrize) => rank > 0 && rank <= 2 ? firstPrize / rank : 0;
+	public static ChampionshipReward CalculateChampionshipReward(Result result)
+	{
+		if (result == null || result.disqualified || resultData.Count == 0) return default;
+		int position = RewardRank(result, ComparisonBasedOnRaceType());
+		if (position == 0) return default;
+		int positionPrize = Championships.Active
+			? Championships.Prizes[Mathf.Min(position - 1, Championships.Prizes.Length - 1)]
+			: (int)(10000f * (resultData.Count - position + 1) / resultData.Count);
+		return new ChampionshipReward(positionPrize,
+			RankedBonus(RewardRank(result, lapComp), 5000),
+			RankedBonus(RewardRank(result, stuntComp), 5000),
+			RankedBonus(RewardRank(result, driftComp), 2500),
+			Mathf.Max(0, (int)result.aeromiles));
+	}
 	public static int CalculatePostraceReward(Result ri)
 	{
+		if (Championships.Active || F.I.scoringType == ScoringType.Championship)
+			return CalculateChampionshipReward(ri).Total;
 		int finalScore = 0;
 		int finalPos = Pos(ri.id, ComparisonBasedOnRaceType()) - 1;
 		int lapPos = Pos(ri.id, lapComp);
@@ -281,7 +322,15 @@ public class ResultsView : MainMenuView
 	{
 		if (Championships.Active)
 		{
-			GoToView(ChampionshipContinuation());
+			MainMenuView continuation = ChampionshipContinuation();
+			Championships.CompleteSeason();
+			List<string> prizes = Championships.TakeCompletionPrizes();
+			if (prizes.Count > 0)
+			{
+				prizeView.Prepare(prizes, false, continuation);
+				GoToView(prizeView);
+			}
+			else GoToView(continuation);
 			return;
 		}
 		if (F.I.gameMode == GameMode.Multiplayer)
@@ -582,6 +631,7 @@ public class ResultsView : MainMenuView
 			SetText(gridTableTr.GetChild(cols + cols * i + 4), visible ? resultData[i].drift.ToString("N0") : "", highlight);
 		}
 
+		Result playerResult = resultData[finalPosition];
 		if (F.I.gameMode == GameMode.Multiplayer)
 		{
 			lapPos = Pos(ServerC.I.networkManager.LocalClientId, lapComp);
@@ -607,7 +657,7 @@ public class ResultsView : MainMenuView
 		lapBonus = (lapPos <= 2) ? (int)(5000f / lapPos) : 0;
 		stuntBonus = (int)((stuntPos <= 2) ? 5000f / stuntPos : 0);
 		driftBonus = (int)((driftPos <= 2) ? 2500f / driftPos : 0);
-		aeroMeter = (int)resultData[finalPosition].aeromiles;
+		aeroMeter = (int)playerResult.aeromiles;
 
 		switch (F.I.scoringType)
 		{
@@ -628,8 +678,16 @@ public class ResultsView : MainMenuView
 		}
 		if (Championships.Active)
 		{
-			positionBonus = resultData[finalPosition].disqualified ? 0 : Championships.Prizes[finalPosition];
-			grandScoreFinal = positionBonus;
+			ChampionshipReward reward = CalculateChampionshipReward(playerResult);
+			lapPos = RewardRank(playerResult, lapComp);
+			stuntPos = RewardRank(playerResult, stuntComp);
+			driftPos = RewardRank(playerResult, driftComp);
+			positionBonus = reward.position;
+			lapBonus = reward.lap;
+			stuntBonus = reward.stunt;
+			driftBonus = reward.drift;
+			aeroMeter = reward.aero;
+			grandScoreFinal = reward.Total;
 		}
 		//Debug.Log(resultData[finalPosition].name + string.Format(" OnEnable. lap,stunt,drift = {0}, {1}, {2}, {3}, {4}", positionBonus, lapBonus, stuntBonus, driftBonus, aeroMeter));
 
@@ -687,7 +745,7 @@ public class ResultsView : MainMenuView
 		while (isAddingScore)
 			yield return null;
 
-		if (F.I.scoringType == ScoringType.Championship && !Championships.Active)
+		if (F.I.scoringType == ScoringType.Championship || Championships.Active)
 		{
 			if (lapBonus > 0)
 			{
@@ -722,7 +780,7 @@ public class ResultsView : MainMenuView
 
 			if (driftBonus > 0)
 			{
-				medal = stuntPos switch
+				medal = driftPos switch
 				{
 					1 => goldMedals[3],
 					2 => silverMedals[3],

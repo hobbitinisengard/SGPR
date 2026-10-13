@@ -112,13 +112,20 @@ namespace RVP
 			return wheelIndex >= 0 && wheelIndex < prefabSuspensionTravel.Length
 				? prefabSuspensionTravel[wheelIndex] : 0;
 		}
-		public Vector3 WorldAngularVelocity => originalVehiclePhysics != null
+		public RailbarLogic ActiveRailbar { get; internal set; }
+		internal float RailbarContactTime = float.NegativeInfinity;
+		public bool HasRailbarTriggerContact => ActiveRailbar && ActiveRailbar.isActiveAndEnabled &&
+			Time.fixedTime - RailbarContactTime <= Time.fixedDeltaTime * 1.5f;
+		public Vector3 RailbarVelocity { get; internal set; }
+		internal float RailbarReleaseTime = float.NegativeInfinity;
+		public Vector3 WorldAngularVelocity => !ActiveRailbar && originalVehiclePhysics != null
 			? originalVehiclePhysics.SourceAngularVelocity : Vector3.zero;
 		public float SourceEnergy => originalVehiclePhysics != null ? originalVehiclePhysics.Energy : 0;
 		public float SourceEnergyPercent => originalVehiclePhysics != null ? originalVehiclePhysics.EnergyPercent : 0;
 		public float SourceEnergyThreshold => originalVehiclePhysics != null ? originalVehiclePhysics.EnergyThreshold : 0;
 		public void UseOriginalPhysics(OriginalVehiclePhysicsConfig config)
 		{
+			ActiveRailbar?.Release(this);
 			if (!OriginalVehiclePhysics.IsUsable(config))
 				throw new InvalidOperationException($"Missing or invalid original vehicle physics data: {config?.sourceConfig ?? carConfig?.name}");
 			originalVehiclePhysics = new OriginalVehiclePhysics(this, config);
@@ -540,8 +547,8 @@ namespace RVP
 
 			F.I.s_cars.Add(this);
 
-			rearLightsLighter = new Material(Resources.Load<Material>($"materials/rearlights/lighter/cars_car{carNumber + 1}_b{carNumber + 1}grid1l"));
-			rearLightsDarker = new Material(Resources.Load<Material>($"materials/rearlights/darker/cars_car{carNumber + 1}_b{carNumber + 1}grid1d"));
+			rearLightsLighter = new Material(Resources.Load<Material>($"materials/rearlights/lighter/grid1l"));
+			rearLightsDarker = new Material(Resources.Load<Material>($"materials/rearlights/darker/grid1d"));
 		}
 		public override void OnNetworkSpawn()
 		{
@@ -697,14 +704,15 @@ namespace RVP
 			GetGroundedWheels();
 
 			prevVel = localVelocity;
-			localVelocity = tr.InverseTransformDirection(rb.linearVelocity - wheelContactsVelocity);
+			Vector3 velocity = ActiveRailbar ? RailbarVelocity : rb.linearVelocity;
+			localVelocity = tr.InverseTransformDirection(velocity - wheelContactsVelocity);
 			acceleration = localVelocity - prevVel;
 
 			localAngularVel = tr.InverseTransformDirection(WorldAngularVelocity);
 
-			velMag = rb.linearVelocity.magnitude;
+			velMag = velocity.magnitude;
 
-			sqrVelMag = rb.linearVelocity.sqrMagnitude;
+			sqrVelMag = velocity.sqrMagnitude;
 			forwardDir = tr.forward;
 			rightDir = tr.right;
 			upDir = tr.up;
@@ -713,7 +721,7 @@ namespace RVP
 			upDot = Vector3.Dot(upDir, RaceManager.worldUpDir);
 			worldCOM = rb.worldCenterOfMass;
 			norm.transform.SetPositionAndRotation(tr.position, Quaternion.LookRotation(reallyGroundedWheels == 0 ? upDir : wheelNormalAverage, forwardDir));
-			if (originalVehiclePhysics != null)
+			if (originalVehiclePhysics != null && !ActiveRailbar)
 			{
 				using (OriginalPhysicsStepMarker.Auto())
 					originalVehiclePhysics.Step();
@@ -755,7 +763,8 @@ namespace RVP
 		// Set brake input
 		public void SetBrake(float f)
 		{
-			brakeInput = Mathf.Clamp01(f);
+			brakeInput = F.I && !F.I.s_inEditor && CountDownSeq.Countdown > 0
+				? 1f : Mathf.Clamp01(f);
 		}
 		public void SetSteer(float f)
 		{
@@ -870,35 +879,33 @@ namespace RVP
 		{
 			sparks.Stop();
 		}
-		// Check for crashes and play collision sounds
+		float nextCrashSoundTime;
+		public void PlayCrashSound(float impactSpeed, float minimumSpeed = 1f)
+		{
+			if (impactSpeed < minimumSpeed || Time.time < nextCrashSoundTime ||
+				CountDownSeq.Countdown > 0 || !crashSnd || !crashSnd.isActiveAndEnabled ||
+				crashClips == null || crashClips.Length == 0) return;
+			AudioClip clip = crashClips[UnityEngine.Random.Range(0, crashClips.Length)];
+			if (!clip) return;
+			nextCrashSoundTime = Time.time + 0.15f;
+			crashSnd.PlayOneShot(clip, Mathf.Lerp(0.35f, 1f, Mathf.Clamp01(impactSpeed / 10f)));
+			crashing = true;
+			lastCrashingTime = Time.time;
+		}
+		// Unity callbacks and the original contact solver share sound playback.
 		void OnCollisionEnter(Collision col)
 		{
 			originalVehiclePhysics?.ResolveBodyContact(col, true);
 			raceBox.evoModule.Reset();
 
-			if (col.contacts.Length > 0)
+			float impactSpeed = 0;
+			for (int i = 0; i < col.contactCount; i++)
 			{
-				foreach (ContactPoint curCol in col.contacts)
-				{
-					if (curCol.thisCollider.gameObject.layer != RaceManager.ignoreWheelCastLayer)
-					{
-						if (Mathf.Abs(Vector3.Dot(curCol.normal, col.relativeVelocity.normalized)) > 0.1f
-							&& col.relativeVelocity.magnitude > 10)
-						{
-							crashSnd.PlayOneShot(crashClips[UnityEngine.Random.Range(0, crashClips.Length)],
-								Mathf.Clamp01(col.relativeVelocity.magnitude * 0.1f));
-							crashing = true;
-							if (crashing)
-								lastCrashingTime = Time.time;
-						}
-
-						//if (sparks && playCrashSparks)
-						//{
-						//	PlaySparks(col);
-						//}
-					}
-				}
+				ContactPoint contact = col.GetContact(i);
+				if (contact.thisCollider.gameObject.layer == RaceManager.ignoreWheelCastLayer) continue;
+				impactSpeed = Mathf.Max(impactSpeed, Mathf.Abs(Vector3.Dot(contact.normal, col.relativeVelocity)));
 			}
+			PlayCrashSound(impactSpeed);
 		}
 		// Continuous collision checking
 		void OnCollisionStay(Collision col)
@@ -942,6 +949,7 @@ namespace RVP
 		}
 		public override void OnDestroy()
 		{
+			ActiveRailbar?.Release(this);
 			F.I.s_cars.Remove(this);
 			SGP_HUD.I?.RemoveFromProgressBar(this);
 			if (norm)
@@ -964,7 +972,7 @@ namespace RVP
 				return;
 			StartCoroutine(followAI.ResetOnTrack());
 		}
-		public void RefuelSourceEnergy()
+		public void RefuelSourceEnergy(float stepSeconds = -1f)
 		{
 			if (!batteryLoadingSnd.isPlaying)
 			{
@@ -972,7 +980,8 @@ namespace RVP
 				batteryLoadingSnd.Play();
 			}
 			if (originalVehiclePhysics != null)
-				originalVehiclePhysics.TransferSourceTunnelEnergy(originalVehiclePhysics.SourceRefuelRate * Time.deltaTime);
+				originalVehiclePhysics.TransferSourceTunnelEnergy(originalVehiclePhysics.SourceRefuelRate *
+					(stepSeconds >= 0 ? stepSeconds : Time.fixedDeltaTime));
 		}
 
 		public void AddSourceStuntEnergyAward()

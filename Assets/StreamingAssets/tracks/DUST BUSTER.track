@@ -11,11 +11,12 @@
   "valid": true,
   "envir": "JAP",
   "preferredCarClass": "Speed",
-  "difficulty": 4,
+  "difficulty": 5,
   "unlocked": true,
   "icons": [
     0,
     2,
     9
-  ]
+  ],
+  "isSkatePark": false
 }

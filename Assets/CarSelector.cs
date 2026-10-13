@@ -138,7 +138,7 @@ public class CarSelector : Sfxable
 		}
 		if (selectedCar == null)
 		{
-			carDescText.text = "No cars available lol";
+			carDescText.text = F.I.LocStr("No cars available");
 		}
 		else
 		{

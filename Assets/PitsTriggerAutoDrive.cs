@@ -8,6 +8,7 @@ public class PitsTriggerAutoDrive : MonoBehaviour
 	public bool allowPlayerAutoDrive = true;
 	private void OnTriggerEnter(Collider carCollider)
 	{
+		if (F.I.gameMode == GameMode.Skate) return;
 		if (!carCollider || !carCollider.attachedRigidbody)
 			return;
 

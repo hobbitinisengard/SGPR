@@ -96,7 +96,7 @@ public class RaceBox : MonoBehaviour
 	}
 	public bool IsGrinding
 	{
-		get { return Time.time - grindTime < 0.15f; }
+		get { return vp && vp.HasRailbarTriggerContact && Time.time - grindTime < 0.15f; }
 	}
 	public float RaceProgressLaps
 	{
@@ -205,7 +205,7 @@ public class RaceBox : MonoBehaviour
 	void FixedUpdate()
 	{
 		if (CheckSurvivalElimination()) return;
-		if (F.I.s_laps > 0)
+		if (F.I.s_laps > 0 || F.I.gameMode == GameMode.Skate)
 		{
 			if (!F.I.gamePaused && curLap > 0)
 				lapTimer += Time.fixedDeltaTime;
@@ -278,6 +278,12 @@ public class RaceBox : MonoBehaviour
 		stuntPai.score += (int)((starLevel + 1) * 1.5f * stunt.score);
 		stableLandingTimer = -1;
 		AcceptExtraStunt();
+		if (name == StuntsData.ExtraName.Railgrind || name == StuntsData.ExtraName.SideRailgrind)
+		{
+			grantedComboTime = 5 + 0.5f * starLevel;
+			starLevel = Mathf.Clamp(starLevel + 1, 0, 10);
+			maxAeroStars = Mathf.Max(maxAeroStars, starLevel);
+		}
 		//stunt.doneTimes = 0;
 	}
 	public void AddLooper()
@@ -447,29 +453,21 @@ public class RaceBox : MonoBehaviour
 	}
 	void RailgrindDetector()
 	{
-		if(Time.time - grindTime > 1)
+		if (!vp.HasRailbarTriggerContact || vp.RailbarVelocity.magnitude <= 30)
 		{
 			grindTimer = 0;
+			return;
 		}
-		bool railbarSupported = vp.originalVehiclePhysics != null && vp.originalVehiclePhysics.IsRailbarGrinding;
-		if ((railbarSupported || (vp.reallyGroundedWheels == 0 && (vp.crashing || vp.colliding))) && vp.velMag > 30)
+		float dot = Vector3.Dot(vp.forwardDir, vp.RailbarVelocity.normalized);
+		grindTimer += Time.fixedDeltaTime;
+		grindTime = Time.time;
+		if (grindTimer > 0.15f)
 		{
-			if (railbarSupported || (Physics.Raycast(vp.tr.position + vp.upDir, -vp.upDir, out var hit, 2) &&
-				Vector3.Dot(vp.upDir, hit.normal) > 0.86f))
-			{
-				float dot = Vector3.Dot(vp.forwardDir, vp.rb.linearVelocity.normalized);
-				
-				grindTimer += Time.fixedDeltaTime;
-				grindTime = Time.time;
-				if (grindTimer > 0.15f)
-				{
-					if (dot > 0.86f)
-						StartCoroutine(AddExtraStuntCo(StuntsData.ExtraName.Railgrind));
-					if (Mathf.Abs(dot) < .34f)
-						StartCoroutine(AddExtraStuntCo(StuntsData.ExtraName.SideRailgrind));
-					grindTimer = -99;
-				}
-			}
+			if (dot > 0.86f)
+				StartCoroutine(AddExtraStuntCo(StuntsData.ExtraName.Railgrind));
+			if (Mathf.Abs(dot) < .34f)
+				StartCoroutine(AddExtraStuntCo(StuntsData.ExtraName.SideRailgrind));
+			grindTimer = -99;
 		}
 	}
 	void StuntDetector()
@@ -534,7 +532,10 @@ public class RaceBox : MonoBehaviour
 	}
 	void FlipDetector(float deltaTime)
 	{
-		if (vp.reallyGroundedWheels == 0)
+		// A car resting on its roof has no grounded wheels, but is not in flight.
+		bool touchingTrack = vp.originalVehiclePhysics != null
+			? vp.originalVehiclePhysics.HasTrackContact : vp.colliding;
+		if (vp.reallyGroundedWheels == 0 && !touchingTrack)
 		{
 			if (!prevGroundedWheels0)
 			{
@@ -670,8 +671,8 @@ public class RaceBox : MonoBehaviour
 				stableLandingTimer = .5f;
 			}
 
-			if (stableLandingTimer != -1 && vp.velMag < 3)
-				DeclineStunt();
+			//if (stableLandingTimer != -1 && vp.velMag < 0)
+			//	DeclineStunt();
 
 			if (stableLandingTimer != -1 && stableLandingTimer <= 0)
 				AcceptStunt();
@@ -731,7 +732,7 @@ public class RaceBox : MonoBehaviour
 	}
 	public void ResetOnTrack()
 	{
-		if (F.I.s_laps > 0)
+		if (F.I.s_laps > 0 || F.I.gameMode == GameMode.Skate)
 		{
 			driftingTimer = 0;
 			grindTime = 0;
@@ -794,7 +795,10 @@ public class RaceBox : MonoBehaviour
 			{
 				if (!vp.crashing)
 				{
-					bool traf = Physics.Raycast(vp.tr.position, Vector3.down, out var hit, float.MaxValue, 1 << F.I.roadLayer);
+					int groundMask = 1 << F.I.roadLayer;
+					if (F.I.gameMode == GameMode.Skate) groundMask |= 1 << F.I.terrainLayer;
+					bool traf = Physics.Raycast(vp.tr.position, Vector3.down, out var hit, float.MaxValue,
+						groundMask, QueryTriggerInteraction.Ignore);
 					if (!traf || Vector3.Distance(vp.tr.position, hit.point) < 4)
 						return;
 					if (vp.rb.linearVelocity.y > 0 && vp.velMag > 13)
@@ -850,6 +854,7 @@ public class RaceBox : MonoBehaviour
 
 	public void NextLap()
 	{
+		if (F.I.gameMode == GameMode.Skate) return;
 		if (F.I.s_laps > 0)
 		{
 			if (curLap == 0 || vp.followAI.LapProgressPercent > 0.9f)
@@ -929,7 +934,7 @@ public class RaceBox : MonoBehaviour
 						if (!F.I.s_inEditor && curPos == 1)
 						{
 							RaceManager.I.hud.infoText.AddMessage(new(vp.tr.name + " " + F.I.LocStr("WINS!"), BottomInfoType.CAR_WINS));
-							Online.I.ActivateEndraceTimer();
+							RaceManager.I.ActivateEndraceTimer();
 						}
 						// in racemode after the end of a race, cars still run around the track, ghosts overtake each other. Don't let it change results
 						curLap += 100 * (F.I.maxCarsInRace - curPos);
@@ -1006,7 +1011,7 @@ public class RaceBox : MonoBehaviour
 				}
 				ResultsView.Add(vp);
 			}
-			vp.followAI.selfDriving = true;
+			vp.followAI.selfDriving = F.I.gameMode != GameMode.Skate;
 
 			if (!SurvivalEliminated) UpdateTrackRecords();
 		}
@@ -1029,12 +1034,13 @@ public class RaceBox : MonoBehaviour
 	{
 		if (!vp.followAI.IsCPU)
 		{ // Save records, if this car beat any
-			if ((float)vp.raceBox.bestLapTime.TotalSeconds < F.I.tracks[F.I.s_trackName].records.lap.secondsOrPts)
+			if (F.I.gameMode != GameMode.Skate &&
+				(float)vp.raceBox.bestLapTime.TotalSeconds < F.I.tracks[F.I.s_trackName].records.lap.secondsOrPts)
 			{
 				F.I.tracks[F.I.s_trackName].records.lap.playerName = vp.name;
 				F.I.tracks[F.I.s_trackName].records.lap.secondsOrPts = (float)vp.raceBox.bestLapTime.TotalSeconds;
 			}
-			if ((float)vp.raceBox.raceTime.TotalSeconds < 36000
+			if (F.I.gameMode != GameMode.Skate && (float)vp.raceBox.raceTime.TotalSeconds < 36000
 				&& (float)vp.raceBox.raceTime.TotalSeconds > F.I.tracks[F.I.s_trackName].records.race.secondsOrPts)
 			{
 				F.I.tracks[F.I.s_trackName].records.race.playerName = vp.name;
@@ -1045,7 +1051,7 @@ public class RaceBox : MonoBehaviour
 				F.I.tracks[F.I.s_trackName].records.stunt.secondsOrPts = vp.raceBox.Aero;
 				F.I.tracks[F.I.s_trackName].records.stunt.playerName = vp.name;
 			}
-			if (vp.raceBox.Drift > F.I.tracks[F.I.s_trackName].records.drift.secondsOrPts)
+			if (F.I.gameMode != GameMode.Skate && vp.raceBox.Drift > F.I.tracks[F.I.s_trackName].records.drift.secondsOrPts)
 			{
 				F.I.tracks[F.I.s_trackName].records.drift.playerName = vp.name;
 				F.I.tracks[F.I.s_trackName].records.drift.secondsOrPts = vp.raceBox.Drift;

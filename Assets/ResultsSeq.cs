@@ -218,8 +218,8 @@ public class ResultsSeq : MonoBehaviour
 					
 					for (int i = 0; i < activeOnes; ++i)
 					{
-						leftRow.GetChild(i).gameObject.GetComponent<SlideInOut>().PlaySlideOut(true);
-						rightRow.GetChild(i).gameObject.GetComponent<SlideInOut>().PlaySlideOut(true);
+						leftRow.GetChild(i).gameObject.GetComponent<SlideInOut>().PlaySlideOut();
+						rightRow.GetChild(i).gameObject.GetComponent<SlideInOut>().PlaySlideOut();
 						yield return new WaitForSecondsRealtime(.2f);
 					}
 

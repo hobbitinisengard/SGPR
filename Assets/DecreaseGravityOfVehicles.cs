@@ -8,7 +8,8 @@ public class DecreaseGravityOfVehicles : MonoBehaviour
 	// used only in loops
 	private void OnTriggerStay(Collider car)
 	{
-		car.attachedRigidbody.AddRelativeForce(Vector3.down * 10);
+		if (car.attachedRigidbody && !car.attachedRigidbody.isKinematic)
+			car.attachedRigidbody.AddRelativeForce(Vector3.down * 10);
 	}
 	private void OnTriggerExit(Collider carCollider)
 	{

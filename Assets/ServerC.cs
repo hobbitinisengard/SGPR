@@ -244,9 +244,15 @@ public class ServerC : MonoBehaviour
 
 		RaceManager.I.playerCar = null;
 		networkManager.Shutdown();
-		await LobbyService.Instance.RemovePlayerAsync(lobby.Id, AuthenticationService.Instance.PlayerId);
-		DeleteEmptyLobbies();
-
+		try
+		{
+			await LobbyService.Instance.RemovePlayerAsync(lobby.Id, AuthenticationService.Instance.PlayerId);
+			DeleteEmptyLobbies();
+		}
+		catch (Exception e)
+		{
+			Debug.LogError(e.Message);
+		}
 		OnLobbyExit.Invoke();
 		Debug.Log("DISCONNECTED");
 	}

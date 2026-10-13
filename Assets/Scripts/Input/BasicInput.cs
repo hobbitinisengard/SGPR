@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -26,6 +26,37 @@ namespace RVP
 			playerInput = GameObject.Find("Canvas").GetComponent<PlayerInput>();
 		}
 
+		void Update()
+		{
+			if (!vp || vp.originalVehiclePhysics == null) return;
+			bool playerDriving = vp.Owner && !vp.followAI.selfDriving && F.I && !F.I.chat.texting;
+			if (!playerDriving)
+			{
+				vp.originalVehiclePhysics.CancelSuspensionJump();
+				return;
+			}
+			vp.originalVehiclePhysics.SetSuspensionJumpInput(F.I.altInputRef &&
+				F.I.altInputRef.action != null && F.I.altInputRef.action.IsPressed());
+		}
+		void OnDisable()
+		{
+			F.I.lightsInput.action.performed -= LightsInputPerformed;
+			if (vp && vp.originalVehiclePhysics != null)
+				vp.originalVehiclePhysics.CancelSuspensionJump();
+		}
+		private void OnEnable()
+		{
+			if (!vp.followAI.selfDriving)
+			{
+				F.I.lightsInput.action.performed += LightsInputPerformed;
+			}
+		}
+
+		private void LightsInputPerformed(InputAction.CallbackContext obj)
+		{
+			vp.Switchlights();
+		}
+
 		void FixedUpdate()
 		{
 			if (!vp.followAI.selfDriving)
@@ -51,12 +82,6 @@ namespace RVP
 						}
 					}
 
-					if (!string.IsNullOrEmpty(lightsButton))
-					{
-						if (Input.GetButtonDown(lightsButton))
-							vp.Switchlights();
-					}
-
 					Vector2 input2 = F.I.driveRef.action.ReadValue<Vector2>();
 					vp.SetAccel(Mathf.Clamp01(input2.y));
 					vp.SetBrake(Mathf.Abs(Mathf.Clamp(input2.y, -1, 0)));
@@ -65,6 +90,7 @@ namespace RVP
 					if (F.I.chat.texting)
 						return;
 
+					
 					vp.SetHonkerInput((int)F.I.honkInput.action.ReadValue<float>());
 					vp.SetSGPShift((int)F.I.evoInput.action.ReadValue<float>());
 					if (F.I.resetOnTrackInput.action.ReadValue<float>() == 1

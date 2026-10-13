@@ -27,6 +27,7 @@ public class EnergyTransfer : MonoBehaviour
 
 		colliders = new HashSet<Collider> { other };
 		collidersInTunnel.Add(vp, colliders);
+		vp.originalVehiclePhysics?.SetEnergyTunnelContact(true);
 		RaceManager.I.hud.infoText.AddMessage(new Message(vp.name + " " + F.I.LocStr(F.I.s_raceType == RaceType.Survival ? "IS DISCHARGING!" : "IS RECHARGING!"), BottomInfoType.PIT_IN));
 		vp.PlayBatteryLoadingFXs(true);
 		var pitsPathCreator = transform.parent.parent.GetComponent<EnergyTunnelPath>().pitsPathCreator;
@@ -48,6 +49,7 @@ public class EnergyTransfer : MonoBehaviour
 			return;
 
 		collidersInTunnel.Remove(vp);
+		vp.originalVehiclePhysics?.SetEnergyTunnelContact(false);
 		lastRefuelFixedTime.Remove(vp);
 		vp.PlayBatteryLoadingFXs(false);
 		if (collidersInTunnel.Count == 0)
@@ -64,7 +66,20 @@ public class EnergyTransfer : MonoBehaviour
 		if (lastRefuelFixedTime.TryGetValue(vp, out float lastTime) && Mathf.Approximately(lastTime, fixedTime))
 			return;
 		lastRefuelFixedTime[vp] = fixedTime;
-		vp.RefuelSourceEnergy();
+		vp.RefuelSourceEnergy(Time.fixedDeltaTime);
+	}
+	private void OnDisable()
+	{
+		foreach (var entry in collidersInTunnel)
+		{
+			VehicleParent vp = entry.Key;
+			if (!vp) continue;
+			vp.originalVehiclePhysics?.SetEnergyTunnelContact(false);
+			vp.PlayBatteryLoadingFXs(false);
+			if (vp.customCam == elecCam) vp.customCam = null;
+		}
+		collidersInTunnel.Clear();
+		lastRefuelFixedTime.Clear();
 	}
 
 	static VehicleParent GetVehicle(Collider other)

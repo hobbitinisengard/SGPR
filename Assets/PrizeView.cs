@@ -13,6 +13,7 @@ public class PrizeView : MainMenuView
 	public GameObject OkButton;
 	int currentUnlockIndex = 0;
 	bool continuationCheck = false;
+	MainMenuView nextView;
 	Coroutine moveCo;
 	Vector2 unlockparentBeginPos;
 	protected override void Awake()
@@ -22,6 +23,7 @@ public class PrizeView : MainMenuView
 	}
 	protected override void OnDisable()
 	{
+		nextView = null;
 		F.DestroyAllChildren(unlocksParent);
 		currentUnlockIndex = 0;
 		unlocksParent.GetComponent<RectTransform>().anchoredPosition = unlockparentBeginPos;
@@ -37,9 +39,11 @@ public class PrizeView : MainMenuView
 		//Prepare(new List<string>() { "spn3", "spn1" }, false);
 		base.OnEnable();
 	}
-	public void Prepare(List<string> prizes, bool continuationCheck)
+	public void Prepare(List<string> prizes, bool continuationCheck, MainMenuView nextView = null)
 	{
 		this.continuationCheck = continuationCheck;
+		this.nextView = nextView;
+		prevViewForbidden = nextView != null;
 		for (int i=0; i<prizes.Count; i++)
 		{
 			string prize = prizes[i];
@@ -85,6 +89,11 @@ public class PrizeView : MainMenuView
 	{
 		if(++currentUnlockIndex >= unlocksParent.childCount)
 		{
+			if (nextView != null)
+			{
+				GoToView(nextView);
+				return;
+			}
 			if (continuationCheck && F.I.targetNode.connections?.Length > 0) // go back to arcade selector
 			{
 				ResultsView.Clear();

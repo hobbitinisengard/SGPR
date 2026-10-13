@@ -672,7 +672,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 289947137081344
-    m_Localized: "Brak dost\u0119pnych autek lol"
+    m_Localized: "Brak dost\u0119pnych autek"
     m_Metadata:
       m_Items: []
   - m_Id: 291063086186496
@@ -1145,7 +1145,9 @@ MonoBehaviour:
   - m_Id: 413387257020416
     m_Localized: "- K\xF3\u0142ko myszy - zmie\u0144 promie\u0144\\n K\xF3\u0142ko
       myszy+ shift - zmie\u0144 szybko\u015B\u0107\\nPrzytrzymaj Shift w trybie Podnie\u015B/Opu\u015B\u0107
-      by opu\u015Bci\u0107 teren\\n- Ctrl + R - reset terenu"
+      by opu\u015Bci\u0107 teren\\n- Ctrl + R - reset terenu\\n- Ctrl - Pr\xF3bkuje
+      poziom terenu pod kursorem. U\u017Cyj \"ustaw\" \u017Ceby skopiowa\u0107 ten
+      poziom\\n - Ctrl + Tab - cofa ostatni\u0105 zmian\u0119 terenu"
     m_Metadata:
       m_Items: []
   - m_Id: 413979912175616
@@ -2237,6 +2239,38 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 188378724084277248
     m_Localized: "Nadpisa\u0107 obrazek: "
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189469949742866432
+    m_Localized: Ustaw
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189522099361603584
+    m_Localized: 'Limit czasu: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189544484919894016
+    m_Localized: KASKADER
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189544510102495232
+    m_Localized: "Ten zmodyfikowany jastrz\u0105b zabierze ci\u0119 w przestworza!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190294953174818816
+    m_Localized: 'Auta:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190595285587124224
+    m_Localized: TRIGGER HAMULCA
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190595817013829632
+    m_Localized: TRIGGER GAZU
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190601394989359104
+    m_Localized: "O\u015A PRZYSPIESZANIA"
     m_Metadata:
       m_Items: []
   references:

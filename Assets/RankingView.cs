@@ -28,7 +28,7 @@ public class RankingRowData
 	public RankingRowData(IEnumerable<Result> sortedPlayers)
 	{
 		Result me;
-		if(F.I.gameMode == GameMode.Multiplayer)
+		if (F.I.gameMode == GameMode.Multiplayer)
 		{
 			me = sortedPlayers.First(p => p.id == ServerC.I.networkManager.LocalClientId);
 			rounds = F.I.Rounds;
@@ -40,7 +40,7 @@ public class RankingRowData
 		}
 
 		dateStr = DateTime.Now.ToString();
-	
+
 		float absoluteScore = 0;
 		if (F.I.teams)
 		{
@@ -83,6 +83,8 @@ public class RankingView : MainMenuView
 {
 	public MainMenuView SinglePlayerView;
 	public MainMenuView recordsView;
+	public MainMenuView SkateTracksView;
+	public MainMenuView unlockedView;
 	public TextMeshProUGUI upBarText;
 	public GameObject rankingRowPrefab;
 	public Transform rankingContent;
@@ -99,7 +101,17 @@ public class RankingView : MainMenuView
 	[NonSerialized]
 	public List<Result> sortedResults;
 
+	RankingRowData pendingSkateEntry;
 	GameMode showGameMode = GameMode.Multiplayer;
+	public void PrepareSkateResult(Result player)
+	{
+		showGameMode = GameMode.Skate;
+		sortedResults = null;
+		//prevView = SkateTracksView;
+		//prevViewForbidden = false;
+		pendingSkateEntry = player == null ? null : new RankingRowData(
+			player.name, DateTime.Now.ToString(), 1, player.aeromiles);
+	}
 	public void SetRankingType(ScoringType s, bool teams, GameMode gm)
 	{
 		F.I.scoringType = s;
@@ -114,7 +126,11 @@ public class RankingView : MainMenuView
 	}
 	public void OKButton()
 	{
-		if (Championships.Active && Championships.Current.Completed)
+		if (F.I.gameMode == GameMode.Skate)
+		{
+			GoToView(SkateTracksView);
+		}
+		else if (Championships.Active && Championships.Current.Completed)
 		{
 			GoToView(SinglePlayerView);
 		}
@@ -156,7 +172,7 @@ public class RankingView : MainMenuView
 		F.I.move2Ref.action.performed -= Move;
 		SetColorOfRow(selectedRow, Color.white);
 		F.I.SaveRanking();
-		if (sortedResults?.Count > 0)
+		if (F.I.gameMode == GameMode.Multiplayer && sortedResults?.Count > 0)
 		{
 			ServerC.I.ScoreSet(0);
 			ServerC.I.UpdatePlayerData();
@@ -169,7 +185,12 @@ public class RankingView : MainMenuView
 		List<Result> players = ResultsView.SortedResultsByFinishPos;
 		RankingRowData newEntry = null;
 
-		if (Championships.Active && Championships.Current.Completed)
+		if (showGameMode == GameMode.Skate)
+		{
+			newEntry = pendingSkateEntry;
+			pendingSkateEntry = null;
+		}
+		else if (Championships.Active && Championships.Current.Completed)
 		{
 			SetRankingType(ScoringType.Championship, false, GameMode.Championships);
 			prevView = SinglePlayerView;
@@ -181,10 +202,16 @@ public class RankingView : MainMenuView
 
 		string gameName;
 		LinkedList<RankingRowData> data;
-		switch (F.I.scoringType)
+		bool rawScore = showGameMode == GameMode.Skate || F.I.scoringType == ScoringType.Championship;
+		if (showGameMode == GameMode.Skate)
+		{
+			gameName = "SKATE - " + F.I.LocStr("AEROMILES");
+			data = F.I.rankingData.Skate ??= new LinkedList<RankingRowData>();
+		}
+		else switch (F.I.scoringType)
 		{
 			case ScoringType.Championship:
-				if(showGameMode == GameMode.Arcade)
+				if (showGameMode == GameMode.Arcade)
 				{
 					data = F.I.curVariant.progress.rankingRows;
 					gameName = F.I.LocStr("ARCADE");
@@ -209,18 +236,18 @@ public class RankingView : MainMenuView
 				break;
 		}
 
-		upBarText.text = F.I.LocStr("RANKING") + " - " + (F.I.teams ? F.I.LocStr("TEAMS") + " " : "") + gameName + " - Top 100";
+		upBarText.text = F.I.LocStr("RANKING") + " - " + (showGameMode != GameMode.Skate && F.I.teams ? F.I.LocStr("TEAMS") + " " : "") + gameName + " - Top 100";
 
 		float newScore = 0;
 		if (newEntry != null)
 		{
-			if (F.I.scoringType == ScoringType.Championship)
+			if (rawScore)
 				newScore = newEntry.moneyOrPerc;
 			else
 				newScore = newEntry.moneyOrPerc * newEntry.rounds;
 		}
 
-		while (rankingContent.childCount != 100)
+		while (rankingContent.childCount < 100)
 		{
 			Instantiate(rankingRowPrefab, rankingContent);
 		}
@@ -234,7 +261,7 @@ public class RankingView : MainMenuView
 			float winValue = 0;
 			if (curNode != null)
 			{
-				if (F.I.scoringType == ScoringType.Championship)
+				if (rawScore)
 					winValue = curNode.Value.moneyOrPerc;
 				else
 					winValue = curNode.Value.moneyOrPerc * curNode.Value.rounds;
@@ -243,7 +270,7 @@ public class RankingView : MainMenuView
 			if (newEntry != null && (curNode == null || newScore >= winValue))
 			{ // add newEntry to data
 				if (curNode == null)
-					curNode = data.AddFirst(newEntry);
+					curNode = data.AddLast(newEntry);
 				else
 					curNode = data.AddBefore(curNode, newEntry);
 				newEntry = null;
@@ -257,8 +284,10 @@ public class RankingView : MainMenuView
 			{
 				row.GetChild(1).GetComponent<TextMeshProUGUI>().text = curNode.Value.name;
 				row.GetChild(2).GetComponent<TextMeshProUGUI>().text = curNode.Value.dateStr;
-				row.GetChild(3).GetComponent<TextMeshProUGUI>().text = F.I.LocStr("Round") + " " + curNode.Value.rounds.ToString();
-				row.GetChild(4).GetComponent<TextMeshProUGUI>().text = F.I.scoringType switch
+				row.GetChild(3).GetComponent<TextMeshProUGUI>().text = showGameMode == GameMode.Skate
+					? F.I.LocStr("AEROMILES") : F.I.LocStr("Round") + " " + curNode.Value.rounds.ToString();
+				row.GetChild(4).GetComponent<TextMeshProUGUI>().text = showGameMode == GameMode.Skate
+					? curNode.Value.moneyOrPerc.ToString("F0") : F.I.scoringType switch
 				{
 					ScoringType.Championship => curNode.Value.moneyOrPerc.ToString("F0"),
 					ScoringType.Points => (100 * curNode.Value.moneyOrPerc).ToString("F0"),
@@ -284,6 +313,9 @@ public class RankingView : MainMenuView
 
 		while (data.Count > 100)
 			data.RemoveLast();
+
+		if (showGameMode == GameMode.Skate)
+			F.I.SaveRanking();
 
 		base.OnEnable();
 	}

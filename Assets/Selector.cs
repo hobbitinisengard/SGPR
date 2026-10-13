@@ -96,6 +96,8 @@ public class TrackSelectorTemplate : Sfxable
 			return true;
 		else if (F.I.gameMode == GameMode.Multiplayer && !ServerC.I.AmHost)
 			return ValidCheck(F.I.tracks[trackName].valid); // show even not unlocked tracks for clients
+		else if (F.I.gameMode == GameMode.Skate)
+			return F.I.tracks[trackName].isSkatePark;
 		else
 			return F.I.tracks[trackName].unlocked && ValidCheck(F.I.tracks[trackName].valid);
 	}

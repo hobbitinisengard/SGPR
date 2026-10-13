@@ -8,7 +8,9 @@ public class BotPitCheckEntry : MonoBehaviour
 {
 	private void OnTriggerEnter(Collider carCollider)
 	{
-		var vp = carCollider.attachedRigidbody.transform.GetComponent<VehicleParent>();
+		if (F.I.gameMode == GameMode.Skate || !carCollider.attachedRigidbody) return;
+		var vp = carCollider.attachedRigidbody.GetComponent<VehicleParent>();
+		if (!vp) return;
 		vp.followAI.PitsTrigger();
 	}
 }

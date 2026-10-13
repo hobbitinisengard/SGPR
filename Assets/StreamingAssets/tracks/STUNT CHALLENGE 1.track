@@ -1,0 +1,20 @@
+{
+  "author": "Team17",
+  "localizedDescriptions": [
+    "Classic  stunt arena set in Germany",
+    "Klasyczna arena umiejscowiona w Niemczech"
+  ],
+  "localizedNames": [
+    "STUNT CHALLENGE 1",
+    "ARENA KASKADERSKA 1"
+  ],
+  "valid": false,
+  "envir": "GER",
+  "preferredCarClass": "Aero",
+  "difficulty": 0,
+  "unlocked": true,
+  "icons": [
+    5
+  ],
+  "isSkatePark": true
+}

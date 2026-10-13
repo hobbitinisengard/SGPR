@@ -1,9 +1,10 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class SC_TerrainEditor : MonoBehaviour
 {
-	public enum DeformMode { RaiseLower, Flatten, Smooth }
+	public enum DeformMode { RaiseLower, Flatten, Smooth, Set }
 	DeformMode deformMode = DeformMode.RaiseLower;
 	//string[] deformModeNames = new string[] { "Raise Lower", "Flatten", "Smooth" };
 	public SliderValue areaSliderVal;
@@ -19,6 +20,66 @@ public class SC_TerrainEditor : MonoBehaviour
 	Transform buildTarget;
 	Vector3 buildTargPos;
 	Light spotLight;
+	LineRenderer brushOutline;
+	Material brushOutlineMaterial;
+	const int BrushOutlineSegments = 96;
+	readonly Vector3[] brushOutlinePoints = new Vector3[BrushOutlineSegments];
+
+	void CreateBrushOutline()
+	{
+		GameObject outline = new GameObject("Terrain brush outline");
+		outline.layer = F.I.terrainLayer; // Visible wherever the edited terrain is rendered; no collider.
+		brushOutline = outline.AddComponent<LineRenderer>();
+		brushOutlineMaterial = new Material(Resources.Load<Shader>("TerrainBrushOutline"));
+		brushOutline.sharedMaterial = brushOutlineMaterial;
+		brushOutline.useWorldSpace = true;
+		brushOutline.loop = true;
+		brushOutline.positionCount = BrushOutlineSegments;
+		brushOutline.widthMultiplier = 0.12f;
+		brushOutline.startColor = brushOutline.endColor = new Color(0.2f, 1f, 1f, 0.95f);
+		brushOutline.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+		brushOutline.receiveShadows = false;
+		brushOutline.enabled = false;
+	}
+	void LateUpdate()
+	{
+		if (!brushOutline) return;
+		bool visible = terrain && tData && newTex && buildTarget && onTerrain &&
+			!onWindow && uiTest && !uiTest.PointerOverUI();
+		brushOutline.enabled = visible;
+		if (!visible) return;
+		Vector3 position = buildTarget.position - terrain.GetPosition();
+		GetBrushArea(position, out _, out _, out int startX, out int startZ,
+			out int width, out int height);
+		// Match the heightmap samples actually edited, including edge clamping
+		// and different terrain dimensions on the X and Z axes.
+		Vector3 origin = terrain.GetPosition();
+		float spacingX = tData.size.x / (tData.heightmapResolution - 1);
+		float spacingZ = tData.size.z / (tData.heightmapResolution - 1);
+		float radiusX = (width - 1) * spacingX * 0.5f;
+		float radiusZ = (height - 1) * spacingZ * 0.5f;
+		float centerX = startX * spacingX + radiusX;
+		float centerZ = startZ * spacingZ + radiusZ;
+		for (int i = 0; i < BrushOutlineSegments; i++)
+		{
+			float angle = i * (2 * Mathf.PI / BrushOutlineSegments);
+			float x = centerX + Mathf.Cos(angle) * radiusX;
+			float z = centerZ + Mathf.Sin(angle) * radiusZ;
+			float y = tData.GetInterpolatedHeight(x / tData.size.x, z / tData.size.z);
+			brushOutlinePoints[i] = origin + new Vector3(x, y + 0.04f, z);
+		}
+		// Keep the outline legible when the editor camera is far from the brush.
+		float cameraDistance = Camera.main ? Vector3.Distance(Camera.main.transform.position,
+			origin + new Vector3(centerX, terrain.SampleHeight(buildTarget.position), centerZ)) : 0;
+		brushOutline.widthMultiplier = Mathf.Clamp(cameraDistance * 0.0015f, 0.12f, 0.5f);
+		brushOutline.SetPositions(brushOutlinePoints);
+	}
+	void OnDestroy()
+	{
+		if (brushOutline) Destroy(brushOutline.gameObject);
+		if (brushOutlineMaterial) Destroy(brushOutlineMaterial);
+	}
+
 
 	//GUI
 	//Rect windowRect = new Rect(10, 10, 400, 185);
@@ -46,6 +107,82 @@ public class SC_TerrainEditor : MonoBehaviour
 	public int d_startZ;
 	public int d_width;
 	public int d_height;
+	float pickedHeight;
+	EditorPanel editorPanel;
+	const int UndoCapacity = 5;
+	const int UndoTileSize = 32;
+	sealed class HeightPatch
+	{
+		public int x, z;
+		public float[,] heights;
+	}
+	sealed class TerrainOperation
+	{
+		public readonly Dictionary<int, HeightPatch> patches = new Dictionary<int, HeightPatch>();
+	}
+	readonly List<TerrainOperation> undoHistory = new List<TerrainOperation>(UndoCapacity);
+	TerrainOperation currentOperation;
+	bool undoShortcutHeld;
+	bool blockStrokeUntilRelease;
+
+	bool UndoShortcutPressed => F.I.ctrlInputRef && F.I.altInputRef &&
+		F.I.ctrlInputRef.action.IsPressed() && F.I.altInputRef.action.IsPressed();
+
+	void BeginTerrainOperation()
+	{
+		if (!terrain || !tData || blockStrokeUntilRelease) return;
+		currentOperation = new TerrainOperation();
+		// Sample flatten height once per stroke, using the click's actual position.
+		Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+		if (Physics.Raycast(ray, out var terrainHit, Mathf.Infinity, 1 << F.I.terrainLayer))
+		{
+			Vector3 local = terrainHit.point - terrain.GetPosition();
+			flattenTarget = tData.GetInterpolatedHeight(Mathf.Clamp01(local.x / tData.size.x),
+				Mathf.Clamp01(local.z / tData.size.z)) / tData.size.y;
+		}
+	}
+	void FinishTerrainOperation()
+	{
+		if (currentOperation != null && currentOperation.patches.Count > 0)
+		{
+			if (undoHistory.Count == UndoCapacity) undoHistory.RemoveAt(0);
+			undoHistory.Add(currentOperation);
+		}
+		currentOperation = null;
+	}
+	void CaptureOriginalHeights(int startX, int startZ, int width, int height)
+	{
+		int resolution = tData.heightmapResolution;
+		int tilesPerRow = (resolution + UndoTileSize - 1) / UndoTileSize;
+		for (int tileZ = startZ / UndoTileSize; tileZ <= (startZ + height - 1) / UndoTileSize; tileZ++)
+		{
+			for (int tileX = startX / UndoTileSize; tileX <= (startX + width - 1) / UndoTileSize; tileX++)
+			{
+				int key = tileZ * tilesPerRow + tileX;
+				if (currentOperation.patches.ContainsKey(key)) continue;
+				int x = tileX * UndoTileSize, z = tileZ * UndoTileSize;
+				currentOperation.patches.Add(key, new HeightPatch
+				{
+					x = x, z = z,
+					heights = tData.GetHeights(x, z, Mathf.Min(UndoTileSize, resolution - x),
+						Mathf.Min(UndoTileSize, resolution - z))
+				});
+			}
+		}
+	}
+	void UndoTerrainOperation()
+	{
+		// Undo during a drag also restores that drag and waits for mouse release.
+		FinishTerrainOperation();
+		blockStrokeUntilRelease = Input.GetMouseButton(0);
+		if (!tData || undoHistory.Count == 0) return;
+		int last = undoHistory.Count - 1;
+		foreach (HeightPatch patch in undoHistory[last].patches.Values)
+			tData.SetHeightsDelayLOD(patch.x, patch.z, patch.heights);
+		tData.SyncHeightmap();
+		undoHistory.RemoveAt(last);
+	}
+
 
 	float strengthNormalized
 	{
@@ -57,19 +194,46 @@ public class SC_TerrainEditor : MonoBehaviour
 	private void OnEnable()
 	{
 		terrainSculptor.SetActive(true);
+		undoShortcutHeld = UndoShortcutPressed;
+		F.I.ctrlInputRef.action.performed += CtrlPressed;
 	}
+
+	private void CtrlPressed(UnityEngine.InputSystem.InputAction.CallbackContext obj)
+	{
+		if (UndoShortcutPressed) return;
+		
+		Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+		hit = new RaycastHit();
+		if (Physics.Raycast(ray, out hit, Mathf.Infinity))
+		{
+			pickedHeight = hit.point.y;
+			editorPanel.DisplayMessageFor(pickedHeight.ToString("N2"), 3);
+		}
+	}
+
 	private void OnDisable()
 	{
+		FinishTerrainOperation();
+		blockStrokeUntilRelease = Input.GetMouseButton(0);
+		F.I.ctrlInputRef.action.performed -= CtrlPressed;
 		terrainSculptor.SetActive(false);
+		if (brushOutline) brushOutline.enabled = false;
 	}
 	public void SetTerrain(Terrain terrain)
 	{
+		if (this.terrain != terrain)
+		{
+			currentOperation = null;
+			undoHistory.Clear();
+			blockStrokeUntilRelease = Input.GetMouseButton(0);
+		}
 		this.terrain = terrain;
-		if (terrain != null)
-			tData = this.terrain.terrainData;
+		tData = terrain ? terrain.terrainData : null;
+		if (tData) xRes = zRes = tData.heightmapResolution;
 	}
 	void Start()
 	{
+		editorPanel = GetComponent<EditorPanel>();
 		areaSliderVal.slider.onValueChanged.AddListener(delegate { brushScaling(); });
 		strengthSliderVal.slider.onValueChanged.AddListener(delegate { brushScaling(); });
 		uiTest = GetComponent<UITest>();
@@ -85,6 +249,7 @@ public class SC_TerrainEditor : MonoBehaviour
 		spotLight = spotLightObj.AddComponent<Light>();
 		spotLight.type = LightType.Spot;
 		spotLight.range = 20;
+		CreateBrushOutline();
 
 		tData = terrain.terrainData;
 		if (tData)
@@ -110,6 +275,16 @@ public class SC_TerrainEditor : MonoBehaviour
 	}
 	void Update()
 	{
+		if (!Input.GetMouseButton(0))
+		{
+			FinishTerrainOperation();
+			blockStrokeUntilRelease = false;
+		}
+		bool undoPressed = UndoShortcutPressed;
+		if (undoPressed && !undoShortcutHeld) UndoTerrainOperation();
+		undoShortcutHeld = undoPressed;
+		if (!undoPressed && Input.GetMouseButtonDown(0) && uiTest && !uiTest.PointerOverUI())
+			BeginTerrainOperation();
 		if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.R))
 		{
 			ResetTerrain();
@@ -144,6 +319,7 @@ public class SC_TerrainEditor : MonoBehaviour
 		Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 		hit = new RaycastHit();
 		//Do Raycast hit only against terrain layer
+		
 		if (Physics.Raycast(ray, out hit, Mathf.Infinity, 1 << F.I.terrainLayer))
 		{
 			onTerrain = true;
@@ -166,18 +342,23 @@ public class SC_TerrainEditor : MonoBehaviour
 
 	//TerrainDeformation
 	//___________________________________________________________________________________________________________________
+	void GetBrushArea(Vector3 position, out int x, out int z, out int startX, out int startZ,
+		out int width, out int height)
+	{
+		x = (int)Mathf.Lerp(0, xRes, Mathf.InverseLerp(0, tData.size.x, position.x));
+		z = (int)Mathf.Lerp(0, zRes, Mathf.InverseLerp(0, tData.size.z, position.z));
+		x = Mathf.Clamp(x, newTex.width / 2, xRes - newTex.width / 2);
+		z = Mathf.Clamp(z, newTex.height / 2, zRes - newTex.height / 2);
+		startX = Mathf.Clamp(x - newTex.width / 2, 1, xRes - 2);
+		startZ = Mathf.Clamp(z - newTex.height / 2, 1, zRes - 2);
+		width = Mathf.Clamp(newTex.width, 1, xRes - startX - 1);
+		height = Mathf.Clamp(newTex.height, 1, zRes - startZ - 1);
+	}
 	void terrainDeform()
 	{
-		if (Input.GetMouseButtonDown(0))
-		{
-			buildTargPos = buildTarget.position - terrain.GetPosition();
-			float x = Mathf.Clamp01(buildTargPos.x / tData.size.x);
-			float y = Mathf.Clamp01(buildTargPos.z / tData.size.z);
-			flattenTarget = tData.GetInterpolatedHeight(x, y) / tData.heightmapScale.y;
-		}
-
 		//Terrain deform
-		if (Input.GetMouseButton(0))
+		if (Input.GetMouseButton(0) && currentOperation != null &&
+			!blockStrokeUntilRelease && !UndoShortcutPressed)
 		{
 			buildTargPos = buildTarget.position - terrain.GetPosition();
 
@@ -193,19 +374,8 @@ public class SC_TerrainEditor : MonoBehaviour
 
 			if (newTex && tData && craterData != null)
 			{
-				int x = (int)Mathf.Lerp(0, xRes, Mathf.InverseLerp(0, tData.size.x, buildTargPos.x));
-				int z = (int)Mathf.Lerp(0, zRes, Mathf.InverseLerp(0, tData.size.z, buildTargPos.z));
-
-				x = Mathf.Clamp(x, newTex.width / 2, xRes - newTex.width / 2);
-				z = Mathf.Clamp(z, newTex.height / 2, zRes - newTex.height / 2);
-
-				int startX = (int)Mathf.Clamp(x - newTex.width / 2, 1, xRes - 2);
-				int startZ = (int)Mathf.Clamp(z - newTex.height / 2, 1, zRes - 2);
-				//int startX = x - newTex.width / 2;
-				//int startZ = z - newTex.height / 2;
-
-				int width = (int)Mathf.Clamp(newTex.width, 1, xRes - startX - 1);
-				int height = (int)Mathf.Clamp(newTex.height, 1, zRes - startZ - 1);
+				GetBrushArea(buildTargPos, out int x, out int z, out int startX, out int startZ,
+					out int width, out int height);
 
 				d_x = x;
 				d_z = z;
@@ -215,38 +385,49 @@ public class SC_TerrainEditor : MonoBehaviour
 				d_height = height;
 
 				float[,] areaT = tData.GetHeights(startX, startZ, width, height);
+				bool changed = false;
 
 				for (int i = 0; i < height; i++)
 				{
 					for (int j = 0; j < width; j++)
 					{
-						if (deformMode == DeformMode.RaiseLower)
+						float previousHeight = areaT[i, j];
+						switch (deformMode)
 						{
-							areaT[i, j] = areaT[i, j] - craterData[i * newTex.width + j].a * strengthSave / 15000;
-						}
-						else if (deformMode == DeformMode.Flatten)
-						{
-							areaT[i, j] = Mathf.Lerp(areaT[i, j], flattenTarget, craterData[i * newTex.width + j].a * strengthNormalized);
-						}
-						else if (deformMode == DeformMode.Smooth)
-						{
-							if (i == 0 || i == height - 1 || j == 0 || j == width - 1)
-								continue;
+							case DeformMode.RaiseLower:
+								areaT[i, j] = areaT[i, j] - craterData[i * newTex.width + j].a * strengthSave / 15000;
+								break;
+							case DeformMode.Flatten:
+								areaT[i, j] = Mathf.Lerp(areaT[i, j], flattenTarget, craterData[i * newTex.width + j].a * strengthNormalized);
+								break;
+							case DeformMode.Smooth:
+								if (i == 0 || i == height - 1 || j == 0 || j == width - 1)
+									continue;
 
-							float heightSum = 0;
-							for (int ySub = -1; ySub <= 1; ySub++)
-							{
-								for (int xSub = -1; xSub <= 1; xSub++)
+								float heightSum = 0;
+								for (int ySub = -1; ySub <= 1; ySub++)
 								{
-									heightSum += areaT[i + ySub, j + xSub];
+									for (int xSub = -1; xSub <= 1; xSub++)
+									{
+										heightSum += areaT[i + ySub, j + xSub];
+									}
 								}
-							}
-
-							areaT[i, j] = Mathf.Lerp(areaT[i, j], (heightSum / 9), craterData[i * newTex.width + j].a * strengthNormalized);
+								areaT[i, j] = Mathf.Lerp(areaT[i, j], (heightSum / 9), craterData[i * newTex.width + j].a * strengthNormalized);
+								break;
+							case DeformMode.Set:
+								areaT[i, j] = Mathf.Clamp01((pickedHeight - terrain.GetPosition().y) / tData.size.y);
+								break;
+							default:
+								break;
 						}
+						changed |= areaT[i, j] != previousHeight;
 					}
 				}
-				tData.SetHeights(startX, startZ, areaT);
+				if (changed)
+				{
+					CaptureOriginalHeights(startX, startZ, width, height);
+					tData.SetHeights(startX, startZ, areaT);
+				}
 			}
 		}
 	}
@@ -322,94 +503,16 @@ public class SC_TerrainEditor : MonoBehaviour
 				brushScaling();
 		}
 	}
-
-	//GUI
-	//______________________________________________________________________________________________________________________________
-	//void OnGUI()
-	//{
-	//	windowRect = GUI.Window(0, windowRect, TerrainEditorWindow, "Terrain Sculptor");
-
-	//	GUILayout.BeginArea(new Rect(Screen.width - 70, 10, 60, 30));
-	//	showHelp = GUILayout.Toggle(showHelp, "(Help)", new GUILayoutOption[] { GUILayout.Width(60.0f), GUILayout.Height(30.0f) });
-	//	GUILayout.EndArea();
-
-	//	if (showHelp)
-	//	{
-	//		//Help window properties
-	//		GUI.Window(1, new Rect(Screen.width - 410, 50, 400, 120), HelpWindow, "Help Window");
-	//	}
-	//}
-
-	//Help window display tips and tricks
-	//void HelpWindow(int windowId)
-	//{
-	//	GUILayout.BeginVertical("box");
-	//	{
-	//		GUILayout.Label("- Mouse wheel - area change");
-	//		GUILayout.Label("- Mouse wheel + Shift - strength change");
-	//		GUILayout.Label("- Hold Shift in RaiseLower mode to lower terrain");
-	//	}
-	//	GUILayout.EndVertical();
-	//}
 	public void SetDeformMode(int value)
 	{
 		deformMode = (DeformMode)value;
+		editorPanel.DisplayMessageFor(F.I.LocStr(deformMode.ToString()), 3);
 	}
 	public void ResetTerrain()
 	{
+		currentOperation = null;
+		undoHistory.Clear();
+		blockStrokeUntilRelease = Input.GetMouseButton(0);
 		tData.SetHeights(0, 0, saved);
 	}
-	//void TerrainEditorWindow(int windowId)
-	//{
-
-	////Detect when mouse cursor inside region (TerrainEditorWindow)
-	//GUILayout.BeginArea(new Rect(0, 0, 400, 240));
-	//if (GUILayoutUtility.GetRect(10, 50, 400, 240).Contains(Event.current.mousePosition))
-	//{
-	//	onWindow = true;
-	//}
-	//else
-	//{
-	//	onWindow = false;
-	//}
-	//GUILayout.EndArea();
-
-	//GUILayout.BeginVertical();
-
-	//Shared GUI
-	//GUILayout.Space(10f);
-	//GUILayout.BeginHorizontal();
-	//GUILayout.Label("Area:", new GUILayoutOption[] { GUILayout.Width(75f) });
-	//area = GUILayout.HorizontalSlider(area, 10f, 40f, new GUILayoutOption[] { GUILayout.Width(250f), GUILayout.Height(15f) });
-	//GUILayout.Label((Mathf.Round(area * 100f) / 100f).ToString(), new GUILayoutOption[] { GUILayout.Width(250f), GUILayout.Height(20f) });
-	//Change brush texture size if area value was changed
-	//if (GUI.changed)
-	//{
-	//	brushScaling();
-	//}
-	//GUILayout.EndHorizontal();
-
-	//GUILayout.Space(10f);
-	//GUILayout.BeginHorizontal();
-	//GUILayout.Label("Strength:", new GUILayoutOption[] { GUILayout.Width(75f) });
-	//strength = GUILayout.HorizontalSlider(strength, 2f, 30f, new GUILayoutOption[] { GUILayout.Width(250f), GUILayout.Height(15f) });
-	//GUILayout.Label((Mathf.Round(strength * 100f) / 100f).ToString(), new GUILayoutOption[] { GUILayout.Width(250f), GUILayout.Height(20f) });
-	//GUILayout.EndHorizontal();
-
-	////Deform GUI
-	//GUILayout.Space(10);
-
-	//deformMode = (DeformMode)GUILayout.Toolbar((int)deformMode, deformModeNames, GUILayout.Height(25));
-
-	//GUILayout.Space(10);
-
-	//GUILayout.BeginHorizontal();
-	//if (GUILayout.Button("Reset Terrain Height", new GUILayoutOption[] { GUILayout.Height(30f) }))
-	//{
-	//	tData.SetHeights(0, 0, saved);
-	//}
-	//GUILayout.EndHorizontal();
-
-	//GUILayout.EndVertical();
-	//}
 }

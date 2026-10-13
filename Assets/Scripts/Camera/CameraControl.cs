@@ -36,15 +36,16 @@ namespace RVP
 
 		// Original presets 2/3/1: keep distance, elevation and response paired.
 		static readonly float[] Distances = { 10, 15, 6 };
-		static readonly float[] Elevations = { 18, 20, 13 };
+		static readonly float[] Elevations = { 18, 20, 13 };//13
 		static readonly float[] ApproachScales = { 0.125f, 0.125f, 0.5f };
+		float FollowElevation => Elevations[preset];
+		Vector3 FollowOriginPosition => vp.originalVehiclePhysics != null
+			? vp.originalVehiclePhysics.CameraPhysicsPosition : vp.tr.position;
+		Vector3 FollowTargetPosition => FollowOriginPosition + Vector3.up * 1.5f;
 		const float SourceHz = OriginalVehiclePhysics.SourceTicksPerSecond;
-		const float CollisionRadius = 1.25f; // camera_frame.cpp: query.radius = 125
 		const float BaseLens = 2.09f; // 0x4005c28f
-		readonly RaycastHit[] sweepHits = new RaycastHit[32];
 		int preset;
 		int collisionMask;
-		int collisionBypassTicks;
 		int settleTicks;
 		float tickAccumulator;
 		float twist;
@@ -58,6 +59,11 @@ namespace RVP
 		int accelerationFrame = -1;
 		Vector3 cameraSide;
 		Vector3 customCameraVelocity;
+		Vector3 followReturnStartPosition;
+		Quaternion followReturnStartRotation;
+		float followReturnStartFov;
+		const float FollowReturnDuration = 1.2f;
+		float followReturnTime;
 		bool followInitialized;
 		bool wasCustomCamera;
 		bool wasResetting;
@@ -109,12 +115,23 @@ namespace RVP
 		public void Connect(VehicleParent car = null, Mode mode = Mode.Follow)
 		{
 			if (!car) { Disconnect(); return; }
+			bool initialConnection = vp != car || !followInitialized;
 			vp = car;
 			targetBody = car.rb ? car.rb : car.GetComponent<Rigidbody>();
 			if (vp.followAI) vp.followAI.ResetCurCameraIdx();
 			GetComponent<AudioListener>().velocityUpdateMode = AudioVelocityUpdateMode.Fixed;
 			enabled = true;
 			this.mode = mode;
+			if (initialConnection && this.mode == Mode.Follow)
+			{
+				// Start at the car's spawn point, then blend to the chase orbit.
+				Vector3 down = Physics.gravity.sqrMagnitude > 0.000001f ? Physics.gravity.normalized : Vector3.down;
+				Vector3 viewUp = Vector3.ProjectOnPlane(vp.tr.forward, down);
+				if (viewUp.sqrMagnitude < 0.000001f) viewUp = Vector3.ProjectOnPlane(vp.tr.right, down);
+				tr.SetPositionAndRotation(targetBody.position - down * 2f, Quaternion.LookRotation(down, viewUp.normalized));
+				wasResetting = vp.ghost && vp.ghost.justResetted;
+				BeginReturnToFollowCamera();
+			}
 		}
 		void ChangeFollowCamera(InputAction.CallbackContext context)
 		{
@@ -125,32 +142,43 @@ namespace RVP
 		public void UpdateLH()
 		{
 			targetCamCarDistance = Distances[preset];
-			height = Mathf.Sin(Elevations[preset] * Mathf.Deg2Rad) * targetCamCarDistance;
+			height = Mathf.Sin(FollowElevation * Mathf.Deg2Rad) * targetCamCarDistance;
 			if (vp && mode == Mode.Follow) ResetFollowCamera();
 		}
 		Vector3 GetCameraTargetPosition()
 		{
 			return vp.customCam && vp.bodyObj ? vp.bodyObj.transform.position : vp.tr.position;
 		}
-		void ResetFollowCamera()
+		void ResetFollowCamera(bool publish = true)
 		{
+			followReturnTime = 0;
 			targetCamCarDistance = Distances[preset];
-			height = Mathf.Sin(Elevations[preset] * Mathf.Deg2Rad) * targetCamCarDistance;
+			height = Mathf.Sin(FollowElevation * Mathf.Deg2Rad) * targetCamCarDistance;
 			stabilizedUp = vp.tr.up;
 			cameraVelocity = drift = customCameraVelocity = Vector3.zero;
 			accelerationFrame = -1;
 			twist = 0;
 			lens = BaseLens;
 			settleTicks = 0;
-			collisionBypassTicks = 300; // camera_select_mode
 			tickAccumulator = 0;
-			contactHeight = vp.tr.position.y;
+			contactHeight = FollowOriginPosition.y;
 			UpdateContactHeight();
-			cameraTarget = vp.tr.position + Vector3.up * 1.5f;
+			cameraTarget = FollowTargetPosition;
 			cameraPosition = DesiredCameraPosition(0);
+			KeepVehicleVisible();
 			followInitialized = true;
 			wasCustomCamera = false;
-			PublishFollowCamera();
+			if (publish) PublishFollowCamera();
+		}
+		void BeginReturnToFollowCamera()
+		{
+			followReturnStartPosition = tr.position;
+			followReturnStartRotation = tr.rotation;
+			followReturnStartFov = cam.fieldOfView;
+			// Solve visibility at the chase destination, without moving the
+			// rendered camera through the linecast correction on the first frame.
+			ResetFollowCamera(false);
+			followReturnTime = FollowReturnDuration;
 		}
 		void Update()
 		{
@@ -161,14 +189,17 @@ namespace RVP
 			if (!vp || !targetBody) return;
 			if (mode == Mode.Replay) { ReplayCam(); return; }
 			bool resetting = vp.ghost && vp.ghost.justResetted;
-			if (!followInitialized || (resetting && !wasResetting) || (wasCustomCamera && !vp.customCam))
+			if (!followInitialized || (resetting && !wasResetting))
 				ResetFollowCamera();
+			else if (wasCustomCamera && !vp.customCam)
+				BeginReturnToFollowCamera();
 			wasResetting = resetting;
 			wasCustomCamera = vp.customCam;
 			if (vp.customCam)
 			{
+				followReturnTime = 0;
 				// Keep the Unity-authored tunnel/pit cameras independent of chase state.
-				float t = 1 - Mathf.Exp(-3 * Time.fixedDeltaTime);
+				float t = 1 - Mathf.Exp(-4.5f * Time.fixedDeltaTime);
 				Vector3 position = Vector3.SmoothDamp(tr.position, vp.customCam.transform.position,
 					ref customCameraVelocity, 0.5f, 15, Time.fixedDeltaTime * 10);
 				Vector3 aim = GetCameraTargetPosition() - position;
@@ -188,6 +219,7 @@ namespace RVP
 				FollowCameraTick();
 			}
 			PublishFollowCamera();
+			followReturnTime = Mathf.Max(0, followReturnTime - Time.fixedDeltaTime);
 		}
 		Vector3 DesiredCameraPosition(float speedLift)
 		{
@@ -200,7 +232,7 @@ namespace RVP
 			forward.Normalize();
 			Vector3 right = Vector3.Cross(forward, stabilizedUp).normalized;
 			Vector3 orbit = Quaternion.AngleAxis(xInput * 90 + yInput * 180, Vector3.up) *
-				(Quaternion.AngleAxis(Elevations[preset], Vector3.right) * Vector3.forward * targetCamCarDistance);
+				(Quaternion.AngleAxis(FollowElevation, Vector3.right) * Vector3.forward * targetCamCarDistance);
 			Vector3 vertical = stabilizedUp * orbit.y;
 			if (Vector3.Dot(gravity, stabilizedUp) >= 0) vertical = -vertical;
 			Vector3 relative = right * orbit.x + vertical + forward * orbit.z;
@@ -209,7 +241,7 @@ namespace RVP
 			float bodyHeight = vp.originalVehiclePhysics != null ? vp.originalVehiclePhysics.CameraBodyHeight : 1.15f;
 			relative -= Mathf.Max(0, bodyHeight - 1.15f) * vp.tr.up;
 			relative.y += speedLift;
-			return vp.tr.position - relative.normalized * targetCamCarDistance;
+			return FollowOriginPosition - relative.normalized * targetCamCarDistance;
 		}
 		void UpdateContactHeight()
 		{
@@ -218,7 +250,7 @@ namespace RVP
 			if (vp.originalVehiclePhysics != null)
 				contactHeight = vp.originalVehiclePhysics.CameraLaunchHeight;
 			else if (vp.reallyGroundedWheels > 0)
-				contactHeight = vp.tr.position.y;
+				contactHeight = FollowOriginPosition.y;
 		}
 		void FollowCameraTick()
 		{
@@ -235,7 +267,7 @@ namespace RVP
 			float fraction = Mathf.Clamp01((targetBody.linearVelocity.magnitude / 0.6f - 83.333336f) * 0.024f);
 			lens = BaseLens - fraction * 0.5f;
 			twist = (twist - Vector3.Dot(cameraVelocity * 100, cameraSide) * 0.25f) * 0.5f;
-			cameraTarget += (vp.tr.position + Vector3.up * 1.5f - cameraTarget) / 3;
+			cameraTarget += (FollowTargetPosition - cameraTarget) / 3;
 			stabilizedUp += (vp.tr.up - stabilizedUp) * 0.1f;
 			UpdateContactHeight();
 			OriginalVehiclePhysics physics = vp.originalVehiclePhysics;
@@ -244,9 +276,10 @@ namespace RVP
 			Vector3 gravity = Physics.gravity.sqrMagnitude > 0.000001f ? Physics.gravity.normalized : Vector3.down;
 			if (Vector3.Dot(gravity, stabilizedUp) >= 0) drift -= gravity * 0.02f;
 			bool coasting = false;
-			if ((cameraPosition - vp.tr.position).sqrMagnitude < 900)
+			Vector3 bodyPosition = FollowOriginPosition;
+			if ((cameraPosition - bodyPosition).sqrMagnitude < 900)
 			{
-				if (counter <= 0 && Mathf.Abs(vp.tr.position.y - contactHeight) > 0.5f)
+				if (counter <= 0 && Mathf.Abs(bodyPosition.y - contactHeight) > 0.5f)
 				{
 					drift *= 0.9f;
 					drift -= gravity * 0.02f;
@@ -266,7 +299,7 @@ namespace RVP
 					if (coasting) drift *= 0.9f;
 				}
 			}
-			if (!coasting)
+			if (!coasting || followReturnTime > 0)
 			{
 				drift = Vector3.zero;
 				desiredPosition = DesiredCameraPosition(fraction * 0.75f);
@@ -280,42 +313,28 @@ namespace RVP
 				}
 				cameraVelocity = motion.normalized * Mathf.Min(speed, limit);
 			}
-			if ((cameraPosition - vp.tr.position).sqrMagnitude > 625) collisionBypassTicks = 600;
-			if (collisionBypassTicks > 0)
-			{
-				cameraPosition += cameraVelocity;
-				collisionBypassTicks--;
-			}
-			else MoveWithTrackCollision();
+			cameraPosition += cameraVelocity;
+			KeepVehicleVisible();
 			// camera_integrate_velocity runs AFTER camera_move.
 			cameraVelocity = (cameraVelocity + drift) * 0.95f;
 			for (int axis = 0; axis < 3; axis++)
 				if (Mathf.Abs(cameraVelocity[axis]) < 0.001f) cameraVelocity[axis] = 0;
 		}
-		void MoveWithTrackCollision()
+		void KeepVehicleVisible()
 		{
-			Vector3 remaining = cameraVelocity;
-			for (int attempt = 0; attempt < 33 && remaining.sqrMagnitude > 0.00000001f; attempt++)
-			{
-				float distance = remaining.magnitude;
-				int count = Physics.SphereCastNonAlloc(cameraPosition, CollisionRadius, remaining / distance,
-					sweepHits, distance, collisionMask, QueryTriggerInteraction.Ignore);
-				int nearest = -1;
-				float nearestDistance = distance;
-				for (int i = 0; i < count; i++)
-				{
-					if (sweepHits[i].rigidbody || sweepHits[i].distance > nearestDistance) continue;
-					nearest = i;
-					nearestDistance = sweepHits[i].distance;
-				}
-				if (nearest < 0) { cameraPosition += remaining; return; }
-				RaycastHit hit = sweepHits[nearest];
-				float travel = Mathf.Max(0, hit.distance - 0.001f);
-				cameraPosition += remaining / distance * travel;
-				remaining *= 1 - travel / distance;
-				float inward = Vector3.Dot(remaining, hit.normal);
-				if (inward < 0) remaining -= hit.normal * inward * 1.01f;
-			}
+			// Check the entire car-to-camera segment, including when the camera
+			// is stationary or the original chase logic is coasting in the air.
+			Vector3 origin = FollowOriginPosition;
+			Vector3 offset = cameraPosition - origin;
+			if (offset.sqrMagnitude < 0.000001f ||
+				!Physics.Linecast(origin, cameraPosition, out RaycastHit hit,
+					collisionMask, QueryTriggerInteraction.Ignore)) return;
+			float clearance = Mathf.Max(0.15f, cam.nearClipPlane);
+			cameraPosition = origin + offset.normalized * Mathf.Max(0, hit.distance - clearance);
+			// Remove motion toward the obstruction; the chase resumes smoothly
+			// toward its normal orbit once the segment is clear.
+			float outwardSpeed = Vector3.Dot(cameraVelocity, offset.normalized);
+			if (outwardSpeed > 0) cameraVelocity -= offset.normalized * outwardSpeed;
 		}
 		Quaternion FollowViewRotation(Vector3 position, Vector3 target, float roll)
 		{
@@ -326,9 +345,18 @@ namespace RVP
 		void PublishFollowCamera()
 		{
 			Quaternion rotation = FollowViewRotation(cameraPosition, cameraTarget, twist);
+			float fieldOfView = 2 * Mathf.Atan(1 / lens) * Mathf.Rad2Deg;
+			Vector3 position = cameraPosition;
+			if (followReturnTime > 0)
+			{
+				float blend = Mathf.SmoothStep(0, 1, 1 - followReturnTime / FollowReturnDuration);
+				position = Vector3.Lerp(followReturnStartPosition, cameraPosition, blend);
+				rotation = Quaternion.Slerp(followReturnStartRotation, rotation, blend);
+				fieldOfView = Mathf.Lerp(followReturnStartFov, fieldOfView, blend);
+			}
 			cameraSide = rotation * Vector3.right;
-			cam.fieldOfView = 2 * Mathf.Atan(1 / lens) * Mathf.Rad2Deg;
-			tr.SetPositionAndRotation(cameraPosition, rotation);
+			cam.fieldOfView = fieldOfView;
+			tr.SetPositionAndRotation(position, rotation);
 		}
 		void ReplayCam()
 		{

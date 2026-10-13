@@ -282,6 +282,7 @@ namespace UnityEngine.InputSystem.Samples.RebindUI
 				.OnComplete(
 					operation =>
 					{
+						RebindsLoad.RepairDriveAxisPairs(action);
 						m_RebindOverlay?.SetActive(false);
 						m_RebindStopEvent?.Invoke(this, operation);
 						UpdateBindingDisplay();
@@ -297,6 +298,39 @@ namespace UnityEngine.InputSystem.Samples.RebindUI
 						}
 					});
 
+			var targetBinding = action.bindings[bindingIndex];
+			if (action.name == "Drive" && targetBinding.isPartOfComposite &&
+				(targetBinding.name.Equals("up", StringComparison.OrdinalIgnoreCase) ||
+				 targetBinding.name.Equals("down", StringComparison.OrdinalIgnoreCase)))
+			{
+				// Accept actual axes as well as buttons/triggers. Some controllers
+				// expose no synthetic directional buttons for their sticks.
+				var axisDirections = new Dictionary<InputControl, float>();
+				m_RebindOperation.WithExpectedControlType((string)null)
+					.WithExpectedControlType<UnityEngine.InputSystem.Controls.AxisControl>()
+					.OnComputeScore((control, inputEvent) =>
+					{
+						var candidate = control as UnityEngine.InputSystem.Controls.AxisControl;
+						if (candidate == null || !candidate.ReadValueFromEvent(inputEvent, out float value)) return 0;
+						// Rebinding suppresses the input event, so ReadValue() still sees
+						// the prior state. Capture polarity directly from the event.
+						axisDirections[control] = value;
+						return Mathf.Abs(value) + (control.synthetic ? 0f : 1f);
+					})
+					.OnApplyBinding((operation, path) =>
+					{
+						bool negativeDirection = axisDirections.TryGetValue(operation.selectedControl, out float value) && value < 0;
+						// Capture the direction the user actually moved. Both composite
+						// parts must receive 0..1, never the same signed -1..1 value.
+						string processors = negativeDirection
+							? "Invert,Clamp(min=0,max=1)" : "Clamp(min=0,max=1)";
+						action.ApplyBindingOverride(bindingIndex, new InputBinding
+						{
+							overridePath = path,
+							overrideProcessors = processors
+						});
+					});
+			}
 			// If it's a part binding, show the name of the part in the UI.
 			var partName = default(string);
 			if (action.bindings[bindingIndex].isPartOfComposite)

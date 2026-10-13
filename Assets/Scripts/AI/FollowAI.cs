@@ -259,6 +259,7 @@ namespace RVP
 		}
 		public void PitsTrigger()
 		{
+			if (F.I.gameMode == GameMode.Skate) return;
 			if (searchForPits)
 			{
 				Collider[] pitsPathHits;
@@ -284,6 +285,7 @@ namespace RVP
 
 			if (CountDownSeq.Countdown > 0)
 			{
+				vp.SetBrake(1);
 				vp.ebrakeInput = 1;
 
 				if (IsCPU)
@@ -294,6 +296,16 @@ namespace RVP
 				return;
 			}
 			vp.ebrakeInput = 0;
+			if (vp.ActiveRailbar)
+			{
+				overRoad = true;
+				outOfTrackTime = rolledOverTime = 0;
+			}
+			if (F.I.gameMode == GameMode.Skate)
+			{
+				UpdateSkate();
+				return;
+			}
 
 			overRoad = Physics.Raycast(tr.position + Vector3.up, Vector3.down, out var _, Mathf.Infinity, 1 << F.I.roadLayer);
 			// Rollover uses the nearby Unity road normal, independent of material profiles.
@@ -574,11 +586,30 @@ namespace RVP
 				}
 			}
 		}
-		public IEnumerator ResetOnTrack(string resetCause = "external request")
+		void UpdateSkate()
+		{
+			selfDriving = false;
+			outOfTrackTime = 0;
+			int groundMask = (1 << F.I.roadLayer) | (1 << F.I.terrainLayer);
+			overRoad = Physics.Raycast(tr.position + Vector3.up, Vector3.down,
+				out var ground, 4f, groundMask, QueryTriggerInteraction.Ignore);
+			bool restingOnGround = overRoad && vp.reallyGroundedWheels < 2
+				&& Mathf.Abs(Vector3.Dot(rb.linearVelocity, ground.normal)) < 1.5f
+				&& !vp.originalVehiclePhysics.StuntActive;
+			rolledOverTime = Mathf.Clamp(restingOnGround && Vector3.Dot(ground.normal, tr.up) < 0.5f
+				? rolledOverTime + Time.fixedDeltaTime : 0f, 0f, Mathf.Max(0f, rollResetTime));
+			if (rollResetTime > 0f &&  rolledOverTime >= rollResetTime /2f)
+				StartCoroutine(ResetOnTrack("Skate rollover", resetInPlace: true));
+			// Arena movement has no wrong-way or monotonic lap-progress restriction.
+			dist = progress = GetDist(trackPathCreator);
+			univProgress = dist;
+		}
+		public IEnumerator ResetOnTrack(string resetCause = "external request", bool resetInPlace = false)
 		{
 			if (!vp.Owner || F.I.s_inEditor || resetRoutineActive)
 				yield break;
 			resetRoutineActive = true;
+			vp.ActiveRailbar?.Release(vp);
 			Debug.LogWarning($"[FollowAI] Reset on track: cause={resetCause}, overRoad={overRoad}, " +
 				$"outOfTrackTime={outOfTrackTime:F2}, rolledOverTime={rolledOverTime:F2}, " +
 				$"lowSpeedTime={lowSpeedTime:F2}, position={tr.position:F2}", vp);
@@ -604,33 +635,47 @@ namespace RVP
 			vp.raceBox.sidewinderRightTimer = 0;
 			vp.raceBox.sidewinderLeftTimer = 0;
 
-			progress = Mathf.Clamp(progress + 5, 0, (int)(trackPathCreator.path.length - 5));
-
-			Vector3 resetPos = trackPathCreator.path.GetPointAtDistance(progress);
-			RaycastHit h;
-			Vector3 resetDir = trackPathCreator.path.GetDirectionAtDistance(progress);
-			while (
+			bool skate = F.I.gameMode == GameMode.Skate;
+			resetInPlace &= skate;
+			progress = skate ? GetDist(trackPathCreator)
+				: Mathf.Clamp(progress + 5, 0, Mathf.Max(0, (int)(trackPathCreator.path.length - 5)));
+			Vector3 resetPos = resetInPlace ? tr.position : (Vector3)trackPathCreator.path.GetPointAtDistance(progress,
+				skate ? EndOfPathInstruction.Stop : EndOfPathInstruction.Loop);
+			RaycastHit h = default;
+			Vector3 resetDir = resetInPlace ? tr.forward : trackPathCreator.path.GetDirectionAtDistance(progress,
+				skate ? EndOfPathInstruction.Stop : EndOfPathInstruction.Loop);
+			if (skate)
+			{
+				int groundMask = (1 << F.I.roadLayer) | (1 << F.I.terrainLayer);
+				if (Physics.Raycast(resetPos + Vector3.up * 5, Vector3.down, out h, 30,
+					groundMask, QueryTriggerInteraction.Ignore))
+					resetPos = h.point;
+				else
+					h.normal = Vector3.up;
+			}
+			else while (progress < Mathf.Max(0, trackPathCreator.path.length - 15) && (
 				 !Physics.Raycast(resetPos + 5 * Vector3.up, Vector3.down, out h, 15, 1 << F.I.roadLayer)
 			|| Vector3.Dot(h.normal, Vector3.up) < -0.5f // while not hit road or hit culled face (backface raycasts are on)
 			|| Vector3.SignedAngle(resetDir, Vector3.up, Vector3.Cross(resetDir, Vector3.up)) < 75
-			|| Physics.CheckSphere(resetPos, 1, 1 << F.I.vehicleTriggerLayer)
-			&& progress < (trackPathCreator.path.length - 15))
+			|| Physics.CheckSphere(resetPos, 1, 1 << F.I.vehicleTriggerLayer)))
 			{
 				progress += 10;
 				resetPos = trackPathCreator.path.GetPointAtDistance(progress);
 				resetDir = trackPathCreator.path.GetDirectionAtDistance(progress);
 			}
 
-			if (progress >= trackPathCreator.path.length)
+			if (!skate && progress >= trackPathCreator.path.length)
 			{
 				univProgress = RaceManager.I.racingPaths[1].path.length - 5;
 				progress = (int)(trackPathCreator.path.length - 5);
 			}
 			dist = progress;
+			if (h.normal.sqrMagnitude < 0.0001f)
+				h.normal = Vector3.up;
 				
 			vp.ghost.StartGhostResetting();
 			rb.isKinematic = true;
-			tr.position = resetPos + Vector3.up + resetDir;
+			tr.position = resetPos + Vector3.up + (skate ? Vector3.zero : resetDir);
 			yield return new WaitForFixedUpdate();
 
 			float newUnivProgress = GetDist(RaceManager.I.racingPaths[1]);
@@ -658,6 +703,7 @@ namespace RVP
 
 		public void DriveThruPits(in PathCreator pitsPathCreator)
 		{
+			if (F.I.gameMode == GameMode.Skate) return;
 			inPitsTime = Time.time;
 			this.pitsPathCreator = pitsPathCreator;
 			selfDriving = true;

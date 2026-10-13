@@ -30,15 +30,18 @@ public class ChampionshipSave
 [Serializable]
 public class ChampionshipStanding
 {
+	public int driverId = -1; // 0 = player; 1..9 = CP drivers, independent of sponsor.
 	public Livery sponsor;
 	public int carIndex;
 	public int points;
 	public int wins;
-	public int lastPosition = 6;
+	public int lastPosition = Championships.DriverCount;
 }
 
 public static class Championships
 {
+	public const int OpponentCount = 9;
+	public const int DriverCount = OpponentCount + 1;
 	public static readonly string[] Countries = { "GER", "SPN", "JAP", "ENG", "FRA", "USA", "ITA" };
 	public static readonly Livery[] Sponsors = { Livery.TGR, Livery.Rline, Livery.Itex, Livery.Caltex, Livery.Titan, Livery.Mysuko };
 	public static ChampionshipSave Current { get; private set; }
@@ -47,8 +50,9 @@ public static class Championships
 	public static bool RacePending { get; private set; }
 	static bool savingEnabled;
 	static bool finalRankingRecorded;
+	static readonly List<string> completionPrizes = new();
 	public static int StartingCash = 25000;
-	public static int[] Prizes = { 15000, 10000, 7500, 5000, 2500, 1000 };
+	public static int[] Prizes = { 15000, 10000, 7500, 5000, 2500, 1000, 500, 250, 100, 0 };
 	public static float TradeInFraction = 0.5f;
 	static CarConfig[] previousConfigs;
 	static int previousCar;
@@ -71,6 +75,7 @@ public static class Championships
 			var save = JsonConvert.DeserializeObject<ChampionshipSave>(File.ReadAllText(SlotPath(slot)));
 			if (save == null || save.version != 1 || string.IsNullOrWhiteSpace(save.driverName)) throw new InvalidDataException("Invalid championship save.");
 			// Earlier versions wrote name-only drafts. These are still empty slots.
+			UpgradeParticipants(save);
 			return IsReady(save) ? save : null;
 		}
 		catch (Exception error) { Debug.LogError($"Championship slot {slot + 1}: {error.Message}"); return null; }
@@ -82,9 +87,39 @@ public static class Championships
 		save.wonSeasons != null && save.cars != null &&
 		save.carIndex >= 0 && save.carIndex < F.I.cars.Length &&
 		save.cars.TryGetValue(save.carIndex, out var car) && car?.originalPhysics != null && car.originalParts != null &&
-		save.cars.All(c => c.Value != null) && save.standings != null && save.standings.Count == 6 &&
+		save.cars.All(c => c.Value != null) && save.standings != null && save.standings.Count == DriverCount &&
 		save.standings.All(s => s != null && Sponsors.Contains(s.sponsor) && s.carIndex >= 0 && s.carIndex < F.I.cars.Length) &&
-		save.standings.Select(s => s.sponsor).Distinct().Count() == 6 && Sponsors.Contains(save.sponsor);
+		save.standings.All(s => s.driverId >= 0 && s.driverId < DriverCount) &&
+		save.standings.Select(s => s.driverId).Distinct().Count() == DriverCount &&
+		save.standings.Any(s => s.driverId == 0 && s.sponsor == save.sponsor) && Sponsors.Contains(save.sponsor);
+	static void UpgradeParticipants(ChampionshipSave save)
+	{
+		if (save.standings == null || save.standings.Count != Sponsors.Length ||
+			!Sponsors.Contains(save.sponsor) ||
+			save.standings.Any(s => s == null || !Sponsors.Contains(s.sponsor) || s.carIndex < 0 || s.carIndex >= F.I.cars.Length) ||
+			save.standings.Select(s => s.sponsor).Distinct().Count() != Sponsors.Length ||
+			!save.standings.Any(s => s.sponsor == save.sponsor) ||
+			save.carIndex < 0 || save.carIndex >= F.I.cars.Length) return;
+		int opponentId = 1;
+		foreach (var standing in save.standings)
+			standing.driverId = standing.sponsor == save.sponsor ? 0 : opponentId++;
+		AddMissingOpponents(save);
+	}
+	static void AddMissingOpponents(ChampionshipSave save)
+	{
+		var sponsors = Sponsors.Where(s => s != save.sponsor).ToArray();
+		CarGroup group = F.I.cars[save.carIndex].category;
+		if (save.tracks != null && save.tracks.Length > 0 && save.tracks[0] != null &&
+			F.I.tracks.TryGetValue(save.tracks[0], out var firstTrack)) group = firstTrack.preferredCarClass;
+		var candidates = Enumerable.Range(0, F.I.cars.Length)
+			.Where(i => F.I.cars[i].category == group).ToArray();
+		if (candidates.Length == 0) candidates = new[] { save.carIndex };
+		for (int id = 1; id <= OpponentCount; id++)
+			if (!save.standings.Any(s => s.driverId == id))
+				save.standings.Add(new ChampionshipStanding { driverId = id,
+					sponsor = sponsors[(id - 1) % sponsors.Length],
+					carIndex = candidates[UnityEngine.Random.Range(0, candidates.Length)] });
+	}
 
 	// Called by ChampionshipsView only after a full season has been prepared.
 	public static void EnterChampionshipView()
@@ -114,6 +149,7 @@ public static class Championships
 		savingEnabled = Current != null;
 		RacePending = false;
 		finalRankingRecorded = false;
+		completionPrizes.Clear();
 		F.I.gameMode = GameMode.Championships;
 		if (Current != null)
 		{
@@ -151,6 +187,8 @@ public static class Championships
 	public static void CompleteSeason()
 	{
 		if (!Active || !Current.Completed || !savingEnabled) return;
+		if (Position == 1)
+			completionPrizes.AddRange(F.I.AwardChampionshipCompletion(Current.season));
 		foreach (string season in Current.wonSeasons) F.I.RememberChampionshipWin(season);
 		if (Position == 1) F.I.RememberChampionshipWin(Current.season);
 		// Keep the final standings in memory for the podium and ranking screens.
@@ -158,6 +196,12 @@ public static class Championships
 		savingEnabled = false;
 		File.Delete(SlotPath(Slot));
 		File.Delete(SlotPath(Slot) + ".tmp");
+	}
+	public static List<string> TakeCompletionPrizes()
+	{
+		var prizes = new List<string>(completionPrizes);
+		completionPrizes.Clear();
+		return prizes;
 	}
 	public static RankingRowData TakeFinalRankingEntry()
 	{
@@ -233,11 +277,8 @@ public static class Championships
 		CarGroup group = F.I.tracks[tracks[0]].preferredCarClass;
 		Current.carIndex = group == CarGroup.Wild ? 9 : group == CarGroup.Aero ? 14 : 8;
 		Current.standings.Clear();
-		foreach (Livery sponsor in Sponsors)
-		{
-			var candidates = Enumerable.Range(0, F.I.cars.Length).Where(i => F.I.cars[i].category == group).ToArray();
-			Current.standings.Add(new ChampionshipStanding { sponsor = sponsor, carIndex = sponsor == Current.sponsor ? Current.carIndex : candidates[UnityEngine.Random.Range(0, candidates.Length)] });
-		}
+		Current.standings.Add(new ChampionshipStanding { driverId = 0, sponsor = Current.sponsor, carIndex = Current.carIndex });
+		AddMissingOpponents(Current);
 		if (!Current.cars.ContainsKey(Current.carIndex))
 		{
 			var config = new CarConfig(previousConfigs[Current.carIndex]);
@@ -247,12 +288,12 @@ public static class Championships
 		Restore(); return true;
 	}
 	public static List<ChampionshipStanding> Standings => Current.standings.OrderByDescending(s => s.points).ThenByDescending(s => s.wins).ThenBy(s => s.lastPosition).ToList();
-	public static int Position => Standings.FindIndex(s => s.sponsor == Current.sponsor) + 1;
+	public static int Position => Standings.FindIndex(s => s.driverId == 0) + 1;
 	public static string NextTrack => Active && !Current.Completed && Current.tracks.Length > 0 ? Current.tracks[Current.nextRace] : null;
 	public static bool PrepareRace()
 	{
 		if (NextTrack == null) return false;
-		Restore(); F.I.s_trackName = NextTrack; F.I.s_laps = 10; F.I.s_cpuRivals = 5;
+		Restore(); F.I.s_trackName = NextTrack; F.I.s_laps = 10; F.I.s_cpuRivals = OpponentCount;
 		F.I.s_raceType = Current.season == "SURVIVAL" ? RaceType.Survival : RaceType.Race;
 		F.I.teams = false; F.I.s_spectator = false; F.I.randomCars = F.I.randomTracks = false;
 		F.I.s_inEditor = false; F.I.scoringType = ScoringType.Championship;
@@ -269,22 +310,20 @@ public static class Championships
 
 	public static string DriverName(ChampionshipStanding standing)
 	{
-		if (standing.sponsor == Current.sponsor) return Current.driverName;
-		int opponentIndex = Current.standings.Where(s => s.sponsor != Current.sponsor).ToList().IndexOf(standing);
-		return "CP" + (opponentIndex + 1);
+		return standing.driverId == 0 ? Current.driverName : "CP" + standing.driverId;
 	}
 	public static CarPlacement[] Placements()
 	{
-		var entries = Current.standings.Where(s => s.sponsor != Current.sponsor).ToList();
-		var player = Current.standings.Find(s => s.sponsor == Current.sponsor);
+		var entries = Current.standings.Where(s => s.driverId != 0).OrderBy(s => s.driverId).ToList();
+		var player = Current.standings.Find(s => s.driverId == 0);
 		// Retain each opponent's identity; only its starting position changes.
 		var grid = entries.Append(player).OrderBy(s => s.points).ThenByDescending(s => s.lastPosition).ToList();
-		var placements = new CarPlacement[6];
+		var placements = new CarPlacement[DriverCount];
 		for (int i = 0; i < entries.Count; i++)
 			placements[i] = new CarPlacement { position = grid.IndexOf(entries[i]), carIdx = entries[i].carIndex,
 				livery = entries[i].sponsor, name = DriverName(entries[i]) };
-		placements[5] = CarPlacement.LocalPlayer();
-		placements[5].position = grid.IndexOf(player);
+		placements[OpponentCount] = CarPlacement.LocalPlayer();
+		placements[OpponentCount].position = grid.IndexOf(player);
 		return placements;
 	}
 	public static void CancelRace() { RacePending = false; Save(); }
@@ -297,20 +336,23 @@ public static class Championships
 			.ThenByDescending(r => r.finished && !r.disqualified)
 			.ThenBy(r => r.finished && !r.disqualified ? r.raceTime.TotalSeconds : 0)
 			.ThenByDescending(r => r.progress).ToList();
-		int[] points = { 10, 6, 4, 3, 2, 1 };
-		for (int i = 0; i < results.Count && i < 6; i++)
+		int[] points = { 10, 6, 4, 3, 2, 1, 0, 0, 0, 0 };
+		for (int i = 0; i < results.Count && i < DriverCount; i++)
 		{
-			var standing = Current.standings.Find(s => s.sponsor == results[i].sponsor);
+			var standing = results[i].vp == RaceManager.I.playerCar
+				? Current.standings.Find(s => s.driverId == 0)
+				: Current.standings.Find(s => s.driverId > 0 && DriverName(s) == results[i].name);
 			if (standing == null) continue;
 			standing.lastPosition = i + 1;
 			if (!results[i].disqualified) { standing.points += points[i]; if (i == 0) standing.wins++; }
-			if (standing.sponsor == Current.sponsor && !results[i].disqualified) Current.cash += Prizes[i];
+			if (standing.driverId == 0 && !results[i].disqualified)
+				Current.cash += ResultsView.CalculateChampionshipReward(results[i]).Total;
 		}
 		RacePending = false; Current.nextRace++;
 		if (Current.Completed && Position == 1 && !Current.wonSeasons.Contains(Current.season)) Current.wonSeasons.Add(Current.season);
 		// ChampionshipsView saves the awarded progress after the results are acknowledged.
 	}
-	public static int PartPrice(OriginalVehiclePartDefinition part) => Mathf.Max(0, part?.price ?? 0);
+	public static int PartPrice(OriginalVehiclePartDefinition part) => Mathf.Max(0, part?.price ?? 0) * 10;
 	public static int TradeIn(OriginalVehiclePartDefinition part) => PartPrice(part) / 2;
 	public static int PartCost(OriginalVehiclePartDefinition part)
 	{
@@ -339,7 +381,7 @@ public static class Championships
 		int price = CarCost(index);
 		if (CarPrice(index) < 0 || price > Current.cash) return false;
 		Current.cash -= price; Current.carIndex = index;
-		Current.standings.Find(s => s.sponsor == Current.sponsor).carIndex = index;
+		Current.standings.Find(s => s.driverId == 0).carIndex = index;
 		if (!Current.cars.ContainsKey(index))
 		{
 			var config = new CarConfig(previousConfigs[index]); config.originalParts = F.I.GetDefaultOriginalVehicleSetup(index); Current.cars[index] = config;
@@ -409,15 +451,26 @@ public class ChampionshipView : MainMenuView
 		{
 			var standings = Championships.Standings;
 			string[] headers = { "Name", "Sponsor", "Points", "Wins" };
+			int cellCount = headers.Length * (standings.Count + 1);
+			while (grid.childCount < cellCount && grid.childCount > 0)
+				Instantiate(grid.GetChild(0).gameObject, grid);
+			var layout = grid.GetComponent<GridLayoutGroup>();
+			if (layout && grid is RectTransform rect && rect.rect.height > 0)
+			{
+				Vector2 size = layout.cellSize;
+				size.y = Mathf.Max(1f, (rect.rect.height - layout.padding.vertical -
+					layout.spacing.y * standings.Count) / (standings.Count + 1));
+				layout.cellSize = size;
+			}
 			for (int i = 0; i < grid.childCount; i++)
 			{
-				var cell = grid.GetChild(i); cell.gameObject.SetActive(i < 28);
+				var cell = grid.GetChild(i); cell.gameObject.SetActive(i < cellCount);
 				if (i < 4) ChampionshipUI.SetText(cell.gameObject, F.I.LocStr(headers[i]));
-				else if (i < 28)
+				else if (i < cellCount)
 				{
 					var row = standings[(i - 4) / 4]; int col = (i - 4) % 4;
 					ChampionshipUI.SetText(cell.gameObject, col == 0 ? Championships.DriverName(row) : col == 1 ? row.sponsor.ToString() : col == 2 ? row.points.ToString() : row.wins.ToString());
-					Color color = row.sponsor == state.sponsor ? Color.white : Color.gray;
+					Color color = row.driverId == 0 ? Color.white : Color.gray;
 					foreach (var text in cell.GetComponentsInChildren<TMP_Text>(true)) text.color = color;
 					foreach (var text in cell.GetComponentsInChildren<Text>(true)) text.color = color;
 				}

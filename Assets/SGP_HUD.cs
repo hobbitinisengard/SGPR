@@ -2,6 +2,7 @@ using RVP;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -160,14 +161,27 @@ public class SGP_HUD : MonoBehaviour
 		gameObject.SetActive(true);
 
 		bool inRace = F.I.s_laps > 0;
-
-		AERODisplay.SetActive(inRace);
-		progressDisplay.SetActive(inRace);
-		positionDisplay.SetActive(inRace);
-		TIMEDisplay.SetActive(inRace);
-		RECScoreDisplay.SetActive(inRace && (F.I.s_raceType == RaceType.Stunt || F.I.s_raceType == RaceType.Drift));
-		RECDisplay.SetActive(inRace && !RECScoreDisplay.activeSelf);
-		LAPDisplay.SetActive(inRace);
+		if(F.I.gameMode == GameMode.Skate)
+		{
+			AERODisplay.SetActive(true);
+			progressDisplay.SetActive(false);
+			positionDisplay.SetActive(false);
+			TIMEDisplay.SetActive(false);
+			RECScoreDisplay.SetActive(true);
+			RECDisplay.SetActive(false);
+			LAPDisplay.SetActive(false);
+		}
+		else
+		{
+			AERODisplay.SetActive(inRace);
+			progressDisplay.SetActive(inRace);
+			positionDisplay.SetActive(inRace);
+			TIMEDisplay.SetActive(inRace);
+			RECScoreDisplay.SetActive(inRace && (F.I.s_raceType == RaceType.Stunt || F.I.s_raceType == RaceType.Drift));
+			RECDisplay.SetActive(inRace && !RECScoreDisplay.activeSelf);
+			LAPDisplay.SetActive(inRace);
+		}
+			
 
 
 		if (RECDisplay.activeSelf && F.I.tracks[F.I.s_trackName].records.lap.secondsOrPts > 0)
@@ -296,7 +310,7 @@ public class SGP_HUD : MonoBehaviour
 		//{
 		//    EndStuntSeq(false);
 		//}
-		if (!vp.raceBox.enabled && F.I.s_laps > 0)
+		if (!vp.raceBox.enabled && (F.I.s_laps > 0 || F.I.gameMode == GameMode.Skate))
 		{
 			raceManager.PlayFinishSeq();
 			gameObject.SetActive(false);

@@ -1,52 +1,70 @@
 using RVP;
 using System.Collections;
-using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class EndraceCountdownTimer : MonoBehaviour
 {
-   public TextMeshProUGUI text;
-   Coroutine cntdown;
-   AudioSource snd;
-   public Color beginColor;
-   public Color endColor;
+	Coroutine cntdown;
+	AudioSource snd;
+	public Color beginColor;
+	public Color endColor;
+	public Image[] overlayImages123;
+	public Sprite[] overlaySpritesArray;
 	private void Awake()
 	{
-      snd = GetComponent<AudioSource>();
+		snd = GetComponent<AudioSource>();
 	}
 	public void OnEnable()
-   {
+	{
 		if (cntdown != null)
 			StopCoroutine(cntdown);
-		cntdown = StartCoroutine(EndraceCountdown());
-   }
+		cntdown = StartCoroutine(Countdown());
+	}
 	public void OnDisable()
 	{
 		gameObject.SetActive(false);
 	}
-	IEnumerator EndraceCountdown()
-   {
-      float timer = Info.AfterMultiPlayerRaceWaitForPlayersSeconds;
-      int round = Info.AfterMultiPlayerRaceWaitForPlayersSeconds;
-      while(timer > 0)
-      {
-			timer -= Time.deltaTime;
-         if(round != Mathf.FloorToInt(timer))
-         {
-            if(ResultsView.FinishedPlayers >= ServerC.I.lobby.Players.Count)
-            {
+	void SetNumber(int number)
+	{
+		number = Mathf.Clamp(number, 0, 999);
+		for (int i = 2; i >= 0; --i)
+		{
+			int letter = number % 10;
+			overlayImages123[i].sprite = overlaySpritesArray[letter];
+			number /= 10;
+		}
+	}
+	IEnumerator Countdown()
+	{
+		float timer;
+		if (F.I.gameMode == GameMode.Skate)
+		{
+			timer = F.I.s_SkateTimeLimit;
+		}
+		else
+			timer = Info.AfterMultiPlayerRaceWaitForPlayersSeconds;
+
+		int round = Mathf.RoundToInt(timer);
+		SetNumber(round);
+		while (timer > 0)
+		{
+			timer = Mathf.Max(0f, timer - Time.deltaTime);
+			if (round != Mathf.FloorToInt(timer))
+			{
+				if (F.I.gameMode == GameMode.Multiplayer && ResultsView.FinishedPlayers >= ServerC.I.lobby.Players.Count)
+				{
 					gameObject.SetActive(false);
-               yield break;
+					yield break;
 				}
-            round = Mathf.FloorToInt(timer);
-				text.text = round.ToString();
-            if(round < 10)
-               snd.Play();
+				round = Mathf.FloorToInt(timer);
+				SetNumber(round);
+				if (round < 10)
+					snd.Play();
 			}
-         text.color = Color.Lerp(endColor, beginColor, timer / Info.AfterMultiPlayerRaceWaitForPlayersSeconds);
-         yield return null;
-      }
+			yield return null;
+		}
 		RaceManager.I.TimeForRaceEnded();
 		gameObject.SetActive(false);
-   }
+	}
 }
