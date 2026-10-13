@@ -329,10 +329,13 @@ public static class Championships
 	public static void CancelRace() { RacePending = false; Save(); }
 	public static void RecordRace()
 	{
-		if (!Active || !RacePending || !RaceManager.I.playerCar || RaceManager.I.playerCar.raceBox.enabled) return;
+		if (!Active || !RacePending || !RaceManager.I.playerCar) return;
+		bool playerRetired = ResultsView.Get(RaceManager.I.playerCar)?.retired == true;
+		if (RaceManager.I.playerCar.raceBox.enabled && !playerRetired) return;
 		// Cars still racing are placed by progress when the player returns to the menu.
 		var results = ResultsView.SortedResultsByFinishPos
-			.OrderBy(r => r.disqualified)
+			.OrderBy(r => r.retired)
+			.ThenBy(r => r.disqualified)
 			.ThenByDescending(r => r.finished && !r.disqualified)
 			.ThenBy(r => r.finished && !r.disqualified ? r.raceTime.TotalSeconds : 0)
 			.ThenByDescending(r => r.progress).ToList();
@@ -344,12 +347,13 @@ public static class Championships
 				: Current.standings.Find(s => s.driverId > 0 && DriverName(s) == results[i].name);
 			if (standing == null) continue;
 			standing.lastPosition = i + 1;
-			if (!results[i].disqualified) { standing.points += points[i]; if (i == 0) standing.wins++; }
-			if (standing.driverId == 0 && !results[i].disqualified)
+			if (!results[i].disqualified && !results[i].retired) { standing.points += points[i]; if (i == 0) standing.wins++; }
+			if (standing.driverId == 0 && !results[i].disqualified && !results[i].retired)
 				Current.cash += ResultsView.CalculateChampionshipReward(results[i]).Total;
 		}
 		RacePending = false; Current.nextRace++;
 		if (Current.Completed && Position == 1 && !Current.wonSeasons.Contains(Current.season)) Current.wonSeasons.Add(Current.season);
+		if (playerRetired) Save();
 		// ChampionshipsView saves the awarded progress after the results are acknowledged.
 	}
 	public static int PartPrice(OriginalVehiclePartDefinition part) => Mathf.Max(0, part?.price ?? 0) * 10;

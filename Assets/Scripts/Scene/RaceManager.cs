@@ -152,7 +152,18 @@ namespace RVP
 			}
 			else
 			{
-				if (F.I.gameMode == GameMode.Arcade)
+				if (Championships.Active && Championships.RacePending && playerCar)
+				{
+					// Capture all competitors before menu cleanup destroys the cars.
+					foreach (var car in F.I.s_cars)
+						if (car && car.raceBox) ResultsView.Add(car);
+					var playerResult = ResultsView.Get(playerCar);
+					playerResult.retired = true;
+					playerResult.finished = true;
+					ResultsView.playerDNF = true;
+					BackToMenu(applyScoring: true);
+				}
+				else if (F.I.gameMode == GameMode.Arcade)
 				{
 					ResultsView.playerDNF = true;
 					BackToMenu(applyScoring: true);

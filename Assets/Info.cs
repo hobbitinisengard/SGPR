@@ -829,27 +829,27 @@ public class Info : MonoBehaviour
 		{
 			cars = new Car[]
 			{
-				new ("car00",40000,5,5,5,CarGroup.Speed, Livery.Itex, "MEAN STREAK","Fast, light and agile, this racer offers much for those who wish to modify their vehicle."),
-				new ("car01",45000,1,8,2,CarGroup.Wild,Livery.Caltex, "THE HUSTLER","Sturdy 4x4 pick-up truck with an eye for the outrageous!"),
-				new ("car02",50000,8,3,6,CarGroup.Aero, Livery.Mysuko, "TWIN EAGLE","Take flight with this light and speedy stuntcar."),
-				new ("car03",40000,8,5,6,CarGroup.Aero, Livery.TGR, "SKY HAWK","Get airborne with this very versatile stunt car."),
-				new ("car04",60000,4,7,7,CarGroup.Speed, Livery.Rline, "THE PHANTOM","Fast, sleek and tough to handle."),
-				new ("car05",80000,1,8,3,CarGroup.Wild, Livery.Titan, "ROAD HOG","Rock and Roll with the rough ridin' road hog."),
-				new ("car06",30000,6,4,5,CarGroup.Wild, Livery.Itex, "DUNE RAT","Defy the laws of physics in this buggy."),
-				new ("car07",50000,3,10,9,CarGroup.Speed, Livery.Titan, "LIGHTNIN'","Supercharged super speed. Easy does it!"),
-				new ("car08",30000,5,4,5,CarGroup.Speed, Livery.Caltex, "ALLEY KAT","Sleek and powerful, this cat is ready to roar."),
-				new ("car09",30000,6,3,2,CarGroup.Wild, Livery.Itex, "SAND SHARK","This beachcomber is at home on any stunt circuit."),
-				new ("car10",65000,1,5,3,CarGroup.Wild, Livery.TGR, "THE BRUTE","Unleash the Brute for no-nonsense on the road!"),
-				new ("car11",90000,10,9,8,CarGroup.Aero, Livery.Titan,"WILD DART","Fly fast and true with this stuntcar."),
-				new ("car12",95000,5,8,7,CarGroup.Wild, Livery.Mysuko, "RAGING BULL","Powerful and fast, this streetwise 4x4 is incredible."),
-				new ("car13",65000,10,7,5,CarGroup.Aero, Livery.Caltex, "FLYING MANTIS","Super light and very fast."),
-				new ("car14",35000,10,1,4,CarGroup.Aero, Livery.Rline, "STUNT MONKEY","Monkey see, monkey do! Go bananas with this wild ride!"),
-				new ("car15",90000,5,5,9,CarGroup.Speed, Livery.Titan, "INFERNO","This speed demon is on fire!"),
-				new ("car16",85000,5,10,9,CarGroup.Team, Livery.Team, "FORK","Despite its looks, it moves like fork lightning!"),
-				new ("car17",75000,4,9,7,CarGroup.Team, Livery.Team, "WORM MOBILE","Super Speedy Buggy!"),
-				new ("car18",120000,3,10,10,CarGroup.Team, Livery.Itex, "FORMULA 17","Incredibly fast racing car."),
-				new ("car19",120000,5,7,7,CarGroup.Team, Livery.Team, "TEAM MACHINE","The ultimate, hugely versatile stock car."),
-				new ("car20",70000,10,5,10,CarGroup.Aero, Livery.Team, "STUNTMAN","This modified hawk takes you to the sky!")
+				new ("car00",400000,5,5,5,CarGroup.Speed, Livery.Itex, "MEAN STREAK","Fast, light and agile, this racer offers much for those who wish to modify their vehicle."),
+				new ("car01",450000,1,8,2,CarGroup.Wild,Livery.Caltex, "THE HUSTLER","Sturdy 4x4 pick-up truck with an eye for the outrageous!"),
+				new ("car02",500000,8,3,6,CarGroup.Aero, Livery.Mysuko, "TWIN EAGLE","Take flight with this light and speedy stuntcar."),
+				new ("car03",400000,8,5,6,CarGroup.Aero, Livery.TGR, "SKY HAWK","Get airborne with this very versatile stunt car."),
+				new ("car04",600000,4,7,7,CarGroup.Speed, Livery.Rline, "THE PHANTOM","Fast, sleek and tough to handle."),
+				new ("car05",800000,1,8,3,CarGroup.Wild, Livery.Titan, "ROAD HOG","Rock and Roll with the rough ridin' road hog."),
+				new ("car06",300000,6,4,5,CarGroup.Wild, Livery.Itex, "DUNE RAT","Defy the laws of physics in this buggy."),
+				new ("car07",500000,3,10,9,CarGroup.Speed, Livery.Titan, "LIGHTNIN'","Supercharged super speed. Easy does it!"),
+				new ("car08",300000,5,4,5,CarGroup.Speed, Livery.Caltex, "ALLEY KAT","Sleek and powerful, this cat is ready to roar."),
+				new ("car09",300000,6,3,2,CarGroup.Wild, Livery.Itex, "SAND SHARK","This beachcomber is at home on any stunt circuit."),
+				new ("car10",650000,1,5,3,CarGroup.Wild, Livery.TGR, "THE BRUTE","Unleash the Brute for no-nonsense on the road!"),
+				new ("car11",900000,10,9,8,CarGroup.Aero, Livery.Titan,"WILD DART","Fly fast and true with this stuntcar."),
+				new ("car12",950000,5,8,7,CarGroup.Wild, Livery.Mysuko, "RAGING BULL","Powerful and fast, this streetwise 4x4 is incredible."),
+				new ("car13",650000,10,7,5,CarGroup.Aero, Livery.Caltex, "FLYING MANTIS","Super light and very fast."),
+				new ("car14",350000,10,1,4,CarGroup.Aero, Livery.Rline, "STUNT MONKEY","Monkey see, monkey do! Go bananas with this wild ride!"),
+				new ("car15",900000,5,5,9,CarGroup.Speed, Livery.Titan, "INFERNO","This speed demon is on fire!"),
+				new ("car16",850000,5,10,9,CarGroup.Team, Livery.Team, "FORK","Despite its looks, it moves like fork lightning!"),
+				new ("car17",750000,4,9,7,CarGroup.Team, Livery.Team, "WORM MOBILE","Super Speedy Buggy!"),
+				new ("car18",1200000,3,10,10,CarGroup.Team, Livery.Itex, "FORMULA 17","Incredibly fast racing car."),
+				new ("car19",1200000,5,7,7,CarGroup.Team, Livery.Team, "TEAM MACHINE","The ultimate, hugely versatile stock car."),
+				new ("car20",700000,10,5,10,CarGroup.Aero, Livery.Team, "STUNTMAN","This modified hawk takes you to the sky!")
 			};
 		}
 		for (int i = 0; i < cars.Length; i++)

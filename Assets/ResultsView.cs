@@ -12,6 +12,7 @@ public class Result
 	public VehicleParent vp;
 	public bool finished;
 	public bool disqualified;
+	public bool retired;
 	public ulong id;
 	public string name;
 	public TimeSpan lap;
@@ -148,7 +149,7 @@ public class ResultsView : MainMenuView
 	static int RankedBonus(int rank, int firstPrize) => rank > 0 && rank <= 2 ? firstPrize / rank : 0;
 	public static ChampionshipReward CalculateChampionshipReward(Result result)
 	{
-		if (result == null || result.disqualified || resultData.Count == 0) return default;
+		if (result == null || result.disqualified || result.retired || resultData.Count == 0) return default;
 		int position = RewardRank(result, ComparisonBasedOnRaceType());
 		if (position == 0) return default;
 		int positionPrize = Championships.Active
@@ -577,6 +578,7 @@ public class ResultsView : MainMenuView
 	}
 	static readonly Comparison<Result> championshipComp = (x, y) =>
 	{
+		if (x.retired != y.retired) return x.retired ? 1 : -1;
 		if (x.disqualified != y.disqualified) return x.disqualified ? 1 : -1;
 		if (x.disqualified) return y.progress.CompareTo(x.progress);
 		if (x.finished != y.finished) return x.finished ? -1 : 1;

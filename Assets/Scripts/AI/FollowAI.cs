@@ -34,7 +34,7 @@ namespace RVP
 		public float forwardTargetDot;
 		public float tSpeed;
 		public float lookAheadBase = 15;
-		const float radius = 30;
+		const float radius = 100;
 		private Vector4 tPos0;
 		public float stoppedTime;
 		public float reverseTime;

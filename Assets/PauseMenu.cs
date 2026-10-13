@@ -44,7 +44,7 @@ public class PauseMenu : Sfxable
 		F.I.gamePaused = true;
 		paused.TransitionTo(0);
 		timeElapsed = 0;
-		restartButton.SetActive(!F.I.s_inEditor && F.I.gameMode != GameMode.Arcade);
+		restartButton.SetActive(!F.I.s_inEditor && F.I.gameMode != GameMode.Arcade && F.I.gameMode != GameMode.Championships);
 		endButton.SetActive(F.I.gameMode == GameMode.Multiplayer);
 		startColor = veil.color;
 		firstButton.Select();
