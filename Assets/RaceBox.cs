@@ -73,7 +73,7 @@ public class StuntsData : IEnumerable<Stunt>
 
 public enum StuntSeqStatus { None, Ongoing, Ended };
 
-public class RaceBox : MonoBehaviour
+public class RaceBox : Sfxable
 {
 	public VehicleParent vp { get; private set; }
 	public SGP_Evo evoModule { get; private set; }
@@ -182,8 +182,9 @@ public class RaceBox : MonoBehaviour
 		}
 	}
 
-	void Awake()
+	protected override void Awake()
 	{
+		base.Awake();
 		vp = GetComponent<VehicleParent>();
 		evoModule = GetComponent<SGP_Evo>();
 
@@ -281,7 +282,7 @@ public class RaceBox : MonoBehaviour
 		if (name == StuntsData.ExtraName.Railgrind || name == StuntsData.ExtraName.SideRailgrind)
 		{
 			grantedComboTime = 5 + 0.5f * starLevel;
-			starLevel = Mathf.Clamp(starLevel + 1, 0, 10);
+			AddAeroStar();
 			maxAeroStars = Mathf.Max(maxAeroStars, starLevel);
 		}
 		//stunt.doneTimes = 0;
@@ -397,7 +398,7 @@ public class RaceBox : MonoBehaviour
 			if (vp.followAI.overRoad && prevSmoothedDriftAngle * smoothedDriftAngle <= 0 && vp.reallyGroundedWheels == 4 && driftingTimer > 1)
 			{ // switching directions
 				grantedComboTime = 3;
-				starLevel = Mathf.Clamp(++starLevel, 0, 10);
+				AddAeroStar();
 				ProgressDrift(0, true);
 				vp.AddSourceStuntEnergyAward();
 				driftingTimer = 0;
@@ -705,6 +706,12 @@ public class RaceBox : MonoBehaviour
 		}
 		StuntPaiReset();
 	}
+	void AddAeroStar()
+	{
+		starLevel = Mathf.Clamp(starLevel + 1, 0, 10);
+		if (F.I.playerData.clapping && RaceManager.I.playerCar == vp)
+			PlaySFX("combo" + ((starLevel + 1) / 2).ToString("D2"));
+	}
 	void AcceptStunt()
 	{
 		stableLandingTimer = -1;
@@ -716,7 +723,7 @@ public class RaceBox : MonoBehaviour
 			else
 			{
 				grantedComboTime = 5 + 0.5f * starLevel;
-				starLevel = Mathf.Clamp(++starLevel, 0, 10);
+				AddAeroStar();
 				aero += stuntPai.score / 10f;
 			}
 			//Debug.Log(vp.tr.name + " Accept");

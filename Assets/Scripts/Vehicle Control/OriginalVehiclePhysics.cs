@@ -3362,9 +3362,8 @@ namespace RVP
 				sourceStartBoostActiveThisTick = true;
 				startBoostTicks = Mathf.Max(0, startBoostTicks - tickScale);
 				performanceMultiplier = startBoostTicks / (3 * SourceTicksPerSecond) + 1;
-				fuel = parameters.fuelCapacity;
-				energy = parameters.fuelCapacity;
-				sourceImpactEnergyLossThisTick = 0;
+				// RaceBox awards the ordinary stunt energy bonus once on activation.
+				// The active trickstart boost must not refill the battery every tick.
 				return;
 			}
 		}

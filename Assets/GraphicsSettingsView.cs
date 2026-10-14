@@ -11,6 +11,7 @@ public class GraphicsSettingsView : MonoBehaviour
 	public TMP_InputField limiterInput;
 	public TMP_Text musicText;
 	public TMP_Text sfxText;
+	public TMP_Text clappingText;
 	private void OnEnable()
 	{
 		SwitchLang(true);
@@ -18,6 +19,7 @@ public class GraphicsSettingsView : MonoBehaviour
 		SwitchVSync(true);
 		SwitchMusicVol(true);
 		SwitchSFXVol(true);
+		SwitchClapping(true);
 		limiterInput.text = F.I.playerData.fpsLimit.ToString();
 	}
 	private void OnDisable()
@@ -35,6 +37,13 @@ public class GraphicsSettingsView : MonoBehaviour
 		if(!init)
 			F.I.playerData.trail = !F.I.playerData.trail;
 		trailText.text = F.I.LocStr("Aerodynamic trail") + ": " + (F.I.playerData.trail ? F.I.LocStr("Yes") : F.I.LocStr("No"));
+	}
+
+	public void SwitchClapping(bool init)
+	{
+		if (!init)
+			F.I.playerData.clapping = !F.I.playerData.clapping;
+		clappingText.text = F.I.LocStr("Clapping") + ": " + (F.I.playerData.clapping ? F.I.LocStr("Yes") : F.I.LocStr("No"));
 	}
 	public void SwitchLang(bool init)
 	{

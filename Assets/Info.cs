@@ -51,6 +51,7 @@ public class PlayerSettingsData
 	public string currentArcadeVariant = "Original";
 	public Language language = Language.English;
 	public bool skateCarUnlocked;
+	public bool clapping = true;
 }
 [Serializable]
 public class RankingData

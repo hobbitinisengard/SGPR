@@ -2273,6 +2273,14 @@ MonoBehaviour:
     m_Localized: "O\u015A PRZYSPIESZANIA"
     m_Metadata:
       m_Items: []
+  - m_Id: 191046325226758144
+    m_Localized: Oklaski
+    m_Metadata:
+      m_Items: []
+  - m_Id: 191052099185336320
+    m_Localized: "Oklaski po pomy\u015Blnej ewolucji"
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

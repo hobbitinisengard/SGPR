@@ -2260,6 +2260,14 @@ MonoBehaviour:
     m_Localized: ACCELERATE AXIS
     m_Metadata:
       m_Items: []
+  - m_Id: 191046325226758144
+    m_Localized: Clapping
+    m_Metadata:
+      m_Items: []
+  - m_Id: 191052099185336320
+    m_Localized: Cheers audible after successful stunt
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

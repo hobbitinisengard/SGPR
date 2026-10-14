@@ -2219,6 +2219,14 @@ MonoBehaviour:
     m_Key: ACCELERATE AXIS
     m_Metadata:
       m_Items: []
+  - m_Id: 191046325226758144
+    m_Key: Clapping
+    m_Metadata:
+      m_Items: []
+  - m_Id: 191052099185336320
+    m_Key: Cheersb
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:
