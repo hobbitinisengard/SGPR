@@ -118,10 +118,6 @@ namespace RVP
 		const float SourceCpuTurboConsumptionModifier = 1.15f;
 		const float SourceCpuBoostUsageModifier = 0.95f;
 		const float SourceCpuAerodynamicDragModifier = 1.15f;
-		const float SourceCollisionEnergyMinimum = 0.25f;
-		const float SourceCollisionEnergyMaximum = 0.5f;
-		const float SourceCollisionEnergyScale = 0.01f;
-		const float SourceCollisionEnergyLimit = 0.75f;
 		// VehicleParent wheel order: front left, front right, rear left, rear right.
 		static readonly int[] UnityWheelIndex = { 2, 3, 0, 1 };
 		static readonly float SourceStuntPhaseBoundary = System.BitConverter.Int32BitsToSingle(0x3f3504f4);
@@ -132,6 +128,7 @@ namespace RVP
 		static int invisibleLevelLayer = -1;
 		static readonly System.Collections.Generic.Dictionary<VehicleParent, Vector3> SourceVehiclePairPositions = new();
 		static Collider[] sourceTrackCollisionTargets = System.Array.Empty<Collider>();
+		static bool sourceTrackHasTerrain;
 		static Collider[] sourceVehicleCollisionTargets = System.Array.Empty<Collider>();
 		static Collider[] sourceInvisibleLevelCollisionTargets = System.Array.Empty<Collider>();
 		static EnergyTunnelPath[] sourceUnityRailPaths = System.Array.Empty<EnergyTunnelPath>();
@@ -161,6 +158,7 @@ namespace RVP
 		readonly float[] sourceWheelGripUsage = new float[4];
 		readonly float[] sourceTireParticleAccumulator = new float[4];
 		readonly int[] sourceTireParticleEvents = new int[4];
+		readonly int[] sourceTireParticleEventTotals = new int[4];
 		readonly float[] sourceWheelSurfaceGrip = { DefaultSourceTrackGrip, DefaultSourceTrackGrip, DefaultSourceTrackGrip, DefaultSourceTrackGrip };
 		readonly float[] sourceWheelSurfaceRolling = { DefaultSourceTrackRolling, DefaultSourceTrackRolling, DefaultSourceTrackRolling, DefaultSourceTrackRolling };
 		readonly float[] sourceWheelSurfaceRoughness = { DefaultSourceTrackRoughness, DefaultSourceTrackRoughness, DefaultSourceTrackRoughness, DefaultSourceTrackRoughness };
@@ -296,7 +294,6 @@ namespace RVP
 		float nextVehicleCollisionHopTime;
 		int lastSourceCollisionHoldTick = -1;
 		float sourceCollisionHoldTicks;
-		float sourceImpactEnergyLossThisTick;
 		float stuntPressedAt = -1;
 		bool stuntPressed;
 		bool stuntActive;
@@ -368,7 +365,7 @@ namespace RVP
 		float SourceRawBrakeInput =>
 			sourceAiStuntInputThisTick && ((sourceAiStuntInputKind == 0 && gear == 0) ||
 				(sourceAiStuntInputKind == 1 && gear != 0))
-				? Mathf.Max(vehicle.brakeInput, 1) : vehicle.brakeInput;
+				? Mathf.Max(vehicle.DriverBrakeInput, 1) : vehicle.DriverBrakeInput;
 		float SourceSteerInput => sourceAiStuntInputThisTick
 			? (sourceAiStuntInputKind == 2 ? -1 : sourceAiStuntInputKind == 3 ? 1 : 0)
 			: vehicle.steerInput;
@@ -399,7 +396,7 @@ namespace RVP
 			(F.I.s_raceType == RaceType.Survival && SourceUpgradeActive &&
 				(!RaceManager.I || RaceManager.I.playerCar != vehicle)));
 		bool PlayerBatteryEmpty => energy <= 0 && F.I && F.I.s_cpuLevel == CpuLevel.Hard &&
-			RaceManager.I && RaceManager.I.playerCar == vehicle;
+			vehicle.IsLocalHuman;
 		float SourceUpgradeCondition => SourceUpgradeActive ? sourceUpgradeCondition : 0f;
 		int SourceTorqueCurveIndex
 		{
@@ -1025,6 +1022,7 @@ namespace RVP
 				Collider[] sceneColliders = Object.FindObjectsByType<Collider>(FindObjectsSortMode.None);
 				var trackIds = new System.Collections.Generic.HashSet<int>();
 				var trackTargets = new System.Collections.Generic.List<Collider>();
+				bool hasTerrain = false;
 				var invisibleLevelIds = new System.Collections.Generic.HashSet<int>();
 				var invisibleLevelTargets = new System.Collections.Generic.List<Collider>();
 				var vehicleIds = new System.Collections.Generic.HashSet<int>();
@@ -1059,6 +1057,7 @@ namespace RVP
 						continue;
 					trackIds.Add(candidate.GetInstanceID());
 					trackTargets.Add(candidate);
+					hasTerrain |= candidate is TerrainCollider;
 				}
 				if (!SourceTrackColliderIds.SetEquals(trackIds) || sourceTrackCollisionMask != layerMask ||
 					!SourceVehicleColliderIds.SetEquals(vehicleIds) ||
@@ -1075,6 +1074,7 @@ namespace RVP
 					sourceInvisibleLevelCollisionTargets = invisibleLevelTargets.ToArray();
 					sourceTrackCollisionMask = layerMask;
 				}
+				sourceTrackHasTerrain = hasTerrain;
 				// IgnoreCollision is not persistent across collider/rigidbody
 				// deactivation. Reapply the cached pairs after each periodic scan.
 				sourceTrackCollisionGeneration++;
@@ -1145,7 +1145,10 @@ namespace RVP
 				probeCenter = sourceCenter;
 				travelDistance = Mathf.Clamp(sourceTravel, 0, distance);
 				triangleIndex = sourceTriangleIndex;
-				return true;
+				// Pure mesh tracks keep the fast path. On mixed tracks terrain may
+				// be hit before this mesh: compare both against the same sweep.
+				if (!sourceTrackHasTerrain)
+					return true;
 			}
 			// PhysX sphere casts skip colliders that overlap their starting sphere.
 			// Recover the source solver's zero-distance contact before sweeping so
@@ -1178,11 +1181,15 @@ namespace RVP
 						distance + 0.01f, layerMask, QueryTriggerInteraction.Ignore);
 					hitCount = castHits.Length;
 				}
-				float closestDistance = float.PositiveInfinity;
-				int closestTriangleIndex = -1;
+				float closestDistance = collider ? travelDistance : float.PositiveInfinity;
 				for (int i = 0; i < hitCount; i++)
 				{
 					RaycastHit hit = castHits[i];
+					// PhysX can report an initial overlap with no contact point and a
+					// normal opposite the cast. Real overlaps are resolved above;
+					// this placeholder is not an impact against the world origin.
+					if (hit.distance <= 0 && hit.point == Vector3.zero)
+						continue;
 					if (hit.collider is MeshCollider meshCollider &&
 						OriginalTrackSphereSweep.WasProcessed(meshCollider))
 						continue;
@@ -1192,13 +1199,12 @@ namespace RVP
 					collider = hit.collider;
 					point = hit.point;
 					normal = hit.normal.normalized;
-					closestTriangleIndex = hit.triangleIndex;
+					travelDistance = Mathf.Clamp(hit.distance, 0, distance);
+					probeCenter = start + direction * travelDistance;
+					triangleIndex = hit.triangleIndex;
 				}
 				if (collider)
 				{
-					travelDistance = Mathf.Clamp(closestDistance, 0, distance);
-					probeCenter = start + direction * travelDistance;
-					triangleIndex = closestTriangleIndex;
 					return true;
 				}
 			}
@@ -1255,11 +1261,27 @@ namespace RVP
 				bool supportsClosestPoint = candidate is BoxCollider || candidate is SphereCollider ||
 					candidate is CapsuleCollider ||
 					(candidate is MeshCollider closestPointMesh && closestPointMesh.convex);
-				if (!supportsClosestPoint)
+				if (candidate is TerrainCollider)
 				{
-					// ClosestPoint is unsupported for terrain and non-convex meshes.
-					// Cast inward from outside the collider bounds along probe motion,
-					// then gravity as a fallback for lateral motion over terrain.
+					// Terrain is a height field, not a closed mesh. A long ray along
+					// horizontal probe motion can hit a distant hill and must never be
+					// used to depenetrate a wheel at a ramp/terrain seam.
+					Bounds terrainBounds = candidate.bounds;
+					float top = Mathf.Max(center.y, terrainBounds.max.y) + radius + 0.01f;
+					Ray terrainRay = new Ray(new Vector3(center.x, top, center.z), Vector3.down);
+					float reach = top - terrainBounds.min.y + radius + 0.01f;
+					if (!candidate.Raycast(terrainRay, out RaycastHit terrainHit, reach))
+						continue; // Includes holes in the terrain.
+					candidatePoint = terrainHit.point;
+					candidateNormal = terrainHit.normal.normalized;
+					squaredDistance = (center - candidatePoint).sqrMagnitude;
+					centerInsideCollider = center.y < candidatePoint.y;
+					candidateTriangleIndex = terrainHit.triangleIndex;
+				}
+				else if (!supportsClosestPoint)
+				{
+					// ClosestPoint is unsupported for non-convex meshes. Cast inward
+					// from outside the bounds, then try gravity as a fallback.
 					Bounds bounds = candidate.bounds;
 					float reach = Vector3.Distance(center, bounds.center) + bounds.extents.magnitude +
 						radius + 0.01f;
@@ -1288,10 +1310,7 @@ namespace RVP
 					}
 					if (!foundSurface)
 						continue;
-					// TerrainCollider represents a solid height field. If its overlap
-					// query found the probe below the sampled surface, recover it even
-					// when penetration depth exceeds the probe radius.
-					centerInsideCollider = candidate is TerrainCollider || squaredDistance <= 0.000001f;
+					centerInsideCollider = squaredDistance <= 0.000001f;
 				}
 				else
 				{
@@ -1826,6 +1845,16 @@ namespace RVP
 				return usage >= 2;
 			return true;
 		}
+		public bool HasWheelGroundContact(int unityWheelIndex)
+		{
+			int index = SourceIndexForUnityWheel(unityWheelIndex);
+			return index >= 0 && sourceProbeWheelTouched[index];
+		}
+		public int GetTireParticleEventTotal(int unityWheelIndex)
+		{
+			int index = SourceIndexForUnityWheel(unityWheelIndex);
+			return index >= 0 ? sourceTireParticleEventTotals[index] : 0;
+		}
 		public int ConsumeSourceTireParticleEvents(int unityWheelIndex)
 		{
 			int sourceIndex = SourceIndexForUnityWheel(unityWheelIndex);
@@ -1863,6 +1892,9 @@ namespace RVP
 				if (accumulated > 200)
 				{
 					sourceTireParticleEvents[i]++;
+					// Independent of render-frame consumption and resets. Small exact
+					// integer totals let network snapshots carry events between updates.
+					sourceTireParticleEventTotals[i] = (sourceTireParticleEventTotals[i] + 1) & 65535;
 					accumulated = 175;
 				}
 				sourceTireParticleAccumulator[i] = accumulated;
@@ -2187,7 +2219,6 @@ namespace RVP
 				float crashSpeed = Mathf.Max(0, normalSpeed * SourceSpeedToMetresPerSecond);
 				vehicle.PlayCrashSound(crashSpeed, 0.5f);
 				otherVehicle.PlayCrashSound(crashSpeed, 0.5f);
-				ApplySourceImpactEnergy(normalSpeed);
 				effectiveComHeight = parameters.comHeight;
 				sourceCom2628 = sourceCom262c = 0;
 				comResetTicks = -12;
@@ -2234,21 +2265,6 @@ namespace RVP
 			float upwardSpeed = Mathf.Min(3.5f, Mathf.Sqrt(2 * acceleration * height));
 			float existingUpwardSpeed = Vector3.Dot(vehicle.rb.linearVelocity, up);
 			vehicle.rb.linearVelocity += up * Mathf.Max(0, upwardSpeed - existingUpwardSpeed);
-		}
-		void ApplySourceImpactEnergy(float strength)
-		{
-			// Spawning and resting contacts during the starting countdown are free.
-			if (CountDownSeq.Countdown > 0 ||
-				(F.I && F.I.raceStartDate > System.DateTime.UtcNow))
-				return;
-			if (sourceImpactEnergyLossThisTick > SourceCollisionEnergyLimit)
-				return;
-			float amount = Mathf.Abs(strength) * SourceCollisionEnergyScale;
-			if (amount < SourceCollisionEnergyMinimum)
-				return;
-			amount = Mathf.Min(amount, SourceCollisionEnergyMaximum);
-			ConsumeBatteryEnergy(amount);
-			sourceImpactEnergyLossThisTick += amount;
 		}
 		void AdvanceSourceCollisionHold(int tick, float tickScale)
 		{
@@ -2341,9 +2357,6 @@ namespace RVP
 			float tickScale = Time.fixedDeltaTime * SourceTicksPerSecond;
 			sourceRailControlsActive = false;
 			sourceUnityRailPathThisTick = null;
-			// contact::solver clears its accumulated impact loss once before the
-			// contact pass, so the cap applies only to impacts within this source tick.
-			sourceImpactEnergyLossThisTick = 0;
 			vehicle.rb.mass = Mathf.Max(0.001f, sourceEffectiveMass * SourceMassToKilograms);
 			vehicle.rb.centerOfMass = Vector3.zero;
 			using (SourceCollisionExclusionMarker.Auto())
@@ -3019,7 +3032,9 @@ namespace RVP
 		{
 			if (SourcePlayerControlsSuppressed)
 				return;
-			float brakeInput = Mathf.Clamp01(gear == 0 ? SourceRawAccelInput : SourceRawBrakeInput);
+			// Starting-grid hold is a brake force, never a reverse-gear command.
+			float brakeInput = vehicle.StartBrakeActive ? 1f :
+				Mathf.Clamp01(gear == 0 ? SourceRawAccelInput : SourceRawBrakeInput);
 			if (DigitalControls && grounded == 0)
 				return; // digital_brake leaves both the ramp and flags untouched in air
 			if (DigitalControls)
@@ -3426,8 +3441,6 @@ namespace RVP
 			if (!F.I || F.I.s_inEditor || !vehicle.raceBox ||
 				!vehicle.raceBox.enabled || CountDownSeq.Countdown <= 0)
 				return;
-			vehicle.SetBrake(1);
-			vehicle.SetEbrake(1);
 			brakeRamp = Mathf.Min(127, brakeRamp + 6 * tickScale);
 			System.Array.Clear(wheelSpeed, 0, wheelSpeed.Length);
 		}
@@ -3748,10 +3761,6 @@ namespace RVP
 						ApplyAngularContactFriction(current, sourceProbeLocal[i], normal, normalSpeed,
 							sourceUpBasis);
 					}
-					// impact() first finishes the physical response, then applies energy
-					// loss and material effects. Wheel impacts use the quarter-strength
-					// effect set by finish_impact_physical; body probes use full strength.
-					ApplySourceImpactEnergy(wheelContact ? normalSpeed * 0.25f : normalSpeed);
 					// A supported tire has a contact every tick. Play landing sounds
 					// only on fresh contact; body/wall impacts can sound again after cooldown.
 					if (!wheelContact || sourceProbeContactIterations[i] == 1)
@@ -4122,6 +4131,7 @@ namespace RVP
 			else
 				sourceSuspensionObservationLogged = true;
 		}
+		public Vector3 BodyPresentation { get; private set; }
 		void UpdateOriginalSuspensionPose(float sourceSpeed, float tickScale)
 		{
 			float left = 0.5f * (sourceSuspension[0] + sourceSuspension[2]);
@@ -4156,24 +4166,34 @@ namespace RVP
 				sourceSuspension[2] + sourceSuspension[3]);
 			sourceBodyHeave = parameters.rideHeight - averageSuspension -
 			suspensionJumpLowering / SourceLengthToMetres;
+			// Remote suspension loads come from a corrected local simulation, not
+			// the driver's actual cornering forces. Render only the owner's pose.
+			if (vehicle.UsesRemoteWheelPresentation)
+				return;
+			BodyPresentation = new Vector3(sourceBodyRoll, displayedBodyPitch, sourceBodyHeave);
+			ApplyBodyPresentation(BodyPresentation, 1);
+		}
+		public void ApplyBodyPresentation(Vector3 pose, float blend)
+		{
 			if (!bodyTransform)
 				return;
-			Vector3 bodyUp = new Vector3(sourceBodyRoll, 1, 0).normalized;
+			Vector3 bodyUp = new Vector3(pose.x, 1, 0).normalized;
 			// vehicle_model_pose.cpp stores forward as (0, body_pitch, 1).
 			// Keep that sign in Unity so acceleration and braking pitch the chassis
 			// in the same direction as the source model pose.
-			Vector3 bodyForward = new Vector3(0, displayedBodyPitch, 1).normalized;
+			Vector3 bodyForward = new Vector3(0, pose.y, 1).normalized;
 			Quaternion sourcePose = Quaternion.LookRotation(bodyForward, bodyUp);
 			// The retail renderer adds body_heave to the model's local Y position
 			// (vehicle_model_pose.cpp / source_pmd_vehicle_pose.cpp). Positive
 			// suspension compression therefore lowers the body relative to the
 			// wheel anchors; subtracting this value raised the body instead.
-			bodyTransform.localPosition = initialBodyLocalPosition + Vector3.up *
-				(sourceBodyHeave * SourceLengthToMetres);
+			Vector3 targetPosition = initialBodyLocalPosition + Vector3.up * (pose.z * SourceLengthToMetres);
+			bodyTransform.localPosition = Vector3.Lerp(bodyTransform.localPosition, targetPosition, blend);
 			// sourcePose is expressed in the vehicle's local axes. Apply it outside
 			// the prefab's static mesh alignment so cars whose body mesh is rotated
 			// (car17 is aligned by 180 degrees around Y) still lean with the vehicle.
-			bodyTransform.localRotation = sourcePose * initialBodyLocalRotation;
+			bodyTransform.localRotation = Quaternion.Slerp(bodyTransform.localRotation,
+				sourcePose * initialBodyLocalRotation, blend);
 		}
 		void ApplyTyres(float tickScale, int sourceContactClass)
 		{
@@ -4453,6 +4473,20 @@ namespace RVP
 				? velocity.magnitude / SourceSpeedToMetresPerSecond
 				: Vector3.Dot(velocity, sourceForward) / SourceSpeedToMetresPerSecond;
 			if (sourceContactClass != 0 || Mathf.Abs(sourceSpeed) <= 0.001f)
+				return;
+			// Contact class retains wheel support for several ticks after separation.
+			// With Unity track geometry, applying full downforce during that grace
+			// interval can cancel a ramp takeoff before the airborne class is reached.
+			// Keep grace for drivetrain/stunts, but require an actual wheel contact
+			// for aerodynamic adhesion. Body contacts cannot provide wheel support.
+			bool hasWheelContact = false;
+			for (int i = 0; i < 4; i++)
+				if (sourceProbeWheelTouched[i])
+				{
+					hasWheelContact = true;
+					break;
+				}
+			if (!hasWheelContact)
 				return;
 			double speedMetres = (double)sourceSpeed * SourceSpeedToMetresPerSecond;
 			double lift = speedMetres * speedMetres * sourceAirFactor * parameters.frontalArea *

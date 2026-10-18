@@ -114,6 +114,8 @@ public class ViewSwitcher : MonoBehaviour
 	}
 	void CleanUp()
 	{
+		bool splitScreen = F.I.gameMode == GameMode.Splitscreen;
+		if (splitScreen && applyScoring) SplitScreenSelector.RecordResults();
 		bool skateCarUnlocked = false;
 		if (Championships.Active)
 		{
@@ -131,6 +133,15 @@ public class ViewSwitcher : MonoBehaviour
 		RaceManager.I.RemoveCars();
 		RaceManager.I.editorPanel.RemoveTrackLeftovers();
 		Time.timeScale = 1;
+		if (splitScreen)
+		{
+			MainMenuView destination = applyScoring ? resultsView.GetComponent<MainMenuView>() : SplitScreenSelector.I.thisView;
+			foreach (var view in Resources.FindObjectsOfTypeAll<MainMenuView>())
+				if (view != destination && view.transform.IsChildOf(menu.transform) && view.gameObject.activeSelf) view.gameObject.SetActive(false);
+			destination.gameObject.SetActive(true);
+			if (destination.music) { menuMusic.clip = destination.music; menuMusic.Play(); }
+			return;
+		}
 
 		if (Championships.Active)
 		{

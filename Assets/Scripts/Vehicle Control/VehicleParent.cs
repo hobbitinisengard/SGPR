@@ -152,18 +152,102 @@ namespace RVP
 		/// This can't be set to random.
 		/// </summary>
 		NetworkVariable<Livery> _sponsor = new(Livery.Random);
+		readonly NetworkVariable<bool> networkTurboActive = new(false,
+			NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+		public struct WheelPresentationState : INetworkSerializable, IEquatable<WheelPresentationState>
+		{
+			public Vector4 rpm, forwardSlip, sidewaysSlip, gripUsage;
+			public Vector4 tireParticleTotals;
+			public Vector4 bodyPose; // roll, displayed pitch, heave; W marks a valid snapshot
+			public byte groundedMask, skidMask;
+			public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+			{
+				serializer.SerializeValue(ref rpm);
+				serializer.SerializeValue(ref forwardSlip);
+				serializer.SerializeValue(ref sidewaysSlip);
+				serializer.SerializeValue(ref gripUsage);
+				serializer.SerializeValue(ref tireParticleTotals);
+				serializer.SerializeValue(ref bodyPose);
+				serializer.SerializeValue(ref groundedMask);
+				serializer.SerializeValue(ref skidMask);
+			}
+			public bool Equals(WheelPresentationState other) => rpm.Equals(other.rpm) &&
+				forwardSlip.Equals(other.forwardSlip) && sidewaysSlip.Equals(other.sidewaysSlip) && gripUsage.Equals(other.gripUsage) &&
+				tireParticleTotals.Equals(other.tireParticleTotals) && bodyPose.Equals(other.bodyPose) &&
+				groundedMask == other.groundedMask && skidMask == other.skidMask;
+		}
+		readonly NetworkVariable<WheelPresentationState> networkWheelPresentation = new(default,
+			NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+		float nextWheelPresentationSyncTime;
+		public bool UsesRemoteWheelPresentation => F.I.gameMode == GameMode.Multiplayer && IsSpawned && !IsOwner;
+		public void GetRemoteTireEffects(int index, out bool grounded, out bool skid, out int particleTotal)
+		{
+			grounded = skid = false;
+			particleTotal = 0;
+			if (!UsesRemoteWheelPresentation || index < 0 || index >= 4) return;
+			var state = networkWheelPresentation.Value;
+			grounded = (state.groundedMask & (1 << index)) != 0;
+			skid = (state.skidMask & (1 << index)) != 0;
+			particleTotal = (int)state.tireParticleTotals[index];
+		}
+		public void ApplyRemoteWheelPresentation(Wheel wheel, int index)
+		{
+			if (!UsesRemoteWheelPresentation || index < 0 || index >= 4) return;
+			var state = networkWheelPresentation.Value;
+			wheel.currentRPM = wheel.rawRPM = wheel.connected ? state.rpm[index] : 0;
+			wheel.forwardSlip = state.forwardSlip[index];
+			wheel.sidewaysSlip = state.sidewaysSlip[index];
+			wheel.originalGripUsage = state.gripUsage[index];
+		}
+		void SynchronizeWheelPresentation()
+		{
+			if (wheels == null || wheels.Length < 4 || originalVehiclePhysics == null) return;
+			var state = new WheelPresentationState();
+			Vector3 bodyPose = originalVehiclePhysics.BodyPresentation;
+			state.bodyPose = new Vector4(bodyPose.x, bodyPose.y, bodyPose.z, 1);
+			for (int i = 0; i < 4; i++)
+			{
+				Wheel wheel = wheels[i];
+				state.tireParticleTotals[i] = originalVehiclePhysics.GetTireParticleEventTotal(i);
+				if (!wheel || !wheel.connected || ActiveRailbar) continue;
+				state.rpm[i] = wheel.currentRPM;
+				originalVehiclePhysics.GetWheelSlip(i, out float forwardSlip, out float sidewaysSlip);
+				state.forwardSlip[i] = forwardSlip;
+				state.sidewaysSlip[i] = sidewaysSlip;
+				state.gripUsage[i] = originalVehiclePhysics.GetWheelGripUsage(i);
+				if (originalVehiclePhysics.HasWheelGroundContact(i))
+				{
+					state.groundedMask |= (byte)(1 << i);
+					if (originalVehiclePhysics.ShouldEmitSourceSkidStrip(i))
+						state.skidMask |= (byte)(1 << i);
+				}
+			}
+			// Send at most 20 updates per second, but transmit stopping immediately.
+			bool stopped = state.rpm == Vector4.zero && networkWheelPresentation.Value.rpm != Vector4.zero;
+			if (!stopped && Time.unscaledTime < nextWheelPresentationSyncTime) return;
+			nextWheelPresentationSyncTime = Time.unscaledTime + 0.05f;
+			if (!networkWheelPresentation.Value.Equals(state)) networkWheelPresentation.Value = state;
+		}
+		public bool BoostPresentationActive => F.I.gameMode == GameMode.Multiplayer && IsSpawned && !IsOwner
+			? networkTurboActive.Value
+			: !ActiveRailbar && originalVehiclePhysics != null && originalVehiclePhysics.TurboActive;
 
 		[System.NonSerialized]
 		public float accelInput;
 		[System.NonSerialized]
 		public int honkInput;
 		[System.NonSerialized]
-		public float brakeInput;
+		float requestedBrakeInput;
+		public bool StartBrakeActive => F.I && !F.I.s_inEditor && raceBox &&
+			raceBox.enabled && CountDownSeq.Countdown > 0;
+		public float DriverBrakeInput => requestedBrakeInput;
+		public float brakeInput => StartBrakeActive ? 1f : requestedBrakeInput;
 		[System.NonSerialized]
 		[Range(-1, 1)]
 		public float steerInput;
 		[System.NonSerialized]
-		public float ebrakeInput;
+		float requestedEbrakeInput;
+		public float ebrakeInput => StartBrakeActive ? 1f : requestedEbrakeInput;
 		[System.NonSerialized]
 		public int boostButton;
 		[System.NonSerialized]
@@ -330,6 +414,10 @@ namespace RVP
 		[NonSerialized]
 		public GameObject customCam;
 		public bool Owner { get { return IsOwner || F.I.gameMode != GameMode.Multiplayer; } }
+		[NonSerialized] public int localPlayerIndex = -1;
+		[NonSerialized] public CameraControl localCamera;
+		[NonSerialized] public SGP_HUD localHud;
+		public bool IsLocalHuman => localPlayerIndex >= 0 || (RaceManager.I && RaceManager.I.playerCar == this);
 		[NonSerialized]
 		public int lastRoundScore;
 		[Rpc(SendTo.SpecifiedInParams)]
@@ -429,7 +517,8 @@ namespace RVP
 			if (antennaFlag != null)
 				antennaFlag.material = newMat;
 
-			RaceManager.I.hud.AddToProgressBar(this);
+			if (SplitScreenRace.I) SplitScreenRace.I.AddProgress(this);
+			else RaceManager.I.hud.AddToProgressBar(this);
 			sampleText.textMesh.color = F.ReadColor(sponsor);
 		}
 		public void ApplyOriginalPartPresentation()
@@ -490,7 +579,9 @@ namespace RVP
 		{
 			base.name = name;
 			sampleText.textMesh.text = name;
-			if (name == F.I.playerData.playerName && Owner)
+			if (F.I.gameMode == GameMode.Splitscreen && localPlayerIndex >= 0)
+				SplitScreenRace.I?.Bind(this);
+			else if (F.I.gameMode != GameMode.Splitscreen && name == F.I.playerData.playerName && Owner)
 			{
 				RaceManager.I.playerCar = this;
 
@@ -593,8 +684,8 @@ namespace RVP
 			OnNameChanged();
 			OnSponsorChanged();
 
-			bool isLocalPlayer = Owner && string.Equals(name,
-				F.I.playerData.playerName, StringComparison.Ordinal);
+			bool isLocalPlayer = localPlayerIndex >= 0 || (Owner && string.Equals(name,
+				F.I.playerData.playerName, StringComparison.Ordinal));
 			bool isCpuCar = !isLocalPlayer && name != null && name.Length > 2 &&
 				char.IsDigit(name[2]);
 			followAI.SetCPU(isCpuCar);
@@ -699,8 +790,65 @@ namespace RVP
 			// Debug.DrawRay(norm.position, norm.up, Color.green);
 			// Debug.DrawRay(norm.position, norm.right, Color.red);
 		}
+		bool remoteTrackResetPending;
+		Vector3 remoteTrackResetPosition;
+		float remoteTrackResetDeadline;
+		public void PublishTrackResetTeleport()
+		{
+			if (!F.I || F.I.gameMode != GameMode.Multiplayer || !IsSpawned || !IsOwner) return;
+			// Send a discontinuity through Smooth Sync rather than interpolating
+			// through the road/walls between the previous pose and the reset pose.
+			var sync = GetComponent<Smooth.SmoothSyncNetcode>();
+			if (sync)
+			{
+				sync.teleportOwnedObjectFromOwner();
+				sync.forceStateSendNextFixedUpdate();
+			}
+			TrackResetTeleportRpc(rb.position, rb.rotation);
+		}
+		[Rpc(SendTo.Everyone)]
+		void TrackResetTeleportRpc(Vector3 position, Quaternion rotation)
+		{
+			if (IsOwner) return;
+			remoteTrackResetPending = true;
+			remoteTrackResetPosition = position;
+			remoteTrackResetDeadline = Time.unscaledTime + 2f;
+			// Without a synchronizer there is no buffered teleport to wait for.
+			if (!GetComponent<Smooth.SmoothSyncNetcode>())
+			{
+				tr.SetPositionAndRotation(position, rotation);
+				rb.position = position;
+				rb.rotation = rotation;
+			}
+			foreach (Wheel wheel in wheels)
+				if (wheel) wheel.GetComponent<TireMarkCreate>()?.EndMark();
+		}
+		bool PrepareRemoteTrackReset()
+		{
+			if (!remoteTrackResetPending) return true;
+			if (rb.isKinematic || originalVehiclePhysics == null) return false;
+			// The reset RPC and the timestamped Smooth Sync teleport can arrive
+			// in either order. Do not sweep old probes until the pose has jumped.
+			rb.linearVelocity = Vector3.zero;
+			rb.angularVelocity = Vector3.zero;
+			if ((rb.position - remoteTrackResetPosition).sqrMagnitude > 0.0625f &&
+				Time.unscaledTime < remoteTrackResetDeadline)
+				return false;
+			remoteTrackResetPending = false;
+			ActiveRailbar?.Release(this);
+			originalVehiclePhysics.ResetToNeutral();
+			originalVehiclePhysics.ResetSourceProbeHistory();
+			antenna?.Reset();
+			return true;
+		}
 		public void FixedUpdate()
 		{
+			if (!PrepareRemoteTrackReset()) return;
+			// Source contacts do not produce OnCollisionExit. Expire impacts unless
+			// another impact or OnCollisionStay refreshes their timestamp.
+			if (crashing && Time.time - lastCrashingTime > 0.1f)
+				crashing = false;
+
 			GetGroundedWheels();
 
 			prevVel = localVelocity;
@@ -726,6 +874,20 @@ namespace RVP
 				using (OriginalPhysicsStepMarker.Auto())
 					originalVehiclePhysics.Step();
 			}
+			if (F.I.gameMode == GameMode.Multiplayer && IsSpawned && IsOwner)
+			{
+				bool active = BoostPresentationActive;
+				if (networkTurboActive.Value != active) networkTurboActive.Value = active;
+				SynchronizeWheelPresentation();
+			}
+		}
+		void LateUpdate()
+		{
+			if (!UsesRemoteWheelPresentation || originalVehiclePhysics == null) return;
+			Vector4 pose = networkWheelPresentation.Value.bodyPose;
+			if (pose.w > 0)
+				originalVehiclePhysics.ApplyBodyPresentation(new Vector3(pose.x, pose.y, pose.z),
+					1 - Mathf.Exp(-20f * Time.deltaTime));
 		}
 		public void SetHonkerInput(int f)
 		{
@@ -763,8 +925,7 @@ namespace RVP
 		// Set brake input
 		public void SetBrake(float f)
 		{
-			brakeInput = F.I && !F.I.s_inEditor && CountDownSeq.Countdown > 0
-				? 1f : Mathf.Clamp01(f);
+			requestedBrakeInput = Mathf.Clamp01(f);
 		}
 		public void SetSteer(float f)
 		{
@@ -773,7 +934,7 @@ namespace RVP
 		// Set ebrake input
 		public void SetEbrake(float f)
 		{
-			ebrakeInput = Mathf.Clamp01(f);
+			requestedEbrakeInput = Mathf.Clamp01(f);
 		}
 		public void SetBoost(bool b)
 		{
@@ -951,7 +1112,8 @@ namespace RVP
 		{
 			ActiveRailbar?.Release(this);
 			F.I.s_cars.Remove(this);
-			SGP_HUD.I?.RemoveFromProgressBar(this);
+			if (SplitScreenRace.I) SplitScreenRace.I.RemoveProgress(this);
+			else SGP_HUD.I?.RemoveFromProgressBar(this);
 			if (norm)
 			{
 				Destroy(norm.gameObject);
@@ -1011,7 +1173,7 @@ namespace RVP
 		void KnockoutMeRpc()
 		{
 			KnockoutMeInternal();
-			SGP_HUD.I.infoText.AddMessage(new(tr.name + " " + F.I.LocStr("ELIMINATED!"), BottomInfoType.ELIMINATED));
+			SGP_HUD.ShowRaceMessage(new(tr.name + " " + F.I.LocStr("ELIMINATED!"), BottomInfoType.ELIMINATED));
 		}
 
 	}

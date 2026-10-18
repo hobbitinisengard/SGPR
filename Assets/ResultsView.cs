@@ -321,6 +321,11 @@ public class ResultsView : MainMenuView
 	}
 	public void OKButton()
 	{
+		if (F.I.gameMode == GameMode.Splitscreen)
+		{
+			MainMenuView destination = SplitScreenSelector.I.SeriesCompleted ? winnersView : SplitScreenSelector.I.thisView;
+			Clear(); GoToView(destination); return;
+		}
 		if (Championships.Active)
 		{
 			MainMenuView continuation = ChampionshipContinuation();
@@ -609,7 +614,7 @@ public class ResultsView : MainMenuView
 			prevView = ChampionshipContinuation();
 			prevViewForbidden = false;
 		}
-		else F.I.CurRound++;
+		else if (F.I.gameMode != GameMode.Splitscreen) F.I.CurRound++;
 		//ResultRandomizer(); // for testing 
 		grandScoreMoving = 0;
 		grandScore0Text.text = "      0";
@@ -622,7 +627,8 @@ public class ResultsView : MainMenuView
 		for (int i = 0; i < 10; i++)
 		{
 			bool visible = i < resultData.Count;
-			bool highlight = visible && (((F.I.gameMode == GameMode.Arcade || Championships.Active) && resultData[i].name == F.I.playerData.playerName) ||
+			bool highlight = visible && ((F.I.gameMode == GameMode.Splitscreen && F.I.splitScreenPlayers.Any(player => player.name == resultData[i].name)) ||
+				((F.I.gameMode == GameMode.Arcade || Championships.Active) && resultData[i].name == F.I.playerData.playerName) ||
 				(F.I.gameMode == GameMode.Multiplayer && ServerC.I.networkManager.LocalClientId == resultData[i].id));
 			if (highlight)
 				finalPosition = i;
@@ -633,6 +639,18 @@ public class ResultsView : MainMenuView
 			SetText(gridTableTr.GetChild(cols + cols * i + 4), visible ? resultData[i].drift.ToString("N0") : "", highlight);
 		}
 
+		if (F.I.gameMode == GameMode.Splitscreen)
+		{
+			if (SplitScreenSelector.I.SeriesCompleted)
+			{
+				winnersView.PrepareUsingSplitScreen();
+				prevView = winnersView;
+			}
+			else prevView = SplitScreenSelector.I.thisView;
+			prevViewForbidden = false;
+			grandScore0.SetActive(false); grandScore1.SetActive(false); addingScore.SetActive(false); medalsTable.gameObject.SetActive(false);
+			base.OnEnable(); return;
+		}
 		Result playerResult = resultData[finalPosition];
 		if (F.I.gameMode == GameMode.Multiplayer)
 		{

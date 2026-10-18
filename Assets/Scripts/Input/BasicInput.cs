@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -10,9 +11,25 @@ namespace RVP
 	// Class for setting the input with the input manager
 	public class BasicInput : MonoBehaviour
 	{
+		static int pauseFrame = -1;
 		VehicleParent vp;
 		[NonSerialized]
 		public PlayerInput playerInput;
+		PlayerInput cachedInput;
+		readonly Dictionary<Guid, InputAction> localActions = new();
+		public InputAction Action(InputActionReference reference)
+		{
+			if (!reference) return null;
+			if (vp.localPlayerIndex < 0 || !playerInput) return reference.action;
+			if (cachedInput != playerInput) { cachedInput = playerInput; localActions.Clear(); }
+			Guid id = reference.action.id;
+			if (!localActions.TryGetValue(id, out var action))
+			{
+				action = playerInput.actions.FindAction(id.ToString());
+				localActions[id] = action;
+			}
+			return action;
+		}
 		
 		public string upshiftButton;
 		public string downshiftButton;
@@ -29,14 +46,21 @@ namespace RVP
 		void Update()
 		{
 			if (!vp || vp.originalVehiclePhysics == null) return;
+			if (vp.localPlayerIndex >= 0)
+			{
+				if (Action(F.I.escRef)?.WasPressedThisFrame() == true && pauseFrame != Time.frameCount)
+				{ pauseFrame = Time.frameCount; RaceManager.I.hud.TogglePause(); }
+				if (Action(F.I.lightsInput)?.WasPressedThisFrame() == true) vp.Switchlights();
+				if (vp.localCamera && Action(vp.localCamera.changeCamRef)?.WasPressedThisFrame() == true)
+					vp.localCamera.CycleFollowCamera();
+			}
 			bool playerDriving = vp.Owner && !vp.followAI.selfDriving && F.I && !F.I.chat.texting;
 			if (!playerDriving)
 			{
 				vp.originalVehiclePhysics.CancelSuspensionJump();
 				return;
 			}
-			vp.originalVehiclePhysics.SetSuspensionJumpInput(F.I.altInputRef &&
-				F.I.altInputRef.action != null && F.I.altInputRef.action.IsPressed());
+			vp.originalVehiclePhysics.SetSuspensionJumpInput(Action(F.I.altInputRef)?.IsPressed() == true);
 		}
 		void OnDisable()
 		{
@@ -46,7 +70,7 @@ namespace RVP
 		}
 		private void OnEnable()
 		{
-			if (!vp.followAI.selfDriving)
+			if (!vp.followAI.selfDriving && F.I.gameMode != GameMode.Splitscreen)
 			{
 				F.I.lightsInput.action.performed += LightsInputPerformed;
 			}
@@ -66,7 +90,7 @@ namespace RVP
 					if (F.I.chat.texting)
 						return;
 
-					if (!string.IsNullOrEmpty(upshiftButton))
+					if (vp.localPlayerIndex < 0 && !string.IsNullOrEmpty(upshiftButton))
 					{
 						if (Input.GetButtonDown(upshiftButton))
 						{
@@ -74,7 +98,7 @@ namespace RVP
 						}
 					}
 
-					if (!string.IsNullOrEmpty(downshiftButton))
+					if (vp.localPlayerIndex < 0 && !string.IsNullOrEmpty(downshiftButton))
 					{
 						if (Input.GetButtonDown(downshiftButton))
 						{
@@ -82,30 +106,30 @@ namespace RVP
 						}
 					}
 
-					Vector2 input2 = F.I.driveRef.action.ReadValue<Vector2>();
+					Vector2 input2 = Action(F.I.driveRef)?.ReadValue<Vector2>() ?? Vector2.zero;
 					vp.SetAccel(Mathf.Clamp01(input2.y));
 					vp.SetBrake(Mathf.Abs(Mathf.Clamp(input2.y, -1, 0)));
 					vp.SetSteer(input2.x);
-					vp.SetBoost((int)F.I.boostInput.action.ReadValue<float>());
+					vp.SetBoost((int)(Action(F.I.boostInput)?.ReadValue<float>() ?? 0));
 					if (F.I.chat.texting)
 						return;
 
 					
-					vp.SetHonkerInput((int)F.I.honkInput.action.ReadValue<float>());
-					vp.SetSGPShift((int)F.I.evoInput.action.ReadValue<float>());
-					if (F.I.resetOnTrackInput.action.ReadValue<float>() == 1
+					vp.SetHonkerInput((int)(Action(F.I.honkInput)?.ReadValue<float>() ?? 0));
+					vp.SetSGPShift((int)(Action(F.I.evoInput)?.ReadValue<float>() ?? 0));
+					if ((Action(F.I.resetOnTrackInput)?.ReadValue<float>() ?? 0) == 1
 						&& Time.time - vp.resetOnTrackTime > 5)
 					{
 						vp.ResetOnTrack();
 					}
-					vp.SetRoll(F.I.rollInput.action.ReadValue<float>());
+					vp.SetRoll(Action(F.I.rollInput)?.ReadValue<float>() ?? 0);
 
-					if (!string.IsNullOrEmpty(upshiftButton))
+					if (vp.localPlayerIndex < 0 && !string.IsNullOrEmpty(upshiftButton))
 					{
 						vp.SetUpshift(Input.GetAxis(upshiftButton));
 					}
 
-					if (!string.IsNullOrEmpty(downshiftButton))
+					if (vp.localPlayerIndex < 0 && !string.IsNullOrEmpty(downshiftButton))
 					{
 						vp.SetDownshift(Input.GetAxis(downshiftButton));
 					}

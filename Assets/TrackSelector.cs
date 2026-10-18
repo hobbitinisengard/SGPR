@@ -17,7 +17,7 @@ public class TrackSelector : TrackSelectorTemplate
 		base.OnEnable();
 		ResetButtons();
 	}
-	public void ResetButtons()
+	public virtual void ResetButtons()
 	{
 		SwitchRoadType(true);
 		SwitchCatchup(true);
@@ -87,6 +87,7 @@ public class TrackSelector : TrackSelectorTemplate
 	}
 	public void SwitchCPULevel(bool init = false)
 	{
+		if (F.I.s_cpuLevel < CpuLevel.Easy || F.I.s_cpuLevel > CpuLevel.Hard) F.I.s_cpuLevel = CpuLevel.Medium;
 		int dir = 0;
 		if (!init)
 			dir = F.I.shiftInputRef.action.ReadValue<float>() > 0.5f ? -1 : 1;

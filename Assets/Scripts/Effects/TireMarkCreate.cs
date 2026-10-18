@@ -51,6 +51,8 @@ namespace RVP
 		public ParticleSystem[] debrisParticles;
 		public ParticleSystem sparks;
 		float[] initialEmissionRates;
+		int lastRemoteParticleTotal;
+		bool remoteParticleTotalInitialized;
 		ParticleSystem.MinMaxCurve zeroEmission = new(0);
 		private void Awake()
 		{
@@ -99,8 +101,31 @@ namespace RVP
 				? w.slipThres + w.vp.engine.targetPitch : 0;
 
 			int wheelIndex = Array.IndexOf(w.vp.wheels, w);
-			int particleCount = w.vp.originalVehiclePhysics.ConsumeSourceTireParticleEvents(wheelIndex);
-			if (particleCount > 0 && validSurface && surfaceType < debrisParticles.Length)
+			bool grounded = w.groundedReally;
+			bool sourceSkid;
+			int particleCount;
+			if (w.vp.UsesRemoteWheelPresentation)
+			{
+				w.vp.ApplyRemoteWheelPresentation(w, wheelIndex);
+				w.vp.GetRemoteTireEffects(wheelIndex, out grounded, out sourceSkid, out int total);
+				// Ignore history on first observation; consume each network event once,
+				// even if several render frames use the same snapshot.
+				particleCount = remoteParticleTotalInitialized ? (total - lastRemoteParticleTotal + 65536) & 65535 : 0;
+				lastRemoteParticleTotal = total;
+				remoteParticleTotalInitialized = true;
+				// A rebuilt physics instance can restart the total; do not replay
+				// that backwards jump as thousands of particle events.
+				particleCount = particleCount > 32768 ? 0 : Mathf.Min(particleCount, 8);
+				// Discard locally simulated events on this remote copy.
+				w.vp.originalVehiclePhysics.ConsumeSourceTireParticleEvents(wheelIndex);
+			}
+			else
+			{
+				particleCount = w.vp.originalVehiclePhysics.ConsumeSourceTireParticleEvents(wheelIndex);
+				sourceSkid = w.vp.originalVehiclePhysics.ShouldEmitSourceSkidStrip(wheelIndex);
+			}
+			if (particleCount > 0 && (!w.vp.UsesRemoteWheelPresentation || (grounded && w.connected)) &&
+				validSurface && surfaceType < debrisParticles.Length)
 			{
 				ParticleSystem particles = debrisParticles[surfaceType];
 				if (!particles.isPlaying)
@@ -108,8 +133,7 @@ namespace RVP
 				particles.Emit(particleCount);
 			}
 
-			bool sourceSkid = w.vp.originalVehiclePhysics.ShouldEmitSourceSkidStrip(wheelIndex);
-			if (w.groundedReally && sourceSkid && w.connected && validSurface)
+			if (grounded && sourceSkid && w.connected && validSurface)
 			{
 				w.sliding = true;
 				prevSurface = curSurface;
@@ -142,6 +166,8 @@ namespace RVP
 				w.sliding = false;
 				EndMark();
 			}
+			else
+				w.sliding = false;
 
 			if (creatingMark)
 			{
@@ -161,9 +187,9 @@ namespace RVP
 			if (sparks)
 			{
 				emission = sparks.emission;
-				bool emitSparks = w.groundedReally && w.connected && validSurface && w.popped &&
+				bool emitSparks = grounded && w.connected && validSurface && w.popped &&
 					GroundSurfaceMaster.surfaceTypesStatic[surfaceType].leaveSparks &&
-					w.vp.originalVehiclePhysics.CurrentSourceSpeed < 100;
+					(w.vp.UsesRemoteWheelPresentation ? w.vp.velMag / 0.6f : w.vp.originalVehiclePhysics.CurrentSourceSpeed) < 100;
 				float sparkRate = emitSparks
 					? initialEmissionRates[debrisParticles.Length] *
 						Mathf.Clamp01((w.originalGripUsage - 3.5f) * 0.25f)

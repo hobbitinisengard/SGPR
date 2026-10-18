@@ -99,6 +99,14 @@ MonoBehaviour:
     m_Key: A new player is synching right now...
     m_Metadata:
       m_Items: []
+  - m_Id: 190601394989359104
+    m_Key: ACCELERATE AXIS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190595817013829632
+    m_Key: ACCELERATE TRIGGER
+    m_Metadata:
+      m_Items: []
   - m_Id: 413979912175616
     m_Key: ADD
     m_Metadata:
@@ -159,6 +167,14 @@ MonoBehaviour:
     m_Key: BACK
     m_Metadata:
       m_Items: []
+  - m_Id: 66363235515293696
+    m_Key: Bad racingpath. Press R to reset it
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420546
+    m_Key: Battery
+    m_Metadata:
+      m_Items: []
   - m_Id: 609966840610816
     m_Key: 'Battery:'
     m_Metadata:
@@ -169,6 +185,10 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 63684845764608
     m_Key: BEST LAP
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420554
+    m_Key: BMS
     m_Metadata:
       m_Items: []
   - m_Id: 609937199464448
@@ -191,8 +211,24 @@ MonoBehaviour:
     m_Key: BRAKE AXIS
     m_Metadata:
       m_Items: []
+  - m_Id: 190595285587124224
+    m_Key: BRAKE TRIGGER
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420548
+    m_Key: Brakes
+    m_Metadata:
+      m_Items: []
   - m_Id: 34593245495296
     m_Key: Button for navigating menu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615753
+    m_Key: Buy part
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615754
+    m_Key: Buy vehicle
     m_Metadata:
       m_Items: []
   - m_Id: 60913451008000
@@ -279,8 +315,64 @@ MonoBehaviour:
     m_Key: car19d
     m_Metadata:
       m_Items: []
+  - m_Id: 189544510102495232
+    m_Key: car20d
+    m_Metadata:
+      m_Items: []
+  - m_Id: 190294953174818816
+    m_Key: 'Cars:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420544
+    m_Key: 'Cash Balance:'
+    m_Metadata:
+      m_Items: []
   - m_Id: 61990388891648
     m_Key: Catchup
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188100648683233281
+    m_Key: Champ.CurrentStandings
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188115634570715137
+    m_Key: Champ.PodiumResult
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615759
+    m_Key: Champ.Season.ENG.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615760
+    m_Key: Champ.Season.FRA.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615756
+    m_Key: Champ.Season.GER.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615762
+    m_Key: Champ.Season.ITA.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615758
+    m_Key: Champ.Season.JAP.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615763
+    m_Key: Champ.Season.SGP.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615757
+    m_Key: Champ.Season.SPN.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615764
+    m_Key: Champ.Season.SURVIVAL.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615761
+    m_Key: Champ.Season.USA.Description
     m_Metadata:
       m_Items: []
   - m_Id: 304757304197120
@@ -299,12 +391,36 @@ MonoBehaviour:
     m_Key: Change camera
     m_Metadata:
       m_Items: []
+  - m_Id: 188038661651619840
+    m_Key: CHANGE VEHICLE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188100648683233280
+    m_Key: Change your car
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420550
+    m_Key: Chassis
+    m_Metadata:
+      m_Items: []
   - m_Id: 610053390073856
     m_Key: 'Chassis:'
     m_Metadata:
       m_Items: []
   - m_Id: 62877173809152
     m_Key: Chat
+    m_Metadata:
+      m_Items: []
+  - m_Id: 191052099185336320
+    m_Key: Cheersb
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188153002149339136
+    m_Key: 'Choose '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 191046325226758144
+    m_Key: Clapping
     m_Metadata:
       m_Items: []
   - m_Id: 50751705186304
@@ -351,8 +467,16 @@ MonoBehaviour:
     m_Key: Create completely new track from scratch
     m_Metadata:
       m_Items: []
+  - m_Id: 188100648683233282
+    m_Key: Credits
+    m_Metadata:
+      m_Items: []
   - m_Id: 24337685676032
     m_Key: CREDITS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188040853192237056
+    m_Key: Current team status
     m_Metadata:
       m_Items: []
   - m_Id: 302311790084096
@@ -379,6 +503,10 @@ MonoBehaviour:
     m_Key: DRIFT
     m_Metadata:
       m_Items: []
+  - m_Id: 187701912941420551
+    m_Key: Drive
+    m_Metadata:
+      m_Items: []
   - m_Id: 610188887064576
     m_Key: 'Drive:'
     m_Metadata:
@@ -403,8 +531,16 @@ MonoBehaviour:
     m_Key: Empty
     m_Metadata:
       m_Items: []
+  - m_Id: 188072957011615745
+    m_Key: Empty slot
+    m_Metadata:
+      m_Items: []
   - m_Id: 305240286691328
     m_Key: Energy
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420545
+    m_Key: Engine
     m_Metadata:
       m_Items: []
   - m_Id: 610093642809344
@@ -483,6 +619,10 @@ MonoBehaviour:
     m_Key: FRONT
     m_Metadata:
       m_Items: []
+  - m_Id: 188072957011615749
+    m_Key: Funds
+    m_Metadata:
+      m_Items: []
   - m_Id: 24202255794176
     m_Key: GAME SETTINGS
     m_Metadata:
@@ -493,6 +633,10 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 610000764141568
     m_Key: 'Gearbox:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420555
+    m_Key: Gears
     m_Metadata:
       m_Items: []
   - m_Id: 51147988979748864
@@ -551,6 +695,10 @@ MonoBehaviour:
     m_Key: 'Honk:'
     m_Metadata:
       m_Items: []
+  - m_Id: 187701912941420552
+    m_Key: Horn
+    m_Metadata:
+      m_Items: []
   - m_Id: 34424500256768
     m_Key: HORN
     m_Metadata:
@@ -567,12 +715,24 @@ MonoBehaviour:
     m_Key: INFERNO
     m_Metadata:
       m_Items: []
+  - m_Id: 188072957011615755
+    m_Key: Installed
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420664
+    m_Key: IS DISCHARGING!
+    m_Metadata:
+      m_Items: []
   - m_Id: 620015688351744
     m_Key: IS OUT OF BATTERY!
     m_Metadata:
       m_Items: []
   - m_Id: 303904539279360
     m_Key: IS RECHARGING!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 414248532180992
+    m_Key: Is skate park
     m_Metadata:
       m_Items: []
   - m_Id: 305307479441408
@@ -687,6 +847,10 @@ MonoBehaviour:
     m_Key: Modifier3 used with Enter
     m_Metadata:
       m_Items: []
+  - m_Id: 188038140953944064
+    m_Key: MODIFY VEHICLE
+    m_Metadata:
+      m_Items: []
   - m_Id: 31406203600896
     m_Key: Move stick right to
     m_Metadata:
@@ -707,16 +871,20 @@ MonoBehaviour:
     m_Key: Name
     m_Metadata:
       m_Items: []
-  - m_Id: 964890581532672
-    m_Key: Texts are too short or not translated
-    m_Metadata:
-      m_Items: []
   - m_Id: 601241874595840
     m_Key: NATURAL
     m_Metadata:
       m_Items: []
+  - m_Id: 188358577143472128
+    m_Key: Navigate to an unlocked part to mount it
+    m_Metadata:
+      m_Items: []
   - m_Id: 311052132417536
     m_Key: New Entry
+    m_Metadata:
+      m_Items: []
+  - m_Id: 192055982565154816
+    m_Key: STEER LEFT
     m_Metadata:
       m_Items: []
   - m_Id: 612559939698688
@@ -751,6 +919,10 @@ MonoBehaviour:
     m_Key: newTrackE7
     m_Metadata:
       m_Items: []
+  - m_Id: 188100007000858624
+    m_Key: Next race
+    m_Metadata:
+      m_Items: []
   - m_Id: 61628621783040
     m_Key: Night
     m_Metadata:
@@ -767,12 +939,20 @@ MonoBehaviour:
     m_Key: No limit
     m_Metadata:
       m_Items: []
+  - m_Id: 187701912941420556
+    m_Key: No parts available
+    m_Metadata:
+      m_Items: []
   - m_Id: 303048955789312
     m_Key: No racingline defined
     m_Metadata:
       m_Items: []
   - m_Id: 307683875618816
     m_Key: No synchronization. Try again or reconnect
+    m_Metadata:
+      m_Items: []
+  - m_Id: 57652508077395968
+    m_Key: OBJECTIVES
     m_Metadata:
       m_Items: []
   - m_Id: 45342225111781376
@@ -787,12 +967,24 @@ MonoBehaviour:
     m_Key: Original
     m_Metadata:
       m_Items: []
+  - m_Id: 188378724084277248
+    m_Key: 'Overwrite track picture:'
+    m_Metadata:
+      m_Items: []
   - m_Id: 56551219658752
     m_Key: Password (empty or more than 8 chars)
     m_Metadata:
       m_Items: []
+  - m_Id: 63452409415667712
+    m_Key: Perform {0} at least {1} times
+    m_Metadata:
+      m_Items: []
   - m_Id: 32231219003392
     m_Key: Perform stunt / handbrake
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188358232631730176
+    m_Key: Pick a part you want to buy and accept purchase
     m_Metadata:
       m_Items: []
   - m_Id: 60611503063040
@@ -819,6 +1011,10 @@ MonoBehaviour:
     m_Key: Polish
     m_Metadata:
       m_Items: []
+  - m_Id: 188072957011615751
+    m_Key: Position
+    m_Metadata:
+      m_Items: []
   - m_Id: 63312634839040
     m_Key: POSITION
     m_Metadata:
@@ -835,6 +1031,14 @@ MonoBehaviour:
     m_Key: PRESS ENTER
     m_Metadata:
       m_Items: []
+  - m_Id: 188072957011615750
+    m_Key: Price
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188115255720206336
+    m_Key: 'Price New:'
+    m_Metadata:
+      m_Items: []
   - m_Id: 50017676967088128
     m_Key: PROGRESS
     m_Metadata:
@@ -845,6 +1049,10 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 28282818658304
     m_Key: Quick messages are written to chat when pressing keyboard buttons 0-9
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188158728963940352
+    m_Key: QUICK RACE
     m_Metadata:
       m_Items: []
   - m_Id: 51158714318393344
@@ -865,6 +1073,10 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 314266147880960
     m_Key: RACE TIME
+    m_Metadata:
+      m_Items: []
+  - m_Id: 60076925909524480
+    m_Key: Race with others on the same computer
     m_Metadata:
       m_Items: []
   - m_Id: 21488641769472
@@ -999,6 +1211,10 @@ MonoBehaviour:
     m_Key: Round
     m_Metadata:
       m_Items: []
+  - m_Id: 121623786990133248
+    m_Key: Rounds
+    m_Metadata:
+      m_Items: []
   - m_Id: 294442617274368
     m_Key: SAND SHARK
     m_Metadata:
@@ -1039,12 +1255,28 @@ MonoBehaviour:
     m_Key: Select a single player game
     m_Metadata:
       m_Items: []
+  - m_Id: 60077190968565760
+    m_Key: Select amount of local players
+    m_Metadata:
+      m_Items: []
   - m_Id: 47791721053753344
     m_Key: SELECT ARCADE VARIANT
     m_Metadata:
       m_Items: []
   - m_Id: 52413027057664
     m_Key: SELECT CAR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615747
+    m_Key: Select championship
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188004823470759936
+    m_Key: SELECT CHAMPIONSHIP SLOT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188153160442372096
+    m_Key: Select championships
     m_Metadata:
       m_Items: []
   - m_Id: 300248343511040
@@ -1057,6 +1289,14 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 59241395912704
     m_Key: Select number of opponents of this make
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188005531444109312
+    m_Key: SELECT SEASON
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188096609769807872
+    m_Key: SELECT TEAM SPONSOR
     m_Metadata:
       m_Items: []
   - m_Id: 56946205655040
@@ -1079,6 +1319,10 @@ MonoBehaviour:
     m_Key: Servers are overloaded. Try again later
     m_Metadata:
       m_Items: []
+  - m_Id: 189469949742866432
+    m_Key: Set
+    m_Metadata:
+      m_Items: []
   - m_Id: 51148493227364352
     m_Key: Set the fastest lap time
     m_Metadata:
@@ -1097,10 +1341,6 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 22066021269504
     m_Key: Show off your stunt skills on a stunt arena
-    m_Metadata:
-      m_Items: []
-  - m_Id: 414248532180992
-    m_Key: Is skate park
     m_Metadata:
       m_Items: []
   - m_Id: 605554986450944
@@ -1179,8 +1419,16 @@ MonoBehaviour:
     m_Key: STAR
     m_Metadata:
       m_Items: []
+  - m_Id: 188072957011615744
+    m_Key: START
+    m_Metadata:
+      m_Items: []
   - m_Id: 55394770354176
     m_Key: START A SERVER
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188072957011615746
+    m_Key: Start championship
     m_Metadata:
       m_Items: []
   - m_Id: 10063009546240
@@ -1188,15 +1436,23 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 31799994220544
-    m_Key: STEER AXIS STICK
+    m_Key: STEER RIGHT
     m_Metadata:
       m_Items: []
   - m_Id: 49930355605504
     m_Key: STUNT
     m_Metadata:
       m_Items: []
+  - m_Id: 187701912941420553
+    m_Key: Stunt Boost
+    m_Metadata:
+      m_Items: []
   - m_Id: 294690718744576
     m_Key: STUNT MONKEY
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189544484919894016
+    m_Key: STUNTMAN
     m_Metadata:
       m_Items: []
   - m_Id: 32455110950912
@@ -1213,6 +1469,14 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 311000408260608
     m_Key: SUPER LOOPER
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420663
+    m_Key: Survival
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420549
+    m_Key: Suspension
     m_Metadata:
       m_Items: []
   - m_Id: 609891733209088
@@ -1239,6 +1503,10 @@ MonoBehaviour:
     m_Key: TAKES THE LEAD!
     m_Metadata:
       m_Items: []
+  - m_Id: 188040083000582144
+    m_Key: TEAM
+    m_Metadata:
+      m_Items: []
   - m_Id: 18027086872576
     m_Key: Team championships TOP 100
     m_Metadata:
@@ -1260,7 +1528,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 285368081186816
-    m_Key: TEAMS
+    m_Key: Teams
     m_Metadata:
       m_Items: []
   - m_Id: 412376752717824
@@ -1269,6 +1537,10 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 49441526251520
     m_Key: Tex
+    m_Metadata:
+      m_Items: []
+  - m_Id: 964890581532672
+    m_Key: Texts are too short or not translated
     m_Metadata:
       m_Items: []
   - m_Id: 294471230816256
@@ -1281,6 +1553,10 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 294209984397312
     m_Key: THE PHANTOM
+    m_Metadata:
+      m_Items: []
+  - m_Id: 189522099361603584
+    m_Key: 'Time Limit: '
     m_Metadata:
       m_Items: []
   - m_Id: 20069574508544
@@ -1299,6 +1575,10 @@ MonoBehaviour:
     m_Key: TORNADO
     m_Metadata:
       m_Items: []
+  - m_Id: 188065932869427200
+    m_Key: TRACK PREVIEW
+    m_Metadata:
+      m_Items: []
   - m_Id: 414188285198336
     m_Key: Track rotation
     m_Metadata:
@@ -1311,8 +1591,444 @@ MonoBehaviour:
     m_Key: TRACKS
     m_Metadata:
       m_Items: []
+  - m_Id: 188115634570715136
+    m_Key: 'Trade in:'
+    m_Metadata:
+      m_Items: []
   - m_Id: 310188718161920
     m_Key: TRICKSTART
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188100138337099776
+    m_Key: Tune your car
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187699192444542976
+    m_Key: Tuning
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420558
+    m_Key: Tuning.Battery01.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420557
+    m_Key: Tuning.Battery01.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420560
+    m_Key: Tuning.Battery02.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420559
+    m_Key: Tuning.Battery02.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420562
+    m_Key: Tuning.Battery03.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420561
+    m_Key: Tuning.Battery03.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420564
+    m_Key: Tuning.Battery04.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420563
+    m_Key: Tuning.Battery04.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420566
+    m_Key: Tuning.Battery05.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420565
+    m_Key: Tuning.Battery05.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420628
+    m_Key: Tuning.Bms01.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420627
+    m_Key: Tuning.Bms01.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420630
+    m_Key: Tuning.Bms02.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420629
+    m_Key: Tuning.Bms02.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420632
+    m_Key: Tuning.Bms03.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420631
+    m_Key: Tuning.Bms03.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420634
+    m_Key: Tuning.Bms04.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420633
+    m_Key: Tuning.Bms04.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420636
+    m_Key: Tuning.Bms05.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420635
+    m_Key: Tuning.Bms05.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420568
+    m_Key: Tuning.Brakes01.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420567
+    m_Key: Tuning.Brakes01.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420570
+    m_Key: Tuning.Brakes02.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420569
+    m_Key: Tuning.Brakes02.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420572
+    m_Key: Tuning.Brakes03.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420571
+    m_Key: Tuning.Brakes03.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420574
+    m_Key: Tuning.Brakes04.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420573
+    m_Key: Tuning.Brakes04.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420576
+    m_Key: Tuning.Brakes05.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420575
+    m_Key: Tuning.Brakes05.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420578
+    m_Key: Tuning.Chassis01.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420577
+    m_Key: Tuning.Chassis01.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420580
+    m_Key: Tuning.Chassis02.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420579
+    m_Key: Tuning.Chassis02.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420582
+    m_Key: Tuning.Chassis03.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420581
+    m_Key: Tuning.Chassis03.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420584
+    m_Key: Tuning.Chassis04.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420583
+    m_Key: Tuning.Chassis04.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420586
+    m_Key: Tuning.Chassis05.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420585
+    m_Key: Tuning.Chassis05.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420658
+    m_Key: Tuning.Drive01.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420657
+    m_Key: Tuning.Drive01.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420660
+    m_Key: Tuning.Drive02.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420659
+    m_Key: Tuning.Drive02.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420662
+    m_Key: Tuning.Drive03.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420661
+    m_Key: Tuning.Drive03.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420588
+    m_Key: Tuning.Engine01.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420587
+    m_Key: Tuning.Engine01.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420590
+    m_Key: Tuning.Engine02.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420589
+    m_Key: Tuning.Engine02.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420592
+    m_Key: Tuning.Engine03.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420591
+    m_Key: Tuning.Engine03.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420594
+    m_Key: Tuning.Engine04.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420593
+    m_Key: Tuning.Engine04.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420596
+    m_Key: Tuning.Engine05.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420595
+    m_Key: Tuning.Engine05.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420598
+    m_Key: Tuning.Gears01.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420597
+    m_Key: Tuning.Gears01.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420600
+    m_Key: Tuning.Gears02.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420599
+    m_Key: Tuning.Gears02.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420602
+    m_Key: Tuning.Gears03.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420601
+    m_Key: Tuning.Gears03.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420604
+    m_Key: Tuning.Gears04.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420603
+    m_Key: Tuning.Gears04.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420606
+    m_Key: Tuning.Gears05.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420605
+    m_Key: Tuning.Gears05.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420608
+    m_Key: Tuning.Horns01.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420607
+    m_Key: Tuning.Horns01.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420610
+    m_Key: Tuning.Horns02.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420609
+    m_Key: Tuning.Horns02.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420612
+    m_Key: Tuning.Horns03.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420611
+    m_Key: Tuning.Horns03.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420614
+    m_Key: Tuning.Horns04.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420613
+    m_Key: Tuning.Horns04.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420616
+    m_Key: Tuning.Horns05.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420615
+    m_Key: Tuning.Horns05.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420648
+    m_Key: Tuning.StuntBoost01.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420647
+    m_Key: Tuning.StuntBoost01.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420650
+    m_Key: Tuning.StuntBoost02.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420649
+    m_Key: Tuning.StuntBoost02.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420652
+    m_Key: Tuning.StuntBoost03.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420651
+    m_Key: Tuning.StuntBoost03.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420654
+    m_Key: Tuning.StuntBoost04.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420653
+    m_Key: Tuning.StuntBoost04.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420656
+    m_Key: Tuning.StuntBoost05.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420655
+    m_Key: Tuning.StuntBoost05.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420618
+    m_Key: Tuning.Suspension01.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420617
+    m_Key: Tuning.Suspension01.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420620
+    m_Key: Tuning.Suspension02.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420619
+    m_Key: Tuning.Suspension02.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420622
+    m_Key: Tuning.Suspension03.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420621
+    m_Key: Tuning.Suspension03.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420624
+    m_Key: Tuning.Suspension04.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420623
+    m_Key: Tuning.Suspension04.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420626
+    m_Key: Tuning.Suspension05.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420625
+    m_Key: Tuning.Suspension05.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420638
+    m_Key: Tuning.Tyres01.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420637
+    m_Key: Tuning.Tyres01.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420640
+    m_Key: Tuning.Tyres02.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420639
+    m_Key: Tuning.Tyres02.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420642
+    m_Key: Tuning.Tyres03.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420641
+    m_Key: Tuning.Tyres03.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420644
+    m_Key: Tuning.Tyres04.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420643
+    m_Key: Tuning.Tyres04.Name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420646
+    m_Key: Tuning.Tyres05.Description
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420645
+    m_Key: Tuning.Tyres05.Name
     m_Metadata:
       m_Items: []
   - m_Id: 294072901959680
@@ -1321,6 +2037,10 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 603166619729920
     m_Key: TWIST
+    m_Metadata:
+      m_Items: []
+  - m_Id: 187701912941420547
+    m_Key: Tyres
     m_Metadata:
       m_Items: []
   - m_Id: 610157161349120
@@ -1352,7 +2072,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 35368357068800
-    m_Key: UI HORIZONTAL AXIS
+    m_Key: UI2 UP
     m_Metadata:
       m_Items: []
   - m_Id: 34898922176512
@@ -1372,7 +2092,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 35484086304768
-    m_Key: UI VERTICAL AXIS
+    m_Key: UI2 DOWN
     m_Metadata:
       m_Items: []
   - m_Id: 21319934279680
@@ -1389,6 +2109,14 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 32651203051520
     m_Key: Used to look around your car
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188100648683233283
+    m_Key: Vehicle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188177540870365184
+    m_Key: Very quick race for very busy people
     m_Metadata:
       m_Items: []
   - m_Id: 304835657990144
@@ -1447,6 +2175,10 @@ MonoBehaviour:
     m_Key: WILD WHEELS
     m_Metadata:
       m_Items: []
+  - m_Id: 188072957011615748
+    m_Key: Win all seven national championships to unlock.
+    m_Metadata:
+      m_Items: []
   - m_Id: 288555311824896
     m_Key: WIN THE GAME!
     m_Metadata:
@@ -1463,6 +2195,10 @@ MonoBehaviour:
     m_Key: WINDMILL
     m_Metadata:
       m_Items: []
+  - m_Id: 188072957011615752
+    m_Key: Wins
+    m_Metadata:
+      m_Items: []
   - m_Id: 288486017728512
     m_Key: WINS THE GAME!
     m_Metadata:
@@ -1473,6 +2209,10 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 313742182842368
     m_Key: WINS!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 188040234964410368
+    m_Key: WON
     m_Metadata:
       m_Items: []
   - m_Id: 294788483776512
@@ -1491,740 +2231,12 @@ MonoBehaviour:
     m_Key: You sure?
     m_Metadata:
       m_Items: []
-  - m_Id: 57652508077395968
-    m_Key: OBJECTIVES
+  - m_Id: 192128263333142528
+    m_Key: UI2 LEFT
     m_Metadata:
       m_Items: []
-  - m_Id: 60076925909524480
-    m_Key: Race with others on the same computer
-    m_Metadata:
-      m_Items: []
-  - m_Id: 60077190968565760
-    m_Key: Select amount of local players
-    m_Metadata:
-      m_Items: []
-  - m_Id: 63452409415667712
-    m_Key: Perform {0} at least {1} times
-    m_Metadata:
-      m_Items: []
-  - m_Id: 66363235515293696
-    m_Key: Bad racingpath. Press R to reset it
-    m_Metadata:
-      m_Items: []
-  - m_Id: 121623786990133248
-    m_Key: Rounds
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187699192444542976
-    m_Key: Tuning
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420544
-    m_Key: 'Cash Balance:'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420545
-    m_Key: Engine
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420546
-    m_Key: Battery
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420547
-    m_Key: Tyres
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420548
-    m_Key: Brakes
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420549
-    m_Key: Suspension
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420550
-    m_Key: Chassis
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420551
-    m_Key: Drive
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420552
-    m_Key: Horn
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420553
-    m_Key: Stunt Boost
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420554
-    m_Key: BMS
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420555
-    m_Key: Gears
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420556
-    m_Key: No parts available
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420557
-    m_Key: Tuning.Battery01.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420558
-    m_Key: Tuning.Battery01.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420559
-    m_Key: Tuning.Battery02.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420560
-    m_Key: Tuning.Battery02.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420561
-    m_Key: Tuning.Battery03.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420562
-    m_Key: Tuning.Battery03.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420563
-    m_Key: Tuning.Battery04.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420564
-    m_Key: Tuning.Battery04.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420565
-    m_Key: Tuning.Battery05.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420566
-    m_Key: Tuning.Battery05.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420567
-    m_Key: Tuning.Brakes01.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420568
-    m_Key: Tuning.Brakes01.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420569
-    m_Key: Tuning.Brakes02.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420570
-    m_Key: Tuning.Brakes02.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420571
-    m_Key: Tuning.Brakes03.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420572
-    m_Key: Tuning.Brakes03.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420573
-    m_Key: Tuning.Brakes04.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420574
-    m_Key: Tuning.Brakes04.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420575
-    m_Key: Tuning.Brakes05.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420576
-    m_Key: Tuning.Brakes05.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420577
-    m_Key: Tuning.Chassis01.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420578
-    m_Key: Tuning.Chassis01.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420579
-    m_Key: Tuning.Chassis02.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420580
-    m_Key: Tuning.Chassis02.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420581
-    m_Key: Tuning.Chassis03.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420582
-    m_Key: Tuning.Chassis03.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420583
-    m_Key: Tuning.Chassis04.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420584
-    m_Key: Tuning.Chassis04.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420585
-    m_Key: Tuning.Chassis05.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420586
-    m_Key: Tuning.Chassis05.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420587
-    m_Key: Tuning.Engine01.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420588
-    m_Key: Tuning.Engine01.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420589
-    m_Key: Tuning.Engine02.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420590
-    m_Key: Tuning.Engine02.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420591
-    m_Key: Tuning.Engine03.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420592
-    m_Key: Tuning.Engine03.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420593
-    m_Key: Tuning.Engine04.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420594
-    m_Key: Tuning.Engine04.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420595
-    m_Key: Tuning.Engine05.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420596
-    m_Key: Tuning.Engine05.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420597
-    m_Key: Tuning.Gears01.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420598
-    m_Key: Tuning.Gears01.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420599
-    m_Key: Tuning.Gears02.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420600
-    m_Key: Tuning.Gears02.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420601
-    m_Key: Tuning.Gears03.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420602
-    m_Key: Tuning.Gears03.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420603
-    m_Key: Tuning.Gears04.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420604
-    m_Key: Tuning.Gears04.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420605
-    m_Key: Tuning.Gears05.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420606
-    m_Key: Tuning.Gears05.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420607
-    m_Key: Tuning.Horns01.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420608
-    m_Key: Tuning.Horns01.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420609
-    m_Key: Tuning.Horns02.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420610
-    m_Key: Tuning.Horns02.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420611
-    m_Key: Tuning.Horns03.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420612
-    m_Key: Tuning.Horns03.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420613
-    m_Key: Tuning.Horns04.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420614
-    m_Key: Tuning.Horns04.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420615
-    m_Key: Tuning.Horns05.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420616
-    m_Key: Tuning.Horns05.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420617
-    m_Key: Tuning.Suspension01.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420618
-    m_Key: Tuning.Suspension01.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420619
-    m_Key: Tuning.Suspension02.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420620
-    m_Key: Tuning.Suspension02.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420621
-    m_Key: Tuning.Suspension03.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420622
-    m_Key: Tuning.Suspension03.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420623
-    m_Key: Tuning.Suspension04.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420624
-    m_Key: Tuning.Suspension04.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420625
-    m_Key: Tuning.Suspension05.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420626
-    m_Key: Tuning.Suspension05.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420627
-    m_Key: Tuning.Bms01.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420628
-    m_Key: Tuning.Bms01.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420629
-    m_Key: Tuning.Bms02.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420630
-    m_Key: Tuning.Bms02.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420631
-    m_Key: Tuning.Bms03.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420632
-    m_Key: Tuning.Bms03.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420633
-    m_Key: Tuning.Bms04.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420634
-    m_Key: Tuning.Bms04.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420635
-    m_Key: Tuning.Bms05.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420636
-    m_Key: Tuning.Bms05.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420637
-    m_Key: Tuning.Tyres01.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420638
-    m_Key: Tuning.Tyres01.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420639
-    m_Key: Tuning.Tyres02.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420640
-    m_Key: Tuning.Tyres02.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420641
-    m_Key: Tuning.Tyres03.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420642
-    m_Key: Tuning.Tyres03.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420643
-    m_Key: Tuning.Tyres04.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420644
-    m_Key: Tuning.Tyres04.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420645
-    m_Key: Tuning.Tyres05.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420646
-    m_Key: Tuning.Tyres05.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420647
-    m_Key: Tuning.StuntBoost01.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420648
-    m_Key: Tuning.StuntBoost01.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420649
-    m_Key: Tuning.StuntBoost02.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420650
-    m_Key: Tuning.StuntBoost02.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420651
-    m_Key: Tuning.StuntBoost03.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420652
-    m_Key: Tuning.StuntBoost03.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420653
-    m_Key: Tuning.StuntBoost04.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420654
-    m_Key: Tuning.StuntBoost04.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420655
-    m_Key: Tuning.StuntBoost05.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420656
-    m_Key: Tuning.StuntBoost05.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420657
-    m_Key: Tuning.Drive01.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420658
-    m_Key: Tuning.Drive01.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420659
-    m_Key: Tuning.Drive02.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420660
-    m_Key: Tuning.Drive02.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420661
-    m_Key: Tuning.Drive03.Name
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420662
-    m_Key: Tuning.Drive03.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420663
-    m_Key: Survival
-    m_Metadata:
-      m_Items: []
-  - m_Id: 187701912941420664
-    m_Key: IS DISCHARGING!
-    m_Metadata:
-      m_Items: []
-  - m_Id: 188004823470759936
-    m_Key: SELECT CHAMPIONSHIP SLOT
-    m_Metadata:
-      m_Items: []
-  - m_Id: 188005531444109312
-    m_Key: SELECT SEASON
-    m_Metadata:
-      m_Items: []
-  - m_Id: 188038140953944064
-    m_Key: MODIFY VEHICLE
-    m_Metadata:
-      m_Items: []
-  - m_Id: 188038661651619840
-    m_Key: CHANGE VEHICLE
-    m_Metadata:
-      m_Items: []
-  - m_Id: 188040083000582144
-    m_Key: TEAM
-    m_Metadata:
-      m_Items: []
-  - m_Id: 188040234964410368
-    m_Key: WON
-    m_Metadata:
-      m_Items: []
-  - m_Id: 188040853192237056
-    m_Key: Current team status
-    m_Metadata:
-      m_Items: []
-  - m_Id: 188065932869427200
-    m_Key: TRACK PREVIEW
-    m_Metadata:
-      m_Items: []
-  - m_Id: 188072957011615744
-    m_Key: START
-    m_Metadata:
-      m_Items: []
-  - m_Id: 188072957011615745
-    m_Key: Empty slot
-    m_Metadata:
-      m_Items: []
-  - m_Id: 188072957011615746
-    m_Key: Start championship
-    m_Metadata:
-      m_Items: []
-  - m_Id: 188072957011615747
-    m_Key: Select championship
-    m_Metadata:
-      m_Items: []
-  - m_Id: 188072957011615748
-    m_Key: Win all seven national championships to unlock.
-    m_Metadata:
-      m_Items: []
-  - m_Id: 188072957011615749
-    m_Key: Funds
-    m_Metadata:
-      m_Items: []
-  - m_Id: 188072957011615750
-    m_Key: Price
-    m_Metadata:
-      m_Items: []
-  - m_Id: 188072957011615751
-    m_Key: Position
-    m_Metadata:
-      m_Items: []
-  - m_Id: 188072957011615752
-    m_Key: Wins
-    m_Metadata:
-      m_Items: []
-  - m_Id: 188072957011615753
-    m_Key: Buy part
-    m_Metadata:
-      m_Items: []
-  - m_Id: 188072957011615754
-    m_Key: Buy vehicle
-    m_Metadata:
-      m_Items: []
-  - m_Id: 188072957011615755
-    m_Key: Installed
-    m_Metadata:
-      m_Items: []
-  - m_Id: 188072957011615756
-    m_Key: Champ.Season.GER.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 188072957011615757
-    m_Key: Champ.Season.SPN.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 188072957011615758
-    m_Key: Champ.Season.JAP.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 188072957011615759
-    m_Key: Champ.Season.ENG.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 188072957011615760
-    m_Key: Champ.Season.FRA.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 188072957011615761
-    m_Key: Champ.Season.USA.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 188072957011615762
-    m_Key: Champ.Season.ITA.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 188072957011615763
-    m_Key: Champ.Season.SGP.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 188072957011615764
-    m_Key: Champ.Season.SURVIVAL.Description
-    m_Metadata:
-      m_Items: []
-  - m_Id: 188096609769807872
-    m_Key: SELECT TEAM SPONSOR
-    m_Metadata:
-      m_Items: []
-  - m_Id: 188100007000858624
-    m_Key: Next race
-    m_Metadata:
-      m_Items: []
-  - m_Id: 188100138337099776
-    m_Key: Tune your car
-    m_Metadata:
-      m_Items: []
-  - m_Id: 188100648683233280
-    m_Key: Change your car
-    m_Metadata:
-      m_Items: []
-  - m_Id: 188100648683233281
-    m_Key: Champ.CurrentStandings
-    m_Metadata:
-      m_Items: []
-  - m_Id: 188100648683233282
-    m_Key: Credits
-    m_Metadata:
-      m_Items: []
-  - m_Id: 188100648683233283
-    m_Key: Vehicle
-    m_Metadata:
-      m_Items: []
-  - m_Id: 188115255720206336
-    m_Key: 'Price New:'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 188115634570715136
-    m_Key: 'Trade in:'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 188115634570715137
-    m_Key: Champ.PodiumResult
-    m_Metadata:
-      m_Items: []
-  - m_Id: 188153002149339136
-    m_Key: 'Choose '
-    m_Metadata:
-      m_Items: []
-  - m_Id: 188153160442372096
-    m_Key: Select championships
-    m_Metadata:
-      m_Items: []
-  - m_Id: 188158728963940352
-    m_Key: QUICK RACE
-    m_Metadata:
-      m_Items: []
-  - m_Id: 188177540870365184
-    m_Key: Very quick race for very busy people
-    m_Metadata:
-      m_Items: []
-  - m_Id: 188358232631730176
-    m_Key: Pick a part you want to buy and accept purchase
-    m_Metadata:
-      m_Items: []
-  - m_Id: 188358577143472128
-    m_Key: Navigate to an unlocked part to mount it
-    m_Metadata:
-      m_Items: []
-  - m_Id: 188378724084277248
-    m_Key: 'Overwrite track picture:'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 189469949742866432
-    m_Key: Set
-    m_Metadata:
-      m_Items: []
-  - m_Id: 189522099361603584
-    m_Key: 'Time Limit: '
-    m_Metadata:
-      m_Items: []
-  - m_Id: 189544484919894016
-    m_Key: STUNTMAN
-    m_Metadata:
-      m_Items: []
-  - m_Id: 189544510102495232
-    m_Key: car20d
-    m_Metadata:
-      m_Items: []
-  - m_Id: 190294953174818816
-    m_Key: 'Cars:'
-    m_Metadata:
-      m_Items: []
-  - m_Id: 190595285587124224
-    m_Key: BRAKE TRIGGER
-    m_Metadata:
-      m_Items: []
-  - m_Id: 190595817013829632
-    m_Key: ACCELERATE TRIGGER
-    m_Metadata:
-      m_Items: []
-  - m_Id: 190601394989359104
-    m_Key: ACCELERATE AXIS
-    m_Metadata:
-      m_Items: []
-  - m_Id: 191046325226758144
-    m_Key: Clapping
-    m_Metadata:
-      m_Items: []
-  - m_Id: 191052099185336320
-    m_Key: Cheersb
+  - m_Id: 192128475921440768
+    m_Key: UI2 RIGHT
     m_Metadata:
       m_Items: []
   m_Metadata:

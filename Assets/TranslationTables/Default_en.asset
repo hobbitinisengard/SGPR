@@ -228,7 +228,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 31799994220544
-    m_Localized: STEER AXIS (STICK)
+    m_Localized: STEER RIGHT
     m_Metadata:
       m_Items: []
   - m_Id: 31932731359232
@@ -324,11 +324,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 35368357068800
-    m_Localized: UI HORIZONTAL AXIS
+    m_Localized: UI2 UP
     m_Metadata:
       m_Items: []
   - m_Id: 35484086304768
-    m_Localized: UI VERTICAL AXIS
+    m_Localized: UI2 DOWN
     m_Metadata:
       m_Items: []
   - m_Id: 35537223942144
@@ -653,7 +653,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 285368081186816
-    m_Localized: TEAMS
+    m_Localized: Teams
     m_Metadata:
       m_Items: []
   - m_Id: 285564097789952
@@ -2266,6 +2266,18 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 191052099185336320
     m_Localized: Cheers audible after successful stunt
+    m_Metadata:
+      m_Items: []
+  - m_Id: 192055982565154816
+    m_Localized: STEER LEFT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 192128263333142528
+    m_Localized: UI2 LEFT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 192128475921440768
+    m_Localized: UI2 RIGHT
     m_Metadata:
       m_Items: []
   references:

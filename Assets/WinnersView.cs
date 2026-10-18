@@ -19,16 +19,46 @@ public class WinnersView : MainMenuView
 	public TextMeshProUGUI description;
 	public void OKButton()
 	{
+		if (F.I.gameMode == GameMode.Splitscreen)
+		{
+			ResultsView.Clear();
+			GoToView(SplitScreenSelector.I.thisView);
+			return;
+		}
 		GoToView(rankingView);
 	}
 	protected override void OnEnable()
 	{
+		if (F.I.gameMode == GameMode.Splitscreen)
+		{
+			prevView = SplitScreenSelector.I.thisView;
+			prevViewForbidden = false;
+		}
 		if (Championships.Active && Championships.Current.Completed)
 		{
 			prevView = rankingView;
 			prevViewForbidden = false;
 		}
 		base.OnEnable();
+	}
+	public void PrepareUsingSplitScreen()
+	{
+		var players = SplitScreenSelector.I.SeriesStandings;
+		int bestScore = players.Count > 0 ? players[0].score : 0;
+		var winners = players.Where(player => player.score == bestScore).ToList();
+		if (F.I.teams)
+		{
+			var teams = players.GroupBy(player => player.sponsor).ToList();
+			int bestTeamScore = teams.Count > 0 ? teams.Max(team => team.Sum(player => player.score)) : 0;
+			winners = teams.Where(team => team.Sum(player => player.score) == bestTeamScore).SelectMany(team => team).ToList();
+		}
+		description.text = string.Join(", ", winners.Select(player => player.name)) + " " +
+			F.I.LocStr(winners.Count == 1 ? "WINS THE GAME!" : "WIN THE GAME!");
+		result123Obj.gameObject.SetActive(false);
+		succOverObj.gameObject.SetActive(true);
+		bool localWinner = winners.Any(winner => F.I.splitScreenPlayers.Any(player => player.name == winner.name));
+		succOverObj.sprite = succOverSprites[localWinner ? 1 : 0];
+		music = localWinner ? goodendingClip : gameoverClip;
 	}
 	public void PrepareUsingChampionship()
 	{

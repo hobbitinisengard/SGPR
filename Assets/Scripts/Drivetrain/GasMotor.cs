@@ -30,7 +30,7 @@ namespace RVP
 				: 0;
 
 			bool wasBoosting = boosting;
-			boosting = vp && vp.originalVehiclePhysics != null && vp.originalVehiclePhysics.TurboActive;
+			boosting = vp && vp.BoostPresentationActive;
 			if (boosting && !wasBoosting)
 				boostActivatedTime = Time.time;
 

@@ -37,8 +37,9 @@ public class PtsAnim : Sfxable
 	RectTransform rt;
 	float timer;
 	float duration = 1;
-	private void Start()
+	protected override void Awake()
 	{
+		base.Awake();
 		image = GetComponent<Image>();
 		rt = GetComponent<RectTransform>();
 		timer = duration;
@@ -61,7 +62,8 @@ public class PtsAnim : Sfxable
 				digit.color = clr;
 			}
 			var pos = rt.localPosition;
-			pos.y = Screen.currentResolution.height / 2f * timer / duration;
+			var parentRect = rt.parent as RectTransform;
+			pos.y = (parentRect ? parentRect.rect.height : Screen.height) / 2f * timer / duration;
 			rt.localPosition = pos;
 		}
 		else

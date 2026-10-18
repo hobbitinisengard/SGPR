@@ -135,6 +135,11 @@ namespace RVP
 		}
 		void ChangeFollowCamera(InputAction.CallbackContext context)
 		{
+			if (F.I.gameMode == GameMode.Splitscreen) return;
+			CycleFollowCamera();
+		}
+		public void CycleFollowCamera()
+		{
 			if (!enabled || mode != Mode.Follow || F.I.chat.texting) return;
 			preset = (preset + 1) % Distances.Length;
 			UpdateLH();
@@ -209,8 +214,8 @@ namespace RVP
 			}
 			if (!F.I.chat.texting)
 			{
-				xInput = F.I.lookAxisInput.action.ReadValue<float>();
-				yInput = -F.I.lookBackInput.action.ReadValue<float>();
+				xInput = vp.basicInput.Action(F.I.lookAxisInput)?.ReadValue<float>() ?? 0;
+				yInput = -(vp.basicInput.Action(F.I.lookBackInput)?.ReadValue<float>() ?? 0);
 			}
 			tickAccumulator += Time.fixedDeltaTime * SourceHz;
 			while (tickAccumulator >= 0.99999f)

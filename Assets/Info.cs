@@ -105,6 +105,7 @@ public class Info : MonoBehaviour
 
 	public const string TranslationTableName = "Default";
 	public MultiPlayerSelector mpSelectorInitializer;
+	public SplitScreenSelector splitScreenSelector;
 	public Text versionText;
 	public Material transpMaterial;
 	public Material opaqueMaterial;
@@ -112,7 +113,7 @@ public class Info : MonoBehaviour
 	public Material emissiveRearDarker;
 	public Mesh sphereMesh;
 	public AudioMixer mainAudioMixer;
-	public const string VERSION = "0.6";
+	public const string VERSION = "0.7";
 	public bool minimized { get; private set; }
 	[DllImport("user32.dll")]
 	static extern bool SetCursorPos(int X, int Y);
@@ -136,6 +137,7 @@ public class Info : MonoBehaviour
 		SetCursorPos(0, 0);
 		UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
 		MultiPlayerSelector.I = mpSelectorInitializer;
+		SplitScreenSelector.I = splitScreenSelector;
 		versionText.text = VERSION;
 		int MPtags = CurrentPlayer.ReadOnlyTags().Count();
 		switch (MPtags)
@@ -258,6 +260,9 @@ public class Info : MonoBehaviour
 	public InputActionReference lookBackInput;
 	public InputActionReference lookAxisInput;
 	public InputActionReference lightsInput;
+	// Gameplay instances are paired with devices and independent keyboard profiles only for a local race.
+	public PlayerInput[] playerInputs = new PlayerInput[SplitScreenRace.MaxPlayers];
+	public List<SplitScreenPlayerInfo> splitScreenPlayers = new();
 
 	public RankingData rankingData;
 	[NonSerialized]

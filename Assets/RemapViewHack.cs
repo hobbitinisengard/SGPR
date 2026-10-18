@@ -1,24 +1,19 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 
+// The operation itself handles Escape, including when the Cancel action is disabled.
+// This overlay only prevents the same press from leaving the remap menu.
 public class RemapViewHack : MonoBehaviour
 {
-   public MainMenuView MainMenuView;
-	MainMenuView prevView;
-	// disable quitting remap menu when rebinding by removing prevView from MainMenu component
+	public MainMenuView MainMenuView;
+	bool previousForbidden;
 	private void OnEnable()
 	{
-		F.I.escRef.action.performed += EscWorks;
-		prevView = MainMenuView.prevView;
-		MainMenuView.prevView = null;
+		if (!MainMenuView) return;
+		previousForbidden = MainMenuView.prevViewForbidden;
+		MainMenuView.prevViewForbidden = true;
 	}
 	private void OnDisable()
 	{
-		F.I.escRef.action.performed -= EscWorks;
-		MainMenuView.prevView = prevView;
-	}
-	void EscWorks(InputAction.CallbackContext ctx)
-	{
-		gameObject.SetActive(false);
+		if (MainMenuView) MainMenuView.prevViewForbidden = previousForbidden;
 	}
 }

@@ -30,10 +30,13 @@ public class TrackSelectorTemplate : Sfxable
 	protected SortingCond curSortingCondition = SortingCond.Difficulty;
 	protected bool loadCo;
 	protected Coroutine containerCo;
+	Coroutine loadRoutine;
 	protected string persistentSelectedTrack;
 
-	protected void OnDisable()
+	protected virtual void OnDisable()
 	{
+		if (loadRoutine != null) StopCoroutine(loadRoutine);
+		loadRoutine = null; loadCo = false;
 		F.I.move2Ref.action.performed -= CalculateTargetToSelect;
 		persistentSelectedTrack = selectedTrack ? selectedTrack.name : persistentSelectedTrack;
 	}
@@ -51,9 +54,8 @@ public class TrackSelectorTemplate : Sfxable
 		}
 
 		F.I.move2Ref.action.performed += CalculateTargetToSelect;
-		if (loadCo)
-			StopCoroutine(Load());
-		StartCoroutine(Load());
+		if (loadRoutine != null) StopCoroutine(loadRoutine);
+		loadRoutine = StartCoroutine(Load());
 	}
 	public void SortTrackList()
 	{
@@ -65,11 +67,10 @@ public class TrackSelectorTemplate : Sfxable
 		else
 			sortButton.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = F.I.LocStr("Sorted by difficulty");
 		// reload 
-		if (loadCo)
-			StopCoroutine(Load());
-		StartCoroutine(Load(F.I.s_trackName, forceReload: true));
+		if (loadRoutine != null) StopCoroutine(loadRoutine);
+		loadRoutine = StartCoroutine(Load(F.I.s_trackName, forceReload: true));
 	}
-	public void SwitchRoadType(bool init = false)
+	public virtual void SwitchRoadType(bool init = false)
 	{
 		int dir = 0;
 		if (init)
@@ -96,6 +97,8 @@ public class TrackSelectorTemplate : Sfxable
 			return true;
 		else if (F.I.gameMode == GameMode.Multiplayer && !ServerC.I.AmHost)
 			return ValidCheck(F.I.tracks[trackName].valid); // show even not unlocked tracks for clients
+		else if (F.I.gameMode == GameMode.Splitscreen)
+			return F.I.tracks[trackName].unlocked && F.I.tracks[trackName].valid && !F.I.tracks[trackName].isSkatePark;
 		else if (F.I.gameMode == GameMode.Skate)
 			return F.I.tracks[trackName].isSkatePark;
 		else
@@ -105,6 +108,7 @@ public class TrackSelectorTemplate : Sfxable
 	protected IEnumerator Load(string specificTrackName = null, bool forceReload = false)
 	{
 		loadCo = true;
+		if (!trackContent || trackContent.childCount == 0 || !trackImageTemplate) { loadCo = false; yield break; }
 		if (specificTrackName != null)
 			F.I.s_trackName = specificTrackName;
 
@@ -204,17 +208,19 @@ public class TrackSelectorTemplate : Sfxable
 		if (selectedTrack == null)
 		{
 			//Debug.LogWarning("selectedTrack is null");
-			selectedTrack = trackContent.GetChild(0).GetChild(0);
+			for (int i = 0; i < trackContent.childCount && !selectedTrack; i++)
+				if (trackContent.GetChild(i).childCount > 0) selectedTrack = trackContent.GetChild(i).GetChild(0);
 		}
+		if (!selectedTrack) { SetTrackShaenigans(); loadCo = false; yield break; }
 		F.I.s_trackName = selectedTrack.name;
 
 		radial?.gameObject.SetActive(selectedTrack);
 		radial?.SetChildrenActive(trackContent);
-		startButton.Select();
+		if (startButton) startButton.Select();
 		SetTrackShaenigans();
 		loadCo = false;
 	}
-	protected void SetTrackShaenigans()
+	protected virtual void SetTrackShaenigans()
 	{
 		trackContent.GetChild(0).gameObject.SetActive(!F.I.randomTracks);
 		if(trackContent.childCount > 1)
@@ -223,8 +229,9 @@ public class TrackSelectorTemplate : Sfxable
 		SetTiles();
 		SetRecords();
 
-		scrollx.gameObject.SetActive(!F.I.randomTracks && ServerC.I.AmHost);
-		scrolly.gameObject.SetActive(!F.I.randomTracks && ServerC.I.AmHost);
+		bool canSelectTrack = F.I.gameMode != GameMode.Multiplayer || (ServerC.I && ServerC.I.AmHost);
+		if (scrollx) scrollx.gameObject.SetActive(!F.I.randomTracks && canSelectTrack);
+		if (scrolly) scrolly.gameObject.SetActive(!F.I.randomTracks && canSelectTrack);
 
 		radial?.gameObject.SetActive(!F.I.randomTracks);
 		// set description
@@ -254,7 +261,7 @@ public class TrackSelectorTemplate : Sfxable
 		// focus on track
 		if (containerCo != null)
 			StopCoroutine(containerCo);
-		if (gameObject.activeInHierarchy)
+		if (gameObject.activeInHierarchy && trackContent && scrollx && scrolly)
 			containerCo = StartCoroutine(MoveToTrack());
 	}
 	protected void CalculateTargetToSelect(InputAction.CallbackContext ctx)
@@ -305,6 +312,7 @@ public class TrackSelectorTemplate : Sfxable
 	
 	protected void SetRecords()
 	{
+		if (!recordsContainer) return;
 		if (!F.I.randomTracks)
 		{
 			for (int i = 0; i < recordsContainer.childCount; ++i)
@@ -339,6 +347,7 @@ public class TrackSelectorTemplate : Sfxable
 	}
 	protected void SetTiles()
 	{
+		if (!tilesContainer || tilesContainer.childCount == 0) return;
 		void AddTile(string spriteName)
 		{
 			var tile = Instantiate(tilesContainer.GetChild(0).gameObject, tilesContainer);

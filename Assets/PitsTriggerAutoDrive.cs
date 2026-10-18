@@ -13,7 +13,7 @@ public class PitsTriggerAutoDrive : MonoBehaviour
 			return;
 
 		var vp = carCollider.attachedRigidbody.GetComponent<VehicleParent>();
-		if (!vp || (!allowPlayerAutoDrive && vp == RaceManager.I.playerCar))
+		if (!vp || (!allowPlayerAutoDrive && vp.IsLocalHuman))
 			return;
 
 		PathCreator pitsPathCreator = transform.parent.parent.GetComponent<EnergyTunnelPath>().pitsPathCreator;

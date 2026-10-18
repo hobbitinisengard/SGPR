@@ -37,6 +37,7 @@ public class MainMenuView : Sfxable
 
 	void CancelPressed(InputAction.CallbackContext obj)
 	{
+		if (UnityEngine.InputSystem.Samples.RebindUI.RebindActionUI.ConsumeCancelInput()) return;
 		GoBack();
 	}
 	/// <summary>
@@ -45,6 +46,7 @@ public class MainMenuView : Sfxable
 	/// <param name="ignoreYouSure"></param>
 	public void GoBack(bool ignoreYouSure = false)
 	{
+		if (SplitScreenSelector.I && SplitScreenSelector.I.BackRegistration(this)) return;
 		if(prevViewForbidden)
 		{
 			PlaySFX("fe-warning");
@@ -73,6 +75,17 @@ public class MainMenuView : Sfxable
 	/// </summary>
 	public void GoToView(MainMenuView view)
 	{
+		if (SplitScreenSelector.I && SplitScreenSelector.I.IsRegistrationView(this) && !SplitScreenSelector.I.RegistrationNavigationAllowed) return;
+		if (F.I.gameMode == GameMode.Splitscreen && TryGetComponent<PreSplitScreenView>(out var pre) && F.I.splitScreenSelector && view == F.I.splitScreenSelector.enterNameView &&
+			!F.I.splitScreenSelector.BeginRegistration(this)) return;
+		if (F.I.gameMode == GameMode.Splitscreen && SplitScreenSelector.I)
+		{
+			var split = SplitScreenSelector.I;
+			if (this == split.thisView && view && (view == split.garageView || view.GetComponentInChildren<CarSelector>(true)))
+			{ if (!split.PrepareGarage(view)) return; }
+			else if (this == split.garageView && split.GaragePlayerIndex >= 0 && !split.GarageReturnAllowed)
+			{ if (split.carSelector) split.carSelector.BuySelectedVehicle(); return; }
+		}
 		if (name == "EnterNameView" && F.I.gameMode == GameMode.Championships)
 		{
 			if (champNameSubmitted) return;
@@ -104,6 +117,7 @@ public class MainMenuView : Sfxable
 	}
 	protected virtual void OnDisable()
 	{
+		if (SplitScreenSelector.I) SplitScreenSelector.I.RegistrationViewDisabled(this);
 		F.I.escRef.action.started -= CancelPressed;
 		// get current selection and save it 
 		firstButtonToBeSelected = EventSystem.current.currentSelectedGameObject?.GetComponent<Button>() ?? firstButtonToBeSelected;
@@ -111,6 +125,7 @@ public class MainMenuView : Sfxable
 	protected virtual void OnEnable()
 	{
 		champNameSubmitted = false;
+		if (SplitScreenSelector.I) SplitScreenSelector.I.RegistrationViewEnabled(this);
 		F.I.escRef.action.started += CancelPressed;
 		if (firstButtonToBeSelected)
 			firstButtonToBeSelected.Select();

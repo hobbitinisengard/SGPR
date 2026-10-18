@@ -648,6 +648,17 @@
                     "isPartOfComposite": false
                 },
                 {
+                    "name": "up",
+                    "id": "c0b5ae8a-875f-4a28-a6ef-4e965972ec46",
+                    "path": "<Gamepad>/rightStick/up",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Gamepad",
+                    "action": "Move2",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
                     "name": "down",
                     "id": "f550fc92-daea-44f3-93ef-45973a53204e",
                     "path": "<HID::Logitech Logitech Dual Action>/rz",
@@ -662,6 +673,17 @@
                     "name": "down",
                     "id": "dd726a95-b679-4ead-a337-5cec3d1e1fb9",
                     "path": "<HID::Logitech Logitech Dual Action>/rz",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Gamepad",
+                    "action": "Move2",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "left",
+                    "id": "bfac0ebc-afe4-49ba-ba62-9c73bc1693ec",
+                    "path": "<Gamepad>/rightStick/left",
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
@@ -871,6 +893,17 @@
                     "name": "down",
                     "id": "271f3302-52af-4847-9ff9-b9da669dcc1a",
                     "path": "<Gamepad>/rightStick/down",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Gamepad",
+                    "action": "Drive",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "left",
+                    "id": "84186540-80c2-4499-8036-958a282be2db",
+                    "path": "<Gamepad>/leftStick/left",
                     "interactions": "",
                     "processors": "",
                     "groups": ";Gamepad",

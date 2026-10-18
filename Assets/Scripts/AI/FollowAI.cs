@@ -216,7 +216,7 @@ namespace RVP
 		{
 			if (pitsPathCreator)
 			{
-				RaceManager.I.hud.infoText.AddMessage(new Message(vp.name + " " + F.I.LocStr("RETURNS ON TRACK!"), BottomInfoType.PIT_OUT));
+				SGP_HUD.ShowRaceMessage(new Message(vp.name + " " + F.I.LocStr("RETURNS ON TRACK!"), BottomInfoType.PIT_OUT));
 				speedLimit = 1024;
 				speedLimitDist = -1;
 				if (resetProgress)
@@ -285,8 +285,7 @@ namespace RVP
 
 			if (CountDownSeq.Countdown > 0)
 			{
-				vp.SetBrake(1);
-				vp.ebrakeInput = 1;
+				// VehicleParent applies the starting-grid brake separately from driver input.
 
 				if (IsCPU)
 				{
@@ -295,7 +294,7 @@ namespace RVP
 				}
 				return;
 			}
-			vp.ebrakeInput = 0;
+			vp.SetEbrake(0);
 			if (vp.ActiveRailbar)
 			{
 				overRoad = true;
@@ -673,9 +672,18 @@ namespace RVP
 			if (h.normal.sqrMagnitude < 0.0001f)
 				h.normal = Vector3.up;
 				
+			Vector3 resetForward = Vector3.ProjectOnPlane(resetDir, h.normal);
+			if (resetForward.sqrMagnitude < 0.0001f)
+				resetForward = Vector3.ProjectOnPlane(Vector3.forward, h.normal);
+			Quaternion resetRotation = Quaternion.LookRotation(resetForward.normalized, h.normal);
+			Vector3 resetPosition = resetPos + Vector3.up + (skate ? Vector3.zero : resetDir);
 			vp.ghost.StartGhostResetting();
 			rb.isKinematic = true;
-			tr.position = resetPos + Vector3.up + (skate ? Vector3.zero : resetDir);
+			tr.SetPositionAndRotation(resetPosition, resetRotation);
+			rb.position = resetPosition;
+			rb.rotation = resetRotation;
+			vp.originalVehiclePhysics.ResetSourceProbeHistory();
+			vp.PublishTrackResetTeleport();
 			yield return new WaitForFixedUpdate();
 
 			float newUnivProgress = GetDist(RaceManager.I.racingPaths[1]);
@@ -687,10 +695,6 @@ namespace RVP
 			vp.antenna?.Reset();
 			//rb.angularVelocity = Vector3.zero;
 			//rb.velocity = Vector3.zero;
-			Vector3 resetForward = Vector3.ProjectOnPlane(resetDir, h.normal);
-			if (resetForward.sqrMagnitude < 0.0001f)
-				resetForward = Vector3.ProjectOnPlane(Vector3.forward, h.normal);
-			tr.rotation = Quaternion.LookRotation(resetForward.normalized, h.normal);
 			vp.originalVehiclePhysics.ResetSourceProbeHistory();
 
 			OutOfPits(resetProgress: false);

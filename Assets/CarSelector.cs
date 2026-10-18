@@ -27,6 +27,16 @@ public class CarSelector : Sfxable
 	float playerMoney = 0;
 	bool forceChampionshipRefresh;
 	bool returningToChampionship;
+	int splitScreenPlayer = -1;
+	bool SplitScreenGarage => F.I.gameMode == GameMode.Splitscreen && SplitScreenSelector.I && splitScreenPlayer >= 0 &&
+		splitScreenPlayer == SplitScreenSelector.I.GaragePlayerIndex;
+	public void SetSplitScreenPlayer(int index)
+	{
+		splitScreenPlayer = index;
+		forceChampionshipRefresh = true;
+		persistentSelectedCar = "car" + F.I.splitScreenPlayers[index].car.ToString("D2");
+		selectedCar = null;
+	}
 	public void SetType(GarageType type, float money = 1e6f)
 	{
 		playerMoney = money;
@@ -47,12 +57,16 @@ public class CarSelector : Sfxable
 		F.I.move2Ref.action.performed -= CalculateTargetToSelect;
 		F.I.enterRef.action.performed -= ConfirmPurchase;
 		if (selectedCar) persistentSelectedCar = selectedCar.name;
+		if (SplitScreenGarage) { splitScreenPlayer = -1; return; }
 		if (Championships.Active) F.I.s_playerCarIdx = Championships.Current.carIndex;
 		else if (selectedCar) F.I.s_playerCarIdx = Car.Name2Index(selectedCar.name);
 	}
 	private void OnEnable()
 	{
 		returningToChampionship = false;
+		if (F.I.gameMode == GameMode.Splitscreen && SplitScreenSelector.I && SplitScreenSelector.I.GaragePlayerIndex >= 0)
+			SetSplitScreenPlayer(SplitScreenSelector.I.GaragePlayerIndex);
+		else splitScreenPlayer = -1;
 		if (Championships.Active)
 		{
 			forceChampionshipRefresh = true;
@@ -60,8 +74,11 @@ public class CarSelector : Sfxable
 			persistentSelectedCar = "car" + Championships.Current.carIndex.ToString("D2");
 			selectedCar = null; ClearAllCars();
 		}
-		F.I.move2Ref.action.performed += CalculateTargetToSelect;
-		F.I.enterRef.action.performed += ConfirmPurchase;
+		if (!SplitScreenGarage)
+		{
+			F.I.move2Ref.action.performed += CalculateTargetToSelect;
+			F.I.enterRef.action.performed += ConfirmPurchase;
+		}
 		if (loadCo)
 		{
 			StopCoroutine(Load());
@@ -70,6 +87,14 @@ public class CarSelector : Sfxable
 	}
 	bool ShowCar(Car c)
 	{
+		if (SplitScreenGarage)
+		{
+			var player = SplitScreenSelector.I.GaragePlayer;
+			int index = System.Array.IndexOf(F.I.cars, c);
+			return index == player.car || (F.I.scoringType == ScoringType.Championship
+				? c.price >= 0 && SplitScreenSelector.I.GarageCost(index) <= player.Funds
+				: c.price >= 0 && c.unlocked);
+		}
 		if (Championships.Active) return c == F.I.cars[Championships.Current.carIndex] || (Championships.CarPrice(System.Array.IndexOf(F.I.cars,c)) >= 0 && Championships.CarCost(System.Array.IndexOf(F.I.cars,c)) <= Championships.Current.cash);
 		switch (type)
 		{
@@ -159,11 +184,14 @@ public class CarSelector : Sfxable
 
 	void CalculateTargetToSelect(InputAction.CallbackContext ctx)
 	{
+		if (!SplitScreenGarage) MoveSelection(ctx.ReadValue<Vector2>());
+	}
+	public void MoveSelection(Vector2 move2)
+	{
 		if (!selectedCar || loadCo)
 			return;
 		d_co = containerCo == null;
 
-		Vector2 move2 = F.I.move2Ref.action.ReadValue<Vector2>();
 		int x = Mathf.RoundToInt(move2.x);
 		int y = Mathf.RoundToInt(-move2.y);
 
@@ -190,7 +218,7 @@ public class CarSelector : Sfxable
 				if (tempSelectedCar != null && tempSelectedCar != selectedCar)
 				{
 					selectedCar = tempSelectedCar;
-					if (!Championships.Active) F.I.s_playerCarIdx = Car.Name2Index(selectedCar.name);
+					if (!Championships.Active && !SplitScreenGarage) F.I.s_playerCarIdx = Car.Name2Index(selectedCar.name);
 					buttonsContainer.GetChild(selectedCar.parent.GetSiblingIndex()).GetComponent<MainMenuButton>().Select();
 					PlaySFX("fe-bitmapscroll");
 				}
@@ -215,7 +243,9 @@ public class CarSelector : Sfxable
 		if (!selectedCar) return;
 		var car = F.I.Car(selectedCar.name);
 		carDescText.text = F.I.LocStr(car.name) + "\n\n" + F.I.LocStr(selectedCar.name + "d");
-		if (Championships.Active)
+		if (SplitScreenGarage && F.I.scoringType == ScoringType.Championship)
+			carDescText.text += $"\n\n{F.I.LocStr("Funds")}: ${SplitScreenSelector.I.GaragePlayer.Funds:N0}\n{F.I.LocStr("Price")}: ${Mathf.Max(0,car.price):N0}";
+		else if (Championships.Active)
 		{
 			carDescText.text += $"\n\n{F.I.LocStr("Funds")}: ${Championships.Current.cash:N0}\n{F.I.LocStr("Price")}: ${Mathf.Max(0,Championships.CarPrice(Car.Name2Index(selectedCar.name))):N0}";
 
@@ -224,6 +254,14 @@ public class CarSelector : Sfxable
 	void ConfirmPurchase(InputAction.CallbackContext ctx) => BuySelectedVehicle();
 	public void BuySelectedVehicle()
 	{
+		if (SplitScreenGarage)
+		{
+			if (F.I.enterRef.action.WasPressedThisFrame() && !SplitScreenSelector.I.GarageSubmitAllowed) return;
+			if (returningToChampionship || loadCo || !selectedCar) return;
+			if (!SplitScreenSelector.I.BuyGarageCar(Car.Name2Index(selectedCar.name))) { PlaySFX("fe-warning"); return; }
+			returningToChampionship = true; PlaySFX("fe-dialogconfirm");
+			SplitScreenSelector.I.ReturnFromGarage(); return;
+		}
 		if (returningToChampionship || loadCo || !selectedCar || !Championships.Active) return;
 		if (!Championships.BuyCar(Car.Name2Index(selectedCar.name))) { PlaySFX("fe-warning"); return; }
 		PlaySFX("fe-dialogconfirm");

@@ -64,6 +64,7 @@ namespace RVP
 
 		[NonSerialized] public float currentRPM;
 		[NonSerialized] public float rawRPM;
+		int vehicleWheelIndex = -1;
 		[NonSerialized] public WheelContact contactPoint = new();
 		[NonSerialized] public bool grounded;
 		public bool groundedReally { get; private set; }
@@ -91,6 +92,7 @@ namespace RVP
 		{
 			rb = tr.GetTopmostParentComponent<Rigidbody>();
 			vp = tr.GetTopmostParentComponent<VehicleParent>();
+			if (vp && vp.wheels != null) vehicleWheelIndex = Array.IndexOf(vp.wheels, this);
 			if (!susParent)
 				susParent = tr.parent ? tr.parent.GetComponent<Suspension>() : null;
 			travelDist = susParent ? susParent.targetCompression : 1;
@@ -195,10 +197,14 @@ namespace RVP
 				vp.originalVehiclePhysics.GetWheelSlip(wheelIndex, out forwardSlip, out sidewaysSlip);
 				originalGripUsage = vp.originalVehiclePhysics.GetWheelGripUsage(wheelIndex);
 			}
+			vp.ApplyRemoteWheelPresentation(this, vehicleWheelIndex);
 		}
 
 		void LateUpdate()
 		{
+			// Apply after all physics updates: the local solver on a remote copy
+			// must not overwrite the owner's wheel RPM before rendering.
+			if (Application.isPlaying && vp) vp.ApplyRemoteWheelPresentation(this, vehicleWheelIndex);
 			RotateWheel();
 			if (!Application.isPlaying)
 			{

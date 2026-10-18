@@ -72,11 +72,13 @@ namespace RVP
 		}
 		public void RemoveCars()
 		{
+			var split = GetComponent<SplitScreenRace>();
+			if (split) split.Cleanup();
 			hud.Disconnect();
 			hud.gameObject.SetActive(false);
 			cam.Disconnect();
 
-			if (ServerC.I.AmHost)
+			if (F.I.gameMode != GameMode.Multiplayer || ServerC.I.AmHost)
 			{
 				for (int i = 0; i < F.I.s_cars.Count; i++)
 				{
@@ -110,6 +112,8 @@ namespace RVP
 			switch (F.I.gameMode)
 			{
 				case GameMode.Exhibition:
+				case GameMode.Splitscreen:
+					countDownSeq.gameObject.SetActive(false);
 					RemoveCars();
 					StartRace();
 					break;
@@ -205,19 +209,19 @@ namespace RVP
 						{
 							case RaceType.Survival:
 							case RaceType.Race:
-								hud.infoText.AddMessage(new(leader.name + " " + F.I.LocStr("TAKES THE LEAD!"), BottomInfoType.NEW_LEADER));
+								SGP_HUD.ShowRaceMessage(new(leader.name + " " + F.I.LocStr("TAKES THE LEAD!"), BottomInfoType.NEW_LEADER));
 								break;
 							case RaceType.Knockout:
-								hud.infoText.AddMessage(new(leader.name + " " + F.I.LocStr("TAKES THE LEAD!"), BottomInfoType.NEW_LEADER));
+								SGP_HUD.ShowRaceMessage(new(leader.name + " " + F.I.LocStr("TAKES THE LEAD!"), BottomInfoType.NEW_LEADER));
 								break;
 							case RaceType.Stunt:
-								hud.infoText.AddMessage(new(leader.name + " " + F.I.LocStr("TAKES THE LEAD!") + " " + F.I.LocStr("AEROMILES") + ": " + leader.raceBox.Aero, BottomInfoType.NEW_LEADER));
+								SGP_HUD.ShowRaceMessage(new(leader.name + " " + F.I.LocStr("TAKES THE LEAD!") + " " + F.I.LocStr("AEROMILES") + ": " + leader.raceBox.Aero, BottomInfoType.NEW_LEADER));
 								break;
 							case RaceType.Drift:
-								hud.infoText.AddMessage(new(leader.name + " " + F.I.LocStr("TAKES THE LEAD!") + " " + F.I.LocStr("DRIFT") + ": " + leader.raceBox.Drift, BottomInfoType.NEW_LEADER));
+								SGP_HUD.ShowRaceMessage(new(leader.name + " " + F.I.LocStr("TAKES THE LEAD!") + " " + F.I.LocStr("DRIFT") + ": " + leader.raceBox.Drift, BottomInfoType.NEW_LEADER));
 								break;
 							case RaceType.TimeTrial:
-								hud.infoText.AddMessage(new(leader.name + " " + F.I.LocStr("TAKES THE LEAD!") + " " + F.I.LocStr("LAP") + ": " + leader.raceBox.bestLapTime.ToLaptimeStr(), BottomInfoType.NEW_LEADER));
+								SGP_HUD.ShowRaceMessage(new(leader.name + " " + F.I.LocStr("TAKES THE LEAD!") + " " + F.I.LocStr("LAP") + ": " + leader.raceBox.bestLapTime.ToLaptimeStr(), BottomInfoType.NEW_LEADER));
 								break;
 							default:
 								break;
@@ -243,7 +247,7 @@ namespace RVP
 				{
 					var eliminatedCar = F.I.s_cars[i];
 					eliminatedCar.KnockoutMe();
-					hud.infoText.AddMessage(new(eliminatedCar.name + " " + F.I.LocStr("ELIMINATED!"), BottomInfoType.ELIMINATED));
+					SGP_HUD.ShowRaceMessage(new(eliminatedCar.name + " " + F.I.LocStr("ELIMINATED!"), BottomInfoType.ELIMINATED));
 				}
 			}
 		}
@@ -304,6 +308,7 @@ namespace RVP
 		}
 		private void OnDisable()
 		{
+			GetComponent<SplitScreenRace>()?.Cleanup();
 			playerCar = null;
 			F.I.raceStartDate = DateTime.MinValue;
 			DemoSGPLogo.SetActive(false);
@@ -349,11 +354,14 @@ namespace RVP
 		}
 		public void ActivateEndraceTimer()
 		{
+			if (F.I.gameMode == GameMode.Splitscreen) hud.endraceTimer.gameObject.SetActive(true);
 			if (F.I.gameMode == GameMode.Multiplayer)
 				Online.I.CountdownTillForceEveryoneToResultsRpc();
 		}
 		public void StartRace()
 		{
+			finishSequenceStarted = false;
+			hud.endraceTimer.gameObject.SetActive(false);
 			ResultsView.Clear();
 			F.I.raceStartDate = DateTime.UtcNow.AddSeconds(5);
 			cam.isSkateCam = F.I.tracks[F.I.s_trackName].isSkatePark;
@@ -361,6 +369,7 @@ namespace RVP
 		}
 		IEnumerator StartRaceCoroutine()
 		{
+			bool splitScreen = F.I.gameMode == GameMode.Splitscreen;
 			bool skate = F.I.gameMode == GameMode.Skate;
 			if (skate)
 			{
@@ -398,6 +407,12 @@ namespace RVP
 			editorPanel.gameObject.SetActive(false);
 
 			SetPitsLayer(0);
+			if (splitScreen)
+			{
+				var split = GetComponent<SplitScreenRace>() ?? gameObject.AddComponent<SplitScreenRace>();
+				if (!split.Prepare(this)) { BackToMenu(false); yield break; }
+				F.I.s_spectator = false;
+			}
 
 			if ((F.I.tracks[F.I.s_trackName].envir == Envir.SPN
 						|| F.I.tracks[F.I.s_trackName].envir == Envir.ENG
@@ -420,7 +435,26 @@ namespace RVP
 					preferredCarsIdxs.Add(i);
 			}
 			CarPlacement[] carPlacements;
-			if (skate)
+			if (splitScreen)
+			{
+				var localPlayers = F.I.splitScreenPlayers;
+				int rivals = Mathf.Clamp(F.I.s_cpuRivals, 0, F.I.maxCarsInRace - localPlayers.Count);
+				carPlacements = new CarPlacement[rivals + localPlayers.Count];
+				for (int i = 0; i < rivals; i++)
+				{
+					carPlacements[i] = CarPlacement.CPU(i, preferredCarsIdxs.GetRandom());
+					if (F.I.teams) carPlacements[i].livery = SplitScreenSelector.I.CpuSponsor(i);
+					foreach (var player in localPlayers)
+						if (string.Equals(player.name, carPlacements[i].name, StringComparison.OrdinalIgnoreCase)) carPlacements[i].name += "_CPU";
+				}
+				for (int i = 0; i < localPlayers.Count; i++)
+				{
+					var player = localPlayers[i];
+					carPlacements[rivals + i] = new CarPlacement { localPlayerIndex = i, position = rivals + i,
+						carIdx = player.car, name = player.name, livery = player.sponsor };
+				}
+			}
+			else if (skate)
 				carPlacements = new[] { CarPlacement.LocalPlayer() };
 			else if (ServerC.I.AmHost)
 			{
@@ -524,7 +558,7 @@ namespace RVP
 					trackForward = Vector3.ProjectOnPlane(Vector3.forward, trackNormal);
 				var rotation = Quaternion.LookRotation(trackForward.normalized, trackNormal);
 
-				if (!skate && !ServerC.I.AmHost)
+				if (!skate && !splitScreen && !ServerC.I.AmHost)
 					Online.I.GibCar(position, rotation);
 				else
 				{
@@ -536,6 +570,7 @@ namespace RVP
 					else
 						newCar = Instantiate(carModel, position, rotation).GetComponent<VehicleParent>();
 
+					newCar.localPlayerIndex = cp.localPlayerIndex;
 					newCar.name = cp.name;
 					newCar.sponsor = cp.livery;
 				}
@@ -543,7 +578,7 @@ namespace RVP
 			SetPitsLayer(F.I.roadLayer);
 
 			DemoSGPLogo.SetActive(F.I.s_spectator);
-			if (skate)
+			if (skate || splitScreen)
 				F.I.raceStartDate = DateTime.UtcNow.AddSeconds(CountDownSeq.startRaceCountdownSecs);
 			hud.gameObject.SetActive(!F.I.s_spectator);
 			countDownSeq.gameObject.SetActive(!F.I.s_spectator);
@@ -601,8 +636,11 @@ namespace RVP
 
 		public void PlayFinishSeq()
 		{
+			if (finishSequenceStarted) return;
+			finishSequenceStarted = true;
 			StartCoroutine(FinishSeq());
 		}
+		bool finishSequenceStarted;
 		IEnumerator FinishSeq()
 		{
 			if (ServerC.I.AmHost)

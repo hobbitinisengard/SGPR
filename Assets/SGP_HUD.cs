@@ -15,6 +15,14 @@ public enum BottomInfoType {
 public class SGP_HUD : MonoBehaviour
 {
 	public static SGP_HUD I;
+	public static void ShowRaceMessage(Message message)
+	{
+		if (F.I.gameMode == GameMode.Splitscreen && SplitScreenRace.I)
+			SplitScreenRace.I.BroadcastRaceMessage(message);
+		else if (I && I.infoText) I.infoText.AddMessage(message);
+	}
+	[NonSerialized] public bool primaryHud = true;
+	public Transform container;
 	public EndraceCountdownTimer endraceTimer;
 	public GameObject AEROText;
 	public GameObject DRIFTText;
@@ -117,7 +125,7 @@ public class SGP_HUD : MonoBehaviour
 	}
 	private void OnEnable()
 	{
-		F.I.escRef.action.performed += EscapePressed;
+		if (F.I.gameMode != GameMode.Splitscreen) F.I.escRef.action.performed += EscapePressed;
 
 		AEROText.SetActive(F.I.s_raceType != RaceType.Drift);
 		DRIFTText.SetActive(F.I.s_raceType == RaceType.Drift);
@@ -131,12 +139,12 @@ public class SGP_HUD : MonoBehaviour
 	}
 	private void Awake()
 	{
-		I = this;
+		if (primaryHud) I = this;
 		stuntTemplate = StuntInfo.transform.GetChild(0).gameObject;
 		fullScaleGear = currentGear.transform.localScale.x;
 		smolScaleGear = fullScaleGear * 0.75f;
 		progressBarUpdateTime = Time.time;
-		rt = GetComponent<RectTransform>();
+		rt = container.GetComponent<RectTransform>();
 		hudPos0 = rt.anchoredPosition.y;
 		hudHeight = -55;//-transform.parent.GetComponent<RectTransform>().sizeDelta.y / 4f;
 	}
@@ -201,17 +209,22 @@ public class SGP_HUD : MonoBehaviour
 		if (carProgressIcons.ContainsKey(newCar))
 			return;
 		var Icon = Instantiate(carProgressIconPrefab, progressBar).transform;
-		Icon.localScale = ((newCar == RaceManager.I.playerCar) ? 1 : 0.75f) * Vector3.one;
+		Icon.localScale = ((newCar == vp) ? 4 : 3) * Vector3.one;
 		Icon.name = newCar.name;
 		Icon.GetComponent<Image>().sprite = SponserSprites[(int)newCar.sponsor - 1];
 		carProgressIcons.Add(newCar, progressBar.GetChild(progressBar.childCount - 1));
 	}
 	public void RemoveFromProgressBar(VehicleParent delCar)
 	{
-		Destroy(carProgressIcons[delCar].gameObject);
+		if (!carProgressIcons.TryGetValue(delCar, out var icon)) return;
+		Destroy(icon.gameObject);
 		carProgressIcons.Remove(delCar);
 	}
 	void EscapePressed(UnityEngine.InputSystem.InputAction.CallbackContext obj)
+	{
+		TogglePause();
+	}
+	public void TogglePause()
 	{
 		if (CountDownSeq.Countdown <=0 && !componentPanel.gameObject.activeSelf && !raceManager.resultsSeq.gameObject.activeSelf)
 		{
@@ -312,9 +325,12 @@ public class SGP_HUD : MonoBehaviour
 		//}
 		if (!vp.raceBox.enabled && (F.I.s_laps > 0 || F.I.gameMode == GameMode.Skate))
 		{
-			raceManager.PlayFinishSeq();
-			gameObject.SetActive(false);
-			return;
+			if (F.I.gameMode != GameMode.Splitscreen)
+			{
+				raceManager.PlayFinishSeq();
+				gameObject.SetActive(false);
+				return;
+			}
 		}
 
 		ptsAnim.Play(vp.raceBox.JumpPai);

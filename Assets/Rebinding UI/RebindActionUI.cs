@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine.Events;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.InputSystem.LowLevel;
 ////TODO: localization support
 
 ////TODO: deal with composites that have parts bound in different control schemes
@@ -14,6 +15,48 @@ namespace UnityEngine.InputSystem.Samples.RebindUI
 	/// </summary>
 	public class RebindActionUI : MonoBehaviour
 	{
+		static RebindActionUI activeRebind;
+		public static bool IsRebinding => activeRebind && activeRebind.m_RebindOperation != null;
+		InputAction captureAction;
+		int captureBindingIndex = -1;
+		public bool bindingCleared { get; private set; }
+		public bool clearedKeyboardBinding { get; private set; }
+		static void DeletePressed(InputEventPtr inputEvent, InputDevice device)
+		{
+			if (!IsRebinding || !(device is Keyboard keyboard) || inputEvent.handled) return;
+			if (!inputEvent.IsA<StateEvent>() && !inputEvent.IsA<DeltaStateEvent>()) return;
+			if (!keyboard.deleteKey.ReadValueFromEvent(inputEvent, out float value) || value < .5f || keyboard.deleteKey.isPressed) return;
+			var ui = activeRebind;
+			// Bulk clearing takes priority even if this listener runs before RemapView's.
+			var remap = ui.GetComponentInParent<RemapView>();
+			if (remap && remap.TryClearVisibleBindings(inputEvent, device)) return;
+			if (ui.captureAction == null || ui.captureBindingIndex < 0) return;
+			// Empty override disables this binding; removing the override would restore the default.
+			inputEvent.handled = true;
+			ui.captureAction.ApplyBindingOverride(ui.captureBindingIndex, new InputBinding {
+				overridePath = "", overrideProcessors = "", overrideInteractions = ""
+			});
+			ui.bindingCleared = true;
+			ui.m_RebindOperation.Cancel(); // The normal stop path saves, refreshes and closes the overlay.
+		}
+
+		static int lastRebindStopFrame = -1;
+		// Menu actions may receive Escape before or after the rebinding callback.
+		public static bool ConsumeCancelInput()
+		{
+			if (activeRebind && activeRebind.m_RebindOperation != null)
+			{
+				activeRebind.m_RebindOperation.Cancel();
+				return true;
+			}
+			return lastRebindStopFrame == Time.frameCount;
+		}
+		void MarkRebindStopped()
+		{
+			if (activeRebind == this) activeRebind = null;
+			lastRebindStopFrame = Time.frameCount;
+		}
+
 		/// <summary>
 		/// Reference to the action that is to be rebound.
 		/// </summary>
@@ -27,6 +70,50 @@ namespace UnityEngine.InputSystem.Samples.RebindUI
 				UpdateBindingDisplay();
 			}
 		}
+
+		// RemapView selects a private input set without changing Inspector references.
+		InputAction m_RuntimeAction;
+		public InputAction runtimeAction
+		{
+			get => m_RuntimeAction;
+			set
+			{
+				m_RebindOperation?.Cancel();
+				m_RuntimeAction = value;
+				UpdateActionLabel();
+				UpdateBindingDisplay();
+			}
+		}
+		bool hasInputSetContext;
+		public int inputSetIndex { get; private set; } = -1;
+		public event Action<RebindActionUI> prepareRebind;
+		InputAction targetAction => hasInputSetContext ? m_RuntimeAction : m_RuntimeAction ?? m_Action?.action;
+		// Set the asset and binding together; no intermediate refresh from another set.
+		public void SetInputSet(InputActionAsset asset, int setIndex, string bindingId)
+		{
+			m_RebindOperation?.Cancel();
+			hasInputSetContext = true;
+			inputSetIndex = setIndex;
+			m_RuntimeAction = m_Action?.action != null ? asset?.FindAction(m_Action.action.id.ToString()) : null;
+			m_RuntimeBindingId = bindingId ?? "";
+			UpdateActionLabel();
+			UpdateBindingDisplay();
+		}
+		public void ClearInputSet()
+		{
+			m_RebindOperation?.Cancel();
+			hasInputSetContext = false; inputSetIndex = -1;
+			m_RuntimeAction = null; m_RuntimeBindingId = null;
+			UpdateActionLabel(); UpdateBindingDisplay();
+		}
+		string m_RuntimeBindingId;
+		public string runtimeBindingId
+		{
+			get => m_RuntimeBindingId;
+			set { m_RebindOperation?.Cancel(); m_RuntimeBindingId = value; UpdateBindingDisplay(); }
+		}
+		string targetBindingId => m_RuntimeBindingId ?? m_BindingId;
+
 
 		/// <summary>
 		/// ID (in string form) of the binding that is to be rebound on the action.
@@ -164,15 +251,15 @@ namespace UnityEngine.InputSystem.Samples.RebindUI
 		{
 			bindingIndex = -1;
 
-			action = m_Action?.action;
+			action = targetAction;
 			if (action == null)
 				return false;
 
-			if (string.IsNullOrEmpty(m_BindingId))
+			if (string.IsNullOrEmpty(targetBindingId))
 				return false;
 
 			// Look up binding index.
-			var bindingId = new Guid(m_BindingId);
+			if (!Guid.TryParse(targetBindingId, out var bindingId)) return false;
 			bindingIndex = action.bindings.IndexOf(x => x.id == bindingId);
 			if (bindingIndex == -1)
 			{
@@ -193,12 +280,23 @@ namespace UnityEngine.InputSystem.Samples.RebindUI
 			var controlPath = default(string);
 
 			// Get display string from action.
-			var action = m_Action?.action;
+			var action = targetAction;
 			if (action != null)
 			{
-				var bindingIndex = action.bindings.IndexOf(x => x.id.ToString() == m_BindingId);
+				var bindingIndex = action.bindings.IndexOf(x => x.id.ToString() == targetBindingId);
 				if (bindingIndex != -1)
-					displayString = action.GetBindingDisplayString(bindingIndex, out deviceLayoutName, out controlPath, displayStringOptions);
+				{
+					var binding = action.bindings[bindingIndex];
+					var options = hasInputSetContext ? displayStringOptions & ~InputBinding.DisplayStringOptions.IgnoreBindingOverrides : displayStringOptions;
+					if (hasInputSetContext && !binding.isComposite)
+					{
+						// Read this set's override, without resolving a shared physical device's controls.
+						displayString = binding.ToDisplayString(options);
+						if (!string.IsNullOrEmpty(binding.effectivePath))
+							InputControlPath.ToHumanReadableString(binding.effectivePath, out deviceLayoutName, out controlPath);
+					}
+					else displayString = action.GetBindingDisplayString(bindingIndex, out deviceLayoutName, out controlPath, options);
+				}
 			}
 
 			// Set on label (if any).
@@ -236,11 +334,13 @@ namespace UnityEngine.InputSystem.Samples.RebindUI
 		/// </summary>
 		public void StartInteractiveRebind()
 		{
+			if (Time.unscaledTime - lastRebindTime < .2f) return;
+			prepareRebind?.Invoke(this);
 			if (!ResolveActionAndBinding(out var action, out var bindingIndex))
 				return;
 
 			//debouncing workaround
-			if (Time.time - lastRebindTime < .2f)
+			if (Time.unscaledTime - lastRebindTime < .2f)
 				return;
 
 			// If the binding is a composite, we need to rebind each part in turn.
@@ -258,35 +358,46 @@ namespace UnityEngine.InputSystem.Samples.RebindUI
 
 		private void PerformInteractiveRebind(InputAction action, int bindingIndex, bool allCompositeParts = false)
 		{
+			if (activeRebind && activeRebind != this) activeRebind.m_RebindOperation?.Cancel();
 			m_RebindOperation?.Cancel(); // Will null out m_RebindOperation.
 
+			var targetBinding = action.bindings[bindingIndex];
+			bool keyboardBinding = (targetBinding.path?.StartsWith("<Keyboard>/", StringComparison.OrdinalIgnoreCase) ?? false) ||
+				Array.IndexOf((targetBinding.groups ?? "").Split(';'), "Keyboard") >= 0;
+			captureAction = action; captureBindingIndex = bindingIndex;
+			bindingCleared = false; clearedKeyboardBinding = keyboardBinding;
+			bool wasEnabled = action.enabled;
 			void CleanUp()
 			{
 				m_RebindOperation?.Dispose();
 				m_RebindOperation = null;
-				lastRebindTime = Time.time;
-				action.Enable();
+				captureAction = null; captureBindingIndex = -1;
+				lastRebindTime = Time.unscaledTime;
+				if (wasEnabled) action.Enable();
 			}
 			// not disabling it causes error
 			action.Disable();
 
 			m_RebindOperation = action.PerformInteractiveRebinding(bindingIndex)
+				.WithCancelingThrough("<Keyboard>/escape")
 				.OnCancel(
 					operation =>
 					{
+						MarkRebindStopped();
 						m_RebindStopEvent?.Invoke(this, operation);
+						CleanUp();
 						m_RebindOverlay?.SetActive(false);
 						UpdateBindingDisplay();
-						CleanUp();
 					})
 				.OnComplete(
 					operation =>
 					{
+						MarkRebindStopped();
 						RebindsLoad.RepairDriveAxisPairs(action);
-						m_RebindOverlay?.SetActive(false);
 						m_RebindStopEvent?.Invoke(this, operation);
-						UpdateBindingDisplay();
 						CleanUp();
+						m_RebindOverlay?.SetActive(false);
+						UpdateBindingDisplay();
 
 						// If there's more composite parts we should bind, initiate a rebind
 						// for the next part.
@@ -298,8 +409,16 @@ namespace UnityEngine.InputSystem.Samples.RebindUI
 						}
 					});
 
-			var targetBinding = action.bindings[bindingIndex];
-			if (action.name == "Drive" && targetBinding.isPartOfComposite &&
+			if (keyboardBinding)
+			{
+				// Composite parts still describe axes, but their keyboard inputs are buttons.
+				m_RebindOperation.WithExpectedControlType("Button")
+					.WithControlsHavingToMatchPath("<Keyboard>/*")
+					.OnApplyBinding((operation, path) => action.ApplyBindingOverride(bindingIndex, new InputBinding {
+						overridePath = path, overrideProcessors = "", overrideInteractions = ""
+					}));
+			}
+			else if (action.name == "Drive" && targetBinding.isPartOfComposite &&
 				(targetBinding.name.Equals("up", StringComparison.OrdinalIgnoreCase) ||
 				 targetBinding.name.Equals("down", StringComparison.OrdinalIgnoreCase)))
 			{
@@ -336,6 +455,7 @@ namespace UnityEngine.InputSystem.Samples.RebindUI
 			if (action.bindings[bindingIndex].isPartOfComposite)
 				partName = $"Binding '{action.bindings[bindingIndex].name}'. ";
 
+			activeRebind = this;
 			// Bring up rebind overlay, if we have one.
 			m_RebindOverlay?.SetActive(true);
 			if (m_RebindText != null)
@@ -354,7 +474,7 @@ namespace UnityEngine.InputSystem.Samples.RebindUI
 			// Give listeners a chance to act on the rebind starting.
 			m_RebindStartEvent?.Invoke(this, m_RebindOperation);
 
-			m_RebindOperation.Start();
+			m_RebindOperation?.Start();
 		}
 
 		protected void OnEnable()
@@ -363,11 +483,15 @@ namespace UnityEngine.InputSystem.Samples.RebindUI
 				s_RebindActionUIs = new List<RebindActionUI>();
 			s_RebindActionUIs.Add(this);
 			if (s_RebindActionUIs.Count == 1)
+			{
 				InputSystem.onActionChange += OnActionChange;
+				InputSystem.onEvent += DeletePressed;
+			}
 		}
 
 		protected void OnDisable()
 		{
+			m_RebindOperation?.Cancel();
 			m_RebindOperation?.Dispose();
 			m_RebindOperation = null;
 
@@ -376,6 +500,7 @@ namespace UnityEngine.InputSystem.Samples.RebindUI
 			{
 				s_RebindActionUIs = null;
 				InputSystem.onActionChange -= OnActionChange;
+				InputSystem.onEvent -= DeletePressed;
 			}
 		}
 
@@ -395,7 +520,7 @@ namespace UnityEngine.InputSystem.Samples.RebindUI
 			for (var i = 0; i < s_RebindActionUIs.Count; ++i)
 			{
 				var component = s_RebindActionUIs[i];
-				var referencedAction = component.actionReference?.action;
+				var referencedAction = component.targetAction;
 				if (referencedAction == null)
 					continue;
 
@@ -468,7 +593,7 @@ namespace UnityEngine.InputSystem.Samples.RebindUI
 		{
 			if (m_ActionLabel != null)
 			{
-				var action = m_Action?.action;
+				var action = targetAction;
 				m_ActionLabel.text = action != null ? action.name : string.Empty;
 			}
 		}

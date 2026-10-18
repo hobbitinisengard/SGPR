@@ -225,7 +225,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 31799994220544
-    m_Localized: "O\u015A STEROWANIA"
+    m_Localized: "SKR\u0118T W PRAWO"
     m_Metadata:
       m_Items: []
   - m_Id: 31932731359232
@@ -321,11 +321,11 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 35368357068800
-    m_Localized: "INTERFEJS O\u015A POZIOMA"
+    m_Localized: "INTERFEJS2 G\xD3RA"
     m_Metadata:
       m_Items: []
   - m_Id: 35484086304768
-    m_Localized: "INTERFEJS O\u015A PIONOWA"
+    m_Localized: "INTERFEJS2 D\xD3\u0141"
     m_Metadata:
       m_Items: []
   - m_Id: 35537223942144
@@ -652,7 +652,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 285368081186816
-    m_Localized: "ZESPO\u0141Y"
+    m_Localized: "Zespo\u0142y"
     m_Metadata:
       m_Items: []
   - m_Id: 285564097789952
@@ -2279,6 +2279,18 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 191052099185336320
     m_Localized: "Oklaski po pomy\u015Blnej ewolucji"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 192055982565154816
+    m_Localized: "SKR\u0118T W LEWO"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 192128263333142528
+    m_Localized: INTERFEJS2 W LEWO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 192128475921440768
+    m_Localized: INTERFEJS2 PRAWO
     m_Metadata:
       m_Items: []
   references:

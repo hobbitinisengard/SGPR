@@ -40,6 +40,8 @@ namespace RVP
 
 			for (int i = 0; i < vp.wheels.Length; i++)
 			{
+				// Effects run in Update, before Wheel.LateUpdate restores owner data.
+				vp.ApplyRemoteWheelPresentation(wheels[i], i);
 				if (wheels[i].connected)
 				{
 					//if (Mathf.Abs(F.MaxAbs(wheels[i].sidewaysSlip, wheels[i].forwardSlip, alwaysScrape)) - wheels[i].slipThreshold > 0)

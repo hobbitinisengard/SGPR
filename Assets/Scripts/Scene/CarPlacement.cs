@@ -12,6 +12,7 @@ public class CarPlacement
 	public int carIdx;
 	public string name;
 	public Livery livery = Livery.Random;
+	public int localPlayerIndex = -1;
 	public static CarPlacement CPU(int pos, int carIdx)
 	{
 		return new CarPlacement()

@@ -76,6 +76,7 @@ public enum StuntSeqStatus { None, Ongoing, Ended };
 public class RaceBox : Sfxable
 {
 	public VehicleParent vp { get; private set; }
+	SGP_HUD Hud => vp && vp.localHud ? vp.localHud : RaceManager.I.hud;
 	public SGP_Evo evoModule { get; private set; }
 	public float distance { get; private set; }
 	private float aero;
@@ -239,7 +240,7 @@ public class RaceBox : Sfxable
 		vp.KnockoutMe();
 		// Multiplayer's knockout RPC already broadcasts the elimination message.
 		if (F.I.gameMode != GameMode.Multiplayer)
-			RaceManager.I.hud.infoText.AddMessage(new(vp.name + " " + F.I.LocStr("ELIMINATED!"), BottomInfoType.ELIMINATED));
+			SGP_HUD.ShowRaceMessage(new(vp.name + " " + F.I.LocStr("ELIMINATED!"), BottomInfoType.ELIMINATED));
 		return true;
 	}
 
@@ -709,7 +710,7 @@ public class RaceBox : Sfxable
 	void AddAeroStar()
 	{
 		starLevel = Mathf.Clamp(starLevel + 1, 0, 10);
-		if (F.I.playerData.clapping && RaceManager.I.playerCar == vp)
+		if (F.I.playerData.clapping && vp.IsLocalHuman)
 			PlaySFX("combo" + ((starLevel + 1) / 2).ToString("D2"));
 	}
 	void AcceptStunt()
@@ -889,43 +890,43 @@ public class RaceBox : Sfxable
 
 					if (!vp.followAI.IsCPU)
 					{
-						if (curLap == F.I.s_laps && vp == RaceManager.I.playerCar)
+						if (curLap == F.I.s_laps && vp.IsLocalHuman)
 						{
-							RaceManager.I.hud.infoText.AddMessage(
+							Hud.infoText.AddMessage(
 										new(F.I.LocStr("FINAL LAP"), BottomInfoType.FINAL_LAP));
 						}
-						if(vp != RaceManager.I.playerCar)
+						if(!vp.IsLocalHuman)
 						{
 							if (starLevel == 10)
 							{
-								RaceManager.I.hud.infoText.AddMessage(
+								SGP_HUD.ShowRaceMessage(
 											new(vp.tr.name + " " + F.I.LocStr("COMPLETES LAP WITH 10 AERO STARS!"), BottomInfoType.HIGHEST_AEROMILES_COMBO));
 							}
 						}
 						
 
-						if (RaceManager.I.hud.RECDisplay.activeSelf)
+						if (Hud.RECDisplay.activeSelf)
 						{
 							if (curlaptime.Value.TotalSeconds < F.I.tracks[F.I.s_trackName].records.lap.secondsOrPts)
 							{
 								F.I.tracks[F.I.s_trackName].records.lap.playerName = vp.name;
 								F.I.tracks[F.I.s_trackName].records.lap.secondsOrPts = (float)curlaptime.Value.TotalSeconds;
 
-								if(vp == RaceManager.I.playerCar)
-									RaceManager.I.hud.lapRecordSeq.gameObject.SetActive(true);
+								if(vp.IsLocalHuman)
+									Hud.lapRecordSeq.gameObject.SetActive(true);
 								else
-									RaceManager.I.hud.infoText.AddMessage(
+									SGP_HUD.ShowRaceMessage(
 										new(vp.tr.name + " " + F.I.LocStr("SETS NEW LAP RECORD: ") + curlaptime.Value.ToLaptimeStr(), BottomInfoType.NEW_LAPRECORD));
 							}
-							RaceManager.I.hud.SetRec(TimeSpan.FromSeconds(F.I.tracks[F.I.s_trackName].records.lap.secondsOrPts));
+							Hud.SetRec(TimeSpan.FromSeconds(F.I.tracks[F.I.s_trackName].records.lap.secondsOrPts));
 						}
 
-						if (RaceManager.I.hud.RECScoreDisplay.activeSelf)
+						if (Hud.RECScoreDisplay.activeSelf)
 						{
 							if(F.I.s_raceType == RaceType.Drift)
-								RaceManager.I.hud.SetScore((int)F.I.tracks[F.I.s_trackName].records.drift.secondsOrPts);
+								Hud.SetScore((int)F.I.tracks[F.I.s_trackName].records.drift.secondsOrPts);
 							else
-								RaceManager.I.hud.SetScore((int)F.I.tracks[F.I.s_trackName].records.stunt.secondsOrPts);
+								Hud.SetScore((int)F.I.tracks[F.I.s_trackName].records.stunt.secondsOrPts);
 						}
 					}
 
@@ -940,7 +941,7 @@ public class RaceBox : Sfxable
 						int curPos = RaceManager.I.Position(vp) + 1;
 						if (!F.I.s_inEditor && curPos == 1)
 						{
-							RaceManager.I.hud.infoText.AddMessage(new(vp.tr.name + " " + F.I.LocStr("WINS!"), BottomInfoType.CAR_WINS));
+							SGP_HUD.ShowRaceMessage(new(vp.tr.name + " " + F.I.LocStr("WINS!"), BottomInfoType.CAR_WINS));
 							RaceManager.I.ActivateEndraceTimer();
 						}
 						// in racemode after the end of a race, cars still run around the track, ghosts overtake each other. Don't let it change results
@@ -963,7 +964,7 @@ public class RaceBox : Sfxable
 
 						if (F.I.gameMode == GameMode.Multiplayer && ResultsView.FinishedPlayers >= ServerC.I.lobby.Players.Count)
 						{
-							RaceManager.I.hud.endraceTimer.gameObject.SetActive(false);
+							Hud.endraceTimer.gameObject.SetActive(false);
 						}
 						
 					}

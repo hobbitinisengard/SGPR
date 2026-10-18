@@ -78,6 +78,20 @@ public class ResultsSeq : MonoBehaviour
 			rightRow.GetChild(i).gameObject.SetActive(false);
 		}
 		cosArg = 0;
+		if (F.I.gameMode == GameMode.Splitscreen)
+		{
+			imgResult.gameObject.SetActive(false);
+			rightBoxLabel.text = rightBoxLabels[rightBoxLabelInt];
+			dimmer.color = new Color(0, 0, 0, 0);
+			dimCo = showResultCo = showTableCo = null;
+			audioSource.volume = 1;
+			audioSource.clip = F.I.audioClips["RaceResults"];
+			audioSource.loop = true;
+			audioSource.Play();
+			foreach (var b in boxes) b.gameObject.SetActive(true);
+			showTableCo = StartCoroutine(ShowTableCo());
+			yield break;
+		}
 
 		
 

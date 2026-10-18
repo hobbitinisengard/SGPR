@@ -20,6 +20,7 @@ public class EnterNameInputField : Sfxable
 	private void Start()
 	{
 		glg = GetComponent<GridLayoutGroup>();
+		if (SplitScreenSelector.I && SplitScreenSelector.I.RegistrationActive) return;
 		// write F.I.s_playerName for the first time
 		foreach(char c in F.I.playerData.playerName)
 		{
@@ -35,15 +36,30 @@ public class EnterNameInputField : Sfxable
 	}
 	public string GetInputField()
 	{
-		string s = "";
-		for(int i=1; i<transform.childCount-1; ++i)
+		string result = "";
+		foreach (Transform child in transform)
+			if (child.gameObject != letterTemplate && child != selector && child.gameObject.activeSelf) result += child.name;
+		return result;
+	}
+	public void SetInputField(string value)
+	{
+		if (!glg) glg = GetComponent<GridLayoutGroup>();
+		foreach (Transform child in transform)
+			if (child.gameObject != letterTemplate && child != selector)
+			{ child.gameObject.SetActive(false); Destroy(child.gameObject); }
+		len = 0;
+		if (OKButton) OKButton.gameObject.SetActive(false);
+		selector.GetComponent<Image>().sprite = allowedKeysSprites[0];
+		foreach (char character in value ?? "")
 		{
-			s += transform.GetChild(i).name;
+			if (len >= glg.constraintCount - 1) break;
+			for (int i = 0; i < allowedKeys.Length; i++)
+				if ((char)allowedKeys[i] == char.ToLowerInvariant(character)) { PlaceLetter(i); break; }
 		}
-		return s;
 	}
 	public void SetName()
 	{
+		if (SplitScreenSelector.I && SplitScreenSelector.I.RegistrationActive) return;
 		string driverName = GetInputField().Trim();
 		if (string.IsNullOrWhiteSpace(driverName)) return;
 		if (F.I.gameMode == GameMode.Championships)
@@ -55,6 +71,7 @@ public class EnterNameInputField : Sfxable
 	}
 	void Update()
 	{
+		if (SplitScreenSelector.I && SplitScreenSelector.I.IgnoreNameTypingThisFrame) return;
 		if(Input.GetKeyDown(KeyCode.Backspace) && len > 0)
 		{
 			PlaySFX("fe-keydeleted");
