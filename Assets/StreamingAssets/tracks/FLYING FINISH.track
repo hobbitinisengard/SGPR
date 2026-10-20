@@ -16,5 +16,6 @@
   "icons": [
     2,
     3
-  ]
+  ],
+  "isSkatePark": false
 }

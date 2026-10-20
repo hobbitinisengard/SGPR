@@ -2259,6 +2259,26 @@ MonoBehaviour:
     m_Key: Android.EditorNeedsDevices
     m_Metadata:
       m_Items: []
+  - m_Id: 193400000000000002
+    m_Key: Android.NitroToggle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 193400000000000003
+    m_Key: Android.NitroHold
+    m_Metadata:
+      m_Items: []
+  - m_Id: 193400000000000004
+    m_Key: Android.ResetLayout
+    m_Metadata:
+      m_Items: []
+  - m_Id: 193400000000000005
+    m_Key: Android.SaveLayout
+    m_Metadata:
+      m_Items: []
+  - m_Id: 193400000000000006
+    m_Key: Android.LayoutHint
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

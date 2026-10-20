@@ -41,6 +41,8 @@ public class ChampionshipStanding
 public static class Championships
 {
 	public const int OpponentCount = 9;
+    // Keep the saved championship roster portable; limit only the cars spawned on Android.
+    public static int RaceOpponentCount => MobileControls.Enabled ? 3 : OpponentCount;
 	public const int DriverCount = OpponentCount + 1;
 	public static readonly string[] Countries = { "GER", "SPN", "JAP", "ENG", "FRA", "USA", "ITA" };
 	public static readonly Livery[] Sponsors = { Livery.TGR, Livery.Rline, Livery.Itex, Livery.Caltex, Livery.Titan, Livery.Mysuko };
@@ -293,7 +295,7 @@ public static class Championships
 	public static bool PrepareRace()
 	{
 		if (NextTrack == null) return false;
-		Restore(); F.I.s_trackName = NextTrack; F.I.s_laps = 10; F.I.s_cpuRivals = OpponentCount;
+		Restore(); F.I.s_trackName = NextTrack; F.I.s_laps = 10; F.I.s_cpuRivals = RaceOpponentCount;
 		F.I.s_raceType = Current.season == "SURVIVAL" ? RaceType.Survival : RaceType.Race;
 		F.I.teams = false; F.I.s_spectator = false; F.I.randomCars = F.I.randomTracks = false;
 		F.I.s_inEditor = false; F.I.scoringType = ScoringType.Championship;
@@ -314,16 +316,16 @@ public static class Championships
 	}
 	public static CarPlacement[] Placements()
 	{
-		var entries = Current.standings.Where(s => s.driverId != 0).OrderBy(s => s.driverId).ToList();
+		var entries = Current.standings.Where(s => s.driverId != 0).OrderBy(s => s.driverId).Take(RaceOpponentCount).ToList();
 		var player = Current.standings.Find(s => s.driverId == 0);
 		// Retain each opponent's identity; only its starting position changes.
 		var grid = entries.Append(player).OrderBy(s => s.points).ThenByDescending(s => s.lastPosition).ToList();
-		var placements = new CarPlacement[DriverCount];
+		var placements = new CarPlacement[entries.Count + 1];
 		for (int i = 0; i < entries.Count; i++)
 			placements[i] = new CarPlacement { position = grid.IndexOf(entries[i]), carIdx = entries[i].carIndex,
 				livery = entries[i].sponsor, name = DriverName(entries[i]) };
-		placements[OpponentCount] = CarPlacement.LocalPlayer();
-		placements[OpponentCount].position = grid.IndexOf(player);
+		placements[entries.Count] = CarPlacement.LocalPlayer();
+		placements[entries.Count].position = grid.IndexOf(player);
 		return placements;
 	}
 	public static void CancelRace() { RacePending = false; Save(); }

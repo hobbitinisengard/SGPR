@@ -458,13 +458,15 @@ namespace RVP
 				carPlacements = new[] { CarPlacement.LocalPlayer() };
 			else if (ServerC.I.AmHost)
 			{
-				carPlacements = new CarPlacement[F.I.s_cpuRivals + 1];
+                if (MobileControls.Enabled && (F.I.gameMode == GameMode.Arcade || Championships.Active))
+                    F.I.s_cpuRivals = Mathf.Clamp(F.I.s_cpuRivals, 0, 3);
+                carPlacements = new CarPlacement[F.I.s_cpuRivals + 1];
 
 				if (Championships.Active)
 					carPlacements = Championships.Placements();
 				else if (F.I.gameMode == GameMode.Arcade)
 				{
-					for (int i = 0; i < F.I.targetNode.cars.Length; ++i)
+					for (int i = 0; i < Mathf.Min(F.I.targetNode.cars.Length, F.I.s_cpuRivals); ++i)
 					{
 						carPlacements[i] = F.I.targetNode.cars[i];
 						carPlacements[i].position = i;

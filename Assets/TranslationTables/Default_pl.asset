@@ -2313,6 +2313,26 @@ MonoBehaviour:
     m_Localized: Podłącz klawiaturę i mysz, aby korzystać z edytora tras.
     m_Metadata:
       m_Items: []
+  - m_Id: 193400000000000002
+    m_Localized: 'NITRO: PRZEŁĄCZNIK'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 193400000000000003
+    m_Localized: 'NITRO: PRZYTRZYMANIE'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 193400000000000004
+    m_Localized: 'PRZYWRÓĆ POZYCJE'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 193400000000000005
+    m_Localized: 'ZAPISZ I WRÓĆ'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 193400000000000006
+    m_Localized: 'Przeciągnij przyciski wyścigowe, aby zmienić ich położenie.'
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

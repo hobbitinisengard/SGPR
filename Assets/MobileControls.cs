@@ -32,11 +32,24 @@ public sealed class MobileControls : MonoBehaviour
             return editorDevicesConnected;
         }
     }
-    bool nitroHeld;
-    public bool Nitro => nitroHeld && gas && !brake;
+    const string LayoutKey = "AndroidControls.Layout.";
+    const string NitroModeKey = "AndroidControls.ToggleNitro";
+    bool nitroHeld, nitroLatched;
+    public bool ToggleNitro { get; private set; }
+    public bool Nitro => (ToggleNitro ? nitroLatched : nitroHeld) && gas && !brake;
+    public bool EditingLayout { get; private set; }
+    MainMenuView layoutView;
+    sealed class LayoutControl
+    {
+        public MobileTouchButton button;
+        public Vector2 defaultPosition;
+    }
+    readonly List<LayoutControl> layoutControls = new();
+    GameObject layoutToolbar;
+    Text nitroModeLabel, resetLayoutLabel, saveLayoutLabel, layoutHint;
     public bool Stunts { get; private set; }
     public bool Driving { get; private set; }
-    bool left, right, gas, brake, menuLeft, menuRight, menuUp, menuDown, menuShift, menuCtrl, menuTab;
+    bool left, right, gas, brake, menuLeft, menuRight, menuUp, menuDown, menuEnter, menuShift, menuCtrl, menuTab;
     int lastMenuMask = -1;
     public Vector2 Drive => new Vector2((right ? 1 : 0) - (left ? 1 : 0), (gas ? 1 : 0) - (brake ? 1 : 0));
     RectTransform safeRoot;
@@ -55,6 +68,7 @@ public sealed class MobileControls : MonoBehaviour
     void Awake()
     {
         I = this;
+        ToggleNitro = PlayerPrefs.GetInt(NitroModeKey, 0) != 0;
         DontDestroyOnLoad(gameObject);
         menuKeyboard = InputSystem.AddDevice<Keyboard>("MobileMenuKeyboard");
         var canvasObject = GameObject.Find("Canvas");
@@ -94,6 +108,10 @@ public sealed class MobileControls : MonoBehaviour
         nitroButton = Button(raceButtons.transform, "NITRO", new Vector2(0, 0), new Vector2(240, 135), new Vector2(330, 145));
         nitroButton.highlightColor = new Color(.9f, .1f, .1f, .85f);
         nitroButton.heldChanged = value => { nitroHeld = value; RefreshNitroHighlight(); };
+        nitroButton.tapped = () =>
+        {
+            if (ToggleNitro) { nitroLatched = !nitroLatched; RefreshNitroHighlight(); }
+        };
         var stuntButton = Button(raceButtons.transform, "SHIFT", new Vector2(0, 0), new Vector2(240, 300), new Vector2(330, 145));
         stuntButton.highlightWhenHeld = true;
         stuntButton.highlightColor = new Color(1f, .4f, .05f, .85f);
@@ -107,6 +125,7 @@ public sealed class MobileControls : MonoBehaviour
         };
         Button(menuButtons.transform, "\u25C0", new Vector2(0, 0), new Vector2(105, 205), new Vector2(140, 90)).heldChanged = value => menuLeft = value;
         Button(menuButtons.transform, "\u25B6", new Vector2(0, 0), new Vector2(270, 205), new Vector2(140, 90)).heldChanged = value => menuRight = value;
+        Button(menuButtons.transform, "ENTER", new Vector2(1, 0), new Vector2(-105, 425), new Vector2(140, 90)).heldChanged = value => menuEnter = value;
         Button(menuButtons.transform, "\u25B2", new Vector2(1, 0), new Vector2(-105, 315), new Vector2(140, 90)).heldChanged = value => menuUp = value;
         Button(menuButtons.transform, "\u25BC", new Vector2(1, 0), new Vector2(-105, 205), new Vector2(140, 90)).heldChanged = value => menuDown = value;
         Button(menuButtons.transform, "ESC", new Vector2(1, 0), new Vector2(-105, 95), new Vector2(140, 90)).tapped = Back;
@@ -117,6 +136,7 @@ public sealed class MobileControls : MonoBehaviour
         shift.tapped = () => { menuShift = !menuShift; shift.SetHighlighted(menuShift); };
         ctrl.tapped = () => { menuCtrl = !menuCtrl; ctrl.SetHighlighted(menuCtrl); };
         tab.tapped = () => { menuTab = !menuTab; tab.SetHighlighted(menuTab); };
+        CreateLayoutToolbar();
     }
     static RectTransform Panel(string label, Transform parent)
     {
@@ -124,7 +144,7 @@ public sealed class MobileControls : MonoBehaviour
         rect.SetParent(parent, false); rect.anchorMin = Vector2.zero; rect.anchorMax = Vector2.one;
         rect.offsetMin = rect.offsetMax = Vector2.zero; return rect;
     }
-    static MobileTouchButton Button(Transform parent, string label, Vector2 anchor, Vector2 position, Vector2 size)
+    MobileTouchButton Button(Transform parent, string label, Vector2 anchor, Vector2 position, Vector2 size)
     {
         var obj = new GameObject(label, typeof(RectTransform), typeof(Image), typeof(MobileTouchButton));
         var rect = obj.GetComponent<RectTransform>(); rect.SetParent(parent, false);
@@ -136,6 +156,8 @@ public sealed class MobileControls : MonoBehaviour
         textRect.offsetMin = textRect.offsetMax = Vector2.zero;
         text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf"); text.fontSize = 30;
         text.alignment = TextAnchor.MiddleCenter; text.text = label; text.raycastTarget = false;
+        if (parent == raceButtons.transform || (parent == safeRoot && label == "ESC"))
+            layoutControls.Add(new LayoutControl { button = control, defaultPosition = position });
         return control;
     }
     void Update()
@@ -144,17 +166,18 @@ public sealed class MobileControls : MonoBehaviour
         var race = RaceManager.I;
         bool racing = F.I.viewSwitcher.world.activeInHierarchy && !F.I.s_inEditor && race && race.playerCar &&
             race.playerCar.raceBox && race.playerCar.raceBox.enabled && !race.resultsSeq.gameObject.activeInHierarchy;
-        bool driving = racing && !F.I.gamePaused;
+        bool driving = racing && !F.I.gamePaused && !EditingLayout;
         if (Driving != driving)
         {
             Driving = driving;
-            nitroHeld = false; left = right = gas = brake = Stunts = false;
+            nitroHeld = nitroLatched = false; left = right = gas = brake = Stunts = false;
             nitroButton.SetHighlighted(false);
         }
-        raceButtons.SetActive(driving);
-        menuButtons.SetActive(!racing && F.I.viewSwitcher.menu.activeInHierarchy && !TouchScreenKeyboard.visible);
-        raceEscape.SetActive(!menuButtons.activeSelf && !TouchScreenKeyboard.visible);
-        if (EventSystem.current) EventSystem.current.sendNavigationEvents = F.I.s_inEditor && F.I.viewSwitcher.world.activeInHierarchy;
+        raceButtons.SetActive(driving || EditingLayout);
+        menuButtons.SetActive(!EditingLayout && !racing && F.I.viewSwitcher.menu.activeInHierarchy && !TouchScreenKeyboard.visible);
+        raceEscape.SetActive(EditingLayout || (!menuButtons.activeSelf && !TouchScreenKeyboard.visible));
+        if (EventSystem.current) EventSystem.current.sendNavigationEvents =
+            (menuButtons.activeInHierarchy && menuEnter) || (F.I.s_inEditor && F.I.viewSwitcher.world.activeInHierarchy);
         // Keyboard input is only synthesized for menu controls, never for the race or editor.
         menuKeys.Clear();
         if (menuButtons.activeInHierarchy)
@@ -163,12 +186,13 @@ public sealed class MobileControls : MonoBehaviour
             if (menuRight) menuKeys.Add(Key.D);
             if (menuUp) menuKeys.Add(Key.W);
             if (menuDown) menuKeys.Add(Key.S);
+            if (menuEnter) menuKeys.Add(Key.Enter);
             if (menuShift) menuKeys.Add(Key.RightShift);
             if (menuCtrl) menuKeys.Add(Key.LeftCtrl);
             if (menuTab) menuKeys.Add(Key.Tab);
         }
         int mask = 0;
-        foreach (var key in menuKeys) mask |= key == Key.A ? 1 : key == Key.D ? 2 : key == Key.W ? 4 : key == Key.S ? 8 : key == Key.RightShift ? 16 : key == Key.LeftCtrl ? 32 : 64;
+        foreach (var key in menuKeys) mask |= key == Key.A ? 1 : key == Key.D ? 2 : key == Key.W ? 4 : key == Key.S ? 8 : key == Key.RightShift ? 16 : key == Key.LeftCtrl ? 32 : key == Key.Tab ? 64 : 128;
         if (mask != lastMenuMask)
         {
             lastMenuMask = mask;
@@ -179,7 +203,107 @@ public sealed class MobileControls : MonoBehaviour
             lastSafeArea = Screen.safeArea; lastScreen = new Vector2Int(Screen.width, Screen.height);
             safeRoot.anchorMin = lastSafeArea.min / new Vector2(Screen.width, Screen.height);
             safeRoot.anchorMax = lastSafeArea.max / new Vector2(Screen.width, Screen.height);
+            Canvas.ForceUpdateCanvases();
+            ApplySavedLayout();
         }
+    }
+    void CreateLayoutToolbar()
+    {
+        layoutToolbar = Panel("Layout options", safeRoot).gameObject;
+        var nitroMode = Button(layoutToolbar.transform, "Nitro mode", new Vector2(.5f, 1), new Vector2(-215, -65), new Vector2(340, 90));
+        nitroModeLabel = nitroMode.GetComponentInChildren<Text>();
+        nitroMode.tapped = () => SetToggleNitro(!ToggleNitro);
+        var reset = Button(layoutToolbar.transform, "Reset layout", new Vector2(.5f, 1), new Vector2(155, -65), new Vector2(340, 90));
+        resetLayoutLabel = reset.GetComponentInChildren<Text>();
+        reset.tapped = ResetLayout;
+        var done = Button(layoutToolbar.transform, "Save layout", new Vector2(.5f, 0), new Vector2(0, 80), new Vector2(280, 90));
+        saveLayoutLabel = done.GetComponentInChildren<Text>();
+        done.tapped = () => { if (layoutView) layoutView.GoBack(); };
+        layoutHint = new GameObject("Layout hint", typeof(RectTransform), typeof(Text)).GetComponent<Text>();
+        layoutHint.transform.SetParent(layoutToolbar.transform, false);
+        var hintRect = (RectTransform)layoutHint.transform;
+        hintRect.anchorMin = hintRect.anchorMax = new Vector2(.5f, .5f);
+        hintRect.sizeDelta = new Vector2(680, 140);
+        layoutHint.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        layoutHint.fontSize = 30; layoutHint.alignment = TextAnchor.MiddleCenter; layoutHint.raycastTarget = false;
+        layoutToolbar.SetActive(false);
+    }
+    public void BeginLayoutEditing(MainMenuView view)
+    {
+        if (EditingLayout || !Enabled) return;
+        layoutView = view;
+        EditingLayout = true;
+        nitroHeld = nitroLatched = false;
+        foreach (var item in layoutControls) item.button.SetLayoutEditing(true);
+        RefreshNitroHighlight();
+        UpdateLayoutLabels();
+        layoutToolbar.SetActive(true);
+    }
+    public void EndLayoutEditing()
+    {
+        if (!EditingLayout) return;
+        SaveLayout();
+        EditingLayout = false;
+        layoutView = null;
+        foreach (var item in layoutControls) item.button.SetLayoutEditing(false);
+        layoutToolbar.SetActive(false);
+        nitroHeld = nitroLatched = false;
+    }
+    public void SetToggleNitro(bool value)
+    {
+        ToggleNitro = value;
+        nitroHeld = nitroLatched = false;
+        PlayerPrefs.SetInt(NitroModeKey, value ? 1 : 0);
+        PlayerPrefs.Save();
+        RefreshNitroHighlight();
+        UpdateLayoutLabels();
+    }
+    void UpdateLayoutLabels()
+    {
+        if (!F.I || !nitroModeLabel) return;
+        nitroModeLabel.text = F.I.LocStr(ToggleNitro ? "Android.NitroToggle" : "Android.NitroHold");
+        resetLayoutLabel.text = F.I.LocStr("Android.ResetLayout");
+        saveLayoutLabel.text = F.I.LocStr("Android.SaveLayout");
+        layoutHint.text = F.I.LocStr("Android.LayoutHint");
+    }
+    void SaveLayout()
+    {
+        foreach (var item in layoutControls)
+        {
+            var rect = (RectTransform)item.button.transform;
+            var area = ((RectTransform)rect.parent).rect;
+            if (area.width <= 0 || area.height <= 0) continue;
+            Vector2 position = rect.localPosition;
+            string key = LayoutKey + item.button.name;
+            PlayerPrefs.SetFloat(key + ".x", (position.x - area.xMin) / area.width);
+            PlayerPrefs.SetFloat(key + ".y", (position.y - area.yMin) / area.height);
+        }
+        PlayerPrefs.Save();
+    }
+    void ApplySavedLayout()
+    {
+        foreach (var item in layoutControls)
+        {
+            string key = LayoutKey + item.button.name;
+            if (!PlayerPrefs.HasKey(key + ".x") || !PlayerPrefs.HasKey(key + ".y")) continue;
+            var rect = (RectTransform)item.button.transform;
+            var area = ((RectTransform)rect.parent).rect;
+            Vector2 target = new Vector2(
+                area.xMin + Mathf.Clamp01(PlayerPrefs.GetFloat(key + ".x")) * area.width,
+                area.yMin + Mathf.Clamp01(PlayerPrefs.GetFloat(key + ".y")) * area.height);
+            rect.anchoredPosition += target - (Vector2)rect.localPosition;
+            item.button.ClampToParent();
+        }
+    }
+    void ResetLayout()
+    {
+        foreach (var item in layoutControls)
+        {
+            PlayerPrefs.DeleteKey(LayoutKey + item.button.name + ".x");
+            PlayerPrefs.DeleteKey(LayoutKey + item.button.name + ".y");
+            ((RectTransform)item.button.transform).anchoredPosition = item.defaultPosition;
+        }
+        PlayerPrefs.Save();
     }
     void RefreshNitroHighlight()
     {
@@ -206,7 +330,8 @@ public sealed class MobileControls : MonoBehaviour
     void OnApplicationFocus(bool focus)
     {
         if (focus) return;
-        left = right = gas = brake = Stunts = nitroHeld = menuLeft = menuRight = menuUp = menuDown = false;
+        if (EditingLayout) SaveLayout();
+        left = right = gas = brake = Stunts = nitroHeld = nitroLatched = menuLeft = menuRight = menuUp = menuDown = menuEnter = false;
         if (nitroButton) nitroButton.SetHighlighted(false);
         lastMenuMask = -1;
         if (menuKeyboard != null) InputSystem.ResetDevice(menuKeyboard);

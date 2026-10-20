@@ -2300,6 +2300,26 @@ MonoBehaviour:
     m_Localized: Connect a keyboard and mouse to use the track editor.
     m_Metadata:
       m_Items: []
+  - m_Id: 193400000000000002
+    m_Localized: 'NITRO: TOGGLE'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 193400000000000003
+    m_Localized: 'NITRO: HOLD'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 193400000000000004
+    m_Localized: 'RESET POSITIONS'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 193400000000000005
+    m_Localized: 'SAVE AND BACK'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 193400000000000006
+    m_Localized: 'Drag the race buttons to change their positions.'
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []
