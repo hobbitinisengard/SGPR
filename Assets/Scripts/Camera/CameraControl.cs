@@ -80,6 +80,8 @@ namespace RVP
 			tr = transform;
 			cam = GetComponent<Camera>();
 			cam.depthTextureMode |= DepthTextureMode.Depth;
+            // A 1 cm near plane wastes depth precision over the kilometre-scale scene.
+            if (MobileControls.Enabled) cam.nearClipPlane = Mathf.Max(cam.nearClipPlane, 0.5f);
 			collisionMask = castMask.value & ~LayerMask.GetMask("InvisibleLevel", "Vehicles", "vehicles", "CarCarCollision");
 			if (changeCamRef) changeCamRef.action.performed += ChangeFollowCamera;
 		}

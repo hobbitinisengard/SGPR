@@ -363,6 +363,7 @@ public class EditorPanel : MonoBehaviour
 
 	void Update()
 	{
+		if (!MobileControls.EditorDevicesConnected) return;
 		if(!savePanel.gameObject.activeSelf)
 		{
 			if (Input.GetKeyDown(KeyCode.E))

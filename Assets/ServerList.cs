@@ -9,6 +9,7 @@ using UnityEngine.UI;
 
 public class ServerList : MonoBehaviour
 {
+	public TextMeshProUGUI yourVersionText;
 	public TextMeshProUGUI dialogTextObj;
 	public Button startAServerButton;
 	public Transform content;
@@ -27,6 +28,10 @@ public class ServerList : MonoBehaviour
 	{
 		server.password = pass;
 		JoinLobby(code);
+	}
+	private void Start()
+	{
+		yourVersionText.text = F.I.LocStr("Your version: ") + Info.VERSION;
 	}
 	private void OnEnable()
 	{

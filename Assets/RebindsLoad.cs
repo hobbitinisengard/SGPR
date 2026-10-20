@@ -20,11 +20,6 @@ public class RebindsLoad : MonoBehaviour
 				}
 			if (changed) PlayerPrefs.SetString("rebinds", actions.SaveBindingOverridesAsJson());
 		}
-		if (RemapView.RestoreFirstKeyboardBack(actions))
-		{
-			PlayerPrefs.SetString("rebinds", actions.SaveBindingOverridesAsJson());
-			PlayerPrefs.Save();
-		}
 	}
 	public static bool RepairDriveAxisPairs(InputAction action)
 	{
@@ -33,16 +28,18 @@ public class RebindsLoad : MonoBehaviour
 		for (int upIndex = 0; upIndex < action.bindings.Count; upIndex++)
 		{
 			var up = action.bindings[upIndex];
-			if (!up.isPartOfComposite || !up.name.Equals("up", System.StringComparison.OrdinalIgnoreCase) ||
+			if (!up.isPartOfComposite ||
+				(!up.name.Equals("up", System.StringComparison.OrdinalIgnoreCase) && !up.name.Equals("right", System.StringComparison.OrdinalIgnoreCase)) ||
 				string.IsNullOrEmpty(up.overridePath) || string.IsNullOrEmpty(up.overrideProcessors)) continue;
 			var control = InputSystem.FindControl(up.overridePath) as UnityEngine.InputSystem.Controls.AxisControl;
 			if (control == null || control is UnityEngine.InputSystem.Controls.ButtonControl) continue;
 			int compositeIndex = upIndex - 1;
+			string opposite = up.name.Equals("right", System.StringComparison.OrdinalIgnoreCase) ? "left" : "down";
 			while (compositeIndex >= 0 && action.bindings[compositeIndex].isPartOfComposite) compositeIndex--;
 			for (int downIndex = compositeIndex + 1; downIndex < action.bindings.Count && action.bindings[downIndex].isPartOfComposite; downIndex++)
 			{
 				var down = action.bindings[downIndex];
-				if (!down.name.Equals("down", System.StringComparison.OrdinalIgnoreCase) ||
+				if (!down.name.Equals(opposite, System.StringComparison.OrdinalIgnoreCase) ||
 					down.overridePath != up.overridePath || down.overrideProcessors != up.overrideProcessors) continue;
 				if (up.overrideProcessors != "Clamp(min=0,max=1)" && up.overrideProcessors != "Invert,Clamp(min=0,max=1)") continue;
 				action.ApplyBindingOverride(downIndex, new InputBinding
@@ -62,13 +59,16 @@ public class RebindsLoad : MonoBehaviour
 		var binding = action.bindings[bindingIndex];
 		if (!binding.isPartOfComposite ||
 			(!binding.name.Equals("up", System.StringComparison.OrdinalIgnoreCase) &&
-			 !binding.name.Equals("down", System.StringComparison.OrdinalIgnoreCase))) return false;
+			 !binding.name.Equals("down", System.StringComparison.OrdinalIgnoreCase) &&
+			 !binding.name.Equals("left", System.StringComparison.OrdinalIgnoreCase) &&
+			 !binding.name.Equals("right", System.StringComparison.OrdinalIgnoreCase))) return false;
 		string path = binding.overridePath;
 		// New directional axis overrides already contain their captured polarity.
 		if (!string.IsNullOrEmpty(binding.overrideProcessors)) return false;
-		if (string.IsNullOrEmpty(path) || !path.EndsWith("/y", System.StringComparison.OrdinalIgnoreCase) ||
+		bool horizontal = binding.name.Equals("left", System.StringComparison.OrdinalIgnoreCase) || binding.name.Equals("right", System.StringComparison.OrdinalIgnoreCase);
+		if (string.IsNullOrEmpty(path) || !path.EndsWith(horizontal ? "/x" : "/y", System.StringComparison.OrdinalIgnoreCase) ||
 			path.IndexOf("stick/", System.StringComparison.OrdinalIgnoreCase) < 0) return false;
-		// Preserve the selected stick and device, changing only the full Y axis
+		// Preserve the selected stick and device, changing only the full axis
 		// into the directional half-axis corresponding to this composite part.
 		action.ApplyBindingOverride(bindingIndex, path.Substring(0, path.Length - 1) + binding.name.ToLowerInvariant());
 		return true;

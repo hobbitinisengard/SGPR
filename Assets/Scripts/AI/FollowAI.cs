@@ -34,7 +34,7 @@ namespace RVP
 		public float forwardTargetDot;
 		public float tSpeed;
 		public float lookAheadBase = 15;
-		const float radius = 100;
+		const float radius = 60;
 		private Vector4 tPos0;
 		public float stoppedTime;
 		public float reverseTime;
@@ -619,7 +619,6 @@ namespace RVP
 				w.gameObject.GetComponent<TireMarkCreate>().EndMark();
 
 
-			vp.raceBox.ResetOnTrack();
 			vp.originalVehiclePhysics.ResetToNeutral();
 			vp.ApplySourceRespawnEnergyCost();
 			rolledOverTime = 0;
@@ -629,10 +628,6 @@ namespace RVP
 			lowSpeedTime = 0;
 			reverseTime = 0;
 			stoppedTime = 0;
-			vp.raceBox.wheelieTimer = 0;
-			vp.raceBox.handstandTimer = 0;
-			vp.raceBox.sidewinderRightTimer = 0;
-			vp.raceBox.sidewinderLeftTimer = 0;
 
 			bool skate = F.I.gameMode == GameMode.Skate;
 			resetInPlace &= skate;
@@ -685,6 +680,7 @@ namespace RVP
 			vp.originalVehiclePhysics.ResetSourceProbeHistory();
 			vp.PublishTrackResetTeleport();
 			yield return new WaitForFixedUpdate();
+			vp.raceBox.ResetTimers();
 
 			float newUnivProgress = GetDist(RaceManager.I.racingPaths[1]);
 			if (newUnivProgress > univProgress)

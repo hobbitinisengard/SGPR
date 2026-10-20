@@ -2,7 +2,9 @@
 
 using System.Collections.Generic;
 using System.Linq;
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 
 
 namespace UnityEngine.UI.Extensions

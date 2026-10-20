@@ -320,7 +320,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 190294953174818816
-    m_Key: 'Cars:'
+    m_Key: Cars
     m_Metadata:
       m_Items: []
   - m_Id: 187701912941420544
@@ -1076,7 +1076,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 60076925909524480
-    m_Key: Race with others on the same computer
+    m_Key: Race with others on your computer
     m_Metadata:
       m_Items: []
   - m_Id: 21488641769472
@@ -1432,7 +1432,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 10063009546240
-    m_Key: Start splitscreen or an online multiplayer
+    m_Key: Start your own lobby or join a server online
     m_Metadata:
       m_Items: []
   - m_Id: 31799994220544
@@ -2237,6 +2237,26 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 192128475921440768
     m_Key: UI2 RIGHT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 192722804037705728
+    m_Key: CANCEL
+    m_Metadata:
+      m_Items: []
+  - m_Id: 192756958649442304
+    m_Key: Splitscreen scoring
+    m_Metadata:
+      m_Items: []
+  - m_Id: 192790190505910272
+    m_Key: Victory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 193059058486927360
+    m_Key: 'Your version: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 193400000000000001
+    m_Key: Android.EditorNeedsDevices
     m_Metadata:
       m_Items: []
   m_Metadata:

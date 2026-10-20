@@ -182,7 +182,7 @@ public class RaceBox : Sfxable
 			jumpPai = value;
 		}
 	}
-
+	
 	protected override void Awake()
 	{
 		base.Awake();
@@ -738,7 +738,7 @@ public class RaceBox : Sfxable
 		stuntPai.score = 0;
 		stuntPai.level = -1;
 	}
-	public void ResetOnTrack()
+	public void ResetTimers()
 	{
 		if (F.I.s_laps > 0 || F.I.gameMode == GameMode.Skate)
 		{

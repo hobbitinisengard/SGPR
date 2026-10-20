@@ -17,10 +17,15 @@ public class SkyboxController : MonoBehaviour
 	}
 	public void SetNightTimeLights()
 	{
-		if (nightTimeLights)
-			nightTimeLights.SetActive(F.I.s_timeOfDay == TimeOfDay.Night);
+        if (!F.I) return;
+        bool night = F.I.s_timeOfDay == TimeOfDay.Night;
+        // The daytime sky mesh lives on this root; disabling its child alone leaves
+        // both sky shells rendering into the same depth buffer at night.
+        foreach (var skyRenderer in GetComponents<Renderer>()) skyRenderer.enabled = !night;
+        if (nightTimeLights)
+            nightTimeLights.SetActive(F.I.s_timeOfDay == TimeOfDay.Night);
 
-		nightSky.SetActive(F.I.s_timeOfDay == TimeOfDay.Night);
+		if (nightSky) nightSky.SetActive(night);
 
 		if (extraToTurnOffInNight)
 			extraToTurnOffInNight.SetActive(F.I.s_timeOfDay != TimeOfDay.Night);

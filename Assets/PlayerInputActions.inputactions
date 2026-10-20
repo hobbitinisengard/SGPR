@@ -151,7 +151,7 @@
                 },
                 {
                     "name": "Left Click",
-                    "type": "Value",
+                    "type": "PassThrough",
                     "id": "66290cd0-1730-4013-999c-bbb9d37b4846",
                     "expectedControlType": "",
                     "processors": "",
@@ -160,7 +160,7 @@
                 },
                 {
                     "name": "Point",
-                    "type": "Value",
+                    "type": "PassThrough",
                     "id": "eff7f107-7a86-4d1e-8816-766abdc88694",
                     "expectedControlType": "Vector2",
                     "processors": "",
@@ -197,12 +197,22 @@
             ],
             "bindings": [
                 {
+                    "name": "", "id": "d0c78a15-15c6-49ec-89be-f152cfd4f391",
+                    "path": "<Touchscreen>/touch*/position", "interactions": "", "processors": "",
+                    "groups": "Touch", "action": "Point", "isComposite": false, "isPartOfComposite": false
+                },
+                {
+                    "name": "", "id": "8c913aa2-97e6-4567-81fd-57efb619a090",
+                    "path": "<Touchscreen>/touch*/press", "interactions": "", "processors": "",
+                    "groups": "Touch", "action": "Left Click", "isComposite": false, "isPartOfComposite": false
+                },
+                {
                     "name": "",
                     "id": "53252c69-ca4b-44ac-a63b-b65755ab3176",
                     "path": "<Keyboard>/enter",
                     "interactions": "",
                     "processors": "",
-                    "groups": "Keyboard",
+                    "groups": "Keyboard;Touch",
                     "action": "Submit",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -224,7 +234,7 @@
                     "path": "<Keyboard>/l",
                     "interactions": "",
                     "processors": "",
-                    "groups": "Keyboard",
+                    "groups": "Keyboard;Touch",
                     "action": "Lights",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -235,7 +245,7 @@
                     "path": "<Keyboard>/escape",
                     "interactions": "",
                     "processors": "",
-                    "groups": "Keyboard",
+                    "groups": "Keyboard;Touch",
                     "action": "Cancel",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -257,7 +267,7 @@
                     "path": "<Keyboard>/ctrl",
                     "interactions": "",
                     "processors": "",
-                    "groups": "Keyboard",
+                    "groups": "Keyboard;Touch",
                     "action": "Boost",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -279,7 +289,7 @@
                     "path": "<Keyboard>/shift",
                     "interactions": "",
                     "processors": "",
-                    "groups": "Keyboard",
+                    "groups": "Keyboard;Touch",
                     "action": "Evo",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -312,7 +322,7 @@
                     "path": "<Keyboard>/h",
                     "interactions": "",
                     "processors": "",
-                    "groups": "Keyboard",
+                    "groups": "Keyboard;Touch",
                     "action": "Horn",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -334,7 +344,7 @@
                     "path": "<Keyboard>/s",
                     "interactions": "",
                     "processors": "",
-                    "groups": "Keyboard",
+                    "groups": "Keyboard;Touch",
                     "action": "Look Back",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -389,7 +399,7 @@
                     "path": "<Keyboard>/a",
                     "interactions": "",
                     "processors": "",
-                    "groups": "Keyboard",
+                    "groups": "Keyboard;Touch",
                     "action": "Look",
                     "isComposite": false,
                     "isPartOfComposite": true
@@ -400,7 +410,7 @@
                     "path": "<Keyboard>/d",
                     "interactions": "",
                     "processors": "",
-                    "groups": "Keyboard",
+                    "groups": "Keyboard;Touch",
                     "action": "Look",
                     "isComposite": false,
                     "isPartOfComposite": true
@@ -455,7 +465,7 @@
                     "path": "<Keyboard>/z",
                     "interactions": "",
                     "processors": "",
-                    "groups": "Keyboard",
+                    "groups": "Keyboard;Touch",
                     "action": "Roll",
                     "isComposite": false,
                     "isPartOfComposite": true
@@ -466,7 +476,7 @@
                     "path": "<Keyboard>/x",
                     "interactions": "",
                     "processors": "",
-                    "groups": "Keyboard",
+                    "groups": "Keyboard;Touch",
                     "action": "Roll",
                     "isComposite": false,
                     "isPartOfComposite": true
@@ -488,7 +498,7 @@
                     "path": "<Keyboard>/upArrow",
                     "interactions": "",
                     "processors": "",
-                    "groups": "Keyboard",
+                    "groups": "Keyboard;Touch",
                     "action": "Move",
                     "isComposite": false,
                     "isPartOfComposite": true
@@ -499,7 +509,7 @@
                     "path": "<Keyboard>/downArrow",
                     "interactions": "",
                     "processors": "",
-                    "groups": "Keyboard",
+                    "groups": "Keyboard;Touch",
                     "action": "Move",
                     "isComposite": false,
                     "isPartOfComposite": true
@@ -510,7 +520,7 @@
                     "path": "<Keyboard>/leftArrow",
                     "interactions": "",
                     "processors": "",
-                    "groups": "Keyboard",
+                    "groups": "Keyboard;Touch",
                     "action": "Move",
                     "isComposite": false,
                     "isPartOfComposite": true
@@ -521,7 +531,7 @@
                     "path": "<Keyboard>/rightArrow",
                     "interactions": "",
                     "processors": "",
-                    "groups": "Keyboard",
+                    "groups": "Keyboard;Touch",
                     "action": "Move",
                     "isComposite": false,
                     "isPartOfComposite": true
@@ -598,7 +608,7 @@
                     "path": "<Keyboard>/w",
                     "interactions": "",
                     "processors": "",
-                    "groups": "Keyboard",
+                    "groups": "Keyboard;Touch",
                     "action": "Move2",
                     "isComposite": false,
                     "isPartOfComposite": true
@@ -609,7 +619,7 @@
                     "path": "<Keyboard>/s",
                     "interactions": "",
                     "processors": "",
-                    "groups": "Keyboard",
+                    "groups": "Keyboard;Touch",
                     "action": "Move2",
                     "isComposite": false,
                     "isPartOfComposite": true
@@ -620,7 +630,7 @@
                     "path": "<Keyboard>/a",
                     "interactions": "",
                     "processors": "",
-                    "groups": "Keyboard",
+                    "groups": "Keyboard;Touch",
                     "action": "Move2",
                     "isComposite": false,
                     "isPartOfComposite": true
@@ -631,7 +641,7 @@
                     "path": "<Keyboard>/d",
                     "interactions": "",
                     "processors": "",
-                    "groups": "Keyboard",
+                    "groups": "Keyboard;Touch",
                     "action": "Move2",
                     "isComposite": false,
                     "isPartOfComposite": true
@@ -708,7 +718,7 @@
                     "path": "<Keyboard>/shift",
                     "interactions": "",
                     "processors": "",
-                    "groups": "Keyboard",
+                    "groups": "Keyboard;Touch",
                     "action": "Shift",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -741,7 +751,7 @@
                     "path": "<Keyboard>/ctrl",
                     "interactions": "",
                     "processors": "",
-                    "groups": "Keyboard",
+                    "groups": "Keyboard;Touch",
                     "action": "Ctrl",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -774,7 +784,7 @@
                     "path": "<Keyboard>/tab",
                     "interactions": "",
                     "processors": "",
-                    "groups": "Keyboard",
+                    "groups": "Keyboard;Touch",
                     "action": "Alt",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -796,7 +806,7 @@
                     "path": "<Mouse>/press",
                     "interactions": "",
                     "processors": "",
-                    "groups": "Keyboard",
+                    "groups": "Keyboard;Touch",
                     "action": "Left Click",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -807,7 +817,7 @@
                     "path": "<Mouse>/position",
                     "interactions": "",
                     "processors": "",
-                    "groups": "Keyboard",
+                    "groups": "Keyboard;Touch",
                     "action": "Point",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -829,7 +839,7 @@
                     "path": "<Keyboard>/upArrow",
                     "interactions": "",
                     "processors": "",
-                    "groups": "Keyboard",
+                    "groups": "Keyboard;Touch",
                     "action": "Drive",
                     "isComposite": false,
                     "isPartOfComposite": true
@@ -840,7 +850,7 @@
                     "path": "<Keyboard>/downArrow",
                     "interactions": "",
                     "processors": "",
-                    "groups": "Keyboard",
+                    "groups": "Keyboard;Touch",
                     "action": "Drive",
                     "isComposite": false,
                     "isPartOfComposite": true
@@ -928,7 +938,7 @@
                     "path": "<Keyboard>/t",
                     "interactions": "",
                     "processors": "",
-                    "groups": "Keyboard",
+                    "groups": "Keyboard;Touch",
                     "action": "Chat",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -950,7 +960,7 @@
                     "path": "<Keyboard>/r",
                     "interactions": "",
                     "processors": "",
-                    "groups": "Keyboard",
+                    "groups": "Keyboard;Touch",
                     "action": "ResetOnTrack",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -972,7 +982,7 @@
                     "path": "<Keyboard>/1",
                     "interactions": "",
                     "processors": "Scale",
-                    "groups": "Keyboard",
+                    "groups": "Keyboard;Touch",
                     "action": "QuickMessage",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -983,7 +993,7 @@
                     "path": "<Keyboard>/2",
                     "interactions": "",
                     "processors": "Scale(factor=2)",
-                    "groups": "Keyboard",
+                    "groups": "Keyboard;Touch",
                     "action": "QuickMessage",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -994,7 +1004,7 @@
                     "path": "<Keyboard>/3",
                     "interactions": "",
                     "processors": "Scale(factor=3)",
-                    "groups": "Keyboard",
+                    "groups": "Keyboard;Touch",
                     "action": "QuickMessage",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -1005,7 +1015,7 @@
                     "path": "<Keyboard>/4",
                     "interactions": "",
                     "processors": "Scale(factor=4)",
-                    "groups": "Keyboard",
+                    "groups": "Keyboard;Touch",
                     "action": "QuickMessage",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -1016,7 +1026,7 @@
                     "path": "<Keyboard>/5",
                     "interactions": "",
                     "processors": "Scale(factor=5)",
-                    "groups": "Keyboard",
+                    "groups": "Keyboard;Touch",
                     "action": "QuickMessage",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -1027,7 +1037,7 @@
                     "path": "<Keyboard>/6",
                     "interactions": "",
                     "processors": "Scale(factor=6)",
-                    "groups": "Keyboard",
+                    "groups": "Keyboard;Touch",
                     "action": "QuickMessage",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -1038,7 +1048,7 @@
                     "path": "<Keyboard>/7",
                     "interactions": "",
                     "processors": "Scale(factor=7)",
-                    "groups": "Keyboard",
+                    "groups": "Keyboard;Touch",
                     "action": "QuickMessage",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -1049,7 +1059,7 @@
                     "path": "<Keyboard>/8",
                     "interactions": "",
                     "processors": "Scale(factor=8)",
-                    "groups": "Keyboard",
+                    "groups": "Keyboard;Touch",
                     "action": "QuickMessage",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -1060,7 +1070,7 @@
                     "path": "<Keyboard>/9",
                     "interactions": "",
                     "processors": "Scale(factor=9)",
-                    "groups": "Keyboard",
+                    "groups": "Keyboard;Touch",
                     "action": "QuickMessage",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -1071,7 +1081,7 @@
                     "path": "<Keyboard>/0",
                     "interactions": "",
                     "processors": "Scale(factor=10)",
-                    "groups": "Keyboard",
+                    "groups": "Keyboard;Touch",
                     "action": "QuickMessage",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -1094,6 +1104,14 @@
                     "isOptional": false,
                     "isOR": false
                 }
+            ]
+        },
+        {
+            "name": "Touch",
+            "bindingGroup": "Touch",
+            "devices": [
+                { "devicePath": "<Touchscreen>", "isOptional": false, "isOR": false },
+                { "devicePath": "<Keyboard>", "isOptional": true, "isOR": false }
             ]
         },
         {

@@ -41,14 +41,15 @@ public class YouSureDialog : MonoBehaviour
 	}
 	private void OnEnable()
 	{
-		selectMeAfterDisable = EventSystem.current.currentSelectedGameObject.GetComponent<Button>();
+		var selected = EventSystem.current ? EventSystem.current.currentSelectedGameObject : null;
+		selectMeAfterDisable = selected ? selected.GetComponent<Button>() : null;
 		SetInteractibilityOfButtons(false);
 		transform.GetChild(1).GetComponent<Button>().Select();
 	}
 	private void OnDisable()
 	{
 		SetInteractibilityOfButtons(true);
-		selectMeAfterDisable.Select();
+		if (selectMeAfterDisable) selectMeAfterDisable.Select();
 		gameObject.SetActive(false);
 	}
 }

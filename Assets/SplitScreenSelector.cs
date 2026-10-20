@@ -544,12 +544,13 @@ public class SplitScreenSelector : TrackSelector
 	}
 	public void Refresh()
 	{
+		while (F.I.splitScreenPlayers.Count < 2) AddPlayer();
 		if (!Enum.IsDefined(typeof(CpuLevel), F.I.s_cpuLevel)) F.I.s_cpuLevel = CpuLevel.Medium;
 		RefreshSponsor();
 		TMP_Text teamLabel = teamsText;
 		if (!teamLabel && teamsBtn) teamLabel = teamsBtn.GetComponentInChildren<TMP_Text>(true);
-		SetText(teamLabel, L("TEAMS") + ": " + L(F.I.teams ? "Yes" : "No"));
-		if (splitScreenEntryBtn) splitScreenEntryBtn.interactable = F.I.splitScreenPlayers.Count >= 2;
+		SetText(teamLabel, L("Teams") + ": " + L(F.I.teams ? "Yes" : "No"));
+		if (splitScreenEntryBtn) splitScreenEntryBtn.interactable = !MobileControls.Enabled && F.I.splitScreenPlayers.Count >= 2;
 		if (F.I.s_raceType == RaceType.Knockout) F.I.s_laps = F.I.s_cpuRivals + F.I.splitScreenPlayers.Count - 1;
 		if (lapsButton) lapsButton.interactable = F.I.s_raceType != RaceType.Knockout;
 		SetText(splitScreenPlayersNumberText, L("SPLIT SCREEN PLAYERS") + ": " + F.I.splitScreenPlayers.Count);
@@ -559,7 +560,7 @@ public class SplitScreenSelector : TrackSelector
 		SetText(nightButtonText, L(F.I.s_timeOfDay.ToString()));
 		SetText(randomCarsText, L("Cars") + ": " + L(F.I.randomCars ? "Random" : "Select"));
 		SetText(randomTracksText, L("Tracks") + ": " + L(F.I.randomTracks ? "Random" : "Select"));
-		SetText(scoringText, L(F.I.scoringType.ToString())); SetText(roundText, L("Round") + ": " + Mathf.Min(CurrentRound, TotalRounds) + "/" + TotalRounds);
+		SetText(scoringText, L("Splitscreen scoring") + ": " + L(F.I.scoringType.ToString())); SetText(roundText, L("Round") + ": " + Mathf.Min(CurrentRound, TotalRounds) + "/" + TotalRounds);
 		SetText(LevelButtonText, L("CPU") + ": " + L(F.I.s_cpuLevel.ToString()));
 		SetText(catchupButtonText, L("Catchup") + ": " + L(F.I.catchup ? "Yes" : "No"));
 		SetText(roadTypeText ? roadTypeText : wayButtonText, L("Tex") + ": " + L(F.I.s_roadType.ToString()));
@@ -569,10 +570,6 @@ public class SplitScreenSelector : TrackSelector
 		var names = F.I.splitScreenPlayers.Select(player => player.name).ToArray();
 		if (names.Any(string.IsNullOrWhiteSpace) || names.Distinct(StringComparer.OrdinalIgnoreCase).Count() != names.Length)
 		{ raceReady = false; error = "Enter a different name for each player"; }
-		foreach (var player in F.I.splitScreenPlayers)
-			if (InputSystem.GetDeviceById(player.deviceId) is Keyboard && player.keyboardProfile >= 0 && player.keyboardProfile < SplitScreenRace.MaxPlayers &&
-				SplitScreenKeyboardProfile.Load(player.keyboardProfile).keys.Take(4).Any(string.IsNullOrEmpty))
-			{ raceReady = false; error = "Assign acceleration, brake and steering keys to each keyboard profile"; }
 		if (!F.I.tracks.TryGetValue(F.I.s_trackName ?? "", out var selected) || !selected.valid || !selected.unlocked || selected.isSkatePark)
 		{ raceReady = false; error = "Select a track"; }
 		if (F.I.teams && (F.I.splitScreenPlayers.Any(player => player.sponsor == Livery.Random) ||
@@ -598,12 +595,13 @@ public class SplitScreenSelector : TrackSelector
 	}
 	public void SwitchSplitScreenPlayers(bool init = false)
 	{
+		while (F.I.splitScreenPlayers.Count < 2) AddPlayer();
 		if (!init)
 		{
 			if (Direction() > 0 && F.I.splitScreenPlayers.Count < SplitScreenRace.MaxPlayers) AddPlayer();
-			else if (Direction() < 0 && F.I.splitScreenPlayers.Count > 0) F.I.splitScreenPlayers.RemoveAt(F.I.splitScreenPlayers.Count - 1);
+			else if (Direction() < 0 && F.I.splitScreenPlayers.Count > 2) F.I.splitScreenPlayers.RemoveAt(F.I.splitScreenPlayers.Count - 1);
 		}
-		if (splitScreenEntryBtn) splitScreenEntryBtn.interactable = F.I.splitScreenPlayers.Count >= 2;
+		if (splitScreenEntryBtn) splitScreenEntryBtn.interactable = !MobileControls.Enabled && F.I.splitScreenPlayers.Count >= 2;
 		F.I.s_cpuRivals = Mathf.Min(F.I.s_cpuRivals, SplitScreenRace.MaxPlayers - F.I.splitScreenPlayers.Count); Refresh();
 	}
 	public new void SwitchRaceType(bool init = false) { if (!init) F.I.s_raceType = (RaceType)F.Wraparound((int)F.I.s_raceType + Direction(), 0, F.I.RaceTypes - 1); Refresh(); }

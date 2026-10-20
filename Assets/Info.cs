@@ -9,7 +9,9 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
+#if UNITY_EDITOR
 using Unity.Multiplayer.Playmode;
+#endif
 using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.EventSystems;
@@ -113,10 +115,12 @@ public class Info : MonoBehaviour
 	public Material emissiveRearDarker;
 	public Mesh sphereMesh;
 	public AudioMixer mainAudioMixer;
-	public const string VERSION = "0.7";
+	public const string VERSION = "0.7.1";
 	public bool minimized { get; private set; }
+#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
 	[DllImport("user32.dll")]
 	static extern bool SetCursorPos(int X, int Y);
+#endif
 	void OnApplicationFocus(bool hasFocus)
 	{
 		minimized = !hasFocus;
@@ -134,12 +138,17 @@ public class Info : MonoBehaviour
 	private void Awake()
 	{
 		F.I = this;
+#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
 		SetCursorPos(0, 0);
+#endif
 		UnityEngine.Random.InitState((int)DateTime.Now.Ticks);
 		MultiPlayerSelector.I = mpSelectorInitializer;
 		SplitScreenSelector.I = splitScreenSelector;
 		versionText.text = VERSION;
-		int MPtags = CurrentPlayer.ReadOnlyTags().Count();
+		int MPtags = 0;
+#if UNITY_EDITOR
+		MPtags = CurrentPlayer.ReadOnlyTags().Count();
+#endif
 		switch (MPtags)
 		{
 			case 1:
@@ -155,12 +164,19 @@ public class Info : MonoBehaviour
 				break;
 		}
 
+#if UNITY_ANDROID && !UNITY_EDITOR
+		_documentsSGPRpath = Application.persistentDataPath + "/";
+#endif
 		if (!Directory.Exists(documentsSGPRpath))
 		{
 			Debug.LogWarning(documentsSGPRpath + " doesnt exist");
 			Directory.CreateDirectory(documentsSGPRpath);
 		}
+#if UNITY_ANDROID && !UNITY_EDITOR
+		AndroidDataFiles.Install(documentsSGPRpath);
+#else
 		F.CopyDocumentsData(Application.streamingAssetsPath, documentsSGPRpath);
+#endif
 
 		Application.targetFrameRate = playerData.fpsLimit;
 		QualitySettings.vSyncCount = playerData.vSync ? 1 : 0;
@@ -221,12 +237,12 @@ public class Info : MonoBehaviour
 		get { return _documentsSGPRpath; }
 		private set { _documentsSGPRpath = value; }
 	}
-	public string partsPath { get { return documentsSGPRpath + "parts\\"; } }
+	public string partsPath { get { return Path.Combine(documentsSGPRpath, "parts") + Path.DirectorySeparatorChar; } }
 	public string userPartsPath => Path.Combine(partsPath, "user");
-	public string tracksPath { get { return documentsSGPRpath + "tracks\\"; } }
+	public string tracksPath { get { return Path.Combine(documentsSGPRpath, "tracks") + Path.DirectorySeparatorChar; } }
 	public string userdataPath { get { return documentsSGPRpath + "userdata.json"; } }
 	public string rankingPath { get { return documentsSGPRpath + "ranking.json"; } }
-	public string arcadePath { get { return documentsSGPRpath + "arcade\\"; } }
+	public string arcadePath { get { return Path.Combine(documentsSGPRpath, "arcade") + Path.DirectorySeparatorChar; } }
 	public string lastPath { get { return documentsSGPRpath + "path.txt"; } }
 
 	public const string arcadeProgressExtension = ".progress";

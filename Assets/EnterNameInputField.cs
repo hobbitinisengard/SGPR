@@ -17,6 +17,33 @@ public class EnterNameInputField : Sfxable
 	public SlideInOut OKButton;
 	GridLayoutGroup glg;
 	int len = 0;
+	TouchScreenKeyboard screenKeyboard;
+	string lastKeyboardText;
+	void OnEnable()
+	{
+        if (!MobileControls.Enabled) return;
+        // The whole name field is tappable, including empty space between letters.
+        var graphic = GetComponent<Graphic>();
+        if (!graphic)
+        {
+            var hitArea = gameObject.AddComponent<Image>();
+            hitArea.color = Color.clear;
+            graphic = hitArea;
+        }
+        graphic.raycastTarget = true;
+        MobileTapTarget.Bind(gameObject, OpenScreenKeyboard);
+	}
+	void OpenScreenKeyboard()
+	{
+		if (!MobileControls.Enabled || !isActiveAndEnabled || (screenKeyboard != null && screenKeyboard.active)) return;
+		lastKeyboardText = GetInputField();
+		screenKeyboard = TouchScreenKeyboard.Open(lastKeyboardText, TouchScreenKeyboardType.Default, false, false, false, false, "Name");
+	}
+	void OnDisable()
+	{
+		if (screenKeyboard != null) screenKeyboard.active = false;
+		screenKeyboard = null;
+	}
 	private void Start()
 	{
 		glg = GetComponent<GridLayoutGroup>();
@@ -71,6 +98,15 @@ public class EnterNameInputField : Sfxable
 	}
 	void Update()
 	{
+		if (MobileControls.Enabled && screenKeyboard != null)
+		{
+			if (screenKeyboard.text != lastKeyboardText)
+			{
+				SetInputField(screenKeyboard.text);
+				lastKeyboardText = screenKeyboard.text;
+			}
+			return;
+		}
 		if (SplitScreenSelector.I && SplitScreenSelector.I.IgnoreNameTypingThisFrame) return;
 		if(Input.GetKeyDown(KeyCode.Backspace) && len > 0)
 		{

@@ -37,6 +37,11 @@ public class GreetingLogo : Sfxable
 
 	private void SubmitPressed(InputAction.CallbackContext obj)
 	{
+		BeginFromTouch();
+	}
+	void BeginFromTouch()
+	{
+		if (goingUpSeq) return;
 		PlaySFX("fe-dialogconfirm");
 		goingUpSeq = true;
 		F.I.s_spectator = false;
@@ -48,6 +53,7 @@ public class GreetingLogo : Sfxable
 	{
 		bottomText.color = Color.white;
 		submitRef.action.performed -= SubmitPressed;
+		if (MobileControls.Enabled) startButton.onClick.RemoveListener(BeginFromTouch);
 	}
 	private void OnEnable()
 	{
@@ -62,6 +68,7 @@ public class GreetingLogo : Sfxable
 		goingUpSeq = false;
 		startButton.Select();
 		submitRef.action.performed += SubmitPressed;
+		if (MobileControls.Enabled) startButton.onClick.AddListener(BeginFromTouch);
 		F.I.gameMode = GameMode.Exhibition;
 	}
 

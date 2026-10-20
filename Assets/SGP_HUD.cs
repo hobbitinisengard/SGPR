@@ -49,8 +49,8 @@ public class SGP_HUD : MonoBehaviour
 	public Image currentGear;
 	public Transform rpmIndicator;
 	public RectTransform batteryLack;
-	readonly int minBatteryLack = 192;
-	readonly int maxBatteryLack = 35;
+	readonly int minBatteryLack = -46;
+	readonly int maxBatteryLack = -241;
 	// 0,1,2,3,4,5,6,7,8,9
 	public Sprite[] speedoSprites;
 	// Hundreds, Tens, Ones
@@ -579,7 +579,7 @@ public class SGP_HUD : MonoBehaviour
 					try
 					{
 						Vector3 pos = carProgressIcons[car].GetComponent<RectTransform>().anchoredPosition;
-						pos.x = 62 * diff; // from -62 to -62
+						pos.x = 230 * diff; // from -230 to -230
 						carProgressIcons[car].GetComponent<RectTransform>().anchoredPosition = pos;
 					}
 					catch

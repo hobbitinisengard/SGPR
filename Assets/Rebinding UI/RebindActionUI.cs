@@ -41,12 +41,11 @@ namespace UnityEngine.InputSystem.Samples.RebindUI
 		}
 
 		static int lastRebindStopFrame = -1;
-		// Menu actions may receive Escape before or after the rebinding callback.
+		// A menu Back action must not leave this view while a key is being captured.
 		public static bool ConsumeCancelInput()
 		{
 			if (activeRebind && activeRebind.m_RebindOperation != null)
 			{
-				activeRebind.m_RebindOperation.Cancel();
 				return true;
 			}
 			return lastRebindStopFrame == Time.frameCount;
@@ -87,6 +86,7 @@ namespace UnityEngine.InputSystem.Samples.RebindUI
 		bool hasInputSetContext;
 		public int inputSetIndex { get; private set; } = -1;
 		public event Action<RebindActionUI> prepareRebind;
+		public event Func<RebindActionUI, bool, string, int> resolveCaptureBinding;
 		InputAction targetAction => hasInputSetContext ? m_RuntimeAction : m_RuntimeAction ?? m_Action?.action;
 		// Set the asset and binding together; no intermediate refresh from another set.
 		public void SetInputSet(InputActionAsset asset, int setIndex, string bindingId)
@@ -378,8 +378,12 @@ namespace UnityEngine.InputSystem.Samples.RebindUI
 			// not disabling it causes error
 			action.Disable();
 
-			m_RebindOperation = action.PerformInteractiveRebinding(bindingIndex)
-				.WithCancelingThrough("<Keyboard>/escape")
+			bool anyDevice = resolveCaptureBinding != null;
+			// A target binding automatically restricts capture to its control scheme.
+			// RemapView chooses the destination binding after the actual input arrives.
+			m_RebindOperation = (anyDevice ? action.PerformInteractiveRebinding() : action.PerformInteractiveRebinding(bindingIndex))
+				.WithCancelingThrough((string)null)
+				.WithControlsExcluding("<Mouse>/*")
 				.OnCancel(
 					operation =>
 					{
@@ -409,7 +413,39 @@ namespace UnityEngine.InputSystem.Samples.RebindUI
 						}
 					});
 
-			if (keyboardBinding)
+			if (anyDevice)
+			{
+				bool directionalAxis = targetBinding.isPartOfComposite;
+				var axisDirections = new Dictionary<InputControl, float>();
+				m_RebindOperation.WithExpectedControlType((string)null)
+					.WithExpectedControlType(directionalAxis ? "Axis" : "Button")
+					.WithControlsHavingToMatchPath("<Keyboard>")
+					.WithControlsHavingToMatchPath("<Gamepad>")
+					.WithControlsHavingToMatchPath("<Joystick>")
+					.OnComputeScore((control, inputEvent) =>
+					{
+						if (resolveCaptureBinding(this, control.device is Keyboard, targetBinding.name) < 0) return 0;
+						if (!(control is UnityEngine.InputSystem.Controls.AxisControl axis) || !axis.ReadValueFromEvent(inputEvent, out float value)) return 0;
+						axisDirections[control] = value;
+						return Mathf.Abs(value) + (control.synthetic ? 0f : 1f);
+					})
+					.OnApplyBinding((operation, path) =>
+					{
+						bool keyboard = operation.selectedControl.device is Keyboard;
+						int destination = resolveCaptureBinding(this, keyboard, targetBinding.name);
+						if (destination < 0) return;
+						string processors = "";
+						if (directionalAxis && !keyboard && !(operation.selectedControl is UnityEngine.InputSystem.Controls.ButtonControl))
+						{
+							bool negative = axisDirections.TryGetValue(operation.selectedControl, out float value) && value < 0;
+							processors = negative ? "Invert,Clamp(min=0,max=1)" : "Clamp(min=0,max=1)";
+						}
+						action.ApplyBindingOverride(destination, new InputBinding { overridePath = path, overrideProcessors = processors, overrideInteractions = "" });
+						captureBindingIndex = destination;
+						m_RuntimeBindingId = action.bindings[destination].id.ToString();
+					});
+			}
+			else if (keyboardBinding)
 			{
 				// Composite parts still describe axes, but their keyboard inputs are buttons.
 				m_RebindOperation.WithExpectedControlType("Button")
@@ -420,7 +456,9 @@ namespace UnityEngine.InputSystem.Samples.RebindUI
 			}
 			else if (action.name == "Drive" && targetBinding.isPartOfComposite &&
 				(targetBinding.name.Equals("up", StringComparison.OrdinalIgnoreCase) ||
-				 targetBinding.name.Equals("down", StringComparison.OrdinalIgnoreCase)))
+				 targetBinding.name.Equals("down", StringComparison.OrdinalIgnoreCase) ||
+				 targetBinding.name.Equals("left", StringComparison.OrdinalIgnoreCase) ||
+				 targetBinding.name.Equals("right", StringComparison.OrdinalIgnoreCase)))
 			{
 				// Accept actual axes as well as buttons/triggers. Some controllers
 				// expose no synthetic directional buttons for their sticks.

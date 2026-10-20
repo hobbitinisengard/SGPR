@@ -4,7 +4,6 @@ using System;
 using TMPro;
 using UnityEngine.InputSystem;
 using UnityEngine.EventSystems;
-using NUnit.Framework;
 
 public class MainMenuView : Sfxable
 {
@@ -202,6 +201,12 @@ public class MainMenuView : Sfxable
 	}
 	public void ToEditorScene()
 	{
+		if (!MobileControls.EditorDevicesConnected)
+		{
+			PlaySFX("fe-warning");
+			if (bottomText) bottomText.text = F.I.LocStr("Android.EditorNeedsDevices");
+			return;
+		}
 		if (F.I.s_trackName == "MEX")
 			PlaySFX("fe-cardserror");
 		else

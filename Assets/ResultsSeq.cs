@@ -56,7 +56,19 @@ public class ResultsSeq : MonoBehaviour
 
 		seq = StartCoroutine(EnableSeq());
 	}
-	private void OnEnterClicked(UnityEngine.InputSystem.InputAction.CallbackContext obj)
+	private void Update()
+    {
+        if (!MobileControls.Enabled) return;
+        var screen = UnityEngine.InputSystem.Touchscreen.current;
+        if (screen == null) return;
+        foreach (var touch in screen.touches)
+            if (touch.press.wasPressedThisFrame)
+            {
+                submitFlag = true;
+                break;
+            }
+    }
+    private void OnEnterClicked(UnityEngine.InputSystem.InputAction.CallbackContext obj)
 	{
 		//RaceManager.I.TurnOffSmoothSyncForEveryCar();
 		submitFlag = true;

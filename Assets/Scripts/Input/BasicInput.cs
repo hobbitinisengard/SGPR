@@ -107,16 +107,24 @@ namespace RVP
 					}
 
 					Vector2 input2 = Action(F.I.driveRef)?.ReadValue<Vector2>() ?? Vector2.zero;
+					var mobile = MobileControls.I;
+					bool touchDriving = mobile && mobile.Driving && vp == RaceManager.I.playerCar;
+					if (touchDriving)
+					{
+						Vector2 touch = mobile.Drive;
+						if (touch.x != 0) input2.x = touch.x;
+						if (touch.y != 0) input2.y = touch.y;
+					}
 					vp.SetAccel(Mathf.Clamp01(input2.y));
 					vp.SetBrake(Mathf.Abs(Mathf.Clamp(input2.y, -1, 0)));
 					vp.SetSteer(input2.x);
-					vp.SetBoost((int)(Action(F.I.boostInput)?.ReadValue<float>() ?? 0));
+					vp.SetBoost(touchDriving && mobile.Nitro ? 1 : (int)(Action(F.I.boostInput)?.ReadValue<float>() ?? 0));
 					if (F.I.chat.texting)
 						return;
 
 					
 					vp.SetHonkerInput((int)(Action(F.I.honkInput)?.ReadValue<float>() ?? 0));
-					vp.SetSGPShift((int)(Action(F.I.evoInput)?.ReadValue<float>() ?? 0));
+					vp.SetSGPShift(touchDriving && mobile.Stunts ? 1 : (int)(Action(F.I.evoInput)?.ReadValue<float>() ?? 0));
 					if ((Action(F.I.resetOnTrackInput)?.ReadValue<float>() ?? 0) == 1
 						&& Time.time - vp.resetOnTrackTime > 5)
 					{

@@ -252,6 +252,13 @@ public class TuningSelector : MainMenuView
 					ImageCategories[(int)slot.type] + "_" + parts[i].index.ToString("D2"));
 				image.preserveAspect = true;
 				icon.SetActive(true);
+				int partIndex = i;
+				MobileTapTarget.Bind(icon, () =>
+				{
+					if (loading) return;
+					if (selectedRow == rowIndex && row.selectedIndex == partIndex && Championships.Active) BuySelectedPart();
+					else SelectPart(rowIndex, partIndex);
+				});
 				row.images.Add(rect);
 			}
 			rowTransform.anchoredPosition = new Vector2(-row.images[row.selectedIndex].anchoredPosition.x,
@@ -289,6 +296,11 @@ public class TuningSelector : MainMenuView
 		int nextRow = Mathf.Clamp(selectedRow + y, 0, rows.Count - 1);
 		PartRow row = rows[nextRow];
 		int nextPart = Mathf.Clamp(row.selectedIndex + (y == 0 ? x : 0), 0, row.parts.Count - 1);
+		SelectPart(nextRow, nextPart);
+	}
+	void SelectPart(int nextRow, int nextPart)
+	{
+		PartRow row = rows[nextRow];
 		if (nextRow == selectedRow && nextPart == row.selectedIndex) return;
 		if (Championships.Active && nextRow != selectedRow)
 		{

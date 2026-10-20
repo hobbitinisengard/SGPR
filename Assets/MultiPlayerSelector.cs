@@ -414,7 +414,7 @@ public class MultiPlayerSelector : TrackSelector
 		
 
 		ServerC.I.CarNameSet();
-		randomCarsText.text = F.I.LocStr("Cars:") + (F.I.randomCars ? F.I.LocStr("Random") : F.I.LocStr("Select"));
+		randomCarsText.text = F.I.LocStr("Cars")+ ": " + (F.I.randomCars ? F.I.LocStr("Random") : F.I.LocStr("Select"));
 		garageBtn.interactable = !F.I.randomCars;
 	}
 	void PickRandomTrack()

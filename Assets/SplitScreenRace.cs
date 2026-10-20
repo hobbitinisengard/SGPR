@@ -14,6 +14,7 @@ public sealed class SplitScreenRace : MonoBehaviour
 	public VehicleParent[] Cars { get; private set; } = Array.Empty<VehicleParent>();
 	CameraControl[] cameras;
 	SGP_HUD[] huds;
+	CanvasGroup[] hudVisibility;
 	readonly List<GameObject> ownedObjects = new();
 	readonly List<(Transform child, Transform parent, int sibling)> sharedHudElements = new();
 	RectTransform[] viewports;
@@ -61,6 +62,7 @@ public sealed class SplitScreenRace : MonoBehaviour
 		ending = false;
 		int count = F.I.splitScreenPlayers.Count;
 		Cars = new VehicleParent[count]; cameras = new CameraControl[count]; huds = new SGP_HUD[count];
+		hudVisibility = new CanvasGroup[count];
 		var menuInput = GameObject.Find("Canvas").GetComponent<PlayerInput>();
 		F.I.playerInputs = new PlayerInput[MaxPlayers];
 		cameraRect = race.cam.GetComponent<Camera>().rect;
@@ -129,7 +131,9 @@ public sealed class SplitScreenRace : MonoBehaviour
 			var originalScaler = hudParent.GetComponentInParent<CanvasScaler>();
 			scaler.referenceResolution = originalScaler ? originalScaler.referenceResolution : new Vector2(1920, 1080);
 			scaler.matchWidthOrHeight = 0.5f;
-			var viewport = new GameObject("Viewport", typeof(RectTransform), typeof(RectMask2D)).GetComponent<RectTransform>();
+			var viewport = new GameObject("Viewport", typeof(RectTransform), typeof(RectMask2D), typeof(CanvasGroup)).GetComponent<RectTransform>();
+			hudVisibility[i] = viewport.GetComponent<CanvasGroup>();
+			hudVisibility[i].blocksRaycasts = false;
 			viewport.SetParent(canvasObject.transform, false); viewport.anchorMin = camera.rect.min; viewport.anchorMax = camera.rect.max;
 			viewport.offsetMin = viewport.offsetMax = Vector2.zero; viewports[i] = viewport;
 			var rect = (RectTransform)huds[i].transform; rect.SetParent(viewport, false);
@@ -178,6 +182,9 @@ public sealed class SplitScreenRace : MonoBehaviour
 		if (ending || Cars.Length == 0 || Cars.Any(car => !car)) return;
 		foreach (var car in Cars)
 			if (car.originalVehiclePhysics == null) return;
+		// Hide visuals without stopping the shared finish countdown hosted by HUD 1P.
+		for (int i = 0; i < Cars.Length; i++)
+			if (!Cars[i].raceBox.enabled) hudVisibility[i].alpha = 0;
 		if (Cars.Any(car => car.raceBox.enabled)) return;
 		ending = true;
 		race.hud.endraceTimer.gameObject.SetActive(false);
@@ -224,7 +231,7 @@ public sealed class SplitScreenRace : MonoBehaviour
 		foreach (var input in F.I.playerInputs) if (input) { input.DeactivateInput(); Destroy(input.actions); }
 		foreach (var obj in ownedObjects) if (obj) { obj.SetActive(false); Destroy(obj); }
 		F.I.playerInputs = new PlayerInput[MaxPlayers];
-		ownedObjects.Clear(); sharedHudElements.Clear(); Cars = Array.Empty<VehicleParent>(); huds = null; cameras = null;
+		ownedObjects.Clear(); sharedHudElements.Clear(); Cars = Array.Empty<VehicleParent>(); huds = null; cameras = null; hudVisibility = null;
 		if (I == this) I = null;
 	}
 }

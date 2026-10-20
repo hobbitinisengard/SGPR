@@ -10,6 +10,7 @@ using UnityEngine.UI;
 
 public class RemapView : MonoBehaviour
 {
+	public Button CancelRebindBtn;
 	public InputActionAsset actions;
 	public Button RebindControllerMenu;
 	
@@ -21,7 +22,6 @@ public class RemapView : MonoBehaviour
 	int currentSet;
 	readonly InputActionAsset[] inputSets = new InputActionAsset[SplitScreenRace.MaxPlayers];
 	readonly List<RebindActionUI> buttons = new();
-	readonly HashSet<RebindActionUI> hiddenBackButtons = new();
 	readonly bool[] setUsesKeyboard = new bool[SplitScreenRace.MaxPlayers];
 	bool refreshSetPending;
 	bool connected;
@@ -80,9 +80,11 @@ public class RemapView : MonoBehaviour
 		{
 			button.stopRebindEvent.AddListener(RebindStopped);
 			button.prepareRebind += PrepareRebind;
+			button.resolveCaptureBinding += ResolveCaptureBinding;
 		}
 		connected = true;
-		removeBindingsButton.onClick.AddListener(ClearVisibleBindings);
+		if (removeBindingsButton) removeBindingsButton.onClick.AddListener(ClearVisibleBindings);
+		if (CancelRebindBtn) CancelRebindBtn.onClick.AddListener(CancelRebinding);
 		keyboardMode = lastDeviceWasKeyboard;
 		InputSystem.onAfterUpdate += UpdateDeviceMode;
 		InputSystem.onEvent += ClearShortcut;
@@ -114,13 +116,6 @@ public class RemapView : MonoBehaviour
 		{
 			if (!button || button.actionReference?.action == null) continue;
 			var action = asset.FindAction(button.actionReference.action.id.ToString());
-			bool hideBack = currentSet == 0 && setUsesKeyboard[currentSet] && action?.id == F.I.escRef.action.id;
-			if (hideBack)
-			{
-				hiddenBackButtons.Add(button);
-				button.gameObject.SetActive(false);
-			}
-			else if (hiddenBackButtons.Remove(button)) button.gameObject.SetActive(true);
 			int binding = FindBindingForDevice(action, button.bindingId, setUsesKeyboard[currentSet]);
 			button.SetInputSet(asset, currentSet, binding >= 0 ? action.bindings[binding].id.ToString() : "");
 			if (binding < 0)
@@ -176,8 +171,17 @@ public class RemapView : MonoBehaviour
 		var asset = GetSet();
 		var action = asset.FindAction(button.actionReference.action.id.ToString());
 		int binding = FindBindingForDevice(action, button.bindingId, keyboardMode);
-		if (currentSet == 0 && keyboardMode && action?.id == F.I.escRef.action.id) binding = -1;
+		if (binding < 0) binding = FindBindingForDevice(action, button.bindingId, !keyboardMode);
 		button.SetInputSet(asset, currentSet, binding >= 0 ? action.bindings[binding].id.ToString() : "");
+	}
+	int ResolveCaptureBinding(RebindActionUI button, bool keyboard, string partName)
+	{
+		var action = GetSet().FindAction(button.actionReference.action.id.ToString());
+		int index = FindBindingForDevice(action, button.bindingId, keyboard);
+		if (index < 0 || !action.bindings[index].isComposite) return index;
+		for (int part = index + 1; part < action.bindings.Count && action.bindings[part].isPartOfComposite; part++)
+			if (string.Equals(action.bindings[part].name, partName, StringComparison.OrdinalIgnoreCase)) return part;
+		return -1;
 	}
 	void RebindStopped(RebindActionUI button, InputActionRebindingExtensions.RebindingOperation operation)
 	{
@@ -243,7 +247,6 @@ public class RemapView : MonoBehaviour
 	void SaveCurrentSet()
 	{
 		var asset = inputSets[currentSet]; if (!asset) return;
-		if (currentSet == 0) RestoreFirstKeyboardBack(asset);
 		string json = asset.SaveBindingOverridesAsJson();
 		PlayerPrefs.SetString(SetKey(currentSet), json);
 		// Set 1 also remains the regular single-player/menu setup.
@@ -256,19 +259,20 @@ public class RemapView : MonoBehaviour
 		if (!connected) return;
 		InputSystem.onAfterUpdate -= UpdateDeviceMode;
 		InputSystem.onEvent -= ClearShortcut;
+		if (removeBindingsButton) removeBindingsButton.onClick.RemoveListener(ClearVisibleBindings);
+		if (CancelRebindBtn) CancelRebindBtn.onClick.RemoveListener(CancelRebinding);
 		CancelRebinding(); SaveCurrentSet();
 		foreach (var button in buttons)
 			if (button)
 			{
 				button.stopRebindEvent.RemoveListener(RebindStopped);
 				button.prepareRebind -= PrepareRebind;
+				button.resolveCaptureBinding -= ResolveCaptureBinding;
 				button.ClearInputSet();
 			}
 		// Publish set 1 to regular gameplay after editing, keeping the menu asset out of capture.
 		if (actions && inputSets[0]) actions.LoadBindingOverridesFromJson(inputSets[0].SaveBindingOverridesAsJson());
 		buttons.Clear(); connected = false; refreshSetPending = false;
-		foreach (var button in hiddenBackButtons) if (button) button.gameObject.SetActive(true);
-		hiddenBackButtons.Clear();
 		for (int i = 0; i < inputSets.Length; i++)
 			if (inputSets[i]) { inputSets[i].Disable(); Destroy(inputSets[i]); inputSets[i] = null; }
 		inputSets[0] = null;
@@ -278,27 +282,17 @@ public class RemapView : MonoBehaviour
 	// Called on the private PlayerInput copy at race start, for keyboards and pads.
 	[Serializable] class SavedBinding { public string id = ""; public string path = ""; }
 	[Serializable] class SavedBindings { public SavedBinding[] bindings = Array.Empty<SavedBinding>(); }
-	public static bool RestoreFirstKeyboardBack(InputActionAsset asset)
-	{
-		var cancel = asset.FindAction("Global/Cancel");
-		if (cancel == null) return false;
-		bool changed = false;
-		for (int i = 0; i < cancel.bindings.Count; i++)
-		{
-			var binding = cancel.bindings[i];
-			if (binding.isComposite || !(binding.path?.StartsWith("<Keyboard>/", StringComparison.OrdinalIgnoreCase) ?? false)) continue;
-			if (binding.effectivePath == "<Keyboard>/escape" && string.IsNullOrEmpty(binding.overrideProcessors) && string.IsNullOrEmpty(binding.overrideInteractions)) continue;
-			cancel.ApplyBindingOverride(i, new InputBinding { overridePath = "<Keyboard>/escape", overrideProcessors = "", overrideInteractions = "" });
-			changed = true;
-		}
-		return changed;
-	}
 	public static void ApplyInputSet(InputActionAsset asset, int index, bool keyboard)
 	{
 		index = Mathf.Clamp(index, 0, SplitScreenRace.MaxPlayers - 1);
 		string json = PlayerPrefs.GetString(SetKey(index), "");
 		if (!string.IsNullOrEmpty(json)) asset.LoadBindingOverridesFromJson(json);
-		if (index == 0) RestoreFirstKeyboardBack(asset);
+		foreach (var map in asset.actionMaps)
+			foreach (var action in map.actions)
+			{
+				for (int binding = 0; binding < action.bindings.Count; binding++) RebindsLoad.NormalizeDriveBinding(action, binding);
+				RebindsLoad.RepairDriveAxisPairs(action);
+			}
 		if (!keyboard) return;
 		var profile = SplitScreenKeyboardProfile.Load(index);
 		// Import Submit overrides saved before keyboard profiles had their own submitKey.
@@ -317,7 +311,6 @@ public class RemapView : MonoBehaviour
 				}
 		}
 		profile.Apply(asset);
-		if (index == 0) RestoreFirstKeyboardBack(asset);
 	}
 }
 
@@ -356,11 +349,6 @@ public sealed class SplitScreenKeyboardProfile
 				else if (index >= Presets.Length && saved.keys.Take(16).All(string.IsNullOrEmpty) && saved.keys[16] == "escape")
 					saved.keys[16] = "";
 				if (saved.submitKey == null) saved.submitKey = DefaultSubmitKey(index);
-				if (index == 0 && saved.keys[16] != "escape")
-				{
-					saved.keys[16] = "escape";
-					saved.Save(index);
-				}
 				return saved;
 			}
 		}

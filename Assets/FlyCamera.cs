@@ -3,8 +3,10 @@ using UnityEngine;
 //Logic of camera movements
 public class FlyCamera : MonoBehaviour
 {
+	#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
 	[DllImport("user32.dll")]
 	static extern bool SetCursorPos(int X, int Y);
+#endif
 	public float mainSpeed;// = 20; //regular speed
 	public float shiftAdd;// = 50; //multiplied by how long shift is held. Basically running
 	public float maxShift;// = 100; //Maximum speed when holding shift
@@ -20,6 +22,7 @@ public class FlyCamera : MonoBehaviour
 	}
 	void Update()
 	{
+		if (!MobileControls.EditorDevicesConnected) return;
 		if (Input.GetKeyUp(KeyCode.BackQuote))
 		{
 			float posY = this.transform.position.y;
@@ -70,7 +73,10 @@ public class FlyCamera : MonoBehaviour
 			transform.eulerAngles = lastMouse;
 			if (Input.mousePosition.x < 0.232 * Screen.width || Input.mousePosition.x > Screen.width - 10 || Input.mousePosition.y < 0.094 * Screen.height || Input.mousePosition.y > Screen.height - 10)
 			{
+				
+#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
 				SetCursorPos(Mathf.RoundToInt(Screen.width / 2f), Mathf.RoundToInt((Screen.height / 2f)));
+#endif
 				flag = 1;
 			}
 

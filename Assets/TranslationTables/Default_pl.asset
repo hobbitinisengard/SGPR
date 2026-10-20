@@ -69,7 +69,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 10063009546240
-    m_Localized: Gra przez internet lub na podzielonym ekranie
+    m_Localized: "Stw\xF3rz sw\xF3j serwer lub do\u0142\u0105cz do ju\u017C istniej\u0105cego"
     m_Metadata:
       m_Items: []
   - m_Id: 10285001474048
@@ -1533,7 +1533,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 60076925909524480
-    m_Localized: "\u015Acigaj si\u0119 z innymi na tym samym komputerze"
+    m_Localized: "\u015Acigaj si\u0119 na podzielonym ekranie"
     m_Metadata:
       m_Items: []
   - m_Id: 60077190968565760
@@ -2258,7 +2258,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 190294953174818816
-    m_Localized: 'Auta:'
+    m_Localized: Auta
     m_Metadata:
       m_Items: []
   - m_Id: 190595285587124224
@@ -2291,6 +2291,26 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 192128475921440768
     m_Localized: INTERFEJS2 PRAWO
+    m_Metadata:
+      m_Items: []
+  - m_Id: 192722804037705728
+    m_Localized: ANULUJ
+    m_Metadata:
+      m_Items: []
+  - m_Id: 192756958649442304
+    m_Localized: Tryb dzielonego ekranu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 192790190505910272
+    m_Localized: "Zwyci\u0119stwa"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 193059058486927360
+    m_Localized: 'Twoja wersja: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 193400000000000001
+    m_Localized: Podłącz klawiaturę i mysz, aby korzystać z edytora tras.
     m_Metadata:
       m_Items: []
   references:

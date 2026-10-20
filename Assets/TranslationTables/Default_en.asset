@@ -73,7 +73,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 10063009546240
-    m_Localized: Start splitscreen or an online multiplayer
+    m_Localized: Start your own lobby or join a server online
     m_Metadata:
       m_Items: []
   - m_Id: 10285001474048
@@ -1529,7 +1529,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 60076925909524480
-    m_Localized: Race with others on the same computer
+    m_Localized: Race in a split screen mode
     m_Metadata:
       m_Items: []
   - m_Id: 60077190968565760
@@ -2245,7 +2245,7 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 190294953174818816
-    m_Localized: 'Cars:'
+    m_Localized: Cars
     m_Metadata:
       m_Items: []
   - m_Id: 190595285587124224
@@ -2278,6 +2278,26 @@ MonoBehaviour:
       m_Items: []
   - m_Id: 192128475921440768
     m_Localized: UI2 RIGHT
+    m_Metadata:
+      m_Items: []
+  - m_Id: 192722804037705728
+    m_Localized: CANCEL
+    m_Metadata:
+      m_Items: []
+  - m_Id: 192756958649442304
+    m_Localized: Splitscreen scoring
+    m_Metadata:
+      m_Items: []
+  - m_Id: 192790190505910272
+    m_Localized: Victory
+    m_Metadata:
+      m_Items: []
+  - m_Id: 193059058486927360
+    m_Localized: 'Your version: '
+    m_Metadata:
+      m_Items: []
+  - m_Id: 193400000000000001
+    m_Localized: Connect a keyboard and mouse to use the track editor.
     m_Metadata:
       m_Items: []
   references:

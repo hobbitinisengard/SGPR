@@ -136,6 +136,7 @@ public class CarSelector : Sfxable
 					newcar.name = "car" + i.ToString("D2");
 					newcar.GetComponent<Image>().sprite = Resources.Load<Sprite>(F.I.carImagesPath + newcar.name);
 					newcar.SetActive(true);
+					MobileTapTarget.Bind(newcar, () => SelectMobileCar(newcar.transform));
 					menuButtons[(int)car.category] = true;
 					if (persistentSelectedCar != null && persistentSelectedCar == newcar.name)
 						selectedCar = newcar.transform;
@@ -238,6 +239,18 @@ public class CarSelector : Sfxable
 		}
 	}
 
+	void SelectMobileCar(Transform car)
+	{
+		if (loadCo) return;
+		if (selectedCar == car && (Championships.Active || SplitScreenGarage)) { BuySelectedVehicle(); return; }
+		selectedCar = car;
+		if (!Championships.Active && !SplitScreenGarage) F.I.s_playerCarIdx = Car.Name2Index(car.name);
+		UpdateDescription();
+		if (barsAndRadialCo != null) StopCoroutine(barsAndRadialCo);
+		barsAndRadialCo = StartCoroutine(SetPerformanceBarsAndRadial());
+		if (containerCo != null) StopCoroutine(containerCo);
+		containerCo = StartCoroutine(MoveToCar());
+	}
 	void UpdateDescription()
 	{
 		if (!selectedCar) return;

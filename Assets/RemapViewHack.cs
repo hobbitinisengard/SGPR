@@ -1,11 +1,13 @@
 using UnityEngine;
+using UnityEngine.UI;
 
-// The operation itself handles Escape, including when the Cancel action is disabled.
-// This overlay only prevents the same press from leaving the remap menu.
+// Input is captured by the rebind operation; cancellation uses CancelRebindBtn.
+// Keep menu navigation blocked while the overlay is visible.
 public class RemapViewHack : MonoBehaviour
 {
 	public MainMenuView MainMenuView;
 	bool previousForbidden;
+	
 	private void OnEnable()
 	{
 		if (!MainMenuView) return;

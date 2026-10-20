@@ -42,7 +42,7 @@ public class ServerC : MonoBehaviour
 	public const int basePort = 7770;
 	string connectionType => (encryption == EncryptionType.DTLS) ? "dtls" : "udp";
 
-	const int lobbyHeartbeatInterval = 15;
+	const int lobbyHeartbeatInterval = 5;
 	const int lobbyPollInterval = 60;
 	public const string k_relayCode = "RelayJoinCode";
 	public const string k_actionHappening = "ah";

@@ -171,6 +171,13 @@ public class TrackSelectorTemplate : Sfxable
 					newtrack.name = trackName;
 					newtrack.GetComponent<Image>().sprite = IMG2Sprite.LoadNewSprite(F.I.tracksPath + trackName + ".jpg");
 					newtrack.SetActive(true);
+					MobileTapTarget.Bind(newtrack, () =>
+					{
+						if (loadCo) return;
+						selectedTrack = newtrack.transform;
+						F.I.s_trackName = selectedTrack.name;
+						SetTrackShaenigans();
+					});
 					existingTrackClasses[trackOrigin] = true;
 					if (persistentSelectedTrack != null && persistentSelectedTrack == trackName)
 					{

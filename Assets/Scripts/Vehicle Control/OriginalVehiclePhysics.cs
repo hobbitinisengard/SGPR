@@ -353,7 +353,9 @@ namespace RVP
 		readonly int[] sourceStuntPhaseIndex = new int[2];
 		readonly int[] sourceStuntLastPhase = { -1, -1 };
 		bool DigitalControls => vehicle.basicInput && vehicle.basicInput.playerInput &&
-			vehicle.basicInput.playerInput.currentControlScheme == "Keyboard" && !vehicle.followAI.selfDriving;
+			(vehicle.basicInput.playerInput.currentControlScheme == "Keyboard" ||
+             (MobileControls.I && MobileControls.I.Driving && RaceManager.I && RaceManager.I.playerCar == vehicle)) &&
+            !vehicle.followAI.selfDriving;
 		bool SourcePlayerControlsSuppressed => sourceRailControlsActive && sourceRailControlDisabled;
 		bool SourceAutomaticShiftAllowed =>
 			(F.I && F.I.s_raceType == RaceType.TimeTrial) ||
@@ -395,7 +397,8 @@ namespace RVP
 		bool UnlimitedBatteryEnergy => F.I && (F.I.s_raceType == RaceType.TimeTrial ||
 			(F.I.s_raceType == RaceType.Survival && SourceUpgradeActive &&
 				(!RaceManager.I || RaceManager.I.playerCar != vehicle)));
-		bool PlayerBatteryEmpty => energy <= 0 && F.I && F.I.s_cpuLevel == CpuLevel.Hard &&
+		bool PlayerBatteryEmpty => energy <= 0 && F.I &&
+			(F.I.s_raceType == RaceType.Survival || F.I.s_cpuLevel == CpuLevel.Hard) &&
 			vehicle.IsLocalHuman;
 		float SourceUpgradeCondition => SourceUpgradeActive ? sourceUpgradeCondition : 0f;
 		int SourceTorqueCurveIndex
@@ -1949,7 +1952,9 @@ namespace RVP
 		{
 			if (F.I && F.I.s_raceType == RaceType.Stunt)
 				return;
-			ConsumeBatteryEnergy((float)((double)SourceHumanRespawnEnergyCost * parameters.fuelCapacity / SourceEnergyCapacity));
+			float cost = (float)((double)SourceHumanRespawnEnergyCost * parameters.fuelCapacity / SourceEnergyCapacity);
+			if (F.I && F.I.s_raceType == RaceType.Survival) cost *= 2f;
+			ConsumeBatteryEnergy(cost);
 		}
 		public void AddSourceStuntEnergyAward()
 		{
@@ -1959,6 +1964,7 @@ namespace RVP
 				? SourceCpuStuntEnergyAwardPercent : SourceHumanStuntEnergyAwardPercent;
 			double amount = (double)awardPercent * SourceStuntEnergyAwardMultiplier *
 				0.01 * parameters.fuelCapacity;
+			if (F.I && F.I.s_raceType == RaceType.Survival) amount *= 0.5;
 			energy = Mathf.Min(parameters.fuelCapacity, (float)((double)energy + amount));
 		}
 		public void ResetToNeutral()
@@ -2152,8 +2158,10 @@ namespace RVP
 		}
 		void ResolveSourceVehiclePair()
 		{
+			// Knockout ends scoring for an eliminated car, but leaves it physically solid.
 			if (!F.I || F.I.s_raceType == RaceType.TimeTrial || !vehicle.gameObject.activeInHierarchy ||
-				!vehicle.raceBox || !vehicle.raceBox.enabled || (vehicle.ghost && !vehicle.ghost.hittable))
+				!vehicle.raceBox || (!vehicle.raceBox.enabled && F.I.s_raceType != RaceType.Knockout) ||
+				(vehicle.ghost && !vehicle.ghost.hittable))
 				return;
 			int tick = Mathf.RoundToInt(Time.fixedTime / Mathf.Max(0.0001f, Time.fixedDeltaTime));
 			float tickScale = Time.fixedDeltaTime * SourceTicksPerSecond;
@@ -2175,7 +2183,7 @@ namespace RVP
 				VehicleParent otherVehicle = F.I.s_cars[i];
 				if (!otherVehicle || otherVehicle == vehicle || otherVehicle.originalVehiclePhysics == null || !otherVehicle.rb ||
 					!otherVehicle.gameObject.activeInHierarchy || otherVehicle.rb.isKinematic ||
-					!otherVehicle.raceBox || !otherVehicle.raceBox.enabled ||
+					!otherVehicle.raceBox || (!otherVehicle.raceBox.enabled && F.I.s_raceType != RaceType.Knockout) ||
 					(otherVehicle.ghost && !otherVehicle.ghost.hittable))
 					continue;
 				if (!SourceVehiclePairPositions.TryGetValue(vehicle, out Vector3 thisPreviousPosition) ||
@@ -3579,6 +3587,7 @@ namespace RVP
 			// Battery difficulty uses the same base consumption as the player.
 			// Keep the original CPU fuel/mass calculation separate from this aid.
 			float batteryConsumption = engineConsumption + turboConsumption;
+			if (F.I.s_raceType == RaceType.Survival) batteryConsumption *= 2f;
 			if (SourceUpgradeActive)
 			{
 				engineConsumption = (float)(((1.0 - SourceUpgradeCondition) * SourceCpuEngineConsumptionModifier + 1.0) * engineConsumption);

@@ -611,9 +611,13 @@ namespace RVP
 				}
 			}
 
-			int curLap = F.I.s_cars[^1].raceBox.curLap - 1;
-			if (curLap < 0)
-				curLap = 0;
+			VehicleParent currentLeader = null;
+			foreach (var car in F.I.s_cars)
+				if (car && car.raceBox && (!currentLeader || LiveProgress(car) > LiveProgress(currentLeader)))
+					currentLeader = car;
+			// Finished cars encode their final position in curLap; exclude that bonus.
+			int leaderLap = currentLeader ? Mathf.Clamp(currentLeader.raceBox.curLap, 0, F.I.s_laps + 1) : 0;
+			int curLap = Mathf.Max(0, leaderLap - 1);
 			var newCar = NetworkObject.InstantiateAndSpawn(carModel, networkManager, relayId, position: position.Value, rotation: rotation.Value).GetComponent<VehicleParent>();
 			newCar.sponsor = p.SponsorGet();
 			newCar.name = p.NameGet();

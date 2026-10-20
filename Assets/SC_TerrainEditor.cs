@@ -275,6 +275,7 @@ public class SC_TerrainEditor : MonoBehaviour
 	}
 	void Update()
 	{
+		if (!MobileControls.EditorDevicesConnected) return;
 		if (!Input.GetMouseButton(0))
 		{
 			FinishTerrainOperation();
@@ -292,6 +293,7 @@ public class SC_TerrainEditor : MonoBehaviour
 	}
 	void FixedUpdate()
 	{
+		if (!MobileControls.EditorDevicesConnected) return;
 		if (uiTest.PointerOverUI() || terrain == null)
 		{
 			spotLight.spotAngle = 0;
