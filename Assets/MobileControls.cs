@@ -43,10 +43,13 @@ public sealed class MobileControls : MonoBehaviour
     {
         public MobileTouchButton button;
         public Vector2 defaultPosition;
+        public Vector2 defaultSize;
+        public float scale = 1;
     }
     readonly List<LayoutControl> layoutControls = new();
     GameObject layoutToolbar;
-    Text nitroModeLabel, resetLayoutLabel, saveLayoutLabel, layoutHint;
+    Text nitroModeLabel, resetLayoutLabel, saveLayoutLabel, layoutHint, selectedLayoutLabel, shapeLabel;
+    LayoutControl selectedLayoutControl;
     public bool Stunts { get; private set; }
     public bool Driving { get; private set; }
     bool left, right, gas, brake, menuLeft, menuRight, menuUp, menuDown, menuEnter, menuShift, menuCtrl, menuTab;
@@ -155,9 +158,13 @@ public sealed class MobileControls : MonoBehaviour
         var textRect = (RectTransform)text.transform; textRect.anchorMin = Vector2.zero; textRect.anchorMax = Vector2.one;
         textRect.offsetMin = textRect.offsetMax = Vector2.zero;
         text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf"); text.fontSize = 30;
+        text.resizeTextForBestFit = true; text.resizeTextMinSize = 14; text.resizeTextMaxSize = 30;
         text.alignment = TextAnchor.MiddleCenter; text.text = label; text.raycastTarget = false;
         if (parent == raceButtons.transform || (parent == safeRoot && label == "ESC"))
-            layoutControls.Add(new LayoutControl { button = control, defaultPosition = position });
+        {
+            layoutControls.Add(new LayoutControl { button = control, defaultPosition = position, defaultSize = size });
+            control.layoutSelected = SelectLayoutControl;
+        }
         return control;
     }
     void Update()
@@ -175,7 +182,8 @@ public sealed class MobileControls : MonoBehaviour
         }
         raceButtons.SetActive(driving || EditingLayout);
         menuButtons.SetActive(!EditingLayout && !racing && F.I.viewSwitcher.menu.activeInHierarchy && !TouchScreenKeyboard.visible);
-        raceEscape.SetActive(EditingLayout || (!menuButtons.activeSelf && !TouchScreenKeyboard.visible));
+        bool trackEditorActive = F.I.s_inEditor && F.I.viewSwitcher.world.activeInHierarchy;
+        raceEscape.SetActive(!trackEditorActive && (EditingLayout || (!menuButtons.activeSelf && !TouchScreenKeyboard.visible)));
         if (EventSystem.current) EventSystem.current.sendNavigationEvents =
             (menuButtons.activeInHierarchy && menuEnter) || (F.I.s_inEditor && F.I.viewSwitcher.world.activeInHierarchy);
         // Keyboard input is only synthesized for menu controls, never for the race or editor.
@@ -226,7 +234,48 @@ public sealed class MobileControls : MonoBehaviour
         hintRect.sizeDelta = new Vector2(680, 140);
         layoutHint.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         layoutHint.fontSize = 30; layoutHint.alignment = TextAnchor.MiddleCenter; layoutHint.raycastTarget = false;
+        var smaller = Button(layoutToolbar.transform, "-", new Vector2(.5f, .5f), new Vector2(-220, -100), new Vector2(90, 80));
+        smaller.tapped = () => ResizeSelectedControl(-.1f);
+        var larger = Button(layoutToolbar.transform, "+", new Vector2(.5f, .5f), new Vector2(-110, -100), new Vector2(90, 80));
+        larger.tapped = () => ResizeSelectedControl(.1f);
+        var shape = Button(layoutToolbar.transform, "Shape", new Vector2(.5f, .5f), new Vector2(125, -100), new Vector2(340, 80));
+        shapeLabel = shape.GetComponentInChildren<Text>();
+        shape.tapped = () =>
+        {
+            if (selectedLayoutControl == null) return;
+            selectedLayoutControl.button.SetCircular(!selectedLayoutControl.button.Circular);
+            ApplyControlSize(selectedLayoutControl);
+            UpdateLayoutLabels();
+        };
+        selectedLayoutLabel = Instantiate(layoutHint, layoutToolbar.transform);
+        selectedLayoutLabel.name = "Selected control";
+        ((RectTransform)selectedLayoutLabel.transform).anchoredPosition = new Vector2(0, -15);
+        ((RectTransform)selectedLayoutLabel.transform).sizeDelta = new Vector2(680, 50);
+        hintRect.anchoredPosition = new Vector2(0, 75);
         layoutToolbar.SetActive(false);
+    }
+    void SelectLayoutControl(MobileTouchButton button)
+    {
+        foreach (var item in layoutControls)
+        {
+            item.button.SetLayoutSelected(item.button == button);
+            if (item.button == button) selectedLayoutControl = item;
+        }
+        UpdateLayoutLabels();
+    }
+    void ResizeSelectedControl(float delta)
+    {
+        if (selectedLayoutControl == null) return;
+        selectedLayoutControl.scale = Mathf.Clamp(selectedLayoutControl.scale + delta, .5f, 2f);
+        ApplyControlSize(selectedLayoutControl);
+        UpdateLayoutLabels();
+    }
+    void ApplyControlSize(LayoutControl item)
+    {
+        Vector2 size = item.defaultSize;
+        if (item.button.Circular) size = Vector2.one * Mathf.Min(size.x, size.y);
+        ((RectTransform)item.button.transform).sizeDelta = size * item.scale;
+        item.button.ClampToParent();
     }
     public void BeginLayoutEditing(MainMenuView view)
     {
@@ -235,6 +284,7 @@ public sealed class MobileControls : MonoBehaviour
         EditingLayout = true;
         nitroHeld = nitroLatched = false;
         foreach (var item in layoutControls) item.button.SetLayoutEditing(true);
+        if (layoutControls.Count > 0) SelectLayoutControl(layoutControls[0].button);
         RefreshNitroHighlight();
         UpdateLayoutLabels();
         layoutToolbar.SetActive(true);
@@ -265,6 +315,11 @@ public sealed class MobileControls : MonoBehaviour
         resetLayoutLabel.text = F.I.LocStr("Android.ResetLayout");
         saveLayoutLabel.text = F.I.LocStr("Android.SaveLayout");
         layoutHint.text = F.I.LocStr("Android.LayoutHint");
+        if (selectedLayoutControl != null)
+        {
+            selectedLayoutLabel.text = selectedLayoutControl.button.name + ": " + Mathf.RoundToInt(selectedLayoutControl.scale * 100) + "%";
+            shapeLabel.text = F.I.LocStr(selectedLayoutControl.button.Circular ? "Android.ShapeCircle" : "Android.ShapeRectangle");
+        }
     }
     void SaveLayout()
     {
@@ -275,6 +330,8 @@ public sealed class MobileControls : MonoBehaviour
             if (area.width <= 0 || area.height <= 0) continue;
             Vector2 position = rect.localPosition;
             string key = LayoutKey + item.button.name;
+            PlayerPrefs.SetFloat(key + ".scale", item.scale);
+            PlayerPrefs.SetInt(key + ".circle", item.button.Circular ? 1 : 0);
             PlayerPrefs.SetFloat(key + ".x", (position.x - area.xMin) / area.width);
             PlayerPrefs.SetFloat(key + ".y", (position.y - area.yMin) / area.height);
         }
@@ -285,6 +342,9 @@ public sealed class MobileControls : MonoBehaviour
         foreach (var item in layoutControls)
         {
             string key = LayoutKey + item.button.name;
+            item.scale = Mathf.Clamp(PlayerPrefs.GetFloat(key + ".scale", 1), .5f, 2f);
+            item.button.SetCircular(PlayerPrefs.GetInt(key + ".circle", 0) != 0);
+            ApplyControlSize(item);
             if (!PlayerPrefs.HasKey(key + ".x") || !PlayerPrefs.HasKey(key + ".y")) continue;
             var rect = (RectTransform)item.button.transform;
             var area = ((RectTransform)rect.parent).rect;
@@ -301,9 +361,15 @@ public sealed class MobileControls : MonoBehaviour
         {
             PlayerPrefs.DeleteKey(LayoutKey + item.button.name + ".x");
             PlayerPrefs.DeleteKey(LayoutKey + item.button.name + ".y");
+            PlayerPrefs.DeleteKey(LayoutKey + item.button.name + ".scale");
+            PlayerPrefs.DeleteKey(LayoutKey + item.button.name + ".circle");
+            item.scale = 1;
+            item.button.SetCircular(false);
+            ApplyControlSize(item);
             ((RectTransform)item.button.transform).anchoredPosition = item.defaultPosition;
         }
         PlayerPrefs.Save();
+        UpdateLayoutLabels();
     }
     void RefreshNitroHighlight()
     {

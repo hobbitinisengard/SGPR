@@ -31,29 +31,37 @@ public class InfoText : MonoBehaviour
 	float timer = 0;
 	bool showing = false;
 	Coroutine showingCo;
-	private void Awake()
-	{
-		infoText_rt = GetComponent<RectTransform>();
-		infoText = GetComponent<Text>();
-		SetBottomTextPos(msgHiddenPos);
-		bottomTextAnim = new AnimationCurve(new Keyframe[] {
-			new (0,0),
-			new (.5f,1),
-			new (2.5f,1),
-			new (3,0),
-		});
-		gameObject.SetActive(true);
-		
-	}
+    void EnsureInitialized()
+    {
+        // HUD.Connect may reset this component while its GameObject is still
+        // inactive and Awake has not run (for example, editor free driving).
+        if (!infoText_rt) infoText_rt = GetComponent<RectTransform>();
+        if (!infoText) infoText = GetComponent<Text>();
+        if (bottomTextAnim == null)
+            bottomTextAnim = new AnimationCurve(new Keyframe[] {
+                new (0,0),
+                new (.5f,1),
+                new (2.5f,1),
+                new (3,0),
+            });
+    }
+    private void Awake()
+    {
+        EnsureInitialized();
+        SetBottomTextPos(msgHiddenPos);
+        gameObject.SetActive(true);
+    }
 	private void OnEnable()
 	{
 		Reset();
 	}
 	public void Reset()
 	{
+        EnsureInitialized();
 		showing = false;
 		if(showingCo != null)
 			StopCoroutine(showingCo);
+        showingCo = null;
 		liveMessages.Clear();
 		curMsgInQueue = null;
 		newPosY = msgHiddenPos;
@@ -85,6 +93,7 @@ public class InfoText : MonoBehaviour
 	
 	public void AddMessage(Message message)
 	{
+        EnsureInitialized();
 		if (curMsgInQueue != null && message.type == curMsgInQueue.type)
 		{ // if already displaying message of the same type -> immediately switch to this message
 			curMsgInQueue = message;
@@ -113,6 +122,7 @@ public class InfoText : MonoBehaviour
 	}
 	public void SetBottomTextPos(float posy)
 	{
+        EnsureInitialized();
 		Vector2 position = infoText_rt.anchoredPosition;
 		position.y = posy;
 		infoText_rt.anchoredPosition = position;

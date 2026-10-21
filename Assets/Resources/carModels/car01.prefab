@@ -4709,6 +4709,7 @@ MonoBehaviour:
   toeAngle: 0
   pivotOffset: 0
   suspensionDistance: 0.25
+  droopVisualScale: 0.5
   targetCompression: 1
   damagePivot: {x: 0, y: 0, z: 0}
   detachedCompression: 0.5
@@ -5444,6 +5445,7 @@ MonoBehaviour:
   toeAngle: 0
   pivotOffset: 0
   suspensionDistance: 0.25
+  droopVisualScale: 0.5
   targetCompression: 1
   damagePivot: {x: 0, y: 0, z: 0}
   detachedCompression: 0.5
@@ -5544,6 +5546,7 @@ MonoBehaviour:
   toeAngle: 0
   pivotOffset: 0
   suspensionDistance: 0.25
+  droopVisualScale: 0.5
   targetCompression: 1
   damagePivot: {x: 0, y: 0, z: 0}
   detachedCompression: 0.5
@@ -5692,6 +5695,7 @@ MonoBehaviour:
   toeAngle: 0
   pivotOffset: 0
   suspensionDistance: 0.25
+  droopVisualScale: 0.5
   targetCompression: 1
   damagePivot: {x: 0, y: 0, z: 0}
   detachedCompression: 0.5

@@ -172,7 +172,7 @@ public class MainMenuView : Sfxable
 		info.teams = false;
 		info.s_spectator = false;
 		info.s_playerCarIdx = carIndex;
-		info.s_cpuRivals = 9;
+		info.s_cpuRivals = MobileControls.Enabled ? 3 : 9;
 		info.s_inEditor = false;
 		info.s_cpuLevel = (CpuLevel)UnityEngine.Random.Range(0, 3);
 		info.s_trackName = trackName;
@@ -201,12 +201,6 @@ public class MainMenuView : Sfxable
 	}
 	public void ToEditorScene()
 	{
-		if (!MobileControls.EditorDevicesConnected)
-		{
-			PlaySFX("fe-warning");
-			if (bottomText) bottomText.text = F.I.LocStr("Android.EditorNeedsDevices");
-			return;
-		}
 		if (F.I.s_trackName == "MEX")
 			PlaySFX("fe-cardserror");
 		else

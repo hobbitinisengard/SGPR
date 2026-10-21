@@ -276,6 +276,9 @@ namespace RVP
 		float sourceContactCounter;
 		float sourceCameraLaunchHeight;
 		Vector3 sourceCameraOriginLocal;
+        int hustlerRampDiagnosticSamples;
+        float nextHustlerRampDiagnosticTime;
+        float sourceSupportSpanSkew;
 		int sourceUnsafeContactTicks;
 		int sourceOpposingDirectionTicks;
 		int sourceLastUnsafeProbe = -1;
@@ -987,6 +990,7 @@ namespace RVP
 			{
 				left.Normalize();
 				forward.Normalize();
+                sourceSupportSpanSkew = Vector3.Dot(-left, forward);
 				Vector3 up = Vector3.Cross(left, forward);
 				if (up.sqrMagnitude > 0.000001f)
 				{
@@ -996,6 +1000,7 @@ namespace RVP
 					return;
 				}
 			}
+            sourceSupportSpanSkew = 0;
 			sourceRightBasis = fallbackRotation * Vector3.right;
 			sourceForwardBasis = fallbackRotation * Vector3.forward;
 			sourceUpBasis = fallbackRotation * Vector3.up;
@@ -1778,7 +1783,13 @@ namespace RVP
 				// The source uses positive suspension for bump/compression and negative
 				// suspension for droop. Wheel.PositionWheel travels down along the spring
 				// direction, so the normalized visual position runs in the opposite direction.
-				return Mathf.Clamp01((tyre.travelIn - sourceSuspension[i]) / totalTravel);
+                // Body heave already raises the chassis when the suspension unloads.
+                // Scale only the additional visible wheel extension; keep the source
+                // spring state, compression and contact-probe geometry unchanged.
+                float visibleSuspension = sourceSuspension[i];
+                if (visibleSuspension < 0 && wheel.susParent)
+                    visibleSuspension *= wheel.susParent.droopVisualScale;
+                return Mathf.Clamp01((tyre.travelIn - visibleSuspension) / totalTravel);
 			}
 			return wheel.susParent ? wheel.susParent.compression : 0;
 		}
@@ -2510,6 +2521,8 @@ namespace RVP
 				tyreDynamicsIncrementVector, airIncrementVector);
 			float dynamicsRotationDegrees = Quaternion.Angle(stepStartRotation, stepRotation);
 			Vector3 dynamicsRotationVector = RotationVector(stepRotation * Quaternion.Inverse(stepStartRotation));
+            LogHustlerRampContact(appliedContactRotationVector, pendingContactRotationVector,
+                tyreDynamicsIncrementVector, airIncrementVector, dynamicsRotationVector, dynamicsContactClass);
 			bool hasSourceProbeContactThisTick = false;
 			for (int i = 0; i < sourceProbeCount; i++)
 				if (sourceProbeHitsThisTick[i] > 0)
@@ -2617,6 +2630,50 @@ namespace RVP
 				}
 			}
 		}
+        void LogHustlerRampContact(Vector3 applied, Vector3 contact, Vector3 tyres, Vector3 air,
+            Vector3 axle, int contactClass)
+        {
+            // A small event-only diagnostic budget: no strings/arrays during normal
+            // driving, no output for CPUs or other cars, at most eight messages.
+            if (vehicle.carNumber != 1 || !vehicle.Owner || hustlerRampDiagnosticSamples >= 8 ||
+                Time.fixedTime < nextHustlerRampDiagnosticTime || CountDownSeq.Countdown > 0)
+                return;
+            float largestTurn = Mathf.Max(Mathf.Max(applied.magnitude, contact.magnitude), axle.magnitude) * Mathf.Rad2Deg;
+            float slope = Vector3.Angle(sourceUpBasis, SourceWorldUp);
+            bool touchesTrack = false;
+            for (int i = 0; i < sourceProbeCount; i++) touchesTrack |= sourceProbeHitsThisTick[i] > 0;
+            if (!touchesTrack || slope < 20 || (largestTurn < 2 && effectiveComHeight >= 0)) return;
+            nextHustlerRampDiagnosticTime = Time.fixedTime + 0.35f;
+            hustlerRampDiagnosticSamples++;
+            var detail = new System.Text.StringBuilder(900);
+            for (int i = 0; i < sourceProbeCount; i++)
+            {
+                Vector3 normal = sourceProbeFirstContactNormal[i];
+                float alignment = Vector3.Dot(normal, stepStartRotation * Vector3.up);
+                detail.Append($" p{i}: hits={sourceProbeHitsThisTick[i]}, normal={normal.ToString("F2")}, " +
+                    $"alignment={alignment:F3}, impact={sourceProbeFirstContactSpeed[i]:F2}");
+                if (i < 4)
+                {
+                    OriginalTyrePhysicsConfig tyre = parameters.tyres[i];
+                    detail.Append($", wheelContact={sourceProbeWheelTouched[i]}, grace={contactCountdown[i]:F1}, " +
+                        $"load={sourceProbeWheelLoad[i]:F1}/{filteredContactLoad[i]:F1}, " +
+                        $"spring={sourceSuspension[i]:F1} range=-{tyre.travelOut:F1}/+{tyre.travelIn:F1}");
+                }
+                detail.Append(';');
+            }
+            Debug.LogWarning($"[Hustler ramp] sample={hustlerRampDiagnosticSamples}/8, " +
+                $"track={F.I?.s_trackName}, source={parameters.sourceConfig}, " +
+                $"position={vehicle.rb.position.ToString("F2")}, speed={vehicle.rb.linearVelocity.magnitude * 3.6f:F1}km/h, " +
+                $"slope={slope:F1}deg, class={contactClass}, com={parameters.comHeight:F2}/{effectiveComHeight:F2}, " +
+                $"steering={sourceSteering:F3}, steeringInput={SourceSteerInput:F3}, " +
+                $"probeSpanSkew={sourceSupportSpanSkew:F6}, supportForwardRightDot={Vector3.Dot(sourceForwardBasis, sourceRightBasis):F6}, " +
+                $"lateralGravity={Vector3.Dot(SourceGravityAcceleration, sourceRightBasis):F3}, " +
+                $"comRecovery={sourceCom2628:F2}/{sourceCom262c:F2}/{comResetTicks}, " +
+                $"rigOrigin={sourceCameraOriginLocal.ToString("F3")}, heave={sourceBodyHeave:F2}, " +
+                $"pose={stepStartRotation.eulerAngles.ToString("F1")}->{stepRotation.eulerAngles.ToString("F1")}, " +
+                $"appliedRad={applied.ToString("F4")}, contactRad={contact.ToString("F4")}, " +
+                $"tyresRad={tyres.ToString("F4")}, airRad={air.ToString("F4")}, axleRad={axle.ToString("F4")};" + detail, vehicle);
+        }
 		void LogFormulaAcceleration(Vector3 velocityBeforeContacts, Vector3 velocityBeforeTyres)
 		{
 			// Eight samples per vehicle instance, no per-frame string allocations.
@@ -2756,7 +2813,15 @@ namespace RVP
 				delta = 0.01f;
 			else if (delta > 1.0f)
 				delta = 1.0f;
-			effectiveComHeight = (float)(parameters.comHeight - target * delta);
+            float recoveredHeight = (float)(parameters.comHeight - target * delta);
+            // The retail 500-unit recovery can overshoot on a steep Unity ramp
+            // while an axle is unsupported (Hustler: 35 -> -228.63). A negative
+            // effective height reverses acceleration tilt and can pitch the car
+            // further off the remaining support. Retain the recovery history and
+            // normal response, but constrain the assist between zero and the
+            // configured height, including intentionally negative custom configs.
+            effectiveComHeight = Mathf.Clamp(recoveredHeight,
+                Mathf.Min(0, parameters.comHeight), Mathf.Max(0, parameters.comHeight));
 			sourceCom2628 = (float)target;
 		}
 		static Vector3 RotationVector(Quaternion rotation)
@@ -3916,67 +3981,62 @@ namespace RVP
 				? Quaternion.AngleAxis(angle * Mathf.Rad2Deg, resolved / angle)
 				: Quaternion.identity;
 		}
-		void StabilizeSourceIncrementalRotation()
-		{
-			// contact_response.cpp damps and settles the incremental matrix only
-			// after each of the four wheel probes has accumulated four impacts.
-			bool supportsStabilization = true;
-			for (int i = 0; i < 4; i++)
-				if (sourceProbeContactIterations[i] < 4)
-				{
-					supportsStabilization = false;
-					break;
-				}
-			if (supportsStabilization)
-			{
-				Vector3 x = sourceIncrementalRotation * Vector3.right;
-				Vector3 y = sourceIncrementalRotation * Vector3.up;
-				Vector3 z = sourceIncrementalRotation * Vector3.forward;
-				if (Mathf.Abs(z.x) <= 0.05f && Mathf.Abs(z.y) <= 0.05f)
-				{
-					x.x *= 1.5f;
-					y.y *= 1.5f;
-					z.z *= 1.5f;
-					x.Normalize();
-					y.Normalize();
-					z.Normalize();
-					// Retail stores all three independently normalized columns. Using
-					// LookRotation(z, y) discarded the damped X column, so the Unity
-					// rotation did not include the full contact stabilization response.
-					// Project that slightly non-orthogonal matrix onto a rotation using
-					// all columns, rather than rebuilding X from the other two.
-					if (x.sqrMagnitude > 0.000001f && y.sqrMagnitude > 0.000001f && z.sqrMagnitude > 0.000001f)
-					{
-						Matrix4x4 dampedBasis = Matrix4x4.identity;
-						dampedBasis.SetColumn(0, new Vector4(x.x, x.y, x.z, 0));
-						dampedBasis.SetColumn(1, new Vector4(y.x, y.y, y.z, 0));
-						dampedBasis.SetColumn(2, new Vector4(z.x, z.y, z.z, 0));
-						sourceIncrementalRotation = dampedBasis.rotation.normalized;
-					}
-				}
-				z = sourceIncrementalRotation * Vector3.forward;
-				if (Mathf.Abs(z.x) <= 0.002f && Mathf.Abs(z.y) <= 0.002f)
-					sourceIncrementalRotation = Quaternion.identity;
-			}
-			// limit_incremental trims any matrix column component beyond the
-			// recovered 45-degree bound by rotating the incremental basis in place.
-			const float threshold = 0.70710677f;
-			Vector3 forward = sourceIncrementalRotation * Vector3.forward;
-			Vector3 right = sourceIncrementalRotation * Vector3.right;
-			sourceIncrementalRotation = LimitSourceIncrementalAxis(sourceIncrementalRotation, 0, forward.y, threshold);
-			sourceIncrementalRotation = LimitSourceIncrementalAxis(sourceIncrementalRotation, 1, -forward.x, threshold);
-			sourceIncrementalRotation = LimitSourceIncrementalAxis(sourceIncrementalRotation, 2, -right.y, threshold);
-		}
-		static Quaternion LimitSourceIncrementalAxis(Quaternion rotation, int axis, float value, float threshold)
-		{
-			if (Mathf.Abs(value) <= threshold)
-				return rotation;
-			float argument = value < 0 ? value + threshold : value - threshold;
-			float sine = Mathf.Sqrt(Mathf.Max(0, (1 + argument) * (1 - argument)));
-			float degrees = Mathf.Atan2(argument, sine) * Mathf.Rad2Deg;
-			Vector3 direction = axis == 0 ? Vector3.right : axis == 1 ? Vector3.up : Vector3.forward;
-			return Quaternion.AngleAxis(degrees, direction) * rotation;
-		}
+        void StabilizeSourceIncrementalRotation()
+        {
+            // contact_solver.cpp: damp_incremental -> settle_incremental ->
+            // limit_incremental. Keep the intermediate matrix until all three
+            // stages finish: independently normalized columns are not necessarily
+            // orthogonal, so an early conversion to Quaternion changes the tests.
+            Matrix4x4 incremental = Matrix4x4.Rotate(sourceIncrementalRotation);
+            bool supportsStabilization = true;
+            for (int i = 0; i < 4; i++)
+                if (sourceProbeContactIterations[i] < 4)
+                {
+                    supportsStabilization = false;
+                    break;
+                }
+            if (supportsStabilization)
+            {
+                // These are components of the per-tick rotation, not the car's
+                // world orientation. The same stabilization works on an inverted
+                // section of a loop without pulling the car toward world-up.
+                if (Mathf.Abs(incremental.m02) <= 0.05f && Mathf.Abs(incremental.m12) <= 0.05f)
+                {
+                    Vector3 x = incremental.GetColumn(0);
+                    Vector3 y = incremental.GetColumn(1);
+                    Vector3 z = incremental.GetColumn(2);
+                    x.x *= 1.5f;
+                    y.y *= 1.5f;
+                    z.z *= 1.5f;
+                    x.Normalize();
+                    y.Normalize();
+                    z.Normalize();
+                    incremental.SetColumn(0, new Vector4(x.x, x.y, x.z, 0));
+                    incremental.SetColumn(1, new Vector4(y.x, y.y, y.z, 0));
+                    incremental.SetColumn(2, new Vector4(z.x, z.y, z.z, 0));
+                }
+                if (Mathf.Abs(incremental.m02) <= 0.002f && Mathf.Abs(incremental.m12) <= 0.002f)
+                    incremental = Matrix4x4.identity;
+            }
+            const float threshold = 0.70710677f;
+            // Read each component AFTER the preceding correction, as retail
+            // limit_incremental does. Cached forward/right columns replay the
+            // original error after another axis has already changed the matrix.
+            LimitSourceIncrementalAxis(ref incremental, 0, incremental.m12, threshold);
+            LimitSourceIncrementalAxis(ref incremental, 1, -incremental.m02, threshold);
+            LimitSourceIncrementalAxis(ref incremental, 2, -incremental.m10, threshold);
+            sourceIncrementalRotation = incremental.rotation.normalized;
+        }
+        static void LimitSourceIncrementalAxis(ref Matrix4x4 incremental, int axis, float value, float threshold)
+        {
+            if (Mathf.Abs(value) <= threshold)
+                return;
+            float argument = value < 0 ? value + threshold : value - threshold;
+            float sine = Mathf.Sqrt(Mathf.Max(0, (1 + argument) * (1 - argument)));
+            float degrees = Mathf.Atan2(argument, sine) * Mathf.Rad2Deg;
+            Vector3 direction = axis == 0 ? Vector3.right : axis == 1 ? Vector3.up : Vector3.forward;
+            incremental = Matrix4x4.Rotate(Quaternion.AngleAxis(degrees, direction)) * incremental;
+        }
 		void ApplySourceSuspensionTick(float tickScale)
 		{
 			float sourceGravity = SourceGravityMagnitude;
@@ -4220,9 +4280,12 @@ namespace RVP
 			Vector3 forward = sourceForwardBasis;
 			Vector3 right = sourceRightBasis;
 			Vector3 up = sourceUpBasis;
-			// The source builds vehicle_rotation(1, steering) in the fixed world
-			// coordinate frame, then applies it to the world-space axle basis.
-			Quaternion steering = Quaternion.AngleAxis(sourceSteering, Vector3.up);
+            // On a loop the steering axis follows the supported road normal.
+            // Rotating around world Y pushes the steered axes out of the road
+            // plane, loses steering authority near vertical and reverses it on
+            // the inverted section. Keep the existing airborne steering path.
+            Vector3 steeringAxis = sourceContactClass == 1 ? Vector3.up : up;
+            Quaternion steering = Quaternion.AngleAxis(sourceSteering, steeringAxis);
 			Vector3 steeredForward = steering * forward;
 			Vector3 steeredRight = steering * right;
 			Vector3 sourceVelocity = vehicle.rb.linearVelocity / SourceSpeedToMetresPerSecond;

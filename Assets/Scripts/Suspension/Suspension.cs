@@ -38,6 +38,8 @@ namespace RVP
 
 		[Header("Original suspension presentation")]
 		public float suspensionDistance;
+        [Tooltip("Additional wheel droop below its rest position. The original body-heave animation also extends the suspension.")]
+        [Range(0, 1)] public float droopVisualScale = 1;
 		[NonSerialized] public float compression;
 		[Range(0, 1)] public float targetCompression = 1;
 		[NonSerialized] public Vector3 maxCompressPoint;

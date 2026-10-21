@@ -38,7 +38,14 @@ namespace RVP
 		static readonly float[] Distances = { 10, 15, 6 };
 		static readonly float[] Elevations = { 18, 20, 13 };//13
 		static readonly float[] ApproachScales = { 0.125f, 0.125f, 0.5f };
-		float FollowElevation => Elevations[preset];
+		float followElevation;
+		float approachScale;
+		float presetStartDistance;
+		float presetStartElevation;
+		float presetStartApproachScale;
+		float presetTransitionTime;
+		const float PresetTransitionDuration = 1.2f;
+		float FollowElevation => followElevation;
 		Vector3 FollowOriginPosition => vp.originalVehiclePhysics != null
 			? vp.originalVehiclePhysics.CameraPhysicsPosition : vp.tr.position;
 		Vector3 FollowTargetPosition => FollowOriginPosition + Vector3.up * 1.5f;
@@ -148,9 +155,15 @@ namespace RVP
 		}
 		public void UpdateLH()
 		{
-			targetCamCarDistance = Distances[preset];
-			height = Mathf.Sin(FollowElevation * Mathf.Deg2Rad) * targetCamCarDistance;
-			if (vp && mode == Mode.Follow) ResetFollowCamera();
+			if (vp && mode == Mode.Follow && followInitialized)
+			{
+				// Move the chase orbit while retaining its live position and velocity.
+				presetStartDistance = targetCamCarDistance;
+				presetStartElevation = followElevation;
+				presetStartApproachScale = approachScale;
+				presetTransitionTime = PresetTransitionDuration;
+			}
+			else if (vp && mode == Mode.Follow) ResetFollowCamera();
 		}
 		Vector3 GetCameraTargetPosition()
 		{
@@ -159,6 +172,9 @@ namespace RVP
 		void ResetFollowCamera(bool publish = true)
 		{
 			followReturnTime = 0;
+			presetTransitionTime = 0;
+			followElevation = Elevations[preset];
+			approachScale = ApproachScales[preset];
 			targetCamCarDistance = Distances[preset];
 			height = Mathf.Sin(FollowElevation * Mathf.Deg2Rad) * targetCamCarDistance;
 			stabilizedUp = vp.tr.up;
@@ -218,6 +234,15 @@ namespace RVP
 			{
 				xInput = vp.basicInput.Action(F.I.lookAxisInput)?.ReadValue<float>() ?? 0;
 				yInput = -(vp.basicInput.Action(F.I.lookBackInput)?.ReadValue<float>() ?? 0);
+			}
+			if (presetTransitionTime > 0)
+			{
+				presetTransitionTime = Mathf.Max(0, presetTransitionTime - Time.fixedDeltaTime);
+				float blend = Mathf.SmoothStep(0, 1, 1 - presetTransitionTime / PresetTransitionDuration);
+				targetCamCarDistance = Mathf.Lerp(presetStartDistance, Distances[preset], blend);
+				followElevation = Mathf.Lerp(presetStartElevation, Elevations[preset], blend);
+				approachScale = Mathf.Lerp(presetStartApproachScale, ApproachScales[preset], blend);
+				height = Mathf.Sin(FollowElevation * Mathf.Deg2Rad) * targetCamCarDistance;
 			}
 			tickAccumulator += Time.fixedDeltaTime * SourceHz;
 			while (tickAccumulator >= 0.99999f)
@@ -306,12 +331,12 @@ namespace RVP
 					if (coasting) drift *= 0.9f;
 				}
 			}
-			if (!coasting || followReturnTime > 0)
+			if (!coasting || followReturnTime > 0 || presetTransitionTime > 0)
 			{
 				drift = Vector3.zero;
 				desiredPosition = DesiredCameraPosition(fraction * 0.75f);
 				Vector3 motion = desiredPosition - cameraPosition;
-				float speed = motion.magnitude * ApproachScales[preset];
+				float speed = motion.magnitude * approachScale;
 				float limit = 2.56f;
 				if (settleTicks > 0)
 				{

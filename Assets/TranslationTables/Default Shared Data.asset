@@ -2279,6 +2279,14 @@ MonoBehaviour:
     m_Key: Android.LayoutHint
     m_Metadata:
       m_Items: []
+  - m_Id: 193400000000000007
+    m_Key: Android.ShapeCircle
+    m_Metadata:
+      m_Items: []
+  - m_Id: 193400000000000008
+    m_Key: Android.ShapeRectangle
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

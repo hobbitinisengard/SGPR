@@ -6,10 +6,14 @@ using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 // Each control tracks its own fingers so steering, throttle and tricks can be held together.
-public sealed class MobileTouchButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerExitHandler, IInitializePotentialDragHandler, IDragHandler
+public sealed class MobileTouchButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerExitHandler, IInitializePotentialDragHandler, IDragHandler, ICanvasRaycastFilter
 {
     public Action<bool> heldChanged;
     public Action tapped;
+    public Action<MobileTouchButton> layoutSelected;
+    public bool Circular { get; private set; }
+    static Sprite circleSprite;
+    bool selectedForLayout;
     // Throttle releases when the finger slides off, without waiting for finger-up.
     public bool releaseOnExit;
     // Race steering reads all screen touches, independently of UI pointer capture.
@@ -32,7 +36,7 @@ public sealed class MobileTouchButton : MonoBehaviour, IPointerDownHandler, IPoi
         if (Application.isFocused && screen != null)
             foreach (var touch in screen.touches)
                 if (touch.press.isPressed &&
-                    RectTransformUtility.RectangleContainsScreenPoint(touchRect, touch.position.ReadValue(), null))
+                    ContainsScreenPoint(touch.position.ReadValue(), null))
                 {
                     pressed = true;
                     break;
@@ -46,6 +50,7 @@ public sealed class MobileTouchButton : MonoBehaviour, IPointerDownHandler, IPoi
     {
         if (editingLayout)
         {
+            layoutSelected?.Invoke(this);
             if (!dragPointer.HasValue && RectTransformUtility.ScreenPointToLocalPointInRectangle(
                     (RectTransform)touchRect.parent, data.position, data.pressEventCamera, out lastDragPoint))
                 dragPointer = data.pointerId;
@@ -81,6 +86,7 @@ public sealed class MobileTouchButton : MonoBehaviour, IPointerDownHandler, IPoi
     public void SetLayoutEditing(bool value)
     {
         editingLayout = value;
+        selectedForLayout = false;
         dragPointer = null;
         screenHeld = false;
         fingers.Clear();
@@ -118,8 +124,47 @@ public sealed class MobileTouchButton : MonoBehaviour, IPointerDownHandler, IPoi
         if (highlightWhenHeld) SetHighlighted(false);
         heldChanged?.Invoke(false);
     }
+    public void SetLayoutSelected(bool value)
+    {
+        selectedForLayout = value;
+        SetHighlighted(false);
+    }
+    public void SetCircular(bool value)
+    {
+        Circular = value;
+        if (value && !circleSprite)
+        {
+            const int size = 128;
+            var texture = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            texture.name = "Touch control circle";
+            texture.wrapMode = TextureWrapMode.Clamp;
+            var pixels = new Color32[size * size];
+            for (int y = 0; y < size; y++)
+                for (int x = 0; x < size; x++)
+                {
+                    float distance = Vector2.Distance(new Vector2(x + .5f, y + .5f), Vector2.one * (size * .5f));
+                    pixels[y * size + x] = new Color(1, 1, 1, Mathf.Clamp01(size * .5f - distance));
+                }
+            texture.SetPixels32(pixels);
+            texture.Apply(false, true);
+            circleSprite = Sprite.Create(texture, new Rect(0, 0, size, size), Vector2.one * .5f, 100, 0, SpriteMeshType.FullRect);
+        }
+        var image = GetComponent<Image>();
+        image.sprite = value ? circleSprite : null;
+        image.type = Image.Type.Simple;
+    }
+    bool ContainsScreenPoint(Vector2 point, Camera eventCamera)
+    {
+        if (!RectTransformUtility.RectangleContainsScreenPoint(touchRect, point, eventCamera)) return false;
+        if (!Circular) return true;
+        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(touchRect, point, eventCamera, out var local)) return false;
+        Vector2 relative = local - touchRect.rect.center;
+        return relative.sqrMagnitude <= Mathf.Pow(Mathf.Min(touchRect.rect.width, touchRect.rect.height) * .5f, 2);
+    }
+    public bool IsRaycastLocationValid(Vector2 screenPoint, Camera eventCamera) => ContainsScreenPoint(screenPoint, eventCamera);
     public void SetHighlighted(bool value)
     {
-        GetComponent<Image>().color = value ? highlightColor : new Color(.08f, .09f, .12f, .65f);
+        GetComponent<Image>().color = value ? highlightColor :
+            (editingLayout && selectedForLayout ? new Color(.2f, .55f, .85f, .85f) : new Color(.08f, .09f, .12f, .65f));
     }
 }

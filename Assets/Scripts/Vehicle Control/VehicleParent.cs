@@ -473,8 +473,8 @@ namespace RVP
 			//rearLightsBrakeMaterial.color = new(1, 18/255f, 0);
 			rearLightsDarker.mainTexture = newMat.mainTexture;
 			// set emission texture
-			rearLightsDarker.SetTexture("_EmissionMap", newMat.mainTexture);
-			rearLightsDarker.SetColor("_EmissionColor", Color.gray);
+			//rearLightsDarker.SetTexture("_EmissionMap", newMat.mainTexture);
+			//rearLightsDarker.SetColor("_EmissionColor", Color.gray);;
 
 			// assign to body
 			mr.material = newMat;

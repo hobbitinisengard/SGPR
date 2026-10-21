@@ -321,7 +321,7 @@ public class EditorPanel : MonoBehaviour
 	{
 		F.I.s_timeOfDay = timeOfDay;
 
-		raceManager.SetPartOfDay();
+		ApplyEnvironmentLighting();
 		skybox.GetComponent<SkyboxController>().SetNightTimeLights();
 		SetEnvirLights();
 		for (int i = 0; i < placedTilesContainer.transform.childCount; ++i)
@@ -1954,10 +1954,10 @@ public class EditorPanel : MonoBehaviour
 		RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
 		RenderSettings.ambientIntensity = intensity;
 		// Flat ambient uses ambientLight directly, rather than the skybox intensity.
-		RenderSettings.ambientLight = new Color(intensity, intensity, intensity, 1f);
-		RenderSettings.fogColor = track.envir == Envir.SPN && F.I.s_timeOfDay == TimeOfDay.Night
-			? new Color32(128, 128, 255, 255)
-			: new Color32(255, 128, 0, 255);
+		// yellowish ambientLight. fog color doesn't work
+		raceManager.Sun.intensity = intensity;
+		RenderSettings.ambientLight = F.I.s_timeOfDay == TimeOfDay.Night ?
+		 new Color32(100/2, 98/2, 86/2, 1) : new Color32(255/2, 254/2, 232/2, 1);
 	}
 	public void SetEnvirLights()
 	{

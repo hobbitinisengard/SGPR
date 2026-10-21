@@ -1,4 +1,5 @@
 {
+  "originalPhysicsOverrides": {"tyres.front.travelIn": 26.0, "tyres.front.travelOut": 35.0, "tyres.rear.travelIn": 26.0, "tyres.rear.travelOut": 35.0},
   "externalParts": [
     null,
     null,

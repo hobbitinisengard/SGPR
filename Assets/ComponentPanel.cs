@@ -537,6 +537,9 @@ public class CarConfig
 	public static readonly string extension = "carcfg";
 	public OriginalVehiclePhysicsConfig originalPhysics;
 	public OriginalVehicleCarSetup originalParts;
+    // Car-specific stock tuning applied after catalog parts; custom user parts
+    // can still explicitly override these values.
+    public Dictionary<string, float> originalPhysicsOverrides;
 
 	public CarConfig() { }
 
@@ -547,6 +550,8 @@ public class CarConfig
 			JsonConvert.DeserializeObject<OriginalVehiclePhysicsConfig>(
 				JsonConvert.SerializeObject(source.originalPhysics));
 		originalParts = source.originalParts?.Clone();
+        originalPhysicsOverrides = source.originalPhysicsOverrides == null ? null :
+            new Dictionary<string, float>(source.originalPhysicsOverrides);
 	}
 
 	public CarConfig(string name, string jsonText)
@@ -555,6 +560,8 @@ public class CarConfig
 		CarConfig data = JsonConvert.DeserializeObject<CarConfig>(jsonText);
 		originalPhysics = data?.originalPhysics;
 		originalParts = data?.originalParts?.Clone();
+        originalPhysicsOverrides = data?.originalPhysicsOverrides == null ? null :
+            new Dictionary<string, float>(data.originalPhysicsOverrides);
 	}
 
 	public void EnsureOriginalParts(OriginalVehicleCarSetup defaultSetup)
@@ -569,7 +576,7 @@ public class CarConfig
 		{
 			if (originalParts == null)
 				originalParts = F.I?.GetDefaultOriginalVehicleSetup(vehicle.carNumber);
-			OriginalVehiclePhysicsConfig runtimePhysics = CreateRuntimePhysicsConfig(originalPhysics, originalParts);
+			OriginalVehiclePhysicsConfig runtimePhysics = CreateRuntimePhysicsConfig(originalPhysics, originalParts, originalPhysicsOverrides);
 			vehicle.UseOriginalPhysics(runtimePhysics);
 			vehicle.originalPartsSetup = originalParts?.Clone();
 			vehicle.ApplyOriginalPartPresentation();
@@ -603,17 +610,21 @@ public class CarConfig
 		}
 	}
 
-	public OriginalVehiclePhysicsConfig BuildRuntimePhysicsConfig() => CreateRuntimePhysicsConfig(originalPhysics, originalParts);
+	public OriginalVehiclePhysicsConfig BuildRuntimePhysicsConfig() => CreateRuntimePhysicsConfig(originalPhysics, originalParts, originalPhysicsOverrides);
 
-	static OriginalVehiclePhysicsConfig CreateRuntimePhysicsConfig(OriginalVehiclePhysicsConfig source, OriginalVehicleCarSetup parts)
+	static OriginalVehiclePhysicsConfig CreateRuntimePhysicsConfig(OriginalVehiclePhysicsConfig source, OriginalVehicleCarSetup parts,
+        Dictionary<string, float> carOverrides)
 	{
 		if (source == null)
 			return null;
 
 		var runtime = JsonConvert.DeserializeObject<OriginalVehiclePhysicsConfig>(JsonConvert.SerializeObject(source));
 		OriginalVehiclePartCatalog catalog = F.I?.originalVehiclePartCatalog;
-		if (catalog == null || parts == null)
-			return runtime;
+        if (catalog == null || parts == null)
+        {
+            OriginalVehicleUserPartFile.Apply(runtime, carOverrides);
+            return runtime;
+        }
 
 		bool Try(string parameter, out float value, int occurrence = 0) =>
 			catalog.TryGetEffectiveParameter(parts, parameter, occurrence, out value);
@@ -695,6 +706,7 @@ public class CarConfig
 		Set("Mat Rot Speed X", value => runtime.maxPitchSpeed = value);
 		Set("Mat Rot Speed Y", value => runtime.maxYawSpeed = value);
 
+        OriginalVehicleUserPartFile.Apply(runtime, carOverrides);
 		foreach (OriginalVehiclePartSlot slot in parts.slots ?? Array.Empty<OriginalVehiclePartSlot>())
 			OriginalVehicleUserPartFile.Apply(runtime, catalog.GetPart(slot?.SelectedPartId)?.physicsOverrides);
 		return runtime;

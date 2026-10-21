@@ -2330,7 +2330,15 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 193400000000000006
-    m_Localized: 'Przeciągnij przyciski wyścigowe, aby zmienić ich położenie.'
+    m_Localized: 'Wybierz przycisk. Przeciągnij go, aby przesunąć; użyj - / + do zmiany rozmiaru i Kształt do zmiany prostokąta na koło.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 193400000000000007
+    m_Localized: 'Kształt: Koło'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 193400000000000008
+    m_Localized: 'Kształt: Prostokąt'
     m_Metadata:
       m_Items: []
   references:

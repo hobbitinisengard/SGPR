@@ -256,40 +256,6 @@ namespace RVP
 		//	float factor = Mathf.Pow(2, intensity);
 		//	return new Color(r * factor, g * factor, b * factor);
 		//}
-		public void SetPartOfDay()
-		{
-			int eulerX = 0;
-			switch (F.I.s_timeOfDay)
-			{
-				case TimeOfDay.Day:
-					if (F.I.s_inEditor)
-						Sun.intensity = 1;
-					else
-						Sun.intensity = 0f;
-					eulerX = 120;//UnityEngine.Random.Range(26, 143);
-					RenderSettings.ambientLight = new Color32(255,255,255, 1);
-					break;
-				case TimeOfDay.Night:
-					Sun.intensity = 0;
-					//eulerX = 120;
-					RenderSettings.ambientLight = new Color32(100,100,100, 1);//new Color32(52, 52, 52, 1);
-					break;
-				//case TimeOfDay.Sunrise:
-				//	Sun.intensity = 130000;
-				//	eulerX = UnityEngine.Random.Range(8, 26);
-				//	RenderSettings.ambientLight = new Color32(208, 208, 208, 1);
-				//	break;
-				//case TimeOfDay.Sunset:
-				//	Sun.intensity = 130000;
-				//	eulerX = UnityEngine.Random.Range(2, 8);
-				//	RenderSettings.ambientLight = new Color32(208, 208, 208, 1);
-				//	break;
-				default:
-					break;
-			}
-			Sun.transform.rotation = Quaternion.Euler(eulerX, 0, 0);
-			if (editorPanel) editorPanel.ApplyEnvironmentLighting();
-		}
 		void Awake()
 		{
 			I = this;
@@ -316,7 +282,7 @@ namespace RVP
 		private void OnEnable()
 		{
 			StartCoroutine(editorPanel.LoadTrack());
-			SetPartOfDay();
+			editorPanel.ApplyEnvironmentLighting();
 
 			F.I.chat.SetVisibility(false);
 

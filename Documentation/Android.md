@@ -37,8 +37,8 @@ The overlay uses the screen safe area and independent pointer IDs for multitouch
 - EnterNameView opens the native keyboard only after tapping the name field.
 - Android Arcade and Championships races spawn at most three CPU rivals. Championship
   saves retain the full roster for compatibility with desktop; only CP1-CP3 race on Android.
-- Track editor entry requires an actual keyboard and mouse. The virtual menu
-  keyboard does not satisfy this requirement.
+- Track editor entry is available regardless of connected input devices. Editing
+  controls still use a physical keyboard and mouse.
 
 Runtime and editor C# compilation completed with zero errors. Device validation
 is still required: APK installation, rendering/materials, native

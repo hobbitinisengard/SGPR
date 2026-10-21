@@ -2317,7 +2317,15 @@ MonoBehaviour:
     m_Metadata:
       m_Items: []
   - m_Id: 193400000000000006
-    m_Localized: 'Drag the race buttons to change their positions.'
+    m_Localized: 'Select a race button. Drag to move it; use - / + to resize it and Shape to switch between rectangle and circle.'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 193400000000000007
+    m_Localized: 'Shape: Circle'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 193400000000000008
+    m_Localized: 'Shape: Rectangle'
     m_Metadata:
       m_Items: []
   references:
