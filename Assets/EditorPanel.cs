@@ -1957,7 +1957,7 @@ public class EditorPanel : MonoBehaviour
 		// yellowish ambientLight. fog color doesn't work
 		raceManager.Sun.intensity = intensity;
 		RenderSettings.ambientLight = F.I.s_timeOfDay == TimeOfDay.Night ?
-		 new Color32(100/2, 98/2, 86/2, 1) : new Color32(255/2, 254/2, 232/2, 1);
+		 new Color32(100, 98, 86, 1) : new Color32(255, 254, 232, 1);
 	}
 	public void SetEnvirLights()
 	{
@@ -1965,7 +1965,8 @@ public class EditorPanel : MonoBehaviour
 		{
 			var lights = envir.transform.Find("Lights");
 			if (lights != null)
-				lights.gameObject.SetActive(F.I.s_timeOfDay == TimeOfDay.Night || (!F.I.s_inEditor && F.I.tracks[F.I.s_trackName].envir == Envir.FRA));
+				lights.gameObject.SetActive(F.I.s_timeOfDay == TimeOfDay.Night || (!F.I.s_inEditor
+				&& new[] {Envir.FRA,Envir.GER}.Any(e => e == F.I.tracks[F.I.s_trackName].envir)));
 		}
 	}
 	public void RemoveTrackLeftovers()
