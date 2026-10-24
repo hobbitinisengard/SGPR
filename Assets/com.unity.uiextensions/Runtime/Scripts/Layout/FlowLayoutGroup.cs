@@ -35,7 +35,7 @@ namespace UnityEngine.UI.Extensions
 			if (startAxis == Axis.Horizontal) {
 				base.CalculateLayoutInputHorizontal ();
 				var minWidth = GetGreatestMinimumChildWidth () + padding.left + padding.right;
-				SetLayoutInputForAxis (minWidth, -1, -1, 0);
+				SetLayoutInputForAxis (minWidth, float.PositiveInfinity, -1, -1, 0);
 			} else {
 				_layoutWidth = SetLayout (0, true);
 			}
@@ -59,7 +59,7 @@ namespace UnityEngine.UI.Extensions
 			} else {
 				base.CalculateLayoutInputHorizontal ();
 				var minHeight = GetGreatestMinimumChildHeigth () + padding.bottom + padding.top;
-				SetLayoutInputForAxis (minHeight, -1, -1, 1);
+				SetLayoutInputForAxis (minHeight, float.PositiveInfinity, -1, -1, 1);
 			}
 		}
 
@@ -240,7 +240,7 @@ namespace UnityEngine.UI.Extensions
 			offset += counterOffset;
 
 			if (layoutInput) {
-				SetLayoutInputForAxis(offset, offset, -1, axis);
+				SetLayoutInputForAxis(offset, float.PositiveInfinity, offset, -1, axis);
 			}
 			return offset;
 		}

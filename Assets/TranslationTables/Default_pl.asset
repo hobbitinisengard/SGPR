@@ -2341,6 +2341,14 @@ MonoBehaviour:
     m_Localized: 'Kształt: Prostokąt'
     m_Metadata:
       m_Items: []
+  - m_Id: 193400000000000009
+    m_Localized: 'Skręt: Gałka'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 193400000000000010
+    m_Localized: 'Skręt: Przyciski'
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

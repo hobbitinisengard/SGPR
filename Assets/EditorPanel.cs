@@ -935,7 +935,8 @@ public class EditorPanel : MonoBehaviour
 	}
 	IEnumerator CreateRacingPath()
 	{
-
+		// A failed or cancelled rebuild must not retain a previously valid line.
+		SetPathClosed(false);
 		connectors.Clear();
 		if (isSkateParkToggle.isOn || F.I.gameMode == GameMode.Skate)
 		{
@@ -1869,7 +1870,19 @@ public class EditorPanel : MonoBehaviour
 	}
 	public bool PathValid()
 	{
-		return (racingLine != null && racingLine.Length > 2);
+		if (loadingTrack || !isPathClosed || racingLine == null || racingLine.Length <= 2 || !placedTilesContainer)
+			return false;
+		bool skate = isSkateParkToggle.isOn || F.I.gameMode == GameMode.Skate;
+		int startlines = 0;
+		foreach (Transform child in placedTilesContainer.transform)
+		{
+			Tile tile = child.GetComponent<Tile>();
+			// The floating placement preview is not part of the saved track.
+			if (!tile || !tile.placed) continue;
+			if (child.name.Contains("startline") || (skate && child.name.Contains("startGround")))
+				startlines++;
+		}
+		return startlines == 1;
 	}
 	public void SetVisibleInPictureMode(bool isVisible)
 	{
@@ -1971,6 +1984,13 @@ public class EditorPanel : MonoBehaviour
 	}
 	public void RemoveTrackLeftovers()
 	{
+		ClearConnectors();
+		closingPathCo = null;
+		SetPathClosed(false);
+		stuntpointsContainer.Clear();
+		replayCamsContainer.Clear();
+		foreach (GameObject lineContainer in racingLineContainers)
+			lineContainer.transform.DestroyAllChildren();
 		if (skybox != null)
 			Destroy(skybox);
 		if (envir != null)
@@ -2022,6 +2042,7 @@ public class EditorPanel : MonoBehaviour
 			Initialize();
 		gameObject.SetActive(true);
 		loadingTrack = true;
+		isSkateParkToggle.isOn = F.I.tracks[F.I.s_trackName].isSkatePark;
 		ApplyEnvironmentLighting();
 
 		int skyboxNumber = F.I.skys[(int)F.I.tracks[F.I.s_trackName].envir];
@@ -2063,7 +2084,6 @@ public class EditorPanel : MonoBehaviour
 
 		string trackJson = File.ReadAllText(path);
 		TrackSavableData TRACK = JsonConvert.DeserializeObject<TrackSavableData>(trackJson);
-		isSkateParkToggle.isOn = F.I.tracks[F.I.s_trackName].isSkatePark;
 		Array.Copy(F.I.tracks[F.I.s_trackName].localizedNames, savePanel.localizedNames, LocalizationSettings.AvailableLocales.Locales.Count);
 		Array.Copy(F.I.tracks[F.I.s_trackName].localizedDescriptions, savePanel.localizedDescriptions, LocalizationSettings.AvailableLocales.Locales.Count);
 

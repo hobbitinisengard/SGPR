@@ -20,11 +20,13 @@ namespace RVP
 		{
 			lastTime = Time.time;
 			init = transform.rotation;
-			initialEuler = transform.rotation.eulerAngles;
+			targetQ = init;
+			initialEuler = init.eulerAngles;
 		}
 		private void Update()
 		{
-			if (Time.time - lastTime > moveTimeSecs)
+			float duration = Mathf.Max(0.0001f, moveTimeSecs);
+			if (Time.time - lastTime > duration)
 			{
 				lastTime = Time.time;
 				target = maxVal - Random.value * (maxVal - minVal);
@@ -45,7 +47,7 @@ namespace RVP
 				}
 			}
 			transform.rotation = Quaternion.Lerp(init, targetQ,
-				Easing.InOutSine((Time.time - lastTime) / moveTimeSecs));
+				Easing.InOutSine(Mathf.Clamp01((Time.time - lastTime) / duration)));
 		}
 	}
 }

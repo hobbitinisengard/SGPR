@@ -33,9 +33,14 @@ public sealed class MobileControls : MonoBehaviour
         }
     }
     const string LayoutKey = "AndroidControls.Layout.";
+    const string SteeringModeKey = "AndroidControls.AnalogSteering";
     const string NitroModeKey = "AndroidControls.ToggleNitro";
     bool nitroHeld, nitroLatched;
     public bool ToggleNitro { get; private set; }
+    public bool AnalogSteering { get; private set; }
+    float steeringAxis;
+    MobileTouchButton leftSteeringButton, rightSteeringButton, steeringStick;
+    Text steeringModeLabel;
     public bool Nitro => (ToggleNitro ? nitroLatched : nitroHeld) && gas && !brake;
     public bool EditingLayout { get; private set; }
     MainMenuView layoutView;
@@ -54,12 +59,13 @@ public sealed class MobileControls : MonoBehaviour
     public bool Driving { get; private set; }
     bool left, right, gas, brake, menuLeft, menuRight, menuUp, menuDown, menuEnter, menuShift, menuCtrl, menuTab;
     int lastMenuMask = -1;
-    public Vector2 Drive => new Vector2((right ? 1 : 0) - (left ? 1 : 0), (gas ? 1 : 0) - (brake ? 1 : 0));
+    public Vector2 Drive => new Vector2(AnalogSteering ? steeringAxis : (right ? 1 : 0) - (left ? 1 : 0), (gas ? 1 : 0) - (brake ? 1 : 0));
     RectTransform safeRoot;
     GameObject raceButtons, menuButtons, raceEscape;
     MobileTouchButton nitroButton;
     Keyboard menuKeyboard;
     readonly List<Key> menuKeys = new();
+    bool keyboardWasVisible;
     Rect lastSafeArea;
     Vector2Int lastScreen;
 
@@ -71,6 +77,8 @@ public sealed class MobileControls : MonoBehaviour
     void Awake()
     {
         I = this;
+        RestoreImmersiveMode();
+        AnalogSteering = PlayerPrefs.GetInt(SteeringModeKey, 0) != 0;
         ToggleNitro = PlayerPrefs.GetInt(NitroModeKey, 0) != 0;
         DontDestroyOnLoad(gameObject);
         menuKeyboard = InputSystem.AddDevice<Keyboard>("MobileMenuKeyboard");
@@ -89,15 +97,23 @@ public sealed class MobileControls : MonoBehaviour
         menuButtons = Panel("Menu controls", safeRoot).gameObject;
         // Steering on the right; stunts/nitro on the left. Throttle/brake stay high on the right.
         var leftButton = Button(raceButtons.transform, "\u25C0", new Vector2(1, 0), new Vector2(-322.5f, 135), new Vector2(165, 145));
+        leftSteeringButton = leftButton;
         leftButton.readScreenTouches = true;
         leftButton.highlightWhenHeld = true;
         leftButton.highlightColor = new Color(1f, .4f, .05f, .85f);
         leftButton.heldChanged = value => left = value;
         var rightButton = Button(raceButtons.transform, "\u25B6", new Vector2(1, 0), new Vector2(-157.5f, 135), new Vector2(165, 145));
+        rightSteeringButton = rightButton;
         rightButton.readScreenTouches = true;
         rightButton.highlightWhenHeld = true;
         rightButton.highlightColor = new Color(1f, .4f, .05f, .85f);
         rightButton.heldChanged = value => right = value;
+        steeringStick = Button(raceButtons.transform, "STEER", new Vector2(1, 0), new Vector2(-240, 135), new Vector2(330, 145));
+        steeringStick.horizontalStick = true;
+        steeringStick.highlightWhenHeld = true;
+        steeringStick.highlightColor = new Color(1f, .4f, .05f, .85f);
+        steeringStick.axisChanged = value => steeringAxis = value;
+        RefreshSteeringControls();
         Button(raceButtons.transform, "R", new Vector2(0, 1), new Vector2(160, -155), new Vector2(145, 110)).tapped = ResetPlayerOnTrack;
         var gasButton = Button(raceButtons.transform, "GAS", new Vector2(1, 1), new Vector2(-240, -145), new Vector2(330, 145));
         gasButton.highlightWhenHeld = true;
@@ -169,6 +185,9 @@ public sealed class MobileControls : MonoBehaviour
     }
     void Update()
     {
+        bool keyboardVisible = TouchScreenKeyboard.visible;
+        if (keyboardWasVisible && !keyboardVisible) RestoreImmersiveMode();
+        keyboardWasVisible = keyboardVisible;
         if (!F.I || !F.I.viewSwitcher) return;
         var race = RaceManager.I;
         bool racing = F.I.viewSwitcher.world.activeInHierarchy && !F.I.s_inEditor && race && race.playerCar &&
@@ -221,6 +240,9 @@ public sealed class MobileControls : MonoBehaviour
         var nitroMode = Button(layoutToolbar.transform, "Nitro mode", new Vector2(.5f, 1), new Vector2(-215, -65), new Vector2(340, 90));
         nitroModeLabel = nitroMode.GetComponentInChildren<Text>();
         nitroMode.tapped = () => SetToggleNitro(!ToggleNitro);
+        var steeringMode = Button(layoutToolbar.transform, "Steering mode", new Vector2(.5f, 1), new Vector2(-215, -170), new Vector2(340, 90));
+        steeringModeLabel = steeringMode.GetComponentInChildren<Text>();
+        steeringMode.tapped = () => SetAnalogSteering(!AnalogSteering);
         var reset = Button(layoutToolbar.transform, "Reset layout", new Vector2(.5f, 1), new Vector2(155, -65), new Vector2(340, 90));
         resetLayoutLabel = reset.GetComponentInChildren<Text>();
         reset.tapped = ResetLayout;
@@ -284,7 +306,7 @@ public sealed class MobileControls : MonoBehaviour
         EditingLayout = true;
         nitroHeld = nitroLatched = false;
         foreach (var item in layoutControls) item.button.SetLayoutEditing(true);
-        if (layoutControls.Count > 0) SelectLayoutControl(layoutControls[0].button);
+        SelectLayoutControl(AnalogSteering ? steeringStick : leftSteeringButton);
         RefreshNitroHighlight();
         UpdateLayoutLabels();
         layoutToolbar.SetActive(true);
@@ -299,6 +321,23 @@ public sealed class MobileControls : MonoBehaviour
         layoutToolbar.SetActive(false);
         nitroHeld = nitroLatched = false;
     }
+    public void SetAnalogSteering(bool value)
+    {
+        AnalogSteering = value;
+        left = right = false;
+        steeringAxis = 0;
+        PlayerPrefs.SetInt(SteeringModeKey, value ? 1 : 0);
+        PlayerPrefs.Save();
+        RefreshSteeringControls();
+        if (EditingLayout) SelectLayoutControl(value ? steeringStick : leftSteeringButton);
+        UpdateLayoutLabels();
+    }
+    void RefreshSteeringControls()
+    {
+        leftSteeringButton.gameObject.SetActive(!AnalogSteering);
+        rightSteeringButton.gameObject.SetActive(!AnalogSteering);
+        steeringStick.gameObject.SetActive(AnalogSteering);
+    }
     public void SetToggleNitro(bool value)
     {
         ToggleNitro = value;
@@ -311,6 +350,7 @@ public sealed class MobileControls : MonoBehaviour
     void UpdateLayoutLabels()
     {
         if (!F.I || !nitroModeLabel) return;
+        steeringModeLabel.text = F.I.LocStr(AnalogSteering ? "Android.SteeringStick" : "Android.SteeringButtons");
         nitroModeLabel.text = F.I.LocStr(ToggleNitro ? "Android.NitroToggle" : "Android.NitroHold");
         resetLayoutLabel.text = F.I.LocStr("Android.ResetLayout");
         saveLayoutLabel.text = F.I.LocStr("Android.SaveLayout");
@@ -393,9 +433,58 @@ public sealed class MobileControls : MonoBehaviour
         var views = F.I.viewSwitcher.menu.GetComponentsInChildren<MainMenuView>();
         if (views.Length > 0) views[views.Length - 1].GoBack();
     }
+    // Run window operations on Android's UI thread, not Unity's rendering thread.
+    static void RestoreImmersiveMode()
+    {
+#if UNITY_ANDROID && !UNITY_EDITOR
+        if (TouchScreenKeyboard.visible) return;
+        Screen.fullScreen = true;
+        using (var player = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
+        {
+            var activity = player.GetStatic<AndroidJavaObject>("currentActivity");
+            activity.Call("runOnUiThread", new AndroidJavaRunnable(() =>
+            {
+                using (activity)
+                using (var window = activity.Call<AndroidJavaObject>("getWindow"))
+                using (var decor = window.Call<AndroidJavaObject>("getDecorView"))
+                using (var version = new AndroidJavaClass("android.os.Build$VERSION"))
+                {
+                    if (version.GetStatic<int>("SDK_INT") >= 30)
+                    {
+                        using (var controller = decor.Call<AndroidJavaObject>("getWindowInsetsController"))
+                        using (var types = new AndroidJavaClass("android.view.WindowInsets$Type"))
+                        {
+                            if (controller == null) return;
+                            // BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE: system gestures
+                            // reveal bars temporarily; ordinary button presses do not.
+                            controller.Call("setSystemBarsBehavior", 2);
+                            controller.Call("hide", types.CallStatic<int>("systemBars"));
+                        }
+                    }
+                    else
+                    {
+                        // LAYOUT_STABLE | LAYOUT_HIDE_NAVIGATION | LAYOUT_FULLSCREEN |
+                        // HIDE_NAVIGATION | FULLSCREEN | IMMERSIVE_STICKY.
+                        decor.Call("setSystemUiVisibility", 5894);
+                    }
+                }
+            }));
+        }
+#endif
+    }
+    void OnApplicationPause(bool paused)
+    {
+        if (!paused) RestoreImmersiveMode();
+    }
     void OnApplicationFocus(bool focus)
     {
-        if (focus) return;
+        if (focus)
+        {
+            RestoreImmersiveMode();
+            return;
+        }
+        steeringAxis = 0;
+        if (steeringStick) steeringStick.ReleaseStick();
         if (EditingLayout) SaveLayout();
         left = right = gas = brake = Stunts = nitroHeld = nitroLatched = menuLeft = menuRight = menuUp = menuDown = menuEnter = false;
         if (nitroButton) nitroButton.SetHighlighted(false);

@@ -10,6 +10,12 @@ public sealed class MobileTouchButton : MonoBehaviour, IPointerDownHandler, IPoi
 {
     public Action<bool> heldChanged;
     public Action tapped;
+    // Relative horizontal stick: the initial press is neutral, not the control's centre.
+    public bool horizontalStick;
+    public Action<float> axisChanged;
+    int? stickPointer;
+    Vector2 stickOrigin;
+    Text stickIndicator;
     public Action<MobileTouchButton> layoutSelected;
     public bool Circular { get; private set; }
     static Sprite circleSprite;
@@ -56,6 +62,16 @@ public sealed class MobileTouchButton : MonoBehaviour, IPointerDownHandler, IPoi
                 dragPointer = data.pointerId;
             return;
         }
+        if (horizontalStick)
+        {
+            if (stickPointer.HasValue || !RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                    touchRect, data.position, data.pressEventCamera, out stickOrigin)) return;
+            stickPointer = data.pointerId;
+            stickIndicator = GetComponentInChildren<Text>();
+            UpdateStick(data);
+            if (highlightWhenHeld) SetHighlighted(true);
+            return;
+        }
         if (UsesScreenTouches) return;
         if (!fingers.Add(data.pointerId)) return;
         if (fingers.Count == 1)
@@ -72,6 +88,11 @@ public sealed class MobileTouchButton : MonoBehaviour, IPointerDownHandler, IPoi
             if (dragPointer == data.pointerId) dragPointer = null;
             return;
         }
+        if (horizontalStick)
+        {
+            if (stickPointer == data.pointerId) ReleaseStick();
+            return;
+        }
         if (UsesScreenTouches) return;
         if (fingers.Remove(data.pointerId) && fingers.Count == 0)
         {
@@ -85,6 +106,7 @@ public sealed class MobileTouchButton : MonoBehaviour, IPointerDownHandler, IPoi
     }
     public void SetLayoutEditing(bool value)
     {
+        ReleaseStick();
         editingLayout = value;
         selectedForLayout = false;
         dragPointer = null;
@@ -95,16 +117,48 @@ public sealed class MobileTouchButton : MonoBehaviour, IPointerDownHandler, IPoi
     }
     public void OnInitializePotentialDrag(PointerEventData data)
     {
-        if (editingLayout) data.useDragThreshold = false;
+        if (editingLayout || horizontalStick) data.useDragThreshold = false;
     }
     public void OnDrag(PointerEventData data)
     {
+        if (!editingLayout && horizontalStick)
+        {
+            if (stickPointer == data.pointerId) UpdateStick(data);
+            return;
+        }
         if (!editingLayout || dragPointer != data.pointerId) return;
         if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
                 (RectTransform)touchRect.parent, data.position, data.pressEventCamera, out var point)) return;
         touchRect.anchoredPosition += point - lastDragPoint;
         lastDragPoint = point;
         ClampToParent();
+    }
+    void UpdateStick(PointerEventData data)
+    {
+        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                touchRect, data.position, data.pressEventCamera, out var point)) return;
+        float radius = Mathf.Max(1, Mathf.Min(touchRect.rect.width, touchRect.rect.height) * .5f);
+        float displacement = Mathf.Clamp((point.x - stickOrigin.x) / radius, -1, 1);
+        const float deadZone = .06f;
+        float axis = Mathf.Sign(displacement) * Mathf.Clamp01((Mathf.Abs(displacement) - deadZone) / (1 - deadZone));
+        axisChanged?.Invoke(axis);
+        if (stickIndicator)
+        {
+            stickIndicator.text = "\u25CF";
+            stickIndicator.rectTransform.anchoredPosition = stickOrigin - touchRect.rect.center + Vector2.right * (displacement * radius);
+        }
+    }
+    public void ReleaseStick()
+    {
+        stickPointer = null;
+        if (!horizontalStick) return;
+        axisChanged?.Invoke(0);
+        if (stickIndicator)
+        {
+            stickIndicator.text = "STEER";
+            stickIndicator.rectTransform.anchoredPosition = Vector2.zero;
+        }
+        if (highlightWhenHeld) SetHighlighted(false);
     }
     public void ClampToParent()
     {
@@ -117,6 +171,7 @@ public sealed class MobileTouchButton : MonoBehaviour, IPointerDownHandler, IPoi
     }
     void OnDisable()
     {
+        ReleaseStick();
         InputSystem.onAfterUpdate -= ReadScreenTouches;
         screenHeld = false;
         dragPointer = null;

@@ -13,15 +13,15 @@ public class SGP_Bouncer : MonoBehaviour
 	public float lastBounceTime;
 	//public float shockThreshold = 0.25f;
 	//public float timeDelay = .4f;
-	int rbId;
+	EntityId rbId;
 	static AnimationCurve multCurve;
 	public Collider[] bouncyCols;
-	readonly static Dictionary<int, VehicleParent> carRbs = new(10);
+	readonly static Dictionary<EntityId, VehicleParent> carRbs = new(10);
 	static bool OnContactModifyRegistered = false;
 	void Awake()
 	{
 		vp = GetComponent<VehicleParent>();
-		rbId = vp.rb.GetInstanceID();
+		rbId = vp.rb.GetEntityId();
 		carRbs.Add(rbId, vp);
 
 		if (multCurve == null)
@@ -49,11 +49,11 @@ public class SGP_Bouncer : MonoBehaviour
 	{
 		foreach (var pair in pairs)
 		{
-			if (/*pair.bodyInstanceID != 0 && pair.otherBodyInstanceID != 0 &&*/
-					carRbs.ContainsKey(pair.bodyInstanceID) && carRbs.ContainsKey(pair.otherBodyInstanceID)) // car-car collisions
+			if (
+					carRbs.ContainsKey(pair.bodyEntityId) && carRbs.ContainsKey(pair.otherBodyEntityId)) // car-car collisions
 			{
-				VehicleParent firstCar = carRbs[pair.bodyInstanceID];
-				VehicleParent secondCar = carRbs[pair.otherBodyInstanceID];
+				VehicleParent firstCar = carRbs[pair.bodyEntityId];
+				VehicleParent secondCar = carRbs[pair.otherBodyEntityId];
 				// OriginalVehiclePhysics resolves car pairs itself. Do not reshape the
 				// PhysX contacts on top of that response.
 				if ((firstCar && firstCar.originalVehiclePhysics != null) ||

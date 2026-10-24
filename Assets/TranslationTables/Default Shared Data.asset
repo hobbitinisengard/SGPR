@@ -2287,6 +2287,14 @@ MonoBehaviour:
     m_Key: Android.ShapeRectangle
     m_Metadata:
       m_Items: []
+  - m_Id: 193400000000000009
+    m_Key: Android.SteeringStick
+    m_Metadata:
+      m_Items: []
+  - m_Id: 193400000000000010
+    m_Key: Android.SteeringButtons
+    m_Metadata:
+      m_Items: []
   m_Metadata:
     m_Items: []
   m_KeyGenerator:

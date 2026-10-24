@@ -24,8 +24,10 @@ namespace UnityEngine.UI.Extensions
             return
                 !gameObject.scene.IsValid() &&
                 !gameObject.scene.isLoaded &&
-                gameObject.GetInstanceID() >= 0 &&
-                // I noticed that ones with IDs under 0 were objects I didn't recognize
+#if UNITY_EDITOR
+                UnityEditor.EditorUtility.IsPersistent(gameObject) &&
+#endif
+                // Prefab assets have no loaded scene; an ID's sign is not an asset check.
                 !gameObject.hideFlags.HasFlag(HideFlags.HideInHierarchy);
                     // I don't care about GameObjects *inside* prefabs, just the overall prefab.
         }

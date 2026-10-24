@@ -19,10 +19,10 @@ namespace RVP
 
 		static readonly Dictionary<Mesh, MeshTree> Trees = new();
 		static readonly HashSet<Mesh> UnreadableMeshes = new();
-		static readonly HashSet<int> ProcessedColliderIds = new();
+		static readonly HashSet<EntityId> ProcessedColliderIds = new();
 		static readonly List<int> CandidateTriangles = new();
 		static readonly List<SweepCollider> SweepColliders = new();
-		static readonly Dictionary<int, ColliderWorldMesh> ColliderWorldMeshes = new();
+		static readonly Dictionary<EntityId, ColliderWorldMesh> ColliderWorldMeshes = new();
 		static readonly ProfilerMarker CandidateCollectionMarker =
 			new ProfilerMarker("RVP.OriginalPhysics.TrackMeshSweep.CandidateCollection");
 		static readonly ProfilerMarker ColliderFilteringMarker =
@@ -280,7 +280,7 @@ namespace RVP
 		}
 
 		public static bool WasProcessed(MeshCollider collider) =>
-			collider && ProcessedColliderIds.Contains(collider.GetInstanceID());
+			collider && ProcessedColliderIds.Contains(collider.GetEntityId());
 
 		static MeshTree GetTree(Mesh mesh)
 		{
@@ -346,7 +346,7 @@ namespace RVP
 
 		static Vector3[] GetWorldVertices(MeshCollider collider, MeshTree tree, Matrix4x4 localToWorld)
 		{
-			int colliderId = collider.GetInstanceID();
+			EntityId colliderId = collider.GetEntityId();
 			Mesh mesh = collider.sharedMesh;
 			if (!ColliderWorldMeshes.TryGetValue(colliderId, out ColliderWorldMesh cache) ||
 				cache.mesh != mesh || !MatricesExactlyMatch(cache.localToWorld, localToWorld))
@@ -457,7 +457,7 @@ namespace RVP
 					if (MinAbsoluteScale(colliderTransform.lossyScale) <= 0.000001f)
 						continue;
 
-					ProcessedColliderIds.Add(candidate.GetInstanceID());
+					ProcessedColliderIds.Add(candidate.GetEntityId());
 					Matrix4x4 worldToLocal = colliderTransform.worldToLocalMatrix;
 					Matrix4x4 localToWorld = colliderTransform.localToWorldMatrix;
 					SweepColliders.Add(new SweepCollider

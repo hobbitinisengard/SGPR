@@ -2328,6 +2328,14 @@ MonoBehaviour:
     m_Localized: 'Shape: Rectangle'
     m_Metadata:
       m_Items: []
+  - m_Id: 193400000000000009
+    m_Localized: 'Steering: Stick'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 193400000000000010
+    m_Localized: 'Steering: Buttons'
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

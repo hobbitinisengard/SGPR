@@ -1649,7 +1649,7 @@ public class IntelligentMeshCombiner : EditorWindow
         if (!materialColors.TryGetValue(material, out Color color))
         {
             Color.RGBToHSV(MainGroupColor, out float h, out float s, out float v);
-            float hueOffset = (material.GetInstanceID() * 0.618034f) % 1f;
+            float hueOffset = (material.GetEntityId().GetHashCode() * 0.618034f) % 1f;
             hueOffset = (hueOffset - 0.5f) * 0.2f;
             h = Mathf.Repeat(h + hueOffset, 1f);
             s = Mathf.Clamp01(s + (hueOffset * 0.2f));

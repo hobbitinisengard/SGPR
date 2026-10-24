@@ -121,9 +121,9 @@ namespace RVP
 		// VehicleParent wheel order: front left, front right, rear left, rear right.
 		static readonly int[] UnityWheelIndex = { 2, 3, 0, 1 };
 		static readonly float SourceStuntPhaseBoundary = System.BitConverter.Int32BitsToSingle(0x3f3504f4);
-		static readonly System.Collections.Generic.HashSet<int> SourceTrackColliderIds = new();
-		static readonly System.Collections.Generic.HashSet<int> SourceVehicleColliderIds = new();
-		static readonly System.Collections.Generic.HashSet<int> SourceInvisibleLevelColliderIds = new();
+		static readonly System.Collections.Generic.HashSet<EntityId> SourceTrackColliderIds = new();
+		static readonly System.Collections.Generic.HashSet<EntityId> SourceVehicleColliderIds = new();
+		static readonly System.Collections.Generic.HashSet<EntityId> SourceInvisibleLevelColliderIds = new();
 		static bool invisibleLevelLayerInitialized;
 		static int invisibleLevelLayer = -1;
 		static readonly System.Collections.Generic.Dictionary<VehicleParent, Vector3> SourceVehiclePairPositions = new();
@@ -358,6 +358,8 @@ namespace RVP
 		bool sourceAiStuntInputThisTick;
 		readonly int[] sourceStuntPhaseIndex = new int[2];
 		readonly int[] sourceStuntLastPhase = { -1, -1 };
+		bool MobileAnalogSteering => MobileControls.I && MobileControls.I.Driving &&
+            MobileControls.I.AnalogSteering && RaceManager.I && RaceManager.I.playerCar == vehicle;
 		bool DigitalControls => vehicle.basicInput && vehicle.basicInput.playerInput &&
 			(vehicle.basicInput.playerInput.currentControlScheme == "Keyboard" ||
              (MobileControls.I && MobileControls.I.Driving && RaceManager.I && RaceManager.I.playerCar == vehicle)) &&
@@ -1036,12 +1038,12 @@ namespace RVP
 			if (Time.unscaledTime >= nextSourceTrackCollisionScan || sourceTrackCollisionMask != layerMask)
 			{
 				Collider[] sceneColliders = Object.FindObjectsByType<Collider>(FindObjectsSortMode.None);
-				var trackIds = new System.Collections.Generic.HashSet<int>();
+				var trackIds = new System.Collections.Generic.HashSet<EntityId>();
 				var trackTargets = new System.Collections.Generic.List<Collider>();
 				bool hasTerrain = false;
-				var invisibleLevelIds = new System.Collections.Generic.HashSet<int>();
+				var invisibleLevelIds = new System.Collections.Generic.HashSet<EntityId>();
 				var invisibleLevelTargets = new System.Collections.Generic.List<Collider>();
-				var vehicleIds = new System.Collections.Generic.HashSet<int>();
+				var vehicleIds = new System.Collections.Generic.HashSet<EntityId>();
 				var vehicleTargets = new System.Collections.Generic.List<Collider>();
 				foreach (Collider candidate in sceneColliders)
 				{
@@ -1053,7 +1055,7 @@ namespace RVP
 					// between it and every collider belonging to an original-physics car.
 					if (IsInvisibleLevelCollider(candidate))
 					{
-						invisibleLevelIds.Add(candidate.GetInstanceID());
+						invisibleLevelIds.Add(candidate.GetEntityId());
 						invisibleLevelTargets.Add(candidate);
 						continue;
 					}
@@ -1062,7 +1064,7 @@ namespace RVP
 					{
 						if (colliderVehicle.originalVehiclePhysics == null || candidate.attachedRigidbody != colliderVehicle.rb)
 							continue;
-						vehicleIds.Add(candidate.GetInstanceID());
+						vehicleIds.Add(candidate.GetEntityId());
 						vehicleTargets.Add(candidate);
 						continue;
 					}
@@ -1071,7 +1073,7 @@ namespace RVP
 					if ((layerMask & (1 << candidate.gameObject.layer)) == 0 ||
 						!IsSourceTrackCollider(candidate))
 						continue;
-					trackIds.Add(candidate.GetInstanceID());
+					trackIds.Add(candidate.GetEntityId());
 					trackTargets.Add(candidate);
 					hasTerrain |= candidate is TerrainCollider;
 				}
@@ -1106,7 +1108,7 @@ namespace RVP
 				bool isVehicleBodyCollider = own.attachedRigidbody == vehicle.rb;
 				foreach (Collider oldInvisibleLevel in appliedSourceInvisibleLevelCollisionTargets)
 					if (oldInvisibleLevel && oldInvisibleLevel.enabled && oldInvisibleLevel.gameObject.activeInHierarchy &&
-						!SourceInvisibleLevelColliderIds.Contains(oldInvisibleLevel.GetInstanceID()))
+						!SourceInvisibleLevelColliderIds.Contains(oldInvisibleLevel.GetEntityId()))
 						Physics.IgnoreCollision(own, oldInvisibleLevel, false);
 				foreach (Collider invisibleLevel in sourceInvisibleLevelCollisionTargets)
 					if (invisibleLevel && invisibleLevel != own)
@@ -1117,11 +1119,11 @@ namespace RVP
 					continue;
 				foreach (Collider oldTrack in appliedSourceTrackCollisionTargets)
 					if (isVehicleBodyCollider && oldTrack && oldTrack.enabled && oldTrack.gameObject.activeInHierarchy &&
-						!SourceTrackColliderIds.Contains(oldTrack.GetInstanceID()))
+						!SourceTrackColliderIds.Contains(oldTrack.GetEntityId()))
 						Physics.IgnoreCollision(own, oldTrack, false);
 				foreach (Collider oldVehicle in appliedSourceVehicleCollisionTargets)
 					if (isVehicleBodyCollider && oldVehicle && oldVehicle.enabled && oldVehicle.gameObject.activeInHierarchy &&
-						!SourceVehicleColliderIds.Contains(oldVehicle.GetInstanceID()))
+						!SourceVehicleColliderIds.Contains(oldVehicle.GetEntityId()))
 						Physics.IgnoreCollision(own, oldVehicle, false);
 				foreach (Collider track in sourceTrackCollisionTargets)
 					if (isVehicleBodyCollider && track && track != own)
@@ -2132,7 +2134,7 @@ namespace RVP
 				Rigidbody other = contact.otherCollider ? contact.otherCollider.attachedRigidbody : null;
 				bool staticContact = !other || other.isKinematic;
 				if (staticContact && contact.otherCollider &&
-					SourceTrackColliderIds.Contains(contact.otherCollider.GetInstanceID()))
+					SourceTrackColliderIds.Contains(contact.otherCollider.GetEntityId()))
 					continue;
 				Vector3 contactRadial = contact.point - SourceRigPosition;
 				float rotationNormalSpeed = Vector3.Dot(
@@ -2958,7 +2960,7 @@ namespace RVP
 				return;
 			steeringBoost = Mathf.Clamp(steeringBoost + (vehicle.SGPshiftbutton != 0 ? 0.1f : -0.42857143f) * tickScale, 0, 3);
 			float input = Mathf.Clamp(SourceSteerInput, -1, 1);
-			if (DigitalControls)
+			if (DigitalControls && !MobileAnalogSteering)
 			{
 				if (input != 0)
 				{
@@ -2976,7 +2978,7 @@ namespace RVP
 				float amount = Mathf.Min(1, inputCurve * parameters.steeringSensitivity);
 				bool sourceAnalogAssist = !vehicle.followAI.selfDriving && vehicle.basicInput &&
 					vehicle.basicInput.playerInput &&
-					vehicle.basicInput.playerInput.currentControlScheme == "Gamepad";
+					(vehicle.basicInput.playerInput.currentControlScheme == "Gamepad" || MobileAnalogSteering);
 				if (sourceAnalogAssist)
 				{
 					int speedIndex = Mathf.Clamp((int)(Mathf.Abs(currentSourceSpeed) * 0.64f), 0, 127);

@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 #if UNITY_EDITOR
-using Unity.Multiplayer.Playmode;
+
 #endif
 using UnityEngine;
 using UnityEngine.Audio;
@@ -115,7 +115,7 @@ public class Info : MonoBehaviour
 	public Material emissiveRearDarker;
 	public Mesh sphereMesh;
 	public AudioMixer mainAudioMixer;
-	public const string VERSION = "0.7.3";
+	public const string VERSION = "0.7.4";
 	public bool minimized { get; private set; }
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
 	[DllImport("user32.dll")]
@@ -147,7 +147,7 @@ public class Info : MonoBehaviour
 		versionText.text = VERSION;
 		int MPtags = 0;
 #if UNITY_EDITOR
-		MPtags = CurrentPlayer.ReadOnlyTags().Count();
+		MPtags = Unity.Multiplayer.PlayMode.CurrentPlayer.ReadOnlyTags().Count();
 #endif
 		switch (MPtags)
 		{

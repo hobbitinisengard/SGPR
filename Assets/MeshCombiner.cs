@@ -13,7 +13,6 @@ public class MeshCombiner
         deactivateCombinedChildrenMeshRenderers = false, generateUVMap = false, destroyCombinedChildren = false;
     [SerializeField]
     private string folderPath = "Prefabs/CombinedMeshes";
-    [SerializeField]
 
     public bool CreateMultiMaterialMesh { get { return createMultiMaterialMesh; } set { createMultiMaterialMesh = value; } }
     public bool CombineInactiveChildren { get { return combineInactiveChildren; } set { combineInactiveChildren = value; } }

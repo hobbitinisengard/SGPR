@@ -673,7 +673,8 @@ public class ServerC : MonoBehaviour
 			networkManager.Shutdown();
 			var alloc = await HostAllocateRelay();
 			relayJoinCode = await HostGetRelayJoinCode(alloc);
-			networkManager.GetComponent<UnityTransport>().SetRelayServerData(new RelayServerData(alloc, connectionType));
+			var endpoint = alloc.ServerEndpoints.First(e => e.ConnectionType == connectionType);
+			networkManager.GetComponent<UnityTransport>().SetRelayServerData(new RelayServerData(endpoint.Host, (ushort)endpoint.Port, alloc.AllocationIdBytes, alloc.ConnectionData, alloc.ConnectionData, alloc.Key, endpoint.Secure, connectionType == "ws" || connectionType == "wss"));
 			networkManager.StartHost();
 		}
 		catch (Exception e)
@@ -686,7 +687,8 @@ public class ServerC : MonoBehaviour
 	{
 		networkManager.Shutdown();
 		var joinAlloc = await JoinRelay(relayJoinCode);
-		networkManager.GetComponent<UnityTransport>().SetRelayServerData(new RelayServerData(joinAlloc, connectionType));
+		var endpoint = joinAlloc.ServerEndpoints.First(e => e.ConnectionType == connectionType);
+		networkManager.GetComponent<UnityTransport>().SetRelayServerData(new RelayServerData(endpoint.Host, (ushort)endpoint.Port, joinAlloc.AllocationIdBytes, joinAlloc.ConnectionData, joinAlloc.HostConnectionData, joinAlloc.Key, endpoint.Secure, connectionType == "ws" || connectionType == "wss"));
 		networkManager.StartClient();
 	}
 	async Task<Allocation> HostAllocateRelay()

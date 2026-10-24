@@ -30,9 +30,29 @@ public sealed class AndroidBuildPreparation : IPreprocessBuildWithReport
             addressables.BuildAddressablesWithPlayerBuild = AddressableAssetSettings.PlayerBuildOption.BuildWithPlayer;
             EditorUtility.SetDirty(addressables);
         }
+        ConfigureLauncherIcons();
         WriteManifest();
         AssetDatabase.SaveAssets();
         Debug.Log("Android prepared: IL2CPP, ARM64, OpenGL ES 3, landscape. Build the existing Android profile with APK expansion disabled.");
+    }
+    static void ConfigureLauncherIcons()
+    {
+        var logo = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Unver/logos/ico2.png");
+        if (!logo) throw new BuildFailedException("Android launcher logo is missing: Assets/Unver/logos/ico2.png");
+        var target = NamedBuildTarget.Android;
+        foreach (var kind in PlayerSettings.GetSupportedIconKinds(target))
+        {
+            var icons = PlayerSettings.GetPlatformIcons(target, kind);
+            foreach (var icon in icons)
+            {
+                var layers = new Texture2D[icon.maxLayerCount];
+                // The logo includes its opaque black background. Fill the required
+                // adaptive layers; leave optional monochrome layers unset.
+                for (int layer = 0; layer < icon.minLayerCount; layer++) layers[layer] = logo;
+                icon.SetTextures(layers);
+            }
+            PlayerSettings.SetPlatformIcons(target, kind, icons);
+        }
     }
     static void WriteManifest()
     {
@@ -49,6 +69,7 @@ public sealed class AndroidBuildPreparation : IPreprocessBuildWithReport
         if (report.summary.platform != BuildTarget.Android) return;
         if (PlayerSettings.Android.splitApplicationBinary)
             throw new BuildFailedException("Android data installation requires a single APK; disable Split Application Binary.");
+        ConfigureLauncherIcons();
         WriteManifest();
     }
 }
