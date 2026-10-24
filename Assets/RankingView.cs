@@ -12,18 +12,21 @@ public class RankingRowData
 	public string name;
 	public string dateStr;
 	public byte rounds;
+	// Configured Skate duration in seconds; 0 means unknown in older saves.
+	public float skateTimeLimit;
 	/// <summary>
 	/// Returns money in championship mode or win percentage in victory mode or points mode
 	/// </summary>
 	public float moneyOrPerc;
 
 	[JsonConstructor]
-	public RankingRowData(string name, string dateStr, byte rounds, float moneyOrPerc)
+	public RankingRowData(string name, string dateStr, byte rounds, float moneyOrPerc, float skateTimeLimit = 0)
 	{
 		this.name = name;
 		this.dateStr = dateStr;
 		this.rounds = rounds;
 		this.moneyOrPerc = moneyOrPerc;
+		this.skateTimeLimit = skateTimeLimit;
 	}
 	public RankingRowData(IEnumerable<Result> sortedPlayers)
 	{
@@ -110,7 +113,7 @@ public class RankingView : MainMenuView
 		//prevView = SkateTracksView;
 		//prevViewForbidden = false;
 		pendingSkateEntry = player == null ? null : new RankingRowData(
-			player.name, DateTime.Now.ToString(), 1, player.aeromiles);
+			player.name, DateTime.Now.ToString(), 1, player.aeromiles * (90f / Mathf.Max(1f, F.I.s_SkateTimeLimit)), F.I.s_SkateTimeLimit);
 	}
 	public void SetRankingType(ScoringType s, bool teams, GameMode gm)
 	{
@@ -285,7 +288,7 @@ public class RankingView : MainMenuView
 				row.GetChild(1).GetComponent<TextMeshProUGUI>().text = curNode.Value.name;
 				row.GetChild(2).GetComponent<TextMeshProUGUI>().text = curNode.Value.dateStr;
 				row.GetChild(3).GetComponent<TextMeshProUGUI>().text = showGameMode == GameMode.Skate
-					? F.I.LocStr("AEROMILES") : F.I.LocStr("Round") + " " + curNode.Value.rounds.ToString();
+					? (curNode.Value.skateTimeLimit > 0 ? curNode.Value.skateTimeLimit.ToString("0.#") + "s" : "---") : F.I.LocStr("Round") + " " + curNode.Value.rounds.ToString();
 				row.GetChild(4).GetComponent<TextMeshProUGUI>().text = showGameMode == GameMode.Skate
 					? curNode.Value.moneyOrPerc.ToString("F0") : F.I.scoringType switch
 				{

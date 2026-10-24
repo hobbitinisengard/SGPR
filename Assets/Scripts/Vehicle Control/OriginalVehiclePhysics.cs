@@ -169,6 +169,9 @@ namespace RVP
 		readonly Vector3[] sourceWheelLocal = new Vector3[4];
 		readonly Vector3[] sourceProbeLocal = new Vector3[6];
 		readonly Vector3[] sourceConfiguredProbeLocal = new Vector3[6];
+		Vector3 sourceRigOriginLocal;
+		Vector3 SourceRigPosition => vehicle.rb.position + vehicle.rb.rotation * sourceRigOriginLocal;
+		Vector3 SourceRigProbeLocal(int index) => sourceProbeLocal[index] - sourceRigOriginLocal / SourceLengthToMetres;
 		readonly float[] sourceProbeRadius = new float[6];
 		readonly Vector3[] previousSourceProbeWorld = new Vector3[6];
 		readonly int[] sourceProbeContactIterations = new int[6];
@@ -723,6 +726,13 @@ namespace RVP
 				sourceProbeLocal[i].y += sourceWheelProbeVerticalFitOffset[i];
 			for (int i = 4; i < sourceProbeCount; i++)
 				sourceProbeLocal[i].y += sourceBodyProbeVerticalFitOffset;
+			// contact_response::center_probes centers ALL probes, including body
+			// probes. Keep prefab coordinates for placement, but use their centroid
+			// as the source body's origin in every angular/contact calculation.
+			sourceRigOriginLocal = Vector3.zero;
+			for (int i = 0; i < sourceProbeCount; i++)
+				sourceRigOriginLocal += sourceProbeLocal[i];
+			sourceRigOriginLocal *= SourceLengthToMetres / sourceProbeCount;
 		}
 		void FitSourceProbeHeightsToPrefabTires()
 		{
@@ -827,11 +837,9 @@ namespace RVP
 		}
 		Vector3 SourceProbeWorldPosition(int index, Quaternion rotation)
 		{
-			Vector3 sourceLocal = sourceProbeLocal[index];
-			// The retail world and Unity both use +Y as up. The source models use
-			// +Z as forward and the wheel probes sit at negative local Y.
-			Vector3 unityLocal = sourceLocal;
-			return vehicle.rb.position + rotation * (unityLocal * SourceLengthToMetres);
+			// Rotate the centered rig around its physical origin, not the prefab
+			// root. With the current rotation this reproduces the authored position.
+			return SourceRigPosition + rotation * (SourceRigProbeLocal(index) * SourceLengthToMetres);
 		}
 		public void ResetSourceProbeHistory()
 		{
@@ -1919,7 +1927,7 @@ namespace RVP
 			normal.Normalize();
 			Vector3 relativeVelocity = vehicle.rb.linearVelocity - groundVelocity;
 			float centreSpeed = Vector3.Dot(relativeVelocity / SourceSpeedToMetresPerSecond, normal);
-			Vector3 radial = (probePosition - vehicle.rb.position) / SourceLengthToMetres;
+			Vector3 radial = (probePosition - SourceRigPosition) / SourceLengthToMetres;
 			// contact_solver::update_probe_velocity transforms the entire probe offset
 			// by body.incremental. Its point velocity therefore contains the finite
 			// per-tick displacement, not the small-angle angular-velocity estimate.
@@ -2126,7 +2134,7 @@ namespace RVP
 				if (staticContact && contact.otherCollider &&
 					SourceTrackColliderIds.Contains(contact.otherCollider.GetInstanceID()))
 					continue;
-				Vector3 contactRadial = contact.point - vehicle.rb.position;
+				Vector3 contactRadial = contact.point - SourceRigPosition;
 				float rotationNormalSpeed = Vector3.Dot(
 					Vector3.Cross(sourceContactAngularStep, contactRadial) / SourceLengthToMetres, normal);
 				float normalSpeed = centreNormalSpeed + rotationNormalSpeed;
@@ -2137,7 +2145,7 @@ namespace RVP
 					ApplyAngularContactFriction(contact, normal, normalSpeed);
 					if (entering && normalSpeed < 0)
 					{
-						Vector3 radial = vehicle.rb.position - contact.point;
+						Vector3 radial = SourceRigPosition - contact.point;
 						float restitution = OriginalContactPhysics.EffectiveRestitution(normalSpeed, normal,
 							radial, sourceGravity);
 						float beforeImpactSpeed = normalSpeed * SourceSpeedToMetresPerSecond;
@@ -2521,7 +2529,7 @@ namespace RVP
 				tyreDynamicsIncrementVector, airIncrementVector);
 			float dynamicsRotationDegrees = Quaternion.Angle(stepStartRotation, stepRotation);
 			Vector3 dynamicsRotationVector = RotationVector(stepRotation * Quaternion.Inverse(stepStartRotation));
-            LogHustlerRampContact(appliedContactRotationVector, pendingContactRotationVector,
+            LogSourceRampContact(appliedContactRotationVector, pendingContactRotationVector,
                 tyreDynamicsIncrementVector, airIncrementVector, dynamicsRotationVector, dynamicsContactClass);
 			bool hasSourceProbeContactThisTick = false;
 			for (int i = 0; i < sourceProbeCount; i++)
@@ -2573,7 +2581,14 @@ namespace RVP
 			UpdateSourcePositionHistoryAndWake(tickScale);
 			UpdateSourceIdleSuspension(dynamicsContactClass);
 			if (stepRotationChanged)
+			{
+				// Unpack the centered source pose back into the prefab root. Without
+				// this translation a pitch change swings the whole rig around the
+				// floor-level root and lifts an axle even before contact response.
+				Vector3 rigPosition = SourceRigPosition;
+				vehicle.rb.position = rigPosition - stepRotation * sourceRigOriginLocal;
 				vehicle.rb.MoveRotation(stepRotation);
+			}
 			Quaternion appliedRotation = stepRotationChanged ? stepRotation : startRotation;
 			Quaternion rotationDelta = appliedRotation * Quaternion.Inverse(startRotation);
 			rotationDelta.ToAngleAxis(out float rotationDegrees, out Vector3 rotationAxis);
@@ -2630,19 +2645,19 @@ namespace RVP
 				}
 			}
 		}
-        void LogHustlerRampContact(Vector3 applied, Vector3 contact, Vector3 tyres, Vector3 air,
+        void LogSourceRampContact(Vector3 applied, Vector3 contact, Vector3 tyres, Vector3 air,
             Vector3 axle, int contactClass)
         {
             // A small event-only diagnostic budget: no strings/arrays during normal
             // driving, no output for CPUs or other cars, at most eight messages.
-            if (vehicle.carNumber != 1 || !vehicle.Owner || hustlerRampDiagnosticSamples >= 8 ||
+            if ((vehicle.carNumber != 1 && vehicle.carNumber != 6) || !vehicle.Owner || hustlerRampDiagnosticSamples >= 8 ||
                 Time.fixedTime < nextHustlerRampDiagnosticTime || CountDownSeq.Countdown > 0)
                 return;
             float largestTurn = Mathf.Max(Mathf.Max(applied.magnitude, contact.magnitude), axle.magnitude) * Mathf.Rad2Deg;
             float slope = Vector3.Angle(sourceUpBasis, SourceWorldUp);
             bool touchesTrack = false;
             for (int i = 0; i < sourceProbeCount; i++) touchesTrack |= sourceProbeHitsThisTick[i] > 0;
-            if (!touchesTrack || slope < 20 || (largestTurn < 2 && effectiveComHeight >= 0)) return;
+            if (!touchesTrack || slope < 20 || (largestTurn < 2 && effectiveComHeight >= 0 && contactClass != 2)) return;
             nextHustlerRampDiagnosticTime = Time.fixedTime + 0.35f;
             hustlerRampDiagnosticSamples++;
             var detail = new System.Text.StringBuilder(900);
@@ -2657,22 +2672,24 @@ namespace RVP
                     OriginalTyrePhysicsConfig tyre = parameters.tyres[i];
                     detail.Append($", wheelContact={sourceProbeWheelTouched[i]}, grace={contactCountdown[i]:F1}, " +
                         $"load={sourceProbeWheelLoad[i]:F1}/{filteredContactLoad[i]:F1}, " +
-                        $"spring={sourceSuspension[i]:F1} range=-{tyre.travelOut:F1}/+{tyre.travelIn:F1}");
+                        $"spring={sourceSuspension[i]:F1} range=-{tyre.travelOut:F1}/+{tyre.travelIn:F1}, " +
+                        $"rigLocal={SourceRigProbeLocal(i).ToString("F1")}, wheelRotRad={sourceWheelRotationDeltaThisTick[i].ToString("F4")}");
                 }
                 detail.Append(';');
             }
-            Debug.LogWarning($"[Hustler ramp] sample={hustlerRampDiagnosticSamples}/8, " +
-                $"track={F.I?.s_trackName}, source={parameters.sourceConfig}, " +
+            Debug.LogWarning($"[Vehicle ramp] sample={hustlerRampDiagnosticSamples}/8, " +
+                $"car={vehicle.carNumber}, track={F.I?.s_trackName}, source={parameters.sourceConfig}, " +
                 $"position={vehicle.rb.position.ToString("F2")}, speed={vehicle.rb.linearVelocity.magnitude * 3.6f:F1}km/h, " +
                 $"slope={slope:F1}deg, class={contactClass}, com={parameters.comHeight:F2}/{effectiveComHeight:F2}, " +
                 $"steering={sourceSteering:F3}, steeringInput={SourceSteerInput:F3}, " +
                 $"probeSpanSkew={sourceSupportSpanSkew:F6}, supportForwardRightDot={Vector3.Dot(sourceForwardBasis, sourceRightBasis):F6}, " +
                 $"lateralGravity={Vector3.Dot(SourceGravityAcceleration, sourceRightBasis):F3}, " +
                 $"comRecovery={sourceCom2628:F2}/{sourceCom262c:F2}/{comResetTicks}, " +
-                $"rigOrigin={sourceCameraOriginLocal.ToString("F3")}, heave={sourceBodyHeave:F2}, " +
+                $"rigOrigin={sourceRigOriginLocal.ToString("F3")}, heave={sourceBodyHeave:F2}, " +
                 $"pose={stepStartRotation.eulerAngles.ToString("F1")}->{stepRotation.eulerAngles.ToString("F1")}, " +
                 $"appliedRad={applied.ToString("F4")}, contactRad={contact.ToString("F4")}, " +
-                $"tyresRad={tyres.ToString("F4")}, airRad={air.ToString("F4")}, axleRad={axle.ToString("F4")};" + detail, vehicle);
+                $"tyresRad={tyres.ToString("F4")}, accelTiltRad={sourceAccelerationTiltDeltaThisTick.ToString("F4")}, " +
+                $"airRad={air.ToString("F4")}, axleRad={axle.ToString("F4")};" + detail, vehicle);
         }
 		void LogFormulaAcceleration(Vector3 velocityBeforeContacts, Vector3 velocityBeforeTyres)
 		{
@@ -2813,15 +2830,7 @@ namespace RVP
 				delta = 0.01f;
 			else if (delta > 1.0f)
 				delta = 1.0f;
-            float recoveredHeight = (float)(parameters.comHeight - target * delta);
-            // The retail 500-unit recovery can overshoot on a steep Unity ramp
-            // while an axle is unsupported (Hustler: 35 -> -228.63). A negative
-            // effective height reverses acceleration tilt and can pitch the car
-            // further off the remaining support. Retain the recovery history and
-            // normal response, but constrain the assist between zero and the
-            // configured height, including intentionally negative custom configs.
-            effectiveComHeight = Mathf.Clamp(recoveredHeight,
-                Mathf.Min(0, parameters.comHeight), Mathf.Max(0, parameters.comHeight));
+			effectiveComHeight = (float)(parameters.comHeight - target * delta);
 			sourceCom2628 = (float)target;
 		}
 		static Vector3 RotationVector(Quaternion rotation)
@@ -2847,7 +2856,7 @@ namespace RVP
 		{
 			// track_contact.cpp angular_response turns the tangential component of
 			// a probe's normal impact velocity into an inertia-weighted body rotation.
-			Vector3 radial = vehicle.rb.position - contactPoint;
+			Vector3 radial = SourceRigPosition - contactPoint;
 			// The source skips angular accumulation only below 1e-5 source units;
 			// convert that length threshold to metres before comparing squared values.
 			if (radial.sqrMagnitude < 1e-14f)
@@ -2878,7 +2887,7 @@ namespace RVP
 				// Jacobian of the angular contact impulse with respect to the saved
 				// angular step. Point normal motion is dot(step, radial x normal).
 				Vector3 velocityGradient = Vector3.Cross(
-					(contactPoint - vehicle.rb.position) / SourceLengthToMetres, normal);
+					(contactPoint - SourceRigPosition) / SourceLengthToMetres, normal);
 				float response = (1 + restitution) * tangentialVelocity.magnitude /
 					(-normalSpeed * probeMass);
 				for (int row = 0; row < 3; row++)
@@ -2899,7 +2908,7 @@ namespace RVP
 			Quaternion contactOrientation)
 		{
 			Vector3 probeLocalSource = Quaternion.Inverse(contactOrientation) *
-				(probeWorldPosition - vehicle.rb.position) / SourceLengthToMetres;
+				(probeWorldPosition - SourceRigPosition) / SourceLengthToMetres;
 			ApplyAngularContactFriction(probeWorldPosition, probeLocalSource, normal, normalSpeed,
 				contactOrientation * Vector3.up);
 		}
@@ -2924,7 +2933,7 @@ namespace RVP
 			Vector3 signAxis = Vector3.Cross(snapshotUp, probeLocalSource).normalized;
 			if (Vector3.Dot(tangentDirection, signAxis) < 0)
 				angle = -angle;
-			Vector3 radial = probeWorldPosition - vehicle.rb.position;
+			Vector3 radial = probeWorldPosition - SourceRigPosition;
 			Vector3 rotationAxis = SupportRotationAxis(radial, radial.magnitude);
 			if (rotationAxis.sqrMagnitude <= 0.000001f || Mathf.Abs(angle) <= 0.000001f)
 				return;
@@ -3832,7 +3841,7 @@ namespace RVP
 							accumulatedVelocityChange -= tangentVelocity / tangentLength *
 								(removed * SourceSpeedToMetresPerSecond);
 						}
-						ApplyAngularContactFriction(current, sourceProbeLocal[i], normal, normalSpeed,
+						ApplyAngularContactFriction(current, SourceRigProbeLocal(i), normal, normalSpeed,
 							sourceUpBasis);
 					}
 					// A supported tire has a contact every tick. Play landing sounds
@@ -3842,7 +3851,7 @@ namespace RVP
 							wheelContact ? 3f : 1f);
 					ProcessSourceContactMaterial(i, collider, point, normal, triangleIndex, alignment);
 					float impactRestitution = OriginalContactPhysics.EffectiveRestitution(normalSpeed, normal,
-						vehicle.rb.position - current, sourceGravity);
+						SourceRigPosition - current, sourceGravity);
 					accumulatedVelocityChange += SourceProbeImpactVelocityChange(normal, normalSpeed,
 						impactRestitution);
 					if (normalSpeed < 0)
@@ -3860,7 +3869,7 @@ namespace RVP
 						break;
 					}
 					float restitution = OriginalContactPhysics.MotionRestitution(normalSpeed, sourceGravity,
-						vehicle.rb.position - current);
+						SourceRigPosition - current);
 					float normalMotion = Vector3.Dot(sourceMotion, normal);
 					Vector3 reflectedMotion = sourceMotion - normal * (normalMotion * (1 + restitution));
 					remaining = segmentLength > 0.000001f
@@ -4444,8 +4453,7 @@ namespace RVP
 				effectiveComHeight / Mathf.Max(1, (parameters.trackRear + parameters.trackFront) * 0.5f);
 			if (Mathf.Abs(sourcePitch) + Mathf.Abs(sourceRoll) > 0.0001f)
 			{
-				// acceleration_tilt writes a world-space correction into the
-				// incremental matrix after the core has rebuilt its orientation.
+				// Apply acceleration tilt in the vehicle's Unity-local axes.
 				Quaternion localTilt = Quaternion.AngleAxis(-sourceRoll, Vector3.forward) *
 					Quaternion.AngleAxis(sourcePitch, Vector3.right);
 				Quaternion worldTilt = stepRotation * localTilt * Quaternion.Inverse(stepRotation);
@@ -4478,12 +4486,14 @@ namespace RVP
 			// vehicle.cpp wheel_rotation converts each wheel's residual tangential
 			// movement into a support rotation. The retail implementation uses the
 			// first wheel's contact normal for all four wheels; retain that behavior.
-			Vector3 sourceLocal = sourceWheelLocal[sourceIndex];
-			// wheel_rotation applies the source incremental matrix directly to the
-			// source-local probe vector. The body orientation is used only for the
-			// world-space support point passed to support_rotation.
-			Vector3 transformedLocal = sourceIncrementalRotation * sourceLocal;
-			Vector3 tangent = transformedLocal - sourceLocal;
+			// The incremental rotation, road normal and support up are world-space
+			// in this adapter. Transform the centered probe offset into that same
+			// frame before deriving its tangential motion and the correction sign.
+			// Mixing a prefab-local offset with a world rotation made the response
+			// depend on vehicle heading, amplifying pitch on some uphill sections.
+			Vector3 sourceRadial = stepStartRotation * SourceRigProbeLocal(sourceIndex);
+			Vector3 transformedRadial = sourceIncrementalRotation * sourceRadial;
+			Vector3 tangent = transformedRadial - sourceRadial;
 			Vector3 normal = hasSourceWheelContactNormal[0]
 				? sourceWheelContactNormal[0] : Vector3.zero;
 			// wheel_rotation reads wheel zero's stored normal without a fallback;
@@ -4492,8 +4502,8 @@ namespace RVP
 			tangent -= normal * projection;
 			float tangentLength = tangent.magnitude;
 			Vector3 direction = tangentLength > 0.000001f ? tangent / tangentLength : Vector3.zero;
-			Vector3 supportRadial = previousSourceProbeWorld[sourceIndex] - vehicle.rb.position;
-			float radius = sourceLocal.magnitude;
+			Vector3 supportRadial = previousSourceProbeWorld[sourceIndex] - SourceRigPosition;
+			float radius = sourceRadial.magnitude;
 			if (radius <= 0.0001f)
 				return;
 			float sourceGravity = SourceGravityMagnitude;
@@ -4504,7 +4514,7 @@ namespace RVP
 			if (force > load * sourceStaticFriction[sourceIndex])
 				force = load * sourceKineticFriction[sourceIndex] * 0.5f;
 			float angle = force / (mass * radius);
-			Vector3 side = Vector3.Cross(sourceUpBasis, sourceLocal).normalized;
+			Vector3 side = Vector3.Cross(sourceUpBasis, sourceRadial).normalized;
 			if (sourceUpBasis.y < 0)
 				angle = -angle;
 			if (Vector3.Dot(direction, side) >= 0)

@@ -115,7 +115,7 @@ public class Info : MonoBehaviour
 	public Material emissiveRearDarker;
 	public Mesh sphereMesh;
 	public AudioMixer mainAudioMixer;
-	public const string VERSION = "0.7.2";
+	public const string VERSION = "0.7.3";
 	public bool minimized { get; private set; }
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
 	[DllImport("user32.dll")]

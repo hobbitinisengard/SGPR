@@ -133,13 +133,11 @@ namespace RVP
 			this.mode = mode;
 			if (initialConnection && this.mode == Mode.Follow)
 			{
-				// Start at the car's spawn point, then blend to the chase orbit.
-				Vector3 down = Physics.gravity.sqrMagnitude > 0.000001f ? Physics.gravity.normalized : Vector3.down;
-				Vector3 viewUp = Vector3.ProjectOnPlane(vp.tr.forward, down);
-				if (viewUp.sqrMagnitude < 0.000001f) viewUp = Vector3.ProjectOnPlane(vp.tr.right, down);
-				tr.SetPositionAndRotation(targetBody.position - down * 2f, Quaternion.LookRotation(down, viewUp.normalized));
+				// initialize_race_camera uses the newly cleared vehicle orbit offset,
+				// before the first chase tick computes the preset orbit. Air/contact
+				// response then moves the camera naturally, without a timed blend.
+				PlaceRaceFollowCamera();
 				wasResetting = vp.ghost && vp.ghost.justResetted;
-				BeginReturnToFollowCamera();
 			}
 		}
 		void ChangeFollowCamera(InputAction.CallbackContext context)
@@ -192,6 +190,21 @@ namespace RVP
 			followInitialized = true;
 			wasCustomCamera = false;
 			if (publish) PublishFollowCamera();
+		}
+		void PlaceRaceFollowCamera()
+		{
+			// VehicleStorage::clear_vehicle_storage clears orbit_offset. Neither
+			// camera_apply_preset nor initialize_race_camera recomputes it: the
+			// first camera_chase_tick does that AFTER place_race_camera_position.
+			// Thus the fresh race starts at the physical vehicle position, with
+			// only max(height - 115 cm, 0) subtracted along vehicle up.
+			float bodyHeight = vp.originalVehiclePhysics != null ? vp.originalVehiclePhysics.CameraBodyHeight : 1.15f;
+			cameraPosition = FollowOriginPosition - vp.tr.up * Mathf.Max(0, bodyHeight - 1.15f);
+			cameraTarget = FollowTargetPosition;
+			cameraVelocity = drift = Vector3.zero;
+			// Source camera_select_mode initially bypasses collision placement;
+			// a linecast here would overwrite the original starting position.
+			PublishFollowCamera();
 		}
 		void BeginReturnToFollowCamera()
 		{
