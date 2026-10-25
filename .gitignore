@@ -44,3 +44,9 @@ sysinfo.txt
 .codex*/
 
 *.rec
+
+# Android signing keys (keep outside the repository)
+*.keystore
+*.keystore.meta
+*.jks
+*.jks.meta

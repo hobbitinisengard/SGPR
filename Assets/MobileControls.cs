@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using RVP;
 using UnityEngine;
@@ -66,6 +67,7 @@ public sealed class MobileControls : MonoBehaviour
     Keyboard menuKeyboard;
     readonly List<Key> menuKeys = new();
     bool keyboardWasVisible;
+    Coroutine immersiveRestore;
     Rect lastSafeArea;
     Vector2Int lastScreen;
 
@@ -77,7 +79,7 @@ public sealed class MobileControls : MonoBehaviour
     void Awake()
     {
         I = this;
-        RestoreImmersiveMode();
+        RequestImmersiveMode();
         AnalogSteering = PlayerPrefs.GetInt(SteeringModeKey, 0) != 0;
         ToggleNitro = PlayerPrefs.GetInt(NitroModeKey, 0) != 0;
         DontDestroyOnLoad(gameObject);
@@ -186,7 +188,7 @@ public sealed class MobileControls : MonoBehaviour
     void Update()
     {
         bool keyboardVisible = TouchScreenKeyboard.visible;
-        if (keyboardWasVisible && !keyboardVisible) RestoreImmersiveMode();
+        if (keyboardWasVisible && !keyboardVisible) RequestImmersiveMode();
         keyboardWasVisible = keyboardVisible;
         if (!F.I || !F.I.viewSwitcher) return;
         var race = RaceManager.I;
@@ -433,12 +435,37 @@ public sealed class MobileControls : MonoBehaviour
         var views = F.I.viewSwitcher.menu.GetComponentsInChildren<MainMenuView>();
         if (views.Length > 0) views[views.Length - 1].GoBack();
     }
+    void RequestImmersiveMode()
+    {
+        if (!Enabled) return;
+        if (immersiveRestore != null) StopCoroutine(immersiveRestore);
+        immersiveRestore = StartCoroutine(RestoreImmersiveAfterWindowReady());
+    }
+    IEnumerator RestoreImmersiveAfterWindowReady()
+    {
+        // Awake can precede window attachment, landscape rotation and removal of
+        // the Android launch splash. Unity may also restore system bars during
+        // those transitions, so reapply after the first frame and settling delays.
+        yield return null;
+        float delay = .25f;
+        for (int attempt = 0; attempt < 5; attempt++)
+        {
+            if (Application.isFocused && !TouchScreenKeyboard.visible)
+                RestoreImmersiveMode();
+            if (attempt < 4)
+            {
+                yield return new WaitForSecondsRealtime(delay);
+                delay *= 2;
+            }
+        }
+        immersiveRestore = null;
+    }
     // Run window operations on Android's UI thread, not Unity's rendering thread.
     static void RestoreImmersiveMode()
     {
 #if UNITY_ANDROID && !UNITY_EDITOR
         if (TouchScreenKeyboard.visible) return;
-        Screen.fullScreen = true;
+        if (!Screen.fullScreen) Screen.fullScreen = true;
         using (var player = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
         {
             var activity = player.GetStatic<AndroidJavaObject>("currentActivity");
@@ -474,13 +501,13 @@ public sealed class MobileControls : MonoBehaviour
     }
     void OnApplicationPause(bool paused)
     {
-        if (!paused) RestoreImmersiveMode();
+        if (!paused) RequestImmersiveMode();
     }
     void OnApplicationFocus(bool focus)
     {
         if (focus)
         {
-            RestoreImmersiveMode();
+            RequestImmersiveMode();
             return;
         }
         steeringAxis = 0;

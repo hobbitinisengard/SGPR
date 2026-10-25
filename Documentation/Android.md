@@ -44,3 +44,21 @@ Runtime and editor C# compilation completed with zero errors. Device validation
 is still required: APK installation, rendering/materials, native
 keyboard, simultaneous touches, menu purchases, external keyboard/mouse, audio and
 online services. No Android player build or device test was run as part of this change.
+
+## Release signing
+
+On the configured Windows machine, Android builds load the release signing key
+from `%USERPROFILE%\.sgpr\android-signing\signing.json` automatically in the build
+preprocessor. **Tools > Android > Load signing key** also loads it into Publishing
+Settings without starting a build. The alias is `stuntgpr`.
+
+The keystore and configuration stay outside the repository. The password in the
+configuration is encrypted with Windows DPAPI for the current Windows user;
+Unity receives the decrypted password only in memory. Unity does not persist
+keystore passwords between editor sessions.
+
+Back up `stuntgpr-release.keystore` and its password before migrating/reinstalling
+Windows: the encrypted configuration alone cannot recover the password on a new
+Windows installation. See `BACKUP.md` next to the local key for recovery/export.
+A release signed with this key cannot update a previously debug-signed installation
+in place. Subsequent releases must keep using this same release key.
