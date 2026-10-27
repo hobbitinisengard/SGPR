@@ -258,16 +258,14 @@ public class RaceBox : Sfxable
 
 	IEnumerator AddExtraStuntCo(StuntsData.ExtraName name)
 	{
-		stableLandingTimer = .5f;
+		stableLandingTimer = .2f;
 
 		while (stableLandingTimer > 0)
 			yield return null;
 
-		if (stableLandingTimer != -1 && vp.velMag < 14)
+		if (stableLandingTimer == -1)
 			yield break;
-
 		AwardExtraStunt(name);
-		yield return null;
 	}
 	void AwardExtraStunt(StuntsData.ExtraName name)
 	{
@@ -290,11 +288,7 @@ public class RaceBox : Sfxable
 	}
 	public void AddLooper()
 	{
-		if (Time.time - lastLooperTime > 1)
-		{
-			StartCoroutine(AddExtraStuntCo(StuntsData.ExtraName.Looper));
-			lastLooperTime = Time.time;
-		}
+		StartCoroutine(AddExtraStuntCo(StuntsData.ExtraName.Looper));
 	}
 	void ProgressDrift(float addProgress, bool addCombo = false)
 	{

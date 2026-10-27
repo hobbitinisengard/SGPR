@@ -5,12 +5,6 @@ using UnityEngine;
 public class DecreaseGravityOfVehicles : MonoBehaviour
 {
 	Coroutine waitCo;
-	// used only in loops
-	private void OnTriggerStay(Collider car)
-	{
-		if (car.attachedRigidbody && !car.attachedRigidbody.isKinematic)
-			car.attachedRigidbody.AddRelativeForce(Vector3.down * 10);
-	}
 	private void OnTriggerExit(Collider carCollider)
 	{
 		if (waitCo != null)
@@ -19,11 +13,12 @@ public class DecreaseGravityOfVehicles : MonoBehaviour
 	}
 	private void OnTriggerEnter(Collider carCollider)
 	{
-		carCollider.attachedRigidbody.transform.GetComponent<VehicleParent>().followAI.looping = true;
+		VehicleParent vp = carCollider.attachedRigidbody.transform.GetComponent<VehicleParent>();
+		vp.followAI.looping = true;
 	}
 	IEnumerator Wait(Collider carCollider)
 	{
-		yield return new WaitForSeconds(0.5f);
+		yield return new WaitForSeconds(0.1f);
 		carCollider.attachedRigidbody.transform.GetComponent<VehicleParent>().customCam = null;
 		carCollider.attachedRigidbody.transform.GetComponent<VehicleParent>().followAI.looping = false;
 	}

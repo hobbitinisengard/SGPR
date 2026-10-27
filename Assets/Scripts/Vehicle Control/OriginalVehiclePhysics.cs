@@ -279,9 +279,9 @@ namespace RVP
 		float sourceContactCounter;
 		float sourceCameraLaunchHeight;
 		Vector3 sourceCameraOriginLocal;
-        int hustlerRampDiagnosticSamples;
-        float nextHustlerRampDiagnosticTime;
-        float sourceSupportSpanSkew;
+		int hustlerRampDiagnosticSamples;
+		float nextHustlerRampDiagnosticTime;
+		float sourceSupportSpanSkew;
 		int sourceUnsafeContactTicks;
 		int sourceOpposingDirectionTicks;
 		int sourceLastUnsafeProbe = -1;
@@ -359,11 +359,11 @@ namespace RVP
 		readonly int[] sourceStuntPhaseIndex = new int[2];
 		readonly int[] sourceStuntLastPhase = { -1, -1 };
 		bool MobileAnalogSteering => MobileControls.I && MobileControls.I.Driving &&
-            MobileControls.I.AnalogSteering && RaceManager.I && RaceManager.I.playerCar == vehicle;
+						MobileControls.I.AnalogSteering && RaceManager.I && RaceManager.I.playerCar == vehicle;
 		bool DigitalControls => vehicle.basicInput && vehicle.basicInput.playerInput &&
 			(vehicle.basicInput.playerInput.currentControlScheme == "Keyboard" ||
-             (MobileControls.I && MobileControls.I.Driving && RaceManager.I && RaceManager.I.playerCar == vehicle)) &&
-            !vehicle.followAI.selfDriving;
+						 (MobileControls.I && MobileControls.I.Driving && RaceManager.I && RaceManager.I.playerCar == vehicle)) &&
+						!vehicle.followAI.selfDriving;
 		bool SourcePlayerControlsSuppressed => sourceRailControlsActive && sourceRailControlDisabled;
 		bool SourceAutomaticShiftAllowed =>
 			(F.I && F.I.s_raceType == RaceType.TimeTrial) ||
@@ -396,11 +396,11 @@ namespace RVP
 		bool SourceUpgradeActive => vehicle.followAI && vehicle.followAI.IsCPU;
 		float BatteryConsumptionScale => !SourceUpgradeActive || !F.I ||
 			(RaceManager.I && RaceManager.I.playerCar == vehicle) ? 1f : F.I.s_cpuLevel switch
-		{
-			CpuLevel.Medium => 0.5f,
-			CpuLevel.Hard => 0.1f,
-			_ => 1f,
-		};
+			{
+				CpuLevel.Medium => 0.5f,
+				CpuLevel.Hard => 0.1f,
+				_ => 1f,
+			};
 		// Cover every energy cost, including tunnels, boosts, impacts and respawns.
 		bool UnlimitedBatteryEnergy => F.I && (F.I.s_raceType == RaceType.TimeTrial ||
 			(F.I.s_raceType == RaceType.Survival && SourceUpgradeActive &&
@@ -439,11 +439,11 @@ namespace RVP
 			for (int i = 0; i < 4; i++)
 				if (p.tyres[i] == null || p.tyres[i].radius <= 0 || p.torqueCurves[i] == null || p.torqueCurves[i].Length != 128)
 					return false;
-		return p.frictionCurve?.Length == 128 && p.steeringCurve?.Length == 128 &&
-			p.digitalSteering?.Length == 128 && p.digitalBrake?.Length == 128 &&
-				p.analogSteering?.Length == 128 && p.velocitySteering?.Length == 128 &&
-				p.analogBrake?.Length == 128 && p.consumptionCurve?.Length == 128 &&
-				p.turboCurve?.Length == 128;
+			return p.frictionCurve?.Length == 128 && p.steeringCurve?.Length == 128 &&
+				p.digitalSteering?.Length == 128 && p.digitalBrake?.Length == 128 &&
+					p.analogSteering?.Length == 128 && p.velocitySteering?.Length == 128 &&
+					p.analogBrake?.Length == 128 && p.consumptionCurve?.Length == 128 &&
+					p.turboCurve?.Length == 128;
 		}
 		public OriginalVehiclePhysics(VehicleParent owner, OriginalVehiclePhysicsConfig config)
 		{
@@ -513,10 +513,10 @@ namespace RVP
 				return;
 			vehicle.rb.rotation = alignedRotation;
 			//Debug.LogWarning($"[OriginalVehiclePhysics] Initial pose aligned to Unity track surface: " +
-				//$"car={vehicle.carConfig?.name}, source={parameters.sourceConfig}, " +
-				//$"correction={correctionDegrees:F2} deg, normal={surfaceNormal.ToString("F2")}, " +
-				//$"rotation={initialRotation.eulerAngles.ToString("F1")} -> " +
-				//$"{alignedRotation.eulerAngles.ToString("F1")}", vehicle);
+			//$"car={vehicle.carConfig?.name}, source={parameters.sourceConfig}, " +
+			//$"correction={correctionDegrees:F2} deg, normal={surfaceNormal.ToString("F2")}, " +
+			//$"rotation={initialRotation.eulerAngles.ToString("F1")} -> " +
+			//$"{alignedRotation.eulerAngles.ToString("F1")}", vehicle);
 		}
 		public float Energy => energy;
 		public float EnergyCapacity => Mathf.Max(0, parameters.fuelCapacity);
@@ -1000,7 +1000,7 @@ namespace RVP
 			{
 				left.Normalize();
 				forward.Normalize();
-                sourceSupportSpanSkew = Vector3.Dot(-left, forward);
+				sourceSupportSpanSkew = Vector3.Dot(-left, forward);
 				Vector3 up = Vector3.Cross(left, forward);
 				if (up.sqrMagnitude > 0.000001f)
 				{
@@ -1010,7 +1010,7 @@ namespace RVP
 					return;
 				}
 			}
-            sourceSupportSpanSkew = 0;
+			sourceSupportSpanSkew = 0;
 			sourceRightBasis = fallbackRotation * Vector3.right;
 			sourceForwardBasis = fallbackRotation * Vector3.forward;
 			sourceUpBasis = fallbackRotation * Vector3.up;
@@ -1793,13 +1793,13 @@ namespace RVP
 				// The source uses positive suspension for bump/compression and negative
 				// suspension for droop. Wheel.PositionWheel travels down along the spring
 				// direction, so the normalized visual position runs in the opposite direction.
-                // Body heave already raises the chassis when the suspension unloads.
-                // Scale only the additional visible wheel extension; keep the source
-                // spring state, compression and contact-probe geometry unchanged.
-                float visibleSuspension = sourceSuspension[i];
-                if (visibleSuspension < 0 && wheel.susParent)
-                    visibleSuspension *= wheel.susParent.droopVisualScale;
-                return Mathf.Clamp01((tyre.travelIn - visibleSuspension) / totalTravel);
+				// Body heave already raises the chassis when the suspension unloads.
+				// Scale only the additional visible wheel extension; keep the source
+				// spring state, compression and contact-probe geometry unchanged.
+				float visibleSuspension = sourceSuspension[i];
+				if (visibleSuspension < 0 && wheel.susParent)
+					visibleSuspension *= wheel.susParent.droopVisualScale;
+				return Mathf.Clamp01((tyre.travelIn - visibleSuspension) / totalTravel);
 			}
 			return wheel.susParent ? wheel.susParent.compression : 0;
 		}
@@ -2531,8 +2531,8 @@ namespace RVP
 				tyreDynamicsIncrementVector, airIncrementVector);
 			float dynamicsRotationDegrees = Quaternion.Angle(stepStartRotation, stepRotation);
 			Vector3 dynamicsRotationVector = RotationVector(stepRotation * Quaternion.Inverse(stepStartRotation));
-            LogSourceRampContact(appliedContactRotationVector, pendingContactRotationVector,
-                tyreDynamicsIncrementVector, airIncrementVector, dynamicsRotationVector, dynamicsContactClass);
+			//LogSourceRampContact(appliedContactRotationVector, pendingContactRotationVector,
+			//		tyreDynamicsIncrementVector, airIncrementVector, dynamicsRotationVector, dynamicsContactClass);
 			bool hasSourceProbeContactThisTick = false;
 			for (int i = 0; i < sourceProbeCount; i++)
 				if (sourceProbeHitsThisTick[i] > 0)
@@ -2647,52 +2647,52 @@ namespace RVP
 				}
 			}
 		}
-        void LogSourceRampContact(Vector3 applied, Vector3 contact, Vector3 tyres, Vector3 air,
-            Vector3 axle, int contactClass)
-        {
-            // A small event-only diagnostic budget: no strings/arrays during normal
-            // driving, no output for CPUs or other cars, at most eight messages.
-            if ((vehicle.carNumber != 1 && vehicle.carNumber != 6) || !vehicle.Owner || hustlerRampDiagnosticSamples >= 8 ||
-                Time.fixedTime < nextHustlerRampDiagnosticTime || CountDownSeq.Countdown > 0)
-                return;
-            float largestTurn = Mathf.Max(Mathf.Max(applied.magnitude, contact.magnitude), axle.magnitude) * Mathf.Rad2Deg;
-            float slope = Vector3.Angle(sourceUpBasis, SourceWorldUp);
-            bool touchesTrack = false;
-            for (int i = 0; i < sourceProbeCount; i++) touchesTrack |= sourceProbeHitsThisTick[i] > 0;
-            if (!touchesTrack || slope < 20 || (largestTurn < 2 && effectiveComHeight >= 0 && contactClass != 2)) return;
-            nextHustlerRampDiagnosticTime = Time.fixedTime + 0.35f;
-            hustlerRampDiagnosticSamples++;
-            var detail = new System.Text.StringBuilder(900);
-            for (int i = 0; i < sourceProbeCount; i++)
-            {
-                Vector3 normal = sourceProbeFirstContactNormal[i];
-                float alignment = Vector3.Dot(normal, stepStartRotation * Vector3.up);
-                detail.Append($" p{i}: hits={sourceProbeHitsThisTick[i]}, normal={normal.ToString("F2")}, " +
-                    $"alignment={alignment:F3}, impact={sourceProbeFirstContactSpeed[i]:F2}");
-                if (i < 4)
-                {
-                    OriginalTyrePhysicsConfig tyre = parameters.tyres[i];
-                    detail.Append($", wheelContact={sourceProbeWheelTouched[i]}, grace={contactCountdown[i]:F1}, " +
-                        $"load={sourceProbeWheelLoad[i]:F1}/{filteredContactLoad[i]:F1}, " +
-                        $"spring={sourceSuspension[i]:F1} range=-{tyre.travelOut:F1}/+{tyre.travelIn:F1}, " +
-                        $"rigLocal={SourceRigProbeLocal(i).ToString("F1")}, wheelRotRad={sourceWheelRotationDeltaThisTick[i].ToString("F4")}");
-                }
-                detail.Append(';');
-            }
-            Debug.LogWarning($"[Vehicle ramp] sample={hustlerRampDiagnosticSamples}/8, " +
-                $"car={vehicle.carNumber}, track={F.I?.s_trackName}, source={parameters.sourceConfig}, " +
-                $"position={vehicle.rb.position.ToString("F2")}, speed={vehicle.rb.linearVelocity.magnitude * 3.6f:F1}km/h, " +
-                $"slope={slope:F1}deg, class={contactClass}, com={parameters.comHeight:F2}/{effectiveComHeight:F2}, " +
-                $"steering={sourceSteering:F3}, steeringInput={SourceSteerInput:F3}, " +
-                $"probeSpanSkew={sourceSupportSpanSkew:F6}, supportForwardRightDot={Vector3.Dot(sourceForwardBasis, sourceRightBasis):F6}, " +
-                $"lateralGravity={Vector3.Dot(SourceGravityAcceleration, sourceRightBasis):F3}, " +
-                $"comRecovery={sourceCom2628:F2}/{sourceCom262c:F2}/{comResetTicks}, " +
-                $"rigOrigin={sourceRigOriginLocal.ToString("F3")}, heave={sourceBodyHeave:F2}, " +
-                $"pose={stepStartRotation.eulerAngles.ToString("F1")}->{stepRotation.eulerAngles.ToString("F1")}, " +
-                $"appliedRad={applied.ToString("F4")}, contactRad={contact.ToString("F4")}, " +
-                $"tyresRad={tyres.ToString("F4")}, accelTiltRad={sourceAccelerationTiltDeltaThisTick.ToString("F4")}, " +
-                $"airRad={air.ToString("F4")}, axleRad={axle.ToString("F4")};" + detail, vehicle);
-        }
+		void LogSourceRampContact(Vector3 applied, Vector3 contact, Vector3 tyres, Vector3 air,
+				Vector3 axle, int contactClass)
+		{
+			// A small event-only diagnostic budget: no strings/arrays during normal
+			// driving, no output for CPUs or other cars, at most eight messages.
+			if ((vehicle.carNumber != 1 && vehicle.carNumber != 6) || !vehicle.Owner || hustlerRampDiagnosticSamples >= 8 ||
+					Time.fixedTime < nextHustlerRampDiagnosticTime || CountDownSeq.Countdown > 0)
+				return;
+			float largestTurn = Mathf.Max(Mathf.Max(applied.magnitude, contact.magnitude), axle.magnitude) * Mathf.Rad2Deg;
+			float slope = Vector3.Angle(sourceUpBasis, SourceWorldUp);
+			bool touchesTrack = false;
+			for (int i = 0; i < sourceProbeCount; i++) touchesTrack |= sourceProbeHitsThisTick[i] > 0;
+			if (!touchesTrack || slope < 20 || (largestTurn < 2 && effectiveComHeight >= 0 && contactClass != 2)) return;
+			nextHustlerRampDiagnosticTime = Time.fixedTime + 0.35f;
+			hustlerRampDiagnosticSamples++;
+			var detail = new System.Text.StringBuilder(900);
+			for (int i = 0; i < sourceProbeCount; i++)
+			{
+				Vector3 normal = sourceProbeFirstContactNormal[i];
+				float alignment = Vector3.Dot(normal, stepStartRotation * Vector3.up);
+				detail.Append($" p{i}: hits={sourceProbeHitsThisTick[i]}, normal={normal.ToString("F2")}, " +
+						$"alignment={alignment:F3}, impact={sourceProbeFirstContactSpeed[i]:F2}");
+				if (i < 4)
+				{
+					OriginalTyrePhysicsConfig tyre = parameters.tyres[i];
+					detail.Append($", wheelContact={sourceProbeWheelTouched[i]}, grace={contactCountdown[i]:F1}, " +
+							$"load={sourceProbeWheelLoad[i]:F1}/{filteredContactLoad[i]:F1}, " +
+							$"spring={sourceSuspension[i]:F1} range=-{tyre.travelOut:F1}/+{tyre.travelIn:F1}, " +
+							$"rigLocal={SourceRigProbeLocal(i).ToString("F1")}, wheelRotRad={sourceWheelRotationDeltaThisTick[i].ToString("F4")}");
+				}
+				detail.Append(';');
+			}
+			Debug.LogWarning($"[Vehicle ramp] sample={hustlerRampDiagnosticSamples}/8, " +
+					$"car={vehicle.carNumber}, track={F.I?.s_trackName}, source={parameters.sourceConfig}, " +
+					$"position={vehicle.rb.position.ToString("F2")}, speed={vehicle.rb.linearVelocity.magnitude * 3.6f:F1}km/h, " +
+					$"slope={slope:F1}deg, class={contactClass}, com={parameters.comHeight:F2}/{effectiveComHeight:F2}, " +
+					$"steering={sourceSteering:F3}, steeringInput={SourceSteerInput:F3}, " +
+					$"probeSpanSkew={sourceSupportSpanSkew:F6}, supportForwardRightDot={Vector3.Dot(sourceForwardBasis, sourceRightBasis):F6}, " +
+					$"lateralGravity={Vector3.Dot(SourceGravityAcceleration, sourceRightBasis):F3}, " +
+					$"comRecovery={sourceCom2628:F2}/{sourceCom262c:F2}/{comResetTicks}, " +
+					$"rigOrigin={sourceRigOriginLocal.ToString("F3")}, heave={sourceBodyHeave:F2}, " +
+					$"pose={stepStartRotation.eulerAngles.ToString("F1")}->{stepRotation.eulerAngles.ToString("F1")}, " +
+					$"appliedRad={applied.ToString("F4")}, contactRad={contact.ToString("F4")}, " +
+					$"tyresRad={tyres.ToString("F4")}, accelTiltRad={sourceAccelerationTiltDeltaThisTick.ToString("F4")}, " +
+					$"airRad={air.ToString("F4")}, axleRad={axle.ToString("F4")};" + detail, vehicle);
+		}
 		void LogFormulaAcceleration(Vector3 velocityBeforeContacts, Vector3 velocityBeforeTyres)
 		{
 			// Eight samples per vehicle instance, no per-frame string allocations.
@@ -3308,9 +3308,9 @@ namespace RVP
 				? 1000
 				: (float)((double)fuel * parameters.fuelUnitMass + parameters.mass);
 			vehicle.rb.mass = Mathf.Max(0.001f, sourceEffectiveMass * SourceMassToKilograms);
-				effectiveComHeight = sourceMassOverride
-				? System.BitConverter.Int32BitsToSingle(unchecked((int)0x41f00001))
-					: parameters.comHeight;
+			effectiveComHeight = sourceMassOverride
+			? System.BitConverter.Int32BitsToSingle(unchecked((int)0x41f00001))
+				: parameters.comHeight;
 			if (sourceSpecialMode && effectiveComHeight > 10)
 				effectiveComHeight = 10;
 			double friction = gear == 0 ? 2.0 : performanceMultiplier;
@@ -3505,7 +3505,7 @@ namespace RVP
 					sourceAiTurboTicks = 0;
 				if (sourceAiTurboTicks == 0)
 				{
-			sourceAiTurboActive = false;
+					sourceAiTurboActive = false;
 					sourceAiTurboCooldown = sourceAiTurboRestTicks;
 				}
 				return;
@@ -3738,7 +3738,7 @@ namespace RVP
 				bool probeOverflow = false;
 				float probeRadius = sourceProbeRadius[i] * SourceLengthToMetres;
 				int attempt = 0;
-				for (;;)
+				for (; ; )
 				{
 					Vector3 segmentMotion = sourceMotion * remaining;
 					float segmentLength = segmentMotion.magnitude;
@@ -3992,62 +3992,62 @@ namespace RVP
 				? Quaternion.AngleAxis(angle * Mathf.Rad2Deg, resolved / angle)
 				: Quaternion.identity;
 		}
-        void StabilizeSourceIncrementalRotation()
-        {
-            // contact_solver.cpp: damp_incremental -> settle_incremental ->
-            // limit_incremental. Keep the intermediate matrix until all three
-            // stages finish: independently normalized columns are not necessarily
-            // orthogonal, so an early conversion to Quaternion changes the tests.
-            Matrix4x4 incremental = Matrix4x4.Rotate(sourceIncrementalRotation);
-            bool supportsStabilization = true;
-            for (int i = 0; i < 4; i++)
-                if (sourceProbeContactIterations[i] < 4)
-                {
-                    supportsStabilization = false;
-                    break;
-                }
-            if (supportsStabilization)
-            {
-                // These are components of the per-tick rotation, not the car's
-                // world orientation. The same stabilization works on an inverted
-                // section of a loop without pulling the car toward world-up.
-                if (Mathf.Abs(incremental.m02) <= 0.05f && Mathf.Abs(incremental.m12) <= 0.05f)
-                {
-                    Vector3 x = incremental.GetColumn(0);
-                    Vector3 y = incremental.GetColumn(1);
-                    Vector3 z = incremental.GetColumn(2);
-                    x.x *= 1.5f;
-                    y.y *= 1.5f;
-                    z.z *= 1.5f;
-                    x.Normalize();
-                    y.Normalize();
-                    z.Normalize();
-                    incremental.SetColumn(0, new Vector4(x.x, x.y, x.z, 0));
-                    incremental.SetColumn(1, new Vector4(y.x, y.y, y.z, 0));
-                    incremental.SetColumn(2, new Vector4(z.x, z.y, z.z, 0));
-                }
-                if (Mathf.Abs(incremental.m02) <= 0.002f && Mathf.Abs(incremental.m12) <= 0.002f)
-                    incremental = Matrix4x4.identity;
-            }
-            const float threshold = 0.70710677f;
-            // Read each component AFTER the preceding correction, as retail
-            // limit_incremental does. Cached forward/right columns replay the
-            // original error after another axis has already changed the matrix.
-            LimitSourceIncrementalAxis(ref incremental, 0, incremental.m12, threshold);
-            LimitSourceIncrementalAxis(ref incremental, 1, -incremental.m02, threshold);
-            LimitSourceIncrementalAxis(ref incremental, 2, -incremental.m10, threshold);
-            sourceIncrementalRotation = incremental.rotation.normalized;
-        }
-        static void LimitSourceIncrementalAxis(ref Matrix4x4 incremental, int axis, float value, float threshold)
-        {
-            if (Mathf.Abs(value) <= threshold)
-                return;
-            float argument = value < 0 ? value + threshold : value - threshold;
-            float sine = Mathf.Sqrt(Mathf.Max(0, (1 + argument) * (1 - argument)));
-            float degrees = Mathf.Atan2(argument, sine) * Mathf.Rad2Deg;
-            Vector3 direction = axis == 0 ? Vector3.right : axis == 1 ? Vector3.up : Vector3.forward;
-            incremental = Matrix4x4.Rotate(Quaternion.AngleAxis(degrees, direction)) * incremental;
-        }
+		void StabilizeSourceIncrementalRotation()
+		{
+			// contact_solver.cpp: damp_incremental -> settle_incremental ->
+			// limit_incremental. Keep the intermediate matrix until all three
+			// stages finish: independently normalized columns are not necessarily
+			// orthogonal, so an early conversion to Quaternion changes the tests.
+			Matrix4x4 incremental = Matrix4x4.Rotate(sourceIncrementalRotation);
+			bool supportsStabilization = true;
+			for (int i = 0; i < 4; i++)
+				if (sourceProbeContactIterations[i] < 4)
+				{
+					supportsStabilization = false;
+					break;
+				}
+			if (supportsStabilization)
+			{
+				// These are components of the per-tick rotation, not the car's
+				// world orientation. The same stabilization works on an inverted
+				// section of a loop without pulling the car toward world-up.
+				if (Mathf.Abs(incremental.m02) <= 0.05f && Mathf.Abs(incremental.m12) <= 0.05f)
+				{
+					Vector3 x = incremental.GetColumn(0);
+					Vector3 y = incremental.GetColumn(1);
+					Vector3 z = incremental.GetColumn(2);
+					x.x *= 1.5f;
+					y.y *= 1.5f;
+					z.z *= 1.5f;
+					x.Normalize();
+					y.Normalize();
+					z.Normalize();
+					incremental.SetColumn(0, new Vector4(x.x, x.y, x.z, 0));
+					incremental.SetColumn(1, new Vector4(y.x, y.y, y.z, 0));
+					incremental.SetColumn(2, new Vector4(z.x, z.y, z.z, 0));
+				}
+				if (Mathf.Abs(incremental.m02) <= 0.002f && Mathf.Abs(incremental.m12) <= 0.002f)
+					incremental = Matrix4x4.identity;
+			}
+			const float threshold = 0.70710677f;
+			// Read each component AFTER the preceding correction, as retail
+			// limit_incremental does. Cached forward/right columns replay the
+			// original error after another axis has already changed the matrix.
+			LimitSourceIncrementalAxis(ref incremental, 0, incremental.m12, threshold);
+			LimitSourceIncrementalAxis(ref incremental, 1, -incremental.m02, threshold);
+			LimitSourceIncrementalAxis(ref incremental, 2, -incremental.m10, threshold);
+			sourceIncrementalRotation = incremental.rotation.normalized;
+		}
+		static void LimitSourceIncrementalAxis(ref Matrix4x4 incremental, int axis, float value, float threshold)
+		{
+			if (Mathf.Abs(value) <= threshold)
+				return;
+			float argument = value < 0 ? value + threshold : value - threshold;
+			float sine = Mathf.Sqrt(Mathf.Max(0, (1 + argument) * (1 - argument)));
+			float degrees = Mathf.Atan2(argument, sine) * Mathf.Rad2Deg;
+			Vector3 direction = axis == 0 ? Vector3.right : axis == 1 ? Vector3.up : Vector3.forward;
+			incremental = Matrix4x4.Rotate(Quaternion.AngleAxis(degrees, direction)) * incremental;
+		}
 		void ApplySourceSuspensionTick(float tickScale)
 		{
 			float sourceGravity = SourceGravityMagnitude;
@@ -4191,21 +4191,21 @@ namespace RVP
 				}
 			}
 			//Debug.LogWarning($"[OriginalVehiclePhysics] Suspension state after contact observation: " +
-				//$"stableContact={stableContact}, supportingWheels={supportingWheels}/4, " +
-				//$"stableTicks={sourceSuspensionStableContactTicks}, " +
-				//$"secondsSinceFirstContact={contactObservationTime:F2}, bodyClearance={bodyClearance:F3}, " +
-				//$"sourceConfig={parameters.sourceConfig}, rootY={vehicle.rb.position.y:F3}, " +
-				//$"verticalSpeed={Vector3.Dot(vehicle.rb.linearVelocity, sourceUpBasis):F2}m/s, " +
-				//$"rootEuler={vehicle.rb.rotation.eulerAngles.ToString("F1")}, " +
-				//$"rootAngularVelocity={vehicle.rb.angularVelocity.ToString("F2")}, " +
-				//$"bodyY={bodyLocalY:F3}, bodyHeave={sourceBodyHeave:F2}, " +
-				//$"bodyRoll={sourceBodyRoll:F3}, bodyPitch={sourceBodyPitch:F3}, " +
-				//$"rideHeight={parameters.rideHeight:F2}, averageSuspension={averageSuspension:F2}, " +
-				//$"comHeight={parameters.comHeight:F2}/{effectiveComHeight:F2}, " +
-				//$"sourceMass={sourceMass:F2}, sourceGravity={SourceGravityMagnitude:F3}, " +
-				//$"referenceLoad={referenceLoad:F2}, wheelProbeRadius={sourceProbeRadius[0] * SourceLengthToMetres:F3}m, " +
-				//$"probeHits={sourceProbeHitsThisTick[0]},{sourceProbeHitsThisTick[1]}," +
-				//$"{sourceProbeHitsThisTick[2]},{sourceProbeHitsThisTick[3]}, {wheelStates}", vehicle);
+			//$"stableContact={stableContact}, supportingWheels={supportingWheels}/4, " +
+			//$"stableTicks={sourceSuspensionStableContactTicks}, " +
+			//$"secondsSinceFirstContact={contactObservationTime:F2}, bodyClearance={bodyClearance:F3}, " +
+			//$"sourceConfig={parameters.sourceConfig}, rootY={vehicle.rb.position.y:F3}, " +
+			//$"verticalSpeed={Vector3.Dot(vehicle.rb.linearVelocity, sourceUpBasis):F2}m/s, " +
+			//$"rootEuler={vehicle.rb.rotation.eulerAngles.ToString("F1")}, " +
+			//$"rootAngularVelocity={vehicle.rb.angularVelocity.ToString("F2")}, " +
+			//$"bodyY={bodyLocalY:F3}, bodyHeave={sourceBodyHeave:F2}, " +
+			//$"bodyRoll={sourceBodyRoll:F3}, bodyPitch={sourceBodyPitch:F3}, " +
+			//$"rideHeight={parameters.rideHeight:F2}, averageSuspension={averageSuspension:F2}, " +
+			//$"comHeight={parameters.comHeight:F2}/{effectiveComHeight:F2}, " +
+			//$"sourceMass={sourceMass:F2}, sourceGravity={SourceGravityMagnitude:F3}, " +
+			//$"referenceLoad={referenceLoad:F2}, wheelProbeRadius={sourceProbeRadius[0] * SourceLengthToMetres:F3}m, " +
+			//$"probeHits={sourceProbeHitsThisTick[0]},{sourceProbeHitsThisTick[1]}," +
+			//$"{sourceProbeHitsThisTick[2]},{sourceProbeHitsThisTick[3]}, {wheelStates}", vehicle);
 			if (stableContact)
 				sourceSuspensionDiagnosticLogged = true;
 			else
@@ -4291,12 +4291,12 @@ namespace RVP
 			Vector3 forward = sourceForwardBasis;
 			Vector3 right = sourceRightBasis;
 			Vector3 up = sourceUpBasis;
-            // On a loop the steering axis follows the supported road normal.
-            // Rotating around world Y pushes the steered axes out of the road
-            // plane, loses steering authority near vertical and reverses it on
-            // the inverted section. Keep the existing airborne steering path.
-            Vector3 steeringAxis = sourceContactClass == 1 ? Vector3.up : up;
-            Quaternion steering = Quaternion.AngleAxis(sourceSteering, steeringAxis);
+			// On a loop the steering axis follows the supported road normal.
+			// Rotating around world Y pushes the steered axes out of the road
+			// plane, loses steering authority near vertical and reverses it on
+			// the inverted section. Keep the existing airborne steering path.
+			Vector3 steeringAxis = sourceContactClass == 1 ? Vector3.up : up;
+			Quaternion steering = Quaternion.AngleAxis(sourceSteering, steeringAxis);
 			Vector3 steeredForward = steering * forward;
 			Vector3 steeredRight = steering * right;
 			Vector3 sourceVelocity = vehicle.rb.linearVelocity / SourceSpeedToMetresPerSecond;
@@ -4921,7 +4921,10 @@ namespace RVP
 			}
 			playerStuntTurns.Add(new PlayerStuntTurn
 			{
-				axis = axis, direction = direction, targetAngle = 360, initialRotation = playerStuntRotation
+				axis = axis,
+				direction = direction,
+				targetAngle = 360,
+				initialRotation = playerStuntRotation
 			});
 			ResumePlayerStuntTurn();
 		}
