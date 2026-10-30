@@ -1,0 +1,82 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9dd8271d86f6423b87bf339308f6268e, type: 3}
+  m_Name: USA_Night
+  m_EditorClassIdentifier: Assembly-CSharp::EnvironmentNightLightingData
+  lightmaps:
+  - {fileID: 2800000, guid: 820ae159c801d5c4ea204e04f0307da6, type: 3}
+  - {fileID: 2800000, guid: a26916f4aae8c2d4c9f76419975cdad4, type: 3}
+  surfaces:
+  - path: 1
+    terrain: 0
+    lightmap: 1
+    scaleOffset: {x: 0.0049268575, y: 0.005034558, z: 0.82688206, w: 0.099342525}
+  - path: 3
+    terrain: 0
+    lightmap: 1
+    scaleOffset: {x: 0.0049268575, y: 0.005034558, z: 0.22336645, w: 0.5173113}
+  - path: 4
+    terrain: 0
+    lightmap: 1
+    scaleOffset: {x: 0.34830153, y: 0.34830335, z: 0.5641045, w: 0.14857715}
+  - path: 5
+    terrain: 0
+    lightmap: 1
+    scaleOffset: {x: 0.56307274, y: 0.5630834, z: 0.00024414062, w: 0.00024414062}
+  - path: 6
+    terrain: 0
+    lightmap: 1
+    scaleOffset: {x: 0.010882769, y: 0.011218993, z: 0.6965139, w: 0.5265914}
+  - path: 7
+    terrain: 0
+    lightmap: 1
+    scaleOffset: {x: 0.00395718, y: 0.003706676, z: 0.54123396, w: 0.14963403}
+  - path: 8
+    terrain: 0
+    lightmap: 1
+    scaleOffset: {x: 0.00395718, y: 0.0037066767, z: 0.7175035, w: 0.52268094}
+  - path: 9
+    terrain: 0
+    lightmap: 1
+    scaleOffset: {x: 0.00395718, y: 0.003706676, z: 0.40256208, w: 0.39963403}
+  - path: 10
+    terrain: 0
+    lightmap: 1
+    scaleOffset: {x: 0.00395718, y: 0.0037066767, z: 0.444066, w: 0.21945825}
+  - path: 11
+    terrain: 0
+    lightmap: 1
+    scaleOffset: {x: 0.00395718, y: 0.003706676, z: 0.8913316, w: 0.12131373}
+  - path: 12
+    terrain: 0
+    lightmap: 1
+    scaleOffset: {x: 0.00395718, y: 0.0037066767, z: 0.17795272, w: 0.4216067}
+  - path: 13
+    terrain: 0
+    lightmap: 1
+    scaleOffset: {x: 0.00395718, y: 0.003706676, z: 0.8400621, w: 0.47238794}
+  - path: 14
+    terrain: 0
+    lightmap: 1
+    scaleOffset: {x: 0.00395718, y: 0.0037066767, z: 0.61740583, w: 0.5343997}
+  - path: 15
+    terrain: 0
+    lightmap: 1
+    scaleOffset: {x: 0.00395718, y: 0.003706676, z: 0.8293199, w: 0.4474856}
+  - path: 16
+    terrain: 0
+    lightmap: 1
+    scaleOffset: {x: 0.00395718, y: 0.003706676, z: 0.772191, w: 0.07932154}
+  - path: 18
+    terrain: 0
+    lightmap: 0
+    scaleOffset: {x: 0.9995117, y: 0.9995117, z: 0.00024414062, w: 0.00024414062}

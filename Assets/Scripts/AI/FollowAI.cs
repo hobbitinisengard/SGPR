@@ -212,6 +212,17 @@ namespace RVP
 		//	}
 		//	return (int)dist;
 		//}
+		void UpdateUniversalProgress()
+		{
+			// The end of the lap can be physically next to the start/pit exit.
+			// Never use a whole-path projection to grant race progress there.
+			var referencePath = RaceManager.I.racingPaths[1];
+			float next = GetDist(referencePath, univProgress);
+			float advance = next - univProgress;
+			float maxAdvance = Mathf.Min(200f, referencePath.path.length * .25f);
+			if (advance > 0 && advance < maxAdvance)
+				univProgress = next;
+		}
 		void OutOfPits(bool resetProgress = true)
 		{
 			if (pitsPathCreator)
@@ -222,10 +233,10 @@ namespace RVP
 				if (resetProgress)
 				{
 					var newDist = GetDist(trackPathCreator,progress) + 40;
-					if (newDist < progress + 300)
+					if (newDist >= progress && newDist < progress + 300)
 					{
 						progress = newDist;
-						univProgress = GetDist(RaceManager.I.racingPaths[1]);
+						UpdateUniversalProgress();
 					}
 				}
 				pitsProgress = 0;
@@ -365,12 +376,7 @@ namespace RVP
 			}
 			else
 			{
-				float newUnivProgress = GetDist(RaceManager.I.racingPaths[1], univProgress);
-				if (newUnivProgress - univProgress > -200 && newUnivProgress - univProgress < 200 
-				&& newUnivProgress > univProgress)
-				{
-					univProgress = newUnivProgress;
-				}
+				UpdateUniversalProgress();
 
 				dist = GetDist(trackPathCreator, progress);
 
@@ -682,11 +688,10 @@ namespace RVP
 			yield return new WaitForFixedUpdate();
 			vp.raceBox.ResetTimers();
 
-			float newUnivProgress = GetDist(RaceManager.I.racingPaths[1]);
-			if (newUnivProgress > univProgress)
-			{
-				univProgress = newUnivProgress;
-			}
+			if (skate)
+				univProgress = GetDist(RaceManager.I.racingPaths[1]);
+			else
+				UpdateUniversalProgress();
 
 			vp.antenna?.Reset();
 			//rb.angularVelocity = Vector3.zero;

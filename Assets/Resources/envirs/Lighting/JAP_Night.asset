@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9dd8271d86f6423b87bf339308f6268e, type: 3}
+  m_Name: JAP_Night
+  m_EditorClassIdentifier: Assembly-CSharp::EnvironmentNightLightingData
+  lightmaps:
+  - {fileID: 2800000, guid: 1c925e299c538e648acc8ef0c40f1e80, type: 3}
+  - {fileID: 2800000, guid: 31249c81c8527b14997339027566fe10, type: 3}
+  - {fileID: 2800000, guid: ab8784229ef481b438c3a71c78f76cdf, type: 3}
+  - {fileID: 2800000, guid: e821cd62c2e9f6b48a20440ea5af3140, type: 3}
+  surfaces:
+  - path: 0
+    terrain: 0
+    lightmap: 1
+    scaleOffset: {x: 0.72178626, y: 0.72149533, z: 0.00027174538, w: 0.00027183266}
+  - path: 1
+    terrain: 0
+    lightmap: 0
+    scaleOffset: {x: 0.024264708, y: 0.024371056, z: 0.7404599, w: 0.057842642}
+  - path: 2
+    terrain: 0
+    lightmap: 0
+    scaleOffset: {x: 0.010843567, y: 0.0132209, z: 0.7448219, w: 0.29168567}
+  - path: 3
+    terrain: 0
+    lightmap: 0
+    scaleOffset: {x: 0.010843567, y: 0.0132209, z: 0.74091566, w: 0.52020127}
+  - path: 4
+    terrain: 0
+    lightmap: 0
+    scaleOffset: {x: 0.018115235, y: 0.018443571, z: 0.7443643, w: 0.39377803}
+  - path: 5
+    terrain: 0
+    lightmap: 2
+    scaleOffset: {x: 0.70324105, y: 0.70329475, z: 0.00048828125, w: 0.00048828125}
+  - path: 6
+    terrain: 0
+    lightmap: 3
+    scaleOffset: {x: 0.53943104, y: 0.5396861, z: 0.00032645196, w: 0.00032637542}
+  - path: 8/0
+    terrain: 0
+    lightmap: 0
+    scaleOffset: {x: 0.003935362, y: 0.0045156865, z: 0.7472985, w: 0.66672975}
+  - path: 7
+    terrain: 1
+    lightmap: 0
+    scaleOffset: {x: 0.73876953, y: 0.88964844, z: 0.00024414062, w: 0.00024414062}

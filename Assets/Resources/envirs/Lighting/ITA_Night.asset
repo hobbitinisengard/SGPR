@@ -1,0 +1,90 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9dd8271d86f6423b87bf339308f6268e, type: 3}
+  m_Name: ITA_Night
+  m_EditorClassIdentifier: Assembly-CSharp::EnvironmentNightLightingData
+  lightmaps:
+  - {fileID: 2800000, guid: 835a26d7f24838d4a9b9a0e8b239ba6a, type: 3}
+  - {fileID: 2800000, guid: 2a4a1342871dcad45bcff57a81cd2555, type: 3}
+  surfaces:
+  - path: 0
+    terrain: 0
+    lightmap: 1
+    scaleOffset: {x: 0.10645128, y: 0.10599917, z: 0.10103726, w: 0.14400616}
+  - path: 1
+    terrain: 0
+    lightmap: 1
+    scaleOffset: {x: 0.6311443, y: 0.631145, z: 0.00029893796, w: 0.00029893775}
+  - path: 8
+    terrain: 0
+    lightmap: 1
+    scaleOffset: {x: 0.045293566, y: 0.045133792, z: 0.02681838, w: 0.20552945}
+  - path: 9
+    terrain: 0
+    lightmap: 1
+    scaleOffset: {x: 0.008049044, y: 0.007970851, z: 0.58638644, w: 0.59419936}
+  - path: 11
+    terrain: 0
+    lightmap: 0
+    scaleOffset: {x: 0.9995117, y: 0.9995117, z: 0.00024414062, w: 0.00024414062}
+  - path: 12
+    terrain: 0
+    lightmap: 1
+    scaleOffset: {x: 0.019758614, y: 0.018975057, z: 0.26118976, w: 0.39400387}
+  - path: 13
+    terrain: 0
+    lightmap: 1
+    scaleOffset: {x: 0.004885505, y: 0.005918317, z: 0.28271338, w: 0.36865056}
+  - path: 14
+    terrain: 0
+    lightmap: 1
+    scaleOffset: {x: 0.019758614, y: 0.018975057, z: 0.2055257, w: 0.30025387}
+  - path: 15
+    terrain: 0
+    lightmap: 1
+    scaleOffset: {x: 0.004885505, y: 0.005918317, z: 0.13036963, w: 0.55615056}
+  - path: 17/0
+    terrain: 0
+    lightmap: 1
+    scaleOffset: {x: 0.002951522, y: 0.0030104576, z: 0.06785912, w: 0.4789917}
+  - path: 17/1
+    terrain: 0
+    lightmap: 1
+    scaleOffset: {x: 0.002951522, y: 0.0030104576, z: 0.175281, w: 0.3618042}
+  - path: 17/2
+    terrain: 0
+    lightmap: 1
+    scaleOffset: {x: 0.002951522, y: 0.0030104576, z: 0.6049685, w: 0.59227294}
+  - path: 17/3
+    terrain: 0
+    lightmap: 1
+    scaleOffset: {x: 0.002951522, y: 0.0030104576, z: 0.0043825605, w: 0.4789917}
+  - path: 17/4
+    terrain: 0
+    lightmap: 1
+    scaleOffset: {x: 0.002951522, y: 0.0030104576, z: 0.0043825605, w: 0.14793701}
+  - path: 17/5
+    terrain: 0
+    lightmap: 1
+    scaleOffset: {x: 0.002951522, y: 0.0030104576, z: 0.5473513, w: 0.115710445}
+  - path: 17/6
+    terrain: 0
+    lightmap: 1
+    scaleOffset: {x: 0.002951522, y: 0.0030104576, z: 0.2631716, w: 0.37254637}
+  - path: 17/7
+    terrain: 0
+    lightmap: 1
+    scaleOffset: {x: 0.002951522, y: 0.0030104576, z: 0.09032006, w: 0.4164917}
+  - path: 17/8
+    terrain: 0
+    lightmap: 1
+    scaleOffset: {x: 0.002951522, y: 0.0030104576, z: 0.378406, w: 0.42821044}

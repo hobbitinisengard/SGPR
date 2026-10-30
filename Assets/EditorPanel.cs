@@ -1976,6 +1976,8 @@ public class EditorPanel : MonoBehaviour
 	{
 		if (envir)
 		{
+			var bakedLighting = envir.GetComponent<EnvironmentBakedLighting>();
+			if (bakedLighting) bakedLighting.SetNight(F.I.s_timeOfDay == TimeOfDay.Night);
 			var lights = envir.transform.Find("Lights");
 			if (lights != null)
 				lights.gameObject.SetActive(F.I.s_timeOfDay == TimeOfDay.Night || (!F.I.s_inEditor
@@ -2050,6 +2052,7 @@ public class EditorPanel : MonoBehaviour
 		RemoveTrackLeftovers();
 		skybox = Instantiate(Resources.Load<GameObject>("envirs/" + "sky" + skyboxNumber.ToString()));
 		envir = Instantiate(Resources.Load<GameObject>("envirs/" + envirName));
+		EnvironmentBakedLighting.Attach(envir, envirName);
 		var terrainTr = envir.transform.Find("Terrain");
 		if (terrainTr)
 		{
