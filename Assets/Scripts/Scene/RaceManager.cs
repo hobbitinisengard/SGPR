@@ -281,6 +281,9 @@ namespace RVP
 		}
 		private void OnEnable()
 		{
+			// Apply before loading the sky, environment and track lights.
+			if (MobileControls.Enabled && !F.I.s_inEditor)
+				F.I.s_timeOfDay = TimeOfDay.Day;
 			StartCoroutine(editorPanel.LoadTrack());
 			editorPanel.ApplyEnvironmentLighting();
 
@@ -350,6 +353,10 @@ namespace RVP
 			{
 				yield return null;
 			}
+
+			// Also cover restarts and races launched from the track editor.
+			if (MobileControls.Enabled && F.I.s_timeOfDay != TimeOfDay.Day)
+				editorPanel.SwitchDayNight(TimeOfDay.Day);
 
 
 			hud.pauseMenu.gameObject.SetActive(false);

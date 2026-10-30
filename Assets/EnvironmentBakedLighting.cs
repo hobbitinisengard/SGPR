@@ -23,9 +23,10 @@ public sealed class EnvironmentBakedLighting : MonoBehaviour
     {
         var lighting = environment.AddComponent<EnvironmentBakedLighting>();
         lighting.data = Resources.Load<EnvironmentNightLightingData>("envirs/Lighting/" + country + "_Night");
-        // Baked light components must never fall back to realtime after loading.
+        // Bake modes are configured in the editor. Disable lamp components at
+        // runtime; their illumination comes from the saved night lightmaps.
         foreach (var light in environment.GetComponentsInChildren<Light>(true))
-            light.lightmapBakeType = LightmapBakeType.Baked;
+            light.enabled = false;
     }
     public void SetNight(bool night)
     {
