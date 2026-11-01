@@ -312,6 +312,8 @@ namespace RVP
 		readonly System.Collections.Generic.List<PlayerStuntTurn> playerStuntTurns = new(8);
 		bool playerStuntSequenceActive, playerStuntFinishing, playerStuntTurnActive;
 		Quaternion playerStuntInitialRotation, playerStuntRotation;
+		Quaternion playerStuntTakeoffRotation, playerStuntLevelTarget;
+		float playerStuntLevelProgress;
 		int playerStuntLastInputAxis = -1, playerStuntPendingAxis = -1;
 		float playerStuntLastInputDirection, playerStuntPendingDirection;
 		float playerStuntSpeed, playerStuntAcceleration;
@@ -4737,6 +4739,7 @@ namespace RVP
 		{
 			playerStuntTurns.Clear();
 			playerStuntSequenceActive = playerStuntFinishing = playerStuntTurnActive = false;
+			playerStuntLevelProgress = 0;
 			playerStuntLastInputAxis = playerStuntPendingAxis = -1;
 			playerStuntLastInputDirection = playerStuntPendingDirection = 0;
 			playerStuntSpeed = playerStuntAcceleration = 0;
@@ -4748,6 +4751,7 @@ namespace RVP
 				ResetPlayerStuntSequence();
 				playerStuntSequenceActive = true;
 				playerStuntInitialRotation = playerStuntRotation = stepRotation;
+				InitializePlayerStuntLevelTarget();
 			}
 			bool wasFinishing = playerStuntFinishing;
 			playerStuntFinishing = !stuntPressed || SourcePlayerControlsSuppressed;
@@ -4900,6 +4904,40 @@ namespace RVP
 				ResetSourceStuntRoll();
 			}
 		}
+		void InitializePlayerStuntLevelTarget()
+		{
+			playerStuntTakeoffRotation = playerStuntInitialRotation;
+			// Keep takeoff heading, but finish turns with world-up as the body up.
+			Vector3 forward = Vector3.ProjectOnPlane(playerStuntTakeoffRotation * Vector3.forward, Vector3.up);
+			if (forward.sqrMagnitude < 0.000001f)
+				forward = Vector3.Cross(playerStuntTakeoffRotation * Vector3.right, Vector3.up);
+			if (forward.sqrMagnitude < 0.000001f)
+				forward = Vector3.forward;
+			playerStuntLevelTarget = Quaternion.LookRotation(forward.normalized, Vector3.up);
+		}
+		void LevelPlayerStuntDuringTurn(ref PlayerStuntTurn turn, float delta, float remaining)
+		{
+			if (playerStuntLevelProgress >= 1 || delta * remaining <= 0) return;
+			// Consume the remaining takeoff tilt over the remaining commanded turn.
+			// Reversing or switching axes changes the remaining arc, not the current
+			// pose. Completion reaches the level basis exactly, without a later phase.
+			float fraction = Mathf.Clamp01(Mathf.Abs(delta) / Mathf.Max(.000001f, Mathf.Abs(remaining)));
+			playerStuntLevelProgress = Mathf.Lerp(playerStuntLevelProgress, 1, fraction);
+			Quaternion basis = Quaternion.Slerp(playerStuntTakeoffRotation, playerStuntLevelTarget,
+				Mathf.SmoothStep(0, 1, playerStuntLevelProgress));
+			Quaternion correction = basis * Quaternion.Inverse(playerStuntInitialRotation);
+			playerStuntRotation = (correction * playerStuntRotation).normalized;
+			turn.initialRotation = (correction * turn.initialRotation).normalized;
+			// Paused parent turns must share this basis, so resuming them cannot
+			// restore the ramp's pitch/bank after a completed nested turn.
+			for (int i = 0; i < playerStuntTurns.Count; i++)
+			{
+				PlayerStuntTurn paused = playerStuntTurns[i];
+				paused.initialRotation = (correction * paused.initialRotation).normalized;
+				playerStuntTurns[i] = paused;
+			}
+			playerStuntInitialRotation = basis;
+		}
 		void StartPendingPlayerStuntTurn()
 		{
 			int axis = playerStuntPendingAxis;
@@ -4919,6 +4957,8 @@ namespace RVP
 					return;
 				}
 			}
+			if (playerStuntTurns.Count == 0)
+				playerStuntInitialRotation = playerStuntRotation;
 			playerStuntTurns.Add(new PlayerStuntTurn
 			{
 				axis = axis,
@@ -4932,8 +4972,10 @@ namespace RVP
 		{
 			Vector3 axis = turn.axis == 0 ? Vector3.right :
 				turn.axis == 1 ? Vector3.up : Vector3.forward;
+			float remaining = turn.targetAngle - turn.angle;
 			playerStuntRotation = (playerStuntRotation * Quaternion.AngleAxis(delta * turn.direction, axis)).normalized;
 			turn.angle += delta;
+			LevelPlayerStuntDuringTurn(ref turn, delta, remaining);
 		}
 		void ResumePlayerStuntTurn(bool preserveMotion = false)
 		{

@@ -50,6 +50,15 @@ namespace RVP
 			{
 				if (Action(F.I.escRef)?.WasPressedThisFrame() == true && pauseFrame != Time.frameCount)
 				{ pauseFrame = Time.frameCount; RaceManager.I.hud.TogglePause(); }
+			}
+			// Pause navigation remains available; vehicle actions do not.
+			if (Time.timeScale == 0)
+			{
+				vp.originalVehiclePhysics.CancelSuspensionJump();
+				return;
+			}
+			if (vp.localPlayerIndex >= 0)
+			{
 				if (Action(F.I.lightsInput)?.WasPressedThisFrame() == true) vp.Switchlights();
 				if (vp.localCamera && Action(vp.localCamera.changeCamRef)?.WasPressedThisFrame() == true)
 					vp.localCamera.CycleFollowCamera();
@@ -78,11 +87,13 @@ namespace RVP
 
 		private void LightsInputPerformed(InputAction.CallbackContext obj)
 		{
+			if (Time.timeScale == 0) return;
 			vp.Switchlights();
 		}
 
 		void FixedUpdate()
 		{
+			if (Time.timeScale == 0) return;
 			if (!vp.followAI.selfDriving)
 			{
 				if (vp.Owner)
