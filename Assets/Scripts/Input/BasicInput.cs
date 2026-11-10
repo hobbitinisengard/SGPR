@@ -63,7 +63,7 @@ namespace RVP
 				if (vp.localCamera && Action(vp.localCamera.changeCamRef)?.WasPressedThisFrame() == true)
 					vp.localCamera.CycleFollowCamera();
 			}
-			bool playerDriving = vp.Owner && !vp.followAI.selfDriving && F.I && !F.I.chat.texting;
+			bool playerDriving = vp.Owner && !vp.followAI.selfDriving && !F.I.chat.texting && F.I.s_raceType != RaceType.Survival;
 			if (!playerDriving)
 			{
 				vp.originalVehiclePhysics.CancelSuspensionJump();

@@ -267,7 +267,9 @@ namespace RVP
 		int sourceStabilityDiagnosticSamples;
 		int formulaAccelerationDiagnosticSamples;
 		float nextFormulaAccelerationDiagnosticTime;
-		float diagnosticEngineMass, diagnosticDriveAcceleration;
+		float diagnosticEngineMass, diagnosticDriveAcceleration, diagnosticClutchAcceleration;
+		float diagnosticWheelReserveBefore, diagnosticWheelReserveAfter;
+		float diagnosticRollingStep, diagnosticDragStep;
 		float nextSourceStabilityDiagnosticTime;
 		bool sourceSuspensionDiagnosticLogged;
 		bool sourceSuspensionObservationLogged;
@@ -452,6 +454,12 @@ namespace RVP
 			InitializeSourcePhysicsRandom();
 			vehicle = owner;
 			parameters = config;
+			if (IsFinite(owner.rb.position) && IsFinite(owner.rb.rotation))
+			{
+				lastFinitePosition = owner.rb.position;
+				lastFiniteRotation = owner.rb.rotation;
+				hasFinitePose = true;
+			}
 			lastSourceControlledRotation = owner.rb.rotation;
 			InitializeSourceWheelLayout();
 			bodyTransform = owner.bodyObj ? owner.bodyObj.transform : null;
@@ -1619,8 +1627,9 @@ namespace RVP
 		{
 			// curve_index uses the original truncating conversion, with out of
 			// range values selecting the last sample.
+			if (samples == null || samples.Length == 0 || double.IsNaN(x)) return 0;
 			int index = x <= -1.0 || x >= 128.0 ? 127 : (int)x;
-			return samples[index];
+			return samples[Mathf.Clamp(index, 0, samples.Length - 1)];
 		}
 		static void InitializeSourcePhysicsRandom()
 		{
@@ -1990,6 +1999,47 @@ namespace RVP
 			if (F.I && F.I.s_raceType == RaceType.Survival) amount *= 0.5;
 			energy = Mathf.Min(parameters.fuelCapacity, (float)((double)energy + amount));
 		}
+		Vector3 lastFinitePosition;
+		Quaternion lastFiniteRotation = Quaternion.identity;
+		bool hasFinitePose;
+		float nextInvalidMotionLog;
+		public static bool IsFinite(Vector3 value) =>
+			IsFinite(value.x) && IsFinite(value.y) && IsFinite(value.z);
+		public static bool IsFinite(Quaternion value)
+		{
+			float norm = value.x * value.x + value.y * value.y + value.z * value.z + value.w * value.w;
+			return IsFinite(norm) && norm > .000001f;
+		}
+		static bool IsFinite(float value) => !float.IsNaN(value) && !float.IsInfinity(value);
+		public bool ValidateMotion()
+		{
+			var body = vehicle.rb;
+			if (IsFinite(body.position) && IsFinite(body.rotation) &&
+				IsFinite(vehicle.tr.position) && IsFinite(vehicle.tr.rotation) &&
+				IsFinite(body.linearVelocity) && IsFinite(body.angularVelocity))
+			{
+				lastFinitePosition = body.position;
+				lastFiniteRotation = body.rotation;
+				hasFinitePose = true;
+				return true;
+			}
+			Vector3 position = hasFinitePose ? lastFinitePosition : Vector3.zero;
+			Quaternion rotation = hasFinitePose ? lastFiniteRotation : Quaternion.identity;
+			vehicle.tr.SetPositionAndRotation(position, rotation);
+			body.position = position;
+			body.rotation = rotation;
+			if (body.isKinematic) return false;
+			ResetToNeutral();
+			ResetSourceProbeHistory();
+			var sync = vehicle.GetComponent<Smooth.SmoothSyncNetcode>();
+			if (sync) { sync.clearBuffer(); sync.stopEasing(); }
+			if (Time.unscaledTime >= nextInvalidMotionLog)
+			{
+				Debug.LogWarning("[OriginalVehiclePhysics] Recovered non-finite motion; discarded stale network/contact state for " + vehicle.name, vehicle);
+				nextInvalidMotionLog = Time.unscaledTime + 2;
+			}
+			return false;
+		}
 		public void ResetToNeutral()
 		{
 			gear = 1;
@@ -2211,6 +2261,11 @@ namespace RVP
 					continue;
 				if (!SourceVehiclePairPositions.TryGetValue(vehicle, out Vector3 thisPreviousPosition) ||
 					!SourceVehiclePairPositions.TryGetValue(otherVehicle, out Vector3 otherPreviousPosition))
+					continue;
+				// A corrupted remote state must not infect an otherwise valid owner.
+				if (!IsFinite(thisPreviousPosition) || !IsFinite(otherPreviousPosition) ||
+					!IsFinite(vehicle.rb.position) || !IsFinite(otherVehicle.rb.position) ||
+					!IsFinite(vehicle.rb.linearVelocity) || !IsFinite(otherVehicle.rb.linearVelocity))
 					continue;
 				Vector3 previousSeparation = thisPreviousPosition - otherPreviousPosition;
 				if (previousSeparation.sqrMagnitude >= 9)
@@ -2509,12 +2564,13 @@ namespace RVP
 			Vector3 velocityBeforeTyres = vehicle.rb.linearVelocity;
 			using (SourceTyreMarker.Auto())
 				ApplyTyres(tickScale, dynamicsContactClass);
-			LogFormulaAcceleration(contactStartVelocity, velocityBeforeTyres);
 			Vector3 tyreDynamicsIncrementVector = RotationVector(
 				sourceIncrementalRotation * Quaternion.Inverse(incrementalAfterContact));
 			using (SourceTyreMarker.Auto())
 				UpdateSourceTireParticleAccumulator();
+			Vector3 velocityAfterTyres = vehicle.rb.linearVelocity;
 			ApplyAerodynamics(tickScale, dynamicsContactClass);
+			LogFormulaAcceleration(contactStartVelocity, velocityBeforeTyres, velocityAfterTyres);
 			using (SourceSuspensionMarker.Auto())
 			{
 				ApplySourceSuspensionTick(tickScale);
@@ -2695,10 +2751,10 @@ namespace RVP
 					$"tyresRad={tyres.ToString("F4")}, accelTiltRad={sourceAccelerationTiltDeltaThisTick.ToString("F4")}, " +
 					$"airRad={air.ToString("F4")}, axleRad={axle.ToString("F4")};" + detail, vehicle);
 		}
-		void LogFormulaAcceleration(Vector3 velocityBeforeContacts, Vector3 velocityBeforeTyres)
+		void LogFormulaAcceleration(Vector3 velocityBeforeContacts, Vector3 velocityBeforeTyres, Vector3 velocityAfterTyres)
 		{
-			// Eight samples per vehicle instance, no per-frame string allocations.
-			if (vehicle.carNumber != 18 || SourceUpgradeActive || formulaAccelerationDiagnosticSamples >= 8 ||
+			// Twelve samples per affected vehicle instance, no per-frame string allocations.
+			if ((vehicle.carNumber != 18 && vehicle.carNumber != 20) || SourceUpgradeActive || formulaAccelerationDiagnosticSamples >= 12 ||
 				CountDownSeq.Countdown > 0 || SourceRawAccelInput < 0.25f || gear < 2 ||
 				Time.fixedTime < nextFormulaAccelerationDiagnosticTime)
 				return;
@@ -2707,15 +2763,31 @@ namespace RVP
 			Vector3 forward = sourceForwardBasis;
 			float before = Vector3.Dot(velocityBeforeContacts, forward);
 			float beforeTyres = Vector3.Dot(velocityBeforeTyres, forward);
-			float after = Vector3.Dot(vehicle.rb.linearVelocity, forward);
+			float after = Vector3.Dot(velocityAfterTyres, forward);
+			Vector3 aeroDelta = vehicle.rb.linearVelocity - velocityAfterTyres;
+			float load = 0;
+			int supportingWheels = 0;
+			for (int i = 0; i < 4; i++)
+			{
+				load += filteredContactLoad[i];
+				if (sourceProbeWheelTouched[i]) supportingWheels++;
+			}
 			float dt = Mathf.Max(Time.fixedDeltaTime, 0.0001f);
-			Debug.Log($"[Formula17 acceleration] sample={formulaAccelerationDiagnosticSamples}/8, " +
+			Debug.Log($"[Vehicle acceleration] car={vehicle.carNumber}, sample={formulaAccelerationDiagnosticSamples}/12, " +
 				$"source={parameters.sourceConfig}, speed={after * 3.6f:F1}km/h, gear={gear - 1}, rpm={rpm:F0}, " +
 				$"mass={sourceEffectiveMass:F2}, engineMass={diagnosticEngineMass:F2}, maxTorque={parameters.maxTorque:F2}, " +
 				$"torque={torque:F2}, torqueMap={SourceTorqueCurveIndex}, driveMode={parameters.driveMode}, " +
 				$"clutch={clutch:F3}, throttle={throttleSignal:F3}, catchup={F.I.catchup}, performance={performanceMultiplier:F3}, " +
 				$"turboRpm={turboRpm:F0}, turboForce={turboForce:F3}, trickstart={sourceStartBoostActiveThisTick}, " +
-				$"engineStep={diagnosticDriveAcceleration:F4}, " +
+				$"engineStep={diagnosticDriveAcceleration:F4}, clutchStep={diagnosticClutchAcceleration:F4}, " +
+				$"wheelReserve={diagnosticWheelReserveBefore:F4}->{diagnosticWheelReserveAfter:F4} source, " +
+				$"support={supportingWheels}/4, contactLoad={load:F2}, Cl={parameters.liftCoefficient:F3}, Cd={parameters.dragCoefficient:F3}, FA={parameters.frontalArea:F3}, " +
+				$"airFactor={sourceAirFactor:F4}, rollingSurface={sourceWheelSurfaceRolling[0]:F3}/{sourceWheelSurfaceRolling[1]:F3}/{sourceWheelSurfaceRolling[2]:F3}/{sourceWheelSurfaceRolling[3]:F3}, " +
+				$"tyrePressure={parameters.tyres[0].pressure:F2}/{parameters.tyres[1].pressure:F2}/{parameters.tyres[2].pressure:F2}/{parameters.tyres[3].pressure:F2}, " +
+				$"rollingAcceleration={diagnosticRollingStep * SourceSpeedToMetresPerSecond / dt:F3}m/s2, " +
+				$"dragAcceleration={-diagnosticDragStep * SourceSpeedToMetresPerSecond / dt:F3}m/s2, " +
+				$"tractionAcceleration={(after - beforeTyres - (diagnosticRollingStep - diagnosticDragStep) * SourceSpeedToMetresPerSecond) / dt:F3}m/s2, " +
+				$"downforceAcceleration(forward/up)={Vector3.Dot(aeroDelta, forward) / dt:F3}/{Vector3.Dot(aeroDelta, sourceUpBasis) / dt:F3}m/s2, " +
 				$"contactAcceleration={Vector3.Dot(sourceContactVelocityDeltaThisTick, forward) / dt:F2}m/s2, " +
 				$"tyreAcceleration={(after - beforeTyres) / dt:F2}m/s2, totalAcceleration={(after - before) / dt:F2}m/s2, " +
 				$"contactGrace={contactCountdown[0]:F1},{contactCountdown[1]:F1},{contactCountdown[2]:F1},{contactCountdown[3]:F1}", vehicle);
@@ -3585,7 +3657,12 @@ namespace RVP
 			if (clutch < 1)
 				clutch = Mathf.Min(1, clutch + tickScale / Mathf.Max(1, parameters.shiftTime * SourceTicksPerSecond));
 			if (clutch < 0.5f)
-				throttle = 0;
+			{
+				// Retail engage_clutch clears the persistent throttle state, not just
+				// this tick's torque input. Digital throttle must ramp up again when
+				// the clutch re-engages instead of immediately restoring full power.
+				throttle = throttleSignal = 0;
+			}
 			if (throttle < 0.1f)
 				rpm *= Mathf.Pow(parameters.engineDecay, tickScale);
 			float ratio = gear == 1 ? 2 : parameters.ratios[gear];
@@ -3605,6 +3682,7 @@ namespace RVP
 				engineMass * 100 * (double)0.00027777778f * 3;
 			diagnosticEngineMass = engineMass;
 			diagnosticDriveAcceleration = (float)accelerationValue;
+			diagnosticClutchAcceleration = 0;
 			float acceleration = (float)accelerationValue;
 			if (!sourceSpecialMode && energy <= 10)
 			{
@@ -3636,6 +3714,7 @@ namespace RVP
 				rpm = (float)((double)rpm - (double)rpmChange * tickScale);
 				float mismatchMassFactor = 50 / engineMass;
 				float mismatchAcceleration = (float)((double)mismatchMassFactor * mismatch * 1.6666666f);
+				diagnosticClutchAcceleration = mismatchAcceleration;
 				DistributeSourceDrive(mismatchAcceleration, sourceContactClass);
 				while (rpm > parameters.rpmLimit)
 					rpm *= 0.9f;
@@ -4280,6 +4359,7 @@ namespace RVP
 		void ApplyTyres(float tickScale, int sourceContactClass)
 		{
 			System.Array.Clear(sourceWheelRotationDeltaThisTick, 0, sourceWheelRotationDeltaThisTick.Length);
+			diagnosticRollingStep = diagnosticDragStep = 0;
 			sourceAccelerationTiltDeltaThisTick = Vector3.zero;
 			// vehicle_dynamics_core resolves tyre forces into front and rear axle
 			// velocities. Accumulating four AddForceAtPosition calls adds artificial
@@ -4307,6 +4387,7 @@ namespace RVP
 			float rearForce = 0;
 			float sourceMass = sourceEffectiveMass;
 			float speed = Vector3.Dot(forward, sourceVelocity);
+			diagnosticWheelReserveBefore = (wheelSpeed[0] + wheelSpeed[1] + wheelSpeed[2] + wheelSpeed[3]) * 0.25f - speed;
 			float frontSpeed = Vector3.Dot(steeredForward, sourceVelocity);
 			float transfer = -speed * Vector3.Dot(forward, steeredRight);
 			float lateral = -transfer * Vector3.Dot(steeredRight, right);
@@ -4390,6 +4471,9 @@ namespace RVP
 				if (wheelSpeed[i] < 0)
 					resistance = -resistance;
 				float storedResistance = (float)resistance;
+				// Each wheel contributes half to its axle, then the axle and body
+				// averages each halve it again: one eighth reaches body velocity.
+				diagnosticRollingStep += storedResistance * 0.125f;
 				wheelSpeed[i] = (float)((double)storedResistance * tickScale + wheelSpeed[i]);
 				sourceAxleForce[axle] = (float)((double)storedResistance * 0.5 + sourceAxleForce[axle]);
 				wheel.currentRPM = wheelSpeed[i] * SourceSpeedToMetresPerSecond * 60 /
@@ -4411,6 +4495,7 @@ namespace RVP
 			if (SourceUpgradeActive)
 				drag += (1 - SourceUpgradeCondition) * SourceCpuAerodynamicDragModifier;
 			float dragStep = drag / sourceMass * 100 * 0.00027777778f * tickScale;
+			diagnosticDragStep = dragStep;
 			frontForce -= dragStep;
 			rearForce -= dragStep;
 			for (int i = 0; i < wheelSpeed.Length; i++)
@@ -4470,6 +4555,7 @@ namespace RVP
 				? nextVelocity.magnitude / SourceSpeedToMetresPerSecond
 				: Vector3.Dot(sourceForwardBasis, nextVelocity) / SourceSpeedToMetresPerSecond;
 			currentSourceSpeed = finalSpeed;
+			diagnosticWheelReserveAfter = (wheelSpeed[0] + wheelSpeed[1] + wheelSpeed[2] + wheelSpeed[3]) * 0.25f - finalSpeed;
 			for (int i = 0; i < 4; i++)
 			{
 				Wheel wheel = vehicle.wheels[UnityWheelIndex[i]];
@@ -4560,11 +4646,8 @@ namespace RVP
 				: Vector3.Dot(velocity, sourceForward) / SourceSpeedToMetresPerSecond;
 			if (sourceContactClass != 0 || Mathf.Abs(sourceSpeed) <= 0.001f)
 				return;
-			// Contact class retains wheel support for several ticks after separation.
-			// With Unity track geometry, applying full downforce during that grace
-			// interval can cancel a ramp takeoff before the airborne class is reached.
-			// Keep grace for drivetrain/stunts, but require an actual wheel contact
-			// for aerodynamic adhesion. Body contacts cannot provide wheel support.
+			// Contact grace can outlast actual wheel support. Require at least one
+			// current wheel contact so downforce cannot cancel an airborne takeoff.
 			bool hasWheelContact = false;
 			for (int i = 0; i < 4; i++)
 				if (sourceProbeWheelTouched[i])

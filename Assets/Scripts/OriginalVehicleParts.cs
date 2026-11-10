@@ -294,6 +294,12 @@ public class OriginalVehiclePartCatalog
 			{
 				OriginalVehiclePartSlot slot = setup.slots[i];
 				OriginalVehiclePartDefinition part = slot == null ? null : GetPresentationPart(GetPart(slot.SelectedPartId));
+				// Retail apply_campaign_upgrade_4365d0: selection 0 retains the
+				// car's own coefficients but still adds the fallback part's mass.
+				// default_part uses 5 for all categories except Drive (3).
+				// Apply this fallback only here; it must not replace stock tuning.
+				if (slot != null && string.IsNullOrEmpty(slot.SelectedPartId))
+					part = GetPart(slot.type, slot.type == OriginalVehiclePartType.Drive ? 3 : 5);
 				if (part == null)
 					continue;
 				float additiveMass = parameterIndex < part.parameters.Length

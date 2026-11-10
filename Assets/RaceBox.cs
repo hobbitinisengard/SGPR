@@ -933,10 +933,10 @@ public class RaceBox : Sfxable
 					{
 						enabled = false;
 						int curPos = RaceManager.I.Position(vp) + 1;
-						if (!F.I.s_inEditor && curPos == 1)
+						if (!F.I.s_inEditor && curPos == 1 && vp.Owner)
 						{
 							SGP_HUD.ShowRaceMessage(new(vp.tr.name + " " + F.I.LocStr("WINS!"), BottomInfoType.CAR_WINS));
-							RaceManager.I.ActivateEndraceTimer();
+							RaceManager.I.ActivateEndraceTimer(vp);
 						}
 						// in racemode after the end of a race, cars still run around the track, ghosts overtake each other. Don't let it change results
 						curLap += 100 * (F.I.maxCarsInRace - curPos);

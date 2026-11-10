@@ -242,8 +242,8 @@ namespace RVP
 				pitsProgress = 0;
 				pitsPathCreator = null;
 				searchForPits = false;
-				selfDriving = IsCPU;
-				vp.basicInput.enabled = vp.Owner;
+				selfDriving = IsCPU || (vp.raceBox && !vp.raceBox.enabled && F.I.gameMode != GameMode.Skate);
+				vp.basicInput.enabled = vp.Owner && !selfDriving;
 			}
 		}
 		IEnumerator RevvingCoroutine()
@@ -287,6 +287,7 @@ namespace RVP
 		}
 		void FixedUpdate()
 		{
+			if (resetRoutineActive) return;
 			// CPU drivers use the regular brake for corners; handbrake only holds the starting grid.
 			if (IsCPU && CountDownSeq.Countdown <= 0)
 				vp.SetEbrake(0);
@@ -327,6 +328,7 @@ namespace RVP
 			if (rolledOverTime >= rollResetTime)
 			{
 				StartCoroutine(ResetOnTrack("rollover timer"));
+				if (resetRoutineActive) return;
 			}
 
 
@@ -355,6 +357,7 @@ namespace RVP
 				{
 					StartCoroutine(ResetOnTrack(vp.tr.position.y < -250
 						? "below world bound" : "out-of-track timer"));
+					if (resetRoutineActive) return;
 				}
 			}
 
@@ -416,14 +419,12 @@ namespace RVP
 				{
 					
 					//Vector3 targetPos;
-					if (vp.velMag < 5)
-					{
-						lowSpeedTime += Time.fixedDeltaTime;
-					}
+					lowSpeedTime = vp.velMag < 5 ? lowSpeedTime + Time.fixedDeltaTime : 0;
 
 					if (lowSpeedTime > 3)
 					{
 						StartCoroutine(ResetOnTrack("AI low-speed timeout"));
+						if (resetRoutineActive) return;
 					}
 					if (vp.SourceEnergyPercent < 0.2f && vp.raceBox.curLap < F.I.s_laps)
 					{
@@ -504,6 +505,7 @@ namespace RVP
 					if (reverseAttempts > resetReverseCount && resetReverseCount >= 0 && trackPathCreator)
 					{
 						StartCoroutine(ResetOnTrack("AI reverse-attempt limit"));
+						if (resetRoutineActive) return;
 					}
 
 					reverseTime = Mathf.Max(0, reverseTime - Time.fixedDeltaTime);
@@ -631,9 +633,28 @@ namespace RVP
 			pitsProgress = 0;
 			reverseAttempts = 0;
 			outOfTrackTime = 0;
+			lastOutOfTrackTime = Time.time;
 			lowSpeedTime = 0;
 			reverseTime = 0;
 			stoppedTime = 0;
+			// These belong to the pre-reset path/pose, not the new driving target.
+			brakeTime = 0;
+			dumbBool = false;
+			looping = false;
+			speedLimit = 999;
+			speedLimitDist = -1;
+			tSpeed = 0;
+			targetSteer = 0;
+			if (selfDriving)
+			{
+				vp.SetAccel(0);
+				vp.SetBrake(0);
+				vp.SetEbrake(0);
+				vp.SetSteer(0);
+				vp.SetBoost(0);
+				vp.SetSGPShift(0);
+				vp.SetRoll(0);
+			}
 
 			bool skate = F.I.gameMode == GameMode.Skate;
 			resetInPlace &= skate;
@@ -676,6 +697,8 @@ namespace RVP
 			Vector3 resetForward = Vector3.ProjectOnPlane(resetDir, h.normal);
 			if (resetForward.sqrMagnitude < 0.0001f)
 				resetForward = Vector3.ProjectOnPlane(Vector3.forward, h.normal);
+			if (resetForward.sqrMagnitude < 0.0001f)
+				resetForward = Vector3.ProjectOnPlane(Vector3.right, h.normal);
 			Quaternion resetRotation = Quaternion.LookRotation(resetForward.normalized, h.normal);
 			Vector3 resetPosition = resetPos + Vector3.up + (skate ? Vector3.zero : resetDir);
 			vp.ghost.StartGhostResetting();

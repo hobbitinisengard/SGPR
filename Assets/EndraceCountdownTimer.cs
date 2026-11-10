@@ -6,6 +6,22 @@ using UnityEngine.UI;
 public class EndraceCountdownTimer : MonoBehaviour
 {
 	Coroutine cntdown;
+	double networkDeadline;
+	public void SetNetworkDeadline(double deadline)
+	{
+		if (networkDeadline == deadline) return;
+		networkDeadline = deadline;
+		if (deadline <= 0)
+		{
+			gameObject.SetActive(false);
+			return;
+		}
+		if (ResultsView.FinishedPlayers >= ServerC.I.lobby.Players.Count) return;
+		if (!gameObject.activeSelf) gameObject.SetActive(true);
+		else if (gameObject.activeInHierarchy) OnEnable();
+	}
+	float NetworkSecondsRemaining => Mathf.Max(0f,
+		(float)(networkDeadline - ServerC.I.networkManager.ServerTime.Time));
 	AudioSource snd;
 	public Color beginColor;
 	public Color endColor;
@@ -17,6 +33,7 @@ public class EndraceCountdownTimer : MonoBehaviour
 	}
 	public void OnEnable()
 	{
+		if (F.I.gameMode != GameMode.Multiplayer) networkDeadline = 0;
 		if (cntdown != null)
 			StopCoroutine(cntdown);
 		cntdown = StartCoroutine(Countdown());
@@ -43,13 +60,13 @@ public class EndraceCountdownTimer : MonoBehaviour
 			timer = F.I.s_SkateTimeLimit;
 		}
 		else
-			timer = Info.AfterMultiPlayerRaceWaitForPlayersSeconds;
+			timer = networkDeadline > 0 ? NetworkSecondsRemaining : Info.AfterMultiPlayerRaceWaitForPlayersSeconds;
 
 		int round = Mathf.RoundToInt(timer);
 		SetNumber(round);
 		while (timer > 0)
 		{
-			timer = Mathf.Max(0f, timer - Time.deltaTime);
+			timer = networkDeadline > 0 ? NetworkSecondsRemaining : Mathf.Max(0f, timer - Time.deltaTime);
 			if (round != Mathf.FloorToInt(timer))
 			{
 				if (F.I.gameMode == GameMode.Multiplayer && ResultsView.FinishedPlayers >= ServerC.I.lobby.Players.Count)

@@ -13,6 +13,18 @@ public class Result
 	public bool finished;
 	public bool disqualified;
 	public bool retired;
+	// Set by the host at countdown expiry; independent of later race snapshots.
+	public int timeoutPosition = -1;
+	public bool disconnected { get; private set; }
+	public void MarkDisconnected()
+	{
+		disconnected = true;
+		finished = false;
+		lap = raceTime = TimeSpan.MaxValue;
+		progress = -1000;
+		drift = aeromiles = 0;
+		maxAeroStars = 0;
+	}
 	public ulong id;
 	public string name;
 	public TimeSpan lap;
@@ -31,6 +43,8 @@ public class Result
 	public void Update(VehicleParent vp)
 	{
 		this.vp = vp;
+		// Late snapshots must not restore a disconnected player's result.
+		if (disconnected) return;
 		drift = vp.raceBox.Drift;
 		lap = vp.raceBox.bestLapTime;
 		progress = vp.raceBox.RaceProgressLaps;
@@ -95,6 +109,8 @@ public class ResultsView : MainMenuView
 	public Sprite[] silverMedals; // race,lap,stunt,drift
 	public Sprite[] goldMedals;
 	readonly static List<Result> resultData = new();
+	readonly static HashSet<ulong> disconnectedPlayers = new();
+	readonly static Dictionary<ulong, int> timeoutPositions = new();
 	public static bool playerDNF = false;
 	static int Pos(string carName, Comparison<Result> comp)
 	{
@@ -149,7 +165,7 @@ public class ResultsView : MainMenuView
 	static int RankedBonus(int rank, int firstPrize) => rank > 0 && rank <= 2 ? firstPrize / rank : 0;
 	public static ChampionshipReward CalculateChampionshipReward(Result result)
 	{
-		if (result == null || result.disqualified || result.retired || resultData.Count == 0) return default;
+		if (result == null || result.disconnected || result.disqualified || result.retired || resultData.Count == 0) return default;
 		int position = RewardRank(result, ComparisonBasedOnRaceType());
 		if (position == 0) return default;
 		int positionPrize = Championships.Active
@@ -163,6 +179,7 @@ public class ResultsView : MainMenuView
 	}
 	public static int CalculatePostraceReward(Result ri)
 	{
+		if (ri.disconnected) return 0;
 		if (Championships.Active || F.I.scoringType == ScoringType.Championship)
 			return CalculateChampionshipReward(ri).Total;
 		int finalScore = 0;
@@ -251,10 +268,12 @@ public class ResultsView : MainMenuView
 	public static void Clear()
 	{
 		resultData.Clear();
+		disconnectedPlayers.Clear();
+		timeoutPositions.Clear();
 	}
 	public static int FinishedPlayers
 	{
-		get { return resultData.Count(r => r.finished); }
+		get { return resultData.Count(r => r.finished && !r.disconnected); }
 	}
 	public static int Count
 	{
@@ -266,17 +285,37 @@ public class ResultsView : MainMenuView
 		if (entry != default)
 			resultData.Remove(entry);
 	}
+	public static void PreserveTimeoutPositions(ulong[] unfinishedPlayers)
+	{
+		for (int i = 0; i < unfinishedPlayers.Length; i++)
+		{
+			timeoutPositions[unfinishedPlayers[i]] = i;
+			var result = resultData.FirstOrDefault(r => r.id == unfinishedPlayers[i]);
+			if (result != null) result.timeoutPosition = i;
+		}
+	}
+	public static void MarkDisconnected(ulong id)
+	{
+		disconnectedPlayers.Add(id);
+		foreach (var result in resultData)
+			if (result.id == id) result.MarkDisconnected();
+	}
 	public static void Add(VehicleParent car)
 	{
-		var entry = resultData.FirstOrDefault(RD => RD.vp == car);
+		bool online = F.I.gameMode == GameMode.Multiplayer;
+		var entry = resultData.FirstOrDefault(RD => RD.vp == car || (online && RD.id == car.OwnerClientId));
 		if (entry == default)
 		{
-			resultData.Add(new Result(car));
+			entry = new Result(car);
+			resultData.Add(entry);
 		}
 		else
 		{
 			entry.Update(car);
 		}
+		if (online && timeoutPositions.TryGetValue(entry.id, out int timeoutPosition))
+			entry.timeoutPosition = timeoutPosition;
+		if (online && disconnectedPlayers.Contains(entry.id)) entry.MarkDisconnected();
 	}
 
 	RectTransform gridTableTr;
@@ -295,16 +334,24 @@ public class ResultsView : MainMenuView
 	private int stuntBonus;
 	private int driftBonus;
 	private int aeroMeter;
-	public static readonly Comparison<Result> raceComp = new((Result x, Result y) => x.raceTime.TotalSeconds.CompareTo(y.raceTime.TotalSeconds));
-	public static readonly Comparison<Result> survivalComp = new((Result x, Result y) =>
+	static Comparison<Result> WithDisconnectedLast(Comparison<Result> comparison) => (x, y) =>
+		x.disconnected != y.disconnected ? (x.disconnected ? 1 : -1) : comparison(x, y);
+	public static readonly Comparison<Result> raceComp = WithDisconnectedLast((x, y) =>
+	{
+		bool xTimedOut = x.timeoutPosition >= 0;
+		bool yTimedOut = y.timeoutPosition >= 0;
+		if (xTimedOut != yTimedOut) return xTimedOut ? 1 : -1;
+		return xTimedOut ? x.timeoutPosition.CompareTo(y.timeoutPosition) : x.raceTime.CompareTo(y.raceTime);
+	});
+	public static readonly Comparison<Result> survivalComp = WithDisconnectedLast((x, y) =>
 	{
 		if (x.disqualified != y.disqualified) return x.disqualified ? 1 : -1;
 		return x.disqualified ? y.progress.CompareTo(x.progress) : raceComp(x, y);
 	});
-	public static readonly Comparison<Result> knockoutComp = new((Result x, Result y) => { return y.progress.CompareTo(x.progress); });
-	public static readonly Comparison<Result> stuntComp = new((Result x, Result y) => y.aeromiles.CompareTo(x.aeromiles));
-	public static readonly Comparison<Result> driftComp = new((Result x, Result y) => y.drift.CompareTo(x.drift));
-	public static readonly Comparison<Result> lapComp = new((Result x, Result y) => x.lap.TotalSeconds.CompareTo(y.lap.TotalSeconds));
+	public static readonly Comparison<Result> knockoutComp = WithDisconnectedLast((x, y) => y.progress.CompareTo(x.progress));
+	public static readonly Comparison<Result> stuntComp = WithDisconnectedLast((x, y) => y.aeromiles.CompareTo(x.aeromiles));
+	public static readonly Comparison<Result> driftComp = WithDisconnectedLast((x, y) => y.drift.CompareTo(x.drift));
+	public static readonly Comparison<Result> lapComp = WithDisconnectedLast((x, y) => x.lap.CompareTo(y.lap));
 	public static readonly Comparison<Result> ScoreComp = new((Result x, Result y) => y.score.CompareTo(x.score));
 
 	MainMenuView ChampionshipContinuation()

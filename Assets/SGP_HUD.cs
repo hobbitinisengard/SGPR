@@ -2,9 +2,9 @@ using RVP;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel.Design;
 using UnityEngine;
 using UnityEngine.UI;
+using Unity.Netcode;
 
 public enum BottomInfoType { 
 	NEW_LEADER, NO_BATT, PIT_OUT, PIT_IN, STUNT, CAR_WINS, ELIMINATED, NEW_CAMERA_TARGET, NEW_LAPRECORD,
@@ -35,6 +35,8 @@ public class SGP_HUD : MonoBehaviour
 	public GameObject LAPDisplay;
 	public ResultsView resultsMenuView;
 	public InfoText infoText;
+	public Text pingText;
+	float nextPingUpdate;
 	public VehicleParent vp { get; private set; }
 	GearboxTransmission trans;
 	//StuntDetect stunter;
@@ -117,14 +119,17 @@ public class SGP_HUD : MonoBehaviour
 		vp = null;
 		trans = null;
 		engine = null;
+		UpdatePing(true);
 	}
 	public void OnDisable()
 	{
+		if (pingText) pingText.gameObject.SetActive(false);
 		F.I.escRef.action.performed -= EscapePressed;
 		ClearStuntInfo();
 	}
 	private void OnEnable()
 	{
+		UpdatePing(true);
 		if (F.I.gameMode != GameMode.Splitscreen) F.I.escRef.action.performed += EscapePressed;
 
 		AEROText.SetActive(F.I.s_raceType != RaceType.Drift);
@@ -159,6 +164,7 @@ public class SGP_HUD : MonoBehaviour
 		infoText.Reset();
 
 		vp = newVehicle;
+		UpdatePing(true);
 
 		trans = newVehicle.GetComponentInChildren<Transmission>() as GearboxTransmission;
 
@@ -290,11 +296,57 @@ public class SGP_HUD : MonoBehaviour
 	}
 	private void Update()
 	{
+		UpdatePing();
 		if (Input.GetKeyDown(KeyCode.F3) && !pauseMenu.gameObject.activeSelf 
 			&& F.I.gameMode == GameMode.Exhibition && F.I.s_cpuRivals == 0)
 		{
 			componentPanel.gameObject.SetActive(!componentPanel.gameObject.activeSelf);
 		}
+	}
+	void UpdatePing(bool force = false)
+	{
+		if (!pingText) return;
+		var network = NetworkManager.Singleton;
+		bool visible = F.I && F.I.gameMode == GameMode.Multiplayer && !F.I.s_inEditor &&
+			vp && raceManager && raceManager.gameObject.activeInHierarchy && network && network.IsConnectedClient;
+		if (pingText.gameObject.activeSelf != visible)
+		{
+			pingText.gameObject.SetActive(visible);
+			force = true;
+		}
+		if (!visible || (!force && Time.unscaledTime < nextPingUpdate)) return;
+		nextPingUpdate = Time.unscaledTime + .5f;
+		var transport = network.NetworkConfig.NetworkTransport;
+		double totalRtt = 0;
+		int samples = 0;
+		if (network.IsHost)
+		{
+			// Average the complete host -> Relay -> client -> Relay -> host RTT.
+			// Do not include the host's local connection to itself.
+			var clients = network.ConnectedClientsIds;
+			for (int i = 0; i < clients.Count; i++)
+			{
+				if (clients[i] == network.LocalClientId) continue;
+				ulong rtt = transport.GetCurrentRtt(clients[i]);
+				if (rtt == 0) continue; // Transport has no measurement yet.
+				totalRtt += rtt;
+				samples++;
+			}
+		}
+		else
+		{
+			totalRtt = transport.GetCurrentRtt(NetworkManager.ServerClientId);
+			if (totalRtt > 0) samples = 1;
+		}
+		if (samples == 0)
+		{
+			pingText.text = "--";
+			pingText.color = Color.gray;
+			return;
+		}
+		ulong ping = (ulong)Math.Round(totalRtt / samples);
+		pingText.text = ping.ToString();
+		pingText.color = ping < 80 ? Color.green : ping < 140 ? Color.yellow : Color.red;
 	}
 	void FixedUpdate()
 	{

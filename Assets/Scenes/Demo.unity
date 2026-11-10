@@ -8152,6 +8152,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 318391342}
+  - {fileID: 177918040}
   - {fileID: 592549295}
   m_Father: {fileID: 1691249998}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -25276,6 +25277,99 @@ CanvasRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 173998492}
+  m_CullTransparentMesh: 1
+--- !u!1 &177918039
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 177918040}
+  - component: {fileID: 177918044}
+  - component: {fileID: 177918043}
+  - component: {fileID: 177918041}
+  m_Layer: 5
+  m_Name: pingText
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!224 &177918040
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 177918039}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 1
+  m_Children: []
+  m_Father: {fileID: 61066525}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 1, y: 1}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: -133.37964, y: 0}
+  m_SizeDelta: {x: 266.7531, y: 92.2871}
+  m_Pivot: {x: 0.5, y: 1}
+--- !u!114 &177918041
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 177918039}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a6e6fb3b87a87f49b993861f3d1963b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  newPosY: 0
+--- !u!114 &177918043
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 177918039}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 0, g: 1, b: 0, a: 1}
+  m_RaycastTarget: 0
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_FontData:
+    m_Font: {fileID: 12800000, guid: eee94c16e9a1c88479aee1a85c61b9cb, type: 3}
+    m_FontSize: 46
+    m_FontStyle: 0
+    m_BestFit: 0
+    m_MinSize: 1
+    m_MaxSize: 102
+    m_Alignment: 2
+    m_AlignByGeometry: 1
+    m_RichText: 1
+    m_HorizontalOverflow: 1
+    m_VerticalOverflow: 1
+    m_LineSpacing: 1
+  m_Text: 300
+--- !u!222 &177918044
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 177918039}
   m_CullTransparentMesh: 1
 --- !u!1 &178083571
 GameObject:
@@ -60601,7 +60695,7 @@ MonoBehaviour:
   tireMarkHeight: 0.1
   tireFadeTime: 10
   networkManager: {fileID: 158986995}
-  hud: {fileID: 1691249999}
+  hud: {fileID: 7617160848672750784}
   editorPanel: {fileID: 1773213221}
   cam: {fileID: 61044927}
   countDownSeq: {fileID: 479921783}
@@ -197470,14 +197564,13 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1691249998}
-  - component: {fileID: 1691249999}
   m_Layer: 5
-  m_Name: SGPHUD
+  m_Name: HUDcontainer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1691249998
 RectTransform:
   m_ObjectHideFlags: 0
@@ -197490,9 +197583,9 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 61066525}
   - {fileID: 1376600231}
   - {fileID: 166961356782136681}
+  - {fileID: 61066525}
   m_Father: {fileID: 477576721}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -197500,130 +197593,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1691249999
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1691249997}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ca65c3f7d1eec754ab0168ddce4cf55c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  container: {fileID: 166961356782136681}
-  endraceTimer: {fileID: 1849952702}
-  AEROText: {fileID: 596315752}
-  DRIFTText: {fileID: 861643434}
-  AERODisplay: {fileID: 2892101149103374633}
-  progressDisplay: {fileID: 6956207359772857828}
-  positionDisplay: {fileID: 798159098}
-  TIMEDisplay: {fileID: 1355634852}
-  RECDisplay: {fileID: 91280370}
-  RECScoreDisplay: {fileID: 1604080627}
-  LAPDisplay: {fileID: 1150871546}
-  resultsMenuView: {fileID: 150527039}
-  infoText: {fileID: 318391346}
-  componentPanel: {fileID: 539817468}
-  lapRecordSeq: {fileID: 755092969}
-  ptsAnim: {fileID: 592549296}
-  raceManager: {fileID: 477576723}
-  gearsSprites:
-  - {fileID: -1351531801, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
-  - {fileID: 64054743, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
-  - {fileID: 395094187, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
-  - {fileID: -456110046, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
-  - {fileID: 139936217, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
-  - {fileID: -625296948, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
-  - {fileID: -1223708422, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
-  - {fileID: 1221793977, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
-  - {fileID: -1178902668, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
-  - {fileID: 225571867, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
-  currentGear: {fileID: 1688426470}
-  rpmIndicator: {fileID: 2055439452}
-  batteryLack: {fileID: 900883661}
-  speedoSprites:
-  - {fileID: 1022970062, guid: 6205c83abded04348bf99859e4f9eee9, type: 3}
-  - {fileID: -1836650192, guid: 6205c83abded04348bf99859e4f9eee9, type: 3}
-  - {fileID: 1272151748, guid: 6205c83abded04348bf99859e4f9eee9, type: 3}
-  - {fileID: 10466821, guid: 6205c83abded04348bf99859e4f9eee9, type: 3}
-  - {fileID: -368451287, guid: 6205c83abded04348bf99859e4f9eee9, type: 3}
-  - {fileID: -591823420, guid: 6205c83abded04348bf99859e4f9eee9, type: 3}
-  - {fileID: 1383696448, guid: 6205c83abded04348bf99859e4f9eee9, type: 3}
-  - {fileID: -815555598, guid: 6205c83abded04348bf99859e4f9eee9, type: 3}
-  - {fileID: -1082510007, guid: 6205c83abded04348bf99859e4f9eee9, type: 3}
-  - {fileID: -1564026335, guid: 6205c83abded04348bf99859e4f9eee9, type: 3}
-  SpeedoRows:
-  - {fileID: 721270889}
-  - {fileID: 1103895579}
-  - {fileID: 1995208006}
-  positionsSprites:
-  - {fileID: -2050689359, guid: c11ff98d1d5d89444b1bf31f5067b94b, type: 3}
-  - {fileID: 1807912993, guid: f7e63ebf7764fd246b6cad1b90593fcc, type: 3}
-  - {fileID: 447345384, guid: f7e63ebf7764fd246b6cad1b90593fcc, type: 3}
-  - {fileID: 1927119911, guid: f7e63ebf7764fd246b6cad1b90593fcc, type: 3}
-  - {fileID: 1818544239, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
-  - {fileID: -329834168, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
-  - {fileID: 1751053194, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
-  - {fileID: 820905811, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
-  - {fileID: 207429927, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
-  - {fileID: -2050689359, guid: c11ff98d1d5d89444b1bf31f5067b94b, type: 3}
-  - {fileID: -1211246704, guid: c11ff98d1d5d89444b1bf31f5067b94b, type: 3}
-  positionImage: {fileID: 798159100}
-  positionSuffixImage: {fileID: 10435578}
-  lapRollers:
-  - {fileID: 109986575}
-  - {fileID: 1755449638}
-  - {fileID: 1806795470}
-  - {fileID: 2071516904}
-  - {fileID: 812369210}
-  recRollers:
-  - {fileID: 587259069}
-  - {fileID: 371868363}
-  - {fileID: 364807328}
-  - {fileID: 1093465899}
-  - {fileID: 604124070}
-  recScoreRollers:
-  - {fileID: 422301064}
-  - {fileID: 782461624}
-  - {fileID: 1658545576}
-  - {fileID: 484584070}
-  - {fileID: 362042747}
-  - {fileID: 311150574}
-  lapNoRollers:
-  - {fileID: 606800683}
-  - {fileID: 1415092497}
-  - {fileID: 190315406}
-  - {fileID: 293657921}
-  starsParent: {fileID: 1330237135}
-  mainRollers:
-  - {fileID: 8913433}
-  - {fileID: 1188074772}
-  - {fileID: 169127843}
-  - {fileID: 1638036590}
-  - {fileID: 1612511521}
-  - {fileID: 2098602948}
-  - {fileID: 525238885}
-  blinker: {fileID: 462224734}
-  progressBar: {fileID: 915818307}
-  hudPos0: 0
-  hudHeight: 0
-  frequency: 4
-  halflife: 0.2
-  spring_maxV: 1
-  SponserSprites:
-  - {fileID: -786538740, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
-  - {fileID: 535505933, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
-  - {fileID: 1414924242, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
-  - {fileID: 959201065, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
-  - {fileID: -737678224, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
-  - {fileID: 1173726267, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
-  - {fileID: 525499074, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
-  pauseMenu: {fileID: 1388013294}
-  StuntInfo: {fileID: 1376600230}
-  dimStuntTableTimer: -1
-  carProgressIconPrefab: {fileID: 8860600783728403238, guid: 8baa30e1cc85c3e4aa4f00fce4dd5436, type: 3}
 --- !u!1 &1691394378
 GameObject:
   m_ObjectHideFlags: 0
@@ -256035,13 +256004,139 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 166961356782136681}
+  - component: {fileID: 7617160848672750784}
   m_Layer: 5
-  m_Name: container
+  m_Name: SGP_HUD
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
+--- !u!114 &7617160848672750784
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7617160848672750783}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca65c3f7d1eec754ab0168ddce4cf55c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  container: {fileID: 166961356782136681}
+  endraceTimer: {fileID: 1849952702}
+  AEROText: {fileID: 596315752}
+  DRIFTText: {fileID: 861643434}
+  AERODisplay: {fileID: 2892101149103374633}
+  progressDisplay: {fileID: 6956207359772857828}
+  positionDisplay: {fileID: 798159098}
+  TIMEDisplay: {fileID: 1355634852}
+  RECDisplay: {fileID: 91280370}
+  RECScoreDisplay: {fileID: 1604080627}
+  LAPDisplay: {fileID: 1150871546}
+  resultsMenuView: {fileID: 150527039}
+  infoText: {fileID: 318391346}
+  pingText: {fileID: 177918043}
+  componentPanel: {fileID: 539817468}
+  lapRecordSeq: {fileID: 755092969}
+  ptsAnim: {fileID: 592549296}
+  raceManager: {fileID: 477576723}
+  gearsSprites:
+  - {fileID: -1351531801, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
+  - {fileID: 64054743, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
+  - {fileID: 395094187, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
+  - {fileID: -456110046, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
+  - {fileID: 139936217, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
+  - {fileID: -625296948, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
+  - {fileID: -1223708422, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
+  - {fileID: 1221793977, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
+  - {fileID: -1178902668, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
+  - {fileID: 225571867, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
+  currentGear: {fileID: 1688426470}
+  rpmIndicator: {fileID: 2055439452}
+  batteryLack: {fileID: 900883661}
+  speedoSprites:
+  - {fileID: 1022970062, guid: 6205c83abded04348bf99859e4f9eee9, type: 3}
+  - {fileID: -1836650192, guid: 6205c83abded04348bf99859e4f9eee9, type: 3}
+  - {fileID: 1272151748, guid: 6205c83abded04348bf99859e4f9eee9, type: 3}
+  - {fileID: 10466821, guid: 6205c83abded04348bf99859e4f9eee9, type: 3}
+  - {fileID: -368451287, guid: 6205c83abded04348bf99859e4f9eee9, type: 3}
+  - {fileID: -591823420, guid: 6205c83abded04348bf99859e4f9eee9, type: 3}
+  - {fileID: 1383696448, guid: 6205c83abded04348bf99859e4f9eee9, type: 3}
+  - {fileID: -815555598, guid: 6205c83abded04348bf99859e4f9eee9, type: 3}
+  - {fileID: -1082510007, guid: 6205c83abded04348bf99859e4f9eee9, type: 3}
+  - {fileID: -1564026335, guid: 6205c83abded04348bf99859e4f9eee9, type: 3}
+  SpeedoRows:
+  - {fileID: 721270889}
+  - {fileID: 1103895579}
+  - {fileID: 1995208006}
+  positionsSprites:
+  - {fileID: -2050689359, guid: c11ff98d1d5d89444b1bf31f5067b94b, type: 3}
+  - {fileID: 1807912993, guid: f7e63ebf7764fd246b6cad1b90593fcc, type: 3}
+  - {fileID: 447345384, guid: f7e63ebf7764fd246b6cad1b90593fcc, type: 3}
+  - {fileID: 1927119911, guid: f7e63ebf7764fd246b6cad1b90593fcc, type: 3}
+  - {fileID: 1818544239, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
+  - {fileID: -329834168, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
+  - {fileID: 1751053194, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
+  - {fileID: 820905811, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
+  - {fileID: 207429927, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
+  - {fileID: -2050689359, guid: c11ff98d1d5d89444b1bf31f5067b94b, type: 3}
+  - {fileID: -1211246704, guid: c11ff98d1d5d89444b1bf31f5067b94b, type: 3}
+  positionImage: {fileID: 798159100}
+  positionSuffixImage: {fileID: 10435578}
+  lapRollers:
+  - {fileID: 109986575}
+  - {fileID: 1755449638}
+  - {fileID: 1806795470}
+  - {fileID: 2071516904}
+  - {fileID: 812369210}
+  recRollers:
+  - {fileID: 587259069}
+  - {fileID: 371868363}
+  - {fileID: 364807328}
+  - {fileID: 1093465899}
+  - {fileID: 604124070}
+  recScoreRollers:
+  - {fileID: 422301064}
+  - {fileID: 782461624}
+  - {fileID: 1658545576}
+  - {fileID: 484584070}
+  - {fileID: 362042747}
+  - {fileID: 311150574}
+  lapNoRollers:
+  - {fileID: 606800683}
+  - {fileID: 1415092497}
+  - {fileID: 190315406}
+  - {fileID: 293657921}
+  starsParent: {fileID: 1330237135}
+  mainRollers:
+  - {fileID: 8913433}
+  - {fileID: 1188074772}
+  - {fileID: 169127843}
+  - {fileID: 1638036590}
+  - {fileID: 1612511521}
+  - {fileID: 2098602948}
+  - {fileID: 525238885}
+  blinker: {fileID: 462224734}
+  progressBar: {fileID: 915818307}
+  hudPos0: 0
+  hudHeight: 0
+  frequency: 4
+  halflife: 0.2
+  spring_maxV: 1
+  SponserSprites:
+  - {fileID: -786538740, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
+  - {fileID: 535505933, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
+  - {fileID: 1414924242, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
+  - {fileID: 959201065, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
+  - {fileID: -737678224, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
+  - {fileID: 1173726267, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
+  - {fileID: 525499074, guid: d30465db0ff60044392e9e43b9e4e4c1, type: 3}
+  pauseMenu: {fileID: 1388013294}
+  StuntInfo: {fileID: 1376600230}
+  dimStuntTableTimer: -1
+  carProgressIconPrefab: {fileID: 8860600783728403238, guid: 8baa30e1cc85c3e4aa4f00fce4dd5436, type: 3}
 --- !u!1001 &7699947083931278856
 PrefabInstance:
   m_ObjectHideFlags: 0

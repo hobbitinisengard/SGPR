@@ -15,6 +15,9 @@ public sealed class SplitScreenRace : MonoBehaviour
 	CameraControl[] cameras;
 	SGP_HUD[] huds;
 	CanvasGroup[] hudVisibility;
+	CanvasGroup[] spectatorInfoVisibility;
+	bool[] originalInfoIgnoreParent;
+	int[] previousSpectatorDirection;
 	readonly List<GameObject> ownedObjects = new();
 	readonly List<(Transform child, Transform parent, int sibling)> sharedHudElements = new();
 	RectTransform[] viewports;
@@ -63,6 +66,9 @@ public sealed class SplitScreenRace : MonoBehaviour
 		int count = F.I.splitScreenPlayers.Count;
 		Cars = new VehicleParent[count]; cameras = new CameraControl[count]; huds = new SGP_HUD[count];
 		hudVisibility = new CanvasGroup[count];
+		spectatorInfoVisibility = new CanvasGroup[count];
+		originalInfoIgnoreParent = new bool[count];
+		previousSpectatorDirection = new int[count];
 		var menuInput = GameObject.Find("Canvas").GetComponent<PlayerInput>();
 		F.I.playerInputs = new PlayerInput[MaxPlayers];
 		cameraRect = race.cam.GetComponent<Camera>().rect;
@@ -166,6 +172,13 @@ public sealed class SplitScreenRace : MonoBehaviour
 		if (index == 0) race.playerCar = car;
 		huds[index].gameObject.SetActive(true); // Initialize cloned InfoText/Awake before Connect resets it.
 		cameras[index].Connect(car); huds[index].Connect(car);
+		var info = huds[index].infoText;
+		if (info)
+		{
+			var group = info.GetComponent<CanvasGroup>() ?? info.gameObject.AddComponent<CanvasGroup>();
+			spectatorInfoVisibility[index] = group;
+			originalInfoIgnoreParent[index] = group.ignoreParentGroups;
+		}
 	}
 	public void AddProgress(VehicleParent car) { if (huds != null) foreach (var hud in huds) hud.AddToProgressBar(car); }
 	public void BroadcastRaceMessage(Message message)
@@ -184,7 +197,19 @@ public sealed class SplitScreenRace : MonoBehaviour
 			if (car.originalVehiclePhysics == null) return;
 		// Hide visuals without stopping the shared finish countdown hosted by HUD 1P.
 		for (int i = 0; i < Cars.Length; i++)
-			if (!Cars[i].raceBox.enabled) hudVisibility[i].alpha = 0;
+		{
+			bool finished = !Cars[i].raceBox.enabled;
+			hudVisibility[i].alpha = finished ? 0 : 1;
+			// Keep only the info text visible over a finished player's hidden HUD.
+			if (spectatorInfoVisibility[i])
+				spectatorInfoVisibility[i].ignoreParentGroups = finished || originalInfoIgnoreParent[i];
+			// Use the finished player's own input set, not the global menu action.
+			float move = Cars[i].basicInput.Action(cameras[i].moveRef)?.ReadValue<Vector2>().x ?? 0;
+			int direction = Mathf.Abs(move) > .5f ? (move > 0 ? 1 : -1) : 0;
+			if (finished && direction != 0 && direction != previousSpectatorDirection[i])
+				cameras[i].SwitchSpectatorTarget(direction, huds[i]);
+			previousSpectatorDirection[i] = direction;
+		}
 		if (Cars.Any(car => car.raceBox.enabled)) return;
 		ending = true;
 		race.hud.endraceTimer.gameObject.SetActive(false);
@@ -218,6 +243,9 @@ public sealed class SplitScreenRace : MonoBehaviour
 	public void Cleanup()
 	{
 		if (huds == null) { if (I == this) I = null; return; }
+		if (spectatorInfoVisibility != null)
+			for (int i = 0; i < spectatorInfoVisibility.Length; i++)
+				if (spectatorInfoVisibility[i]) spectatorInfoVisibility[i].ignoreParentGroups = originalInfoIgnoreParent[i];
 		if (race && hudParent)
 		{
 			foreach (var hud in huds) if (hud) { hud.Disconnect(); hud.gameObject.SetActive(false); }
@@ -232,6 +260,7 @@ public sealed class SplitScreenRace : MonoBehaviour
 		foreach (var obj in ownedObjects) if (obj) { obj.SetActive(false); Destroy(obj); }
 		F.I.playerInputs = new PlayerInput[MaxPlayers];
 		ownedObjects.Clear(); sharedHudElements.Clear(); Cars = Array.Empty<VehicleParent>(); huds = null; cameras = null; hudVisibility = null;
+		spectatorInfoVisibility = null; originalInfoIgnoreParent = null; previousSpectatorDirection = null;
 		if (I == this) I = null;
 	}
 }

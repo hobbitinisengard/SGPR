@@ -17,4 +17,4 @@ try {
     # This is an interactive game launched by the user; use its normal window.
     Start-Process -FilePath $Executable -ArgumentList @('--root', ('"' + $AssetsRoot + '"')) -WorkingDirectory $AssetsRoot -Wait
 } finally { $env:SGPR_COMPARISON_DIR = $previous }
-Write-Host "CSV: $OutputDirectory\original-*\camera.csv oraz tyres.csv"
+Write-Host "CSV: $OutputDirectory\original-*\acceleration.csv, camera.csv oraz tyres.csv"

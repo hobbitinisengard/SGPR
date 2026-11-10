@@ -321,15 +321,20 @@ namespace RVP
 			newCar.sponsor = F.RandomLivery();
 			newCar.name = F.I.playerData.playerName;
 		}
-		public void ActivateEndraceTimer()
+		public void ActivateEndraceTimer(VehicleParent winner)
 		{
+			// Remote lap triggers are predictions, not confirmation of a finish.
+			if (!winner || !winner.Owner || !winner.raceBox || winner.raceBox.enabled ||
+				winner.raceBox.curLap < F.I.s_laps + 1 || F.I.s_laps <= 0 || CountDownSeq.Countdown > 0)
+				return;
 			if (F.I.gameMode == GameMode.Splitscreen) hud.endraceTimer.gameObject.SetActive(true);
 			if (F.I.gameMode == GameMode.Multiplayer)
-				Online.I.CountdownTillForceEveryoneToResultsRpc();
+				Online.I.CountdownTillForceEveryoneToResultsRpc(winner.OwnerClientId, F.I.raceStartDate.Ticks);
 		}
 		public void StartRace()
 		{
 			finishSequenceStarted = false;
+			if (F.I.gameMode == GameMode.Multiplayer && Online.I) Online.I.ResetEndraceCountdown();
 			hud.endraceTimer.gameObject.SetActive(false);
 			ResultsView.Clear();
 			F.I.raceStartDate = DateTime.UtcNow.AddSeconds(5);
@@ -685,6 +690,15 @@ namespace RVP
 			}
 		}
 		public void TimeForRaceEnded()
+		{
+			if (F.I.gameMode == GameMode.Multiplayer && F.I.s_raceType == RaceType.Race)
+			{
+				Online.I.EndRaceByTimeout();
+				return;
+			}
+			StopRaceAfterTimeout();
+		}
+		public void StopRaceAfterTimeout()
 		{
 			for (int i = 0; i < F.I.s_cars.Count; ++i)
 			{

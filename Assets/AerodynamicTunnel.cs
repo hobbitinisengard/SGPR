@@ -14,7 +14,7 @@ public class AerodynamicTunnel : MonoBehaviour
 
 	void Update()
 	{
-		range = vp.velMag;
+		range = float.IsNaN(vp.velMag) || float.IsInfinity(vp.velMag) ? 0 : Mathf.Max(0, vp.velMag);
 		box.center = new Vector3(0, -range/2, 0);
 		var size = box.size;
 		size.y = range;

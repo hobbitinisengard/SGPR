@@ -223,6 +223,11 @@ namespace RVP
 		void FixedUpdate()
 		{
 			if (!vp || !targetBody) return;
+			if (!OriginalVehiclePhysics.IsFinite(vp.tr.position) || !OriginalVehiclePhysics.IsFinite(vp.tr.rotation)) return;
+			if (!OriginalVehiclePhysics.IsFinite(tr.position) || !OriginalVehiclePhysics.IsFinite(tr.rotation) ||
+				!OriginalVehiclePhysics.IsFinite(cameraPosition) || !OriginalVehiclePhysics.IsFinite(cameraVelocity) ||
+				!OriginalVehiclePhysics.IsFinite(cameraTarget) || !OriginalVehiclePhysics.IsFinite(drift))
+				ResetFollowCamera();
 			if (mode == Mode.Replay) { ReplayCam(); return; }
 			bool resetting = vp.ghost && vp.ghost.justResetted;
 			if (!followInitialized || (resetting && !wasResetting))
@@ -415,13 +420,22 @@ namespace RVP
 		{
 			if (F.I.gameMode != GameMode.Multiplayer || RaceManager.I.playerCar == null ||
 				RaceManager.I.playerCar.raceBox.enabled || F.I.chat.texting || !vp) return;
-			float move = moveRef.action.ReadValue<Vector2>().x;
-			if (Mathf.Abs(move) <= 0.5f || F.I.s_cars.Count == 0) return;
-			int index = F.I.s_cars.FindIndex(c => c.transform.name == vp.name);
-			index = F.Wraparound(index + (move > 0 ? 1 : -1), 0, F.I.s_cars.Count - 1);
-			if (F.I.s_cars[index] == vp) return;
-			Connect(F.I.s_cars[index], Mode.Replay);
-			RaceManager.I.hud.infoText.AddMessage(new Message(vp.transform.name, BottomInfoType.NEW_CAMERA_TARGET));
+			SwitchSpectatorTarget(moveRef.action.ReadValue<Vector2>().x, RaceManager.I.hud);
+		}
+		public void SwitchSpectatorTarget(float move, SGP_HUD viewerHud)
+		{
+			if (!vp || Mathf.Abs(move) <= .5f || F.I.s_cars.Count == 0 || F.I.chat.texting) return;
+			int index = F.I.s_cars.IndexOf(vp);
+			for (int attempt = 0; attempt < F.I.s_cars.Count; attempt++)
+			{
+				index = F.Wraparound(index + (move > 0 ? 1 : -1), 0, F.I.s_cars.Count - 1);
+				var target = F.I.s_cars[index];
+				if (!target) continue;
+				if (target == vp) return;
+				Connect(target, Mode.Replay);
+				if (viewerHud && viewerHud.infoText) viewerHud.infoText.ShowCameraTarget(target.name);
+				return;
+			}
 		}
 		public void SetInput(float x, float y)
 		{

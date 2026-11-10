@@ -129,6 +129,8 @@ namespace RVP
 			if (!OriginalVehiclePhysics.IsUsable(config))
 				throw new InvalidOperationException($"Missing or invalid original vehicle physics data: {config?.sourceConfig ?? carConfig?.name}");
 			originalVehiclePhysics = new OriginalVehiclePhysics(this, config);
+			if (F.I.gameMode == GameMode.Multiplayer && !GetComponent<NetworkVehicleSyncGuard>())
+				gameObject.AddComponent<NetworkVehicleSyncGuard>();
 		}
 		public void RefreshOriginalPhysicsParameters()
 		{
@@ -791,8 +793,6 @@ namespace RVP
 			// Debug.DrawRay(norm.position, norm.right, Color.red);
 		}
 		bool remoteTrackResetPending;
-		Vector3 remoteTrackResetPosition;
-		float remoteTrackResetDeadline;
 		public void PublishTrackResetTeleport()
 		{
 			if (!F.I || F.I.gameMode != GameMode.Multiplayer || !IsSpawned || !IsOwner) return;
@@ -809,16 +809,21 @@ namespace RVP
 		[Rpc(SendTo.Everyone)]
 		void TrackResetTeleportRpc(Vector3 position, Quaternion rotation)
 		{
-			if (IsOwner) return;
+			if (IsOwner || !OriginalVehiclePhysics.IsFinite(position) || !OriginalVehiclePhysics.IsFinite(rotation)) return;
+			// The reset RPC is itself an authoritative discontinuity. Discard the
+			// pre-reset interpolation history before applying its pose immediately.
+			var sync = GetComponent<Smooth.SmoothSyncNetcode>();
+			if (sync) { sync.clearBuffer(); sync.stopEasing(); }
+			GetComponent<NetworkVehicleSyncGuard>()?.ResetReceived();
+			ActiveRailbar?.Release(this);
+			tr.SetPositionAndRotation(position, rotation.normalized);
+			rb.position = position;
+			rb.rotation = rotation.normalized;
 			remoteTrackResetPending = true;
-			remoteTrackResetPosition = position;
-			remoteTrackResetDeadline = Time.unscaledTime + 2f;
-			// Without a synchronizer there is no buffered teleport to wait for.
-			if (!GetComponent<Smooth.SmoothSyncNetcode>())
+			if (!rb.isKinematic && originalVehiclePhysics != null)
 			{
-				tr.SetPositionAndRotation(position, rotation);
-				rb.position = position;
-				rb.rotation = rotation;
+				originalVehiclePhysics.ResetToNeutral();
+				originalVehiclePhysics.ResetSourceProbeHistory();
 			}
 			foreach (Wheel wheel in wheels)
 				if (wheel) wheel.GetComponent<TireMarkCreate>()?.EndMark();
@@ -827,13 +832,7 @@ namespace RVP
 		{
 			if (!remoteTrackResetPending) return true;
 			if (rb.isKinematic || originalVehiclePhysics == null) return false;
-			// The reset RPC and the timestamped Smooth Sync teleport can arrive
-			// in either order. Do not sweep old probes until the pose has jumped.
-			rb.linearVelocity = Vector3.zero;
-			rb.angularVelocity = Vector3.zero;
-			if ((rb.position - remoteTrackResetPosition).sqrMagnitude > 0.0625f &&
-				Time.unscaledTime < remoteTrackResetDeadline)
-				return false;
+			// Re-seed after the teleport without waiting on a second network message.
 			remoteTrackResetPending = false;
 			ActiveRailbar?.Release(this);
 			originalVehiclePhysics.ResetToNeutral();
@@ -844,6 +843,7 @@ namespace RVP
 		public void FixedUpdate()
 		{
 			if (!PrepareRemoteTrackReset()) return;
+			if (originalVehiclePhysics != null && !originalVehiclePhysics.ValidateMotion()) return;
 			// Source contacts do not produce OnCollisionExit. Expire impacts unless
 			// another impact or OnCollisionStay refreshes their timestamp.
 			if (crashing && Time.time - lastCrashingTime > 0.1f)
@@ -868,11 +868,15 @@ namespace RVP
 			rightDot = Vector3.Dot(rightDir, RaceManager.worldUpDir);
 			upDot = Vector3.Dot(upDir, RaceManager.worldUpDir);
 			worldCOM = rb.worldCenterOfMass;
-			norm.transform.SetPositionAndRotation(tr.position, Quaternion.LookRotation(reallyGroundedWheels == 0 ? upDir : wheelNormalAverage, forwardDir));
+			Vector3 surfaceNormal = reallyGroundedWheels == 0 ? upDir : wheelNormalAverage;
+			if (!OriginalVehiclePhysics.IsFinite(surfaceNormal) || surfaceNormal.sqrMagnitude < .000001f)
+				surfaceNormal = upDir;
+			norm.transform.SetPositionAndRotation(tr.position, Quaternion.LookRotation(surfaceNormal, forwardDir));
 			if (originalVehiclePhysics != null && !ActiveRailbar)
 			{
 				using (OriginalPhysicsStepMarker.Auto())
 					originalVehiclePhysics.Step();
+				if (!originalVehiclePhysics.ValidateMotion()) return;
 			}
 			if (F.I.gameMode == GameMode.Multiplayer && IsSpawned && IsOwner)
 			{

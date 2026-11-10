@@ -91,6 +91,12 @@ public class InfoText : MonoBehaviour
 		showing = false;
 	}
 	
+	public void ShowCameraTarget(string playerName)
+	{
+		// A new viewing target supersedes queued race events immediately.
+		Reset();
+		AddMessage(new Message(playerName, BottomInfoType.NEW_CAMERA_TARGET));
+	}
 	public void AddMessage(Message message)
 	{
         EnsureInitialized();
