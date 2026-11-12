@@ -28,7 +28,7 @@ public class Voting : NetworkBehaviour
 	public void VoteForRestart()
 	{
 		if (ServerC.I.AmHost)
-			VoteForRestartPassedRpc();
+			VoteForRestartPassedRpc(System.DateTime.UtcNow.AddSeconds(CountDownSeq.startRaceCountdownSecs).Ticks);
 		else
 			VoteForRpc(ServerC.I.PlayerMe.Id, VoteFor.RESTART);
 	}
@@ -70,7 +70,7 @@ public class Voting : NetworkBehaviour
 		{
 			if (voteFor == VoteFor.RESTART)
 			{
-				VoteForRestartPassedRpc();
+				VoteForRestartPassedRpc(System.DateTime.UtcNow.AddSeconds(CountDownSeq.startRaceCountdownSecs).Ticks);
 			}
 			if (voteFor == VoteFor.END)
 			{
@@ -100,10 +100,9 @@ public class Voting : NetworkBehaviour
 		playersThatVoted.Clear();
 	}
 	[Rpc(SendTo.Everyone)]
-	void VoteForRestartPassedRpc()
+	void VoteForRestartPassedRpc(long raceStartTicks)
 	{
-		RaceManager.I.RemoveCars();
-		RaceManager.I.StartRace();
+		RaceManager.I.RestartMultiplayerRace(new System.DateTime(raceStartTicks, System.DateTimeKind.Utc));
 	}
 
 	public void EndForEveryone()

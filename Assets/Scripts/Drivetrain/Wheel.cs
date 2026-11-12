@@ -21,6 +21,9 @@ namespace RVP
 		MeshFilter[] visualWheelMeshes;
 		bool originalTireRadiusChecked;
 		float airTime;
+		bool launchParticlesArmed;
+		float launchParticleTime = 1f;
+		float launchParticleAccumulator;
 		float initialTirePressure;
 
 		[Header("Original tyre telemetry")]
@@ -96,6 +99,26 @@ namespace RVP
 			if (!susParent)
 				susParent = tr.parent ? tr.parent.GetComponent<Suspension>() : null;
 			travelDist = susParent ? susParent.targetCompression : 1;
+			// Most car prefabs leave the air reference empty; resolve the named child once.
+			if (Application.isPlaying)
+			{
+				if (!airGreenParticleSystem)
+					foreach (ParticleSystem particles in GetComponentsInChildren<ParticleSystem>(true))
+						if (string.Equals(particles.name, "air", StringComparison.OrdinalIgnoreCase) ||
+							string.Equals(particles.name, "tireair", StringComparison.OrdinalIgnoreCase))
+						{
+							airGreenParticleSystem = particles;
+							break;
+						}
+				if (airGreenParticleSystem)
+				{
+					var main = airGreenParticleSystem.main;
+					main.simulationSpace = ParticleSystemSimulationSpace.World;
+					var emission = airGreenParticleSystem.emission;
+					emission.enabled = false;
+					airGreenParticleSystem.Stop(false, ParticleSystemStopBehavior.StopEmittingAndClear);
+				}
+			}
 			initialTirePressure = tirePressure;
 			canDetach = detachForce < Mathf.Infinity && Application.isPlaying;
 
@@ -212,14 +235,56 @@ namespace RVP
 				return;
 			}
 
-			if (airGreenParticleSystem)
+			UpdateLaunchParticles();
+		}
+
+		void UpdateLaunchParticles()
+		{
+			if (!airGreenParticleSystem || !vp || vp.originalVehiclePhysics == null) return;
+			if (!connected || vp.ActiveRailbar || rb.isKinematic || CountDownSeq.Countdown > 0)
 			{
-				bool shouldPlay = !grounded && vp && vp.rb.linearVelocity.y < 0 && !vp.colliding;
-				if (shouldPlay && !airGreenParticleSystem.isPlaying)
-					airGreenParticleSystem.Play();
-				else if (!shouldPlay && airGreenParticleSystem.isPlaying)
-					airGreenParticleSystem.Stop();
+				launchParticlesArmed = false;
+				launchParticleTime = 1f;
+				launchParticleAccumulator = 0;
+				return;
 			}
+			bool supported = false;
+			for (int i = 0; i < vp.wheels.Length; i++)
+			{
+				bool contact = vp.originalVehiclePhysics.HasWheelGroundContact(i);
+				if (vp.UsesRemoteWheelPresentation)
+					vp.GetRemoteTireEffects(i, out contact, out _, out _);
+				supported |= contact;
+			}
+			if (supported)
+			{
+				launchParticlesArmed = true;
+				launchParticleTime = 0;
+				launchParticleAccumulator = 0;
+				return;
+			}
+			if (!launchParticlesArmed || isFront) return;
+			// Original emit_launch_wheel_particles: rear pair, every other 60 Hz
+			// tick, for roughly the first second after losing ground contact.
+			float duration = Mathf.Min(Time.deltaTime, Mathf.Max(0, 1f - launchParticleTime));
+			launchParticleTime += Time.deltaTime;
+			if (vp.colliding) return;
+			launchParticleAccumulator += duration * 30f;
+			int count = Mathf.FloorToInt(launchParticleAccumulator);
+			if (count > 0)
+			{
+				launchParticleAccumulator -= count;
+				airGreenParticleSystem.Emit(count);
+			}
+		}
+
+		void OnDisable()
+		{
+			launchParticlesArmed = false;
+			launchParticleTime = 1f;
+			launchParticleAccumulator = 0;
+			if (Application.isPlaying && airGreenParticleSystem)
+				airGreenParticleSystem.Stop(false, ParticleSystemStopBehavior.StopEmittingAndClear);
 		}
 
 		internal void SetOriginalContact(bool sourceGrounded, bool sourceGroundedReally,

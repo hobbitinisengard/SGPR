@@ -274,6 +274,8 @@ namespace RVP
 		}
 		private void OnDisable()
 		{
+			StopRaceSequences();
+			RestartInProgress = false;
 			GetComponent<SplitScreenRace>()?.Cleanup();
 			playerCar = null;
 			F.I.raceStartDate = DateTime.MinValue;
@@ -331,18 +333,59 @@ namespace RVP
 			if (F.I.gameMode == GameMode.Multiplayer)
 				Online.I.CountdownTillForceEveryoneToResultsRpc(winner.OwnerClientId, F.I.raceStartDate.Ticks);
 		}
+		Coroutine startRaceRoutine;
+		Coroutine finishRaceRoutine;
+		Coroutine spectatorRoutine;
+		void StopRaceSequences()
+		{
+			// LoadTrack also runs on this component. Cancel only race sequences.
+			if (startRaceRoutine != null) StopCoroutine(startRaceRoutine);
+			if (finishRaceRoutine != null) StopCoroutine(finishRaceRoutine);
+			if (spectatorRoutine != null) StopCoroutine(spectatorRoutine);
+			startRaceRoutine = finishRaceRoutine = spectatorRoutine = null;
+		}
+		public bool RestartInProgress { get; private set; }
+		public void RestartMultiplayerRace(DateTime raceStartDate)
+		{
+			// Cancel FinishSeq before removing cars: its delayed continuation can
+			// otherwise reopen ResultsSeq or leave the new race for the menu.
+			StopRaceSequences();
+			RestartInProgress = true;
+			resultsSeq.gameObject.SetActive(false);
+			countDownSeq.gameObject.SetActive(false);
+			hud.pauseMenu.gameObject.SetActive(false);
+			Time.timeScale = 1;
+			RemoveCars();
+			BeginRace(raceStartDate);
+		}
 		public void StartRace()
 		{
+			BeginRace(DateTime.UtcNow.AddSeconds(5));
+		}
+		void BeginRace(DateTime raceStartDate)
+		{
+			StopRaceSequences();
+			resultsSeq.gameObject.SetActive(false);
 			finishSequenceStarted = false;
-			if (F.I.gameMode == GameMode.Multiplayer && Online.I) Online.I.ResetEndraceCountdown();
+			if (F.I.gameMode == GameMode.Multiplayer && Online.I)
+			{
+				Online.I.ResetEndraceCountdown();
+				if (Online.I.IsServer) Online.I.raceAlreadyStarted.Value = false;
+			}
 			hud.endraceTimer.gameObject.SetActive(false);
 			ResultsView.Clear();
-			F.I.raceStartDate = DateTime.UtcNow.AddSeconds(5);
+			F.I.raceStartDate = raceStartDate;
 			cam.isSkateCam = F.I.tracks[F.I.s_trackName].isSkatePark;
-			StartCoroutine(StartRaceCoroutine());
+			startRaceRoutine = StartCoroutine(StartRaceCoroutine());
 		}
 		IEnumerator StartRaceCoroutine()
 		{
+			if (RestartInProgress)
+			{
+				// Destroy is deferred. Do not include old cars in the new race results.
+				yield return null;
+				ResultsView.Clear();
+			}
 			bool splitScreen = F.I.gameMode == GameMode.Splitscreen;
 			bool skate = F.I.gameMode == GameMode.Skate;
 			if (skate)
@@ -556,6 +599,7 @@ namespace RVP
 				}
 			} // ---carPlacements
 			SetPitsLayer(F.I.roadLayer);
+			RestartInProgress = false;
 
 			DemoSGPLogo.SetActive(F.I.s_spectator);
 			if (skate || splitScreen)
@@ -566,7 +610,7 @@ namespace RVP
 			yield return null;
 
 			if (F.I.s_spectator)
-				StartCoroutine(SpectatorLoop());
+				spectatorRoutine = StartCoroutine(SpectatorLoop());
 		}
 		public void SpawnCarForPlayer(ulong relayId, string lobbyId, Vector3? position, Quaternion? rotation)
 		{
@@ -597,7 +641,9 @@ namespace RVP
 					currentLeader = car;
 			// Finished cars encode their final position in curLap; exclude that bonus.
 			int leaderLap = currentLeader ? Mathf.Clamp(currentLeader.raceBox.curLap, 0, F.I.s_laps + 1) : 0;
-			int curLap = Mathf.Max(0, leaderLap - 1);
+			// Restart spawns are starting-grid cars, not mid-race joiners.
+			int curLap = RestartInProgress || DateTime.UtcNow < F.I.raceStartDate
+				? 0 : Mathf.Max(0, leaderLap - 1);
 			var newCar = NetworkObject.InstantiateAndSpawn(carModel, networkManager, relayId, position: position.Value, rotation: rotation.Value).GetComponent<VehicleParent>();
 			newCar.sponsor = p.SponsorGet();
 			newCar.name = p.NameGet();
@@ -620,9 +666,9 @@ namespace RVP
 
 		public void PlayFinishSeq()
 		{
-			if (finishSequenceStarted) return;
+			if (finishSequenceStarted || RestartInProgress) return;
 			finishSequenceStarted = true;
-			StartCoroutine(FinishSeq());
+			finishRaceRoutine = StartCoroutine(FinishSeq());
 		}
 		bool finishSequenceStarted;
 		IEnumerator FinishSeq()

@@ -65,8 +65,9 @@ public class Online : NetworkBehaviour
 			F.I.actionHappening != ActionHappening.InRace || !RaceManager.I ||
 			!RaceManager.I.gameObject.activeInHierarchy || !RaceManager.I.hud)
 			return;
+		if (RaceManager.I.RestartInProgress) return;
 		var timer = RaceManager.I.hud.endraceTimer;
-		if (timer) timer.SetNetworkDeadline(endraceDeadline.Value);
+		if (timer) timer.SetNetworkDeadline(DateTime.UtcNow < F.I.raceStartDate ? 0 : endraceDeadline.Value);
 	}
 
 	public void ClientDisconnected(ulong id)

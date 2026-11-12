@@ -659,7 +659,7 @@ namespace RVP
 			bool skate = F.I.gameMode == GameMode.Skate;
 			resetInPlace &= skate;
 			progress = skate ? GetDist(trackPathCreator)
-				: Mathf.Clamp(progress + 5, 0, Mathf.Max(0, (int)(trackPathCreator.path.length - 5)));
+				: Mathf.Clamp(progress + 5, 0, Mathf.Max(0, trackPathCreator.path.length - 5));
 			Vector3 resetPos = resetInPlace ? tr.position : (Vector3)trackPathCreator.path.GetPointAtDistance(progress,
 				skate ? EndOfPathInstruction.Stop : EndOfPathInstruction.Loop);
 			RaycastHit h = default;
@@ -674,21 +674,31 @@ namespace RVP
 				else
 					h.normal = Vector3.up;
 			}
-			else while (progress < Mathf.Max(0, trackPathCreator.path.length - 15) && (
-				 !Physics.Raycast(resetPos + 5 * Vector3.up, Vector3.down, out h, 15, 1 << F.I.roadLayer)
-			|| Vector3.Dot(h.normal, Vector3.up) < -0.5f // while not hit road or hit culled face (backface raycasts are on)
-			|| Vector3.SignedAngle(resetDir, Vector3.up, Vector3.Cross(resetDir, Vector3.up)) < 75
-			|| Physics.CheckSphere(resetPos, 1, 1 << F.I.vehicleTriggerLayer)))
+			else
 			{
-				progress += 10;
-				resetPos = trackPathCreator.path.GetPointAtDistance(progress);
-				resetDir = trackPathCreator.path.GetDirectionAtDistance(progress);
-			}
-
-			if (!skate && progress >= trackPathCreator.path.length)
-			{
-				univProgress = RaceManager.I.racingPaths[1].path.length - 5;
-				progress = (int)(trackPathCreator.path.length - 5);
+				// Never skip a long ramp/loop (or nearly a whole lap) looking for flat road.
+				// Try nearby points ahead first, then return to the road before the accident.
+				float initialDistance = progress;
+				for (int candidate = 0; candidate <= 23; candidate++)
+				{
+					float offset = candidate <= 3 ? candidate * 10f : -(candidate - 3) * 10f;
+					float distance = Mathf.Clamp(initialDistance + offset, 0, trackPathCreator.path.length - 5);
+					Vector3 point = trackPathCreator.path.GetPointAtDistance(distance);
+					Vector3 direction = trackPathCreator.path.GetDirectionAtDistance(distance);
+					if (!Physics.Raycast(point + 5 * Vector3.up, Vector3.down, out var hit, 15,
+						1 << F.I.roadLayer, QueryTriggerInteraction.Ignore) ||
+						(hit.point - point).sqrMagnitude > 5f * 5f ||
+						Vector3.Dot(hit.normal, Vector3.up) < 0.5f ||
+						Mathf.Abs(Vector3.Dot(direction.normalized, Vector3.up)) > 0.26f ||
+						Physics.CheckSphere(hit.point + Vector3.up, 1, 1 << F.I.vehicleTriggerLayer,
+							QueryTriggerInteraction.Collide))
+						continue;
+					progress = distance;
+					resetPos = hit.point;
+					resetDir = direction;
+					h = hit;
+					break;
+				}
 			}
 			dist = progress;
 			if (h.normal.sqrMagnitude < 0.0001f)

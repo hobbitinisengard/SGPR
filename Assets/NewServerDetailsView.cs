@@ -61,12 +61,19 @@ public class NewServerDetailsView : MainMenuView
 		prevViewForbidden = true;
 		OkbuttonText.text = F.I.LocStr("WAIT");
 		F.I.SaveSettingsDataToJson();
-		F.I.s_trackName = F.I.tracks.First(kv => kv.Value.valid && kv.Value.unlocked).Key;
-		string sha = F.I.SHA(F.I.tracksPath + F.I.s_trackName + ".data");
+		// Preserve the multiplayer selector's choice instead of always advertising
+		// the first track in the catalog when a new lobby is created.
+		string trackName = MultiPlayerSelector.I ? MultiPlayerSelector.I.SelectedLobbyTrack : null;
+		if (string.IsNullOrEmpty(trackName) || !F.I.tracks.TryGetValue(trackName, out var track) || !track.valid || !track.unlocked)
+			trackName = F.I.s_trackName;
+		if (string.IsNullOrEmpty(trackName) || !F.I.tracks.TryGetValue(trackName, out track) || !track.valid || !track.unlocked)
+			trackName = F.I.tracks.First(kv => kv.Value.valid && kv.Value.unlocked).Key;
+		F.I.s_trackName = trackName;
+		string sha = F.I.SHA(F.I.tracksPath + trackName + ".data");
 		Debug.Log("CreateLobby start" + F.I.s_trackName + " " + sha);
 		try
 		{
-			if(await server.CreateLobby(F.I.s_trackName, sha))
+			if(await server.CreateLobby(trackName, sha))
 			{
 				prevViewForbidden = false;
 				GoToView(lobbyView);

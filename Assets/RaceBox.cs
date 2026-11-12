@@ -980,6 +980,8 @@ public class RaceBox : Sfxable
 
 	private void OnDisable()
 	{
+		// Removing the previous grid during a restart is not a race finish.
+		if (RaceManager.I && RaceManager.I.RestartInProgress) return;
 		// in case we are disconnecting early
 		if (F.I.gameMode == GameMode.Multiplayer && !ServerC.I.networkManager.IsConnectedClient)
 			return;

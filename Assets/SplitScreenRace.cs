@@ -136,7 +136,9 @@ public sealed class SplitScreenRace : MonoBehaviour
 			var scaler = canvasObject.GetComponent<CanvasScaler>(); scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
 			var originalScaler = hudParent.GetComponentInParent<CanvasScaler>();
 			scaler.referenceResolution = originalScaler ? originalScaler.referenceResolution : new Vector2(1920, 1080);
-			scaler.matchWidthOrHeight = 0.5f;
+			scaler.screenMatchMode = originalScaler ? originalScaler.screenMatchMode : CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+			scaler.matchWidthOrHeight = originalScaler ? originalScaler.matchWidthOrHeight : 1f;
+			scaler.referencePixelsPerUnit = originalScaler ? originalScaler.referencePixelsPerUnit : 100f;
 			var viewport = new GameObject("Viewport", typeof(RectTransform), typeof(RectMask2D), typeof(CanvasGroup)).GetComponent<RectTransform>();
 			hudVisibility[i] = viewport.GetComponent<CanvasGroup>();
 			hudVisibility[i].blocksRaycasts = false;
@@ -175,7 +177,10 @@ public sealed class SplitScreenRace : MonoBehaviour
 		var info = huds[index].infoText;
 		if (info)
 		{
-			var group = info.GetComponent<CanvasGroup>() ?? info.gameObject.AddComponent<CanvasGroup>();
+			var group = info.GetComponent<CanvasGroup>();
+			// Unity can return a missing native component wrapper; ?? does not
+			// use Unity's null check and would skip adding the component.
+			if (!group) group = info.gameObject.AddComponent<CanvasGroup>();
 			spectatorInfoVisibility[index] = group;
 			originalInfoIgnoreParent[index] = group.ignoreParentGroups;
 		}
@@ -230,13 +235,11 @@ public sealed class SplitScreenRace : MonoBehaviour
 			Vector2 available = viewports[i].rect.size;
 			float width = Mathf.Max(.001f, hudLayoutSize.x * Mathf.Abs(hudScale.x));
 			float height = Mathf.Max(.001f, hudLayoutSize.y * Mathf.Abs(hudScale.y));
+			// Fit the complete single-player panel inside this player's viewport.
+			// The limiting dimension determines the largest uniform scale, leaving
+			// symmetric margins instead of stretching or repositioning HUD groups.
 			float scale = Mathf.Min(available.x / width, available.y / height);
-			// Use some of the HUD's empty margins on compact viewports, retaining its layout.
-			float aspect = available.x / Mathf.Max(.001f, available.y);
-			float compactness = Mathf.InverseLerp(16f / 9f, 1f, aspect);
-			scale *= Mathf.Lerp(1f, 1.33f, compactness);
 			var rect = (RectTransform)huds[i].transform;
-			rect.anchoredPosition = Vector2.zero;
 			rect.localScale = hudScale * scale;
 		}
 	}

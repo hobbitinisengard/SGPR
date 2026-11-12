@@ -45,6 +45,7 @@ public class MultiPlayerSelector : TrackSelector
 
 	List<string> AvailableTracksForRandomSession = new();
 	float clientConnectedTime;
+	public string SelectedLobbyTrack => selectedTrack ? selectedTrack.name : persistentSelectedTrack;
 
 	protected override void Awake()
 	{
@@ -257,7 +258,7 @@ public class MultiPlayerSelector : TrackSelector
 					}
 				}
 
-				if (changes.Data.Value.ContainsKey(ServerC.k_trackName))
+				if (changes.Data.Value.ContainsKey(ServerC.k_trackName) || changes.Data.Value.ContainsKey(ServerC.k_trackSHA))
 				{
 					trackChanged = true;
 				}
@@ -377,8 +378,8 @@ public class MultiPlayerSelector : TrackSelector
 		bool isHost = ServerC.I.AmHost;
 		bool notRdy = !ServerC.I.PlayerMe.ReadyGet();
 		SwitchRound(true);
-		sortButton.gameObject.SetActive(isHost);
-		sortButton.buttonComponent.interactable = notRdy;
+		//sortButton.gameObject.SetActive(isHost);
+		//sortButton.buttonComponent.interactable = notRdy;
 		garageBtn.interactable = notRdy && !F.I.randomCars;
 		tuningBtn.interactable = isHost && notRdy;
 		scoringText.text = F.I.scoringType.ToString();
@@ -513,9 +514,7 @@ public class MultiPlayerSelector : TrackSelector
 						if (F.I.randomTracks)
 							PickRandomTrack();
 
-						ServerC.I.lobby.Data[ServerC.k_trackSHA] = 
-							new DataObject(DataObject.VisibilityOptions.Member, F.I.SHA(F.I.tracksPath + F.I.s_trackName + ".data"));
-						ServerC.I.lobby.Data[ServerC.k_trackName] = new DataObject(DataObject.VisibilityOptions.Member, F.I.s_trackName);
+						ServerC.I.SetTrackName();
 						ServerC.I.UpdateServerData();
 					}
 				}

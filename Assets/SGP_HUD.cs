@@ -449,16 +449,23 @@ public class SGP_HUD : MonoBehaviour
 
 
 
-		// HUD vibrates along with dampers
 		Vector3 hudPos = rt.anchoredPosition;
-		if (vp.wheels != null)
+		if (F.I.gameMode == GameMode.Splitscreen)
 		{
-			compression = Mathf.Min(vp.wheels[0].susParent.compression, vp.wheels[1].susParent.compression);
+			// SplitScreenRace fits the whole panel to its viewport. Suspension
+			// movement must not move that fitted panel below the viewport centre.
+			spring_pos = spring_v = 0;
+			hudPos.y = 0;
 		}
-			
-		float target = Mathf.Lerp(hudPos0, hudHeight - hudPos0, compression);
-		damper_spring(ref spring_pos, ref spring_v, target, spring_maxV);
-		hudPos.y = spring_pos;
+		else
+		{
+			// HUD vibrates along with dampers in the full-screen layout.
+			if (vp.wheels != null)
+				compression = Mathf.Min(vp.wheels[0].susParent.compression, vp.wheels[1].susParent.compression);
+			float target = Mathf.Lerp(hudPos0, hudHeight - hudPos0, compression);
+			damper_spring(ref spring_pos, ref spring_v, target, spring_maxV);
+			hudPos.y = spring_pos;
+		}
 		rt.anchoredPosition = hudPos;
 
 		// Gears

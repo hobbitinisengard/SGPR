@@ -439,6 +439,7 @@ namespace RVP
 		public void SynchRaceboxValuesRpc(bool enabled, int lastRoundScore, int curLap, float dist, float progress, float aero, float drift,
 			float bestLapSecs, float raceTimeSecs, RpcParams ps)
 		{
+			if (RaceManager.I && RaceManager.I.RestartInProgress) return;
 			this.lastRoundScore = lastRoundScore;
 			raceBox.UpdateValues(enabled, curLap, dist, progress, aero, drift, bestLapSecs, raceTimeSecs);
 			ResultsView.Add(this);

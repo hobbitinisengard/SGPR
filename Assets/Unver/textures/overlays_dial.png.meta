@@ -53,7 +53,9 @@ TextureImporter:
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
   alphaIsTransparency: 1
+  spriteTessellationMethod: 0
   spriteTessellationDetail: -1
+  spriteGeometrySubdivision: -1
   textureType: 8
   textureShape: 1
   singleChannelComponent: 0
@@ -624,9 +626,9 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 2010
-        y: 638
+        y: 656
         width: 79
-        height: 1557
+        height: 1539
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -646,9 +648,9 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 2115
-        y: 638
+        y: 656
         width: 73
-        height: 1556
+        height: 1538
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}

@@ -58,6 +58,8 @@ public class TuningSelector : MainMenuView
 	Coroutine containerCo;
 	Coroutine barsAndRadialCo;
 	bool loading;
+	bool OnlineMultiplayer => F.I && F.I.gameMode == GameMode.Multiplayer;
+	bool MultiplayerFundsRequired => OnlineMultiplayer && F.I.scoringType == ScoringType.Championship;
 
 	public OriginalVehiclePartDefinition SelectedPart => rows.Count == 0 ? null :
 		rows[selectedRow].parts[rows[selectedRow].selectedIndex];
@@ -211,7 +213,8 @@ public class TuningSelector : MainMenuView
 			if (!Championships.Active)
 			{
 				var equipped = catalog.GetSelectedPart(carConfig.originalParts, slot.type);
-				parts.RemoveAll(part => part.id != equipped?.id && !F.I.IsOriginalVehiclePartUnlocked(part));
+				if (!OnlineMultiplayer)
+					parts.RemoveAll(part => part.id != equipped?.id && !F.I.IsOriginalVehiclePartUnlocked(part));
 				// A custom car setup can equip a stock part outside its usual catalog range.
 				if (equipped != null && !parts.Exists(part => part.id == equipped.id))
 				{
@@ -343,6 +346,7 @@ public class TuningSelector : MainMenuView
 
 	void RemoveUnequippedLockedParts(PartRow row)
 	{
+		if (OnlineMultiplayer) return;
 		string equippedId = carConfig.originalParts.GetSlot(row.type)?.SelectedPartId;
 		for (int i = row.parts.Count - 1; i >= 0; i--)
 		{
@@ -368,10 +372,19 @@ public class TuningSelector : MainMenuView
 	}
 	void UpdatePurchaseUI()
 	{
-		bool active = Championships.Active;
+		bool active = Championships.Active || MultiplayerFundsRequired;
+		if (!PartPricesUI) return;
 		PartPricesUI.SetActive(active);
 		if (!active || SelectedPart == null) return;
 		var part = SelectedPart;
+		if (MultiplayerFundsRequired)
+		{
+			SetMoneyValue(PartPricesUI.transform.GetChild(0).gameObject, Championships.PartPrice(part));
+			SetMoneyValue(PartPricesUI.transform.GetChild(1).gameObject, ServerC.I.PlayerMe?.ScoreGet() ?? 0);
+			// Online credits unlock equipment by threshold; nothing is bought or sold.
+			SetMoneyValue(PartPricesUI.transform.GetChild(2).gameObject, 0);
+			return;
+		}
 		var installed = F.I.originalVehiclePartCatalog.GetSelectedPart(F.I.cars[Championships.Current.carIndex].config.originalParts, part.type);
 		SetMoneyValue(PartPricesUI.transform.GetChild(0).gameObject, Championships.PartPrice(part));
 		SetMoneyValue(PartPricesUI.transform.GetChild(1).gameObject, Championships.Current.cash);
@@ -390,6 +403,13 @@ public class TuningSelector : MainMenuView
 	void EquipPart(OriginalVehiclePartDefinition part)
 	{
 		if (carConfig.originalParts == null) return;
+		if (MultiplayerFundsRequired &&
+			carConfig.originalParts.GetSlot(part.type)?.SelectedPartId != part.id &&
+			(ServerC.I.PlayerMe?.ScoreGet() ?? 0) < Championships.PartPrice(part))
+		{
+			PlaySFX("fe-warning");
+			return;
+		}
 		OriginalVehiclePartSlot slot = carConfig.originalParts.GetSlot(part.type);
 		if (slot == null || slot.SelectedPartId == part.id ||
 			!carConfig.originalParts.TrySelectPart(part)) return;

@@ -39,8 +39,10 @@ public class ResultsSeq : MonoBehaviour
 	private void OnDisable()
 	{
 		F.I.enterRef.action.performed -= OnEnterClicked;
-		if(bottomTextCo != null)
-			StopCoroutine(bottomTextCo);
+		StopAllCoroutines();
+		seq = dimCo = showResultCo = showTableCo = setTableBoxesValuesCo = bottomTextCo = null;
+		submitFlag = false;
+		if (audioSource) audioSource.Stop();
 	}
 	private void OnEnable()
 	{

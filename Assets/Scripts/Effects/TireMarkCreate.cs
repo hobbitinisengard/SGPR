@@ -73,7 +73,14 @@ namespace RVP
 			initialEmissionRates = new float[debrisParticles.Length + 1];
 
 			for (int i = 0; i < debrisParticles.Length; i++)
+			{
 				initialEmissionRates[i] = debrisParticles[i].emission.rateOverTime.constantMax;
+				if (i > 0)
+				{
+					var main = debrisParticles[i].main;
+					main.simulationSpace = ParticleSystemSimulationSpace.World;
+				}
+			}
 
 			for (int i = 0; i < debrisParticles.Length; i++)
 			{
@@ -90,12 +97,14 @@ namespace RVP
 			{
 				if (creatingMark)
 					EndMark();
-				w.sliding = false;
+				if (w) w.sliding = false;
+				StopSurfaceParticles();
 				return;
 			}
 
 			int surfaceType = w.contactPoint.surfaceType;
-			bool validSurface = surfaceType >= 0 && surfaceType < GroundSurfaceMaster.surfaceTypesStatic.Length;
+			bool validSurface = surfaceType >= 0 && GroundSurfaceMaster.surfaceTypesStatic != null &&
+				surfaceType < GroundSurfaceMaster.surfaceTypesStatic.Length;
 			alwaysScrape = w.groundedReally && validSurface &&
 				GroundSurfaceMaster.surfaceTypesStatic[surfaceType].alwaysScrape
 				? w.slipThres + w.vp.engine.targetPitch : 0;
@@ -124,8 +133,10 @@ namespace RVP
 				particleCount = w.vp.originalVehiclePhysics.ConsumeSourceTireParticleEvents(wheelIndex);
 				sourceSkid = w.vp.originalVehiclePhysics.ShouldEmitSourceSkidStrip(wheelIndex);
 			}
-			if (particleCount > 0 && (!w.vp.UsesRemoteWheelPresentation || (grounded && w.connected)) &&
-				validSurface && surfaceType < debrisParticles.Length)
+			// Smoke retains the source's discrete skid events. Loose surfaces use
+			// continuous emission below, including when rolling without skidding.
+			if (particleCount > 0 && grounded && w.connected && !w.vp.ActiveRailbar &&
+				validSurface && surfaceType == 0)
 			{
 				ParticleSystem particles = debrisParticles[surfaceType];
 				if (!particles.isPlaying)
@@ -177,12 +188,8 @@ namespace RVP
 					EndMark();
 			}
 
+			UpdateSurfaceParticles(surfaceType, grounded, sourceSkid);
 			ParticleSystem.EmissionModule emission;
-			for (int i = 0; i < debrisParticles.Length; i++)
-			{
-				emission = debrisParticles[i].emission;
-				emission.rateOverTime = zeroEmission;
-			}
 
 			if (sparks)
 			{
@@ -196,6 +203,48 @@ namespace RVP
 					: 0;
 				emission.rateOverTime = new ParticleSystem.MinMaxCurve(sparkRate);
 			}
+		}
+		void UpdateSurfaceParticles(int surfaceType, bool grounded, bool skidding)
+		{
+			Vector3 velocity = w.vp.rb.linearVelocity;
+			if (w.contactPoint.col && w.contactPoint.col.attachedRigidbody)
+				velocity -= w.contactPoint.col.attachedRigidbody.GetPointVelocity(w.contactPoint.point);
+			float speed = Vector3.ProjectOnPlane(velocity, w.contactPoint.normal).magnitude;
+			// Require actual motion: stationary remote wheels must not throw up dirt.
+			float rolling = Mathf.InverseLerp(0.3f, 12f, speed);
+			float slip = Mathf.Clamp01(Mathf.Max(Mathf.Abs(w.forwardSlip), Mathf.Abs(w.sidewaysSlip)));
+			float intensity = rolling * (1f + 2f * (skidding ? Mathf.Max(0.5f, slip) : slip));
+			for (int i = 1; i < debrisParticles.Length; i++)
+			{
+				ParticleSystem particles = debrisParticles[i];
+				if (!particles) continue;
+				float rate = grounded && w.connected && !w.vp.ActiveRailbar && i == surfaceType
+					? initialEmissionRates[i] * intensity : 0;
+				var emission = particles.emission;
+				emission.enabled = true;
+				emission.rateOverTime = rate;
+				if (rate > 0 && !particles.isPlaying) particles.Play(false);
+				else if (rate <= 0 && particles.isPlaying)
+					particles.Stop(false, ParticleSystemStopBehavior.StopEmitting);
+			}
+		}
+
+		void StopSurfaceParticles()
+		{
+			if (debrisParticles == null) return;
+			foreach (ParticleSystem particles in debrisParticles)
+			{
+				if (!particles) continue;
+				var emission = particles.emission;
+				emission.rateOverTime = zeroEmission;
+				particles.Stop(false, ParticleSystemStopBehavior.StopEmitting);
+			}
+		}
+
+		void OnDisable()
+		{
+			StopSurfaceParticles();
+			if (w) w.sliding = false;
 		}
 		// Start creating a mark
 		void StartMark()

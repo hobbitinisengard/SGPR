@@ -79,8 +79,7 @@ namespace RVP
 		const float SourceMassToKilograms = 0.001f;
 		const float SourceLengthToMetres = 0.01f;
 		public const float SourceTicksPerSecond = 60f;
-		const float SourceEnergyCapacity = 1000f;
-		const float SourceHumanRespawnEnergyCost = 5f;
+		const float SourceHumanRespawnEnergyCostPercent = 5f;
 		const float SourceHumanStuntEnergyAwardPercent = 9f;
 		const float SourceCpuStuntEnergyAwardPercent = 7f; // The retail award truncates Gameplay.csv 7.5 before applying it.
 		const float SourceStuntEnergyAwardMultiplier = 1.5f;
@@ -1984,7 +1983,8 @@ namespace RVP
 		{
 			if (F.I && F.I.s_raceType == RaceType.Stunt)
 				return;
-			float cost = (float)((double)SourceHumanRespawnEnergyCost * parameters.fuelCapacity / SourceEnergyCapacity);
+			// Gameplay.csv human_replace_energy is a percentage (0..100).
+			float cost = (float)((double)SourceHumanRespawnEnergyCostPercent * 0.01 * parameters.fuelCapacity);
 			if (F.I && F.I.s_raceType == RaceType.Survival) cost *= 2f;
 			ConsumeBatteryEnergy(cost);
 		}

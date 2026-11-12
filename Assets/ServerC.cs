@@ -226,9 +226,13 @@ public class ServerC : MonoBehaviour
 			return startingPos;
 		}
 	}
-	public void SetTrackName()
+	public void SetTrackName(string trackName = null)
 	{
-		lobby.Data[k_trackName] = new DataObject(DataObject.VisibilityOptions.Member, F.I.s_trackName);
+		// Publish name and checksum from one snapshot of the chosen track.
+		trackName ??= F.I.s_trackName;
+		string sha = F.I.SHA(F.I.tracksPath + trackName + ".data");
+		lobby.Data[k_trackName] = new DataObject(DataObject.VisibilityOptions.Member, trackName);
+		lobby.Data[k_trackSHA] = new DataObject(DataObject.VisibilityOptions.Member, sha);
 	}
 	public async void DisconnectFromLobby()
 	{
