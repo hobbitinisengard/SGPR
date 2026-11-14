@@ -37,6 +37,29 @@ public class ArcadeVariant
 			for (int i = 0; i < nodes; ++i)
 				pathsDone.Add(new List<int>());
 		}
+		public bool AllPathsFound()
+		{
+			if (parent?.nodes == null || pathsDone == null) return false;
+			foreach (Node node in parent.nodes)
+				foreach (int destination in node.connections ?? Array.Empty<int>())
+					if (node.id < 0 || node.id >= pathsDone.Count ||
+						pathsDone[node.id] == null || !pathsDone[node.id].Contains(destination))
+						return false;
+			return true;
+		}
+		public bool RestoreCompletedPathPrizes()
+		{
+			if (!AllPathsFound()) return false;
+			bool changed = false;
+			for (int i = 0; i < (parent.globalPrizes?.Length ?? 0); i++)
+				if (parent.globalPrizes[i].condition == Condition.AllPathsFound &&
+					globalPrizesCompleted.GetBits(i) == 0)
+				{
+					globalPrizesCompleted.SetBits(i, true);
+					changed = true;
+				}
+			return changed;
+		}
 		public float OverallProgressPerc()
 		{
 			float progress = 0;

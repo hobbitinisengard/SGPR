@@ -82,6 +82,7 @@ public class Chat : NetworkBehaviour
 	{
 		if (F.I.gameMode == GameMode.Multiplayer)
 		{
+			if (!enabled) texting = false;
 			inputFields[1].gameObject.SetActive(enabled);
 			scrollRects[1].gameObject.SetActive(enabled);
 		}
@@ -103,6 +104,8 @@ public class Chat : NetworkBehaviour
 	}
 	IEnumerator ButtonPressedSeq()
 	{
+		// Block vehicle input immediately, before the delayed input-field selection.
+		texting = true;
 		if (showChatCo != null)
 			StopCoroutine(showChatCo);
 

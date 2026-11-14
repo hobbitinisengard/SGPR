@@ -61,6 +61,10 @@ namespace RVP
 		public PauseMenuButton musicButton;
 		public GameObject DemoSGPLogo;
 
+		readonly Dictionary<VehicleParent, int> knockoutCompletedLaps = new();
+		readonly HashSet<int> knockoutResolvedLaps = new();
+		readonly HashSet<VehicleParent> knockoutEliminatedCars = new();
+		int knockoutRaceLaps;
 		VehicleParent leader;
 		[NonSerialized]
 		public VehicleParent playerCar;
@@ -237,17 +241,42 @@ namespace RVP
 			return 0;
 		}
 
-		public void KnockoutCarsBehind(VehicleParent survivorCar)
+		public void RegisterKnockoutLap(VehicleParent car, int completedLaps)
 		{
-			F.I.s_cars.Sort((carA, carB) => LiveProgress(carB).CompareTo(LiveProgress(carA)));
+			if (F.I.s_raceType != RaceType.Knockout || RestartInProgress || !car ||
+				!F.I.s_cars.Contains(car) || knockoutEliminatedCars.Contains(car) || completedLaps < 1 || completedLaps > knockoutRaceLaps ||
+				(F.I.gameMode == GameMode.Multiplayer && !networkManager.IsServer))
+				return;
+			if (knockoutCompletedLaps.TryGetValue(car, out int previous) && previous >= completedLaps)
+				return;
+			knockoutCompletedLaps[car] = completedLaps;
 
-			for (int i = F.I.s_cars.FindIndex(c => c == survivorCar) + 1; i < F.I.s_cars.Count; ++i)
+			// The last safe finisher of each lap eliminates the cars which have
+			// not completed it. With three entrants, two survive lap one, one lap two.
+			// Use confirmed crossings, never a remote replica's estimated position.
+			for (int lap = 1; lap <= completedLaps; lap++)
 			{
-				if (F.I.s_cars[i].raceBox.enabled)
+				if (knockoutResolvedLaps.Contains(lap)) continue;
+				int safeFinishers = 0;
+				foreach (var entry in knockoutCompletedLaps)
+					if (entry.Key && F.I.s_cars.Contains(entry.Key) && entry.Value >= lap)
+						safeFinishers++;
+				if (safeFinishers < knockoutRaceLaps - lap + 1) continue;
+				knockoutResolvedLaps.Add(lap);
+
+				// Disabling a RaceBox can update and sort standings. Snapshot victims
+				// before callbacks so a changing global car list cannot skip/select cars.
+				var eliminated = new List<VehicleParent>();
+				foreach (var candidate in F.I.s_cars)
+					if (candidate && candidate.raceBox.enabled &&
+						(!knockoutCompletedLaps.TryGetValue(candidate, out int done) || done < lap))
+						eliminated.Add(candidate);
+				foreach (var victim in eliminated)
 				{
-					var eliminatedCar = F.I.s_cars[i];
-					eliminatedCar.KnockoutMe();
-					SGP_HUD.ShowRaceMessage(new(eliminatedCar.name + " " + F.I.LocStr("ELIMINATED!"), BottomInfoType.ELIMINATED));
+					knockoutEliminatedCars.Add(victim);
+					victim.KnockoutMe();
+					if (F.I.gameMode != GameMode.Multiplayer)
+						SGP_HUD.ShowRaceMessage(new(victim.name + " " + F.I.LocStr("ELIMINATED!"), BottomInfoType.ELIMINATED));
 				}
 			}
 		}
@@ -274,6 +303,7 @@ namespace RVP
 		}
 		private void OnDisable()
 		{
+			RaceStartPrepared = false;
 			StopRaceSequences();
 			RestartInProgress = false;
 			GetComponent<SplitScreenRace>()?.Cleanup();
@@ -345,6 +375,7 @@ namespace RVP
 			startRaceRoutine = finishRaceRoutine = spectatorRoutine = null;
 		}
 		public bool RestartInProgress { get; private set; }
+		public bool RaceStartPrepared { get; private set; }
 		public void RestartMultiplayerRace(DateTime raceStartDate)
 		{
 			// Cancel FinishSeq before removing cars: its delayed continuation can
@@ -364,9 +395,15 @@ namespace RVP
 		}
 		void BeginRace(DateTime raceStartDate)
 		{
+			RaceStartPrepared = false;
+			knockoutCompletedLaps.Clear();
+			knockoutResolvedLaps.Clear();
+			knockoutEliminatedCars.Clear();
+			knockoutRaceLaps = F.I.s_laps;
 			StopRaceSequences();
 			resultsSeq.gameObject.SetActive(false);
 			finishSequenceStarted = false;
+			survivalRaceResolved = false;
 			if (F.I.gameMode == GameMode.Multiplayer && Online.I)
 			{
 				Online.I.ResetEndraceCountdown();
@@ -375,6 +412,12 @@ namespace RVP
 			hud.endraceTimer.gameObject.SetActive(false);
 			ResultsView.Clear();
 			F.I.raceStartDate = raceStartDate;
+			if (F.I.gameMode == GameMode.Multiplayer)
+				CountDownSeq.Countdown = CountDownSeq.startRaceCountdownSecs;
+			// A client entering an existing race must use the host's start time,
+			// otherwise its temporary countdown suppresses the endrace timer UI.
+			if (F.I.gameMode == GameMode.Multiplayer && Online.I && !Online.I.IsServer)
+				Online.I.PrepareRaceStartSynchronization();
 			cam.isSkateCam = F.I.tracks[F.I.s_trackName].isSkatePark;
 			startRaceRoutine = StartCoroutine(StartRaceCoroutine());
 		}
@@ -601,6 +644,20 @@ namespace RVP
 			SetPitsLayer(F.I.roadLayer);
 			RestartInProgress = false;
 
+			if (F.I.gameMode == GameMode.Multiplayer)
+			{
+				// Spawning on a remote host is asynchronous. Start the sequence only
+				// after our own car is connected to the HUD and the host confirms time.
+				while (!F.I.s_spectator && (!playerCar || playerCar.originalVehiclePhysics == null))
+					yield return null;
+				if (networkManager.IsServer)
+					F.I.raceStartDate = DateTime.UtcNow.AddSeconds(CountDownSeq.startRaceCountdownSecs);
+				else
+					while (!Online.I || !Online.I.RaceStartDateReceived)
+						yield return null;
+			}
+
+			RaceStartPrepared = true;
 			DemoSGPLogo.SetActive(F.I.s_spectator);
 			if (skate || splitScreen)
 				F.I.raceStartDate = DateTime.UtcNow.AddSeconds(CountDownSeq.startRaceCountdownSecs);
@@ -669,6 +726,41 @@ namespace RVP
 			if (finishSequenceStarted || RestartInProgress) return;
 			finishSequenceStarted = true;
 			finishRaceRoutine = StartCoroutine(FinishSeq());
+		}
+		bool survivalRaceResolved;
+		void LateUpdate()
+		{
+			if (survivalRaceResolved || RestartInProgress || F.I.s_raceType != RaceType.Survival ||
+				F.I.actionHappening != ActionHappening.InRace || F.I.s_inEditor ||
+				DateTime.UtcNow < F.I.raceStartDate || F.I.s_cars.Count < 2 ||
+				(F.I.gameMode == GameMode.Multiplayer && !networkManager.IsServer)) return;
+
+			VehicleParent survivor = null;
+			foreach (var car in F.I.s_cars)
+			{
+				if (!car || !car.raceBox) return;
+				if (car.raceBox.SurvivalEliminated) continue;
+				// A normal finisher already decided the race; this rule only applies
+				// when every other entrant has been eliminated.
+				if (!car.raceBox.enabled || survivor) return;
+				survivor = car;
+			}
+			if (!survivor) return;
+			survivalRaceResolved = true;
+			if (F.I.gameMode == GameMode.Multiplayer)
+				Online.I.CompleteSurvivalRaceRpc(survivor.OwnerClientId, F.I.raceStartDate.Ticks);
+			else
+				CompleteSurvivalRace(survivor);
+		}
+
+		public void CompleteSurvivalRace(VehicleParent winner)
+		{
+			if (!winner || F.I.s_raceType != RaceType.Survival || RestartInProgress) return;
+			survivalRaceResolved = true;
+			winner.raceBox.CompleteSurvivalVictory();
+			hud.endraceTimer.gameObject.SetActive(false);
+			SGP_HUD.ShowRaceMessage(new(winner.name + " " + F.I.LocStr("WINS!"), BottomInfoType.CAR_WINS));
+			PlayFinishSeq();
 		}
 		bool finishSequenceStarted;
 		IEnumerator FinishSeq()

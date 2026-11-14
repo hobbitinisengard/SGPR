@@ -115,7 +115,7 @@ public class Info : MonoBehaviour
 	public Material emissiveRearDarker;
 	public Mesh sphereMesh;
 	public AudioMixer mainAudioMixer;
-	public const string VERSION = "0.7.13";
+	public const string VERSION = "0.7.16";
 	public bool minimized { get; private set; }
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
 	[DllImport("user32.dll")]
@@ -333,6 +333,9 @@ public class Info : MonoBehaviour
 					//string serializedProgress = JsonConvert.SerializeObject(variant.progress, Formatting.Indented);
 					//await File.WriteAllTextAsync(progressPath, serializedProgress);
 				}
+				// Older saves checked AllPathsFound before recording the last edge.
+				if (variant.progress.RestoreCompletedPathPrizes())
+					File.WriteAllText(progressPath, JsonConvert.SerializeObject(variant.progress));
 			}
 			catch (Exception e)
 			{
@@ -399,7 +402,7 @@ public class Info : MonoBehaviour
 				}
 				else if (gprize.condition == ArcadeVariant.Prize.Condition.AllPathsFound)
 				{
-					if (variant.progress.pathsDone.Sum(p => p.Count) != variant.nodes.Sum(n => n.connections.Length))
+					if (!variant.progress.AllPathsFound())
 					{
 						prizeNamesToBeLocked.AddRange(gprize.name.Split(","));
 					}
@@ -507,14 +510,22 @@ public class Info : MonoBehaviour
 	public readonly int RaceTypes = Enum.GetValues(typeof(RaceType)).Length;
 
 	public readonly Vector3[] invisibleLevelDimensions = new Vector3[]{
-		new (564, 1231,1), //ger
-		new (800, 900,1),  //jap
-		new (1462, 2480,1),//spn
-		new (2170, 1560,1),//fra
-		new (1170, 817,1), //eng
-		new (739, 1060,1), //usa
-		new (1406, 1337,1),// ita
-		new (564, 1231,1), //mex
+		new (100000, 100000,1), //ger
+		new (100000, 100000,1), //ger
+		new (100000, 100000,1), //ger
+		new (100000, 100000,1), //ger
+		new (100000, 100000,1), //ger
+		new (100000, 100000,1), //ger
+		new (100000, 100000,1), //ger
+		new (100000, 100000,1), //ger
+		// new (564, 1231,1), //ger
+		// new (800, 900,1),  //jap
+		// new (1462, 2480,1),//spn
+		// new (2170, 1560,1),//fra
+		// new (1170, 817,1), //eng
+		// new (739, 1060,1), //usa
+		// new (1406, 1337,1),// ita
+		// new (564, 1231,1), //mex
 	};
 	public readonly int[] skys = new int[] {
 		8, //ger

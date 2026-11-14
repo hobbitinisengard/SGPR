@@ -156,6 +156,17 @@ namespace RVP
 		NetworkVariable<Livery> _sponsor = new(Livery.Random);
 		readonly NetworkVariable<bool> networkTurboActive = new(false,
 			NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+		public bool AerodynamicTrailVisible
+		{
+			get
+			{
+				if (followAI && followAI.IsCPU) return true;
+				if (F.I.gameMode == GameMode.Multiplayer)
+					return !IsOwner || F.I.playerData.trail;
+				return !IsLocalHuman || F.I.playerData.trail;
+			}
+		}
+
 		public struct WheelPresentationState : INetworkSerializable, IEquatable<WheelPresentationState>
 		{
 			public Vector4 rpm, forwardSlip, sidewaysSlip, gripUsage;
@@ -442,6 +453,33 @@ namespace RVP
 			if (RaceManager.I && RaceManager.I.RestartInProgress) return;
 			this.lastRoundScore = lastRoundScore;
 			raceBox.UpdateValues(enabled, curLap, dist, progress, aero, drift, bestLapSecs, raceTimeSecs);
+			ResultsView.Add(this);
+		}
+		float aeroSyncElapsed;
+		void SynchronizeAeroScore()
+		{
+			if (F.I.s_raceType != RaceType.Stunt || F.I.actionHappening != ActionHappening.InRace ||
+				!raceBox.enabled || CountDownSeq.Countdown > 0 ||
+				(RaceManager.I && RaceManager.I.RestartInProgress))
+			{
+				aeroSyncElapsed = 0;
+				return;
+			}
+			aeroSyncElapsed += Time.fixedDeltaTime;
+			if (aeroSyncElapsed < 15f) return;
+			aeroSyncElapsed %= 15f;
+			SynchronizeAeroScoreRpc(raceBox.Aero, F.I.raceStartDate.Ticks);
+		}
+		[Rpc(SendTo.NotOwner)]
+		void SynchronizeAeroScoreRpc(float aeroScore, long raceStartTicks, RpcParams rpcParams = default)
+		{
+			if (rpcParams.Receive.SenderClientId != OwnerClientId ||
+				F.I.gameMode != GameMode.Multiplayer || F.I.s_raceType != RaceType.Stunt ||
+				F.I.raceStartDate.Ticks != raceStartTicks || !raceBox.enabled ||
+				(RaceManager.I && RaceManager.I.RestartInProgress) ||
+				float.IsNaN(aeroScore) || float.IsInfinity(aeroScore) || aeroScore < 0)
+				return;
+			raceBox.Aero = aeroScore;
 			ResultsView.Add(this);
 		}
 		public FollowAI followAI { get; private set; }
@@ -884,6 +922,7 @@ namespace RVP
 				bool active = BoostPresentationActive;
 				if (networkTurboActive.Value != active) networkTurboActive.Value = active;
 				SynchronizeWheelPresentation();
+				SynchronizeAeroScore();
 			}
 		}
 		void LateUpdate()
@@ -1046,14 +1085,17 @@ namespace RVP
 			sparks.Stop();
 		}
 		float nextCrashSoundTime;
-		public void PlayCrashSound(float impactSpeed, float minimumSpeed = 1f)
+		float nextVehicleCrashSoundTime;
+		public void PlayCrashSound(float impactSpeed, float minimumSpeed = 1f, bool vehicleCollision = false)
 		{
 			if (impactSpeed < minimumSpeed || Time.time < nextCrashSoundTime ||
+				(vehicleCollision && Time.time < nextVehicleCrashSoundTime) ||
 				CountDownSeq.Countdown > 0 || !crashSnd || !crashSnd.isActiveAndEnabled ||
 				crashClips == null || crashClips.Length == 0) return;
 			AudioClip clip = crashClips[UnityEngine.Random.Range(0, crashClips.Length)];
 			if (!clip) return;
 			nextCrashSoundTime = Time.time + 0.15f;
+			if (vehicleCollision) nextVehicleCrashSoundTime = Time.time + 0.5f;
 			crashSnd.PlayOneShot(clip, Mathf.Lerp(0.35f, 1f, Mathf.Clamp01(impactSpeed / 10f)));
 			crashing = true;
 			lastCrashingTime = Time.time;
@@ -1071,7 +1113,8 @@ namespace RVP
 				if (contact.thisCollider.gameObject.layer == RaceManager.ignoreWheelCastLayer) continue;
 				impactSpeed = Mathf.Max(impactSpeed, Mathf.Abs(Vector3.Dot(contact.normal, col.relativeVelocity)));
 			}
-			PlayCrashSound(impactSpeed);
+			bool vehicleCollision = col.rigidbody && col.rigidbody.GetComponent<VehicleParent>();
+			PlayCrashSound(impactSpeed, vehicleCollision: vehicleCollision);
 		}
 		// Continuous collision checking
 		void OnCollisionStay(Collision col)
@@ -1159,10 +1202,23 @@ namespace RVP
 		{
 			originalVehiclePhysics?.ApplySourceRespawnEnergyCost();
 		}
+		[Rpc(SendTo.Server)]
+		public void ReportKnockoutLapRpc(int completedLaps, long raceStartTicks, RpcParams rpc = default)
+		{
+			if (rpc.Receive.SenderClientId != OwnerClientId ||
+				F.I.gameMode != GameMode.Multiplayer || F.I.actionHappening != ActionHappening.InRace ||
+				raceStartTicks != F.I.raceStartDate.Ticks || DateTime.UtcNow < F.I.raceStartDate ||
+				!RaceManager.I || RaceManager.I.RestartInProgress)
+				return;
+			RaceManager.I.RegisterKnockoutLap(this, completedLaps);
+		}
 		public void KnockoutMe()
 		{
 			if (F.I.gameMode == GameMode.Multiplayer)
-				KnockoutMeRpc();
+			{
+				if (F.I.s_raceType == RaceType.Knockout && !IsServer) return;
+				KnockoutMeRpc(F.I.raceStartDate.Ticks);
+			}
 			else
 				KnockoutMeInternal();
 		}
@@ -1175,8 +1231,12 @@ namespace RVP
 			raceBox.enabled = false;
 		}
 		[Rpc(SendTo.Everyone)]
-		void KnockoutMeRpc()
+		void KnockoutMeRpc(long raceStartTicks, RpcParams rpc = default)
 		{
+			if (raceStartTicks != F.I.raceStartDate.Ticks ||
+				(RaceManager.I && RaceManager.I.RestartInProgress)) return;
+			if (F.I.s_raceType == RaceType.Knockout &&
+				rpc.Receive.SenderClientId != Unity.Netcode.NetworkManager.ServerClientId) return;
 			KnockoutMeInternal();
 			SGP_HUD.ShowRaceMessage(new(tr.name + " " + F.I.LocStr("ELIMINATED!"), BottomInfoType.ELIMINATED));
 		}

@@ -676,12 +676,16 @@ namespace RVP
 			}
 			else
 			{
-				// Never skip a long ramp/loop (or nearly a whole lap) looking for flat road.
-				// Try nearby points ahead first, then return to the road before the accident.
+				// Search far enough along the path to clear long jumps before trying
+				// points behind the car. Path distance preserves the route at crossings.
+				const float searchStep = 10f;
+				const int forwardSearchSteps = 30; // 300 metres ahead
+				const int backwardSearchSteps = 20; // 200 metres back as a fallback
 				float initialDistance = progress;
-				for (int candidate = 0; candidate <= 23; candidate++)
+				for (int candidate = 0; candidate <= forwardSearchSteps + backwardSearchSteps; candidate++)
 				{
-					float offset = candidate <= 3 ? candidate * 10f : -(candidate - 3) * 10f;
+					float offset = candidate <= forwardSearchSteps ? candidate * searchStep
+						: -(candidate - forwardSearchSteps) * searchStep;
 					float distance = Mathf.Clamp(initialDistance + offset, 0, trackPathCreator.path.length - 5);
 					Vector3 point = trackPathCreator.path.GetPointAtDistance(distance);
 					Vector3 direction = trackPathCreator.path.GetDirectionAtDistance(distance);

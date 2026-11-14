@@ -9,162 +9,175 @@ public class Antenna : MonoBehaviour
 	protected Transform follower;
 	protected Vector3 goal_vel;
 	protected Vector3 follower_vel = Vector3.zero;
-	protected float halflife = .5f; //drag
-	protected float frequency = 2; //Spring
+	[SerializeField, Min(0.01f)] protected float halflife = .2f;
+	[SerializeField, Min(0.01f)] protected float frequency = 2f;
 	protected Vector3 goal_pos;
 	protected Vector3 goal_prevPos;
 	protected Vector3 goal_initPos;
-	int nodes = 0;
 
-	public float targetHeight = 0.26f; // how high above this should target be located?. Always 0.05 bigger than mesh height
-	
-	float[] nodes_y_heights;
-	// Start is called before the first frame update
-	Vector3 ElevateY(Vector3 pos, float height)
+	public float targetHeight = 0.26f;
+	[Header("Antenna motion")]
+	[Tooltip("Bending in metres per m/s squared of acceleration.")]
+	[Min(0)] public float inertia = .012f;
+	[Tooltip("Backward bending in metres per m/s of vehicle speed.")]
+	[Min(0)] public float airDrag = .0015f;
+	[Tooltip("Maximum sideways or forward/backward deflection in metres.")]
+	[Min(0)] float maxDeflection = 1;
+	[Tooltip("Time in seconds used to smooth acceleration impulses.")]
+	[Min(.01f)] public float accelerationSmoothing = .1f;
+
+	Transform[] antennaNodes;
+	Vector3 restOffset;
+	Vector3 previousVelocity;
+	Vector3 smoothedAcceleration;
+	bool motionInitialized;
+	bool restOffsetInitialized;
+	bool ownsGoal;
+
+	public void Reset()
 	{
-		return pos + vp.tr.up * height;
-		//return new Vector3(pos.x, pos.y + height, pos.z);
+		motionInitialized = false;
+		follower_vel = goal_vel = smoothedAcceleration = Vector3.zero;
+		if (!vp || !goal || !follower) return;
+		goal_pos = goal_prevPos = restOffsetInitialized
+			? vp.tr.InverseTransformPoint(transform.position) + restOffset : goal_initPos;
+		goal.localPosition = goal_pos;
+		follower.position = goal.position;
 	}
-    public void Reset()
-    {
-        follower_vel = Vector3.zero;
-		goal_vel = Vector3.zero;
-		goal_prevPos = goal_pos;
-        follower.position = goal.position;
-    }
-    protected void OnDestroy()
+
+	protected void OnDestroy()
 	{
-		Destroy(follower.gameObject);
+		if (follower) Destroy(follower.gameObject);
+		if (ownsGoal && goal) Destroy(goal.gameObject);
 	}
-	private void Start()
+
+	void Start()
 	{
 		vp = transform.GetTopmostParentComponent<VehicleParent>();
+		if (!vp) return;
 		vp.antenna = this;
-		nodes = transform.childCount;
+		antennaNodes = new Transform[transform.childCount];
+		for (int i = 0; i < antennaNodes.Length; i++)
+			antennaNodes[i] = transform.GetChild(i);
 
-		nodes_y_heights = new float[nodes];
-		for (int i = 0; i < nodes; ++i)
-			nodes_y_heights[i] = transform.localPosition.y + i * targetHeight;
-
-		goal = new GameObject("Goal").transform;
-		goal.parent = vp.tr;
-		goal.position = ElevateY(transform.position, targetHeight * (nodes + 1));
-		goal_pos = goal.localPosition;
-		goal_prevPos = goal_pos;
-		goal_initPos = goal_pos;
-
+		if (!goal)
+		{
+			goal = new GameObject("Goal").transform;
+			goal.position = transform.position + vp.tr.up * targetHeight * (antennaNodes.Length + 1);
+			ownsGoal = true;
+		}
+		goal.SetParent(vp.tr, true);
+		goal_initPos = goal.localPosition;
 		follower = new GameObject("Follower").transform;
 		follower.gameObject.layer = 2;
-		follower.position = goal.position;
-		follower.parent = vp.tr;
+		follower.SetParent(vp.tr, false);
+		Reset();
 	}
+
 	protected void FixedUpdate()
 	{
-		if (halflife == 0 || frequency == 0) return;
+		if (!vp || !vp.rb || !goal || !follower || frequency <= 0 || halflife <= 0) return;
 		Update_Follower();
 	}
+
 	void LateUpdate()
 	{
-		Vector3 Up = vp.upDir * targetHeight;
-		for (int i = 0; i < nodes - 1; ++i)
+		if (!vp || !follower || antennaNodes == null || antennaNodes.Length == 0) return;
+		Vector3 up = vp.tr.up * targetHeight;
+		for (int i = 0; i < antennaNodes.Length - 1; i++)
 		{
-			Vector3 straight2spring_vec = (follower.position - transform.GetChild(i).position).normalized * targetHeight;
-
-			transform.GetChild(i + 1).position =
-				 transform.GetChild(i).position + Vector3.Slerp(Up, straight2spring_vec, Easing.OutCubic((float)i / (nodes + 1)));
-			transform.GetChild(i).transform
-				 .LookAt(transform.GetChild(i + 1).position);
+			Vector3 direction = (follower.position - antennaNodes[i].position).normalized * targetHeight;
+			antennaNodes[i + 1].position = antennaNodes[i].position +
+				Vector3.Slerp(up, direction, Easing.OutCubic((float)i / (antennaNodes.Length + 1)));
+			LookAt(antennaNodes[i], antennaNodes[i + 1].position);
 		}
-		transform.GetChild(nodes - 1).transform.LookAt(follower.position);
+		LookAt(antennaNodes[antennaNodes.Length - 1], follower.position);
 	}
+
+	static void LookAt(Transform node, Vector3 target)
+	{
+		if ((target - node.position).sqrMagnitude > .000001f) node.LookAt(target);
+	}
+
 	protected void Update_Follower()
 	{
-		goal_prevPos = goal_vel;
-		goal_pos = goal_initPos - vp.acceleration;
+		float dt = Time.fixedDeltaTime;
+		if (dt <= 0) return;
+		Vector3 basePosition = vp.tr.InverseTransformPoint(transform.position);
+		if (!restOffsetInitialized)
+		{
+			restOffset = goal_initPos - basePosition;
+			restOffsetInitialized = true;
+		}
+		Vector3 restPosition = vp.tr.TransformPoint(basePosition + restOffset);
+		// Sample world velocity before transforming acceleration: differentiating
+		// local velocity alone loses centripetal acceleration in corners.
+		Vector3 velocity = vp.rb.linearVelocity +
+			Vector3.Cross(vp.WorldAngularVelocity, restPosition - vp.rb.worldCenterOfMass);
+		if (!OriginalVehiclePhysics.IsFinite(velocity)) { Reset(); return; }
+		if (!motionInitialized)
+		{
+			previousVelocity = velocity;
+			motionInitialized = true;
+		}
+		Vector3 acceleration = Vector3.ClampMagnitude((velocity - previousVelocity) / dt, 150f);
+		previousVelocity = velocity;
+		smoothedAcceleration = Vector3.Lerp(smoothedAcceleration, acceleration,
+			1f - Mathf.Exp(-dt / Mathf.Max(.01f, accelerationSmoothing)));
+		Vector3 offset = -vp.tr.InverseTransformVector(smoothedAcceleration * inertia + velocity * airDrag);
+		Vector3 restDirection = restOffset.sqrMagnitude > .000001f ? restOffset.normalized : Vector3.up;
+		offset = Vector3.ClampMagnitude(Vector3.ProjectOnPlane(offset, restDirection),
+			Mathf.Min(maxDeflection, restOffset.magnitude * .6f));
+		goal_prevPos = goal_pos;
+		// Keep the tip on an arc around its mounting point instead of stretching it.
+		goal_pos = basePosition + (restOffset + offset).normalized * restOffset.magnitude;
+		goal_vel = (goal_pos - goal_prevPos) / dt;
 		goal.localPosition = goal_pos;
-		goal_vel = goal_pos - goal_prevPos;
-		Vector3 follower_pos = follower.localPosition;
 
-		damper_spring(ref follower_pos.x, ref follower_vel.x,goal_pos.x, goal_vel.x);
-		damper_spring(ref follower_pos.y, ref follower_vel.y,goal_pos.y, goal_vel.y);
-		damper_spring(ref follower_pos.z, ref follower_vel.z,goal_pos.z, goal_vel.z);
-
-		follower.localPosition = follower_pos;
-
-		//goal_prevPos = goal_pos;
-		//goal_pos = goal.position;
-		//goal_vel = goal_pos - goal_prevPos;
-
-		//Vector3 follower_pos = follower.position;
-		//damper_spring(ref follower_pos.x, ref follower_vel.x, goal_pos.x, goal_vel.x);
-		//damper_spring(ref follower_pos.y, ref follower_vel.y, goal_pos.y, goal_vel.y);
-		//damper_spring(ref follower_pos.z, ref follower_vel.z, goal_pos.z, goal_vel.z);
-		
-		//follower.position = follower_pos;
-
-		void damper_spring(ref float x, ref float v, in float x_goal, in float v_goal)
+		Vector3 position = follower.localPosition;
+		Spring(ref position, ref follower_vel, goal_pos, dt);
+		Vector3 displacement = position - (basePosition + restOffset);
+		float limit = Mathf.Min(maxDeflection, restOffset.magnitude * .6f);
+		if (displacement.sqrMagnitude > limit * limit)
 		{
-			float dt = Time.fixedDeltaTime;
-			float g = x_goal;
-			float q = v_goal;
-			float s = frequency_to_stiffness(frequency);
-			float d = halflife_to_damping(halflife);
-			float c = g + (d * q) / (s + Mathf.Epsilon);
-			float y = d / 2.0f;
-
-			if (Mathf.Abs(s - (d * d) / 4.0f) < Mathf.Epsilon) // Critically Damped
-			{
-				float j0 = x - c;
-				float j1 = v + j0 * y;
-
-				float eydt = fast_negexp(y * dt);
-
-				x = j0 * eydt + dt * j1 * eydt + c;
-				v = -y * j0 * eydt - y * dt * j1 * eydt + j1 * eydt;
-			}
-			else if (s - (d * d) / 4.0f > 0.0) // Under Damped
-			{
-				float w = Mathf.Sqrt(s - (d * d) / 4.0f);
-				float j = Mathf.Sqrt(squaref(v + y * (x - c)) / (w * w + Mathf.Epsilon) + squaref(x - c));
-				float p = Mathf.Atan((v + (x - c) * y) / (-(x - c) * w + Mathf.Epsilon));
-
-				j = (x - c) > 0.0f ? j : -j;
-
-				float eydt = fast_negexp(y * dt);
-
-				x = j * eydt * Mathf.Cos(w * dt + p) + c;
-				v = -y * j * eydt * Mathf.Cos(w * dt + p) - w * j * eydt * Mathf.Sin(w * dt + p);
-			}
-			else if (s - (d * d) / 4.0f < 0.0) // Over Damped
-			{
-				float y0 = (d + Mathf.Sqrt(d * d - 4 * s)) / 2.0f;
-				float y1 = (d - Mathf.Sqrt(d * d - 4 * s)) / 2.0f;
-				float j1 = (c * y0 - x * y0 - v) / (y1 - y0);
-				float j0 = x - j1 - c;
-
-				float ey0dt = fast_negexp(y0 * dt);
-				float ey1dt = fast_negexp(y1 * dt);
-
-				x = j0 * ey0dt + j1 * ey1dt + c;
-				v = -y0 * j0 * ey0dt - y1 * j1 * ey1dt;
-			}
+			Vector3 normal = displacement.normalized;
+			position = basePosition + restOffset + normal * limit;
+			follower_vel -= normal * Mathf.Max(0, Vector3.Dot(follower_vel, normal));
 		}
-		float frequency_to_stiffness(float frequency)
-		{
-			return squaref(2.0f * Mathf.PI * frequency);
-		}
-
-		float halflife_to_damping(float halflife)
-		{
-			return (4.0f * 0.69314718056f) / (halflife + Mathf.Epsilon);
-		}
-		float fast_negexp(float x)
-		{
-			return 1.0f / (1.0f + x + 0.48f * x * x + 0.235f * x * x * x);
-		}
-		float squaref(float x) { return x * x; }
+		follower.localPosition = position;
 	}
 
-
-
+	void Spring(ref Vector3 position, ref Vector3 velocity, Vector3 target, float dt)
+	{
+		// Exact damped spring step, stable at different fixed update rates.
+		float omega = 2f * Mathf.PI * frequency;
+		float decay = Mathf.Log(2f) / Mathf.Max(.01f, halflife);
+		float difference = omega * omega - decay * decay;
+		Vector3 displacement = position - target;
+		if (difference > .0001f)
+		{
+			float w = Mathf.Sqrt(difference);
+			float sine = Mathf.Sin(w * dt) / w;
+			float cosine = Mathf.Cos(w * dt);
+			float envelope = Mathf.Exp(-decay * dt);
+			position = target + envelope * (displacement * cosine + (velocity + decay * displacement) * sine);
+			velocity = envelope * (velocity * cosine - (decay * velocity + omega * omega * displacement) * sine);
+		}
+		else if (difference < -.0001f)
+		{
+			float w = Mathf.Sqrt(-difference);
+			float r0 = -decay + w, r1 = -decay - w;
+			Vector3 a = (velocity - r1 * displacement) / (r0 - r1);
+			Vector3 b = displacement - a;
+			position = target + a * Mathf.Exp(r0 * dt) + b * Mathf.Exp(r1 * dt);
+			velocity = a * r0 * Mathf.Exp(r0 * dt) + b * r1 * Mathf.Exp(r1 * dt);
+		}
+		else
+		{
+			Vector3 c = velocity + decay * displacement;
+			float envelope = Mathf.Exp(-decay * dt);
+			position = target + (displacement + c * dt) * envelope;
+			velocity = (velocity - decay * c * dt) * envelope;
+		}
+	}
 }

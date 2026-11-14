@@ -12,6 +12,7 @@ namespace RVP
 	public class BasicInput : MonoBehaviour
 	{
 		static int pauseFrame = -1;
+		bool resetRequiresRelease;
 		VehicleParent vp;
 		[NonSerialized]
 		public PlayerInput playerInput;
@@ -46,6 +47,12 @@ namespace RVP
 		void Update()
 		{
 			if (!vp || vp.originalVehiclePhysics == null) return;
+			// A reset key used while typing must be released before it can reset
+			// the car, including the frame in which the chat input loses focus.
+			if (F.I.gameMode == GameMode.Multiplayer && F.I.chat.texting)
+				resetRequiresRelease = true;
+			else if (Action(F.I.resetOnTrackInput)?.IsPressed() != true)
+				resetRequiresRelease = false;
 			if (vp.localPlayerIndex >= 0)
 			{
 				if (Action(F.I.escRef)?.WasPressedThisFrame() == true && pauseFrame != Time.frameCount)
@@ -99,7 +106,10 @@ namespace RVP
 				if (vp.Owner)
 				{
 					if (F.I.chat.texting)
+					{
+						resetRequiresRelease = true;
 						return;
+					}
 
 					if (vp.localPlayerIndex < 0 && !string.IsNullOrEmpty(upshiftButton))
 					{
@@ -136,7 +146,7 @@ namespace RVP
 					
 					vp.SetHonkerInput((int)(Action(F.I.honkInput)?.ReadValue<float>() ?? 0));
 					vp.SetSGPShift(touchDriving && mobile.Stunts ? 1 : (int)(Action(F.I.evoInput)?.ReadValue<float>() ?? 0));
-					if ((Action(F.I.resetOnTrackInput)?.ReadValue<float>() ?? 0) == 1
+					if (!resetRequiresRelease && (Action(F.I.resetOnTrackInput)?.ReadValue<float>() ?? 0) == 1
 						&& Time.time - vp.resetOnTrackTime > 5)
 					{
 						vp.ResetOnTrack();

@@ -118,9 +118,14 @@ public class LeaderBoardTable : MonoBehaviour
 		newRow.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>().text = player.NameGet();
 		newRow.GetChild(0).GetChild(1).GetComponent<TextMeshProUGUI>().color = player.ReadColor();
 
-		string carName = (player == ServerC.I.PlayerMe) ? F.I.cars[F.I.s_playerCarIdx].name : F.I.Car(player.carNameGet()).name;
-
-		newRow.GetChild(1).GetComponent<TextMeshProUGUI>().text = F.I.randomCars ? F.I.LocStr("Random") : F.I.LocStr(carName);
+		bool localPlayer = player.Id == ServerC.I.PlayerMe.Id;
+		string carName = localPlayer ? F.I.cars[F.I.s_playerCarIdx].name : F.I.Car(player.carNameGet()).name;
+		string tuningClass = localPlayer ? ServerC.I.LocalTuningClass :
+			player.Data != null && player.Data.TryGetValue(ServerC.k_tuningClass, out var grade) ? grade.Value : string.Empty;
+		string carLabel = F.I.LocStr(carName);
+		if (!string.IsNullOrEmpty(tuningClass) && tuningClass.Length == 1 && "SABCDEF".Contains(tuningClass))
+			carLabel += " (" + tuningClass + ")";
+		newRow.GetChild(1).GetComponent<TextMeshProUGUI>().text = F.I.randomCars ? F.I.LocStr("Random") : carLabel;
 
 		newRow.GetChild(2).GetComponent<TextMeshProUGUI>().text = (F.I.scoringType == ScoringType.Championship ? "$ " : "") + player.ScoreGet().ToString();
 	}

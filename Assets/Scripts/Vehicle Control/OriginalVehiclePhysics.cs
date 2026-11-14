@@ -2303,8 +2303,8 @@ namespace RVP
 				otherVehicle.rb.linearVelocity += secondVelocityChange * SourceSpeedToMetresPerSecond;
 				ApplyVehicleCollisionHop(otherVehicle.originalVehiclePhysics, normalSpeed);
 				float crashSpeed = Mathf.Max(0, normalSpeed * SourceSpeedToMetresPerSecond);
-				vehicle.PlayCrashSound(crashSpeed, 0.5f);
-				otherVehicle.PlayCrashSound(crashSpeed, 0.5f);
+				vehicle.PlayCrashSound(crashSpeed, 0.5f, vehicleCollision: true);
+				otherVehicle.PlayCrashSound(crashSpeed, 0.5f, vehicleCollision: true);
 				effectiveComHeight = parameters.comHeight;
 				sourceCom2628 = sourceCom262c = 0;
 				comResetTicks = -12;
@@ -3390,10 +3390,23 @@ namespace RVP
 			double friction = gear == 0 ? 2.0 : performanceMultiplier;
 			for (int i = 0; i < 4; i++)
 			{
-				// The original stores scaled tyre coefficients before the contact
-				// solver multiplies each one by the surface grip.
-				sourceStaticFriction[i] = (float)(friction * parameters.tyres[i].staticFriction);
-				sourceKineticFriction[i] = (float)(friction * parameters.tyres[i].kineticFriction);
+				OriginalTyrePhysicsConfig tyre = parameters.tyres[i];
+				float staticGrip = tyre.staticFriction;
+				float slidingGrip = tyre.kineticFriction;
+				Wheel wheel = vehicle.wheels[UnityWheelIndex[i]];
+				int contactType = wheel.contactPoint.sourceFlags & 15;
+				if (contactType == 1 || !hasSourceWheelSurfaceContact[i])
+				{
+					// Reverse grip on normal road around the original catalog ranges:
+					// static 0.75..1.55, kinetic 0.80..1.40. On loose surfaces
+					// (Dust/Mud contact types 2/3), retain the original off-road advantage.
+					staticGrip = Mathf.Max(0, 2.30f - staticGrip);
+					slidingGrip = Mathf.Max(0, 2.20f - slidingGrip);
+				}
+				// Apply the same coefficients to traction and wheel support rotation.
+				// Surface grip and performance scaling remain separate factors.
+				sourceStaticFriction[i] = (float)(friction * staticGrip);
+				sourceKineticFriction[i] = (float)(friction * slidingGrip);
 			}
 			torque *= performanceMultiplier;
 		}

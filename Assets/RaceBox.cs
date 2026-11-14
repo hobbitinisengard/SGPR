@@ -83,7 +83,7 @@ public class RaceBox : Sfxable
 	public float Aero
 	{
 		get { return 10 * aero; }
-		set { aero = value; }
+		set { aero = value / 10f; }
 	}
 	float lapTimer;
 	public TimeSpan? CurLaptime
@@ -116,8 +116,17 @@ public class RaceBox : Sfxable
 
 	public int curLap;
 	public bool SurvivalEliminated { get; private set; }
+	bool survivalVictory;
 	float survivalStoppedTime;
 	float survivalEliminationProgress;
+
+	public void CompleteSurvivalVictory()
+	{
+		if (SurvivalEliminated) return;
+		survivalVictory = true;
+		enabled = false;
+		ResultsView.Add(vp);
+	}
 
 	public void MarkSurvivalEliminated()
 	{
@@ -197,6 +206,7 @@ public class RaceBox : Sfxable
 	private void OnEnable()
 	{
 		SurvivalEliminated = false;
+		survivalVictory = false;
 		survivalStoppedTime = 0;
 		lapTimer = 3600 * 24; // 24 hours
 		bestLapTime = TimeSpan.FromHours(12);
@@ -924,9 +934,12 @@ public class RaceBox : Sfxable
 						}
 					}
 
-					if (F.I.s_raceType == RaceType.Knockout && (curLap - 1) == (F.I.s_laps - RaceManager.I.Position(vp)))
+					if (F.I.s_raceType == RaceType.Knockout && vp.Owner)
 					{
-						RaceManager.I.KnockoutCarsBehind(vp);
+						if (F.I.gameMode == GameMode.Multiplayer)
+							vp.ReportKnockoutLapRpc(curLap - 1, F.I.raceStartDate.Ticks);
+						else
+							RaceManager.I.RegisterKnockoutLap(vp, curLap - 1);
 					}
 
 					if (curLap == (F.I.s_laps + 1)) // race finished
@@ -962,9 +975,8 @@ public class RaceBox : Sfxable
 						}
 						
 					}
-					// when triggered lap while on energyTunnel
-					if(vp.followAI.pitsProgress > 0)
-						StartCoroutine(vp.followAI.ResetOnTrack());
+					// A finish line can pass above the energy tunnel. Count the lap
+					// while letting the car continue through the tunnel normally.
 				}
 				else
 					enabled = false;
@@ -1003,7 +1015,7 @@ public class RaceBox : Sfxable
 			{
 				if (vp.Owner)
 				{
-					vp.SynchRaceboxValuesRpc(false, ServerC.I.PlayerMe.ScoreGet(), curLap, vp.followAI.dist, vp.followAI.progress, aero, Drift, (float)bestLapTime.TotalSeconds,
+					vp.SynchRaceboxValuesRpc(false, ServerC.I.PlayerMe.ScoreGet(), curLap, vp.followAI.dist, vp.followAI.progress, Aero, Drift, (float)bestLapTime.TotalSeconds,
 					(float)raceTime.TotalSeconds, vp.RpcTarget.Everyone);
 				}
 			}
@@ -1017,14 +1029,14 @@ public class RaceBox : Sfxable
 			}
 			vp.followAI.selfDriving = F.I.gameMode != GameMode.Skate;
 
-			if (!SurvivalEliminated) UpdateTrackRecords();
+			if (!SurvivalEliminated && !survivalVictory) UpdateTrackRecords();
 		}
 	}
 
 	public void UpdateValues(bool enabled, int curLap, float dist, float progress, float aero, float drift, 
 		float bestLapSecs, float raceTimeSecs)
 	{
-		this.aero = aero;
+		this.Aero = aero;
 		this.Drift = drift;
 		this.curLap = curLap;
 		vp.followAI.dist = dist;

@@ -347,6 +347,7 @@ public class RankingView : MainMenuView
 
 			yield return null;
 		}
+		FocusOKButton();
 	}
 
 	IEnumerator SinAnim()
@@ -371,6 +372,15 @@ public class RankingView : MainMenuView
 			//sinSpeed -= Time.deltaTime / animDurationSecs;
 			yield return null;
 		}
+		FocusOKButton();
+	}
+
+	void FocusOKButton()
+	{
+		// RankingView uses its existing first-button binding for OK.
+		if (isActiveAndEnabled && firstButtonToBeSelected &&
+			firstButtonToBeSelected.IsActive() && firstButtonToBeSelected.IsInteractable())
+			firstButtonToBeSelected.Select();
 	}
 
 	void SetColorOfRow(Transform row, Color c)

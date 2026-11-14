@@ -125,7 +125,10 @@ namespace RVP
 
                         // Play crash sound
                         if (vp.crashSnd && vp.crashClips.Length > 0 && !soundPlayed) {
-                            vp.crashSnd.PlayOneShot(vp.crashClips[Random.Range(0, vp.crashClips.Length)], Mathf.Clamp01(col.relativeVelocity.magnitude * 0.1f));
+                            if (col.rigidbody && col.rigidbody.GetComponent<VehicleParent>())
+                                vp.PlayCrashSound(col.relativeVelocity.magnitude, vehicleCollision: true);
+                            else
+                                vp.crashSnd.PlayOneShot(vp.crashClips[Random.Range(0, vp.crashClips.Length)], Mathf.Clamp01(col.relativeVelocity.magnitude * 0.1f));
                             soundPlayed = true;
                         }
 

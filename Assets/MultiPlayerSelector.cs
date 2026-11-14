@@ -103,7 +103,7 @@ public class MultiPlayerSelector : TrackSelector
 		clientConnectedTime = Time.time;
 		maxCPURivals = F.I.maxCarsInRace - ServerC.I.lobby.Players.Count;
 
-		if (F.I.s_raceType == RaceType.Knockout)
+		if (F.I.s_raceType == RaceType.Knockout && F.I.actionHappening != ActionHappening.InRace)
 		{
 			if (ServerC.I.AmHost && ServerC.I.PlayerMe.ReadyGet())
 			{
@@ -369,7 +369,6 @@ public class MultiPlayerSelector : TrackSelector
 		SwitchRandomTrack(true);
 		UpdateInteractableButtons();
 		SwitchReady(true);
-		SwitchScoring(true);
 		SwitchRound(true);
 	}
 
@@ -381,8 +380,7 @@ public class MultiPlayerSelector : TrackSelector
 		//sortButton.gameObject.SetActive(isHost);
 		//sortButton.buttonComponent.interactable = notRdy;
 		garageBtn.interactable = notRdy && !F.I.randomCars;
-		tuningBtn.interactable = isHost && notRdy;
-		scoringText.text = F.I.scoringType.ToString();
+		tuningBtn.interactable = notRdy;
 		scoringText.transform.parent.GetComponent<Button>().interactable = isHost && notRdy;
 		randomCarsText.transform.parent.GetComponent<Button>().interactable = isHost && notRdy;
 		randomTracksText.transform.parent.GetComponent<Button>().interactable = isHost && notRdy;

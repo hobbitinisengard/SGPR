@@ -92,6 +92,11 @@ public class TuningSelector : MainMenuView
 		StopAllCoroutines();
 		loadRoutine = containerCo = barsAndRadialCo = null;
 		loading = false;
+		if (OnlineMultiplayer && ServerC.I && ServerC.I.lobby != null)
+		{
+			ServerC.I.CarNameSet();
+			ServerC.I.UpdatePlayerData();
+		}
 		base.OnDisable();
 	}
 

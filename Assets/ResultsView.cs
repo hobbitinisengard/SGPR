@@ -414,8 +414,6 @@ public class ResultsView : MainMenuView
 			}
 
 			bool continuationCheck = CheckArcadeCondition(F.I.targetNode.continuationReq);
-			List<string> prizes = GetActualPrizeListAndMarkPrizesInProgress();
-
 			if (continuationCheck)
 			{ // update unlocked paths
 				if (F.I.curArcadeNodeID >= 0)
@@ -426,6 +424,8 @@ public class ResultsView : MainMenuView
 					}
 				}
 			}
+			// Global path rewards must see the connection completed by this race.
+			List<string> prizes = GetActualPrizeListAndMarkPrizesInProgress();
 			F.I.SaveArcadeProgress();
 
 			F.I.rankingView.SetRankingType(ScoringType.Championship, false, GameMode.Arcade);
@@ -464,6 +464,7 @@ public class ResultsView : MainMenuView
 
 		for (int i = 0; i < F.I.curVariant.globalPrizes.Length; ++i)
 		{
+			if (F.I.curVariant.progress.globalPrizesCompleted.GetBits(i) != 0) continue;
 			var gprize = F.I.curVariant.globalPrizes[i];
 			if (gprize.condition == ArcadeVariant.Prize.Condition.AlwaysFirst)
 			{
@@ -475,7 +476,7 @@ public class ResultsView : MainMenuView
 			}
 			else if (gprize.condition == ArcadeVariant.Prize.Condition.AllPathsFound)
 			{
-				if (F.I.curVariant.progress.pathsDone.Sum(p => p.Count) == F.I.curVariant.nodes.Sum(n => n.connections == null ? 0 : n.connections.Length))
+				if (F.I.curVariant.progress.AllPathsFound())
 				{
 					F.I.curVariant.progress.globalPrizesCompleted.SetBits(i, true);
 					prizes.AddRange(F.I.curVariant.globalPrizes[i].name.Split(","));
@@ -587,14 +588,7 @@ public class ResultsView : MainMenuView
 			case ArcadeVariant.Prize.Condition.AlwaysFirst:
 				return F.I.alwaysFirst;
 			case ArcadeVariant.Prize.Condition.AllPathsFound:
-				// sum of all unlocked paths in all nodes
-				int allPaths = F.I.curVariant.nodes.Sum(n => n.connections.Length);
-				int unlockedPaths = 0;
-				for (int i = 0; i < F.I.curVariant.progress.pathsDone.Count; i++)
-				{
-					unlockedPaths += F.I.curVariant.progress.pathsDone[i].Count;
-				}
-				return unlockedPaths == allPaths;
+				return F.I.curVariant.progress.AllPathsFound();
 			case ArcadeVariant.Prize.Condition.ExactStunts:
 				{
 					bool ret = F.I.arcadeObjectiveStunts.All(s => s.Item2 <= 0);
@@ -696,7 +690,9 @@ public class ResultsView : MainMenuView
 			else prevView = SplitScreenSelector.I.thisView;
 			prevViewForbidden = false;
 			grandScore0.SetActive(false); grandScore1.SetActive(false); addingScore.SetActive(false); medalsTable.gameObject.SetActive(false);
-			base.OnEnable(); return;
+			base.OnEnable();
+			FocusOKButton();
+			return;
 		}
 		Result playerResult = resultData[finalPosition];
 		if (F.I.gameMode == GameMode.Multiplayer)
@@ -874,6 +870,12 @@ public class ResultsView : MainMenuView
 		tickSnd.pitch = 1;
 		tickSnd.Play();
 		grandScoreFinal = 0;
+		FocusOKButton();
+	}
+	void FocusOKButton()
+	{
+		if (isActiveAndEnabled && OKbutton && OKbutton.IsActive() && OKbutton.IsInteractable())
+			OKbutton.Select();
 	}
 	IEnumerator AddingScoreSeq(string recordType, float bonus, Sprite medal)
 	{

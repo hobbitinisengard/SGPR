@@ -62,6 +62,7 @@ public class ServerC : MonoBehaviour
 	public const string k_Sponsor = "s";
 	public const string k_Name = "n";
 	public const string k_carName = "c";
+	public const string k_tuningClass = "tc";
 	public const string k_score = "sc";
 
 	public const string k_raceConfig = "e";
@@ -271,7 +272,12 @@ public class ServerC : MonoBehaviour
 			{
 				k_carName, new PlayerDataObject(
 					visibility: PlayerDataObject.VisibilityOptions.Member,
-					value: "car00")
+					value: F.I.cars[F.I.s_playerCarIdx].internalName)
+			},
+			{
+				k_tuningClass, new PlayerDataObject(
+					visibility: PlayerDataObject.VisibilityOptions.Member,
+					value: LocalTuningClass)
 			},
 			{
 				k_Name, new PlayerDataObject(
@@ -633,8 +639,25 @@ public class ServerC : MonoBehaviour
 			playerChanged = true;
 		}
 	}
+	public string LocalTuningClass
+	{
+		get
+		{
+			int index = F.I.s_playerCarIdx;
+			if (F.I.originalVehiclePartCatalog == null || F.I.cars == null || index < 0 || index >= F.I.cars.Length)
+				return string.Empty;
+			return F.I.originalVehiclePartCatalog.GetTuningClass(F.I.cars[index].config?.originalParts,
+				F.I.GetDefaultOriginalVehicleSetup(index));
+		}
+	}
 	public void CarNameSet()
 	{
+		string tuningClass = LocalTuningClass;
+		if (!PlayerMe.Data.TryGetValue(k_tuningClass, out var existingClass) || existingClass.Value != tuningClass)
+		{
+			PlayerMe.Data[k_tuningClass] = new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, tuningClass);
+			playerChanged = true;
+		}
 		if (PlayerMe.Data[ServerC.k_carName].Value != F.I.cars[F.I.s_playerCarIdx].internalName)
 		{
 			PlayerMe.Data[ServerC.k_carName].Value = F.I.cars[F.I.s_playerCarIdx].internalName;

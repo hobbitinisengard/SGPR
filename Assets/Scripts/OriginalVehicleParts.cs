@@ -127,7 +127,9 @@ public class OriginalVehicleCarSetup
 	public bool TrySelectPart(OriginalVehiclePartType type, int index)
 	{
 		OriginalVehiclePartSlot slot = GetSlot(type);
-		if (slot == null || index < slot.minimumIndex || index > slot.maximumIndex)
+		// Source min/max ranges describe the original catalog, not compatibility.
+		// Index zero remains the car-specific stock setup.
+		if (slot == null || index < 0)
 			return false;
 		slot.selectedIndex = index;
 		slot.selectedUserPartId = null;
@@ -483,15 +485,51 @@ public class OriginalVehiclePartCatalog
 		OriginalVehiclePartSlot slot = setup?.GetSlot(type);
 		if (slot == null) return available;
 
-		for (int index = System.Math.Max(1, slot.minimumIndex); index <= slot.maximumIndex; index++)
-		{
-			OriginalVehiclePartDefinition part = GetPart(type, index);
-			if (part != null)
-				available.Add(part);
-		}
+		// Every vehicle can use the full catalog for each of its component slots.
 		foreach (OriginalVehiclePartDefinition part in parts)
-			if (part.IsUserPart && part.type == type) available.Add(part);
+			if (part.type == type) available.Add(part);
+		available.Sort((a, b) =>
+		{
+			if (a.IsUserPart != b.IsUserPart) return a.IsUserPart ? 1 : -1;
+			int order = a.index.CompareTo(b.index);
+			return order != 0 ? order : StringComparer.OrdinalIgnoreCase.Compare(a.id, b.id);
+		});
 		return available;
+	}
+
+	public string GetTuningClass(OriginalVehicleCarSetup setup, OriginalVehicleCarSetup stockSetup)
+	{
+		if (setup == null || stockSetup?.slots == null) return string.Empty;
+		bool tuned = false;
+		int points = 0, minimum = 0, maximum = 0;
+		foreach (OriginalVehiclePartSlot stock in stockSetup.slots)
+		{
+			if (stock == null) continue;
+			OriginalVehiclePartSlot selected = setup.GetSlot(stock.type) ?? stock;
+			if (!string.Equals(selected.SelectedPartId, stock.SelectedPartId, StringComparison.OrdinalIgnoreCase))
+				tuned = true;
+			OriginalVehiclePartDefinition part = GetPresentationPart(GetPart(selected.SelectedPartId));
+			int count = 0, rank = 0;
+			foreach (OriginalVehiclePartDefinition candidate in parts)
+			{
+				if (candidate.IsUserPart || candidate.type != stock.type) continue;
+				count++;
+				if (part != null && candidate.index <= part.index) rank++;
+			}
+			if (count == 0) continue;
+			// Index zero preserves car-specific physics without a catalog part.
+			// Give it the minimum rank; user parts use their presentation part.
+			int weight = stock.type == OriginalVehiclePartType.Engine ||
+				stock.type == OriginalVehiclePartType.Battery ||
+				stock.type == OriginalVehiclePartType.Chassis ? 2 : 1;
+			points += Math.Max(1, rank) * weight;
+			minimum += weight;
+			maximum += count * weight;
+		}
+		if (!tuned || maximum == 0) return string.Empty;
+		// Seven equal ranges of the attainable total; the best total is S.
+		int tier = maximum > minimum ? Math.Min(6, (points - minimum) * 7 / (maximum - minimum)) : 0;
+		return "FEDCBAS"[tier].ToString();
 	}
 
 	public int GetSourceCarPrice(int remakeCarIndex)

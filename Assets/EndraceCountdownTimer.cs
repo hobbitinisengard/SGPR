@@ -7,18 +7,20 @@ public class EndraceCountdownTimer : MonoBehaviour
 {
 	Coroutine cntdown;
 	double networkDeadline;
+	bool networkCountdownCompleted;
 	public void SetNetworkDeadline(double deadline)
 	{
-		if (networkDeadline == deadline) return;
+		bool changed = networkDeadline != deadline;
 		networkDeadline = deadline;
+		if (changed) networkCountdownCompleted = false;
 		if (deadline <= 0)
 		{
 			gameObject.SetActive(false);
 			return;
 		}
-		if (ResultsView.FinishedPlayers >= ServerC.I.lobby.Players.Count) return;
+		if (networkCountdownCompleted || ResultsView.FinishedPlayers >= ServerC.I.lobby.Players.Count) return;
 		if (!gameObject.activeSelf) gameObject.SetActive(true);
-		else if (gameObject.activeInHierarchy) OnEnable();
+		else if (changed && gameObject.activeInHierarchy) OnEnable();
 	}
 	float NetworkSecondsRemaining => Mathf.Max(0f,
 		(float)(networkDeadline - ServerC.I.networkManager.ServerTime.Time));
@@ -81,6 +83,7 @@ public class EndraceCountdownTimer : MonoBehaviour
 			}
 			yield return null;
 		}
+		if (networkDeadline > 0) networkCountdownCompleted = true;
 		RaceManager.I.TimeForRaceEnded();
 		gameObject.SetActive(false);
 	}

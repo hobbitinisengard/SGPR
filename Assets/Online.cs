@@ -10,6 +10,17 @@ public class Online : NetworkBehaviour
 	public static Online I;
 	public NetworkVariable<bool> raceAlreadyStarted = new();
 	readonly NetworkVariable<double> endraceDeadline = new();
+	public bool RaceStartDateReceived { get; private set; }
+	bool awaitingRaceStartDate;
+	int raceStartRequestVersion;
+	float nextRaceStartRequest;
+	public void PrepareRaceStartSynchronization()
+	{
+		raceStartRequestVersion++;
+		RaceStartDateReceived = false;
+		awaitingRaceStartDate = true;
+		nextRaceStartRequest = 0;
+	}
 	private void Awake()
 	{
 		I = this;
@@ -17,6 +28,8 @@ public class Online : NetworkBehaviour
 	public override async void OnNetworkSpawn()
 	{
 		base.OnNetworkSpawn();
+		if (!IsServer && F.I.actionHappening == ActionHappening.InRace)
+			PrepareRaceStartSynchronization();
 		if(F.I.actionHappening == ActionHappening.InRace)
 		{
 			while(MultiPlayerSelector.I.Busy)
@@ -29,6 +42,8 @@ public class Online : NetworkBehaviour
 	public override void OnNetworkDespawn()
 	{
 		raceAlreadyStarted = new();
+		awaitingRaceStartDate = false;
+		RaceStartDateReceived = false;
 		base.OnNetworkDespawn();
 	}
 	public void GibCar(Vector3 position, Quaternion rotation)
@@ -59,6 +74,13 @@ public class Online : NetworkBehaviour
 	}
 	void Update()
 	{
+		// A request can reach the host before its track/car has loaded. Retry
+		// independently of HUD activation instead of accepting an invalid date.
+		if (IsSpawned && !IsServer && awaitingRaceStartDate &&
+			F.I.gameMode == GameMode.Multiplayer && F.I.actionHappening == ActionHappening.InRace &&
+			RaceManager.I && RaceManager.I.gameObject.activeInHierarchy &&
+			Time.realtimeSinceStartup >= nextRaceStartRequest)
+			AskHostForRacestartdate();
 		// The replicated deadline also survives a late HUD activation or joining
 		// while the countdown is already running. All peers use server time.
 		if (!IsSpawned || F.I.gameMode != GameMode.Multiplayer ||
@@ -81,6 +103,22 @@ public class Online : NetworkBehaviour
 			ResultsView.MarkDisconnected(id);
 		else
 			ResultsView.Remove(id);
+	}
+
+	[Rpc(SendTo.Everyone)]
+	public void CompleteSurvivalRaceRpc(ulong winnerId, long raceStartTicks, RpcParams rpc = default)
+	{
+		if (rpc.Receive.SenderClientId != Unity.Netcode.NetworkManager.ServerClientId ||
+			F.I.gameMode != GameMode.Multiplayer || F.I.raceStartDate.Ticks != raceStartTicks ||
+			F.I.actionHappening != ActionHappening.InRace || !RaceManager.I ||
+			RaceManager.I.RestartInProgress) return;
+		ResetEndraceCountdown();
+		foreach (var car in F.I.s_cars)
+			if (car && car.OwnerClientId == winnerId)
+			{
+				RaceManager.I.CompleteSurvivalRace(car);
+				break;
+			}
 	}
 
 	public void EndRaceByTimeout()
@@ -108,20 +146,35 @@ public class Online : NetworkBehaviour
 
 	public void AskHostForRacestartdate()
 	{
-		AskHostForRacestartdateRpc(RpcTarget.Server);
+		awaitingRaceStartDate = true;
+		nextRaceStartRequest = Time.realtimeSinceStartup + 1f;
+		if (IsSpawned && !IsServer)
+			AskHostForRacestartdateRpc(raceStartRequestVersion, RpcTarget.Server);
 	}
 	[Rpc(SendTo.SpecifiedInParams)]
-	private void AskHostForRacestartdateRpc(RpcParams ps)
+	private void AskHostForRacestartdateRpc(int requestVersion, RpcParams ps)
 	{
-		TellRacestartdateRpc(F.I.raceStartDate, RpcTarget.Single(ps.Receive.SenderClientId, RpcTargetUse.Temp));
+		if (!IsServer || !RaceManager.I || !RaceManager.I.gameObject.activeInHierarchy ||
+			RaceManager.I.RestartInProgress || F.I.actionHappening != ActionHappening.InRace ||
+			F.I.raceStartDate == DateTime.MinValue || !RaceManager.I.RaceStartPrepared) return;
+		TellRacestartdateRpc(F.I.raceStartDate, requestVersion,
+			RpcTarget.Single(ps.Receive.SenderClientId, RpcTargetUse.Temp));
 	}
 	[Rpc(SendTo.SpecifiedInParams)]
-	private void TellRacestartdateRpc(DateTime raceStartDate, RpcParams ps)
+	private void TellRacestartdateRpc(DateTime raceStartDate, int requestVersion, RpcParams ps)
 	{
+		if (ps.Receive.SenderClientId != Unity.Netcode.NetworkManager.ServerClientId ||
+			requestVersion != raceStartRequestVersion || raceStartDate == DateTime.MinValue ||
+			F.I.gameMode != GameMode.Multiplayer || F.I.actionHappening != ActionHappening.InRace ||
+			!RaceManager.I || !RaceManager.I.gameObject.activeInHierarchy) return;
+		awaitingRaceStartDate = false;
+		RaceStartDateReceived = true;
 		F.I.raceStartDate = raceStartDate;
-		if(F.I.raceStartDate == DateTime.MinValue)
-		{
-			RaceManager.I.ExitButton();
-		}
+		CountDownSeq.Countdown = (float)(raceStartDate - DateTime.UtcNow).TotalSeconds;
+		// A delayed correction must never leave a positive, frozen countdown
+		// after its coroutine has already deactivated itself.
+		if (CountDownSeq.Countdown > 0 && RaceManager.I.playerCar &&
+			RaceManager.I.hud.gameObject.activeInHierarchy && !RaceManager.I.RestartInProgress)
+			RaceManager.I.countDownSeq.gameObject.SetActive(true);
 	}
 }
