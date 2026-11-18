@@ -358,7 +358,7 @@ public static class Championships
 		if (playerRetired) Save();
 		// ChampionshipsView saves the awarded progress after the results are acknowledged.
 	}
-	public static int PartPrice(OriginalVehiclePartDefinition part) => Mathf.Max(0, part?.price ?? 0) * 10;
+	public static int PartPrice(OriginalVehiclePartDefinition part) => (int)(Mathf.Max(0, part?.price ?? 0) * 10L / 3);
 	public static int TradeIn(OriginalVehiclePartDefinition part) => PartPrice(part) / 2;
 	public static int PartCost(OriginalVehiclePartDefinition part)
 	{

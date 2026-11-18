@@ -387,22 +387,30 @@ public class TuningSelector : MainMenuView
 			SetMoneyValue(PartPricesUI.transform.GetChild(0).gameObject, Championships.PartPrice(part));
 			SetMoneyValue(PartPricesUI.transform.GetChild(1).gameObject, ServerC.I.PlayerMe?.ScoreGet() ?? 0);
 			// Online credits unlock equipment by threshold; nothing is bought or sold.
-			SetMoneyValue(PartPricesUI.transform.GetChild(2).gameObject, 0);
+			bool installedPart = carConfig.originalParts?.GetSlot(part.type)?.SelectedPartId == part.id;
+			bool affordable = installedPart || (ServerC.I.PlayerMe?.ScoreGet() ?? 0) >= Championships.PartPrice(part);
+			SetMoneyValue(PartPricesUI.transform.GetChild(2).gameObject, 0, affordable ? F.I.green : F.I.red);
 			return;
 		}
 		var installed = F.I.originalVehiclePartCatalog.GetSelectedPart(F.I.cars[Championships.Current.carIndex].config.originalParts, part.type);
 		SetMoneyValue(PartPricesUI.transform.GetChild(0).gameObject, Championships.PartPrice(part));
 		SetMoneyValue(PartPricesUI.transform.GetChild(1).gameObject, Championships.Current.cash);
 		int exchangeBalance = installed?.id == part.id ? 0 : -Championships.PartCost(part);
-		SetMoneyValue(PartPricesUI.transform.GetChild(2).gameObject, exchangeBalance);
+		SetMoneyValue(PartPricesUI.transform.GetChild(2).gameObject, exchangeBalance,
+			Championships.Current.cash + exchangeBalance >= 0 ? F.I.green : F.I.red);
 
 	}
-	static void SetMoneyValue(GameObject root, int amount)
+	static void SetMoneyValue(GameObject root, int amount, Color? color = null)
 	{
 		if (!root) return;
 		// Update only the numeric child, leaving the labels and their localization intact.
 		Transform value = root.transform.Find("Price") ?? root.transform.Find("Name");
 		if (value) ChampionshipUI.SetText(value.gameObject, $"${amount:N0}");
+		if (color.HasValue)
+		{
+			foreach (var text in root.GetComponentsInChildren<Text>(true)) text.color = color.Value;
+			foreach (var text in root.GetComponentsInChildren<TMPro.TMP_Text>(true)) text.color = color.Value;
+		}
 	}
 
 	void EquipPart(OriginalVehiclePartDefinition part)

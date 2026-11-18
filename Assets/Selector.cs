@@ -322,6 +322,8 @@ public class TrackSelectorTemplate : Sfxable
 		if (!recordsContainer) return;
 		if (!F.I.randomTracks)
 		{
+			// Repair headers already loaded without records by earlier versions.
+			if (selectedTrack) F.I.tracks[selectedTrack.name].records ??= new TrackRecords();
 			for (int i = 0; i < recordsContainer.childCount; ++i)
 			{
 				Transform record = recordsContainer.GetChild(i);
@@ -344,8 +346,8 @@ public class TrackSelectorTemplate : Sfxable
 				}
 				record.GetChild(2).GetComponent<Text>().text = valueStr;
 
-				if (recordData != null && (i > 0 && recordData.secondsOrPts > recordData.requiredSecondsOrPts)
-					|| (i == 0 && recordData.secondsOrPts < recordData.requiredSecondsOrPts))
+				if (recordData != null && ((i > 0 && recordData.secondsOrPts > recordData.requiredSecondsOrPts)
+					|| (i == 0 && recordData.secondsOrPts < recordData.requiredSecondsOrPts)))
 					record.GetChild(2).GetComponent<Text>().color = Color.yellow;
 				else
 					record.GetChild(2).GetComponent<Text>().color = Color.white;

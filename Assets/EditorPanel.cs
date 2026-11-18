@@ -2011,31 +2011,61 @@ public class EditorPanel : MonoBehaviour
 	}
 	public void GenerateMergedTrackColliders()
 	{
-		List<GameObject>[] combinedMeshesToBeMergedBySurfaceType = new List<GameObject>[GroundSurfaceMaster.surfaceTypesStatic.Length];
-		for (int i = 0; i < combinedMeshesToBeMergedBySurfaceType.Length; ++i)
-		{
-			var newMergedTrackColliderForSurfaceType = new GameObject(i.ToString());
-			newMergedTrackColliderForSurfaceType.transform.parent = mergedTrackCollidersContainer;
-			combinedMeshesToBeMergedBySurfaceType[i] = new List<GameObject>();
-		}
+		// Do not cook a single world-sized mesh: distant track sections need
+		// their own local coordinates and collision acceleration structures.
+		const float chunkSize = 256f;
+		var chunks = new Dictionary<(int surface, Vector3Int cell), List<GameObject>>();
 		for (int i = 0; i < placedTilesContainer.transform.childCount; ++i)
 		{
 			Tile tile = placedTilesContainer.transform.GetChild(i).GetComponent<Tile>();
-			if (tile.type == Tile.Type.Road)
-			{
-				var sType = tile.mc.GetComponent<GroundSurfaceInstance>().surfaceType;
-				combinedMeshesToBeMergedBySurfaceType[sType].Add(tile.mc.gameObject);
-				tile.mc.enabled = false;
-			}
+			if (!tile || tile.type != Tile.Type.Road || !tile.mc || !tile.mc.sharedMesh) continue;
+			tile.mc.enabled = true;
+			int surface = tile.mc.GetComponent<GroundSurfaceInstance>().surfaceType;
+			Vector3 center = tile.mc.bounds.center;
+			var cell = new Vector3Int(Mathf.FloorToInt(center.x / chunkSize),
+				Mathf.FloorToInt(center.y / chunkSize), Mathf.FloorToInt(center.z / chunkSize));
+			var key = (surface, cell);
+			if (!chunks.TryGetValue(key, out var objects))
+				chunks[key] = objects = new List<GameObject>();
+			objects.Add(tile.mc.gameObject);
 		}
-		for (int i = 0; i < combinedMeshesToBeMergedBySurfaceType.Length; i++)
+		foreach (Transform old in mergedTrackCollidersContainer) old.gameObject.SetActive(false);
+		mergedTrackCollidersContainer.DestroyAllChildren();
+		const MeshColliderCookingOptions cooking = MeshColliderCookingOptions.CookForFasterSimulation |
+			MeshColliderCookingOptions.EnableMeshCleaning | MeshColliderCookingOptions.WeldColocatedVertices |
+			MeshColliderCookingOptions.UseFastMidphase;
+		foreach (var chunk in chunks)
 		{
-			var mergedContainer = mergedTrackCollidersContainer.GetChild(i);
-			mergedContainer.gameObject.layer = F.I.roadLayer;
-			var mc = mergedContainer.gameObject.AddComponent<MeshCollider>();
-			MeshCombiner mb = new();
-			mc.sharedMesh = mb.CombineObjects(combinedMeshesToBeMergedBySurfaceType[i]);
-			mergedContainer.gameObject.AddComponent<GroundSurfaceInstance>().surfaceType = i;
+			Vector3 origin = (Vector3)chunk.Key.cell * chunkSize;
+			Mesh mesh = new MeshCombiner().CombineObjects(chunk.Value, origin: origin);
+			mesh.name = $"Track collision {chunk.Key.surface} {chunk.Key.cell}";
+			if (mesh.vertexCount == 0 || mesh.triangles.Length < 3)
+			{
+				Destroy(mesh);
+				continue; // Keep the original tile colliders if there is no usable geometry.
+			}
+			// Bake only after all merging/welding has finished, with exactly the
+			// same options used by the collider. Runtime meshes are CPU-readable.
+			Physics.BakeMesh(mesh.GetEntityId(), false, cooking);
+			var merged = new GameObject(mesh.name);
+			merged.transform.SetParent(mergedTrackCollidersContainer, true);
+			merged.transform.SetPositionAndRotation(origin, Quaternion.identity);
+			merged.layer = F.I.roadLayer;
+			var collider = merged.AddComponent<MeshCollider>();
+			collider.cookingOptions = cooking;
+			collider.sharedMesh = mesh;
+			merged.AddComponent<GroundSurfaceInstance>().surfaceType = chunk.Key.surface;
+			if (collider.bounds.size.sqrMagnitude > 0)
+			{
+				foreach (var tile in chunk.Value) tile.GetComponent<MeshCollider>().enabled = false;
+			}
+			else
+			{
+				Debug.LogWarning($"[EditorPanel] Failed to create {mesh.name}; using original tile colliders.");
+				merged.SetActive(false);
+				Destroy(merged);
+				Destroy(mesh);
+			}
 		}
 	}
 	public IEnumerator LoadTrack()

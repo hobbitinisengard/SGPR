@@ -92,6 +92,31 @@ namespace RVP
 			SetLoopClip(engineAudio, rev);
 			SetLoopClip(idlingEngineAudio, idle);
 		}
+		// Source sound IDs are independent of tuning-part numbers. Share existing
+		// recordings where identical; keep distinct retail recordings by source name.
+		static readonly string[] stockRevClips =
+			{ "petes-revving", "karls-revving", "engine1", "stefans-revving", "engine3-revving" };
+		static readonly string[] stockIdleClips =
+			{ "engine2i", "engine3i", "engine1i", "engine4i", "engine0i" };
+
+		public void SetStockAudio(int revIndex, int idleIndex)
+		{
+			if (revIndex < 0 || revIndex > 4 || idleIndex < 0 || idleIndex > 4) return;
+			int selection = -2 - revIndex * 5 - idleIndex;
+			if (selectedAudioPartIndex == selection) return;
+			if (!engineAudio) engineAudio = GetComponent<AudioSource>();
+			if (!idlingEngineAudio && transform.childCount > 0)
+				idlingEngineAudio = transform.GetChild(0).GetComponent<AudioSource>();
+			// Stock selection zero keeps the car's own sound IDs. They are
+			// independent indices into the retail rev and idle sample tables.
+			AudioClip rev = Resources.Load<AudioClip>("sfx/engine/" + stockRevClips[revIndex]);
+			AudioClip idle = Resources.Load<AudioClip>("sfx/engine/" + stockIdleClips[idleIndex]);
+			if (!rev || !idle) return;
+			selectedAudioPartIndex = selection;
+			SetLoopClip(engineAudio, rev);
+			SetLoopClip(idlingEngineAudio, idle);
+		}
+
 		static void SetLoopClip(AudioSource source, AudioClip clip)
 		{
 			if (!source || !clip || source.clip == clip) return;
@@ -133,19 +158,67 @@ namespace RVP
 			UpdateBoostPresentation();
 		}
 
-		protected void UpdateMotorAudio()
+		static readonly System.Collections.Generic.Dictionary<AudioClip, AudioClip> sourcePitchClips = new();
+		static void SetSourcePlaybackFrequency(AudioSource source, float frequency)
+		{
+			if (!source || !source.clip) return;
+			AudioClip clip = source.clip;
+			// Unity limits pitch to 3. The original reaches 81900 Hz even for
+			// 22050-Hz samples. Copy their unchanged PCM to a higher-rate clip so
+			// that the entire original range fits, without resampling the sound.
+			if (clip.frequency * 3 < 81900)
+			{
+				if (!sourcePitchClips.TryGetValue(clip, out AudioClip playbackClip))
+				{
+					float[] samples = new float[clip.samples * clip.channels];
+					if (clip.GetData(samples, 0))
+					{
+						playbackClip = AudioClip.Create(clip.name + " (source pitch)", clip.samples,
+							clip.channels, 44100, false);
+						playbackClip.SetData(samples, 0);
+					}
+					sourcePitchClips[clip] = playbackClip;
+				}
+				if (playbackClip)
+				{
+					bool playing = source.isPlaying;
+					source.clip = playbackClip;
+					if (playing) source.Play();
+					clip = playbackClip;
+				}
+			}
+			source.pitch = Mathf.Clamp(frequency / clip.frequency, 0, 3);
+		}
+
+		protected void UpdateMotorAudio(float? sourceRpm = null)
 		{
 			if (engineAudio)
 			{
 				if (health > 0)
 				{
-					engineAudio.pitch = Mathf.LerpUnclamped(engineAudio.pitch, Mathf.LerpUnclamped(minPitch, maxPitch, targetPitch),
-						20 * Time.fixedDeltaTime) + Mathf.Sin(Time.time * 200 * (1 - health)) * (1 - health) * 0.1f * damagePitchWiggle;
-					idlingEngineAudio.pitch = engineAudio.pitch;
+					if (sourceRpm.HasValue)
+					{
+						float rpm = sourceRpm.Value;
+						if (float.IsNaN(rpm) || float.IsInfinity(rpm)) rpm = 0;
+						// vehicle_audio_engine: absolute RPM maps directly to playback Hz,
+						// independently of the engine's limiter and HUD needle range.
+						float frequency = Mathf.Min(81900f, Mathf.Abs(rpm) * 4f + 11025f);
+						if (vp && vp.IsLocalHuman && rpm < 4096f)
+							frequency = Mathf.Min(81900f, frequency + 14000f);
+						SetSourcePlaybackFrequency(engineAudio, frequency);
+						SetSourcePlaybackFrequency(idlingEngineAudio, frequency);
+					}
+					else
+					{
+						engineAudio.pitch = Mathf.LerpUnclamped(engineAudio.pitch, Mathf.LerpUnclamped(minPitch, maxPitch, targetPitch),
+							20 * Time.fixedDeltaTime) + Mathf.Sin(Time.time * 200 * (1 - health)) * (1 - health) * 0.1f * damagePitchWiggle;
+						if (idlingEngineAudio) idlingEngineAudio.pitch = engineAudio.pitch;
+					}
 					// blend idling engine audio with revving audio
 					float blendPoint = 0.4f;
-					idlingEngineAudio.volume = idlingEngineAudioCurve.Evaluate(1 / (2 * blendPoint) * targetPitch);
-					engineAudio.volume = 1 - idlingEngineAudio.volume;
+					if (idlingEngineAudio)
+						idlingEngineAudio.volume = idlingEngineAudioCurve.Evaluate(1 / (2 * blendPoint) * targetPitch);
+					engineAudio.volume = idlingEngineAudio ? 1 - idlingEngineAudio.volume : 1;
 				}
 			}
 		}

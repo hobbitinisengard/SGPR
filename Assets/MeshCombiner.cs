@@ -67,7 +67,7 @@ public class MeshCombiner
 
 
    
-    public Mesh CombineObjects(List<GameObject> objectsToCombine, bool showCreatedMeshInfo = false)
+    public Mesh CombineObjects(List<GameObject> objectsToCombine, bool showCreatedMeshInfo = false, Vector3? origin = null)
     {
         #region Get MeshFilters, MeshRenderers and unique Materials from all children:
         MeshFilter[] meshFilters = new MeshFilter[objectsToCombine.Count];
@@ -121,7 +121,9 @@ public class MeshCombiner
                                                               // Every part have different index. If there are 3 submeshes
                                                               // in Mesh then MeshRender needs 3 Materials to render them.
                             combineInstance.mesh = meshFilters[j].sharedMesh;
-                            combineInstance.transform = meshFilters[j].transform.localToWorldMatrix;
+                            // Keep large tracks near a local origin while cooking collision geometry.
+                            combineInstance.transform = Matrix4x4.Translate(-(origin ?? Vector3.zero)) *
+                                meshFilters[j].transform.localToWorldMatrix;
                             submeshCombineInstancesList.Add(combineInstance);
                             verticesLength += combineInstance.mesh.vertices.Length;
                         }

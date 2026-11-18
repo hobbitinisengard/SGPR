@@ -568,7 +568,12 @@ namespace RVP
 			if (engine && engineSlot != null)
 			{
 				var part = F.I.originalVehiclePartCatalog.GetPart(engineSlot.SelectedPartId);
-				engine.SetPartAudio(part != null && part.IsUserPart ? part.presentationIndex : engineSlot.selectedIndex);
+				if (engineSlot.selectedIndex == 0 && part == null &&
+					F.I.originalVehiclePartCatalog.TryGetEffectiveParameter(originalPartsSetup, "Engine", out float revSound) &&
+					F.I.originalVehiclePartCatalog.TryGetEffectiveParameter(originalPartsSetup, "Engine Idle", out float idleSound))
+					engine.SetStockAudio(Mathf.RoundToInt(revSound), Mathf.RoundToInt(idleSound));
+				else
+					engine.SetPartAudio(part != null && part.IsUserPart ? part.presentationIndex : engineSlot.selectedIndex);
 			}
 			OriginalVehiclePartSlot hornSlot = originalPartsSetup?.GetSlot(OriginalVehiclePartType.Horn);
 			if (hornSlot != null)

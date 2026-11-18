@@ -35,7 +35,7 @@ namespace RVP
 				boostActivatedTime = Time.time;
 
 			health = Mathf.Clamp01(health);
-			UpdateMotorAudio();
+			UpdateMotorAudio(sourceEngineDrive ? sourceEngineDrive.rpm : 0);
 			UpdateBoostPresentation();
 		}
 	}

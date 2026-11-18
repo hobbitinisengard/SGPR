@@ -79,6 +79,7 @@ namespace RVP
 		const float SourceMassToKilograms = 0.001f;
 		const float SourceLengthToMetres = 0.01f;
 		public const float SourceTicksPerSecond = 60f;
+		const float DriftFullThrottleLateralGripReduction = 0.70f;
 		const float SourceHumanRespawnEnergyCostPercent = 5f;
 		const float SourceHumanStuntEnergyAwardPercent = 9f;
 		const float SourceCpuStuntEnergyAwardPercent = 7f; // The retail award truncates Gameplay.csv 7.5 before applying it.
@@ -4395,6 +4396,11 @@ namespace RVP
 			Vector3 steeredForward = steering * forward;
 			Vector3 steeredRight = steering * right;
 			Vector3 sourceVelocity = vehicle.rb.linearVelocity / SourceSpeedToMetresPerSecond;
+			float driftThrottle = F.I && F.I.s_raceType == RaceType.Drift &&
+				CountDownSeq.Countdown <= 0 && !PlayerBatteryEmpty
+				? Mathf.Clamp01(SourceRawAccelInput) : 0;
+			float lateralGripScale = 1 - DriftFullThrottleLateralGripReduction * driftThrottle;
+			bool hasDriftSupport = false;
 			float sideSpeed = Vector3.Dot(steeredRight, sourceVelocity);
 			float frontForce = Mathf.Clamp(-sideSpeed * Vector3.Dot(steeredRight, forward), -0.5f, 0.5f);
 			float rearForce = 0;
@@ -4428,6 +4434,7 @@ namespace RVP
 						(Mathf.Max(0.001f, parameters.tyres[i].radius * SourceLengthToMetres) * 2 * Mathf.PI);
 					continue;
 				}
+				hasDriftSupport = true;
 				float longitudinal = sourceLongitudinalSpeed[i];
 				float slip = wheelSpeed[i] - longitudinal;
 				float wheelLateral = sourceLateralSpeed[i];
@@ -4471,6 +4478,10 @@ namespace RVP
 				}
 				float longitudinalChange = (float)((double)longitudinalResidual * 0.5);
 				wheelSpeed[i] = (float)((double)wheelSpeed[i] - (double)longitudinalChange * tickScale);
+				// Scale only sideways correction, including the static-grip branch.
+				// Keep longitudinal traction and braking at their original strength.
+				if (driftThrottle > 0)
+					lateralResidual = Mathf.Lerp(wheelLateral, lateralResidual, lateralGripScale);
 				sourceLateralSpeed[i] = lateralResidual;
 				int axle = i < 2 ? 1 : 0;
 				sourceAxleForce[axle] = (float)((double)longitudinalChange + sourceAxleForce[axle]);
@@ -4520,6 +4531,25 @@ namespace RVP
 			float verticalVelocity = Vector3.Dot(previousVelocity, up);
 			Vector3 nextVelocity = (frontAxleVelocity + rearAxleVelocity) * (0.5f * SourceSpeedToMetresPerSecond);
 			nextVelocity += up * verticalVelocity;
+			if (driftThrottle > 0 && hasDriftSupport && sourceContactClass != 1 &&
+				SourceRawBrakeInput <= 0.01f && speed > 0)
+			{
+				Vector3 previousPlanar = Vector3.ProjectOnPlane(previousVelocity, up);
+				Vector3 nextPlanar = Vector3.ProjectOnPlane(nextVelocity, up);
+				float planarSpeed = previousPlanar.magnitude;
+				if (planarSpeed > 2 && nextPlanar.sqrMagnitude > 0.0001f)
+				{
+					float slipRatio = Mathf.Abs(Vector3.Dot(previousPlanar, right)) / planarSpeed;
+					float drifting = Mathf.InverseLerp(0.08f, 0.35f, slipRatio);
+					// Push along the road-plane travel direction to replace speed lost
+					// in a slide. Full throttle preserves speed in a developed drift;
+					// partial throttle restores proportionally less. Never add lift or
+					// exceed the previous speed through this assist alone.
+					float restoreSpeed = Mathf.Max(0, planarSpeed - nextPlanar.magnitude) *
+						driftThrottle * drifting;
+					nextVelocity += nextPlanar.normalized * restoreSpeed;
+				}
+			}
 			vehicle.rb.linearVelocity = nextVelocity;
 			// The source advances each axle independently, then rebuilds its basis
 			// from their new separation and the support up vector.

@@ -114,7 +114,11 @@ public class ZippedTrackDataObject : NetworkBehaviour
 			for (int i = 1; i < 1000; ++i)
 			{
 				newName = trackName + i.ToString();
-				if (!File.Exists(F.I.tracksPath + newName + ".jpg"))
+				if (!F.I.tracks.ContainsKey(newName) &&
+					!File.Exists(F.I.tracksPath + newName + ".jpg") &&
+					!File.Exists(F.I.tracksPath + newName + ".data") &&
+					!File.Exists(F.I.tracksPath + newName + ".track") &&
+					!File.Exists(F.I.tracksPath + newName + ".rec"))
 				{
 					Debug.LogWarning($"Local track already exists. Saving as {newName}");
 					break;
@@ -124,6 +128,13 @@ public class ZippedTrackDataObject : NetworkBehaviour
 			File.Move(F.I.tracksPath + trackName + ".data", F.I.tracksPath + newName + ".data");
 			File.Move(F.I.tracksPath + trackName + ".track", F.I.tracksPath + newName + ".track");
 			var header = new TrackHeader(F.I.tracks[trackName]);
+			// Records belong to the preserved local layout, not the newly
+			// downloaded replacement. Keep them under its new name on disk too.
+			string recordsPath = F.I.tracksPath + trackName + ".rec";
+			if (File.Exists(recordsPath))
+				File.Move(recordsPath, F.I.tracksPath + newName + ".rec");
+			else
+				File.WriteAllText(F.I.tracksPath + newName + ".rec", JsonConvert.SerializeObject(header.records));
 			F.I.tracks.Add(newName, header);
 
 			File.Move(F.I.documentsSGPRpath + trackName + ".jpg", F.I.tracksPath + trackName + ".jpg");
@@ -132,6 +143,7 @@ public class ZippedTrackDataObject : NetworkBehaviour
 
 			string trackJson = File.ReadAllText(F.I.tracksPath + trackName + ".track");
 			header = JsonConvert.DeserializeObject<TrackHeader>(trackJson);
+			header.records ??= new TrackRecords();
 			F.I.tracks[trackName] = header;
 		}
 		else
@@ -143,6 +155,7 @@ public class ZippedTrackDataObject : NetworkBehaviour
 
 			string trackJson = File.ReadAllText(F.I.tracksPath + trackName + ".track");
 			var header = JsonConvert.DeserializeObject<TrackHeader>(trackJson);
+			header.records ??= new TrackRecords();
 			F.I.tracks.Add(trackName, header);
 		}
 		File.Delete(zipPath);

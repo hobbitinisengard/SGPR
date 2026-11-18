@@ -115,7 +115,7 @@ public class Info : MonoBehaviour
 	public Material emissiveRearDarker;
 	public Mesh sphereMesh;
 	public AudioMixer mainAudioMixer;
-	public const string VERSION = "0.7.16";
+	public const string VERSION = "0.7.19";
 	public bool minimized { get; private set; }
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
 	[DllImport("user32.dll")]
@@ -783,6 +783,7 @@ public class Info : MonoBehaviour
 	public readonly Color32 yellow = new(255, 223, 0, 255);
 	public readonly Color32 orange = new(255, 69, 0, 255);
 	public readonly Color32 red = new(255, 64, 64, 255);
+	public readonly Color32 green = new(0, 255, 33, 255);
 	/// <summary>
 	/// Only one object at the time can have this layer
 	/// </summary>
@@ -976,7 +977,7 @@ public class Info : MonoBehaviour
 			if (File.Exists(recordsPath))
 			{
 				string recordsJson = File.ReadAllText(recordsPath);
-				TrackRecords records = JsonConvert.DeserializeObject<TrackRecords>(recordsJson);
+				TrackRecords records = new TrackRecords(JsonConvert.DeserializeObject<TrackRecords>(recordsJson));
 				tracks[name].records = records;
 			}
 			else
@@ -1114,9 +1115,15 @@ public class Info : MonoBehaviour
 			newTris[i] = map[oldTris[i]];
 
 		Mesh weldedMesh = new Mesh();
+		// Welding creates a new mesh: preserve support for large combined tracks.
+		// Set the index format before assigning vertices and triangle indices.
+		weldedMesh.indexFormat = verts.Count > 65535
+			? UnityEngine.Rendering.IndexFormat.UInt32
+			: UnityEngine.Rendering.IndexFormat.UInt16;
 		weldedMesh.vertices = verts.ToArray();
 		weldedMesh.triangles = newTris;
 		weldedMesh.RecalculateNormals();
+		weldedMesh.RecalculateBounds();
 		return weldedMesh;
 	}
 
@@ -1161,12 +1168,12 @@ public class TrackRecords
 		stunt = new(null, 0);
 		drift = new(null, 0);
 	}
-	public TrackRecords(TrackRecords records)
+	public TrackRecords(TrackRecords records) : this()
 	{
-		lap = records.lap;
-		race = records.race;
-		stunt = records.stunt;
-		drift = records.drift;
+		if (records?.lap != null) lap = new Record(records.lap);
+		if (records?.race != null) race = new Record(records.race);
+		if (records?.stunt != null) stunt = new Record(records.stunt);
+		if (records?.drift != null) drift = new Record(records.drift);
 	}
 	public Record this[int key]
 	{
@@ -1255,8 +1262,9 @@ public class TrackHeader
 		this.isSkatePark = isSkatePark;
 	}
 
-	public TrackHeader(TrackHeader h)
+	public TrackHeader(TrackHeader h) : this()
 	{
+		records = new TrackRecords(h.records);
 		this.unlocked = h.unlocked;
 		this.preferredCarClass = h.preferredCarClass;
 		this.difficulty = h.difficulty;
