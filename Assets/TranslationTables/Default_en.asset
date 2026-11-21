@@ -2336,6 +2336,14 @@ MonoBehaviour:
     m_Localized: 'Steering: Buttons'
     m_Metadata:
       m_Items: []
+  - m_Id: 193400000000000011
+    m_Localized: "ITEX LANG"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 193400000000000012
+    m_Localized: "Long-ratio 6-speed gearbox for speeds up to 500 km/h with sufficient engine power."
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

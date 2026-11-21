@@ -2349,6 +2349,14 @@ MonoBehaviour:
     m_Localized: 'Skręt: Przyciski'
     m_Metadata:
       m_Items: []
+  - m_Id: 193400000000000011
+    m_Localized: "ITEX LANG"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 193400000000000012
+    m_Localized: "Sze\u015bciobiegowa skrzynia o wyd\u0142u\u017conych prze\u0142o\u017ceniach, pozwalaj\u0105ca osi\u0105gn\u0105\u0107 do 500 km/h przy odpowiedniej mocy silnika."
+    m_Metadata:
+      m_Items: []
   references:
     version: 2
     RefIds: []

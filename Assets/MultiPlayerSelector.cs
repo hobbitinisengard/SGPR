@@ -10,6 +10,7 @@ using Unity.Services.Authentication;
 using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 public class MultiPlayerSelector : TrackSelector
 {
@@ -238,9 +239,14 @@ public class MultiPlayerSelector : TrackSelector
 		{
 			if (changes.Data.Value.ContainsKey(ServerC.k_raceConfig))
 			{ // SCORING TYPE CHANGED
-				ServerC.I.DecodeConfig(changes.Data.Value[ServerC.k_raceConfig].Value.Value);
-				ResetButtons();
-				refreshLeaderboard = true;
+				string config = changes.Data.Value[ServerC.k_raceConfig].Value.Value;
+				if (!ServerC.I.lobby.Data.TryGetValue(ServerC.k_raceConfig, out var previous) ||
+					previous.Value != config)
+				{
+					ServerC.I.DecodeConfig(config);
+					ResetButtons();
+					refreshLeaderboard = true;
+				}
 			}
 			if (!ServerC.I.AmHost)
 			{
@@ -291,6 +297,11 @@ public class MultiPlayerSelector : TrackSelector
 			return;
 		}
 
+		// Heartbeat/version/timestamp-only events still update the lobby model,
+		// but must not rebuild controls or restart the lobby countdown.
+		bool controlsChanged = changes.Data.Changed || changes.PlayerJoined.Changed ||
+			changes.PlayerLeft.Changed || changes.PlayerData.Changed || changes.HostId.Changed;
+		if (!controlsChanged) return;
 		ServerC.I.UpdatePlayerData();
 
 		if (trackChanged)
@@ -363,6 +374,7 @@ public class MultiPlayerSelector : TrackSelector
 	
 	public new void ResetButtons()
 	{
+		Selectable selection = CaptureLobbySelection();
 		base.ResetButtons();
 		SwitchScoring(true);
 		SwitchRandomCar(true);
@@ -370,10 +382,30 @@ public class MultiPlayerSelector : TrackSelector
 		UpdateInteractableButtons();
 		SwitchReady(true);
 		SwitchRound(true);
+		RestoreLobbySelection(selection);
+	}
+
+	Selectable CaptureLobbySelection()
+	{
+		if (!isActiveAndEnabled || !thisView || !EventSystem.current) return null;
+		GameObject selected = EventSystem.current.currentSelectedGameObject;
+		if (!selected || !selected.transform.IsChildOf(thisView.transform)) return null;
+		var selectable = selected.GetComponent<Selectable>();
+		return selectable && selectable.IsActive() && selectable.IsInteractable() ? selectable : null;
+	}
+	void RestoreLobbySelection(Selectable selected)
+	{
+		// Restore only a selection cleared by this synchronous UI refresh. Do not
+		// steal focus from chat, dialogs, another view, or a player's new selection.
+		if (!selected || !isActiveAndEnabled || !EventSystem.current ||
+			EventSystem.current.alreadySelecting || EventSystem.current.currentSelectedGameObject ||
+			!selected.IsActive() || !selected.IsInteractable()) return;
+		selected.Select();
 	}
 
 	void UpdateInteractableButtons()
 	{
+		Selectable selection = CaptureLobbySelection();
 		bool isHost = ServerC.I.AmHost;
 		bool notRdy = !ServerC.I.PlayerMe.ReadyGet();
 		SwitchRound(true);
@@ -393,6 +425,7 @@ public class MultiPlayerSelector : TrackSelector
 		roundText.transform.parent.GetComponent<Button>().interactable = isHost && notRdy;
 		sponsorButtonText.transform.parent.gameObject.SetActive(isHost || F.I.teams);
 		sponsorButtonText.transform.parent.GetComponent<Button>().interactable = (isHost || F.I.teams) && notRdy;
+		RestoreLobbySelection(selection);
 	}
 	
 	public void SwitchRandomCar(bool init = false)

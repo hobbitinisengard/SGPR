@@ -258,6 +258,9 @@ public class TuningSelector : MainMenuView
 				Image image = icon.GetComponent<Image>();
 				image.sprite = parts[i].IsUserPart ? Resources.Load<Sprite>("catalog/locked") : Resources.Load<Sprite>("catalog/upgrades/frontend_pages_catalog_upgrades_" +
 					ImageCategories[(int)slot.type] + "_" + parts[i].index.ToString("D2"));
+				// Extra gearbox models share the last available catalog illustration.
+				if (!image.sprite && slot.type == OriginalVehiclePartType.Gears)
+					image.sprite = Resources.Load<Sprite>("catalog/upgrades/frontend_pages_catalog_upgrades_gears_05");
 				image.preserveAspect = true;
 				icon.SetActive(true);
 				int partIndex = i;
